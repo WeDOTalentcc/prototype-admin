@@ -36,12 +36,12 @@ export function LIASuggestionsPanel({ open, onClose, selectedTriagemQuestion }: 
       />
 
       {/* Painel Lateral */}
-      <div className="fixed right-0 top-0 h-full z-50 w-[450px] bg-white dark:bg-gray-900 animate-slideInRight">
+      <div className="fixed right-0 top-0 h-full z-50 w-[450px] bg-white dark:bg-lia-bg-primary animate-slideInRight">
         {/* Header */}
         <div className="bg-wedo-purple p-4 text-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-white/20 rounded-md">
+              <div className="p-2 bg-lia-bg-primary/20 rounded-md">
                 <Wand2 className="w-5 h-5" />
               </div>
               <div>
@@ -51,7 +51,7 @@ export function LIASuggestionsPanel({ open, onClose, selectedTriagemQuestion }: 
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 hover:bg-white/20 rounded-md transition-colors"
+              className="p-1.5 hover:bg-lia-bg-primary/20 rounded-md transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -67,24 +67,24 @@ export function LIASuggestionsPanel({ open, onClose, selectedTriagemQuestion }: 
                 Perguntas Recomendadas para Triagem
               </h3>
             </div>
-            <p className="text-xs text-gray-600 dark:text-gray-400">
+            <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
               Clique em "Substituir" para trocar a pergunta selecionada
             </p>
           </div>
 
           <div className="space-y-3">
             {suggestions.map((pergunta, index) => (
-              <div key={index} className="bg-gray-50 dark:bg-gray-800 rounded-md p-4 border border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500 cursor-pointer transition-all group">
+              <div key={index} className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500 cursor-pointer transition-colors group">
                 <div className="flex items-start justify-between mb-2">
                   <h4 className="text-sm font-medium text-gray-950 group-hover:text-gray-950">
                     {pergunta}
                   </h4>
-                  <Badge className="bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 text-xs">
+                  <Badge className="bg-gray-200 text-gray-800 dark:bg-lia-bg-elevated dark:text-lia-text-primary text-xs">
                     {index === 0 ? 'Recomendada' : index === 1 ? 'Popular' : 'Sugerida'}
                   </Badge>
                 </div>
                 <div className="mt-3 flex items-center justify-between">
-                  <div className="flex items-center gap-4 text-xs text-gray-800 dark:text-gray-200">
+                  <div className="flex items-center gap-4 text-xs text-gray-800 dark:text-lia-text-primary">
                     <span className="flex items-center gap-1">
                       <Target className="w-3 h-3" />
                       Relevância: {index === 0 ? 'Muito Alta' : index < 3 ? 'Alta' : 'Média'}
@@ -103,7 +103,7 @@ export function LIASuggestionsPanel({ open, onClose, selectedTriagemQuestion }: 
             ))}
 
             {/* Botão para gerar mais sugestões */}
-            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="mt-4 pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
               <Button
                 variant="outline"
                 className="w-full text-sm"
@@ -116,9 +116,9 @@ export function LIASuggestionsPanel({ open, onClose, selectedTriagemQuestion }: 
         </div>
 
         {/* Footer */}
-        <div className="absolute bottom-0 left-0 right-0 border-t border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-800">
+        <div className="absolute bottom-0 left-0 right-0 border-t border-lia-border-subtle dark:border-lia-border-subtle p-3 bg-gray-50 dark:bg-lia-bg-secondary">
           <div className="flex items-center justify-between">
-            <p className="text-xs text-gray-800 dark:text-gray-200">
+            <p className="text-xs text-gray-800 dark:text-lia-text-primary">
               <Brain className="w-3 h-3 inline mr-1 text-wedo-cyan" />
               Baseado no perfil da vaga
             </p>

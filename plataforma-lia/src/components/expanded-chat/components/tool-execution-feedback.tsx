@@ -60,7 +60,7 @@ export function ToolExecutionFeedback({
         aria-busy="true"
         aria-label={`Executando ${displayName}`}
         className={cn(
-          'flex items-center gap-3 p-3 bg-wedo-cyan/10 rounded-md border border-wedo-cyan/30 dark:border-wedo-cyan/30',
+ 'flex items-center gap-3 p-3 bg-wedo-cyan/10 rounded-md border border-wedo-cyan/30 dark:border-wedo-cyan/30',
           'animate-in fade-in-0 duration-300',
           className
         )}
@@ -89,7 +89,7 @@ export function ToolExecutionFeedback({
         aria-live="polite"
         aria-label={`${displayName} concluída com sucesso`}
         className={cn(
-          'flex items-start gap-3 p-3 bg-status-success/10 rounded-md border border-status-success/30 dark:border-status-success/30',
+ 'flex items-start gap-3 p-3 bg-status-success/10 rounded-md border border-status-success/30 dark:border-status-success/30',
           'animate-in fade-in-0 slide-in-from-bottom-2 duration-300',
           className
         )}
@@ -114,7 +114,7 @@ export function ToolExecutionFeedback({
               variant="ghost"
               size="sm"
               aria-label="Desfazer ação"
-              className="mt-2 h-7 text-xs text-status-success hover:text-status-success hover:bg-status-success/15 dark:text-status-success dark:hover:bg-status-success/50 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-all duration-200"
+              className="mt-2 h-7 text-xs text-status-success hover:text-status-success hover:bg-status-success/15 dark:text-status-success dark:hover:bg-status-success/50 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors duration-200"
             >
               <RefreshCw className="h-3 w-3 mr-1" aria-hidden="true" />
               Desfazer
@@ -133,7 +133,7 @@ export function ToolExecutionFeedback({
       aria-live="assertive"
       aria-label={`Erro ao executar ${displayName}`}
       className={cn(
-        'flex items-start gap-3 p-3 bg-status-error/10 dark:bg-status-error/30 rounded-md border border-status-error/30 dark:border-status-error/30',
+ 'flex items-start gap-3 p-3 bg-status-error/10 dark:bg-status-error/30 rounded-md border border-status-error/30 dark:border-status-error/30',
         'animate-in fade-in-0 shake-x duration-300',
         className
       )}
@@ -153,7 +153,7 @@ export function ToolExecutionFeedback({
             variant="ghost"
             size="sm"
             aria-label="Tentar novamente"
-            className="mt-2 h-7 text-xs text-status-error hover:text-status-error hover:bg-status-error/15 dark:text-status-error dark:hover:bg-status-error/50 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200"
+            className="mt-2 h-7 text-xs text-status-error hover:text-status-error hover:bg-status-error/15 dark:text-status-error dark:hover:bg-status-error/50 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200"
           >
             <RefreshCw className="h-3 w-3 mr-1" aria-hidden="true" />
             Tentar novamente

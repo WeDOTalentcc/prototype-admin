@@ -83,7 +83,7 @@ function CurrencyInput({
       value={displayValue}
       onChange={handleChange}
       placeholder={placeholder || "R$ 0,00"}
-      className="text-right dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
+      className="text-right dark:bg-lia-bg-primary dark:border-lia-border-subtle dark:text-lia-text-primary"
     />
   )
 }
@@ -173,16 +173,16 @@ export function CompensationBenefitsPanel({
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-md dark:bg-gray-800 dark:border-gray-700">
-        <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
-          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-gray-100">
+      <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-lia-text-primary">
             💵 Salário Base (CLT)
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="salary_min" className="dark:text-gray-300">Mínimo</Label>
+              <Label htmlFor="salary_min" className="dark:text-lia-text-secondary">Mínimo</Label>
               <CurrencyInput
                 id="salary_min"
                 value={salaryMin}
@@ -191,7 +191,7 @@ export function CompensationBenefitsPanel({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="salary_max" className="dark:text-gray-300">Máximo</Label>
+              <Label htmlFor="salary_max" className="dark:text-lia-text-secondary">Máximo</Label>
               <CurrencyInput
                 id="salary_max"
                 value={salaryMax}
@@ -203,16 +203,16 @@ export function CompensationBenefitsPanel({
         </CardContent>
       </Card>
 
-      <Card className="rounded-md dark:bg-gray-800 dark:border-gray-700">
-        <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
-          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-gray-100">
+      <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-lia-text-primary">
             🎯 Bônus / Variável
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="bonus_min" className="dark:text-gray-300">Mínimo</Label>
+              <Label htmlFor="bonus_min" className="dark:text-lia-text-secondary">Mínimo</Label>
               <CurrencyInput
                 id="bonus_min"
                 value={bonusMin}
@@ -221,7 +221,7 @@ export function CompensationBenefitsPanel({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="bonus_max" className="dark:text-gray-300">Máximo</Label>
+              <Label htmlFor="bonus_max" className="dark:text-lia-text-secondary">Máximo</Label>
               <CurrencyInput
                 id="bonus_max"
                 value={bonusMax}
@@ -231,29 +231,29 @@ export function CompensationBenefitsPanel({
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="bonus_criteria" className="dark:text-gray-300">Critérios de Elegibilidade</Label>
+            <Label htmlFor="bonus_criteria" className="dark:text-lia-text-secondary">Critérios de Elegibilidade</Label>
             <Textarea
               id="bonus_criteria"
               value={bonusCriteria}
               onChange={(e) => setBonusCriteria(e.target.value)}
               placeholder="Ex: Atingimento de metas individuais e coletivas, tempo mínimo de 6 meses na empresa..."
               rows={3}
-              className="dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
+              className="dark:bg-lia-bg-primary dark:border-lia-border-subtle dark:text-lia-text-primary"
             />
           </div>
         </CardContent>
       </Card>
 
-      <Card className="rounded-md dark:bg-gray-800 dark:border-gray-700">
-        <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
-          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-gray-100">
+      <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-lia-text-primary">
             🎁 Benefícios
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {isLoadingBenefits && benefits.length === 0 ? (
             <div className="flex items-center gap-2 py-4">
-              <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+              <Loader2 className="h-4 w-4 animate-spin lia-text-secondary" />
               <span className="text-sm text-muted-foreground">Carregando benefícios...</span>
             </div>
           ) : (
@@ -264,7 +264,7 @@ export function CompensationBenefitsPanel({
 
               return (
                 <div key={categoryId} className="space-y-3">
-                  <Label className="text-xs font-semibold text-muted-foreground dark:text-gray-400 uppercase tracking-wide flex items-center gap-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground dark:text-lia-text-tertiary uppercase tracking-wide flex items-center gap-1.5">
                     <CategoryIcon className="w-3.5 h-3.5" />
                     {meta.name}
                   </Label>
@@ -287,9 +287,9 @@ export function CompensationBenefitsPanel({
         </CardContent>
       </Card>
 
-      <Card className="rounded-md dark:bg-gray-800 dark:border-gray-700">
-        <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
-          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-gray-100">
+      <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-lia-text-primary">
             📝 Observações
           </CardTitle>
         </CardHeader>
@@ -299,7 +299,7 @@ export function CompensationBenefitsPanel({
             onChange={(e) => setObservations(e.target.value)}
             placeholder="Informações adicionais sobre a remuneração ou benefícios..."
             rows={4}
-            className="dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
+            className="dark:bg-lia-bg-primary dark:border-lia-border-subtle dark:text-lia-text-primary"
           />
         </CardContent>
       </Card>
@@ -307,7 +307,7 @@ export function CompensationBenefitsPanel({
       <Button
         onClick={handleSubmit}
         disabled={isLoading}
-        className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+        className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
         size="lg"
       >
         {isLoading ? (
@@ -347,11 +347,11 @@ function BenefitRow({
       />
       <Label
         htmlFor={benefit.id || benefit.name}
-        className="flex-1 cursor-pointer text-sm font-normal dark:text-gray-300"
+        className="flex-1 cursor-pointer text-sm font-normal dark:text-lia-text-secondary"
       >
         <span>{benefit.name}</span>
         {benefit.is_mandatory && (
-          <span className="ml-1 text-micro px-1 py-0 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400">obrig.</span>
+          <span className="ml-1 text-micro px-1 py-0 rounded-full bg-gray-200 dark:bg-lia-bg-elevated text-gray-600 dark:text-lia-text-tertiary">obrig.</span>
         )}
         {benefit.is_highlighted && (
           <Heart className="inline w-3 h-3 ml-1 text-wedo-magenta fill-pink-500" />
@@ -360,7 +360,7 @@ function BenefitRow({
       {benefit.enabled && (
         <div className="flex items-center gap-2">
           {valueDisplay ? (
-            <span className="text-xs text-muted-foreground dark:text-gray-400 whitespace-nowrap">
+            <span className="text-xs text-muted-foreground dark:text-lia-text-tertiary whitespace-nowrap">
               {valueDisplay}
             </span>
           ) : (
@@ -368,11 +368,11 @@ function BenefitRow({
               value={benefit.value_details || ""}
               onChange={(e) => onValueChange(e.target.value)}
               placeholder="Valor"
-              className="w-24 h-8 text-xs dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
+              className="w-24 h-8 text-xs dark:bg-lia-bg-primary dark:border-lia-border-subtle dark:text-lia-text-primary"
             />
           )}
           {benefit.provider && (
-            <span className="text-micro text-muted-foreground dark:text-gray-400 whitespace-nowrap">
+            <span className="text-micro text-muted-foreground dark:text-lia-text-tertiary whitespace-nowrap">
               {benefit.provider}
             </span>
           )}

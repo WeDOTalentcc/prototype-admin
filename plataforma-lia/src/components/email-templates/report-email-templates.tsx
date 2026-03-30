@@ -404,14 +404,14 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-md w-full max-w-5xl h-[90vh] flex flex-col">
+      <div className="bg-lia-bg-primary rounded-md w-full max-w-5xl h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6">
           <div>
-            <h2 className="text-xl font-semibold text-gray-950 dark:text-gray-50">
+            <h2 className="text-xl font-semibold text-gray-950">
               Templates de Email para Relatórios
             </h2>
-            <p className="text-sm text-gray-800 dark:text-gray-200">
+            <p className="text-sm text-gray-800 dark:text-lia-text-primary">
               Vaga: {jobData.title} ({jobData.jobId})
             </p>
           </div>
@@ -449,9 +449,9 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-6 py-3 text-sm font-medium transition-colors ${
-                activeTab === tab.id
-                  ? 'text-gray-600 dark:text-gray-400 border-b-2 border-gray-900 dark:border-gray-50 bg-gray-100 dark:bg-gray-800'
-                  : 'text-gray-600 hover:text-gray-900'
+ activeTab === tab.id
+                  ? 'text-gray-600 dark:text-lia-text-tertiary border-b-2 border-gray-900 bg-gray-100 dark:bg-lia-bg-secondary'
+                  : 'lia-text-base hover:lia-text-strong'
               }`}
             >
               <tab.icon className="w-4 h-4" />
@@ -472,34 +472,34 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
               {emailTemplates.map((template) => (
                 <Card
                   key={template.id}
-                  className={`cursor-pointer transition-all hover:${
-                    selectedTemplate.id === template.id ? 'ring-2 ring-gray-900/20 dark:ring-gray-50/20 bg-gray-100 dark:bg-gray-800' : ''
+                  className={`cursor-pointer transition-colors hover:${
+ selectedTemplate.id === template.id ? 'ring-2 ring-gray-900/20 dark:ring-gray-50/20 bg-gray-100 dark:bg-lia-bg-secondary' : ''
                   }`}
                   onClick={() => setSelectedTemplate(template)}
                 >
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-medium text-gray-950 dark:text-gray-50">{template.name}</h3>
+                      <h3 className="font-medium text-gray-950">{template.name}</h3>
                       {template.isDefault && (
                         <Badge variant="secondary" className="text-xs">Padrão</Badge>
                       )}
                     </div>
-                    <p className="text-sm text-gray-800 dark:text-gray-200 mb-3">
+                    <p className="text-sm text-gray-800 dark:text-lia-text-primary mb-3">
                       {processTemplate(template.subject, getTemplateVariables())}
                     </p>
                     <div className="flex items-center justify-between">
                       <Badge
                         className={`text-xs ${
-                          template.type === 'executive' ? 'bg-wedo-purple/10 text-wedo-purple' :
-                          template.type === 'detailed' ? 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400' :
+ template.type === 'executive' ? 'bg-wedo-purple/10 text-wedo-purple' :
+                          template.type === 'detailed' ? 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary' :
                           template.type === 'weekly' ? 'bg-status-success/10 text-status-success' :
-                          'bg-gray-100 text-gray-800'
+                          'bg-gray-100 lia-text-strong'
                         }`}
                       >
                         {template.type}
                       </Badge>
                       {template.lastUsed && (
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs lia-text-secondary">
                           Usado em {new Date(template.lastUsed).toLocaleDateString('pt-BR')}
                         </span>
                       )}
@@ -513,7 +513,7 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
           {activeTab === 'recipients' && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-medium text-gray-950 dark:text-gray-50 mb-4">Destinatários Sugeridos</h3>
+                <h3 className="text-lg font-medium text-gray-950 mb-4">Destinatários Sugeridos</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {suggestedRecipients.map((person) => (
                     <div
@@ -522,13 +522,13 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
                     >
                       <div className="flex items-center gap-3">
                         <Avatar className="w-8 h-8">
-                          <AvatarFallback className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs">
+                          <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary text-xs">
                             {person.name.split(' ').map(n => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <div className="font-medium text-gray-800 dark:text-gray-200 text-sm">{person.name}</div>
-                          <div className="text-xs text-gray-800 dark:text-gray-200">{person.role} • {person.department}</div>
+                          <div className="font-medium text-gray-800 dark:text-lia-text-primary text-sm">{person.name}</div>
+                          <div className="text-xs text-gray-800 dark:text-lia-text-primary">{person.role} • {person.department}</div>
                         </div>
                       </div>
                       <Button
@@ -561,12 +561,12 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
               </div>
 
               <div>
-                <h3 className="text-lg font-medium text-gray-950 dark:text-gray-50 mb-4">Adicionar Email Personalizado</h3>
+                <h3 className="text-lg font-medium text-gray-950 mb-4">Adicionar Email Personalizado</h3>
                 <div className="flex gap-2">
                   <input
                     type="email"
                     placeholder="email@empresa.com"
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
+                    className="flex-1 px-3 py-2 border border-lia-border-default rounded-md"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         const email = (e.target as HTMLInputElement).value
@@ -585,13 +585,13 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
 
               {recipients.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-medium text-gray-950 dark:text-gray-50 mb-4">
+                  <h3 className="text-lg font-medium text-gray-950 mb-4">
                     Destinatários Selecionados ({recipients.length})
                   </h3>
                   <div className="space-y-2">
                     {recipients.map((email) => (
                       <div key={email} className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
-                        <span className="text-sm text-gray-800 dark:text-gray-200">{email}</span>
+                        <span className="text-sm text-gray-800 dark:text-lia-text-primary">{email}</span>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -610,7 +610,7 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
           {activeTab === 'customize' && (
             <div className="space-y-6">
               <div>
-                <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2 block">
+                <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2 block">
                   Assunto do Email
                 </label>
                 <input
@@ -618,21 +618,21 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
                   value={customSubject}
                   onChange={(e) => setCustomSubject(e.target.value)}
                   placeholder={selectedTemplate.subject}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  className="w-full px-3 py-2 border border-lia-border-default rounded-md"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs lia-text-secondary mt-1">
                   Pré-visualização: {processedSubject}
                 </p>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2 block">
+                <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2 block">
                   Variáveis Personalizadas
                 </label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {selectedTemplate.variables.map((variable) => (
                     <div key={variable}>
-                      <label className="text-xs text-gray-600 mb-1 block capitalize">
+                      <label className="text-xs lia-text-base mb-1 block capitalize">
                         {variable.replace(/_/g, ' ')}
                       </label>
                       <input
@@ -643,16 +643,16 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
                           [variable]: e.target.value
                         }))}
                         placeholder={`{{${variable}}}`}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                        className="w-full px-3 py-2 border border-lia-border-default rounded-md text-sm"
                       />
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md p-4">
+              <div className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md p-4">
                 <h4 className="font-medium text-wedo-cyan-dark mb-2">💡 Dicas de Personalização</h4>
-                <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                <ul className="text-sm text-gray-600 dark:text-lia-text-tertiary space-y-1">
                   <li>• Use variáveis para tornar o email mais relevante</li>
                   <li>• Personalize o assunto para aumentar taxa de abertura</li>
                   <li>• Adicione insights específicos sobre a performance</li>
@@ -666,10 +666,10 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
             <div className="space-y-4">
               <div className="bg-gray-50 rounded-md p-4 border">
                 <div className="flex items-center gap-2 mb-2">
-                  <Mail className="w-4 h-4 text-gray-600" />
+                  <Mail className="w-4 h-4 lia-text-base" />
                   <strong className="text-sm">Assunto:</strong>
                 </div>
-                <p className="text-sm text-gray-800 font-medium">{processedSubject}</p>
+                <p className="text-sm lia-text-strong font-medium">{processedSubject}</p>
               </div>
 
               <div className="flex gap-2">
@@ -689,14 +689,14 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
                 </Button>
               </div>
 
-              <div className="border border-gray-200 rounded-md overflow-hidden">
+              <div className="border border-lia-border-subtle rounded-md overflow-hidden">
                 {showPreview ? (
                   <div className="p-4 bg-gray-50 font-mono text-sm whitespace-pre-wrap">
                     {processTemplate(selectedTemplate.textContent, getTemplateVariables())}
                   </div>
                 ) : (
                   <div
-                    className="p-4 bg-white"
+                    className="p-4 bg-lia-bg-primary"
                     dangerouslySetInnerHTML={{
                       __html: processedContent
                     }}

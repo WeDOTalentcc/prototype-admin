@@ -175,9 +175,9 @@ export function ExcludedCompaniesInput({
       <div className="flex items-center gap-2">
         <Popover open={isTimeFilterOpen} onOpenChange={setIsTimeFilterOpen}>
           <PopoverTrigger asChild>
-            <button className="flex items-center gap-2 px-2.5 py-1 rounded-md border border-gray-200 text-xs hover:bg-gray-50 transition-colors">
-              <span className="text-gray-800 dark:text-gray-200">{currentTimeOption?.label}</span>
-              <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+            <button className="flex items-center gap-2 px-2.5 py-1 rounded-md border border-lia-border-subtle text-xs hover:bg-gray-50 transition-colors">
+              <span className="lia-text-800 dark:text-lia-text-primary">{currentTimeOption?.label}</span>
+              <ChevronDown className="w-3.5 h-3.5 lia-text-400" />
             </button>
           </PopoverTrigger>
           <PopoverContent className="w-72 p-0" align="start">
@@ -195,12 +195,12 @@ export function ExcludedCompaniesInput({
                   )}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-gray-800 dark:text-gray-200">{option.label}</span>
+                    <span className="text-xs font-medium lia-text-800 dark:text-lia-text-primary">{option.label}</span>
                     {timeFilter === option.value && (
-                      <div className="w-2 h-2 rounded-full bg-gray-900 dark:bg-gray-50" />
+                      <div className="w-2 h-2 rounded-full bg-gray-900 dark:lia-bg-50" />
                     )}
                   </div>
-                  <p className="text-xs text-gray-500 mt-0.5">{option.description}</p>
+                  <p className="text-xs lia-text-500 mt-0.5">{option.description}</p>
                 </button>
               ))}
             </div>
@@ -210,7 +210,7 @@ export function ExcludedCompaniesInput({
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <button className="p-1 text-gray-400 hover:text-gray-600">
+              <button className="p-1 lia-text-400 hover:lia-text-600">
                 <Info className="w-4 h-4" />
               </button>
             </TooltipTrigger>
@@ -227,7 +227,7 @@ export function ExcludedCompaniesInput({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {value.length > 0 && (
-            <span className="text-xs text-gray-500">
+            <span className="text-xs lia-text-500">
               {value.length} empresa{value.length !== 1 ? 's' : ''} excluída{value.length !== 1 ? 's' : ''}
             </span>
           )}
@@ -235,7 +235,7 @@ export function ExcludedCompaniesInput({
         <div className="flex items-center gap-3">
           <button 
             onClick={clearAll}
-            className="text-xs text-gray-500 hover:text-status-error flex items-center gap-1 transition-colors"
+            className="text-xs lia-text-500 hover:text-status-error flex items-center gap-1 transition-colors"
           >
             <RotateCcw className="w-3 h-3" />
             Limpar tudo
@@ -243,7 +243,7 @@ export function ExcludedCompaniesInput({
           <button 
             onClick={() => setShowSavePresetModal(true)}
             disabled={value.length === 0}
-            className="text-xs text-gray-600 hover:text-gray-800 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-xs lia-text-600 hover:lia-text-800 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Save className="w-3.5 h-3.5" />
             Salvar Preset
@@ -251,7 +251,7 @@ export function ExcludedCompaniesInput({
           {showPresets && (
             <button 
               onClick={() => setIsPresetsModalOpen(true)}
-              className="text-xs text-gray-600 hover:text-gray-800 flex items-center gap-1"
+              className="text-xs lia-text-600 hover:lia-text-800 flex items-center gap-1"
             >
               <List className="w-3.5 h-3.5" />
               Presets
@@ -262,7 +262,7 @@ export function ExcludedCompaniesInput({
 
       <div className="relative">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-400" />
           <Input
             ref={inputRef}
             value={inputValue}
@@ -270,14 +270,14 @@ export function ExcludedCompaniesInput({
             onKeyDown={handleKeyDown}
             onFocus={() => inputValue.length > 0 && setIsDropdownOpen(true)}
             placeholder={placeholder}
-            className="pl-9 pr-3 border-gray-200 focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+            className="pl-9 pr-3 border-lia-border-subtle focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
           />
         </div>
 
         {isDropdownOpen && filteredSuggestions.length > 0 && (
           <div 
             ref={dropdownRef}
-            className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md max-h-64 overflow-y-auto"
+            className="absolute z-50 w-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-md max-h-64 overflow-y-auto"
           >
             {filteredSuggestions.map((company, index) => (
               <button
@@ -289,9 +289,9 @@ export function ExcludedCompaniesInput({
                 )}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-800 dark:text-gray-200">{company.name}</span>
+                  <span className="lia-text-800 dark:text-lia-text-primary">{company.name}</span>
                   {company.domain && (
-                    <span className="text-xs text-gray-400">{company.domain}</span>
+                    <span className="text-xs lia-text-400">{company.domain}</span>
                   )}
                 </div>
               </button>
@@ -331,7 +331,7 @@ export function ExcludedCompaniesInput({
 
       {showSavePresetModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowSavePresetModal(false)}>
-          <div className="bg-white rounded-md p-4 w-80" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-lia-bg-primary rounded-md p-4 w-80" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-medium text-sm mb-3">Salvar Preset</h3>
             <Input
               value={savePresetName}
@@ -347,7 +347,7 @@ export function ExcludedCompaniesInput({
                 size="sm" 
                 onClick={handleSaveCustomPreset}
                 disabled={!savePresetName.trim()}
-                className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
               >
                 <Save className="w-3.5 h-3.5 mr-1.5" />
                 Salvar

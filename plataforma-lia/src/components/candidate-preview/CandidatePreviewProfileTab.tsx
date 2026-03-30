@@ -69,14 +69,14 @@ export function CandidatePreviewProfileTab({
             <ExperienceHighlightCard candidate={candidate as { id: string; name: string }} companyId="demo_company" />
             
             {jobId && (opinionsData?.current_general_opinion || (opinionsData?.vacancy_opinions && opinionsData.vacancy_opinions.length > 0)) && (
-              <Card className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700">
-                <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700">
+              <Card className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle">
+                <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-lia-bg-primary border-b border-lia-border-subtle dark:border-lia-border-subtle">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
-                      <div className="p-0.5 rounded-md bg-gray-100 dark:bg-gray-800">
+                      <div className="p-0.5 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
                         <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                       </div>
-                      <CardTitle className={`${textStyles.label} text-gray-600 dark:text-gray-400`}>Parecer LIA</CardTitle>
+                      <CardTitle className={`${textStyles.label} text-gray-600 dark:text-lia-text-tertiary`}>Parecer LIA</CardTitle>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className={`flex items-center gap-1 ${textStyles.caption}`}>
@@ -94,11 +94,11 @@ export function CandidatePreviewProfileTab({
                         disabled={isAnalyzingWithLia}
                         size="sm"
                         variant="ghost"
-                        className={`gap-1 px-2 py-1 ${textStyles.caption} h-6 hover:bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 transition-all disabled:opacity-50`}
+                        className={`gap-1 px-2 py-1 ${textStyles.caption} h-6 hover:bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary transition-colors disabled:opacity-50`}
                       >
                         {isAnalyzingWithLia ? (
                           <>
-                            <div className="w-3 h-3 border-2 border-gray-900 dark:border-gray-50 border-t-transparent rounded-full animate-spin" />
+                            <div className="w-3 h-3 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
                             <span>Analisando...</span>
                           </>
                         ) : (
@@ -120,7 +120,7 @@ export function CandidatePreviewProfileTab({
                     const displayScore = isWsiOpinion ? opinion.wsi_score : opinion.score
                     
                     const getScoreColor = (score: number | null, isWsi: boolean = false) => {
-                      if (score === null || score === undefined) return 'text-gray-600'
+                      if (score === null || score === undefined) return 'lia-text-base'
                       if (isWsi) {
                         return score >= 4.0 ? 'text-status-success' : score >= 3.0 ? 'text-status-warning' : 'text-status-error'
                       }
@@ -137,13 +137,13 @@ export function CandidatePreviewProfileTab({
                           )}
                           {opinion.archetype && (
                             <>
-                              <span className="text-gray-300">•</span>
+                              <span className="lia-text-muted">•</span>
                               <Badge className={badgeStyles.default}>{opinion.archetype}</Badge>
                             </>
                           )}
                         </div>
                         {opinion.summary && (
-                          <p className={`${textStyles.caption} text-gray-600 dark:text-gray-400 leading-relaxed`}>
+                          <p className={`${textStyles.caption} text-gray-600 dark:text-lia-text-tertiary leading-relaxed`}>
                             {opinion.summary}
                           </p>
                         )}
@@ -155,14 +155,14 @@ export function CandidatePreviewProfileTab({
             )}
             
             {jobId && isLoadingOpinions && !opinionsData && (
-              <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-md p-3 animate-pulse">
+              <div className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3 animate-pulse">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
-                  <div className="w-24 h-4 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                  <div className="w-4 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md"></div>
+                  <div className="w-24 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md"></div>
                 </div>
                 <div className="space-y-1.5">
-                  <div className="w-32 h-3 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
-                  <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                  <div className="w-32 h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-md"></div>
+                  <div className="w-full h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-md"></div>
                 </div>
               </div>
             )}
@@ -191,13 +191,13 @@ export function CandidatePreviewProfileTab({
               if (totalItems === 0) return null
               
               const skillCategories: Record<string, { label: string, bgColor: string, skills: string[] }> = {
-                backend: { label: 'Backend', bgColor: 'bg-gray-100 dark:bg-gray-800', skills: [] },
-                frontend: { label: 'Frontend', bgColor: 'bg-gray-100 dark:bg-gray-800', skills: [] },
-                data: { label: 'Dados & Analytics', bgColor: 'bg-gray-100 dark:bg-gray-800', skills: [] },
-                devops: { label: 'DevOps & Cloud', bgColor: 'bg-gray-100 dark:bg-gray-800', skills: [] },
-                design: { label: 'Design', bgColor: 'bg-gray-100 dark:bg-gray-800', skills: [] },
-                mobile: { label: 'Mobile', bgColor: 'bg-gray-100 dark:bg-gray-800', skills: [] },
-                other: { label: 'Outras', bgColor: 'bg-gray-100 dark:bg-gray-800', skills: [] }
+                backend: { label: 'Backend', bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary', skills: [] },
+                frontend: { label: 'Frontend', bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary', skills: [] },
+                data: { label: 'Dados & Analytics', bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary', skills: [] },
+                devops: { label: 'DevOps & Cloud', bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary', skills: [] },
+                design: { label: 'Design', bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary', skills: [] },
+                mobile: { label: 'Mobile', bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary', skills: [] },
+                other: { label: 'Outras', bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary', skills: [] }
               }
               
               const backendKeywords = ['java', 'spring', 'node', 'python', 'django', 'flask', 'fastapi', 'ruby', 'rails', 'php', 'laravel', '.net', 'c#', 'go', 'golang', 'rust', 'express', 'nestjs', 'graphql', 'rest', 'api', 'microservices', 'sql', 'postgresql', 'mysql', 'mongodb', 'redis', 'kafka', 'rabbitmq']
@@ -229,23 +229,23 @@ export function CandidatePreviewProfileTab({
               const categoriesWithSkills = Object.entries(skillCategories).filter(([, cat]) => cat.skills.length > 0)
               
               return (
-                <Card className="border-gray-100 dark:border-gray-700">
-                  <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-gray-900">
+                <Card className="border-lia-border-subtle dark:border-lia-border-subtle">
+                  <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-lia-bg-primary">
                     <div className="flex items-center gap-1.5">
-                      <Code className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
-                      <CardTitle className="text-xs font-semibold text-gray-950 dark:text-gray-50">
+                      <Code className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
+                      <CardTitle className="text-xs font-semibold text-gray-950">
                         Mapa de Skills
                       </CardTitle>
-                      <Badge className="text-micro px-1 py-0 h-4 bg-gray-200 text-gray-800 dark:text-gray-200">
+                      <Badge className="text-micro px-1 py-0 h-4 bg-gray-200 text-gray-800 dark:text-lia-text-primary">
                         {totalItems} itens
                       </Badge>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <span className="text-gray-400 cursor-help text-micro">ⓘ</span>
+                          <span className="lia-text-secondary cursor-help text-micro">ⓘ</span>
                         </TooltipTrigger>
                         <TooltipContent side="right" className="text-xs max-w-xs">
                           <div className="space-y-1">
-                            <p><span className="inline-block w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-500 mr-1"></span> Skills do CV</p>
+                            <p><span className="inline-block w-2 h-2 rounded-full bg-gray-400 mr-1"></span> Skills do CV</p>
                             <p><span className="inline-block w-2 h-2 rounded-full mr-1 bg-gray-900"></span> Expertise do LinkedIn</p>
                             <p><span className="inline-block w-2 h-2 rounded-full mr-1 bg-gray-900"></span> Soft Skills (LIA)</p>
                             <p><span className="inline-block w-2 h-2 rounded-full bg-wedo-magenta mr-1"></span> Interesses</p>
@@ -259,11 +259,11 @@ export function CandidatePreviewProfileTab({
                     {categoriesWithSkills.map(([key, category]) => (
                       <div key={key}>
                         <div className="flex items-center gap-1.5 mb-1">
-                          <div className="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-500" />
+                          <div className="w-2 h-2 rounded-full bg-gray-400" />
                           <span className={textStyles.label}>{category.label}</span>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <span className="text-gray-300 cursor-help text-micro">ⓘ</span>
+                              <span className="lia-text-muted cursor-help text-micro">ⓘ</span>
                             </TooltipTrigger>
                             <TooltipContent side="right" className="text-xs">
                               Extraído do currículo (CV)
@@ -274,7 +274,7 @@ export function CandidatePreviewProfileTab({
                           {category.skills.map((skill: string, idx: number) => (
                             <Badge 
                               key={idx} 
-                              className="text-micro px-1.5 py-0 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-0"
+                              className="text-micro px-1.5 py-0 bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary border-0"
                             >
                               {skill}
                             </Badge>
@@ -287,10 +287,10 @@ export function CandidatePreviewProfileTab({
                       <div>
                         <div className="flex items-center gap-1.5 mb-1">
                           <Brain className="w-3 h-3 text-wedo-cyan" />
-                          <span className={`${textStyles.label} text-gray-700`}>Soft Skills</span>
+                          <span className={`${textStyles.label} lia-text-base`}>Soft Skills</span>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <span className="cursor-help text-micro text-gray-700">ⓘ</span>
+                              <span className="cursor-help text-micro lia-text-base">ⓘ</span>
                             </TooltipTrigger>
                             <TooltipContent side="right" className="text-xs">
                               Competências comportamentais inferidas pela LIA
@@ -301,7 +301,7 @@ export function CandidatePreviewProfileTab({
                           {softSkillsList.map((skill: string, idx: number) => (
                             <Badge 
                               key={idx} 
-                              className="text-micro px-1.5 py-0 border-0 bg-wedo-cyan/15 text-gray-800"
+                              className="text-micro px-1.5 py-0 border-0 bg-wedo-cyan/15 lia-text-strong"
                             >
                               {skill}
                             </Badge>
@@ -313,11 +313,11 @@ export function CandidatePreviewProfileTab({
                     {expertiseList.length > 0 && (
                       <div>
                         <div className="flex items-center gap-1.5 mb-1">
-                          <Linkedin className="w-3 h-3 text-gray-600" />
-                          <span className={`${textStyles.label} text-gray-700 dark:text-gray-300`}>Expertise LinkedIn</span>
+                          <Linkedin className="w-3 h-3 lia-text-base" />
+                          <span className={`${textStyles.label} text-gray-700 dark:text-lia-text-secondary`}>Expertise LinkedIn</span>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <span className="cursor-help text-micro text-gray-400 dark:text-gray-500">ⓘ</span>
+                              <span className="cursor-help text-micro text-gray-400">ⓘ</span>
                             </TooltipTrigger>
                             <TooltipContent side="right" className="text-xs">
                               Áreas de expertise extraídas do perfil LinkedIn
@@ -328,7 +328,7 @@ export function CandidatePreviewProfileTab({
                           {expertiseList.map((item: string, idx: number) => (
                             <Badge
                               key={idx}
-                              className="text-micro px-1.5 py-0 border-0 bg-gray-200/30 text-gray-800"
+                              className="text-micro px-1.5 py-0 border-0 bg-gray-200/30 lia-text-strong"
                             >
                               {item}
                             </Badge>
@@ -367,11 +367,11 @@ export function CandidatePreviewProfileTab({
                     {tags.length > 0 && (
                       <div>
                         <div className="flex items-center gap-1.5 mb-1">
-                          <Tag className="w-3 h-3 text-gray-600 dark:text-gray-400" />
-                          <span className={`${textStyles.label} text-gray-700 dark:text-gray-300`}>Tags</span>
+                          <Tag className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
+                          <span className={`${textStyles.label} text-gray-700 dark:text-lia-text-secondary`}>Tags</span>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <span className="cursor-help text-micro text-gray-400 dark:text-gray-500">ⓘ</span>
+                              <span className="cursor-help text-micro text-gray-400">ⓘ</span>
                             </TooltipTrigger>
                             <TooltipContent side="right" className="text-xs">
                               Tags adicionadas pelo recrutador ou sistema
@@ -382,7 +382,7 @@ export function CandidatePreviewProfileTab({
                           {tags.map((tag: string, idx: number) => (
                             <Badge
                               key={idx}
-                              className="text-micro px-1.5 py-0 border-0 bg-gray-200/30 text-gray-800"
+                              className="text-micro px-1.5 py-0 border-0 bg-gray-200/30 lia-text-strong"
                             >
                               {tag}
                             </Badge>
@@ -420,7 +420,7 @@ export function CandidatePreviewProfileTab({
                     </Badge>
                   )}
                   {isDecisionMaker === true && (
-                    <Badge variant="outline" className="text-micro px-2 py-0.5 h-5 bg-gray-100 text-gray-700 dark:bg-gray-800 border-gray-200 dark:border-gray-700 flex items-center gap-1">
+                    <Badge variant="outline" className="text-micro px-2 py-0.5 h-5 bg-gray-100 lia-text-base dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle flex items-center gap-1">
                       👔 Decision Maker
                     </Badge>
                   )}
@@ -452,19 +452,19 @@ export function CandidatePreviewProfileTab({
               if (!hasLinkedInData) return null
               
               return (
-                <Card className="border-gray-100 dark:border-gray-700">
-                  <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-gray-900">
+                <Card className="border-lia-border-subtle dark:border-lia-border-subtle">
+                  <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-lia-bg-primary">
                     <div className="flex items-center gap-1.5">
-                      <Linkedin className="w-3.5 h-3.5 text-gray-600" />
-                      <CardTitle className="text-xs font-semibold text-gray-950 dark:text-gray-50">
+                      <Linkedin className="w-3.5 h-3.5 lia-text-base" />
+                      <CardTitle className="text-xs font-semibold text-gray-950">
                         Perfil LinkedIn
                       </CardTitle>
-                      <Globe className="w-3 h-3 text-gray-600 dark:text-gray-400" />
+                      <Globe className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
                     </div>
                   </CardHeader>
                   <CardContent className="p-2.5 space-y-2">
                     {!!headline && (
-                      <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">
+                      <p className="text-xs text-gray-800 dark:text-lia-text-primary leading-relaxed">
                         {String(headline)}
                       </p>
                     )}
@@ -478,14 +478,14 @@ export function CandidatePreviewProfileTab({
                       )}
                       {followersCount !== undefined && followersCount !== null && (
                         <div className="flex items-center gap-1">
-                          <Users className="w-3 h-3 text-gray-400 dark:text-gray-500" />
+                          <Users className="w-3 h-3 text-gray-400" />
                           <span className={`${textStyles.bodySmall} font-medium`}>{(followersCount as number).toLocaleString('pt-BR')}</span>
                           <span className={textStyles.caption}>seguidores</span>
                         </div>
                       )}
                       {connectionsCount !== undefined && connectionsCount !== null && (
                         <div className="flex items-center gap-1">
-                          <UserPlus className="w-3 h-3 text-gray-400 dark:text-gray-500" />
+                          <UserPlus className="w-3 h-3 text-gray-400" />
                           <span className={`${textStyles.bodySmall} font-medium`}>{(connectionsCount as number) >= 500 ? '500+' : String(connectionsCount)}</span>
                           <span className={textStyles.caption}>conexões</span>
                         </div>
@@ -496,11 +496,11 @@ export function CandidatePreviewProfileTab({
               )
             })()}
 
-            <Card className="border-gray-100 dark:border-gray-700">
-              <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-gray-900">
+            <Card className="border-lia-border-subtle dark:border-lia-border-subtle">
+              <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-lia-bg-primary">
                 <div className="flex items-center gap-1.5">
-                  <Briefcase className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
-                  <CardTitle className="text-xs font-semibold text-gray-950 dark:text-gray-50">
+                  <Briefcase className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
+                  <CardTitle className="text-xs font-semibold text-gray-950">
                     Experiência Profissional
                   </CardTitle>
                 </div>
@@ -544,18 +544,18 @@ export function CandidatePreviewProfileTab({
                       }
                       
                       return (
-                        <div key={index} className={`border-l-2 ${index === 0 ? 'border-gray-700' : 'border-gray-300 dark:border-gray-600'} pl-3`}>
+                        <div key={index} className={`border-l-2 ${index === 0 ? 'border-gray-700' : 'border-lia-border-default dark:border-lia-border-default'} pl-3`}>
                           <div className="flex items-start justify-between gap-2 mb-1">
                             <div>
-                              <h5 className="text-xs font-medium text-gray-800 dark:text-gray-200">{title || 'Cargo não informado'}</h5>
-                              <p className="text-xs text-gray-600 dark:text-gray-400">
+                              <h5 className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">{title || 'Cargo não informado'}</h5>
+                              <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
                                 {company || 'Empresa não informada'}
                                 {location && ` • ${location}`}
-                                {durationYears && durationYears > 0 && <span className="text-gray-400 ml-1">({durationYears.toFixed(1)} anos)</span>}
+                                {durationYears && durationYears > 0 && <span className="lia-text-secondary ml-1">({durationYears.toFixed(1)} anos)</span>}
                               </p>
                             </div>
                             {(startDate || endDate) && (
-                              <span className="text-micro text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                              <span className="text-micro text-gray-500 dark:text-lia-text-tertiary whitespace-nowrap">
                                 {formatDate(startDate)}{startDate && endDate ? ' - ' : ''}{formatDate(endDate)}
                               </span>
                             )}
@@ -563,7 +563,7 @@ export function CandidatePreviewProfileTab({
                           
                           <div className="flex flex-wrap gap-1.5 mb-2">
                             {industriesList.slice(0, 2).map((ind: string, idx: number) => (
- <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro bg-gray-100 text-gray-700 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+ <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro bg-gray-100 lia-text-base dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
                                 <Building className="w-2.5 h-2.5 mr-0.5" />
                                 {ind}
                               </span>
@@ -574,7 +574,7 @@ export function CandidatePreviewProfileTab({
                               </span>
                             )}
                             {!!companySize && (
-                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-micro bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-100 dark:border-gray-700">
+                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-micro bg-gray-50 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary border border-lia-border-subtle dark:border-lia-border-subtle">
                                 <Users className="w-2.5 h-2.5" />
                                 {companySize}
                               </span>
@@ -583,23 +583,23 @@ export function CandidatePreviewProfileTab({
 
                           {technologiesList.length > 0 && (
                             <div className="flex flex-wrap gap-1 mb-2">
-                              <span className="text-micro text-gray-400 flex items-center gap-0.5">
+                              <span className="text-micro lia-text-secondary flex items-center gap-0.5">
                                 <Code className="w-2.5 h-2.5" />
                                 Stack:
                               </span>
                               {technologiesList.slice(0, 6).map((tech: string, idx: number) => (
-                                <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-gray-800 dark:text-gray-200">
+                                <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-gray-800 dark:text-lia-text-primary">
                                   {tech}
                                 </span>
                               ))}
                               {technologiesList.length > 6 && (
-                                <span className="text-micro text-gray-400 dark:text-gray-500">+{technologiesList.length - 6}</span>
+                                <span className="text-micro text-gray-400">+{technologiesList.length - 6}</span>
                               )}
                             </div>
                           )}
                           
                           {descriptionList.length > 0 && (
-                            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{descriptionList[0]}</p>
+                            <p className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-1">{descriptionList[0]}</p>
                           )}
                         </div>
                       )
@@ -611,11 +611,11 @@ export function CandidatePreviewProfileTab({
               </CardContent>
             </Card>
 
-            <Card className="border-gray-100 dark:border-gray-700">
-              <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-gray-900">
+            <Card className="border-lia-border-subtle dark:border-lia-border-subtle">
+              <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-lia-bg-primary">
                 <div className="flex items-center gap-1.5">
-                  <GraduationCap className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
-                  <CardTitle className="text-xs font-semibold text-gray-950 dark:text-gray-50">
+                  <GraduationCap className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
+                  <CardTitle className="text-xs font-semibold text-gray-950">
                     Formação Acadêmica
                   </CardTitle>
                 </div>
@@ -623,7 +623,7 @@ export function CandidatePreviewProfileTab({
               <CardContent className="p-2.5 space-y-2">
                 {candidate.education && (candidate.education as Record<string, unknown>[]).length > 0 ? (
                   (candidate.education as Record<string, unknown>[]).map((edu: Record<string, unknown>, index: number) => (
-                    <div key={index} className={`flex items-start justify-between gap-2 ${index < (candidate.education as Record<string, unknown>[]).length - 1 ? 'pb-2 border-b border-gray-100' : ''}`}>
+                    <div key={index} className={`flex items-start justify-between gap-2 ${index < (candidate.education as Record<string, unknown>[]).length - 1 ? 'pb-2 border-b border-lia-border-subtle' : ''}`}>
                       <div className="min-w-0 flex-1">
                         <h5 className={textStyles.label}>
                           {(edu.degree || edu.title || 'Formação') as string}{(edu.field_of_study || edu.fieldOfStudy) ? ` em ${(edu.field_of_study || edu.fieldOfStudy) as string}` : ''}
@@ -632,7 +632,7 @@ export function CandidatePreviewProfileTab({
                           {(edu.school || edu.institution || 'Instituição não informada') as string}
                         </p>
                       </div>
-                      <span className="text-xs text-gray-800 dark:text-gray-200 flex-shrink-0">
+                      <span className="text-xs text-gray-800 dark:text-lia-text-primary flex-shrink-0">
                         {(edu.start_date || edu.startDate || '') as string}{((edu.start_date || edu.startDate) && (edu.end_date || edu.endDate)) ? ' - ' : ''}{(edu.end_date || edu.endDate || '') as string}
                       </span>
                     </div>
@@ -643,11 +643,11 @@ export function CandidatePreviewProfileTab({
               </CardContent>
             </Card>
 
-            <Card className="border-gray-100 dark:border-gray-700">
-              <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-gray-900">
+            <Card className="border-lia-border-subtle dark:border-lia-border-subtle">
+              <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-lia-bg-primary">
                 <div className="flex items-center gap-1.5">
-                  <Award className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
-                  <CardTitle className="text-xs font-semibold text-gray-950 dark:text-gray-50">
+                  <Award className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
+                  <CardTitle className="text-xs font-semibold text-gray-950">
                     Cursos e Certificações
                   </CardTitle>
                 </div>
@@ -666,7 +666,7 @@ export function CandidatePreviewProfileTab({
                           </h5>
                           {certIssuer && <p className={textStyles.bodySmall}>{certIssuer}</p>}
                         </div>
-                        {certDate && <span className="text-xs text-gray-800 dark:text-gray-200 flex-shrink-0">{certDate}</span>}
+                        {certDate && <span className="text-xs text-gray-800 dark:text-lia-text-primary flex-shrink-0">{certDate}</span>}
                       </div>
                     )
                   })
@@ -676,11 +676,11 @@ export function CandidatePreviewProfileTab({
               </CardContent>
             </Card>
 
-            <Card className="border-gray-100 dark:border-gray-700">
-              <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-gray-900">
+            <Card className="border-lia-border-subtle dark:border-lia-border-subtle">
+              <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-lia-bg-primary">
                 <div className="flex items-center gap-1.5">
-                  <Languages className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
-                  <CardTitle className="text-xs font-semibold text-gray-950 dark:text-gray-50">
+                  <Languages className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
+                  <CardTitle className="text-xs font-semibold text-gray-950">
                     Idiomas
                   </CardTitle>
                 </div>
@@ -693,7 +693,7 @@ export function CandidatePreviewProfileTab({
                         {lang.language}
                       </span>
                       {lang.proficiency && (
-                        <Badge className="text-xs px-1.5 py-0 h-4 bg-gray-200 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 font-semibold">
+                        <Badge className="text-xs px-1.5 py-0 h-4 bg-gray-200 text-gray-800 dark:text-lia-text-primary border-lia-border-default dark:border-lia-border-default font-semibold">
                           {lang.proficiency}
                         </Badge>
                       )}
@@ -705,11 +705,11 @@ export function CandidatePreviewProfileTab({
               </CardContent>
             </Card>
 
-            <Card className="border-gray-100 dark:border-gray-700 col-span-2">
-              <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-gray-900">
+            <Card className="border-lia-border-subtle dark:border-lia-border-subtle col-span-2">
+              <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-lia-bg-primary">
                 <div className="flex items-center gap-1.5">
-                  <DollarSign className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
-                  <CardTitle className="text-xs font-semibold text-gray-950 dark:text-gray-50">
+                  <DollarSign className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
+                  <CardTitle className="text-xs font-semibold text-gray-950">
                     Remuneração
                   </CardTitle>
                 </div>
@@ -759,11 +759,11 @@ export function CandidatePreviewProfileTab({
               </CardContent>
             </Card>
 
-            <Card className="border-gray-100 dark:border-gray-700">
-              <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-gray-900">
+            <Card className="border-lia-border-subtle dark:border-lia-border-subtle">
+              <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-lia-bg-primary">
                 <div className="flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
-                  <CardTitle className="text-xs font-semibold text-gray-950 dark:text-gray-50">
+                  <User className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
+                  <CardTitle className="text-xs font-semibold text-gray-950">
                     Preferências e Dados Pessoais
                   </CardTitle>
                 </div>
@@ -796,7 +796,7 @@ export function CandidatePreviewProfileTab({
                 {candidate.is_remote !== undefined && (
                   <div className="flex items-center justify-between">
                     <span className={textStyles.bodySmall}>Aceita Remoto</span>
-                    <Badge className={`text-xs px-1.5 py-0 h-4 ${candidate.is_remote ? 'bg-status-success/15 text-status-success' : 'bg-gray-100 text-gray-800 dark:text-gray-200'}`}>
+                    <Badge className={`text-xs px-1.5 py-0 h-4 ${candidate.is_remote ? 'bg-status-success/15 text-status-success' : 'bg-gray-100 text-gray-800 dark:text-lia-text-primary'}`}>
                       {candidate.is_remote ? 'Sim' : 'Não'}
                     </Badge>
                   </div>
@@ -804,7 +804,7 @@ export function CandidatePreviewProfileTab({
                 {(candidate.willing_to_relocate !== undefined || candidate.willingToRelocate !== undefined) && (
                   <div className="flex items-center justify-between">
                     <span className={textStyles.bodySmall}>Aceita Mudança</span>
-                    <Badge className={`text-xs px-1.5 py-0 h-4 ${(candidate.willing_to_relocate ?? candidate.willingToRelocate) ? 'bg-status-success/15 text-status-success' : 'bg-gray-100 text-gray-800 dark:text-gray-200'}`}>
+                    <Badge className={`text-xs px-1.5 py-0 h-4 ${(candidate.willing_to_relocate ?? candidate.willingToRelocate) ? 'bg-status-success/15 text-status-success' : 'bg-gray-100 text-gray-800 dark:text-lia-text-primary'}`}>
                       {(candidate.willing_to_relocate ?? candidate.willingToRelocate) === true ? 'Sim' : 
                        (candidate.willing_to_relocate ?? candidate.willingToRelocate) === false ? 'Não' : 
                        String(candidate.willing_to_relocate ?? candidate.willingToRelocate)}
@@ -814,7 +814,7 @@ export function CandidatePreviewProfileTab({
                 {candidate.mobility !== undefined && (
                   <div className="flex items-center justify-between">
                     <span className={textStyles.bodySmall}>Disponibilidade Viagens</span>
-                    <Badge className={`text-xs px-1.5 py-0 h-4 ${candidate.mobility ? 'bg-status-success/15 text-status-success' : 'bg-gray-100 text-gray-800 dark:text-gray-200'}`}>
+                    <Badge className={`text-xs px-1.5 py-0 h-4 ${candidate.mobility ? 'bg-status-success/15 text-status-success' : 'bg-gray-100 text-gray-800 dark:text-lia-text-primary'}`}>
                       {candidate.mobility === true ? 'Sim' : candidate.mobility === false ? 'Não' : String(candidate.mobility)}
                     </Badge>
                   </div>
@@ -830,11 +830,11 @@ export function CandidatePreviewProfileTab({
               </CardContent>
             </Card>
 
-            <Card className="border-gray-100 dark:border-gray-700">
-              <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-gray-900">
+            <Card className="border-lia-border-subtle dark:border-lia-border-subtle">
+              <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-lia-bg-primary">
                 <div className="flex items-center gap-1.5">
-                  <Home className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
-                  <CardTitle className="text-xs font-semibold text-gray-950 dark:text-gray-50">
+                  <Home className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
+                  <CardTitle className="text-xs font-semibold text-gray-950">
                     Endereço
                   </CardTitle>
                 </div>
@@ -843,8 +843,8 @@ export function CandidatePreviewProfileTab({
                 {hasAddressData() ? (
                   <div className="space-y-1">
                     <div className="flex items-start gap-2">
-                      <MapPin className="w-3 h-3 text-gray-600 dark:text-gray-400 mt-0.5 flex-shrink-0" />
-                      <div className="text-xs text-gray-800 dark:text-gray-200 whitespace-pre-line">
+                      <MapPin className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary mt-0.5 flex-shrink-0" />
+                      <div className="text-xs text-gray-800 dark:text-lia-text-primary whitespace-pre-line">
                         {getAddressString()}
                       </div>
                     </div>

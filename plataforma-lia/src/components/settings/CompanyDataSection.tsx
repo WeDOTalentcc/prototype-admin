@@ -119,13 +119,13 @@ interface CompanyDataSectionProps {
 }
 
 const inputClass = (disabled: boolean) => 
- `w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-gray-200 dark:border-gray-700 rounded-md bg-white focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors ${disabled ? 'opacity-60 cursor-not-allowed bg-gray-50 dark:bg-gray-900' : ''}`
+ `w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors ${disabled ? 'opacity-60 cursor-not-allowed bg-gray-50 dark:bg-lia-bg-primary' : ''}`
 
 const textareaClass = (disabled: boolean) => 
- `w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-gray-200 dark:border-gray-700 rounded-md bg-white focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors resize-none ${disabled ? 'opacity-60 cursor-not-allowed bg-gray-50 dark:bg-gray-900' : ''}`
+ `w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors resize-none ${disabled ? 'opacity-60 cursor-not-allowed bg-gray-50 dark:bg-lia-bg-primary' : ''}`
 
 const selectClass = (disabled: boolean) => 
- `w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-gray-200 dark:border-gray-700 rounded-md bg-white focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors ${disabled ? 'opacity-60 cursor-not-allowed bg-gray-50 dark:bg-gray-900' : ''}`
+ `w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors ${disabled ? 'opacity-60 cursor-not-allowed bg-gray-50 dark:bg-lia-bg-primary' : ''}`
 
 export function CompanyDataSection({
   companyData,
@@ -187,10 +187,10 @@ export function CompanyDataSection({
       )}
 
       {/* Header com botão Editar/Salvar */}
-      <div className="flex items-center justify-between bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md p-4">
+      <div className="flex items-center justify-between bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-900 dark:bg-gray-50">
-            <Building className="w-5 h-5 text-white dark:text-gray-900" />
+          <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-900 dark:lia-bg-50">
+            <Building className="w-5 h-5 text-white dark:lia-text-900" />
           </div>
           <div>
             <h2 className={textStyles.h3}>
@@ -202,7 +202,7 @@ export function CompanyDataSection({
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 font-['Open_Sans',sans-serif]">
+          <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 lia-text-700 dark:bg-lia-bg-elevated dark:text-lia-text-secondary font-['Open_Sans',sans-serif]">
             {countActiveFields()} de {totalFields} campos ativos
           </span>
           {!isEditingCompanyData ? (
@@ -243,7 +243,7 @@ export function CompanyDataSection({
                 }}
                 disabled={saving}
                 size="sm"
-                className="gap-1.5 text-xs rounded-md bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                className="gap-1.5 text-xs rounded-md bg-gray-900 text-white hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
               >
                 {saving ? (
                   <>
@@ -264,20 +264,20 @@ export function CompanyDataSection({
 
       {/* Seção: Informações Gerais */}
       <div className="space-y-3">
-        <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
+        <h3 className="text-xs font-semibold lia-text-500 dark:text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
           Informações Gerais
         </h3>
         
         <div className="grid grid-cols-1 gap-3">
           {/* Logo - Card especial com logo antes do nome e largura auto */}
-          <div className="inline-flex items-center gap-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md px-4 py-3 w-fit">
-            <div className="w-14 h-14 rounded-md bg-gray-100 dark:bg-gray-800 border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors hover:border-gray-900 dark:hover:border-gray-50 flex-shrink-0">
+          <div className="inline-flex items-center gap-3 bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md px-4 py-3 w-fit">
+            <div className="w-14 h-14 rounded-md bg-gray-100 dark:bg-lia-bg-secondary border-2 border-dashed border-lia-border-default flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors hover:border-gray-900 dark:hover:border-gray-50 flex-shrink-0">
               {companyData.logo ? (
                 <img src={companyData.logo} alt="Logo" className="w-full h-full object-cover rounded-md" />
               ) : (
                 <div className="text-center">
-                  <Image className="w-5 h-5 mx-auto text-gray-400 dark:text-gray-500 mb-0.5" />
-                  <span className="text-micro text-gray-500 dark:text-gray-400 font-['Open_Sans',sans-serif]">Upload</span>
+                  <Image className="w-5 h-5 mx-auto lia-text-400 dark:lia-text-500 mb-0.5" />
+                  <span className="text-micro lia-text-500 dark:text-lia-text-tertiary font-['Open_Sans',sans-serif]">Upload</span>
                 </div>
               )}
             </div>
@@ -285,7 +285,7 @@ export function CompanyDataSection({
               <span className={textStyles.label}>
                 Logo da Empresa
               </span>
-              <span className="text-micro text-gray-500 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full font-['Open_Sans',sans-serif]">
+              <span className="text-micro lia-text-500 bg-gray-100 dark:bg-lia-bg-elevated px-1.5 py-0.5 rounded-full font-['Open_Sans',sans-serif]">
                 Identidade Visual
               </span>
             </div>
@@ -380,7 +380,7 @@ export function CompanyDataSection({
 
       {/* Seção: Contato e Presença Online */}
       <div className="space-y-3">
-        <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
+        <h3 className="text-xs font-semibold lia-text-500 dark:text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
           Contato e Presença Online
         </h3>
         
@@ -485,7 +485,7 @@ export function CompanyDataSection({
             className="md:col-span-2"
           >
             <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+              <MapPin className="w-4 h-4 lia-text-400 dark:lia-text-500" />
               <input
                 type="text"
                 value={companyData.address || ''}
@@ -500,34 +500,34 @@ export function CompanyDataSection({
       </div>
 
       {/* LIA Analysis Card - CYAN é mantido aqui pois é seção LIA/IA */}
-      <div className="rounded-md border border-gray-300 dark:border-gray-600 bg-gradient-to-r from-gray-50 dark:from-gray-900 to-transparent p-5">
+      <div className="rounded-md border border-lia-border-default dark:border-lia-border-default bg-gradient-to-r from-gray-50 dark:lia-from-900 to-transparent p-5">
         <div className="flex items-start gap-4">
           <div
-            className="w-12 h-12 rounded-md flex items-center justify-center flex-shrink-0 bg-gray-900 dark:bg-gray-50"
+            className="w-12 h-12 rounded-md flex items-center justify-center flex-shrink-0 bg-gray-900 dark:lia-bg-50"
           >
             <Brain className="w-6 h-6 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className="text-sm font-bold text-gray-950 dark:text-gray-50 mb-1 font-['Open_Sans',sans-serif]">
+            <h4 className="text-sm font-bold lia-text-950 dark:lia-text-50 mb-1 font-['Open_Sans',sans-serif]">
               Análise Inteligente com LIA
             </h4>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3 leading-relaxed font-['Open_Sans',sans-serif]">
+            <p className="text-xs lia-text-600 dark:text-lia-text-tertiary mb-3 leading-relaxed font-['Open_Sans',sans-serif]">
               A LIA pode analisar o website e LinkedIn da empresa para preencher automaticamente os campos de Cultura, Missão, Visão, Valores e ajustar o perfil Big Five.
             </p>
 
             {isLiaAnalyzing ? (
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-medium text-gray-700">
+                  <span className="font-medium lia-text-700">
                     {liaAnalysisStep || "Iniciando..."}
                   </span>
-                  <span className="font-bold tabular-nums text-gray-700">
+                  <span className="font-bold tabular-nums lia-text-700">
                     {Math.round(liaAnalysisProgress)}%
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                   <div
-                    className="h-2 rounded-full transition-all duration-500 bg-gray-900" style={{width: `${liaAnalysisProgress}%`}}
+                    className="h-2 rounded-full transition-[width,height] duration-500 bg-gray-900" style={{width: `${liaAnalysisProgress}%`}}
                   />
                 </div>
               </div>
@@ -535,7 +535,7 @@ export function CompanyDataSection({
               <Button
                 onClick={handleLiaAnalysis}
                 disabled={!isEditingCompanyData || !companyData.website}
-                className="gap-2 text-white hover:opacity-90 transition-opacity text-xs bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                className="gap-2 text-white hover:opacity-90 transition-opacity text-xs bg-gray-900 hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
               >
                 <Brain className="w-4 h-4 text-wedo-cyan" />
                 Analisar com LIA
@@ -556,7 +556,7 @@ export function CompanyDataSection({
 
       {/* Seção: Cultura e Identidade */}
       <div className="space-y-3">
-        <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
+        <h3 className="text-xs font-semibold lia-text-500 dark:text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
           Cultura e Identidade
         </h3>
         
@@ -620,7 +620,7 @@ export function CompanyDataSection({
             <div className="space-y-2">
               <div className="flex flex-wrap gap-2">
                 {(companyData.values || []).map((value: string, idx: number) => (
-                  <Badge key={idx} className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 text-micro px-2 py-0.5 rounded-full">
+                  <Badge key={idx} className="bg-gray-100 dark:bg-lia-bg-secondary lia-text-800 dark:text-lia-text-primary text-micro px-2 py-0.5 rounded-full">
                     {value}
                     {isEditingCompanyData && (
                       <button
@@ -668,7 +668,7 @@ export function CompanyDataSection({
             <div className="space-y-2">
               <div className="flex flex-wrap gap-2">
                 {(companyData.coreCompetencies || []).map((comp: string, idx: number) => (
-                  <Badge key={idx} className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-micro px-2 py-0.5 rounded-full">
+                  <Badge key={idx} className="bg-gray-100 dark:bg-lia-bg-elevated lia-text-700 dark:text-lia-text-secondary text-micro px-2 py-0.5 rounded-full">
                     {comp}
                     {isEditingCompanyData && (
                       <button
@@ -705,7 +705,7 @@ export function CompanyDataSection({
 
       {/* Seção: Informações Corporativas */}
       <div className="space-y-3">
-        <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
+        <h3 className="text-xs font-semibold lia-text-500 dark:text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
           Informações Corporativas
         </h3>
         
@@ -718,7 +718,7 @@ export function CompanyDataSection({
             isEditing={isEditingCompanyData}
           >
             <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+              <Users className="w-4 h-4 lia-text-400 dark:lia-text-500" />
               <input
                 type="number"
                 value={companyData.employee_count || ''}
@@ -741,7 +741,7 @@ export function CompanyDataSection({
             isEditing={isEditingCompanyData}
           >
             <div className="flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+              <Building2 className="w-4 h-4 lia-text-400 dark:lia-text-500" />
               <select
                 value={companyData.company_size || ''}
                 onChange={(e) => setCompanyData((prev) => ({ ...prev, company_size: e.target.value }))}
@@ -766,7 +766,7 @@ export function CompanyDataSection({
             isEditing={isEditingCompanyData}
           >
             <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+              <Calendar className="w-4 h-4 lia-text-400 dark:lia-text-500" />
               <input
                 type="number"
                 value={companyData.founded_year || ''}
@@ -785,7 +785,7 @@ export function CompanyDataSection({
 
       {/* Seção: Modelo de Trabalho e Contratação */}
       <div className="space-y-3">
-        <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
+        <h3 className="text-xs font-semibold lia-text-500 dark:text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
           Modelo de Trabalho e Contratação
         </h3>
         
@@ -803,7 +803,7 @@ export function CompanyDataSection({
             onInstructionSave={updateLiaInstruction}
           >
             <div className="flex items-center gap-2">
-              <Briefcase className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+              <Briefcase className="w-4 h-4 lia-text-400 dark:lia-text-500" />
               <select
                 value={companyData.work_model || ''}
                 onChange={(e) => setCompanyData((prev) => ({ ...prev, work_model: e.target.value }))}
@@ -849,8 +849,8 @@ export function CompanyDataSection({
                     }}
                     className={`px-2.5 py-1.5 text-micro rounded-full border transition-colors ${
                       isSelected
-                        ? 'bg-gray-900 border-gray-900 text-white dark:bg-gray-50 dark:border-gray-50 dark:text-gray-900'
-                        : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300'
+                        ? 'bg-gray-900 border-gray-900 text-white dark:lia-bg-50 dark:lia-border-50 dark:lia-text-900'
+                        : 'bg-white border-lia-border-subtle lia-text-600 hover:border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-lia-text-secondary'
                     } ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
                   >
                     {isSelected && <CheckCircle className="w-2.5 h-2.5 inline mr-0.5" />}
@@ -877,7 +877,7 @@ export function CompanyDataSection({
             <div className="space-y-2">
               <div className="flex flex-wrap gap-2">
                 {(companyData.seniority_levels || []).map((level: string, idx: number) => (
-                  <Badge key={idx} className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-micro px-2 py-0.5 rounded-full">
+                  <Badge key={idx} className="bg-gray-100 dark:bg-lia-bg-secondary lia-text-700 dark:text-lia-text-secondary text-micro px-2 py-0.5 rounded-full">
                     {level}
                     {isEditingCompanyData && (
                       <button
@@ -906,7 +906,7 @@ export function CompanyDataSection({
                           seniority_levels: [...(prev.seniority_levels || []), level],
                         }))
                       }}
-                      className={`text-micro px-2 py-0.5 border border-dashed border-gray-300 dark:border-gray-600 rounded-full text-gray-500 dark:text-gray-400 hover:border-wedo-purple/30 hover:text-wedo-purple transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
+                      className={`text-micro px-2 py-0.5 border border-dashed border-lia-border-default dark:border-lia-border-default rounded-full lia-text-500 dark:text-lia-text-tertiary hover:border-wedo-purple/30 hover:text-wedo-purple transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
                     >
                       + {level}
                     </button>
@@ -919,7 +919,7 @@ export function CompanyDataSection({
 
       {/* Seção: Responsabilidade Social */}
       <div className="space-y-3">
-        <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
+        <h3 className="text-xs font-semibold lia-text-500 dark:text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
           Responsabilidade Social
         </h3>
         
@@ -937,7 +937,7 @@ export function CompanyDataSection({
             onInstructionSave={updateLiaInstruction}
           >
             <div className="flex items-start gap-2">
-              <Users className="w-4 h-4 text-gray-400 dark:text-gray-500 mt-2" />
+              <Users className="w-4 h-4 lia-text-400 dark:lia-text-500 mt-2" />
               <textarea
                 value={companyData.dei_initiatives || ''}
                 onChange={(e) => setCompanyData((prev) => ({ ...prev, dei_initiatives: e.target.value }))}
@@ -962,7 +962,7 @@ export function CompanyDataSection({
             onInstructionSave={updateLiaInstruction}
           >
             <div className="flex items-start gap-2">
-              <Leaf className="w-4 h-4 text-gray-400 dark:text-gray-500 mt-2" />
+              <Leaf className="w-4 h-4 lia-text-400 dark:lia-text-500 mt-2" />
               <textarea
                 value={companyData.sustainability || ''}
                 onChange={(e) => setCompanyData((prev) => ({ ...prev, sustainability: e.target.value }))}
@@ -987,7 +987,7 @@ export function CompanyDataSection({
             onInstructionSave={updateLiaInstruction}
           >
             <div className="flex items-start gap-2">
-              <Heart className="w-4 h-4 text-gray-400 dark:text-gray-500 mt-2" />
+              <Heart className="w-4 h-4 lia-text-400 dark:lia-text-500 mt-2" />
               <textarea
                 value={companyData.social_impact || ''}
                 onChange={(e) => setCompanyData((prev) => ({ ...prev, social_impact: e.target.value }))}
@@ -1004,7 +1004,7 @@ export function CompanyDataSection({
       {/* Seção: Perfil Organizacional (Big Five) */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
+          <h3 className="text-xs font-semibold lia-text-500 dark:text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
             Perfil Organizacional (Big Five)
           </h3>
           <Button
@@ -1012,7 +1012,7 @@ export function CompanyDataSection({
             size="sm"
             onClick={handleSaveCultureFields}
             disabled={saving}
-            className="text-micro rounded-md border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
+            className="text-micro rounded-md border-lia-border-default hover:bg-gray-100 dark:border-lia-border-default dark:hover:bg-gray-700"
           >
             {saving ? (
               <>
@@ -1021,7 +1021,7 @@ export function CompanyDataSection({
               </>
             ) : (
               <>
-                <Save className="w-3 h-3 mr-1.5 text-gray-700 dark:text-gray-300" />
+                <Save className="w-3 h-3 mr-1.5 lia-text-700 dark:text-lia-text-secondary" />
                 Salvar Perfil
               </>
             )}
@@ -1039,7 +1039,7 @@ export function CompanyDataSection({
           onToggleChange={updateLiaToggle}
           onInstructionSave={updateLiaInstruction}
         >
-          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-md p-4">
+          <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4">
             <BigFiveRadar
               scores={{
                 openness: companyData.openness_score ?? 50,

@@ -49,14 +49,14 @@ const STATUS_CONFIG: Record<VoiceStatus, {
   idle: {
     icon: Phone,
     label: 'Pronto para iniciar',
-    color: 'text-gray-800 dark:text-gray-200',
-    bgColor: 'bg-gray-100 dark:bg-gray-800'
+    color: 'text-gray-800 dark:text-lia-text-primary',
+    bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary'
   },
   initiating: {
     icon: Loader2,
     label: 'Iniciando chamada...',
-    color: 'text-gray-600 dark:text-gray-400',
-    bgColor: 'bg-gray-100 dark:bg-gray-800',
+    color: 'text-gray-600 dark:text-lia-text-tertiary',
+    bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary',
     animate: true
   },
   calling: {
@@ -242,7 +242,7 @@ export function WSIVoiceScreeningStatus({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Phone className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+            <Phone className="w-5 h-5 text-gray-700 dark:text-lia-text-secondary" />
             Triagem por Voz WSI
           </DialogTitle>
           <DialogDescription>
@@ -303,14 +303,14 @@ export function WSIVoiceScreeningStatus({
                   <div className="w-full space-y-3 pt-2">
                     <div className="text-center">
                       <div className={`text-3xl font-bold ${
-                        result.overall_wsi >= 4 ? 'text-status-success' :
+ result.overall_wsi >= 4 ? 'text-status-success' :
                         result.overall_wsi >= 3 ? 'text-status-warning' :
                         'text-status-error'
                       }`}>
                         {result.overall_wsi.toFixed(1)}
                       </div>
                       <Badge className={`mt-1 ${
-                        result.classification === 'excelente' || result.classification === 'alto' 
+ result.classification === 'excelente' || result.classification === 'alto' 
                           ? 'bg-status-success/15 text-status-success' :
                         result.classification === 'medio' 
                           ? 'bg-status-warning/15 text-status-warning' :
@@ -321,11 +321,11 @@ export function WSIVoiceScreeningStatus({
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="p-2 bg-white dark:bg-gray-800 rounded-md text-center">
+                      <div className="p-2 bg-white dark:bg-lia-bg-secondary rounded-md text-center">
                         <div className="text-lg font-semibold">{result.technical_wsi.toFixed(1)}</div>
                         <div className="text-xs text-muted-foreground">Técnico</div>
                       </div>
-                      <div className="p-2 bg-white dark:bg-gray-800 rounded-md text-center">
+                      <div className="p-2 bg-white dark:bg-lia-bg-secondary rounded-md text-center">
                         <div className="text-lg font-semibold">{result.behavioral_wsi.toFixed(1)}</div>
                         <div className="text-xs text-muted-foreground">Comportamental</div>
                       </div>

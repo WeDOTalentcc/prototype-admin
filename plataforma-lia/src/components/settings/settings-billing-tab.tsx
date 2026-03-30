@@ -85,9 +85,9 @@ export function SettingsBillingTab({ onSettingsChange }: { onSettingsChange: (ch
     switch (status) {
       case "ativo": return "bg-status-success/15 text-status-success dark:bg-status-success/20 dark:text-status-success"
       case "setup": return "bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/20 dark:text-wedo-orange"
- case "trial": return "bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
+ case "trial": return "bg-gray-50 lia-text-700 dark:bg-lia-bg-secondary dark:text-lia-text-tertiary"
       case "suspenso": return "bg-status-error/15 text-status-error dark:bg-status-error/20 dark:text-status-error"
-      default: return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-500"
+      default: return "bg-gray-100 lia-text-800 dark:bg-lia-bg-elevated dark:lia-text-500"
     }
   }
 
@@ -96,11 +96,11 @@ export function SettingsBillingTab({ onSettingsChange }: { onSettingsChange: (ch
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-800" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-800" />
             <input
               type="text"
               placeholder="Buscar clientes..."
-              className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 w-64"
+              className="pl-10 pr-4 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary w-64"
             />
           </div>
           <Button variant="outline" size="sm">
@@ -120,18 +120,18 @@ export function SettingsBillingTab({ onSettingsChange }: { onSettingsChange: (ch
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-md flex items-center justify-center">
-                    <Building className="w-6 h-6 text-gray-800 dark:text-gray-200" />
+                  <div className="w-12 h-12 bg-gray-100 dark:bg-lia-bg-elevated rounded-md flex items-center justify-center">
+                    <Building className="w-6 h-6 lia-text-800 dark:text-lia-text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-950 dark:text-gray-50">{client.name}</h3>
-                    <p className="text-sm text-gray-800 dark:text-gray-200">CNPJ: {client.cnpj}</p>
+                    <h3 className="font-medium lia-text-950 dark:lia-text-50">{client.name}</h3>
+                    <p className="text-sm lia-text-800 dark:text-lia-text-primary">CNPJ: {client.cnpj}</p>
                     <div className="flex items-center gap-3 mt-1">
                       <Badge className={getStatusColor(client.status)}>
                         {client.status.toUpperCase()}
                       </Badge>
-                      <span className="text-xs text-gray-800">Plano {client.plan}</span>
-                      <span className="text-xs text-gray-800">{client.users} usuários</span>
+                      <span className="text-xs lia-text-800">Plano {client.plan}</span>
+                      <span className="text-xs lia-text-800">{client.users} usuários</span>
                     </div>
                   </div>
                 </div>
@@ -158,19 +158,19 @@ export function SettingsBillingTab({ onSettingsChange }: { onSettingsChange: (ch
                 </div>
               </div>
 
-              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="mt-4 pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                 <div className="grid grid-cols-3 gap-4 text-sm">
                   <div>
-                    <span className="text-gray-800 dark:text-gray-200">Contato:</span>
+                    <span className="lia-text-800 dark:text-lia-text-primary">Contato:</span>
                     <div className="font-medium">{client.contact.name}</div>
-                    <div className="text-gray-800 dark:text-gray-200">{client.contact.email}</div>
+                    <div className="lia-text-800 dark:text-lia-text-primary">{client.contact.email}</div>
                   </div>
                   <div>
-                    <span className="text-gray-800 dark:text-gray-200">Tenant:</span>
+                    <span className="lia-text-800 dark:text-lia-text-primary">Tenant:</span>
                     <div className="font-medium font-mono text-xs">{client.tenant}</div>
                   </div>
                   <div>
-                    <span className="text-gray-800 dark:text-gray-200">Último acesso:</span>
+                    <span className="lia-text-800 dark:text-lia-text-primary">Último acesso:</span>
                     <div className="font-medium">{client.lastAccess}</div>
                   </div>
                 </div>
@@ -200,8 +200,8 @@ export function SettingsBillingTab({ onSettingsChange }: { onSettingsChange: (ch
                 <div className="text-sm text-wedo-orange dark:text-wedo-orange">Em Setup</div>
               </div>
               <div className="text-center p-4 bg-wedo-cyan/10 dark:bg-wedo-cyan/20 rounded-md">
-                <div className="text-2xl font-bold text-gray-700 dark:text-gray-400">2</div>
- <div className="text-sm text-gray-600">Trial</div>
+                <div className="text-2xl font-bold lia-text-700 dark:text-lia-text-tertiary">2</div>
+ <div className="text-sm lia-text-600">Trial</div>
               </div>
             </div>
           </div>
@@ -218,7 +218,7 @@ export function SettingsBillingTab({ onSettingsChange }: { onSettingsChange: (ch
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-md">
+            <div className="p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
               <h4 className="font-medium mb-2">Templates de Email</h4>
               <div className="space-y-2">
                 <Button variant="outline" size="sm" className="mr-2">Email de Boas-vindas</Button>
@@ -227,7 +227,7 @@ export function SettingsBillingTab({ onSettingsChange }: { onSettingsChange: (ch
               </div>
             </div>
 
-            <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-md">
+            <div className="p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
               <h4 className="font-medium mb-2">Checklist de Setup</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-2">
@@ -272,8 +272,8 @@ export function SettingsBillingTab({ onSettingsChange }: { onSettingsChange: (ch
                 onClick={() => setActiveSection(section.id)}
                 className={`flex items-center gap-2 px-4 py-3 rounded-md text-sm font-medium transition-colors font-crimson ${
                   activeSection === section.id
- ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-300'
-                    : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200'
+ ? 'bg-gray-50 dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-secondary'
+                    : 'hover:bg-gray-50 dark:hover:bg-gray-800 lia-text-800 dark:text-lia-text-primary'
                 }`}
               >
                 <section.icon className="w-4 h-4" />
@@ -293,7 +293,7 @@ export function SettingsBillingTab({ onSettingsChange }: { onSettingsChange: (ch
       {/* Modais */}
       {showAddClientModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-md w-full max-w-2xl p-6">
+          <div className="bg-white dark:bg-lia-bg-secondary rounded-md w-full max-w-2xl p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Novo Cliente</h3>
               <Button variant="ghost" size="sm" onClick={() => setShowAddClientModal(false)}>
@@ -306,7 +306,7 @@ export function SettingsBillingTab({ onSettingsChange }: { onSettingsChange: (ch
                 <label className="text-sm font-medium mb-2 block">Nome da Empresa</label>
                 <input
                   type="text"
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md"
+                  className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md"
                   placeholder="Ex: Sodexo Brasil"
                 />
               </div>
@@ -314,7 +314,7 @@ export function SettingsBillingTab({ onSettingsChange }: { onSettingsChange: (ch
                 <label className="text-sm font-medium mb-2 block">CNPJ</label>
                 <input
                   type="text"
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md"
+                  className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md"
                   placeholder="00.000.000/0001-00"
                 />
               </div>
@@ -322,7 +322,7 @@ export function SettingsBillingTab({ onSettingsChange }: { onSettingsChange: (ch
                 <label className="text-sm font-medium mb-2 block">Nome do Contato</label>
                 <input
                   type="text"
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md"
+                  className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md"
                   placeholder="Ex: Ana Silva"
                 />
               </div>
@@ -330,7 +330,7 @@ export function SettingsBillingTab({ onSettingsChange }: { onSettingsChange: (ch
                 <label className="text-sm font-medium mb-2 block">Email</label>
                 <input
                   type="email"
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md"
+                  className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md"
                   placeholder="ana.silva@empresa.com"
                 />
               </div>
@@ -338,13 +338,13 @@ export function SettingsBillingTab({ onSettingsChange }: { onSettingsChange: (ch
                 <label className="text-sm font-medium mb-2 block">Telefone</label>
                 <input
                   type="tel"
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md"
+                  className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md"
                   placeholder="(11) 99999-9999"
                 />
               </div>
               <div>
                 <label className="text-sm font-medium mb-2 block">Plano</label>
-                <select className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md">
+                <select className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md">
                   <option>Starter</option>
                   <option>Professional</option>
                   <option>Enterprise</option>
@@ -366,7 +366,7 @@ export function SettingsBillingTab({ onSettingsChange }: { onSettingsChange: (ch
 
       {showSendInviteModal && selectedClient && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-md w-full max-w-lg p-6">
+          <div className="bg-white dark:bg-lia-bg-secondary rounded-md w-full max-w-lg p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Enviar Link de Setup</h3>
               <Button variant="ghost" size="sm" onClick={() => setShowSendInviteModal(false)}>
@@ -381,7 +381,7 @@ export function SettingsBillingTab({ onSettingsChange }: { onSettingsChange: (ch
                   type="text"
                   value={selectedClient.name}
                   disabled
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700"
+                  className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-gray-50 dark:bg-lia-bg-elevated"
                 />
               </div>
               <div>
@@ -389,12 +389,12 @@ export function SettingsBillingTab({ onSettingsChange }: { onSettingsChange: (ch
                 <input
                   type="email"
                   value={selectedClient.contact.email}
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md"
+                  className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md"
                 />
               </div>
               <div>
                 <label className="text-sm font-medium mb-2 block">Tipo de Link</label>
-                <select className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md">
+                <select className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md">
                   <option>Setup Inicial Completo</option>
                   <option>Apenas Ativação</option>
                   <option>Resetar Senha Admin</option>
@@ -404,7 +404,7 @@ export function SettingsBillingTab({ onSettingsChange }: { onSettingsChange: (ch
                 <label className="text-sm font-medium mb-2 block">Mensagem Personalizada</label>
                 <textarea
                   rows={3}
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md"
+                  className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md"
                   placeholder="Adicione uma mensagem personalizada (opcional)"
                 />
               </div>

@@ -51,8 +51,8 @@ const discDimensions = {
     letter: "D",
     name: "Dominância",
     icon: Target,
-    bgColor: "bg-gray-100 dark:bg-gray-800",
-    borderColor: "border-gray-300 dark:border-gray-600",
+    bgColor: "bg-gray-100 dark:bg-lia-bg-secondary",
+    borderColor: "border-lia-border-default dark:border-lia-border-default",
     high: {
       label: "Alto",
       keywords: ["Direto", "Decisivo", "Competitivo", "Assertivo"],
@@ -79,8 +79,8 @@ const discDimensions = {
     letter: "I",
     name: "Influência",
     icon: Users,
-    bgColor: "bg-gray-100 dark:bg-gray-800",
-    borderColor: "border-gray-900 dark:border-gray-50/25",
+    bgColor: "bg-gray-100 dark:bg-lia-bg-secondary",
+    borderColor: "border-gray-900/25",
     high: {
       label: "Alto",
       keywords: ["Entusiasta", "Otimista", "Comunicativo", "Persuasivo"],
@@ -108,7 +108,7 @@ const discDimensions = {
     name: "Estabilidade",
     icon: Shield,
     bgColor: "bg-gray-100",
-    borderColor: "border-gray-200",
+    borderColor: "border-lia-border-subtle",
     high: {
       label: "Alto",
       keywords: ["Paciente", "Confiável", "Leal", "Previsível"],
@@ -137,7 +137,7 @@ const discDimensions = {
     icon: Zap,
     color: "var(--gray-400)",
     bgColor: "bg-gray-50",
-    borderColor: "border-gray-200",
+    borderColor: "border-lia-border-subtle",
     high: {
       label: "Alto",
       keywords: ["Analítico", "Preciso", "Metódico", "Perfeccionista"],
@@ -319,29 +319,29 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-md max-w-4xl w-full max-h-[95vh] overflow-hidden flex flex-col">
-        <div className="p-6 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-lia-bg-primary rounded-md max-w-4xl w-full max-h-[95vh] overflow-hidden flex flex-col">
+        <div className="p-6 bg-gray-50 dark:bg-lia-bg-secondary/50 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
               <Avatar className="w-14 h-14 ring-4 ring-white dark:ring-gray-800">
                 <AvatarImage src={candidate?.avatar} />
-                <AvatarFallback className="text-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                <AvatarFallback className="text-lg bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary">
                   {candidate?.name?.split(' ').map((n: string) => n[0]).join('') || 'C'}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h2 className="text-sm font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-2">
+                <h2 className="text-sm font-semibold text-gray-950 flex items-center gap-2">
                   <Brain className="w-4 h-4 text-wedo-cyan" />
                   Relatório DISC
                 </h2>
-                <p className="text-gray-600 dark:text-gray-400 text-xs">
+                <p className="text-gray-600 dark:text-lia-text-tertiary text-xs">
                   {candidate?.name} • {data.assessmentProvider || 'Assessment Comportamental'}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               {data.reportUrl && (
-                <Button variant="outline" size="sm" className="text-xs bg-white border border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700">
+                <Button variant="outline" size="sm" className="text-xs bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700">
                   <Download className="w-3 h-3 mr-1" />
                   PDF
                 </Button>
@@ -353,40 +353,40 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
           </div>
 
           <div className="mt-4 grid grid-cols-4 gap-3">
-            <div className="col-span-2 bg-gradient-to-r from-gray-100 dark:from-gray-800 to-gray-50 rounded-md p-4 border border-gray-300 dark:border-gray-600">
+            <div className="col-span-2 bg-gradient-to-r from-gray-100 dark:from-gray-800 to-gray-50 rounded-md p-4 border border-lia-border-default dark:border-lia-border-default">
               <div className="flex items-center gap-3">
                 <span className="text-3xl">{profileInfo.icon}</span>
                 <div>
-                  <div className="text-lg font-bold text-gray-950 dark:text-gray-50">
+                  <div className="text-lg font-bold text-gray-950">
                     {data.profile || profileType}
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                  <div className="text-sm text-gray-600 dark:text-lia-text-tertiary">
                     {profileInfo.title}
                   </div>
                 </div>
               </div>
             </div>
             {data.comparisonToRole && (
-              <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700">
+              <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                    <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Match</span>
+                    <TrendingUp className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                    <span className="text-xs font-medium text-gray-600 dark:text-lia-text-tertiary">Match</span>
                   </div>
-                  <div className="text-xl font-bold text-gray-900 dark:text-gray-50">
+                  <div className="text-xl font-bold text-gray-900">
                     {data.comparisonToRole.matchPercentage}%
                   </div>
                 </div>
               </div>
             )}
             {data.culturalFitScore && (
-              <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700">
+              <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-gray-500" />
-                    <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Fit Cultural</span>
+                    <Users className="w-4 h-4 lia-text-secondary" />
+                    <span className="text-xs font-medium text-gray-600 dark:text-lia-text-tertiary">Fit Cultural</span>
                   </div>
-                  <div className="text-xl font-bold text-gray-800 dark:text-gray-200">
+                  <div className="text-xl font-bold text-gray-800 dark:text-lia-text-primary">
                     {data.culturalFitScore}%
                   </div>
                 </div>
@@ -398,8 +398,8 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
         <div className="flex-1 overflow-y-auto p-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
-                <div className="w-2 h-2 bg-gray-900 dark:bg-gray-50 rounded-full"></div>
+              <h3 className="text-sm font-semibold text-gray-800 dark:text-lia-text-primary flex items-center gap-2">
+                <div className="w-2 h-2 bg-gray-900 rounded-full"></div>
                 Dimensões DISC
               </h3>
 
@@ -417,8 +417,8 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
                           {dim.letter}
                         </div>
                         <div>
-                          <div className="font-semibold text-gray-950 dark:text-gray-50">{dim.name}</div>
-                          <div className="text-xs text-gray-500">{levelData.label}</div>
+                          <div className="font-semibold text-gray-950">{dim.name}</div>
+                          <div className="text-xs lia-text-secondary">{levelData.label}</div>
                         </div>
                       </div>
                       <div className="text-2xl font-bold" style={{color: dim.color}}>
@@ -426,18 +426,18 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
                       </div>
                     </div>
 
-                    <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mb-3">
+                    <div className="h-2 bg-gray-200 dark:bg-lia-bg-elevated rounded-full overflow-hidden mb-3">
                       <div 
-                        className="h-full rounded-full transition-all duration-500"
+                        className="h-full rounded-full transition-[width,height] duration-500"
                         style={{width: `${score}%`, backgroundColor: dim.color}}
                       />
                     </div>
 
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">{levelData.description}</p>
+                    <p className="text-xs text-gray-600 dark:text-lia-text-tertiary mb-2">{levelData.description}</p>
 
                     <div className="flex flex-wrap gap-1">
                       {levelData.keywords.map((kw, i) => (
-                        <Badge key={i} variant="outline" className="text-micro px-1.5 py-0 bg-white/50">
+                        <Badge key={i} variant="outline" className="text-micro px-1.5 py-0 bg-lia-bg-primary/50">
                           {kw}
                         </Badge>
                       ))}
@@ -448,47 +448,47 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
             </div>
 
             <div className="space-y-4">
-              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-md p-4 border border-gray-200 dark:border-gray-700">
-                <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
+              <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
+                <h3 className="text-sm font-semibold text-gray-800 dark:text-lia-text-primary mb-3 flex items-center gap-2">
                   <span className="text-lg">{profileInfo.icon}</span>
                   Perfil: {profileInfo.title}
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{profileInfo.description}</p>
+                <p className="text-sm text-gray-600 dark:text-lia-text-tertiary mb-4">{profileInfo.description}</p>
                 
                 <div className="space-y-3">
                   <div>
-                    <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">Pontos Fortes</p>
+                    <p className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary mb-1">Pontos Fortes</p>
                     <div className="flex flex-wrap gap-1">
                       {profileInfo.strengths.map((s, i) => (
-                        <Badge key={i} className="text-micro bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600">
+                        <Badge key={i} className="text-micro bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default">
                           ✓ {s}
                         </Badge>
                       ))}
                     </div>
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">Ambiente Ideal</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">{profileInfo.environment}</p>
+                    <p className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary mb-1">Ambiente Ideal</p>
+                    <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">{profileInfo.environment}</p>
                   </div>
                 </div>
               </div>
 
               {data.leadershipStyle && (
-                <div className="bg-white dark:bg-gray-800 rounded-md p-4 border border-gray-200 dark:border-gray-700">
-                  <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">Estilo de Liderança</h3>
+                <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
+                  <h3 className="text-sm font-semibold text-gray-800 dark:text-lia-text-primary mb-3">Estilo de Liderança</h3>
                   <div className="flex items-center gap-3 mb-3">
-                    <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600">
+                    <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default">
                       {data.leadershipStyle}
                     </Badge>
                     {data.leadershipScore && (
-                      <span className="text-lg font-bold text-gray-800 dark:text-gray-200">{data.leadershipScore}%</span>
+                      <span className="text-lg font-bold text-gray-800 dark:text-lia-text-primary">{data.leadershipScore}%</span>
                     )}
                   </div>
                   {data.leadershipStrengths && data.leadershipStrengths.length > 0 && (
                     <ul className="space-y-1">
                       {data.leadershipStrengths.map((s: string, i: number) => (
-                        <li key={i} className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
-                          <span className="text-gray-600 dark:text-gray-400">✓</span> {s}
+                        <li key={i} className="text-xs text-gray-600 dark:text-lia-text-tertiary flex items-start gap-2">
+                          <span className="text-gray-600 dark:text-lia-text-tertiary">✓</span> {s}
                         </li>
                       ))}
                     </ul>
@@ -497,12 +497,12 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
               )}
 
               {data.developmentAreas && data.developmentAreas.length > 0 && (
-                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-md p-4 border border-gray-200 dark:border-gray-700">
-                  <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">Áreas de Desenvolvimento</h3>
+                <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
+                  <h3 className="text-sm font-semibold text-gray-800 dark:text-lia-text-primary mb-3">Áreas de Desenvolvimento</h3>
                   <ul className="space-y-1">
                     {data.developmentAreas.map((a: string, i: number) => (
-                      <li key={i} className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
-                        <span className="text-gray-400">•</span> {a}
+                      <li key={i} className="text-xs text-gray-600 dark:text-lia-text-tertiary flex items-start gap-2">
+                        <span className="lia-text-secondary">•</span> {a}
                       </li>
                     ))}
                   </ul>
@@ -510,29 +510,29 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
               )}
 
               {data.recommendation && (
-                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-md p-4 border border-gray-300 dark:border-gray-600">
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-50 mb-2">Recomendação</h3>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">{data.recommendation}</p>
+                <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-default dark:border-lia-border-default">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-2">Recomendação</h3>
+                  <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">{data.recommendation}</p>
                 </div>
               )}
 
               <div className="grid grid-cols-3 gap-2">
                 {data.teamworkScore && (
-                  <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700 text-center">
-                    <p className="text-lg font-bold text-gray-800 dark:text-gray-200">{data.teamworkScore}%</p>
-                    <p className="text-micro text-gray-500">Trabalho em Equipe</p>
+                  <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle text-center">
+                    <p className="text-lg font-bold text-gray-800 dark:text-lia-text-primary">{data.teamworkScore}%</p>
+                    <p className="text-micro lia-text-secondary">Trabalho em Equipe</p>
                   </div>
                 )}
                 {data.adaptabilityScore && (
-                  <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700 text-center">
-                    <p className="text-lg font-bold text-gray-800 dark:text-gray-200">{data.adaptabilityScore}%</p>
-                    <p className="text-micro text-gray-500">Adaptabilidade</p>
+                  <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle text-center">
+                    <p className="text-lg font-bold text-gray-800 dark:text-lia-text-primary">{data.adaptabilityScore}%</p>
+                    <p className="text-micro lia-text-secondary">Adaptabilidade</p>
                   </div>
                 )}
                 {data.stressResilienceScore && (
-                  <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700 text-center">
-                    <p className="text-lg font-bold text-gray-800 dark:text-gray-200">{data.stressResilienceScore}%</p>
-                    <p className="text-micro text-gray-500">Resiliência</p>
+                  <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle text-center">
+                    <p className="text-lg font-bold text-gray-800 dark:text-lia-text-primary">{data.stressResilienceScore}%</p>
+                    <p className="text-micro lia-text-secondary">Resiliência</p>
                   </div>
                 )}
               </div>
@@ -540,12 +540,12 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
           </div>
         </div>
 
-        <div className="p-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
-          <p className="text-xs text-gray-500">
+        <div className="p-4 bg-gray-50 dark:bg-lia-bg-primary border-t border-lia-border-subtle dark:border-lia-border-subtle flex justify-between items-center">
+          <p className="text-xs lia-text-secondary">
             {data.completedAt && `Realizado em ${data.completedAt}`}
             {data.duration && ` • Duração: ${data.duration}`}
           </p>
-          <Button onClick={onClose} className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200">
+          <Button onClick={onClose} className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200">
             Fechar
           </Button>
         </div>

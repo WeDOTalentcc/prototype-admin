@@ -81,7 +81,7 @@ export const getLiaAlerts = (candidate: KanbanCandidateBase) => {
         type: 'urgent',
         icon: React.createElement(Flag, { className: "w-3.5 h-3.5" }),
         label: 'Aprovar Contato',
-        color: 'bg-gray-200 text-gray-800 border-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'
+        color: 'bg-gray-200 text-gray-800 border-lia-border-default dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'
       })
     } else if (candidate.liaStatus === 'triagem_completa') {
       alerts.push({
@@ -105,7 +105,7 @@ export const getLiaAlerts = (candidate: KanbanCandidateBase) => {
       type: 'action',
       icon: React.createElement(Mail, { className: "w-3 h-3" }),
       label: 'Enviar Feedback',
-      color: 'bg-gray-200 text-gray-800 border-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700'
+      color: 'bg-gray-200 text-gray-800 border-lia-border-default dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700'
     })
   }
 

@@ -39,10 +39,10 @@ export function AlertsSection({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400" >
+          <h3 className="text-sm font-medium lia-text-500 dark:text-lia-text-tertiary" >
             Alertas Técnicos de Comunicação
           </h3>
-          <p className="text-xs mt-1 text-gray-400 dark:text-gray-500" >
+          <p className="text-xs mt-1 lia-text-400 dark:lia-text-500" >
             Configure alertas para monitorar a saúde das comunicações e integrações
           </p>
         </div>
@@ -59,7 +59,7 @@ export function AlertsSection({
             <Button
               onClick={saveTechnicalAlerts}
               disabled={savingTechnicalAlerts}
-              className="bg-gray-900 dark:bg-gray-50 hover:bg-gray-800 dark:hover:bg-gray-200"
+              className="bg-gray-900 dark:lia-bg-50 hover:bg-gray-800 dark:hover:bg-gray-200"
               size="sm"
             >
               {savingTechnicalAlerts ? (
@@ -79,15 +79,15 @@ export function AlertsSection({
 
       {technicalAlertsLoading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-gray-700 dark:text-gray-300" />
-          <span className="ml-3 text-sm text-gray-500 dark:text-gray-400" >
+          <Loader2 className="w-8 h-8 animate-spin lia-text-700 dark:text-lia-text-secondary" />
+          <span className="ml-3 text-sm lia-text-500 dark:text-lia-text-tertiary" >
             Carregando alertas técnicos...
           </span>
         </div>
       ) : technicalAlerts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
-          <Bell className="w-12 h-12 text-gray-300 mb-4" />
-          <p className="text-sm text-gray-400 dark:text-gray-500" >
+          <Bell className="w-12 h-12 lia-text-300 mb-4" />
+          <p className="text-sm lia-text-400 dark:lia-text-500" >
             Nenhum alerta técnico configurado
           </p>
         </div>
@@ -99,8 +99,8 @@ export function AlertsSection({
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <AlertTriangle className={`w-4 h-4 ${alert.enabled ? 'text-status-warning' : 'text-gray-400 dark:text-gray-500'}`} />
-                      <h4 className="font-medium text-sm text-gray-800 dark:text-gray-100" >
+                      <AlertTriangle className={`w-4 h-4 ${alert.enabled ? 'text-status-warning' : 'lia-text-400 dark:lia-text-500'}`} />
+                      <h4 className="font-medium text-sm lia-text-800 dark:text-lia-text-primary" >
                         {alert.name}
                       </h4>
                       <Badge className={`text-xs ${severityColors[alert.severity]}`}>
@@ -109,13 +109,13 @@ export function AlertsSection({
                          alert.severity === 'high' ? 'Alta' : 'Crítica'}
                       </Badge>
                     </div>
-                    <p className="text-xs mb-3 text-gray-400 dark:text-gray-500" >
+                    <p className="text-xs mb-3 lia-text-400 dark:lia-text-500" >
                       {alert.description}
                     </p>
                     
                     {alert.threshold !== undefined && (
                       <div className="flex items-center gap-2 mb-3">
-                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400" >Limite:</span>
+                        <span className="text-xs font-medium lia-text-500 dark:text-lia-text-tertiary" >Limite:</span>
                         <Input
                           type="number"
                           value={alert.threshold}
@@ -123,21 +123,21 @@ export function AlertsSection({
                           className="w-20 h-7 text-xs"
                           min={0}
                         />
-                        <span className="text-xs text-gray-400 dark:text-gray-500" >
+                        <span className="text-xs lia-text-400 dark:lia-text-500" >
                           {alert.thresholdUnit}
                         </span>
                       </div>
                     )}
                     
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400" >Canais:</span>
+                      <span className="text-xs font-medium lia-text-500 dark:text-lia-text-tertiary" >Canais:</span>
                       {(['email', 'slack', 'webhook'] as const).map(channel => (
                         <Badge
                           key={channel}
                           variant={alert.channels.includes(channel) ? 'default' : 'outline'}
-                          className={`text-xs cursor-pointer transition-all hover:scale-105 ${
+                          className={`text-xs cursor-pointer transition-transform hover:scale-105 ${
                             alert.channels.includes(channel) 
-                              ? channel === 'email' ? 'bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200' 
+                              ? channel === 'email' ? 'bg-gray-900 hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200' 
                                 : channel === 'slack' ? 'bg-wedo-purple hover:bg-wedo-purple' 
                                 : 'bg-status-success hover:bg-status-success'
                               : ''
@@ -157,7 +157,7 @@ export function AlertsSection({
                       checked={alert.enabled}
                       onCheckedChange={() => handleToggleAlert(alert.id)}
                     />
-                    <span className="text-xs text-gray-400 dark:text-gray-500" >
+                    <span className="text-xs lia-text-400 dark:lia-text-500" >
                       {alert.enabled ? 'Ativo' : 'Inativo'}
                     </span>
                   </div>
@@ -170,16 +170,16 @@ export function AlertsSection({
 
       {technicalAlertsHasChanges && (
         <div className="fixed bottom-6 right-6 z-50">
-          <Card className="border-gray-300/30 dark:border-gray-600/30">
+          <Card className="border-lia-border-default/30 dark:border-lia-border-default/30">
             <CardContent className="p-4 flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+                <AlertCircle className="w-5 h-5 lia-text-700 dark:text-lia-text-secondary" />
                 <span className="text-sm font-medium">Alterações não salvas</span>
               </div>
               <Button
                 onClick={saveTechnicalAlerts}
                 disabled={savingTechnicalAlerts}
-                className="bg-gray-900 dark:bg-gray-50 hover:bg-gray-800 dark:hover:bg-gray-200"
+                className="bg-gray-900 dark:lia-bg-50 hover:bg-gray-800 dark:hover:bg-gray-200"
                 size="sm"
               >
                 {savingTechnicalAlerts ? (

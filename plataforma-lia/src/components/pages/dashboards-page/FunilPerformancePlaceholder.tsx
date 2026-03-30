@@ -111,20 +111,20 @@ export function FunilPerformancePlaceholder() {
     <div className="space-y-3">
       {/* Header */}
       <div>
-        <h1 className={`${textStyles.title} dark:text-gray-100 flex items-center gap-2`}>
-          <TrendingUp className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+        <h1 className={`${textStyles.title} dark:text-lia-text-primary flex items-center gap-2`}>
+          <TrendingUp className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
           Funil & Performance
         </h1>
-        <p className={`${textStyles.bodySmall} dark:text-gray-400 mt-1`}>
+        <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary mt-1`}>
           Análise de conversão do pipeline, efetividade por canal e qualidade do processo
         </p>
       </div>
 
       {/* Funil de Conversão Visual */}
-      <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-gray-700`}>
+      <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-lia-border-subtle`}>
         <CardHeader className="px-4 py-3">
-          <CardTitle className={`${textStyles.title} dark:text-gray-100 flex items-center gap-2`}>
-            <BarChart3 className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+          <CardTitle className={`${textStyles.title} dark:text-lia-text-primary flex items-center gap-2`}>
+            <BarChart3 className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
             Funil de Conversão do Pipeline
           </CardTitle>
         </CardHeader>
@@ -135,7 +135,7 @@ export function FunilPerformancePlaceholder() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50">Candidaturas Recebidas</p>
-                  <p className={`${textStyles.description} dark:text-gray-400`}>100% do funil</p>
+                  <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>100% do funil</p>
                 </div>
                 <span className="text-lg font-inter font-bold text-gray-950 dark:text-gray-50">3.247</span>
               </div>
@@ -147,11 +147,11 @@ export function FunilPerformancePlaceholder() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50">Triagem LIA Aprovada</p>
-                  <p className={`${textStyles.description} dark:text-gray-400`}>62% conversão</p>
+                  <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>62% conversão</p>
                 </div>
                 <span className="text-lg font-inter font-bold text-gray-950 dark:text-gray-50">2.013</span>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-4">
                 <div className="h-4 rounded-full bg-gray-900 w-[62%]"></div>
               </div>
             </div>
@@ -161,11 +161,11 @@ export function FunilPerformancePlaceholder() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50">Entrevistas Agendadas</p>
-                  <p className={`${textStyles.description} dark:text-gray-400`}>38% conversão (total)</p>
+                  <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>38% conversão (total)</p>
                 </div>
                 <span className="text-lg font-inter font-bold text-gray-950 dark:text-gray-50">1.234</span>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-4">
                 <div className="h-4 rounded-full bg-wedo-purple w-[38%]"></div>
               </div>
             </div>
@@ -175,11 +175,11 @@ export function FunilPerformancePlaceholder() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50">Ofertas Enviadas</p>
-                  <p className={`${textStyles.description} dark:text-gray-400`}>18% conversão (total)</p>
+                  <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>18% conversão (total)</p>
                 </div>
                 <span className="text-lg font-inter font-bold text-gray-950 dark:text-gray-50">585</span>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-4">
                 <div className="h-4 rounded-full bg-wedo-orange w-[18%]"></div>
               </div>
             </div>
@@ -189,11 +189,11 @@ export function FunilPerformancePlaceholder() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50">Contratações Finalizadas</p>
-                  <p className={`${textStyles.description} dark:text-gray-400`}>12% conversão (total)</p>
+                  <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>12% conversão (total)</p>
                 </div>
                 <span className="text-lg font-inter font-bold text-status-success dark:text-status-success">389</span>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-4">
                 <div className="h-4 rounded-full bg-wedo-green-bright w-[12%]"></div>
               </div>
             </div>
@@ -204,90 +204,90 @@ export function FunilPerformancePlaceholder() {
       {/* Performance por Canal & Taxas de Conversão */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
         {/* Performance por Canal de Divulgação */}
-        <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-gray-700`}>
+        <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-lia-border-subtle`}>
           <CardHeader className="pb-3">
-            <CardTitle className={`${textStyles.subtitle} dark:text-gray-100 flex items-center gap-2`}>
+            <CardTitle className={`${textStyles.subtitle} dark:text-lia-text-primary flex items-center gap-2`}>
               <Target className="w-3.5 h-3.5 text-wedo-green" />
               Performance por Canal de Divulgação
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {/* LinkedIn */}
-            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-800">
+            <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-gray-800">
               <div className="flex items-center justify-between mb-2">
                 <div>
                   <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50 text-sm">LinkedIn Jobs</p>
-                  <p className={`${textStyles.description} dark:text-gray-400`}>1.247 candidaturas • 178 contratações</p>
+                  <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>1.247 candidaturas • 178 contratações</p>
                 </div>
- <Badge className="bg-gray-100 text-gray-900 dark:text-gray-300 font-inter font-bold">
+ <Badge className="bg-gray-100 text-gray-900 dark:text-lia-text-secondary font-inter font-bold">
                   14.3%
                 </Badge>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
                 <div className="h-2 rounded-full bg-gray-900" style={{width: '14.3%'}}></div>
               </div>
             </div>
 
             {/* Indicações */}
-            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-800">
+            <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-gray-800">
               <div className="flex items-center justify-between mb-2">
                 <div>
                   <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50 text-sm">Indicações Internas</p>
-                  <p className={`${textStyles.description} dark:text-gray-400`}>412 candidaturas • 94 contratações</p>
+                  <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>412 candidaturas • 94 contratações</p>
                 </div>
                 <Badge className="bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success font-inter font-bold">
                   22.8%
                 </Badge>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
                 <div className="h-2 rounded-full bg-wedo-green-bright" style={{width: '22.8%'}}></div>
               </div>
             </div>
 
             {/* Site Corporativo */}
-            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-800">
+            <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-gray-800">
               <div className="flex items-center justify-between mb-2">
                 <div>
                   <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50 text-sm">Site Corporativo</p>
-                  <p className={`${textStyles.description} dark:text-gray-400`}>894 candidaturas • 87 contratações</p>
+                  <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>894 candidaturas • 87 contratações</p>
                 </div>
                 <Badge className="bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/30 dark:text-wedo-orange font-inter font-bold">
                   9.7%
                 </Badge>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
                 <div className="h-2 rounded-full bg-wedo-orange" style={{width: '9.7%'}}></div>
               </div>
             </div>
 
             {/* Job Boards */}
-            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-800">
+            <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-gray-800">
               <div className="flex items-center justify-between mb-2">
                 <div>
                   <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50 text-sm">Job Boards (Catho, Vagas.com)</p>
-                  <p className={`${textStyles.description} dark:text-gray-400`}>562 candidaturas • 24 contratações</p>
+                  <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>562 candidaturas • 24 contratações</p>
                 </div>
                 <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple font-inter font-bold">
                   4.3%
                 </Badge>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
                 <div className="h-2 rounded-full bg-wedo-purple" style={{width: '4.3%'}}></div>
               </div>
             </div>
 
             {/* Headhunting */}
-            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-800">
+            <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-gray-800">
               <div className="flex items-center justify-between mb-2">
                 <div>
                   <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50 text-sm">Headhunting Especializado</p>
-                  <p className={`${textStyles.description} dark:text-gray-400`}>132 candidaturas • 6 contratações</p>
+                  <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>132 candidaturas • 6 contratações</p>
                 </div>
                 <Badge className="bg-wedo-magenta/15 text-wedo-magenta dark:bg-wedo-magenta/30 dark:text-wedo-magenta font-inter font-bold">
                   4.5%
                 </Badge>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
                 <div className="h-2 rounded-full bg-wedo-magenta" style={{width: '4.5%'}}></div>
               </div>
             </div>
@@ -295,9 +295,9 @@ export function FunilPerformancePlaceholder() {
         </Card>
 
         {/* Qualidade do Processo */}
-        <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-gray-700`}>
+        <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-lia-border-subtle`}>
           <CardHeader className="pb-3">
-            <CardTitle className={`${textStyles.subtitle} dark:text-gray-100 flex items-center gap-2`}>
+            <CardTitle className={`${textStyles.subtitle} dark:text-lia-text-primary flex items-center gap-2`}>
               <Award className="w-3.5 h-3.5 text-wedo-purple" />
               Indicadores de Qualidade
             </CardTitle>
@@ -309,19 +309,19 @@ export function FunilPerformancePlaceholder() {
                 <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50">Taxa de Aceitação de Ofertas</p>
                 <div className="text-2xl font-inter font-bold text-status-success dark:text-status-success">66%</div>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
                 <div className="h-2 rounded-full bg-wedo-green-bright w-[66%]"></div>
               </div>
               <p className={`${textStyles.description} mt-2`}>Meta: 60% • +6% vs. meta</p>
             </div>
 
             {/* Tempo Médio de Fechamento */}
- <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-md">
+ <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50">Tempo Médio de Fechamento</p>
- <div className="text-2xl font-inter font-bold text-gray-900 dark:text-gray-300">21<span className="text-sm">d</span></div>
+ <div className="text-2xl font-inter font-bold text-gray-900 dark:text-lia-text-secondary">21<span className="text-sm">d</span></div>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
                 <div className="h-2 rounded-full bg-gray-900 w-[70%]"></div>
               </div>
               <p className={`${textStyles.bodySmall} text-status-success dark:text-status-success mt-2`}>-4 dias vs. mês anterior</p>
@@ -333,7 +333,7 @@ export function FunilPerformancePlaceholder() {
                 <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50">Satisfação dos Contratados (30 dias)</p>
                 <div className="text-2xl font-inter font-bold text-wedo-purple dark:text-wedo-purple">8.7<span className="text-sm">/10</span></div>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
                 <div className="h-2 rounded-full bg-wedo-purple w-[87%]"></div>
               </div>
               <p className={`${textStyles.description} mt-2`}>NPS: +74 (Excelente)</p>
@@ -345,7 +345,7 @@ export function FunilPerformancePlaceholder() {
                 <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50">Retenção em 90 dias</p>
                 <div className="text-2xl font-inter font-bold text-wedo-orange dark:text-wedo-orange">92%</div>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
                 <div className="h-2 rounded-full bg-wedo-orange w-[92%]"></div>
               </div>
               <p className={`${textStyles.description} mt-2`}>Meta: 85% • +7% vs. meta</p>
@@ -355,35 +355,35 @@ export function FunilPerformancePlaceholder() {
       </div>
 
       {/* Insights e Recomendações */}
-      <Card className={`${cardStyles.default} dark:bg-gray-900 dark:border-gray-800`}>
+      <Card className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-gray-800`}>
         <CardHeader className="px-4 py-3">
-          <CardTitle className={`${textStyles.title} dark:text-gray-100 flex items-center gap-2`}>
-            <Lightbulb className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+          <CardTitle className={`${textStyles.title} dark:text-lia-text-primary flex items-center gap-2`}>
+            <Lightbulb className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
             Insights de Performance
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-start gap-3">
             <CheckCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-wedo-green-bright" />
-            <p className="text-sm font-open-sans text-gray-800 dark:text-gray-200">
+            <p className="text-sm font-open-sans text-gray-800 dark:text-lia-text-primary">
               <strong>Indicações são o canal mais efetivo:</strong> 22.8% de conversão - 2x a média. Incentive programa de referral.
             </p>
           </div>
           <div className="flex items-start gap-3">
             <TrendingUp className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-700" />
-            <p className="text-sm font-open-sans text-gray-800 dark:text-gray-200">
+            <p className="text-sm font-open-sans text-gray-800 dark:text-lia-text-primary">
               <strong>LinkedIn gera volume:</strong> 38% das candidaturas vêm do LinkedIn. Otimizar descrições de vagas pode aumentar qualidade.
             </p>
           </div>
           <div className="flex items-start gap-3">
             <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-wedo-orange" />
-            <p className="text-sm font-open-sans text-gray-800 dark:text-gray-200">
+            <p className="text-sm font-open-sans text-gray-800 dark:text-lia-text-primary">
               <strong>Job Boards com baixa conversão:</strong> 4.3% pode indicar descasamento de público. Reavaliar investimento nesses canais.
             </p>
           </div>
           <div className="flex items-start gap-3">
             <Award className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-wedo-purple" />
-            <p className="text-sm font-open-sans text-gray-800 dark:text-gray-200">
+            <p className="text-sm font-open-sans text-gray-800 dark:text-lia-text-primary">
               <strong>Qualidade em alta:</strong> Retenção de 92% em 90 dias supera meta em 7%. Processo de seleção está bem calibrado.
             </p>
           </div>

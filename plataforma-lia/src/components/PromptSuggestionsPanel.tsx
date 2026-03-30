@@ -181,7 +181,7 @@ export function PromptSuggestionsPanel({
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <LIAIcon size="sm" />
-          <span className="text-sm font-medium text-gray-950 dark:text-gray-50">💡 Sugestões Inteligentes</span>
+          <span className="text-sm font-medium text-gray-950">💡 Sugestões Inteligentes</span>
           <Badge variant="outline" className="text-xs">
             {suggestions.length} disponíveis
           </Badge>
@@ -190,7 +190,7 @@ export function PromptSuggestionsPanel({
         {commandHistory.length > 0 && (
           <button
             onClick={() => setShowHistory(!showHistory)}
-            className="text-xs text-gray-600 hover:text-gray-700 flex items-center gap-1 transition-colors"
+            className="text-xs lia-text-base hover:lia-text-base flex items-center gap-1 transition-colors"
           >
             📜 Histórico ({commandHistory.length})
           </button>
@@ -199,15 +199,15 @@ export function PromptSuggestionsPanel({
 
       {showHistory && commandHistory.length > 0 && (
         <div className="mb-4 p-3 bg-gray-50 rounded-md border">
-          <h4 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-2">Comandos Recentes</h4>
+          <h4 className="text-xs font-medium text-gray-800 dark:text-lia-text-primary mb-2">Comandos Recentes</h4>
           <div className="space-y-1">
             {commandHistory.map((command, index) => (
               <button
                 key={index}
                 onClick={() => onHistoryCommand(command)}
                 disabled={isProcessing}
-                className={`w-full text-left text-xs p-2 rounded-md hover:bg-white transition-colors ${
-                  isProcessing ? 'opacity-50' : 'text-gray-600 hover:text-gray-800'
+                className={`w-full text-left text-xs p-2 rounded-md hover:bg-lia-bg-primary transition-colors ${
+ isProcessing ? 'opacity-50' : 'lia-text-base hover:lia-text-strong'
                 }`}
               >
                 📝 {command}
@@ -223,22 +223,22 @@ export function PromptSuggestionsPanel({
             key={suggestion.id}
             onClick={() => onSuggestionClick(suggestion)}
             disabled={isProcessing}
-            className={`flex items-start gap-3 p-3 text-left rounded-md border border-gray-100 bg-white transition-all group ${
-              isProcessing
+            className={`flex items-start gap-3 p-3 text-left rounded-md border border-lia-border-subtle bg-lia-bg-primary transition-colors group ${
+ isProcessing
                 ? 'opacity-50 cursor-not-allowed'
                 : 'hover:border-gray-400 hover:'
             }`}
           >
             <span className="text-lg flex-shrink-0">{suggestion.icon}</span>
             <div className="flex-1">
-              <div className="text-base-ui font-semibold text-gray-800 group-hover:text-gray-700">
+              <div className="text-base-ui font-semibold lia-text-strong group-hover:lia-text-base">
                 {suggestion.label}
               </div>
-              <div className="text-xs text-gray-600 mt-1">
+              <div className="text-xs lia-text-base mt-1">
                 {suggestion.description}
               </div>
               {suggestion.category && (
-                <Badge className="mt-2 text-micro bg-gray-100 text-gray-800 dark:text-gray-200 border-0">
+                <Badge className="mt-2 text-micro bg-gray-100 text-gray-800 dark:text-lia-text-primary border-0">
                   {suggestion.category}
                 </Badge>
               )}

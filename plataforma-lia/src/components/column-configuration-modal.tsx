@@ -177,20 +177,20 @@ export function ColumnConfigurationModal({
       <SheetContent side="right" className="w-96 p-0">
         <div className="flex flex-col h-full">
           {/* Header */}
-          <SheetHeader className="p-4 border-b border-gray-200 dark:border-gray-700">
+          <SheetHeader className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
             <SheetTitle className="flex items-center gap-2 font-['Open_Sans',sans-serif]">
               <Settings className="w-4 h-4" />
               Columns
             </SheetTitle>
-            <div className="text-sm text-gray-600 dark:text-gray-400">
+            <div className="text-sm text-gray-600 dark:text-lia-text-tertiary">
               {visibleCount} de {columns.length} colunas visíveis
             </div>
           </SheetHeader>
 
           {/* Search */}
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
             <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <Input
                 placeholder="Search"
                 value={searchTerm}
@@ -202,20 +202,20 @@ export function ColumnConfigurationModal({
 
           {/* Saved Views */}
           {savedViews.length > 0 && (
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-              <h4 className="text-sm font-medium text-gray-950 dark:text-gray-50 mb-2">Visualizações Salvas</h4>
+            <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+              <h4 className="text-sm font-medium text-gray-950 mb-2">Visualizações Salvas</h4>
               <div className="space-y-1">
                 {savedViews.map(view => (
-                  <div key={view.id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
+                  <div key={view.id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                     <button
                       onClick={() => onLoadView(view)}
-                      className="flex-1 text-left text-sm text-gray-800 dark:text-gray-200 hover:text-gray-950 dark:hover:text-gray-50"
+                      className="flex-1 text-left text-sm text-gray-800 dark:text-lia-text-primary hover:text-gray-950 dark:hover:text-gray-50"
                     >
                       {view.name}
                     </button>
                     <button
                       onClick={() => onDeleteView(view.id)}
-                      className="text-gray-400 dark:text-gray-500 hover:text-status-error p-1"
+                      className="text-gray-400 hover:text-status-error p-1"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -226,7 +226,7 @@ export function ColumnConfigurationModal({
           )}
 
           {/* Save New View */}
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
             {!showSaveView ? (
               <Button
                 variant="outline"
@@ -274,21 +274,21 @@ export function ColumnConfigurationModal({
                   onDragOver={handleDragOver}
                   onDrop={(e) => handleDrop(e, column)}
                   className={`flex items-center gap-3 p-2 rounded-md border-2 transition-colors cursor-move ${
-                    column.visible
-                      ? 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600'
-                      : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+ column.visible
+                      ? 'bg-gray-100 dark:bg-lia-bg-elevated border-lia-border-default dark:border-lia-border-default'
+                      : 'bg-gray-50 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle'
                   } hover:bg-gray-100 dark:hover:bg-gray-700`}
                 >
-                  <GripVertical className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                  <GripVertical className="w-4 h-4 text-gray-400" />
 
                   <button
                     onClick={() => handleToggleColumn(column.id)}
                     className="flex items-center gap-2 flex-1 text-left"
                   >
                     <div className={`w-4 h-4 rounded-md border flex items-center justify-center ${
-                      column.visible
-                        ? 'bg-gray-900 dark:bg-gray-50 border-gray-900 dark:border-gray-50'
-                        : 'border-gray-300 dark:border-gray-600'
+ column.visible
+                        ? 'bg-gray-900 border-gray-900'
+                        : 'border-lia-border-default dark:border-lia-border-default'
                     }`}>
                       {column.visible && (
                         <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -298,16 +298,16 @@ export function ColumnConfigurationModal({
                     </div>
 
                     <span className={`text-sm ${
-                      column.visible ? 'text-gray-950 dark:text-gray-50 font-medium' : 'text-gray-600'
+ column.visible ? 'text-gray-950 font-medium' : 'text-gray-600'
                     }`}>
                       {column.label}
                     </span>
                   </button>
 
                   {column.visible ? (
-                    <Eye className="w-4 h-4 text-gray-900 dark:text-gray-50" />
+                    <Eye className="w-4 h-4 text-gray-900" />
                   ) : (
-                    <EyeOff className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                    <EyeOff className="w-4 h-4 text-gray-400" />
                   )}
                 </div>
               ))}
@@ -315,7 +315,7 @@ export function ColumnConfigurationModal({
           </div>
 
           {/* Footer Actions */}
-          <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+          <div className="p-4 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary">
             <div className="flex gap-2">
               <Button
                 variant="outline"
@@ -333,7 +333,7 @@ export function ColumnConfigurationModal({
               </Button>
               <Button
                 onClick={handleSave}
-                className="flex-1 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                className="flex-1 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
               >
                 SAVE
               </Button>

@@ -48,22 +48,22 @@ export function RevealCreditsModal({
   return (
     <AlertDialog open={isOpen} onOpenChange={(open: boolean) => !open && onClose()}>
       <AlertDialogContent 
-        className="max-w-md bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700"
+        className="max-w-md bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle"
        
       >
         <AlertDialogHeader>
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+            <div className="p-2.5 rounded-md bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary">
               <Icon className="w-5 h-5" />
             </div>
-            <AlertDialogTitle className="text-base-ui font-semibold text-gray-800 dark:text-gray-200">
+            <AlertDialogTitle className="text-base-ui font-semibold text-gray-800 dark:text-lia-text-primary">
               Revelar {typeLabel}
             </AlertDialogTitle>
           </div>
           <AlertDialogDescription asChild>
             <div className="space-y-4">
-              <p className="text-gray-600 dark:text-gray-400">
-                Deseja revelar o {typeLabel} de <strong className="text-gray-950 dark:text-gray-50">{candidateName}</strong>?
+              <p className="text-gray-600 dark:text-lia-text-tertiary">
+                Deseja revelar o {typeLabel} de <strong className="text-gray-950">{candidateName}</strong>?
               </p>
               
               <div className="p-4 rounded-md bg-status-warning/10 border border-status-warning/30">
@@ -82,7 +82,7 @@ export function RevealCreditsModal({
                 </div>
               </div>
 
-              <div className="flex items-start gap-2 text-xs text-gray-500 dark:text-gray-400">
+              <div className="flex items-start gap-2 text-xs text-gray-500 dark:text-lia-text-tertiary">
                 <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
                 <span>Esta ação consumirá créditos da sua conta.</span>
               </div>
@@ -94,7 +94,7 @@ export function RevealCreditsModal({
             <Button 
               variant="outline" 
               disabled={isLoading} 
-              className="gap-2 bg-white border border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200"
+              className="gap-2 bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 text-gray-800 dark:text-lia-text-primary"
             >
               <X className="w-4 h-4" />
               Cancelar
@@ -103,7 +103,7 @@ export function RevealCreditsModal({
           <Button
             onClick={handleConfirm}
             disabled={isLoading}
-            className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+            className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
           >
             {isLoading ? (
               <>

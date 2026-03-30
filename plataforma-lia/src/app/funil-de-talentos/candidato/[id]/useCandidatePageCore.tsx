@@ -456,11 +456,11 @@ export function useCandidatePageCore() {
   }
 
   const getFileIcon = (fileType: string, mimeType?: string) => {
-    if (fileType === 'cv') return <FileText className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
+    if (fileType === 'cv') return <FileText className="w-3.5 h-3.5 lia-text-800 dark:text-lia-text-primary" />
     if (fileType === 'video' || mimeType?.startsWith('video/')) return <FileVideo className="w-3.5 h-3.5 text-status-error" />
     if (fileType === 'certificate') return <Award className="w-3.5 h-3.5 text-status-warning" />
     if (mimeType?.startsWith('image/')) return <Image className="w-3.5 h-3.5 text-status-success" />
-    return <File className="w-3.5 h-3.5 text-gray-600" />
+    return <File className="w-3.5 h-3.5 lia-text-600" />
   }
 
   const getCategoryColor = (fileType: string) => {
@@ -538,8 +538,8 @@ export function useCandidatePageCore() {
       'nativo': { label: 'Nativo', percent: 100, color: 'bg-status-success' },
       'fluent': { label: 'Fluente', percent: 90, color: 'bg-status-success' },
       'fluente': { label: 'Fluente', percent: 90, color: 'bg-status-success' },
-      'advanced': { label: 'Avançado', percent: 75, color: 'bg-gray-700 dark:bg-gray-300' },
-      'avançado': { label: 'Avançado', percent: 75, color: 'bg-gray-700 dark:bg-gray-300' },
+      'advanced': { label: 'Avançado', percent: 75, color: 'bg-gray-700 dark:lia-bg-300' },
+      'avançado': { label: 'Avançado', percent: 75, color: 'bg-gray-700 dark:lia-bg-300' },
       'intermediate': { label: 'Intermediário', percent: 50, color: 'bg-status-warning' },
       'intermediário': { label: 'Intermediário', percent: 50, color: 'bg-status-warning' },
       'basic': { label: 'Básico', percent: 25, color: 'bg-gray-400' },

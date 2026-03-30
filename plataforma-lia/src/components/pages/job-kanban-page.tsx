@@ -391,7 +391,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
 
     <div className="h-screen bg-gray-50 dark:bg-gray-950 flex flex-col overflow-hidden">
       {/* Header Principal */}
-      <div className="bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-gray-50 dark:bg-gray-950 border-b border-lia-border-subtle dark:border-lia-border-subtle">
         <div className="w-full px-4">
           <div className="flex flex-col lg:flex-row items-start justify-between gap-4 mb-4">
             {/* Left: Título e Informações Principais */}
@@ -407,13 +407,13 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                     {currentJob.title}
                   </h1>
                   {currentJob.jobId && (
-                    <span className="text-micro font-mono text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-1.5 py-0.5 rounded-md whitespace-nowrap">
+                    <span className="text-micro font-mono text-gray-700 dark:text-lia-text-secondary bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle px-1.5 py-0.5 rounded-md whitespace-nowrap">
                       {currentJob.jobId}
                     </span>
                   )}
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-xs px-2 py-0.5 cursor-pointer hover:bg-gray-100 transition-colors select-none">
+                      <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-gray-800 dark:text-lia-text-primary font-medium whitespace-nowrap text-xs px-2 py-0.5 cursor-pointer hover:bg-gray-100 transition-colors select-none">
                         {jobEditForm.status || currentJob.status}
                       </Badge>
                     </PopoverTrigger>
@@ -461,7 +461,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                       Object.entries(SCREENING_STATUS_LABELS).map(([k, v]) => [k, `Triagem: ${v}`])
                     ) as Record<string, string>
                     const scrStyles: Record<string, string> = {
-                      not_configured: 'bg-gray-100 text-gray-700 border border-gray-300',
+                      not_configured: 'bg-gray-100 text-gray-700 border border-lia-border-default',
                       not_started: 'bg-status-warning/10 text-status-warning border border-status-warning/30',
                       active: 'bg-status-success/10 text-status-success border border-status-success/30',
                       paused: 'bg-wedo-orange/10 text-wedo-orange border border-wedo-orange/30',
@@ -552,34 +552,34 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                       Rascunho
                     </Badge>
                   )}
-                  <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-semibold whitespace-nowrap text-micro px-1.5 py-0">
+                  <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-gray-800 dark:text-lia-text-primary font-semibold whitespace-nowrap text-micro px-1.5 py-0">
                     {currentJob.level}
                   </Badge>
-                  <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium capitalize whitespace-nowrap text-micro px-1.5 py-0">
+                  <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-gray-800 dark:text-lia-text-primary font-medium capitalize whitespace-nowrap text-micro px-1.5 py-0">
                     {currentJob.workModel || '—'}
                   </Badge>
-                  <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                  <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-gray-800 dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                     {currentJob.type || '—'}
                   </Badge>
-                  <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                  <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-gray-800 dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                     {currentJob.department}
                   </Badge>
-                  <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                  <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-gray-800 dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                     {currentJob.location}
                   </Badge>
                   {currentJob.salary && currentJob.salary !== 'A combinar' && (
-                    <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                    <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-gray-800 dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       {currentJob.salary}
                     </Badge>
                   )}
                   {currentJob.publishedLinkedIn && (
-                    <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                    <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-gray-800 dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       Publicada
                     </Badge>
                   )}
                   <span className="text-micro text-gray-300 dark:text-gray-600 mx-0.5">|</span>
                   {currentJob.openDate && (
-                    <span className="text-micro text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                    <span className="text-micro text-gray-700 dark:text-lia-text-secondary whitespace-nowrap">
                       <Calendar className="w-3 h-3 inline mr-0.5 -mt-0.5" />
                       {new Date(currentJob.openDate).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </span>
@@ -589,30 +589,30 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                     if (days <= 0) return null
                     const isLate = days > 30
                     return (
-                      <span className={`text-micro font-semibold whitespace-nowrap ${isLate ? 'text-status-error' : 'text-gray-700 dark:text-gray-300'}`}>
+                      <span className={`text-micro font-semibold whitespace-nowrap ${isLate ? 'text-status-error' : 'text-gray-700 dark:text-lia-text-secondary'}`}>
                         {days}d {isLate ? 'de atraso' : 'aberta'}
                       </span>
                     )
                   })()}
                   {currentJob.updatedAt && (
-                    <span className="text-micro text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                    <span className="text-micro text-gray-600 dark:text-lia-text-tertiary whitespace-nowrap">
                       Atualizada: {new Date(currentJob.updatedAt).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
                     </span>
                   )}
                   {currentJob.deadlineScreening && (
-                    <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                    <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-gray-800 dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       <Calendar className="w-3 h-3 mr-0.5" />
                       Prazo triagem: {new Date(currentJob.deadlineScreening).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
                     </Badge>
                   )}
                   {currentJob.deadlineShortlist && (
-                    <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                    <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-gray-800 dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       <Calendar className="w-3 h-3 mr-0.5" />
                       Prazo short: {new Date(currentJob.deadlineShortlist).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
                     </Badge>
                   )}
                   {currentJob.deadlineClosing && (
-                    <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                    <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-gray-800 dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       <Calendar className="w-3 h-3 mr-0.5" />
                       Encerramento: {new Date(currentJob.deadlineClosing).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
                     </Badge>
@@ -671,13 +671,13 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
               onClick={() => { setActiveTab('management'); setShowJobEditor(false); }}
               className={`flex items-center gap-2 px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
                 activeTab === 'management'
-                  ? 'border-gray-900 text-gray-900 dark:border-gray-100 dark:text-gray-100'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                  ? 'border-gray-900 text-gray-900 dark:border-lia-border-subtle dark:text-lia-text-primary'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-lia-text-tertiary dark:hover:text-gray-300'
               }`}
             >
               <Layers3 className="w-3.5 h-3.5" />
               Gestão da Vaga
-              <Badge className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-micro px-1.5 py-0 ml-1">
+              <Badge className="bg-gray-200 dark:bg-lia-bg-elevated text-gray-700 dark:text-lia-text-secondary text-micro px-1.5 py-0 ml-1">
                 {allTableCandidates?.length || 0}
               </Badge>
             </button>
@@ -685,8 +685,8 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
               onClick={() => { setActiveTab('edit'); setShowJobEditor(true); }}
               className={`flex items-center gap-2 px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
                 activeTab === 'edit'
-                  ? 'border-gray-900 text-gray-900 dark:border-gray-100 dark:text-gray-100'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                  ? 'border-gray-900 text-gray-900 dark:border-lia-border-subtle dark:text-lia-text-primary'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-lia-text-tertiary dark:hover:text-gray-300'
               }`}
             >
               <Settings className="w-3.5 h-3.5" />
@@ -708,7 +708,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                       }
                     }}
                     disabled={pipelineInheritance.isLoading}
-                    className="inline-flex items-center gap-1 px-2 py-1 text-micro font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors"
+                    className="inline-flex items-center gap-1 px-2 py-1 text-micro font-medium text-gray-500 hover:text-gray-700 dark:text-lia-text-tertiary dark:hover:text-gray-300 bg-gray-100 dark:bg-lia-bg-secondary hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors"
                    
                   >
                     <RotateCcw className="w-3 h-3" />
@@ -736,7 +736,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
               className={`flex items-start gap-2 px-3 py-2 rounded-md border text-xs ${
                 insight.urgency === 'urgent' ? 'bg-status-error/10 border-status-error/30 text-status-error' :
                 insight.urgency === 'high' ? 'bg-status-warning/10 border-status-warning/30 text-status-warning' :
-                'bg-gray-50 border-gray-200 text-gray-700'
+                'bg-gray-50 border-lia-border-subtle text-gray-700'
               }`}
             >
               <span className="font-medium flex-shrink-0">{insight.title}</span>
@@ -754,7 +754,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
       )}
 
       {activeTab === 'edit' ? (
-        <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-900">
+        <div className="flex-1 overflow-y-auto bg-white dark:bg-lia-bg-primary">
           <div className="px-4 py-4 pb-12">
             <JobEditTab
               jobEditForm={jobEditForm}
@@ -778,10 +778,10 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
           </div>
         </div>
       ) : (
-        <div className="flex-1 overflow-hidden bg-gray-100 dark:bg-gray-900 flex flex-col min-w-0">
+        <div className="flex-1 overflow-hidden bg-gray-100 dark:bg-lia-bg-primary flex flex-col min-w-0">
           {/* Pipeline Flow - Cards do Funil (apenas no modo Tabela) */}
           {viewMode === "table" && (
-            <div className="flex-shrink-0 bg-white dark:bg-gray-900 px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex-shrink-0 bg-white dark:bg-lia-bg-primary px-4 py-2 border-b border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="w-full">
                 <div className="flex items-center gap-2">
                   {tableStageFilter.length > 0 && (
@@ -837,7 +837,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
           )}
 
           {/* Controles de Visualização e Filtros */}
-          <div className="flex-shrink-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-2">
+          <div className="flex-shrink-0 bg-white dark:bg-lia-bg-secondary border-b border-lia-border-subtle dark:border-lia-border-subtle px-4 py-2">
             <div className="w-full px-4 flex items-center justify-between gap-2">
               {/* Lado Esquerdo: Prompt LIA - Oculto quando prompt expandido está aberto */}
               {!showExpandedLIA && (
@@ -853,7 +853,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                         placeholder="Ex: Analisar candidatos com maior fit..."
                         value={liaPromptValue}
                         onChange={(e) => setLiaPromptValue(e.target.value)}
-                        className="w-full h-10 pl-10 pr-20 text-base-ui rounded-md focus:outline-none placeholder:text-gray-600 transition-all border"
+                        className="w-full h-10 pl-10 pr-20 text-base-ui rounded-md focus:outline-none placeholder:text-gray-600 transition-colors border"
                         style={{backgroundColor: 'var(--gray-50)',
                           color: 'var(--gray-950)'}}
                         onFocus={(e) => {
@@ -916,19 +916,19 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                       className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-md"
                       aria-label="Limpar busca"
                     >
-                      <X className="w-3 h-3 text-gray-800 dark:text-gray-200" aria-hidden="true" />
+                      <X className="w-3 h-3 text-gray-800 dark:text-lia-text-primary" aria-hidden="true" />
                     </button>
                   )}
                 </div>
 
                 {/* Botões de Alternância de Visualização */}
-                <div className="bg-gray-100 dark:bg-gray-700 rounded-md p-0.5 flex">
+                <div className="bg-gray-100 dark:bg-lia-bg-elevated rounded-md p-0.5 flex">
                   <button
                     onClick={() => setViewMode("kanban")}
                     className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
                       viewMode === "kanban"
                         ? "bg-white dark:bg-gray-600 text-gray-950 dark:text-gray-50 font-bold"
-                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                        : "text-gray-600 dark:text-lia-text-tertiary hover:text-gray-900 dark:hover:text-gray-200"
                     }`}
                   >
                     <div className="flex items-center gap-1.5">
@@ -941,7 +941,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                     className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
                       viewMode === "table"
                         ? "bg-white dark:bg-gray-600 text-gray-950 dark:text-gray-50 font-bold"
-                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                        : "text-gray-600 dark:text-lia-text-tertiary hover:text-gray-900 dark:hover:text-gray-200"
                     }`}
                   >
                     <div className="flex items-center gap-1.5">
@@ -1025,7 +1025,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                       setSelectedCandidates(allIds)
                     }
                   }}
-                  className="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-gray-800 dark:text-gray-200 bg-white border border-gray-200 rounded-full hover:bg-gray-50 transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-gray-800 dark:text-lia-text-primary bg-lia-bg-primary border border-lia-border-subtle rounded-full hover:bg-gray-50 transition-colors"
                  
                 >
                   {/* Calcular candidatos visíveis para o texto do botão */}
@@ -1114,7 +1114,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                   className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors ${
                     (viewMode === "kanban" ? showKanbanFiltersPanel : showTableFiltersPanel)
                       ? 'bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200' 
-                      : 'text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                      : 'text-gray-800 dark:text-lia-text-primary bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-default hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                  
                 >
@@ -1129,7 +1129,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                     className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors ${
                       showColumnConfig 
                         ? 'bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200' 
-                        : 'text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                        : 'text-gray-800 dark:text-lia-text-primary bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-default hover:bg-gray-50 dark:hover:bg-gray-700'
                     }`}
                    
                   >
@@ -1146,12 +1146,12 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
           </div>
 
           {/* Container Principal com LIA Sidebar Unificada */}
-          <div className="flex-1 flex gap-2 overflow-hidden bg-gray-50 dark:bg-gray-900 min-w-0">
+          <div className="flex-1 flex gap-2 overflow-hidden bg-gray-50 dark:bg-lia-bg-primary min-w-0">
             {/* Super Chat Expandido - Ocupa a maior parte da tela, deixando apenas uma coluna visível */}
             {showSuperChat && (
               <>
               <div 
-                className="flex-1 transition-all duration-300 pl-4 py-4 pr-0 min-w-0"
+                className="flex-1 transition-colors duration-300 pl-4 py-4 pr-0 min-w-0"
                 style={{maxWidth: 'calc(100% - 48px)'}}
               >
                 <div className="h-full flex flex-col">
@@ -1179,8 +1179,8 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
               </div>
 
               {/* Barra Vertical de Navegação - Estilo colapsado com ícones */}
-              <div className="flex-shrink-0 w-12 transition-all duration-300 py-4 pr-2">
-                <div className="h-[calc(100vh-12rem)] flex flex-col items-center bg-white border border-gray-200 rounded-md py-3 gap-2">
+              <div className="flex-shrink-0 w-12 transition-colors duration-300 py-4 pr-2">
+                <div className="h-[calc(100vh-12rem)] flex flex-col items-center bg-lia-bg-primary border border-lia-border-subtle rounded-md py-3 gap-2">
                   {/* Botão Expandir */}
                   <Button
                     variant="ghost"
@@ -1279,7 +1279,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                   {(!hasMounted || isLoadingCandidates) ? (
                     <div className="flex gap-3 h-full min-w-max" suppressHydrationWarning>
                       {dynamicStages.map((stage) => (
-                        <div key={stage.id} className="flex flex-col flex-1 bg-white rounded-md min-w-[250px] max-w-[320px] border border-gray-200 h-[calc(100vh-16rem)]" suppressHydrationWarning>
+                        <div key={stage.id} className="flex flex-col flex-1 bg-lia-bg-primary rounded-md min-w-[250px] max-w-[320px] border border-lia-border-subtle h-[calc(100vh-16rem)]" suppressHydrationWarning>
                           <div className="flex-shrink-0 p-2.5 pb-1.5">
                             <div className="flex items-center gap-1.5">
                               <div className="w-2 h-2 rounded-full animate-pulse" style={{backgroundColor: stage.color}}></div>
@@ -1324,7 +1324,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                       ))}
                       <div className="flex-shrink-0 w-[280px]">
                         <div 
-                          className="h-full min-h-[200px] rounded-md border-2 border-dashed border-gray-300 hover:border-gray-400 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all hover:bg-gray-50/50 group"
+                          className="h-full min-h-[200px] rounded-md border-2 border-dashed border-lia-border-default hover:border-gray-400 flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors hover:bg-gray-50/50 group"
                           onClick={() => setShowAddColumnPopover(true)}
                         >
                           <div className="w-10 h-10 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors">
@@ -1358,8 +1358,8 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
 
               {/* Preview do Candidato - Painel Lateral Direito (KANBAN) */}
               {isPreviewOpen && previewCandidate && (
-                <div className={`flex-shrink-0 transition-all duration-300 ${isPreviewMaximized ? 'w-[600px]' : 'w-panel-lg'}`}>
-                  <div className="bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 h-[calc(100vh-6rem)] overflow-hidden">
+                <div className={`flex-shrink-0 transition-colors duration-300 ${isPreviewMaximized ? 'w-[600px]' : 'w-panel-lg'}`}>
+                  <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
                   <CandidatePreview
                     candidate={previewCandidate}
                     isOpen={isPreviewOpen}

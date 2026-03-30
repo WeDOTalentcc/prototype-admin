@@ -45,17 +45,17 @@ export function QuickActions({
               <a
                 key={index}
                 href={action.href}
-                className="flex items-center gap-3 p-4 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                className="flex items-center gap-3 p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               >
                 <Icon 
                   className="w-5 h-5" 
                   style={{color: action.iconColor}}
                 />
                 <div>
-                  <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
+                  <p className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
                     {action.title}
                   </p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500">
+                  <p className="text-xs text-gray-400">
                     {action.subtitle}
                   </p>
                 </div>

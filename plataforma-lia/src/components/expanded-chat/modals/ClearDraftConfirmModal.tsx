@@ -20,28 +20,28 @@ export function ClearDraftConfirmModal({ open, onClose, onConfirm }: ClearDraftC
     <>
       {open && (
         <div className="fixed inset-0 z-overlay flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-xl w-panel-lg p-6">
+          <div className="bg-lia-bg-primary rounded-xl w-panel-lg p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-status-error/10 rounded-full flex items-center justify-center">
                 <Trash2 className="w-5 h-5 text-status-error" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-800">
+                <h3 className="text-lg font-semibold lia-text-strong">
                   Começar do zero?
                 </h3>
               </div>
             </div>
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-sm lia-text-secondary mb-4">
               Isso irá <strong>apagar todo o rascunho</strong> da vaga atual, incluindo todas as informações preenchidas até agora.
             </p>
-            <p className="text-xs text-gray-400 mb-4">
+            <p className="text-xs lia-text-secondary mb-4">
               Esta ação não pode ser desfeita.
             </p>
             <div className="flex gap-3">
               <Button
                 variant="outline"
                 onClick={onClose}
-                className="flex-1 h-10 rounded-md border-gray-300 text-gray-600"
+                className="flex-1 h-10 rounded-md border-lia-border-default lia-text-base"
               >
                 Cancelar
               </Button>

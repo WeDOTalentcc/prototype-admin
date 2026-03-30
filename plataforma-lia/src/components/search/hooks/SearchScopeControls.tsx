@@ -49,11 +49,11 @@ export function SearchScopeControls({
               type="button"
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSearchSourceChange?.('local'); }}
               className={cn(
-                "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                 searchSource === 'local' 
                   ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                   : "hover:bg-gray-100"
-              , searchSource === 'local' ? "text-wedo-green" : "text-gray-400"
+              , searchSource === 'local' ? "text-wedo-green" : "lia-text-400"
               )}
             >
               <Home className="w-4 h-4" />
@@ -61,7 +61,7 @@ export function SearchScopeControls({
           </TooltipTrigger>
           <TooltipContent side="bottom" className="!animate-none !duration-0">
             <p className="text-xs font-medium">Seu banco de talentos</p>
-            <p className="text-xs text-gray-300">Gratuito • Local</p>
+            <p className="text-xs lia-text-300">Gratuito • Local</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -74,11 +74,11 @@ export function SearchScopeControls({
                 type="button"
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSourceChange('hybrid'); }}
                 className={cn(
-                  "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                  "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                   searchSource === 'hybrid' 
                     ? "bg-wedo-orange/15 ring-1 ring-wedo-orange" 
                     : "hover:bg-gray-100"
-                , searchSource === 'hybrid' ? "text-wedo-orange" : "text-gray-400"
+                , searchSource === 'hybrid' ? "text-wedo-orange" : "lia-text-400"
                 )}
               >
                 <Zap className="w-4 h-4" />
@@ -86,7 +86,7 @@ export function SearchScopeControls({
             </TooltipTrigger>
             <TooltipContent side="bottom" className="!animate-none !duration-0">
               <p className="text-xs font-medium">Expanda sua busca</p>
-              <p className="text-xs text-gray-300">Local + Global • 1 crédito/candidato</p>
+              <p className="text-xs lia-text-300">Local + Global • 1 crédito/candidato</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -100,11 +100,11 @@ export function SearchScopeControls({
                 type="button"
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSourceChange('global'); }}
                 className={cn(
-                  "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                  "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                   searchSource === 'global' 
                     ? "bg-wedo-cyan/15 ring-1 ring-gray-900/20" 
                     : "hover:bg-gray-100"
-                , searchSource === 'global' ? "text-gray-950" : "text-gray-400"
+                , searchSource === 'global' ? "lia-text-950" : "lia-text-400"
                 )}
               >
                 <Globe className="w-4 h-4" />
@@ -112,7 +112,7 @@ export function SearchScopeControls({
             </TooltipTrigger>
             <TooltipContent side="bottom" className="!animate-none !duration-0">
               <p className="text-xs font-medium">Alcance global</p>
-              <p className="text-xs text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
+              <p className="text-xs lia-text-300">800M+ candidatos • 1 crédito/candidato</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -128,11 +128,11 @@ export function SearchScopeControls({
                   type="button"
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRequireEmailsChange(!requireEmails); }}
                   className={cn(
-                    "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                    "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                     requireEmails 
                       ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                       : "hover:bg-gray-100"
-                  , requireEmails ? "text-wedo-green" : "text-gray-400"
+                  , requireEmails ? "text-wedo-green" : "lia-text-400"
                   )}
                 >
                   <Mail className="w-3.5 h-3.5" />
@@ -140,7 +140,7 @@ export function SearchScopeControls({
               </TooltipTrigger>
               <TooltipContent side="bottom" className="!animate-none !duration-0">
                 <p className="text-xs font-medium">Apenas com Email</p>
-                <p className="text-xs text-gray-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                <p className="text-xs lia-text-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -152,11 +152,11 @@ export function SearchScopeControls({
                   type="button"
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRequirePhoneNumbersChange(!requirePhoneNumbers); }}
                   className={cn(
-                    "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                    "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                     requirePhoneNumbers 
                       ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                       : "hover:bg-gray-100"
-                  , requirePhoneNumbers ? "text-wedo-green" : "text-gray-400"
+                  , requirePhoneNumbers ? "text-wedo-green" : "lia-text-400"
                   )}
                 >
                   <Phone className="w-3.5 h-3.5" />
@@ -164,7 +164,7 @@ export function SearchScopeControls({
               </TooltipTrigger>
               <TooltipContent side="bottom" className="!animate-none !duration-0">
                 <p className="text-xs font-medium">Apenas com Telefone</p>
-                <p className="text-xs text-gray-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                <p className="text-xs lia-text-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -178,7 +178,7 @@ export function SearchScopeControls({
             onClick={onSearch}
             disabled={!canSubmit() || isLoading}
             size="sm"
-            className={cn("h-8 w-8 p-0 rounded-md transition-all hover:scale-105", canSubmit() ? "bg-gray-950 text-white" : "bg-gray-100 text-gray-500")}
+            className={cn("h-8 w-8 p-0 rounded-md transition-transform hover:scale-105", canSubmit() ? "bg-gray-950 text-white" : "bg-gray-100 lia-text-500")}
           >
             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
           </Button>

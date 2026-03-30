@@ -60,8 +60,8 @@ interface User {
 const roleLabels: Record<string, { label: string, color: string }> = {
   admin: { label: 'Administrador', color: 'bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple' },
   manager: { label: 'Gestor', color: 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning' },
- recruiter: { label: 'Recrutador', color: 'bg-gray-100 text-gray-900 dark:text-gray-300' },
-  viewer: { label: 'Visualizador', color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200' }
+ recruiter: { label: 'Recrutador', color: 'bg-gray-100 lia-text-900 dark:text-lia-text-secondary' },
+  viewer: { label: 'Visualizador', color: 'bg-gray-100 lia-text-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary' }
 }
 
 const statusConfig: Record<string, { label: string, icon: React.ComponentType<{ className?: string }>, variant: 'success' | 'warning' | 'default' }> = {
@@ -75,7 +75,7 @@ function TableSkeleton() {
   return (
     <div className="space-y-3">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="flex items-center gap-4 p-3 rounded-md border border-gray-200 dark:border-gray-700">
+        <div key={i} className="flex items-center gap-4 p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
           <Skeleton className="w-10 h-10 rounded-full" />
           <div className="flex-1 space-y-2">
             <Skeleton className="h-4 w-40" />
@@ -366,14 +366,14 @@ export default function ClientUsuariosPage({
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <Users className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+            <Users className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />
             <h2 
-              className="text-lg font-semibold text-gray-800 dark:text-gray-100"
+              className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary"
             >
               Usuários
             </h2>
           </div>
-          <p className="text-sm text-gray-400 dark:text-gray-500">
+          <p className="text-sm lia-text-400 dark:lia-text-500">
             Gestão de usuários e permissões do cliente
           </p>
         </div>
@@ -386,7 +386,7 @@ export default function ClientUsuariosPage({
             <Button 
               size="sm" 
               onClick={() => setShowAddModal(true)}
-              className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+              className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
             >
               <Plus className="w-4 h-4 mr-2" />
               Convidar Usuário
@@ -423,10 +423,10 @@ export default function ClientUsuariosPage({
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
+            <p className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary">
               {users.length}
             </p>
-            <p className="text-sm text-gray-400 dark:text-gray-500">
+            <p className="text-sm lia-text-400 dark:lia-text-500">
               Total de Usuários
             </p>
           </CardContent>
@@ -434,7 +434,7 @@ export default function ClientUsuariosPage({
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-semibold text-status-success">{activeCount}</p>
-            <p className="text-sm text-gray-400 dark:text-gray-500">
+            <p className="text-sm lia-text-400 dark:lia-text-500">
               Ativos
             </p>
           </CardContent>
@@ -442,15 +442,15 @@ export default function ClientUsuariosPage({
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-semibold text-status-warning">{pendingCount}</p>
-            <p className="text-sm text-gray-400 dark:text-gray-500">
+            <p className="text-sm lia-text-400 dark:lia-text-500">
               Pendentes
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-semibold text-gray-400">{inactiveCount}</p>
-            <p className="text-sm text-gray-400 dark:text-gray-500">
+            <p className="text-2xl font-semibold lia-text-400">{inactiveCount}</p>
+            <p className="text-sm lia-text-400 dark:lia-text-500">
               Inativos
             </p>
           </CardContent>
@@ -460,12 +460,12 @@ export default function ClientUsuariosPage({
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between flex-wrap gap-4">
-            <CardTitle className="text-base text-gray-800 dark:text-gray-100">
+            <CardTitle className="text-base lia-text-800 dark:text-lia-text-primary">
               Lista de Usuários
             </CardTitle>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 text-gray-400" />
+                <Filter className="w-4 h-4 lia-text-400" />
                 <Select value={roleFilter} onValueChange={setRoleFilter}>
                   <SelectTrigger className="w-[140px] h-9">
                     <SelectValue placeholder="Role" />
@@ -491,7 +491,7 @@ export default function ClientUsuariosPage({
                 </Select>
               </div>
               <div className="relative w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 lia-text-400" />
                 <Input
                   placeholder="Buscar usuário..."
                   value={searchQuery}
@@ -507,8 +507,8 @@ export default function ClientUsuariosPage({
             <TableSkeleton />
           ) : filteredUsers.length === 0 ? (
             <div className="text-center py-8">
-              <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-              <p className="text-sm text-gray-400 dark:text-gray-500">
+              <Users className="w-12 h-12 mx-auto mb-4 lia-text-300" />
+              <p className="text-sm lia-text-400 dark:lia-text-500">
                 {searchQuery || roleFilter !== 'all' || statusFilter !== 'all' 
                   ? 'Nenhum usuário encontrado com os filtros aplicados' 
                   : 'Nenhum usuário cadastrado'}
@@ -524,25 +524,25 @@ export default function ClientUsuariosPage({
                 return (
                   <div 
                     key={user.id}
-                    className="flex items-center gap-4 p-3 rounded-md border hover:border-gray-900 dark:hover:border-gray-50 transition-colors border-gray-200 dark:border-gray-700"
+                    className="flex items-center gap-4 p-3 rounded-md border hover:border-gray-900 dark:hover:border-gray-50 transition-colors border-lia-border-subtle dark:border-lia-border-subtle"
                   >
-                    <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0">
-                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center shrink-0">
+                      <span className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary">
                         {user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p 
-                          className="font-medium truncate text-gray-800 dark:text-gray-100"
+                          className="font-medium truncate lia-text-800 dark:text-lia-text-primary"
                         >
                           {user.name}
                         </p>
                       </div>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <Mail className="w-3 h-3 text-gray-400" />
+                        <Mail className="w-3 h-3 lia-text-400" />
                         <p 
-                          className="text-sm truncate text-gray-400 dark:text-gray-500"
+                          className="text-sm truncate lia-text-400 dark:lia-text-500"
                         >
                           {user.email}
                         </p>
@@ -564,12 +564,12 @@ export default function ClientUsuariosPage({
                       )}
                       <div className="text-right min-w-[100px]">
                         <p 
-                          className="text-xs text-gray-400 dark:text-gray-500"
+                          className="text-xs lia-text-400 dark:lia-text-500"
                         >
                           Último acesso
                         </p>
                         <p 
-                          className="text-xs text-gray-500 dark:text-gray-400"
+                          className="text-xs lia-text-500 dark:text-lia-text-tertiary"
                         >
                           {formatDateTime(user.lastLogin)}
                         </p>
@@ -686,7 +686,7 @@ export default function ClientUsuariosPage({
             <Button 
               onClick={handleAddUser} 
               disabled={isSaving}
-              className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+              className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
             >
               {isSaving ? (
                 <>
@@ -755,7 +755,7 @@ export default function ClientUsuariosPage({
             <Button 
               onClick={handleEditUser} 
               disabled={isSaving}
-              className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+              className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
             >
               {isSaving ? (
                 <>

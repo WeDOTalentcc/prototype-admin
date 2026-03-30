@@ -95,10 +95,10 @@ export function CandidateSearchBar({
         >
           {/* CV Drop Overlay */}
           {isDroppingCV && (
-            <div className="absolute inset-0 z-50 bg-gray-900/10 border-2 border-dashed border-gray-900 dark:border-gray-100 rounded-md flex items-center justify-center">
+            <div className="absolute inset-0 z-50 bg-gray-900/10 border-2 border-dashed border-gray-900 dark:border-lia-border-subtle rounded-md flex items-center justify-center">
               <div className="text-center">
-                <FileUp className="w-12 h-12 text-gray-900 dark:text-gray-100 mx-auto mb-2" />
-                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Solte o CV aqui</p>
+                <FileUp className="w-12 h-12 text-gray-900 dark:text-lia-text-primary mx-auto mb-2" />
+                <p className="text-sm font-medium text-gray-900 dark:text-lia-text-primary">Solte o CV aqui</p>
                 <p className="text-xs text-gray-800">PDF, DOC, DOCX ou TXT</p>
               </div>
             </div>
@@ -106,9 +106,9 @@ export function CandidateSearchBar({
 
           {/* CV Upload Loading */}
           {cvUploadLoading && (
-            <div className="absolute inset-0 z-50 bg-white/90 dark:bg-gray-900/90 rounded-md flex items-center justify-center">
+            <div className="absolute inset-0 z-50 bg-white/90 dark:bg-lia-bg-primary/90 rounded-md flex items-center justify-center">
               <div className="text-center">
-                <Loader2 className="w-8 h-8 text-gray-900 dark:text-gray-100 mx-auto mb-2 animate-spin" />
+                <Loader2 className="w-8 h-8 text-gray-900 dark:text-lia-text-primary mx-auto mb-2 animate-spin" />
                 <p className="text-sm font-medium text-gray-950 dark:text-gray-50">Analisando CV...</p>
               </div>
             </div>

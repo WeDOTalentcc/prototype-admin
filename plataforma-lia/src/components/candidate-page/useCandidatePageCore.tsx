@@ -287,25 +287,25 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
   })
 
   const textStyles = {
-    title: 'text-sm font-semibold text-gray-950 dark:text-gray-50',
-    subtitle: 'text-xs font-medium text-gray-800 dark:text-gray-200',
-    body: 'text-xs text-gray-600 dark:text-gray-400',
-    bodySmall: 'text-xs text-gray-600 dark:text-gray-400',
-    caption: 'text-micro text-gray-500 dark:text-gray-500',
-    label: 'text-micro font-medium text-gray-800 dark:text-gray-200 uppercase tracking-wider',
-    description: 'text-micro text-gray-500 dark:text-gray-500'
+    title: 'text-sm font-semibold text-gray-950',
+    subtitle: 'text-xs font-medium text-gray-800 dark:text-lia-text-primary',
+    body: 'text-xs text-gray-600 dark:text-lia-text-tertiary',
+    bodySmall: 'text-xs text-gray-600 dark:text-lia-text-tertiary',
+    caption: 'text-micro text-gray-500',
+    label: 'text-micro font-medium text-gray-800 dark:text-lia-text-primary uppercase tracking-wider',
+    description: 'text-micro text-gray-500'
   }
 
   const localBadgeStyles = {
-    default: 'text-micro px-1.5 py-0 h-4 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-0',
+    default: 'text-micro px-1.5 py-0 h-4 bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary border-0',
     success: 'text-micro px-1.5 py-0 h-4 bg-status-success/10 dark:bg-status-success/20 text-status-success dark:text-status-success border-0',
     warning: 'text-micro px-1.5 py-0 h-4 bg-status-warning/10 dark:bg-status-warning/20 text-status-warning dark:text-status-warning border-0',
     error: 'text-micro px-1.5 py-0 h-4 bg-status-error/10 dark:bg-status-error/20 text-status-error dark:text-status-error border-0',
-    info: 'text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-0'
+    info: 'text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-700 dark:bg-lia-bg-secondary dark:text-lia-text-secondary border-0'
   }
 
   const localCardStyles = {
-    default: 'bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-md'
+    default: 'bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md'
   }
 
   const cleanTextForCopy = (text: string): string => {
@@ -419,10 +419,10 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
   }, [candidate?.id])
 
   const getScoreColor = (score: number) => {
-    if (score >= 90) return "bg-wedo-green-pastel text-gray-950 dark:text-gray-50"
-    if (score >= 80) return "bg-gray-100 text-gray-950 dark:text-gray-50"
-    if (score >= 70) return "bg-gray-200 text-gray-950 dark:text-gray-50"
-    return "bg-gray-100 text-gray-950 dark:text-gray-50"
+    if (score >= 90) return "bg-wedo-green-pastel text-gray-950"
+    if (score >= 80) return "bg-gray-100 text-gray-950"
+    if (score >= 70) return "bg-gray-200 text-gray-950"
+    return "bg-gray-100 text-gray-950"
   }
 
   const formatDateShort = (dateStr: string | null | undefined) => {

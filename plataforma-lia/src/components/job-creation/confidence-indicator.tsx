@@ -112,7 +112,7 @@ export function ConfidenceLabel({
   return (
     <span 
       className={cn(
-        "inline-flex items-center gap-1",
+ "inline-flex items-center gap-1",
         size === 'sm' ? 'text-micro' : size === 'md' ? 'text-xs' : 'text-sm',
         styles.color,
         className

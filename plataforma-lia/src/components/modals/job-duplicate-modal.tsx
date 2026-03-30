@@ -112,8 +112,8 @@ export function JobDuplicateModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl bg-white border border-gray-200">
-        <DialogHeader className="pb-3 border-b border-gray-200">
+      <DialogContent className="max-w-2xl bg-lia-bg-primary border border-lia-border-subtle">
+        <DialogHeader className="pb-3 border-b border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-md bg-gray-100 flex items-center justify-center">
               <Copy className="w-4 h-4 text-gray-600" />
@@ -132,12 +132,12 @@ export function JobDuplicateModal({
         <div className="py-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-3">
-              <div className="p-3 rounded-md bg-gray-50 border border-gray-200">
+              <div className="p-3 rounded-md bg-gray-50 border border-lia-border-subtle">
                 <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
                   Vaga Original
                 </h4>
                 <div className="flex items-start gap-2">
-                  <div className="w-8 h-8 rounded-md bg-white border border-gray-200 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-md bg-lia-bg-primary border border-lia-border-subtle flex items-center justify-center flex-shrink-0">
                     <Briefcase className="w-4 h-4 text-gray-600" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -177,7 +177,7 @@ export function JobDuplicateModal({
                 <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
                   O que será mantido
                 </h4>
-                <div className="grid grid-cols-2 gap-x-3 gap-y-1 p-3 rounded-md bg-gray-50 border border-gray-200">
+                <div className="grid grid-cols-2 gap-x-3 gap-y-1 p-3 rounded-md bg-gray-50 border border-lia-border-subtle">
                   {KEPT_ITEMS.map((item) => (
                     <div key={item} className="flex items-center gap-1.5 text-xs text-gray-800">
                       <Check className="w-3 h-3 text-status-success flex-shrink-0" />
@@ -196,21 +196,21 @@ export function JobDuplicateModal({
                   onValueChange={(val) => setCandidateOption(val as 'all' | 'approved' | 'none')}
                   className="space-y-1"
                 >
-                  <div className="flex items-center space-x-2 p-2 rounded-md bg-gray-50 border border-gray-200">
+                  <div className="flex items-center space-x-2 p-2 rounded-md bg-gray-50 border border-lia-border-subtle">
                     <RadioGroupItem value="all" id="all" className="border-gray-400 text-gray-900" />
                     <Label htmlFor="all" className="text-xs text-gray-800 cursor-pointer flex items-center gap-1">
                       <Users className="w-2.5 h-2.5 text-gray-400" />
                       Todos ({job.candidates_count || 0})
                     </Label>
                   </div>
-                  <div className="flex items-center space-x-2 p-2 rounded-md bg-gray-50 border border-gray-200">
+                  <div className="flex items-center space-x-2 p-2 rounded-md bg-gray-50 border border-lia-border-subtle">
                     <RadioGroupItem value="approved" id="approved" className="border-gray-400 text-gray-900" />
                     <Label htmlFor="approved" className="text-xs text-gray-800 cursor-pointer flex items-center gap-1">
                       <Check className="w-2.5 h-2.5 text-gray-400" />
                       Apenas aprovados ({job.approved_count || 0})
                     </Label>
                   </div>
-                  <div className="flex items-center space-x-2 p-2 rounded-md bg-gray-50 border border-gray-200">
+                  <div className="flex items-center space-x-2 p-2 rounded-md bg-gray-50 border border-lia-border-subtle">
                     <RadioGroupItem value="none" id="none" className="border-gray-400 text-gray-900" />
                     <Label htmlFor="none" className="text-xs text-gray-800 cursor-pointer">
                       Começar com base vazia
@@ -232,13 +232,13 @@ export function JobDuplicateModal({
                       value={newTitle}
                       onChange={(e) => setNewTitle(e.target.value)}
                       placeholder="Nome da nova vaga"
-                      className="h-8 text-xs border-gray-200 focus:ring-gray-900/20 focus:border-gray-400"
+                      className="h-8 text-xs border-lia-border-subtle focus:ring-gray-900/20 focus:border-gray-400"
                     />
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs text-gray-800">Recrutador Responsável</Label>
                     <Select value={recruiterId} onValueChange={setRecruiterId}>
-                      <SelectTrigger className="h-8 text-xs border-gray-200 focus:ring-gray-900/20">
+                      <SelectTrigger className="h-8 text-xs border-lia-border-subtle focus:ring-gray-900/20">
                         <SelectValue placeholder="Selecione" />
                       </SelectTrigger>
                       <SelectContent>
@@ -267,7 +267,7 @@ export function JobDuplicateModal({
                       type="date"
                       value={deadlineShortlist}
                       onChange={(e) => setDeadlineShortlist(e.target.value)}
-                      className="h-8 text-xs border-gray-200 focus:ring-gray-900/20 focus:border-gray-400"
+                      className="h-8 text-xs border-lia-border-subtle focus:ring-gray-900/20 focus:border-gray-400"
                     />
                   </div>
                   <div className="space-y-1">
@@ -279,7 +279,7 @@ export function JobDuplicateModal({
                       type="date"
                       value={deadlineScreening}
                       onChange={(e) => setDeadlineScreening(e.target.value)}
-                      className="h-8 text-xs border-gray-200 focus:ring-gray-900/20 focus:border-gray-400"
+                      className="h-8 text-xs border-lia-border-subtle focus:ring-gray-900/20 focus:border-gray-400"
                     />
                   </div>
                   <div className="space-y-1">
@@ -291,7 +291,7 @@ export function JobDuplicateModal({
                       type="date"
                       value={deadlineClosing}
                       onChange={(e) => setDeadlineClosing(e.target.value)}
-                      className="h-8 text-xs border-gray-200 focus:ring-gray-900/20 focus:border-gray-400"
+                      className="h-8 text-xs border-lia-border-subtle focus:ring-gray-900/20 focus:border-gray-400"
                     />
                   </div>
                 </div>
@@ -300,11 +300,11 @@ export function JobDuplicateModal({
           </div>
         </div>
 
-        <DialogFooter className="pt-3 border-t border-gray-200 gap-2">
+        <DialogFooter className="pt-3 border-t border-lia-border-subtle gap-2">
           <Button
             variant="outline"
             onClick={onClose}
-            className="h-9 px-4 text-xs font-medium border-gray-200 text-gray-700 hover:bg-gray-50"
+            className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-gray-700 hover:bg-gray-50"
           >
             Cancelar
           </Button>

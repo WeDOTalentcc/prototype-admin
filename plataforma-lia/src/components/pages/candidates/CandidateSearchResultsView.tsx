@@ -471,7 +471,7 @@ export function CandidateSearchResultsView({
 
       {/* ✨ Banner Cross-Tab Filter */}
       {showCrossTabBanner && crossTabFilter && (
-        <Card className="bg-gray-50 dark:bg-gray-800">
+        <Card className="bg-gray-50 dark:bg-lia-bg-secondary">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gray-900 dark:bg-gray-100 rounded-md flex items-center justify-center">
@@ -485,7 +485,7 @@ export function CandidateSearchResultsView({
                 <h3 className="font-medium text-gray-950 dark:text-gray-50 mb-1">
                   🎯 Filtro Aplicado: {crossTabFilter.type === 'company' ? 'Empresa' : 'Inteligência Competitiva'}
                 </h3>
-                <p className="text-sm text-gray-800 dark:text-gray-400 mb-3">
+                <p className="text-sm text-gray-800 dark:text-lia-text-tertiary mb-3">
                   {crossTabFilter.type === 'company' && crossTabFilter.company && (
                     `Mostrando candidatos da empresa "${crossTabFilter.company}" mapeada`
                   )}
@@ -514,7 +514,7 @@ export function CandidateSearchResultsView({
 
       {/* ✨ Banner Visualizando Lista */}
       {viewingList && (
-        <Card className="bg-gray-50 dark:bg-gray-800 border-l-4" style={{borderLeftColor: viewingList.color || 'var(--gray-600)'}}>
+        <Card className="bg-gray-50 dark:bg-lia-bg-secondary border-l-4" style={{borderLeftColor: viewingList.color || 'var(--gray-600)'}}>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div
@@ -527,7 +527,7 @@ export function CandidateSearchResultsView({
                 <h3 className="font-medium text-gray-950 dark:text-gray-50 mb-1">
                   📋 Visualizando Lista: {viewingList.name}
                 </h3>
-                <p className="text-sm text-gray-800 dark:text-gray-400">
+                <p className="text-sm text-gray-800 dark:text-lia-text-tertiary">
                   {candidates.length} {candidates.length === 1 ? 'candidato' : 'candidatos'} nesta lista
                 </p>
               </div>
@@ -567,9 +567,9 @@ export function CandidateSearchResultsView({
           {/* Prompt LIA - Compacto (max 300px) - Design Specs v3.1 */}
           <div className="flex-1 max-w-panel-sm">
             <div
-              className={`relative flex items-center h-10 rounded-md bg-white transition-all ${
+              className={`relative flex items-center h-10 rounded-md bg-lia-bg-primary transition-colors ${
                 isLIAThinking ? 'cursor-wait' : ''
-              } border border-gray-200`} style={{paddingLeft: '16px', paddingRight: '80px'}}
+              } border border-lia-border-subtle`} style={{paddingLeft: '16px', paddingRight: '80px'}} /* [OPT-043] paddingLeft:16px=pl-4, paddingRight:80px=pr-20 */
             >
               <input
                 type="text"
@@ -656,14 +656,14 @@ export function CandidateSearchResultsView({
         <div className="flex items-center gap-3">
           {/* Badge de seleção */}
           {selectedCandidatesForBatch.size > 0 && (
-            <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-0 text-xs font-medium">
+            <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary border-0 text-xs font-medium">
               🎯 {selectedCandidatesForBatch.size}
             </Badge>
           )}
 
           {/* Sort indicator - mostra ordenação ativa (configuração dentro dos filtros) */}
           {searchSortBy !== 'relevance' && (
-            <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-0 text-xs font-medium gap-1">
+            <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary border-0 text-xs font-medium gap-1">
               <ArrowUpDown className="w-3 h-3" />
               {searchSortBy === 'score_desc' ? 'Maior Score' :
                searchSortBy === 'score_asc' ? 'Menor Score' :
@@ -677,7 +677,7 @@ export function CandidateSearchResultsView({
           {selectedCandidatesForBatch.size === 0 && sortedCandidates.length > 0 && (
             <button
               onClick={selectAllCandidates}
-              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-gray-800 bg-white border border-gray-200 rounded-full hover:bg-gray-50 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-gray-800 bg-lia-bg-primary border border-lia-border-subtle rounded-full hover:bg-gray-50 transition-colors"
 
             >
               <CheckCircle className="w-4 h-4 text-gray-500" />
@@ -691,7 +691,7 @@ export function CandidateSearchResultsView({
             className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors ${
               showTableFiltersPanel
                 ? 'bg-gray-900 text-white hover:bg-gray-800'
-                : 'text-gray-800 bg-white border border-gray-200 hover:bg-gray-50'
+                : 'text-gray-800 bg-lia-bg-primary border border-lia-border-subtle hover:bg-gray-50'
             }`}
 
           >
@@ -710,7 +710,7 @@ export function CandidateSearchResultsView({
             className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors ${
               showColumnConfig
                 ? 'bg-gray-900 text-white hover:bg-gray-800'
-                : 'text-gray-800 bg-white border border-gray-200 hover:bg-gray-50'
+                : 'text-gray-800 bg-lia-bg-primary border border-lia-border-subtle hover:bg-gray-50'
             }`}
 
           >
@@ -727,7 +727,7 @@ export function CandidateSearchResultsView({
       {/* Badge de Filtros Ativos - Simplificado */}
       {(quickFilters.size > 0 || searchTerm || getActiveAdvancedFiltersCount() > 0) && (
         <div className="mb-1.5 flex items-center gap-2">
-          <Badge className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-0">
+          <Badge className="text-xs bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary border-0">
             filtros ativos
           </Badge>
           {selectedCandidatesForBatch.size > 0 && (
@@ -747,7 +747,7 @@ export function CandidateSearchResultsView({
 
       {/* Results Layout with Sidebars - Layout flex responsivo */}
       {/* ORDEM: LIA à esquerda, Filtros à direita, Tabela ao centro */}
-      <div className="flex gap-4 overflow-hidden transition-all duration-300 flex-1 min-h-0 w-full">
+      <div className="flex gap-4 overflow-hidden transition-colors duration-300 flex-1 min-h-0 w-full">
         {/* LIA Sidebar Expandida - Sistema de Pesquisa Avançada */}
         {showExpandedLIA && (
           <LIASearchSidebar
@@ -822,7 +822,7 @@ export function CandidateSearchResultsView({
 
 
         {/* Main Content Area - Candidatos Table with Superchat collapse support */}
-        <div className={`bg-white dark:bg-gray-800 rounded-md transition-all duration-300 ${
+        <div className={`bg-white dark:bg-lia-bg-secondary rounded-md transition-colors duration-300 ${
           isLiaSuperChat
             ? 'w-14 flex-shrink-0'
             : 'flex-1 min-w-0 h-full'
@@ -838,7 +838,7 @@ export function CandidateSearchResultsView({
                 className="h-10 w-10 p-0 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
                 title="Expandir tabela de candidatos"
               >
-                <ChevronRight className="w-5 h-5 text-gray-800 dark:text-gray-400" />
+                <ChevronRight className="w-5 h-5 text-gray-800 dark:text-lia-text-tertiary" />
               </Button>
 
               {/* Ícone da tabela */}
@@ -866,7 +866,7 @@ export function CandidateSearchResultsView({
           >
             {/* Loading Overlay */}
             {isLoading && (
-              <div className="flex items-center justify-center h-full absolute inset-0 z-20 bg-white dark:bg-gray-900">
+              <div className="flex items-center justify-center h-full absolute inset-0 z-20 bg-white dark:bg-lia-bg-primary">
                 <div className="text-center">
                   <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-wedo-cyan/30 mx-auto mb-4"></div>
                   <p className="text-gray-800 text-sm">Carregando candidatos...</p>
@@ -924,9 +924,9 @@ export function CandidateSearchResultsView({
             )}
             {/* Paginação (como Gestão de Vagas) - oculta quando usando Load More em resultados de busca */}
             {!isLoading && !showSearchResults && getPaginatedCandidates().totalPages > 1 && (
-              <div className="bg-white dark:bg-gray-900 rounded-md p-3 mt-2">
+              <div className="bg-white dark:bg-lia-bg-primary rounded-md p-3 mt-2">
                 <div className="flex items-center justify-between">
-                  <div className="text-sm text-gray-800 dark:text-gray-400">
+                  <div className="text-sm text-gray-800 dark:text-lia-text-tertiary">
                     Mostrando {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, getPaginatedCandidates().total)} de {getPaginatedCandidates().total} candidatos
                   </div>
                   <div className="flex items-center gap-2">
@@ -1000,12 +1000,12 @@ export function CandidateSearchResultsView({
 
             {/* Empty State */}
             {!isLoading && sortedCandidates.length === 0 && (
-              <div className="bg-white dark:bg-gray-900 rounded-md p-8 text-center">
+              <div className="bg-white dark:bg-lia-bg-primary rounded-md p-8 text-center">
                 <Users className="w-12 h-12 text-gray-800 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-950 dark:text-gray-50 mb-2">
                   Nenhum candidato encontrado
                 </h3>
-                <p className="text-gray-800 dark:text-gray-400 mb-4">
+                <p className="text-gray-800 dark:text-lia-text-tertiary mb-4">
                   Tente ajustar os filtros ou termos de busca
                 </p>
                 <Button
@@ -1019,7 +1019,7 @@ export function CandidateSearchResultsView({
           </div>
           {/* Load More - Fase 1 Funil de Talentos (FORA do scroll container, sempre visível) */}
           {showSearchResults && displayedResultsCount < sortedCandidates.length && (
-            <div className="flex-shrink-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 py-3 px-4">
+            <div className="flex-shrink-0 bg-white dark:bg-lia-bg-primary border-t border-lia-border-subtle dark:border-lia-border-subtle py-3 px-4">
               <div className="flex flex-col items-center gap-1.5">
                 <Button
                   variant="outline"
@@ -1051,10 +1051,10 @@ export function CandidateSearchResultsView({
 
           {/* Column Configuration Sidebar - Right - WeDOTalent Light Design */}
           {showColumnConfig && (
-            <div className="flex-shrink-0 w-80 transition-all duration-300">
-              <div className="bg-white rounded-md h-[calc(100vh-6rem)] overflow-hidden">
+            <div className="flex-shrink-0 w-80 transition-colors duration-300">
+              <div className="bg-lia-bg-primary rounded-md h-[calc(100vh-6rem)] overflow-hidden">
                 {/* Header */}
-                <div className="p-4 flex items-center justify-between border-b border-gray-100">
+                <div className="p-4 flex items-center justify-between border-b border-lia-border-subtle">
                   <div>
                     <h3
                       className="text-sm font-semibold text-gray-950 dark:text-gray-50"
@@ -1071,14 +1071,14 @@ export function CandidateSearchResultsView({
                   </div>
                   <button
                     onClick={() => setShowColumnConfig(false)}
-                    className="h-8 w-8 rounded-md flex items-center justify-center transition-all text-gray-800 hover:text-gray-950 hover:bg-gray-100"
+                    className="h-8 w-8 rounded-md flex items-center justify-center transition-colors text-gray-800 hover:text-gray-950 hover:bg-gray-100"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 </div>
 
                 {/* Search and Actions */}
-                <div className="p-3 space-y-3 border-b border-gray-100">
+                <div className="p-3 space-y-3 border-b border-lia-border-subtle">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-800" />
                     <input
@@ -1092,7 +1092,7 @@ export function CandidateSearchResultsView({
                   </div>
                   <div className="flex gap-2">
                     <button
-                      className="flex-1 text-xs h-8 rounded-md bg-gray-50 hover:bg-gray-100 transition-all text-gray-600"
+                      className="flex-1 text-xs h-8 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors text-gray-600"
                       onClick={() => {
                         setTableColumns(prev => prev.map((col, idx) => ({
                           ...col,
@@ -1104,7 +1104,7 @@ export function CandidateSearchResultsView({
                       Restaurar Padrão
                     </button>
                     <button
-                      className="text-xs h-8 px-4 rounded-md bg-gray-50 hover:bg-gray-100 transition-all text-gray-600"
+                      className="text-xs h-8 px-4 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors text-gray-600"
                       onClick={() => {
                         setTableColumns(prev => prev.map(col => ({ ...col, visible: true })))
                       }}
@@ -1185,13 +1185,13 @@ export function CandidateSearchResultsView({
                                     c.id === col.id ? { ...c, visible: !c.visible } : c
                                   ))
                                 }}
-                                className="flex items-center gap-3 p-2.5 rounded-md cursor-pointer transition-all hover:bg-gray-100"
+                                className="flex items-center gap-3 p-2.5 rounded-md cursor-pointer transition-colors hover:bg-gray-100"
                                 style={{backgroundColor: col.visible ? 'var(--gray-50)' : 'var(--gray-50)',
                                   border: col.visible ? '1px solid var(--gray-300)' : '1px solid var(--gray-200)'}}
                               >
                                 {/* Custom Checkbox - Monocromático */}
                                 <div
-                                  className="w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-all"
+                                  className="w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-colors"
                                   style={{backgroundColor: col.visible ? 'var(--gray-600)' : 'transparent',
                                     border: col.visible ? 'none' : '2px solid var(--gray-300)'}}
                                 >
@@ -1205,7 +1205,7 @@ export function CandidateSearchResultsView({
                                     fontWeight: col.visible ? 500 : 400}}
                                 >
                                   {col.isGlobalSearch && (
-                                    <Globe className="w-3 h-3 text-gray-600 dark:text-gray-400" />
+                                    <Globe className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
                                   )}
                                   {col.label}
                                 </span>
@@ -1233,7 +1233,7 @@ export function CandidateSearchResultsView({
                 <div className="absolute inset-0 -left-1 -right-1"></div>
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-gray-300 dark:bg-gray-600 group-hover:bg-gray-400 dark:group-hover:bg-gray-500 rounded-full transition-colors"></div>
               </div>
-              <div className="bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 h-[calc(100vh-6rem)] overflow-hidden">
+              <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
                 <CandidatePreview
                   candidate={previewCandidate}
                   isOpen={showCandidatePreview}

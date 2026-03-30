@@ -153,7 +153,7 @@ export function CreateJobWithCandidatesModal({
         <div className="border-b border-gray-700 p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-md bg-gray-100 dark:bg-gray-800">
+              <div className="p-2 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
                 <Brain className="w-5 h-5 text-wedo-cyan" />
               </div>
               <div>
@@ -182,7 +182,7 @@ export function CreateJobWithCandidatesModal({
         <div className="p-5 space-y-5 flex-1 overflow-hidden flex flex-col">
           <div className="bg-gray-800/50 border border-gray-700 rounded-md p-4">
             <div className="flex items-center gap-2 mb-3">
-              <Users className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              <Users className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
               <span className="text-xs font-medium text-gray-200">
                 {candidateCount} candidato{candidateCount !== 1 ? 's' : ''} selecionado{candidateCount !== 1 ? 's' : ''}
               </span>
@@ -201,7 +201,7 @@ export function CreateJobWithCandidatesModal({
                       className="flex items-center gap-2 p-2 bg-gray-800 rounded-md border border-gray-700"
                     >
                       <Avatar className="w-6 h-6">
-                        <AvatarFallback className="text-micro bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                        <AvatarFallback className="text-micro bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary">
                           {getInitials(name)}
                         </AvatarFallback>
                       </Avatar>
@@ -268,11 +268,11 @@ export function CreateJobWithCandidatesModal({
             )}
           </div>
 
-          <div className="bg-gray-100 border border-gray-200 rounded-md p-3 mt-auto">
+          <div className="bg-gray-100 border border-lia-border-subtle rounded-md p-3 mt-auto">
             <div className="flex items-start gap-2">
               <Briefcase className="w-4 h-4 text-gray-600 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                <p className="text-xs text-gray-600 dark:text-lia-text-tertiary font-medium">
                   Próximo passo
                 </p>
                 <p className="text-micro text-gray-400 mt-1">

@@ -61,8 +61,8 @@ interface BulkActionsBarProps {
 }
 
 const STATUS_OPTIONS = [
-  { value: 'new', label: 'Novo', color: 'bg-gray-100 text-gray-800' },
-  { value: 'screening', label: 'Em Triagem', color: 'bg-gray-100 dark:bg-gray-800 text-wedo-cyan-dark' },
+  { value: 'new', label: 'Novo', color: 'bg-gray-100 lia-text-strong' },
+  { value: 'screening', label: 'Em Triagem', color: 'bg-gray-100 dark:bg-lia-bg-secondary text-wedo-cyan-dark' },
   { value: 'interview', label: 'Entrevista', color: 'bg-wedo-purple/15 text-wedo-purple' },
   { value: 'offer', label: 'Proposta', color: 'bg-status-warning/15 text-status-warning' },
   { value: 'hired', label: 'Contratado', color: 'bg-status-success/15 text-status-success' },
@@ -368,7 +368,7 @@ const BulkActionsBar = memo(function BulkActionsBar({
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0 hover:bg-gray-700 text-gray-600 hover:text-white"
+              className="h-6 w-6 p-0 hover:bg-gray-700 lia-text-base hover:text-white"
               onClick={onClearSelection}
               disabled={isProcessing}
             >
@@ -518,7 +518,7 @@ const BulkActionsBar = memo(function BulkActionsBar({
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Briefcase className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+              <Briefcase className="h-5 w-5 text-gray-600 dark:text-lia-text-tertiary" />
               Atribuir à Vaga
             </DialogTitle>
             <DialogDescription>
@@ -563,7 +563,7 @@ const BulkActionsBar = memo(function BulkActionsBar({
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Mail className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+              <Mail className="h-5 w-5 text-gray-600 dark:text-lia-text-tertiary" />
               Enviar Email
             </DialogTitle>
             <DialogDescription>
@@ -625,7 +625,7 @@ const BulkActionsBar = memo(function BulkActionsBar({
             </Button>
             <Button
               onClick={handleStartScreening}
-              className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+              className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
             >
               Iniciar Triagem
             </Button>
@@ -661,7 +661,7 @@ const BulkActionsBar = memo(function BulkActionsBar({
           </DialogHeader>
           <div className="py-4 space-y-4">
             <Progress value={progressValue} className="h-2" />
-            <p className="text-sm text-gray-600">{progressMessage}</p>
+            <p className="text-sm lia-text-base">{progressMessage}</p>
             
             {operationResult && (
               <div className="space-y-2 text-sm">

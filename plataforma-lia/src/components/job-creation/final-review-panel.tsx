@@ -169,28 +169,28 @@ function MissingFieldCard({
   const SourceIcon = sourceInfo?.icon || Brain
 
   return (
-    <div className="border rounded-md p-3 bg-white dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+    <div className="border rounded-md p-3 bg-white dark:bg-lia-bg-secondary dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1">
-          <div className="font-medium text-sm text-gray-800 dark:text-gray-100">{label}</div>
+          <div className="font-medium text-sm text-gray-800 dark:text-lia-text-primary">{label}</div>
           
           {suggestion && (
             <div className="mt-2">
-              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-1">
+              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-lia-text-tertiary mb-1">
                 <SourceIcon className={cn("h-3 w-3", sourceInfo?.color)} />
                 <span className={sourceInfo?.color}>{sourceInfo?.label}</span>
                 <ConfidenceIndicator confidence={suggestion.confidence} size="sm" showPercentage />
               </div>
               
-              <div className="bg-gray-50 dark:bg-gray-900 rounded-md p-2 text-sm text-gray-700 dark:text-gray-300">
-                <div className="font-medium dark:text-gray-100">{formatFieldValue(fieldKey, suggestion.value)}</div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{suggestion.explanation}</div>
+              <div className="bg-gray-50 dark:bg-lia-bg-primary rounded-md p-2 text-sm text-gray-700 dark:text-lia-text-secondary">
+                <div className="font-medium dark:text-lia-text-primary">{formatFieldValue(fieldKey, suggestion.value)}</div>
+                <div className="text-xs text-gray-500 dark:text-lia-text-tertiary mt-1">{suggestion.explanation}</div>
               </div>
               
               <Button
                 size="sm"
                 variant="outline"
-                className="mt-2 text-xs h-7 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                className="mt-2 text-xs h-7 dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-700"
                 onClick={() => onUseSuggestion(suggestion.value)}
               >
                 <Brain className="h-3 w-3 mr-1 text-wedo-cyan" />
@@ -203,7 +203,7 @@ function MissingFieldCard({
             <Button
               size="sm"
               variant="ghost"
-              className="mt-2 text-xs h-7 dark:text-gray-300 dark:hover:bg-gray-700"
+              className="mt-2 text-xs h-7 dark:text-lia-text-secondary dark:hover:bg-gray-700"
               onClick={() => setShowInput(true)}
             >
               Preencher manualmente
@@ -216,11 +216,11 @@ function MissingFieldCard({
                 value={manualValue}
                 onChange={(e) => setManualValue(e.target.value)}
                 placeholder={`Informe ${label.toLowerCase()}`}
-                className="text-sm h-8 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
+                className="text-sm h-8 dark:bg-lia-bg-primary dark:border-lia-border-subtle dark:text-lia-text-primary"
               />
               <Button
                 size="sm"
-                className="h-8 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                className="h-8 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
                 onClick={() => {
                   onManualEdit(manualValue)
                   setShowInput(false)
@@ -247,9 +247,9 @@ function FilledFieldCard({
   value: unknown
 }) {
   return (
-    <div className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">
-      <span className="text-sm text-gray-600 dark:text-gray-400">{label}</span>
-      <span className="text-sm font-medium text-gray-800 dark:text-gray-100 max-w-[60%] truncate text-right">
+    <div className="flex items-center justify-between py-2 border-b border-lia-border-subtle dark:border-lia-border-subtle last:border-0">
+      <span className="text-sm text-gray-600 dark:text-lia-text-tertiary">{label}</span>
+      <span className="text-sm font-medium text-gray-800 dark:text-lia-text-primary max-w-[60%] truncate text-right">
         {formatFieldValue(fieldKey, value)}
       </span>
     </div>
@@ -304,14 +304,14 @@ export function FinalReviewPanel({
   }
 
   return (
-    <Card className="border-0 rounded-md dark:bg-gray-800 dark:border-gray-700">
-      <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
+    <Card className="border-0 rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+      <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold font-sans dark:text-gray-100">Revisão Final</CardTitle>
+          <CardTitle className="text-lg font-semibold font-sans dark:text-lia-text-primary">Revisão Final</CardTitle>
           <Badge
             variant="outline"
             className={cn(
-              "text-sm font-semibold",
+ "text-sm font-semibold",
               can_publish ? "border-status-success/30 text-status-success" : "border-status-error/30 text-status-error"
             )}
           >
@@ -321,8 +321,8 @@ export function FinalReviewPanel({
         
         <div className="mt-3">
           <div className="flex items-center justify-between text-sm mb-1.5">
-            <span className="text-gray-600 dark:text-gray-400">Completude</span>
-            <span className="font-semibold dark:text-gray-100">{completeness_score}%</span>
+            <span className="text-gray-600 dark:text-lia-text-tertiary">Completude</span>
+            <span className="font-semibold dark:text-lia-text-primary">{completeness_score}%</span>
           </div>
           <Progress value={completeness_score} className={cn("h-2", getScoreColor())} />
         </div>
@@ -418,7 +418,7 @@ export function FinalReviewPanel({
                 )}
               </CollapsibleTrigger>
               <CollapsibleContent className="mt-2">
-                <div className="bg-white dark:bg-gray-800 rounded-md border dark:border-gray-700 p-3">
+                <div className="bg-white dark:bg-lia-bg-secondary rounded-md border dark:border-lia-border-subtle p-3">
                   {filled_fields.map((fieldKey) => (
                     <FilledFieldCard
                       key={fieldKey}
@@ -438,21 +438,21 @@ export function FinalReviewPanel({
               onOpenChange={() => toggleSection("toggled_off")}
               className="mb-4"
             >
-              <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded-md bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded-md bg-gray-50 dark:bg-lia-bg-primary hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                 <div className="flex items-center gap-2">
-                  <Info className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                  <span className="font-medium text-gray-600 dark:text-gray-300">
+                  <Info className="h-4 w-4 text-gray-500 dark:text-lia-text-tertiary" />
+                  <span className="font-medium text-gray-600 dark:text-lia-text-secondary">
                     Campos Desativados ({toggled_off.length})
                   </span>
                 </div>
                 {expandedSections.toggled_off ? (
-                  <ChevronDown className="h-4 w-4 text-gray-500" />
+                  <ChevronDown className="h-4 w-4 lia-text-secondary" />
                 ) : (
-                  <ChevronRight className="h-4 w-4 text-gray-500" />
+                  <ChevronRight className="h-4 w-4 lia-text-secondary" />
                 )}
               </CollapsibleTrigger>
               <CollapsibleContent className="mt-2">
-                <div className="bg-white dark:bg-gray-800 rounded-md border dark:border-gray-700 p-3 text-sm text-gray-500 dark:text-gray-400">
+                <div className="bg-white dark:bg-lia-bg-secondary rounded-md border dark:border-lia-border-subtle p-3 text-sm text-gray-500 dark:text-lia-text-tertiary">
                   <p className="mb-2">
                     Estes campos foram desativados nas configurações da empresa:
                   </p>
@@ -467,9 +467,9 @@ export function FinalReviewPanel({
           )}
         </ScrollArea>
 
-        <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+        <div className="pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
           <Button
-            className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+            className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
             size="lg"
             disabled={!can_publish || isPublishing}
             onClick={onPublish}

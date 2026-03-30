@@ -220,7 +220,7 @@ export function OnboardingPage() {
   const getStatusColor = (status: string) => {
     const colors = {
       pending: 'bg-status-warning/15 text-status-warning border-status-warning/30',
-      in_progress: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600',
+      in_progress: 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary border-lia-border-default dark:border-lia-border-default',
       completed: 'bg-status-success/15 text-status-success border-status-success/30',
       delayed: 'bg-status-error/15 text-status-error border-status-error/30'
     }
@@ -247,10 +247,10 @@ export function OnboardingPage() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Total de Novos Colaboradores</p>
                 <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">{onboardingCandidates.length}</p>
-                <p className="text-xs text-gray-800 dark:text-gray-200">este mês</p>
+                <p className="text-xs text-gray-800 dark:text-lia-text-primary">este mês</p>
               </div>
-              <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center">
-                <UserPlus className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+              <div className="w-12 h-12 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+                <UserPlus className="w-6 h-6 text-gray-600 dark:text-lia-text-tertiary" />
               </div>
             </div>
           </CardContent>
@@ -261,10 +261,10 @@ export function OnboardingPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Em Andamento</p>
-                <p className="text-2xl font-bold text-gray-700 dark:text-gray-300">
+                <p className="text-2xl font-bold text-gray-700 dark:text-lia-text-secondary">
                   {onboardingCandidates.filter(c => c.status === 'in_progress').length}
                 </p>
-                <p className="text-xs text-gray-800 dark:text-gray-200">processos ativos</p>
+                <p className="text-xs text-gray-800 dark:text-lia-text-primary">processos ativos</p>
               </div>
               <div className="w-12 h-12 bg-status-warning/15 rounded-md flex items-center justify-center">
                 <Clock className="w-6 h-6 text-status-warning" />
@@ -281,7 +281,7 @@ export function OnboardingPage() {
                 <p className="text-2xl font-bold text-status-success">
                   {onboardingCandidates.filter(c => c.status === 'completed').length}
                 </p>
-                <p className="text-xs text-gray-800 dark:text-gray-200">com sucesso</p>
+                <p className="text-xs text-gray-800 dark:text-lia-text-primary">com sucesso</p>
               </div>
               <div className="w-12 h-12 bg-status-success/15 rounded-md flex items-center justify-center">
                 <CheckCircle className="w-6 h-6 text-status-success" />
@@ -296,7 +296,7 @@ export function OnboardingPage() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Taxa de Sucesso</p>
                 <p className="text-2xl font-bold text-wedo-purple">92%</p>
-                <p className="text-xs text-gray-800 dark:text-gray-200">últimos 3 meses</p>
+                <p className="text-xs text-gray-800 dark:text-lia-text-primary">últimos 3 meses</p>
               </div>
               <div className="w-12 h-12 bg-wedo-purple/15 rounded-md flex items-center justify-center">
                 <TrendingUp className="w-6 h-6 text-wedo-purple" />
@@ -314,7 +314,7 @@ export function OnboardingPage() {
         <CardContent>
           <div className="space-y-4">
             {onboardingCandidates.filter(c => c.status === 'in_progress' || c.status === 'delayed').map(candidate => (
-              <div key={candidate.id} className="p-4 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">
+              <div key={candidate.id} className="p-4 border border-lia-border-subtle rounded-md hover:bg-gray-50 transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <Avatar className="w-12 h-12">
@@ -325,7 +325,7 @@ export function OnboardingPage() {
                     <div>
                       <h4 className="font-medium text-gray-950 dark:text-gray-50">{candidate.name}</h4>
                       <p className="text-sm text-gray-600">{candidate.position} • {candidate.department}</p>
-                      <p className="text-sm text-gray-800 dark:text-gray-200">Início: {new Date(candidate.startDate).toLocaleDateString('pt-BR')}</p>
+                      <p className="text-sm text-gray-800 dark:text-lia-text-primary">Início: {new Date(candidate.startDate).toLocaleDateString('pt-BR')}</p>
                     </div>
                   </div>
 
@@ -333,7 +333,7 @@ export function OnboardingPage() {
                     <Badge className={getStatusColor(candidate.status)}>
                       {getStatusLabel(candidate.status)}
                     </Badge>
-                    <p className="text-sm text-gray-800 dark:text-gray-200 mt-1">{candidate.currentStep}</p>
+                    <p className="text-sm text-gray-800 dark:text-lia-text-primary mt-1">{candidate.currentStep}</p>
                     <div className="flex items-center gap-2 mt-2">
                       <div className="w-24 bg-gray-200 rounded-full h-2">
                         <div
@@ -343,7 +343,7 @@ export function OnboardingPage() {
                       </div>
                       <span className="text-sm font-medium">{candidate.progress}%</span>
                     </div>
-                    <p className="text-xs text-gray-800 dark:text-gray-200 mt-1">
+                    <p className="text-xs text-gray-800 dark:text-lia-text-primary mt-1">
                       {candidate.completedTasks}/{candidate.totalTasks} tarefas
                     </p>
                   </div>
@@ -404,14 +404,14 @@ export function OnboardingPage() {
               placeholder="Buscar colaboradores..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-md bg-white text-gray-950 dark:text-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 w-80"
+              className="pl-10 pr-4 py-2 border border-lia-border-default rounded-md bg-lia-bg-primary text-gray-950 dark:text-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 w-80"
             />
           </div>
 
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-950 dark:text-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+            className="px-3 py-2 border border-lia-border-default rounded-md bg-lia-bg-primary text-gray-950 dark:text-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
           >
             <option value="all">Todos os Status</option>
             <option value="pending">Pendente</option>
@@ -450,30 +450,30 @@ export function OnboardingPage() {
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-800 dark:text-gray-200">Status:</span>
+                  <span className="text-gray-800 dark:text-lia-text-primary">Status:</span>
                   <Badge className={getStatusColor(candidate.status)}>
                     {getStatusLabel(candidate.status)}
                   </Badge>
                 </div>
 
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-800 dark:text-gray-200">Departamento:</span>
+                  <span className="text-gray-800 dark:text-lia-text-primary">Departamento:</span>
                   <span className="font-medium">{candidate.department}</span>
                 </div>
 
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-800 dark:text-gray-200">Gestor:</span>
+                  <span className="text-gray-800 dark:text-lia-text-primary">Gestor:</span>
                   <span className="font-medium">{candidate.manager}</span>
                 </div>
 
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-800 dark:text-gray-200">Início:</span>
+                  <span className="text-gray-800 dark:text-lia-text-primary">Início:</span>
                   <span className="font-medium">{new Date(candidate.startDate).toLocaleDateString('pt-BR')}</span>
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between text-sm mb-2">
-                    <span className="text-gray-800 dark:text-gray-200">Progresso:</span>
+                    <span className="text-gray-800 dark:text-lia-text-primary">Progresso:</span>
                     <span className="font-medium">{candidate.progress}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
@@ -488,11 +488,11 @@ export function OnboardingPage() {
                 </div>
 
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-800 dark:text-gray-200">Tarefas:</span>
+                  <span className="text-gray-800 dark:text-lia-text-primary">Tarefas:</span>
                   <span className="font-medium">{candidate.completedTasks}/{candidate.totalTasks}</span>
                 </div>
 
-                <div className="text-sm text-gray-800 dark:text-gray-200">
+                <div className="text-sm text-gray-800 dark:text-lia-text-primary">
                   Última atividade: {candidate.lastActivity}
                 </div>
               </div>
@@ -539,7 +539,7 @@ export function OnboardingPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-xs">{template.name}</CardTitle>
-                  <p className="text-sm text-gray-800 dark:text-gray-200 mt-1">{template.description}</p>
+                  <p className="text-sm text-gray-800 dark:text-lia-text-primary mt-1">{template.description}</p>
                 </div>
                 <Badge variant={template.isActive ? "default" : "secondary"}>
                   {template.isActive ? 'Ativo' : 'Inativo'}
@@ -576,7 +576,7 @@ export function OnboardingPage() {
                       </div>
                     ))}
                     {template.tasks.length > 3 && (
-                      <p className="text-xs text-gray-800 dark:text-gray-200">+{template.tasks.length - 3} tarefas adicionais</p>
+                      <p className="text-xs text-gray-800 dark:text-lia-text-primary">+{template.tasks.length - 3} tarefas adicionais</p>
                     )}
                   </div>
                 </div>
@@ -638,7 +638,7 @@ export function OnboardingPage() {
                 onClick={() => setSelectedView(tab.id as any)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   selectedView === tab.id
-                    ? 'bg-white text-gray-950 dark:text-gray-50'
+                    ? 'bg-lia-bg-primary text-gray-950 dark:text-gray-50'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
@@ -683,7 +683,7 @@ function CandidateDetailModal({ candidate, onClose }: CandidateDetailModalProps)
   const getStatusColor = (status: string) => {
     const colors = {
       pending: 'bg-status-warning/15 text-status-warning border-status-warning/30',
-      in_progress: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600',
+      in_progress: 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary border-lia-border-default dark:border-lia-border-default',
       completed: 'bg-status-success/15 text-status-success border-status-success/30',
       delayed: 'bg-status-error/15 text-status-error border-status-error/30'
     }
@@ -702,7 +702,7 @@ function CandidateDetailModal({ candidate, onClose }: CandidateDetailModalProps)
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-md w-full max-w-4xl h-[90vh] flex flex-col">
+      <div className="bg-lia-bg-primary rounded-md w-full max-w-4xl h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <div className="flex items-center gap-4">
@@ -786,7 +786,7 @@ function CandidateDetailModal({ candidate, onClose }: CandidateDetailModalProps)
                 <CardContent>
                   <div className="space-y-3">
                     {onboardingTemplates[0].tasks.map((task, index) => (
-                      <div key={task.id} className="flex items-start gap-3 p-3 border border-gray-200 rounded-md">
+                      <div key={task.id} className="flex items-start gap-3 p-3 border border-lia-border-subtle rounded-md">
                         <CheckCircle className={`w-5 h-5 mt-0.5 ${task.isCompleted ? 'text-status-success' : 'text-gray-600'}`} />
                         <div className="flex-1">
                           <div className="flex items-center justify-between mb-1">
@@ -806,7 +806,7 @@ function CandidateDetailModal({ candidate, onClose }: CandidateDetailModalProps)
                             </div>
                           </div>
                           <p className="text-sm text-gray-600 mb-2">{task.description}</p>
-                          <div className="flex items-center gap-4 text-xs text-gray-800 dark:text-gray-200">
+                          <div className="flex items-center gap-4 text-xs text-gray-800 dark:text-lia-text-primary">
                             <span>Prazo: Dia {task.dueDate}</span>
                             <span>Tempo estimado: {task.estimatedTime}min</span>
                             {task.completedDate && (

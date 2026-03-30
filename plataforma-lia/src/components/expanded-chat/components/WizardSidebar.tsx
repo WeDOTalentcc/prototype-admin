@@ -44,9 +44,9 @@ export function WizardSidebar({
               <div className="flex items-center gap-2 mb-2">
                 <div 
                   className={cn(
-                    "w-2 h-2 rounded-full transition-all",
+ "w-2 h-2 rounded-full transition-[width,height]",
                     isPhaseActive 
-                      ? "bg-gray-900 dark:bg-gray-50" 
+                      ? "bg-gray-900" 
                       : isPhaseCompleted 
                         ? "bg-status-success" 
                         : "bg-gray-300"
@@ -54,12 +54,12 @@ export function WizardSidebar({
                 />
                 <span 
                   className={cn(
-                    "text-micro font-semibold uppercase tracking-wide",
+ "text-micro font-semibold uppercase tracking-wide",
                     isPhaseActive 
-                      ? "text-gray-600 dark:text-gray-400" 
+                      ? "text-gray-600 dark:text-lia-text-tertiary" 
                       : isPhaseCompleted 
-                        ? "text-gray-500" 
-                        : "text-gray-400"
+                        ? "lia-text-secondary" 
+                        : "lia-text-secondary"
                   )}
                  
                 >
@@ -70,7 +70,7 @@ export function WizardSidebar({
                 )}
               </div>
               
-              <div className="flex flex-col gap-1 ml-4 border-l-2 border-gray-200 pl-3">
+              <div className="flex flex-col gap-1 ml-4 border-l-2 border-lia-border-subtle pl-3">
                 {phaseStages.map((stageId) => {
                   const stageIndex = WIZARD_STAGES.findIndex(s => s.id === stageId)
                   const stage = WIZARD_STAGES[stageIndex]
@@ -84,37 +84,37 @@ export function WizardSidebar({
                       onClick={() => handleStageClick(stageId, stageIndex)}
                       disabled={!isClickable}
                       className={cn(
-                        "flex items-center gap-2 py-1.5 px-2 rounded-md text-left transition-all focus-visible:ring-2 focus-visible:ring-gray-400",
-                        isActive && "bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600",
+ "flex items-center gap-2 py-1.5 px-2 rounded-md text-left transition-colors focus-visible:ring-2 focus-visible:ring-gray-400",
+                        isActive && "bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default",
                         isCompleted && isClickable && "hover:bg-gray-100 cursor-pointer",
                         !isClickable && !isActive && "cursor-default"
                       )}
                     >
                       <div 
                         className={cn(
-                          "w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition-all",
+ "w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition-[width,height]",
                           isActive 
-                            ? "bg-gray-900 dark:bg-gray-50" 
+                            ? "bg-gray-900" 
                             : isCompleted 
                               ? "bg-status-success" 
-                              : "border border-gray-300"
+                              : "border border-lia-border-default"
                         )}
                       >
                         {isCompleted && (
                           <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
                         )}
                         {isActive && (
-                          <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                          <div className="w-1.5 h-1.5 rounded-full bg-lia-bg-primary" />
                         )}
                       </div>
                       <span 
                         className={cn(
-                          "text-xs font-medium",
+ "text-xs font-medium",
                           isActive 
-                            ? "text-gray-600 dark:text-gray-400" 
+                            ? "text-gray-600 dark:text-lia-text-tertiary" 
                             : isCompleted 
-                              ? "text-gray-600" 
-                              : "text-gray-400"
+                              ? "lia-text-base" 
+                              : "lia-text-secondary"
                         )}
                        
                       >
@@ -151,12 +151,12 @@ export function WizardSidebar({
             <div className="flex items-center gap-1 mb-1">
               <span 
                 className={cn(
-                  "text-micro font-semibold uppercase tracking-wide",
+ "text-micro font-semibold uppercase tracking-wide",
                   isPhaseActive 
-                    ? "text-gray-600 dark:text-gray-400" 
+                    ? "text-gray-600 dark:text-lia-text-tertiary" 
                     : isPhaseCompleted 
-                      ? "text-gray-500" 
-                      : "text-gray-400"
+                      ? "lia-text-secondary" 
+                      : "lia-text-secondary"
                 )}
                
               >
@@ -181,26 +181,26 @@ export function WizardSidebar({
                     onClick={() => handleStageClick(stageId, stageIndex)}
                     disabled={!isClickable}
                     className={cn(
-                      "flex-1 flex flex-col items-center transition-all focus-visible:ring-2 focus-visible:ring-gray-400 rounded-md",
+ "flex-1 flex flex-col items-center transition-colors focus-visible:ring-2 focus-visible:ring-gray-400 rounded-md",
                       isClickable && "hover:opacity-80 cursor-pointer",
                       !isClickable && "cursor-default"
                     )}
                   >
                     <div 
                       className={cn(
-                        "w-full h-1.5 rounded-full transition-all",
- isActive ? "bg-gray-900 dark:bg-gray-50" : isCompleted ? "bg-status-success" : "bg-gray-200"
+ "w-full h-1.5 rounded-full transition-[width,height]",
+ isActive ? "bg-gray-900" : isCompleted ? "bg-status-success" : "bg-gray-200"
                       )}
                     />
                     {!compact && (
                       <span 
                         className={cn(
-                          "text-micro mt-1 truncate max-w-full px-0.5 text-center leading-tight",
+ "text-micro mt-1 truncate max-w-full px-0.5 text-center leading-tight",
                           isActive 
-                            ? "font-semibold text-gray-900 dark:text-gray-50" 
+                            ? "font-semibold text-gray-900" 
                             : isCompleted 
-                              ? "text-gray-500" 
-                              : "text-gray-400"
+                              ? "lia-text-secondary" 
+                              : "lia-text-secondary"
                         )}
                        
                       >

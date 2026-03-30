@@ -132,8 +132,8 @@ function AceitarConviteContent() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Card className="w-full max-w-md mx-4 border-0">
           <CardContent className="p-8 text-center">
-            <Loader2 className="w-10 h-10 animate-spin text-gray-600 dark:text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600 text-sm">Validando seu convite...</p>
+            <Loader2 className="w-10 h-10 animate-spin lia-text-600 dark:text-lia-text-tertiary mx-auto mb-4" />
+            <p className="lia-text-600 text-sm">Validando seu convite...</p>
           </CardContent>
         </Card>
       </div>
@@ -161,15 +161,15 @@ function AceitarConviteContent() {
                 <AlertCircle className="w-8 h-8 text-status-warning" />
               </div>
               
-              <h2 className="text-xl font-semibold text-gray-950 dark:text-gray-50 mb-2">
+              <h2 className="text-xl font-semibold lia-text-950 dark:lia-text-50 mb-2">
                 Convite Expirado
               </h2>
-              <p className="text-gray-600 text-sm mb-6">
+              <p className="lia-text-600 text-sm mb-6">
                 Este convite expirou. Por favor, solicite um novo convite ao administrador da empresa.
               </p>
               
               <Link href="/login">
-                <Button className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200">
+                <Button className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200">
                   Ir para o Login
                 </Button>
               </Link>
@@ -201,15 +201,15 @@ function AceitarConviteContent() {
                 <AlertCircle className="w-8 h-8 text-status-error" />
               </div>
               
-              <h2 className="text-xl font-semibold text-gray-950 dark:text-gray-50 mb-2">
+              <h2 className="text-xl font-semibold lia-text-950 dark:lia-text-50 mb-2">
                 Convite Inválido
               </h2>
-              <p className="text-gray-600 text-sm mb-6">
+              <p className="lia-text-600 text-sm mb-6">
                 {error || "O link de convite é inválido. Por favor, verifique o link ou solicite um novo convite."}
               </p>
               
               <Link href="/login">
-                <Button className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200">
+                <Button className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200">
                   Ir para o Login
                 </Button>
               </Link>
@@ -241,18 +241,18 @@ function AceitarConviteContent() {
                 <CheckCircle className="w-8 h-8 text-status-success" />
               </div>
               
-              <h2 className="text-xl font-semibold text-gray-950 dark:text-gray-50 mb-2">
+              <h2 className="text-xl font-semibold lia-text-950 dark:lia-text-50 mb-2">
                 Convite Aceito!
               </h2>
-              <p className="text-gray-600 text-sm mb-4">
+              <p className="lia-text-600 text-sm mb-4">
                 Você agora faz parte de <span className="font-medium">{invitationInfo?.company_name}</span>.
               </p>
-              <p className="text-gray-500 text-xs">
+              <p className="lia-text-500 text-xs">
                 Redirecionando para o login...
               </p>
               
               <div className="mt-6">
-                <Loader2 className="w-5 h-5 animate-spin text-gray-600 dark:text-gray-400 mx-auto" />
+                <Loader2 className="w-5 h-5 animate-spin lia-text-600 dark:text-lia-text-tertiary mx-auto" />
               </div>
             </div>
           </CardContent>
@@ -277,34 +277,34 @@ function AceitarConviteContent() {
               />
             </div>
             
-            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-              <UserPlus className="w-8 h-8 text-gray-600 dark:text-gray-400" />
+            <div className="w-16 h-16 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center mx-auto mb-4">
+              <UserPlus className="w-8 h-8 lia-text-600 dark:text-lia-text-tertiary" />
             </div>
             
-            <h2 className="text-xl font-semibold text-gray-950 dark:text-gray-50 mb-2">
+            <h2 className="text-xl font-semibold lia-text-950 dark:lia-text-50 mb-2">
               Você foi convidado!
             </h2>
-            <p className="text-gray-600 text-sm">
+            <p className="lia-text-600 text-sm">
               Você foi convidado para participar da plataforma
             </p>
           </div>
 
           {invitationInfo && (
             <div className="space-y-4 mb-6">
-              <div className="p-4 bg-gray-50 rounded-md border border-gray-100">
+              <div className="p-4 bg-gray-50 rounded-md border border-lia-border-subtle">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center">
-                    <Building2 className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  <div className="w-10 h-10 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+                    <Building2 className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-950 dark:text-gray-50">{invitationInfo.company_name}</p>
-                    <p className="text-xs text-gray-500">Empresa</p>
+                    <p className="font-semibold lia-text-950 dark:lia-text-50">{invitationInfo.company_name}</p>
+                    <p className="text-xs lia-text-500">Empresa</p>
                   </div>
                 </div>
 
-                <div className="space-y-2 pt-3 border-t border-gray-200">
+                <div className="space-y-2 pt-3 border-t border-lia-border-subtle">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <div className="flex items-center gap-2 text-sm lia-text-600">
                       <Briefcase className="w-4 h-4" />
                       <span>Sua função:</span>
                     </div>
@@ -313,11 +313,11 @@ function AceitarConviteContent() {
 
                   {invitationInfo.expires_at && (
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <div className="flex items-center gap-2 text-sm lia-text-600">
                         <Calendar className="w-4 h-4" />
                         <span>Válido até:</span>
                       </div>
-                      <span className="text-sm text-gray-950 dark:text-gray-50">{formatDate(invitationInfo.expires_at)}</span>
+                      <span className="text-sm lia-text-950 dark:lia-text-50">{formatDate(invitationInfo.expires_at)}</span>
                     </div>
                   )}
                 </div>
@@ -325,8 +325,8 @@ function AceitarConviteContent() {
 
               {invitationInfo.name && (
                 <div className="text-center">
-                  <p className="text-sm text-gray-600">
-                    Bem-vindo(a), <span className="font-medium text-gray-950 dark:text-gray-50">{invitationInfo.name}</span>!
+                  <p className="text-sm lia-text-600">
+                    Bem-vindo(a), <span className="font-medium lia-text-950 dark:lia-text-50">{invitationInfo.name}</span>!
                   </p>
                 </div>
               )}
@@ -343,7 +343,7 @@ function AceitarConviteContent() {
           <Button
             onClick={handleAcceptInvitation}
             disabled={isAccepting}
-            className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 h-11"
+            className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 h-11"
           >
             {isAccepting ? (
               <span className="flex items-center gap-2">
@@ -358,9 +358,9 @@ function AceitarConviteContent() {
             )}
           </Button>
 
-          <p className="text-center text-xs text-gray-400 mt-4">
+          <p className="text-center text-xs lia-text-400 mt-4">
             Ao aceitar, você concorda com os{" "}
-            <Link href="/privacidade" className="text-gray-600 dark:text-gray-400 hover:underline">
+            <Link href="/privacidade" className="lia-text-600 dark:text-lia-text-tertiary hover:underline">
               Termos de Uso
             </Link>{" "}
             da plataforma.
@@ -378,8 +378,8 @@ export default function AceitarConvitePage() {
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <Card className="w-full max-w-md mx-4 border-0">
             <CardContent className="p-8 text-center">
-              <Loader2 className="w-10 h-10 animate-spin text-gray-600 dark:text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600 text-sm">Carregando...</p>
+              <Loader2 className="w-10 h-10 animate-spin lia-text-600 dark:text-lia-text-tertiary mx-auto mb-4" />
+              <p className="lia-text-600 text-sm">Carregando...</p>
             </CardContent>
           </Card>
         </div>

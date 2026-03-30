@@ -268,11 +268,11 @@ export function AgentActivityDashboard() {
     <div className="space-y-3">
       {/* Header */}
       <div>
-        <h1 className={`${textStyles.title} dark:text-gray-100 flex items-center gap-2`}>
+        <h1 className={`${textStyles.title} dark:text-lia-text-primary flex items-center gap-2`}>
           <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           Atividade dos Agentes
         </h1>
-        <p className={`${textStyles.bodySmall} dark:text-gray-400 mt-1`}>
+        <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary mt-1`}>
           Monitoramento e métricas dos 7 agentes IA especializados da plataforma LIA
         </p>
       </div>
@@ -283,11 +283,11 @@ export function AgentActivityDashboard() {
         <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-gray-800`}>
           <CardContent className="p-3">
             <div className="flex items-start justify-between mb-2">
-              <p className={`${textStyles.bodySmall} dark:text-gray-400`}>Total de Ações Hoje</p>
-              <Activity className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+              <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>Total de Ações Hoje</p>
+              <Activity className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
             </div>
             <div className="text-xl font-inter font-bold text-gray-950 dark:text-gray-50">{totalActionsToday}</div>
- <p className={`${textStyles.bodySmall} text-gray-900 dark:text-gray-300 mt-1`}>+18% vs. ontem</p>
+ <p className={`${textStyles.bodySmall} text-gray-900 dark:text-lia-text-secondary mt-1`}>+18% vs. ontem</p>
           </CardContent>
         </Card>
 
@@ -295,7 +295,7 @@ export function AgentActivityDashboard() {
         <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-gray-800`}>
           <CardContent className="p-3">
             <div className="flex items-start justify-between mb-2">
-              <p className={`${textStyles.bodySmall} dark:text-gray-400`}>Taxa de Sucesso</p>
+              <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>Taxa de Sucesso</p>
               <CheckCircle className="w-3.5 h-3.5 text-wedo-green" />
             </div>
             <div className="text-xl font-inter font-bold text-gray-950 dark:text-gray-50">{avgSuccessRate}%</div>
@@ -307,7 +307,7 @@ export function AgentActivityDashboard() {
         <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-gray-800`}>
           <CardContent className="p-3">
             <div className="flex items-start justify-between mb-2">
-              <p className={`${textStyles.bodySmall} dark:text-gray-400`}>Tempo Médio de Resposta</p>
+              <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>Tempo Médio de Resposta</p>
               <TrendingUp className="w-3.5 h-3.5 text-wedo-orange" />
             </div>
             <div className="text-xl font-inter font-bold text-gray-950 dark:text-gray-50">{avgResponseTime}s</div>
@@ -319,7 +319,7 @@ export function AgentActivityDashboard() {
         <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-gray-800`}>
           <CardContent className="p-3">
             <div className="flex items-start justify-between mb-2">
-              <p className={`${textStyles.bodySmall} dark:text-gray-400`}>Agentes Ativos</p>
+              <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>Agentes Ativos</p>
               <Brain className="w-3.5 h-3.5 text-wedo-purple" />
             </div>
             <div className="text-xl font-inter font-bold text-gray-950 dark:text-gray-50">{activeAgents}/7</div>
@@ -329,9 +329,9 @@ export function AgentActivityDashboard() {
       </div>
 
       {/* B. Grid de Status dos Agentes */}
-      <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-gray-700`}>
+      <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-lia-border-subtle`}>
         <CardHeader className="px-4 py-3">
-          <CardTitle className={`${textStyles.subtitle} dark:text-gray-100 flex items-center gap-2`}>
+          <CardTitle className={`${textStyles.subtitle} dark:text-lia-text-primary flex items-center gap-2`}>
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
             Status dos Agentes Especializados
           </CardTitle>
@@ -341,13 +341,13 @@ export function AgentActivityDashboard() {
             {agentsData.map((agent) => (
               <div 
                 key={agent.id}
-                className="p-3 bg-gray-50 dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-800 hover:border-gray-900 dark:hover:border-gray-50 dark:hover:border-gray-900 dark:hover:border-gray-50 transition-colors"
+                className="p-3 bg-gray-50 dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-gray-800 hover:border-gray-900 dark:hover:border-gray-50 dark:hover:border-gray-900 dark:hover:border-gray-50 transition-colors"
               >
                 {/* Header com status */}
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-1.5">
                     <div className={`w-2 h-2 rounded-full ${getStatusColor(agent.status)}`}></div>
-                    <span className={`${textStyles.description} dark:text-gray-400`}>{getStatusLabel(agent.status)}</span>
+                    <span className={`${textStyles.description} dark:text-lia-text-tertiary`}>{getStatusLabel(agent.status)}</span>
                   </div>
                 </div>
 
@@ -356,7 +356,7 @@ export function AgentActivityDashboard() {
                   <p className="font-semibold font-open-sans text-sm text-gray-950 dark:text-gray-50 truncate" style={{color: agent.color}}>
                     {agent.name}
                   </p>
-                  <p className="text-xs tracking-tight font-open-sans text-gray-800 dark:text-gray-200 truncate">
+                  <p className="text-xs tracking-tight font-open-sans text-gray-800 dark:text-lia-text-primary truncate">
                     {agent.description}
                   </p>
                 </div>
@@ -364,15 +364,15 @@ export function AgentActivityDashboard() {
                 {/* Métricas do dia */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className={`${textStyles.description} dark:text-gray-400`}>Ações</span>
+                    <span className={`${textStyles.description} dark:text-lia-text-tertiary`}>Ações</span>
                     <span className="text-xs font-inter font-bold text-gray-950 dark:text-gray-50">{agent.actionsToday}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className={`${textStyles.description} dark:text-gray-400`}>Sucesso</span>
+                    <span className={`${textStyles.description} dark:text-lia-text-tertiary`}>Sucesso</span>
                     <span className="text-xs font-inter font-bold text-status-success dark:text-status-success">{agent.successRate}%</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className={`${textStyles.description} dark:text-gray-400`}>Tempo</span>
+                    <span className={`${textStyles.description} dark:text-lia-text-tertiary`}>Tempo</span>
                     <span className="text-xs font-inter font-bold text-gray-950 dark:text-gray-50">{agent.avgResponseTime}s</span>
                   </div>
                 </div>
@@ -382,7 +382,7 @@ export function AgentActivityDashboard() {
                   {[40, 65, 45, 80, 55, 70, 90, 60].map((value, idx) => (
                     <div 
                       key={idx}
-                      className="flex-1 rounded-sm transition-all"
+                      className="flex-1 rounded-sm transition-colors"
                       style={{height: `${value}%`, 
                         backgroundColor: agent.color,
                         opacity: 0.4 + (idx * 0.08)}}
@@ -396,10 +396,10 @@ export function AgentActivityDashboard() {
       </Card>
 
       {/* C. Gráfico de Atividade por Agente */}
-      <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-gray-700`}>
+      <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-lia-border-subtle`}>
         <CardHeader className="px-4 py-3">
-          <CardTitle className={`${textStyles.subtitle} dark:text-gray-100 flex items-center gap-2`}>
-            <BarChart3 className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+          <CardTitle className={`${textStyles.subtitle} dark:text-lia-text-primary flex items-center gap-2`}>
+            <BarChart3 className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
             Volume de Ações por Agente (Hoje)
           </CardTitle>
         </CardHeader>
@@ -416,22 +416,22 @@ export function AgentActivityDashboard() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className="w-2.5 h-2.5 rounded-full" style={{backgroundColor: agent.color}}></div>
-                        <span className="text-xs font-open-sans font-medium text-gray-800 dark:text-gray-200">{agent.name}</span>
+                        <span className="text-xs font-open-sans font-medium text-gray-800 dark:text-lia-text-primary">{agent.name}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-inter font-bold text-gray-950 dark:text-gray-50">{agent.actionsToday}</span>
                         <Badge className={`text-xs tracking-tight ${
                           agent.successRate >= 98 ? 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success' :
- agent.successRate >= 95 ? 'bg-gray-100 text-gray-900 dark:text-gray-300' :
+ agent.successRate >= 95 ? 'bg-gray-100 text-gray-900 dark:text-lia-text-secondary' :
                           'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning'
                         }`}>
                           {agent.successRate}%
                         </Badge>
                       </div>
                     </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
                       <div 
-                        className="h-2 rounded-full transition-all"
+                        className="h-2 rounded-full transition-[width,height]"
                         style={{width: `${percentage}%`, backgroundColor: agent.color}}
                       ></div>
                     </div>
@@ -443,11 +443,11 @@ export function AgentActivityDashboard() {
       </Card>
 
       {/* D. Tabela de Ações Recentes */}
-      <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-gray-700`}>
+      <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-lia-border-subtle`}>
         <CardHeader className="px-4 py-3">
           <div className="flex items-center justify-between">
-            <CardTitle className={`${textStyles.subtitle} dark:text-gray-100 flex items-center gap-2`}>
-              <Activity className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+            <CardTitle className={`${textStyles.subtitle} dark:text-lia-text-primary flex items-center gap-2`}>
+              <Activity className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
               Ações Recentes
             </CardTitle>
             
@@ -456,7 +456,7 @@ export function AgentActivityDashboard() {
               <select
                 value={selectedAgentFilter}
                 onChange={(e) => setSelectedAgentFilter(e.target.value)}
-                className="text-xs font-open-sans px-2 py-1 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200"
+                className="text-xs font-open-sans px-2 py-1 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary text-gray-800 dark:text-lia-text-primary"
               >
                 <option value="all">Todos os Agentes</option>
                 {agentsData.map(agent => (
@@ -467,7 +467,7 @@ export function AgentActivityDashboard() {
               <select
                 value={selectedTypeFilter}
                 onChange={(e) => setSelectedTypeFilter(e.target.value)}
-                className="text-xs font-open-sans px-2 py-1 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200"
+                className="text-xs font-open-sans px-2 py-1 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary text-gray-800 dark:text-lia-text-primary"
               >
                 <option value="all">Todos os Tipos</option>
                 {actionTypes.map(type => (
@@ -481,26 +481,26 @@ export function AgentActivityDashboard() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-200 dark:border-gray-800">
-                  <th className="text-left py-2 px-2 text-xs tracking-tight font-open-sans font-semibold text-gray-800 dark:text-gray-200 uppercase">Hora</th>
-                  <th className="text-left py-2 px-2 text-xs tracking-tight font-open-sans font-semibold text-gray-800 dark:text-gray-200 uppercase">Agente</th>
-                  <th className="text-left py-2 px-2 text-xs tracking-tight font-open-sans font-semibold text-gray-800 dark:text-gray-200 uppercase">Tipo</th>
-                  <th className="text-left py-2 px-2 text-xs tracking-tight font-open-sans font-semibold text-gray-800 dark:text-gray-200 uppercase">Descrição</th>
-                  <th className="text-left py-2 px-2 text-xs tracking-tight font-open-sans font-semibold text-gray-800 dark:text-gray-200 uppercase">Status</th>
+                <tr className="border-b border-lia-border-subtle dark:border-gray-800">
+                  <th className="text-left py-2 px-2 text-xs tracking-tight font-open-sans font-semibold text-gray-800 dark:text-lia-text-primary uppercase">Hora</th>
+                  <th className="text-left py-2 px-2 text-xs tracking-tight font-open-sans font-semibold text-gray-800 dark:text-lia-text-primary uppercase">Agente</th>
+                  <th className="text-left py-2 px-2 text-xs tracking-tight font-open-sans font-semibold text-gray-800 dark:text-lia-text-primary uppercase">Tipo</th>
+                  <th className="text-left py-2 px-2 text-xs tracking-tight font-open-sans font-semibold text-gray-800 dark:text-lia-text-primary uppercase">Descrição</th>
+                  <th className="text-left py-2 px-2 text-xs tracking-tight font-open-sans font-semibold text-gray-800 dark:text-lia-text-primary uppercase">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredActions.map((action) => {
                   const agent = agentsData.find(a => a.id === action.agentId)
                   return (
-                    <tr key={action.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50">
+                    <tr key={action.id} className="border-b border-lia-border-subtle dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50">
                       <td className="py-2 px-2">
                         <span className="text-xs font-inter font-medium text-gray-950 dark:text-gray-50">{action.time}</span>
                       </td>
                       <td className="py-2 px-2">
                         <div className="flex items-center gap-1.5">
                           <div className="w-2 h-2 rounded-full" style={{backgroundColor: agent?.color || 'var(--gray-950)'}}></div>
-                          <span className="text-xs font-open-sans font-medium text-gray-800 dark:text-gray-200">{action.agentName}</span>
+                          <span className="text-xs font-open-sans font-medium text-gray-800 dark:text-lia-text-primary">{action.agentName}</span>
                         </div>
                       </td>
                       <td className="py-2 px-2">
@@ -509,7 +509,7 @@ export function AgentActivityDashboard() {
                         </Badge>
                       </td>
                       <td className="py-2 px-2">
-                        <span className="text-xs font-open-sans text-gray-600 dark:text-gray-400 line-clamp-1 max-w-sidebar-content">{action.description}</span>
+                        <span className="text-xs font-open-sans text-gray-600 dark:text-lia-text-tertiary line-clamp-1 max-w-sidebar-content">{action.description}</span>
                       </td>
                       <td className="py-2 px-2">
                         <Badge className={`text-xs tracking-tight ${getActionStatusColor(action.status)}`}>
@@ -525,17 +525,17 @@ export function AgentActivityDashboard() {
           
           {filteredActions.length === 0 && (
             <div className="text-center py-6">
- <Activity className="w-8 h-8 mx-auto text-gray-300 dark:text-gray-200 mb-2" />
-              <p className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Nenhuma ação encontrada com os filtros selecionados</p>
+ <Activity className="w-8 h-8 mx-auto text-gray-300 dark:text-lia-text-primary mb-2" />
+              <p className="text-xs font-open-sans text-gray-800 dark:text-lia-text-primary">Nenhuma ação encontrada com os filtros selecionados</p>
             </div>
           )}
         </CardContent>
       </Card>
 
       {/* Insights dos Agentes */}
-      <Card className={`${cardStyles.default} dark:bg-gray-900 dark:border-gray-800`}>
+      <Card className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-gray-800`}>
         <CardHeader className="px-4 py-3">
-          <CardTitle className={`${textStyles.title} dark:text-gray-100 flex items-center gap-2`}>
+          <CardTitle className={`${textStyles.title} dark:text-lia-text-primary flex items-center gap-2`}>
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
             Insights do Sistema de Agentes
           </CardTitle>
@@ -543,19 +543,19 @@ export function AgentActivityDashboard() {
         <CardContent className="space-y-3">
           <div className="flex items-start gap-3">
             <CheckCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-wedo-green" />
-            <p className="text-sm font-open-sans text-gray-800 dark:text-gray-200">
+            <p className="text-sm font-open-sans text-gray-800 dark:text-lia-text-primary">
               <strong>Performance excelente:</strong> Agente Screening lidera com 215 ações e 96% de sucesso. Análise de CVs automatizada reduzindo tempo em 78%.
             </p>
           </div>
           <div className="flex items-start gap-3">
-            <TrendingUp className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-600 dark:text-gray-400" />
-            <p className="text-sm font-open-sans text-gray-800 dark:text-gray-200">
+            <TrendingUp className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-600 dark:text-lia-text-tertiary" />
+            <p className="text-sm font-open-sans text-gray-800 dark:text-lia-text-primary">
               <strong>Agente Sourcing ativo:</strong> 128 buscas realizadas hoje. Pipeline de talentos ampliado em 23 perfis qualificados.
             </p>
           </div>
           <div className="flex items-start gap-3">
             <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-wedo-orange" />
-            <p className="text-sm font-open-sans text-gray-800 dark:text-gray-200">
+            <p className="text-sm font-open-sans text-gray-800 dark:text-lia-text-primary">
               <strong>Atenção:</strong> Agente Communication em modo idle. Considere revisar filas de mensagens pendentes.
             </p>
           </div>

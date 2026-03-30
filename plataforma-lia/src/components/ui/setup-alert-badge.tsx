@@ -151,7 +151,7 @@ export function SetupAlertBadge() {
     <button
       ref={badgeRef}
       onClick={handleClick}
-      className="fixed z-50 flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md select-none"
+      className="fixed z-50 flex items-center gap-2 px-3 py-2 bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md select-none"
       style={{left: `${position.x}px`,
         top: `${position.y}px`,
         cursor: isDragging ? 'grabbing' : 'pointer',
@@ -163,13 +163,13 @@ export function SetupAlertBadge() {
         className="cursor-grab active:cursor-grabbing p-0.5 -ml-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
         title="Arraste para mover"
       >
-        <GripVertical className="w-3 h-3 text-gray-400" />
+        <GripVertical className="w-3 h-3 lia-text-secondary" />
       </div>
       <div className="relative">
         {/* Fundo com 12% de opacidade — opacity no wrapper isolado evita afetar o ícone filho */}
         <div className="w-8 h-8 rounded-md flex items-center justify-center relative">
           <div
-            className="absolute inset-0 rounded-md opacity-[0.12]"
+            className="absolute inset-0 rounded-md opacity-[0.12]" /* [OPT-052] opacity-[0.12] sem canônico Tailwind — closest: opacity-10 (10%) */
             style={{backgroundColor: 'var(--progress-color)'}}
           />
           <AlertCircle
@@ -178,14 +178,14 @@ export function SetupAlertBadge() {
           />
         </div>
         <div
-          className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-micro font-bold text-white dark:text-gray-950"
+          className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-micro font-bold text-white"
           style={{backgroundColor: 'var(--progress-color)'}}
         >
           !
         </div>
       </div>
       <div className="flex flex-col items-start">
-        <span className="text-micro font-medium text-gray-500 dark:text-gray-400 leading-tight">
+        <span className="text-micro font-medium text-gray-500 dark:text-lia-text-tertiary leading-tight">
           Setup Incompleto
         </span>
         <div className="flex items-center gap-1.5">
@@ -195,16 +195,16 @@ export function SetupAlertBadge() {
           >
             {overallCompletion}%
           </span>
-          <div className="w-12 h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+          <div className="w-12 h-1 bg-gray-200 dark:bg-lia-bg-elevated rounded-full overflow-hidden">
             <div
-              className="h-full rounded-full transition-all duration-300"
+              className="h-full rounded-full transition-[width,height] duration-300"
               style={{width: `${overallCompletion}%`,
                 backgroundColor: 'var(--progress-color)'}}
             />
           </div>
         </div>
       </div>
-      <Settings className="w-3 h-3 text-gray-400 ml-1" />
+      <Settings className="w-3 h-3 lia-text-secondary ml-1" />
     </button>
   )
 }

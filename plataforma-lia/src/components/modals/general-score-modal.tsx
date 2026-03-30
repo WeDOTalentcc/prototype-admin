@@ -98,10 +98,10 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
-        className="w-full max-w-2xl overflow-hidden flex flex-col bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md"
+        className="w-full max-w-2xl overflow-hidden flex flex-col bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md"
       >
         <div 
-          className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 rounded-t-xl"
+          className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-lia-bg-primary border-b border-lia-border-subtle dark:border-lia-border-subtle rounded-t-xl"
         >
           <div className="flex items-center gap-2">
             <div
@@ -126,15 +126,15 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
           </div>
           <button 
             onClick={onClose}
-            className="h-7 w-7 p-0 flex items-center justify-center transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-500 dark:text-gray-400"
+            className="h-7 w-7 p-0 flex items-center justify-center transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-500 dark:text-lia-text-tertiary"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="px-4 py-4 bg-white dark:bg-gray-900">
+        <div className="px-4 py-4 bg-white dark:bg-lia-bg-primary">
           <div 
-            className="flex items-center justify-between p-4 rounded-md mb-4 border border-gray-100"
+            className="flex items-center justify-between p-4 rounded-md mb-4 border border-lia-border-subtle"
           >
             <div>
               <p 
@@ -187,11 +187,11 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
                 return (
                   <div 
                     key={component.id}
-                    className="p-3 rounded-md border border-gray-100"
+                    className="p-3 rounded-md border border-lia-border-subtle"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <Icon className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                        <Icon className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                         <span 
                           className="text-xs font-medium text-gray-950 dark:text-gray-50"
                          
@@ -231,7 +231,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
             className="p-3 rounded-md bg-wedo-cyan/8 border border-wedo-cyan/20"
           >
             <p 
-              className="text-micro font-medium mb-1 text-gray-700 dark:text-gray-300"
+              className="text-micro font-medium mb-1 text-gray-700 dark:text-lia-text-secondary"
              
             >
               Fórmula do cálculo:
@@ -246,7 +246,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
         </div>
 
         <div 
-          className="px-4 py-3 flex justify-end bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 rounded-b-xl"
+          className="px-4 py-3 flex justify-end bg-gray-50 dark:bg-lia-bg-primary border-t border-lia-border-subtle dark:border-lia-border-subtle rounded-b-xl"
         >
           <Button
             onClick={onClose}

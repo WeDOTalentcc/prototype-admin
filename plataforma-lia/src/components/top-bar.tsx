@@ -122,7 +122,7 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
               >
                 <Avatar className="h-7 w-7">
                   <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
-                  <AvatarFallback className="text-xs bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900">
+                  <AvatarFallback className="text-xs bg-gray-900 text-white">
                     {currentUser.name.split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
@@ -135,22 +135,22 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
               className="w-64"
             >
               {/* User Info Header */}
-              <div className="p-3 border-b border-gray-200 dark:border-gray-700">
+              <div className="p-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
                 <div className="flex items-center space-x-3">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
-                    <AvatarFallback className="text-sm bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900">
+                    <AvatarFallback className="text-sm bg-gray-900 text-white">
                       {currentUser.name.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-gray-950 dark:text-gray-50 truncate">
+                    <div className="text-sm font-medium text-gray-950 truncate">
                       {currentUser.name}
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    <div className="text-xs text-gray-500 dark:text-lia-text-tertiary truncate">
                       {currentUser.email}
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    <div className="text-xs text-gray-500 dark:text-lia-text-tertiary mt-0.5">
                       {currentUser.role}
                     </div>
                   </div>
@@ -203,7 +203,7 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <KeyRound className="w-5 h-5 text-gray-700" />
+              <KeyRound className="w-5 h-5 lia-text-base" />
               Alterar Senha
             </DialogTitle>
             <DialogDescription>
@@ -240,9 +240,9 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
                       onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                     >
                       {showCurrentPassword ? (
-                        <EyeOff className="w-4 h-4 text-gray-400" />
+                        <EyeOff className="w-4 h-4 lia-text-secondary" />
                       ) : (
-                        <Eye className="w-4 h-4 text-gray-400" />
+                        <Eye className="w-4 h-4 lia-text-secondary" />
                       )}
                     </Button>
                   </div>
@@ -267,9 +267,9 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
                       onClick={() => setShowNewPassword(!showNewPassword)}
                     >
                       {showNewPassword ? (
-                        <EyeOff className="w-4 h-4 text-gray-400" />
+                        <EyeOff className="w-4 h-4 lia-text-secondary" />
                       ) : (
-                        <Eye className="w-4 h-4 text-gray-400" />
+                        <Eye className="w-4 h-4 lia-text-secondary" />
                       )}
                     </Button>
                   </div>
@@ -294,9 +294,9 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     >
                       {showConfirmPassword ? (
-                        <EyeOff className="w-4 h-4 text-gray-400" />
+                        <EyeOff className="w-4 h-4 lia-text-secondary" />
                       ) : (
-                        <Eye className="w-4 h-4 text-gray-400" />
+                        <Eye className="w-4 h-4 lia-text-secondary" />
                       )}
                     </Button>
                   </div>

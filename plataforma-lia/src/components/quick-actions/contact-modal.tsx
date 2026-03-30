@@ -341,16 +341,16 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 dark:bg-gray-950/70 backdrop-blur-[1px] z-50 flex items-center justify-center p-4">
-      <div className={`${cardStyles.default} dark:bg-gray-900 dark:border-gray-700 rounded-md w-full max-w-4xl max-h-[90vh] overflow-y-auto`}>
-        <div className="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
+    <div className="fixed inset-0 bg-black/50/70 backdrop-blur-[1px] z-50 flex items-center justify-center p-4">
+      <div className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle rounded-md w-full max-w-4xl max-h-[90vh] overflow-y-auto`}>
+        <div className="flex items-center justify-between p-5 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <Avatar className="h-12 w-12">
               <AvatarImage src={candidate.avatar} />
               <AvatarFallback>{candidate.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
             </Avatar>
             <div>
-              <h3 className={`${textStyles.title} dark:text-gray-100`}>
+              <h3 className={`${textStyles.title} dark:text-lia-text-primary`}>
                 Contatar {candidate.name}
               </h3>
               <p className={textStyles.bodySmall}>
@@ -358,24 +358,24 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
+          <button onClick={onClose} className="p-1 rounded-md lia-text-secondary hover:lia-text-base dark:hover:lia-text-muted hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
 
         <div className="flex">
           {/* Tabs de Canal */}
-          <div className="w-48 border-r border-gray-100 p-4">
+          <div className="w-48 border-r border-lia-border-subtle p-4">
             <h4 className={`${textStyles.label} mb-3`}>
               Canal de Contato
             </h4>
             <div className="space-y-2">
               <button
                 onClick={() => setActiveTab('email')}
-                className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-all ${
-                  activeTab === 'email'
-                    ? 'bg-gray-100 text-gray-800 border border-gray-200'
-                    : 'hover:bg-gray-50 text-gray-800 dark:text-gray-200 border border-transparent'
+                className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-colors ${
+ activeTab === 'email'
+                    ? 'bg-gray-100 lia-text-strong border border-lia-border-subtle'
+                    : 'hover:bg-gray-50 text-gray-800 dark:text-lia-text-primary border border-transparent'
                 }`}
               >
                 <Mail className="w-4 h-4" />
@@ -387,10 +387,10 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
 
               <button
                 onClick={() => setActiveTab('whatsapp')}
-                className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-all ${
-                  activeTab === 'whatsapp'
+                className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-colors ${
+ activeTab === 'whatsapp'
                     ? 'bg-status-success/10 text-status-success border border-status-success/30'
-                    : 'hover:bg-gray-50 text-gray-800 dark:text-gray-200 border border-transparent'
+                    : 'hover:bg-gray-50 text-gray-800 dark:text-lia-text-primary border border-transparent'
                 }`}
               >
                 <MessageSquare className="w-4 h-4" />
@@ -402,10 +402,10 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
 
               <button
                 onClick={() => setActiveTab('phone')}
-                className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-all ${
-                  activeTab === 'phone'
+                className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-colors ${
+ activeTab === 'phone'
                     ? 'bg-wedo-purple/10 text-wedo-purple border border-wedo-purple/30'
-                    : 'hover:bg-gray-50 text-gray-800 dark:text-gray-200 border border-transparent'
+                    : 'hover:bg-gray-50 text-gray-800 dark:text-lia-text-primary border border-transparent'
                 }`}
               >
                 <Phone className="w-4 h-4" />
@@ -425,7 +425,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
                 <h4 className={textStyles.label}>
                   Templates Rápidos
                 </h4>
-                <div className="flex items-center gap-1 text-micro text-gray-600 dark:text-gray-400">
+                <div className="flex items-center gap-1 text-micro text-gray-600 dark:text-lia-text-tertiary">
                   <Brain className="w-3 h-3 text-wedo-cyan" />
                   <span>LIA disponível abaixo</span>
                 </div>
@@ -435,10 +435,10 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
                   <button
                     key={template.id}
                     onClick={() => handleTemplateSelect(template)}
-                    className={`p-3 border rounded-md text-left transition-all ${
-                      templateType === template.id
-                        ? 'border-gray-300 bg-gray-100'
-                        : 'border-gray-100 hover:bg-gray-50 hover:border-gray-200'
+                    className={`p-3 border rounded-md text-left transition-colors ${
+ templateType === template.id
+                        ? 'border-lia-border-default bg-gray-100'
+                        : 'border-lia-border-subtle hover:bg-gray-50 hover:border-lia-border-subtle'
                     }`}
                   >
                     <div className={textStyles.label}>{template.name}</div>
@@ -448,7 +448,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
             </div>
 
             {/* LIA Assistant */}
-            <div className="border-t border-gray-100 pt-6">
+            <div className="border-t border-lia-border-subtle pt-6">
               <div className="flex items-center justify-between mb-3">
                 <h4 className={`${textStyles.label} flex items-center gap-2`}>
                   <Brain className="w-4 h-4 text-wedo-cyan" />
@@ -458,7 +458,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
                   <select
                     value={liaContext}
                     onChange={(e) => setLiaContext(e.target.value as 'professional' | 'warm' | 'urgent' | 'follow_up')}
-                    className="text-micro border border-gray-200 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-gray-900"
+                    className="text-micro border border-lia-border-subtle rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-gray-900"
                   >
                     <option value="professional">Profissional</option>
                     <option value="warm">Caloroso</option>
@@ -472,7 +472,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
                 <button
                   onClick={() => generateLiaSuggestions(liaContext)}
                   disabled={isLiaGenerating}
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-gray-200 bg-white text-gray-800 dark:text-gray-200 hover:bg-gray-50 transition-all disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 transition-colors disabled:opacity-50"
                 >
                   {isLiaGenerating ? (
                     <>
@@ -488,7 +488,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
                 </button>
                 <button
                   onClick={() => setShowLiaSuggestions(!showLiaSuggestions)}
-                  className="px-3 py-1.5 rounded-md text-gray-500 hover:bg-gray-50 transition-all"
+                  className="px-3 py-1.5 rounded-md lia-text-secondary hover:bg-gray-50 transition-colors"
                   title="Ver/Ocultar sugestões"
                 >
                   <Eye className="w-4 h-4" />
@@ -501,23 +501,23 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
                   {isLiaGenerating ? (
                     <div className="flex items-center justify-center py-8">
                       <div className="text-center">
-                        <RefreshCw className="w-8 h-8 animate-spin text-gray-600 dark:text-gray-400 mx-auto mb-2" />
-                        <p className="text-xs text-gray-600">LIA analisando perfil e gerando sugestões...</p>
+                        <RefreshCw className="w-8 h-8 animate-spin text-gray-600 dark:text-lia-text-tertiary mx-auto mb-2" />
+                        <p className="text-xs lia-text-base">LIA analisando perfil e gerando sugestões...</p>
                       </div>
                     </div>
                   ) : (
                     liaSuggestions.map((suggestion) => (
-                      <div key={suggestion.id} className="border border-gray-200 rounded-md p-4 bg-gray-50">
+                      <div key={suggestion.id} className="border border-lia-border-subtle rounded-md p-4 bg-gray-50">
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <Brain className="w-4 h-4 text-wedo-cyan" />
-                            <h5 className="text-xs font-medium text-gray-800">
+                            <h5 className="text-xs font-medium lia-text-strong">
                               {suggestion.title}
                             </h5>
                           </div>
                           <button
                             onClick={() => applyLiaSuggestion(suggestion)}
-                            className="text-micro h-6 px-2 rounded-full border border-gray-200 text-gray-800 dark:text-gray-200 hover:bg-gray-50 transition-all"
+                            className="text-micro h-6 px-2 rounded-full border border-lia-border-subtle text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 transition-[width,height]"
                           >
                             Usar Esta
                           </button>
@@ -525,26 +525,26 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
 
                         {activeTab === 'email' && suggestion.content.subject && (
                           <div className="mb-2">
-                            <span className="text-micro font-medium text-gray-600">Assunto:</span>
-                            <p className="text-micro text-gray-800 dark:text-gray-200 bg-white p-2 rounded-md border border-gray-100 mt-1">
+                            <span className="text-micro font-medium lia-text-base">Assunto:</span>
+                            <p className="text-micro text-gray-800 dark:text-lia-text-primary bg-lia-bg-primary p-2 rounded-md border border-lia-border-subtle mt-1">
                               {suggestion.content.subject}
                             </p>
                           </div>
                         )}
 
                         <div className="mb-3">
-                          <span className="text-micro font-medium text-gray-600">Mensagem:</span>
-                          <p className="text-micro text-gray-800 dark:text-gray-200 bg-white p-2 rounded-md border border-gray-100 mt-1 whitespace-pre-line">
+                          <span className="text-micro font-medium lia-text-base">Mensagem:</span>
+                          <p className="text-micro text-gray-800 dark:text-lia-text-primary bg-lia-bg-primary p-2 rounded-md border border-lia-border-subtle mt-1 whitespace-pre-line">
                             {suggestion.content.message}
                           </p>
                         </div>
 
-                        <div className="border-t border-gray-100 pt-2">
-                          <span className="text-micro font-medium text-gray-600">Por que a LIA sugere:</span>
-                          <ul className="text-micro text-gray-600 mt-1 space-y-1">
+                        <div className="border-t border-lia-border-subtle pt-2">
+                          <span className="text-micro font-medium lia-text-base">Por que a LIA sugere:</span>
+                          <ul className="text-micro lia-text-base mt-1 space-y-1">
                             {suggestion.reasons.map((reason: string, idx: number) => (
                               <li key={idx} className="flex items-start gap-1">
-                                <span className="text-gray-600 dark:text-gray-400 mt-0.5">•</span>
+                                <span className="text-gray-600 dark:text-lia-text-tertiary mt-0.5">•</span>
                                 {reason}
                               </li>
                             ))}
@@ -561,58 +561,58 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
             <div className="space-y-4">
               {activeTab === 'email' && (
                 <div>
-                  <label className="block text-xs font-medium text-gray-800 mb-1.5">
+                  <label className="block text-xs font-medium lia-text-strong mb-1.5">
                     Assunto
                   </label>
                   <input
                     type="text"
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-gray-200 rounded-md placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-900 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200"
+                    className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md placeholder:lia-text-secondary focus:outline-none focus:ring-1 focus:ring-gray-900 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-lia-text-primary"
                     placeholder="Assunto do email"
                   />
                 </div>
               )}
 
               <div>
-                <label className="block text-xs font-medium text-gray-800 mb-1.5">
+                <label className="block text-xs font-medium lia-text-strong mb-1.5">
                   Mensagem
                 </label>
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   rows={activeTab === 'email' ? 8 : 6}
-                  className="w-full px-3 py-2 text-xs border border-gray-200 rounded-md placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                  className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md placeholder:lia-text-secondary focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
                   placeholder={`Digite sua mensagem...`}
                 />
               </div>
 
               {activeTab === 'phone' && (
-                <div className="bg-gray-50 p-4 rounded-md border border-gray-100">
+                <div className="bg-gray-50 p-4 rounded-md border border-lia-border-subtle">
                   <div className="flex items-center gap-2 mb-2">
-                    <Phone className="w-4 h-4 text-gray-600" />
-                    <span className="text-xs font-medium text-gray-800">
+                    <Phone className="w-4 h-4 lia-text-base" />
+                    <span className="text-xs font-medium lia-text-strong">
                       Ligação Telefônica
                     </span>
                   </div>
-                  <p className="text-xs text-gray-800 dark:text-gray-200">
+                  <p className="text-xs text-gray-800 dark:text-lia-text-primary">
                     Ligue para {candidate.phone} e registre as informações da conversa no campo de mensagem acima.
                   </p>
                 </div>
               )}
             </div>
 
-            <div className="flex justify-end gap-3 mt-6 pt-5 border-t border-gray-100">
+            <div className="flex justify-end gap-3 mt-6 pt-5 border-t border-lia-border-subtle">
               <button
                 onClick={onClose}
-                className="px-3 py-1.5 text-xs font-medium rounded-md border border-gray-200 bg-white text-gray-800 dark:text-gray-200 hover:bg-gray-50 transition-all"
+                className="px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 transition-colors"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSend}
                 disabled={isSending || !message.trim()}
-                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md bg-gray-900 hover:bg-gray-800 text-white transition-all disabled:opacity-50"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md bg-gray-900 hover:bg-gray-800 text-white transition-colors disabled:opacity-50"
               >
                 {isSending ? (
                   <>

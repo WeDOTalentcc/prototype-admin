@@ -249,7 +249,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
       case 'alta': return 'bg-status-error/15 text-status-error border-status-error/30'
       case 'media': return 'bg-status-warning/15 text-status-warning border-status-warning/30'
       case 'baixa': return 'bg-status-success/15 text-status-success border-status-success/30'
-      default: return 'bg-gray-100 text-gray-800 border-gray-200'
+      default: return 'bg-gray-100 lia-text-strong border-lia-border-subtle'
     }
   }
 
@@ -274,15 +274,15 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
 
             <div className="flex items-center gap-3">
               {/* Seletor de visualização */}
-              <div className="flex bg-gray-100 dark:bg-gray-800 rounded-md p-1">
+              <div className="flex bg-gray-100 dark:bg-lia-bg-secondary rounded-md p-1">
                 {(['regioes', 'estados'] as const).map((mode) => (
                   <button
                     key={mode}
                     onClick={() => setViewMode(mode)}
                     className={`px-3 py-1 text-xs rounded-md transition-colors ${
-                      viewMode === mode
+ viewMode === mode
                         ? 'bg-wedo-orange/10 text-white'
-                        : 'text-gray-600 hover:text-gray-900'
+                        : 'lia-text-base hover:lia-text-strong'
                     }`}
                   >
                     {mode === 'regioes' ? 'Por Região' : 'Por Estado'}
@@ -291,15 +291,15 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
               </div>
 
               {/* Seletor de ordenação */}
-              <div className="flex bg-gray-100 dark:bg-gray-800 rounded-md p-1">
+              <div className="flex bg-gray-100 dark:bg-lia-bg-secondary rounded-md p-1">
                 {(['total', 'salario', 'crescimento'] as const).map((sort) => (
                   <button
                     key={sort}
                     onClick={() => setSortBy(sort)}
                     className={`px-3 py-1 text-xs rounded-md transition-colors ${
-                      sortBy === sort
-                        ? 'bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900'
-                        : 'text-gray-600 hover:text-gray-900'
+ sortBy === sort
+                        ? 'bg-gray-900 text-white'
+                        : 'lia-text-base hover:lia-text-strong'
                     }`}
                   >
                     {sort === 'total' ? 'Total' :
@@ -323,17 +323,17 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
               )
 
               return (
-                <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden">
+                <div key={index} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md overflow-hidden">
 
                   {/* Header da região/estado */}
                   <div
-                    className="p-4 bg-gray-50 dark:bg-gray-800 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    className="p-4 bg-gray-50 dark:bg-lia-bg-secondary cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                     onClick={() => isRegion && toggleRegionExpansion(item.regiao)}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         {isRegion && (
-                          <button className="text-gray-600 hover:text-gray-800">
+                          <button className="lia-text-base hover:lia-text-strong">
                             {isExpanded ?
                               <ChevronUp className="w-4 h-4" /> :
                               <ChevronDown className="w-4 h-4" />
@@ -342,7 +342,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
                         )}
 
                         <div>
-                          <h3 className="font-medium text-gray-950 dark:text-gray-50">
+                          <h3 className="font-medium text-gray-950">
                             {isRegion ? item.regiao : `${item.estado} - ${item.cidade}`}
                           </h3>
                           <div className="flex items-center gap-2 mt-1">
@@ -360,15 +360,15 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
 
                       <div className="flex items-center gap-6 text-sm">
                         <div className="text-center">
-                          <div className="text-lg font-bold text-gray-950 dark:text-gray-50">
+                          <div className="text-lg font-bold text-gray-950">
                             R$ {item.salarioMedio.toLocaleString()}
                           </div>
-                          <div className="text-xs text-gray-800 dark:text-gray-200">Salário médio</div>
+                          <div className="text-xs text-gray-800 dark:text-lia-text-primary">Salário médio</div>
                         </div>
 
                         <div className="text-center">
                           <div className={`text-lg font-bold flex items-center gap-1 ${
-                            (item.crescimentoMedio || item.crescimento) > 0 ? 'text-status-success' : 'text-status-error'
+ (item.crescimentoMedio || item.crescimento) > 0 ? 'text-status-success' : 'text-status-error'
                           }`}>
                             {(item.crescimentoMedio || item.crescimento) > 0 ?
                               <ArrowUp className="w-4 h-4" /> :
@@ -376,21 +376,21 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
                             }
                             {Math.abs(item.crescimentoMedio || item.crescimento).toFixed(1)}%
                           </div>
-                          <div className="text-xs text-gray-800 dark:text-gray-200">Crescimento</div>
+                          <div className="text-xs text-gray-800 dark:text-lia-text-primary">Crescimento</div>
                         </div>
                       </div>
                     </div>
 
                     {/* Barra de distribuição de modelos de trabalho */}
                     <div className="mt-4">
-                      <div className="flex rounded-full overflow-hidden h-3 bg-gray-200 dark:bg-gray-700">
+                      <div className="flex rounded-full overflow-hidden h-3 bg-gray-200 dark:bg-lia-bg-elevated">
                         <div
                           className="bg-status-success"
                           style={{width: `${percentages.remoto}%`}}
                           title={`Remoto: ${item.remoto} (${percentages.remoto.toFixed(1)}%)`}
                         />
                         <div
-                          className="bg-gray-700 dark:bg-gray-300"
+                          className="bg-gray-700"
                           style={{width: `${percentages.hibrido}%`}}
                           title={`Híbrido: ${item.hibrido} (${percentages.hibrido.toFixed(1)}%)`}
                         />
@@ -401,18 +401,18 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
                         />
                       </div>
 
-                      <div className="flex items-center justify-between mt-2 text-xs text-gray-600 dark:text-gray-400">
+                      <div className="flex items-center justify-between mt-2 text-xs text-gray-600 dark:text-lia-text-tertiary">
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-1">
                             <Home className="w-3 h-3 text-status-success" />
                             <span>Remoto: {item.remoto}</span>
                           </div>
                           <div className="flex items-center gap-1">
-                            <Globe className="w-3 h-3 text-gray-600 dark:text-gray-400" />
+                            <Globe className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
                             <span>Híbrido: {item.hibrido}</span>
                           </div>
                           <div className="flex items-center gap-1">
-                            <Building className="w-3 h-3 text-gray-600" />
+                            <Building className="w-3 h-3 lia-text-base" />
                             <span>Presencial: {item.presencial}</span>
                           </div>
                         </div>
@@ -422,12 +422,12 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
 
                   {/* Detalhes expandidos para regiões */}
                   {isRegion && isExpanded && (
-                    <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                    <div className="p-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {item.estados.map((estado: RegionData, estadoIndex: number) => (
-                          <div key={estadoIndex} className="p-3 bg-white dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700">
+                          <div key={estadoIndex} className="p-3 bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
                             <div className="flex items-center justify-between mb-2">
-                              <h4 className="font-medium text-gray-950 dark:text-gray-50">
+                              <h4 className="font-medium text-gray-950">
                                 {estado.estado} - {estado.cidade}
                               </h4>
                               <Badge variant="outline" className="text-xs">
@@ -436,13 +436,13 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
                             </div>
 
                             <div className="space-y-2">
-                              <div className="flex rounded-full overflow-hidden h-2 bg-gray-200 dark:bg-gray-700">
+                              <div className="flex rounded-full overflow-hidden h-2 bg-gray-200 dark:bg-lia-bg-elevated">
                                 <div
                                   className="bg-status-success"
                                   style={{width: `${(estado.remoto / estado.total) * 100}%`}}
                                 />
                                 <div
-                                  className="bg-gray-700 dark:bg-gray-300"
+                                  className="bg-gray-700"
                                   style={{width: `${(estado.hibrido / estado.total) * 100}%`}}
                                 />
                                 <div
@@ -451,7 +451,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
                                 />
                               </div>
 
-                              <div className="text-xs text-gray-600 dark:text-gray-400">
+                              <div className="text-xs text-gray-600 dark:text-lia-text-tertiary">
                                 <div>R$ {estado.salarioMedio.toLocaleString()} salário médio</div>
                                 <div className={estado.crescimento > 0 ? 'text-status-success' : 'text-status-error'}>
                                   {estado.crescimento > 0 ? '+' : ''}{estado.crescimento}% crescimento
@@ -460,7 +460,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
 
                               {/* Principais empresas */}
                               <div>
-                                <div className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-1">
+                                <div className="text-xs font-medium text-gray-800 dark:text-lia-text-primary mb-1">
                                   Principais Empresas:
                                 </div>
                                 <div className="flex flex-wrap gap-1">
@@ -480,19 +480,19 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
 
                   {/* Detalhes para estados individuais */}
                   {!isRegion && (
-                    <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                    <div className="p-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                         {/* Principais empresas */}
                         <div>
-                          <h4 className="text-sm font-medium text-gray-950 dark:text-gray-50 mb-2">
+                          <h4 className="text-sm font-medium text-gray-950 mb-2">
                             Principais Empresas
                           </h4>
                           <div className="space-y-2">
                             {item.principaisEmpresas.map((empresa: string, idx: number) => (
                               <div key={idx} className="flex items-center gap-2">
-                                <Building className="w-3 h-3 text-gray-600" />
-                                <span className="text-sm text-gray-600 dark:text-gray-400">{empresa}</span>
+                                <Building className="w-3 h-3 lia-text-base" />
+                                <span className="text-sm text-gray-600 dark:text-lia-text-tertiary">{empresa}</span>
                               </div>
                             ))}
                           </div>
@@ -500,7 +500,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
 
                         {/* Cargos populares */}
                         <div>
-                          <h4 className="text-sm font-medium text-gray-950 dark:text-gray-50 mb-2">
+                          <h4 className="text-sm font-medium text-gray-950 mb-2">
                             Cargos Mais Populares
                           </h4>
                           <div className="flex flex-wrap gap-2">

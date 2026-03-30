@@ -48,8 +48,8 @@ const quickLinks = [
     description: 'Trilha de auditoria completa para conformidade SOX',
     href: '/admin/compliance/auditoria/logs',
     icon: ScrollText,
-    color: 'text-gray-600 dark:text-gray-400',
-    bgColor: 'bg-gray-100 dark:bg-gray-800',
+    color: 'lia-text-600 dark:text-lia-text-tertiary',
+    bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary',
   },
   {
     title: 'Auditorias de Bias',
@@ -96,9 +96,9 @@ const getActivityIcon = (type: string) => {
     case 'sod':
       return <Users className="w-4 h-4 text-status-warning" />
     case 'logs':
-      return <ScrollText className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+      return <ScrollText className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
     default:
-      return <Activity className="w-4 h-4 text-gray-500" />
+      return <Activity className="w-4 h-4 lia-text-500" />
   }
 }
 
@@ -107,7 +107,7 @@ const getAuditTypeBadge = (type: string) => {
     case 'bias':
       return <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple">Bias</Badge>
     case 'external':
-      return <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">Externa</Badge>
+      return <Badge className="bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary">Externa</Badge>
     case 'internal':
       return <Badge className="bg-status-success/15 text-status-success dark:bg-status-success/20 dark:text-status-success">Interna</Badge>
     case 'sod':
@@ -133,15 +133,15 @@ export default function AuditoriaPage() {
           <div 
             className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
           >
-            <ClipboardList className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <ClipboardList className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
           </div>
           <div>
             <h1 
-              className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+              className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary"
             >
               Sala de Auditoria
             </h1>
-            <p className="text-sm text-gray-400 dark:text-gray-500">
+            <p className="text-sm lia-text-400 dark:lia-text-500">
               Central de recursos para auditores internos e externos
             </p>
           </div>
@@ -152,16 +152,16 @@ export default function AuditoriaPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Total de Registros</p>
-                  <p className="text-2xl font-semibold text-gray-950 dark:text-gray-50">
+                  <p className="text-sm lia-text-500 dark:text-lia-text-tertiary">Total de Registros</p>
+                  <p className="text-2xl font-semibold lia-text-950 dark:lia-text-50">
                     {dashboardStats.totalLogs.toLocaleString('pt-BR')}
                   </p>
                 </div>
-                <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-md">
-                  <ScrollText className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+                <div className="p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+                  <ScrollText className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />
                 </div>
               </div>
-              <div className="mt-2 flex items-center gap-1 text-xs text-gray-500">
+              <div className="mt-2 flex items-center gap-1 text-xs lia-text-500">
                 <Clock className="w-3 h-3" />
                 <span>Retenção: 7 anos (SOX)</span>
               </div>
@@ -172,8 +172,8 @@ export default function AuditoriaPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Última Auditoria de Bias</p>
-                  <p className="text-2xl font-semibold text-gray-950 dark:text-gray-50">
+                  <p className="text-sm lia-text-500 dark:text-lia-text-tertiary">Última Auditoria de Bias</p>
+                  <p className="text-2xl font-semibold lia-text-950 dark:lia-text-50">
                     {formatDate(dashboardStats.lastBiasAudit)}
                   </p>
                 </div>
@@ -192,8 +192,8 @@ export default function AuditoriaPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Conflitos SoD Detectados</p>
-                  <p className="text-2xl font-semibold text-gray-950 dark:text-gray-50">
+                  <p className="text-sm lia-text-500 dark:text-lia-text-tertiary">Conflitos SoD Detectados</p>
+                  <p className="text-2xl font-semibold lia-text-950 dark:lia-text-50">
                     {dashboardStats.sodConflicts}
                   </p>
                 </div>
@@ -212,8 +212,8 @@ export default function AuditoriaPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Taxa de Treinamentos</p>
-                  <p className="text-2xl font-semibold text-gray-950 dark:text-gray-50">
+                  <p className="text-sm lia-text-500 dark:text-lia-text-tertiary">Taxa de Treinamentos</p>
+                  <p className="text-2xl font-semibold lia-text-950 dark:lia-text-50">
                     {dashboardStats.trainingRate}%
                   </p>
                 </div>
@@ -243,7 +243,7 @@ export default function AuditoriaPage() {
                       <Link
                         key={link.href}
                         href={link.href}
-                        className="group p-4 rounded-md border border-gray-200 dark:border-gray-700 hover:border-gray-900 dark:hover:border-gray-50 hover:transition-all"
+                        className="group p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-900 dark:hover:border-gray-50 transition-colors"
                       >
                         <div className="flex items-start gap-3">
                           <div className={`p-2 rounded-md ${link.bgColor}`}>
@@ -251,12 +251,12 @@ export default function AuditoriaPage() {
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center justify-between">
-                              <h3 className="font-medium text-gray-950 dark:text-gray-50 group-hover:text-gray-900 dark:group-hover:text-gray-50 transition-colors">
+                              <h3 className="font-medium lia-text-950 dark:lia-text-50 group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors">
                                 {link.title}
                               </h3>
-                              <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-50 transition-colors" />
+                              <ArrowRight className="w-4 h-4 lia-text-400 group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors" />
                             </div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            <p className="text-sm lia-text-500 dark:text-lia-text-tertiary mt-1">
                               {link.description}
                             </p>
                           </div>
@@ -272,7 +272,7 @@ export default function AuditoriaPage() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base font-medium flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                    <Calendar className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                     Auditorias Programadas
                   </CardTitle>
                   <Badge variant="outline">{scheduledAudits.length} próximas</Badge>
@@ -283,14 +283,14 @@ export default function AuditoriaPage() {
                   {scheduledAudits.map((audit) => (
                     <div 
                       key={audit.id}
-                      className="flex items-center justify-between p-3 rounded-md border border-gray-200 dark:border-gray-700 hover:border-gray-900 dark:hover:border-gray-50 transition-colors"
+                      className="flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-900 dark:hover:border-gray-50 transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <div className="flex items-center gap-2 text-sm lia-text-500">
                           <Calendar className="w-4 h-4" />
                           {formatDate(audit.date)}
                         </div>
-                        <span className="text-sm font-medium text-gray-950 dark:text-gray-50">
+                        <span className="text-sm font-medium lia-text-950 dark:lia-text-50">
                           {audit.name}
                         </span>
                       </div>
@@ -310,7 +310,7 @@ export default function AuditoriaPage() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base font-medium flex items-center gap-2">
-                    <Activity className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                    <Activity className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                     Atividade Recente
                   </CardTitle>
                 </div>
@@ -323,13 +323,13 @@ export default function AuditoriaPage() {
                         {getActivityIcon(activity.type)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-gray-950 dark:text-gray-50 truncate">
+                        <p className="text-sm lia-text-950 dark:lia-text-50 truncate">
                           {activity.action}
                         </p>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs text-gray-500">{activity.user}</span>
-                          <span className="text-xs text-gray-400">•</span>
-                          <span className="text-xs text-gray-500">{activity.time}</span>
+                          <span className="text-xs lia-text-500">{activity.user}</span>
+                          <span className="text-xs lia-text-400">•</span>
+                          <span className="text-xs lia-text-500">{activity.time}</span>
                         </div>
                       </div>
                     </div>
@@ -345,10 +345,10 @@ export default function AuditoriaPage() {
                     <CheckCircle2 className="w-5 h-5 text-status-success" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-950 dark:text-gray-50">
+                    <p className="text-sm font-medium lia-text-950 dark:lia-text-50">
                       Conformidade SOX
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs lia-text-500">
                       Retenção de 7 anos ativa (Section 802)
                     </p>
                   </div>
@@ -364,10 +364,10 @@ export default function AuditoriaPage() {
                     <Scale className="w-5 h-5 text-wedo-purple" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-950 dark:text-gray-50">
+                    <p className="text-sm font-medium lia-text-950 dark:lia-text-50">
                       NYC LL144 Compliance
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs lia-text-500">
                       Auditoria de bias ativa
                     </p>
                   </div>

@@ -354,10 +354,10 @@ export function CultureAnalyzer({
 
   if (status === "idle") {
     return (
-      <Card className="rounded-xl bg-gray-50/50 dark:bg-gray-900/20 backdrop-blur-sm border border-gray-200 dark:border-gray-700">
+      <Card className="rounded-xl bg-gray-50/50 dark:bg-lia-bg-primary/20 backdrop-blur-sm border border-lia-border-subtle dark:border-lia-border-subtle">
         <CardContent className="p-6 text-center">
           <div 
-            className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-gray-900 dark:bg-gray-50"
+            className="w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-4 bg-gray-900 dark:lia-bg-50"
           >
             <Brain className="w-7 h-7 text-white" />
           </div>
@@ -371,7 +371,7 @@ export function CultureAnalyzer({
           <Button
             onClick={() => startAnalysis(false)}
             disabled={!websiteUrl}
-            className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             <Brain className="w-4 h-4 text-wedo-cyan" />
             Analisar Empresa com IA
@@ -392,10 +392,10 @@ export function CultureAnalyzer({
     const isLiaStep = (stepKey: string) => stepKey === "analyzing" || stepKey === "completed"
 
     return (
-      <Card className="rounded-xl bg-gray-50/50 dark:bg-gray-900/20 backdrop-blur-sm border border-gray-200 dark:border-gray-700">
+      <Card className="rounded-xl bg-gray-50/50 dark:bg-lia-bg-primary/20 backdrop-blur-sm border border-lia-border-subtle dark:border-lia-border-subtle">
         <CardContent className="p-6">
           <div className="flex items-center gap-4 mb-6">
-            <div className="w-12 h-12 rounded-md flex items-center justify-center relative overflow-hidden bg-gray-900 dark:bg-gray-50">
+            <div className="w-12 h-12 rounded-md flex items-center justify-center relative overflow-hidden bg-gray-900 dark:lia-bg-50">
               <Loader2 className="w-6 h-6 text-white animate-spin" />
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
             </div>
@@ -403,20 +403,20 @@ export function CultureAnalyzer({
               <h3 className={textStyles.h3}>
                 Analisando {websiteUrl}
               </h3>
-              <p className={`${textStyles.bodySmall} text-gray-600 dark:text-gray-400 transition-all duration-300`}>
+              <p className={`${textStyles.bodySmall} lia-text-600 dark:text-lia-text-tertiary transition-colors duration-300`}>
                 {currentStep || "Iniciando..."}
               </p>
             </div>
             <div className="text-right">
-              <span className="text-2xl font-bold tabular-nums text-gray-600 dark:text-gray-400">
+              <span className="text-2xl font-bold tabular-nums lia-text-600 dark:text-lia-text-tertiary">
                 {roundedProgress}%
               </span>
             </div>
           </div>
 
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-6 overflow-hidden shadow-inner">
+          <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-3 mb-6 overflow-hidden shadow-inner">
             <div
-              className="h-3 rounded-full transition-all duration-700 ease-out relative bg-gray-900 dark:bg-gray-50"
+              className="h-3 rounded-full transition-[width,height] duration-700 ease-out relative bg-gray-900 dark:lia-bg-50"
               style={{width: `${displayProgress}%`}}
             >
               <div 
@@ -424,7 +424,7 @@ export function CultureAnalyzer({
                 style={{animation: 'shimmer 2s infinite',
                   backgroundSize: '200% 100%'}}
               />
-              <div className="absolute right-0 top-0 bottom-0 w-2 bg-white/50 rounded-full blur-sm" />
+              <div className="absolute right-0 top-0 bottom-0 w-2 bg-lia-bg-primary/50 rounded-full blur-sm" />
             </div>
           </div>
 
@@ -438,25 +438,25 @@ export function CultureAnalyzer({
               return (
                 <div
                   key={step.key}
-                  className={`flex flex-col items-center p-2 rounded-md transition-all duration-300 ${
+                  className={`flex flex-col items-center p-2 rounded-md transition-colors duration-300 ${
                     isActive
                       ? isLia 
-                        ? "bg-gray-100 dark:bg-gray-800 ring-2 ring-gray-900/20 scale-105"
-                        : "bg-gray-100 dark:bg-gray-800 ring-2 ring-gray-400 scale-105"
+                        ? "bg-gray-100 dark:bg-lia-bg-secondary ring-2 ring-gray-900/20 scale-105"
+                        : "bg-gray-100 dark:bg-lia-bg-secondary ring-2 ring-gray-400 scale-105"
                       : isCompleted
                         ? "bg-status-success/10 dark:bg-status-success/30"
-                        : "bg-gray-50 dark:bg-gray-800/50 opacity-60"
+                        : "bg-gray-50 dark:bg-lia-bg-secondary/50 opacity-60"
                   }`}
                 >
                   <div 
-                    className={`w-7 h-7 rounded-md flex items-center justify-center mb-1.5 transition-all duration-300 ${
+                    className={`w-7 h-7 rounded-md flex items-center justify-center mb-1.5 transition-colors duration-300 ${
                       isCompleted
                         ? "bg-status-success text-white"
                         : isActive
                           ? isLia
-                            ? "bg-gray-900 dark:bg-gray-50 text-white"
-                            : "bg-gray-700 dark:bg-gray-300 text-white dark:text-gray-900"
-                          : "bg-gray-200 dark:bg-gray-700 text-gray-500"
+                            ? "bg-gray-900 dark:lia-bg-50 text-white"
+                            : "bg-gray-700 dark:lia-bg-300 text-white dark:lia-text-900"
+                          : "bg-gray-200 dark:bg-lia-bg-elevated lia-text-500"
                     }`}
                   >
                     {isCompleted ? (
@@ -471,11 +471,11 @@ export function CultureAnalyzer({
                     className={`${textStyles.caption} text-center leading-tight ${
                       isActive
                         ? isLia
-                          ? "text-wedo-cyan-dark dark:text-gray-400"
-                          : "text-gray-700 dark:text-gray-300"
+                          ? "text-wedo-cyan-dark dark:text-lia-text-tertiary"
+                          : "lia-text-700 dark:text-lia-text-secondary"
                         : isCompleted
                           ? "text-status-success dark:text-status-success"
-                          : "text-gray-400 dark:text-gray-500"
+                          : "lia-text-400 dark:lia-text-500"
                     }`}
                   >
                     {step.label}
@@ -486,7 +486,7 @@ export function CultureAnalyzer({
           </div>
 
           {pagesInfo.scraped > 0 && (
-            <div className={`mt-4 flex items-center justify-center gap-4 ${textStyles.caption} text-gray-500 dark:text-gray-400`}>
+            <div className={`mt-4 flex items-center justify-center gap-4 ${textStyles.caption} lia-text-500 dark:text-lia-text-tertiary`}>
               <span className="flex items-center gap-1">
                 <Globe className="w-3.5 h-3.5" />
                 {pagesInfo.discovered} páginas encontradas
@@ -512,7 +512,7 @@ export function CultureAnalyzer({
                 <AlertCircle className="w-5 h-5" />
                 Não foi possível analisar automaticamente
               </AlertDialogTitle>
-              <div className={`${textStyles.body} text-gray-600 space-y-3`}>
+              <div className={`${textStyles.body} lia-text-600 space-y-3`}>
                 <span className="block">
                   {errorMessage || "O website não pôde ser analisado automaticamente."}
                 </span>
@@ -540,7 +540,7 @@ export function CultureAnalyzer({
                     setShowErrorDialog(false)
                     onManualEdit()
                   }}
-                  className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                  className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
                 >
                   <Edit className="w-4 h-4" />
                   Preencher Manualmente
@@ -552,7 +552,7 @@ export function CultureAnalyzer({
 
         <Card className="rounded-xl border border-status-error/30 dark:border-status-error/30 bg-status-error/10/50 dark:bg-status-error/20 backdrop-blur-sm">
           <CardContent className="p-6 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-status-error/15 dark:bg-status-error/50 flex items-center justify-center mx-auto mb-4">
+            <div className="w-14 h-14 rounded-xl bg-status-error/15 dark:bg-status-error/50 flex items-center justify-center mx-auto mb-4">
               <AlertCircle className="w-7 h-7 text-status-error" />
             </div>
             <h3 className={`${textStyles.h3} mb-2`}>
@@ -561,7 +561,7 @@ export function CultureAnalyzer({
             <p className={`${textStyles.caption} text-status-error dark:text-status-error mb-2`}>
               {errorMessage || "Não foi possível analisar o website. Verifique a URL e tente novamente."}
             </p>
-            <p className={`${textStyles.caption} text-gray-500 mb-4`}>
+            <p className={`${textStyles.caption} lia-text-500 mb-4`}>
               Sites com proteção anti-bot ou carregamento dinâmico podem não ser analisados automaticamente.
             </p>
             <div className="flex gap-2 justify-center">
@@ -576,7 +576,7 @@ export function CultureAnalyzer({
               {onManualEdit && (
                 <Button
                   onClick={onManualEdit}
-                  className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                  className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
                 >
                   <Edit className="w-4 h-4" />
                   Preencher Manualmente

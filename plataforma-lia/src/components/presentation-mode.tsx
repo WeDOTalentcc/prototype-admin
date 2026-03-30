@@ -53,12 +53,12 @@ const mockData = {
 
 // Componente de KPI memoizado
 const KPICard = React.memo(({ kpi, index }: { kpi: { label: string; value: number; change: number; trend: string; color: string }; index: number }) => (
-  <Card key={index} className="bg-white dark:bg-gray-800 border-2 hover:transition-all">
+  <Card key={index} className="bg-white dark:bg-lia-bg-secondary border-2 transition-colors">
     <CardContent className="p-8 text-center">
-      <div className="text-5xl font-bold text-gray-950 dark:text-gray-50 mb-4">
+      <div className="text-5xl font-bold text-gray-950 mb-4">
         {kpi.value}
       </div>
-      <div className="text-xl font-medium text-gray-800 dark:text-gray-200 mb-4">
+      <div className="text-xl font-medium text-gray-800 dark:text-lia-text-primary mb-4">
         {kpi.label}
       </div>
       <div className="flex items-center justify-center gap-2">
@@ -67,7 +67,7 @@ const KPICard = React.memo(({ kpi, index }: { kpi: { label: string; value: numbe
           <ArrowDown className="w-6 h-6 text-status-error" />
         }
         <span className={`text-lg font-medium ${
-          kpi.trend === "up" ? "text-status-success" : "text-status-error"
+ kpi.trend === "up" ? "text-status-success" : "text-status-error"
         }`}>
           {Math.abs(kpi.change)}%
         </span>
@@ -84,10 +84,10 @@ const KPISlide = React.memo(({ data }: { data: Record<string, unknown> }) => {
 
   return (
     <div className="h-full flex flex-col justify-center p-16">
-      <h1 className="text-6xl font-bold text-gray-950 dark:text-gray-50 mb-4 text-center">
+      <h1 className="text-6xl font-bold text-gray-950 mb-4 text-center">
         Indicadores Principais
       </h1>
-      <p className="text-2xl text-gray-600 dark:text-gray-400 text-center mb-16">
+      <p className="text-2xl text-gray-600 dark:text-lia-text-tertiary text-center mb-16">
         Performance de Recrutamento - {currentDate}
       </p>
 
@@ -104,33 +104,33 @@ KPISlide.displayName = 'KPISlide'
 
 // Componente de departamento memoizado
 const DepartmentCard = React.memo(({ dept, index }: { dept: { name: string; efficiency: number; openPositions: number; avgDays: number }; index: number }) => (
-  <Card key={index} className="bg-white dark:bg-gray-800 border">
+  <Card key={index} className="bg-white dark:bg-lia-bg-secondary border">
     <CardContent className="p-8">
       <div className="text-center mb-6">
-        <h3 className="text-3xl font-bold text-gray-950 dark:text-gray-50 mb-2">
+        <h3 className="text-3xl font-bold text-gray-950 mb-2">
           {dept.name}
         </h3>
-        <div className="text-6xl font-bold text-gray-900 dark:text-gray-50 mb-4">
+        <div className="text-6xl font-bold text-gray-900 mb-4">
           {dept.efficiency}%
         </div>
-        <div className="text-lg text-gray-600 dark:text-gray-400">
+        <div className="text-lg text-gray-600 dark:text-lia-text-tertiary">
           Eficiência
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4 text-center">
         <div>
-          <div className="text-2xl font-bold text-gray-950 dark:text-gray-50">
+          <div className="text-2xl font-bold text-gray-950">
             {dept.jobs}
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="text-sm text-gray-600 dark:text-lia-text-tertiary">
             Vagas
           </div>
         </div>
         <div>
-          <div className="text-2xl font-bold text-gray-950 dark:text-gray-50">
+          <div className="text-2xl font-bold text-gray-950">
             {dept.hires}
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="text-sm text-gray-600 dark:text-lia-text-tertiary">
             Contratações
           </div>
         </div>
@@ -143,10 +143,10 @@ DepartmentCard.displayName = 'DepartmentCard'
 
 const DepartmentSlide = React.memo(({ data }: { data: Record<string, unknown> }) => (
   <div className="h-full flex flex-col justify-center p-16">
-    <h1 className="text-6xl font-bold text-gray-950 dark:text-gray-50 mb-4 text-center">
+    <h1 className="text-6xl font-bold text-gray-950 mb-4 text-center">
       Performance por Departamento
     </h1>
-    <p className="text-2xl text-gray-600 dark:text-gray-400 text-center mb-16">
+    <p className="text-2xl text-gray-600 dark:text-lia-text-tertiary text-center mb-16">
       Eficiência de Recrutamento por Área
     </p>
 
@@ -167,7 +167,7 @@ const AlertItem = React.memo(({ alert, index }: { alert: { type: string; message
       case "success": return <CheckCircle className="w-8 h-8 text-status-success" />
       case "warning": return <AlertTriangle className="w-8 h-8 text-status-warning" />
       case "error": return <AlertTriangle className="w-8 h-8 text-status-error" />
-      default: return <Activity className="w-8 h-8 text-gray-600 dark:text-gray-400" />
+      default: return <Activity className="w-8 h-8 text-gray-600 dark:text-lia-text-tertiary" />
     }
   }, [alert.type])
 
@@ -176,7 +176,7 @@ const AlertItem = React.memo(({ alert, index }: { alert: { type: string; message
       case "success": return "bg-status-success/10 border-status-success/30"
       case "warning": return "bg-status-warning/10 border-status-warning/30"
       case "error": return "bg-status-error/10 border-status-error/30"
-      default: return "bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600"
+      default: return "bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default"
     }
   }, [alert.type])
 
@@ -184,7 +184,7 @@ const AlertItem = React.memo(({ alert, index }: { alert: { type: string; message
     <Card key={index} className={`border ${getBgColor}`}>
       <CardContent className="p-6 flex items-center gap-4">
         {getIcon}
-        <div className="text-xl font-medium text-gray-950 dark:text-gray-50">
+        <div className="text-xl font-medium text-gray-950">
           {alert.message}
         </div>
       </CardContent>
@@ -196,10 +196,10 @@ AlertItem.displayName = 'AlertItem'
 
 const AlertsSlide = React.memo(({ data }: { data: Record<string, unknown> }) => (
   <div className="h-full flex flex-col justify-center p-16">
-    <h1 className="text-6xl font-bold text-gray-950 dark:text-gray-50 mb-4 text-center">
+    <h1 className="text-6xl font-bold text-gray-950 mb-4 text-center">
       Alertas e Status
     </h1>
-    <p className="text-2xl text-gray-600 dark:text-gray-400 text-center mb-16">
+    <p className="text-2xl text-gray-600 dark:text-lia-text-tertiary text-center mb-16">
       Monitoramento em Tempo Real
     </p>
 
@@ -329,9 +329,9 @@ export function PresentationMode({ isActive, onToggle, currentPage, data }: Pres
   const CurrentSlideComponent = slides[currentSlide]?.component
 
   return (
-    <div className="fixed inset-0 bg-white dark:bg-gray-900 z-50 flex flex-col">
+    <div className="fixed inset-0 bg-white dark:bg-lia-bg-primary z-50 flex flex-col">
       {/* Header Controls */}
-      <div className="flex items-center justify-between p-4 bg-gray-100 dark:bg-gray-800 border-b">
+      <div className="flex items-center justify-between p-4 bg-gray-100 dark:bg-lia-bg-secondary border-b">
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
@@ -353,7 +353,7 @@ export function PresentationMode({ isActive, onToggle, currentPage, data }: Pres
               <ChevronLeft className="w-4 h-4" />
             </Button>
 
-            <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            <span className="text-sm font-medium text-gray-600 dark:text-lia-text-tertiary">
               {currentSlide + 1} / {slides.length}
             </span>
 
@@ -369,7 +369,7 @@ export function PresentationMode({ isActive, onToggle, currentPage, data }: Pres
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="text-lg font-semibold text-gray-950 dark:text-gray-50">
+          <div className="text-lg font-semibold text-gray-950">
             {slides[currentSlide]?.title}
           </div>
 
@@ -386,9 +386,9 @@ export function PresentationMode({ isActive, onToggle, currentPage, data }: Pres
       </div>
 
       {/* Progress Bar */}
-      <div className="h-1 bg-gray-200 dark:bg-gray-700">
+      <div className="h-1 bg-gray-200 dark:bg-lia-bg-elevated">
         <div
-          className="h-full bg-gray-700 dark:bg-gray-300 transition-all duration-300"
+          className="h-full bg-gray-700 transition-[width,height] duration-300"
           style={{width: `${progress}%`}}
         />
       </div>
@@ -401,7 +401,7 @@ export function PresentationMode({ isActive, onToggle, currentPage, data }: Pres
       </div>
 
       {/* Footer Navigation */}
-      <div className="p-4 bg-gray-100 dark:bg-gray-800 border-t">
+      <div className="p-4 bg-gray-100 dark:bg-lia-bg-secondary border-t">
         <div className="flex items-center justify-center gap-2">
           {slides.map((slide, index) => (
             <Button

@@ -66,8 +66,8 @@ export function getStatusColor(status: JobStatus): string {
 
 export const priorityColors = {
   "alta": "bg-status-error/10 text-status-error dark:text-status-error",
-  "média": "bg-gray-50 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
-  "baixa": "bg-gray-50 text-gray-800 dark:bg-gray-800 dark:text-gray-500"
+  "média": "bg-gray-50 lia-text-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary",
+  "baixa": "bg-gray-50 lia-text-800 dark:bg-lia-bg-secondary dark:lia-text-500"
 }
 
 export const WSI_BLOCKS: WSIBlock[] = [

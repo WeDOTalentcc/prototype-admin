@@ -304,7 +304,7 @@ export function KanbanColumnRenderer({
 
   return (
     <div
-      className={`flex flex-col flex-1 bg-white rounded-md min-w-[275px] max-w-[368px] border border-gray-200 transition-all duration-300 ${
+      className={`flex flex-col flex-1 bg-lia-bg-primary rounded-md min-w-[275px] max-w-[368px] border border-lia-border-subtle transition-colors duration-300 ${
         isDropping ? "ring-2 ring-gray-400 bg-gray-50/20" : ""
       } h-[calc(100vh-16rem)]`}
       onDragOver={(e) => onDragOver(e, stageId)}
@@ -321,7 +321,7 @@ export function KanbanColumnRenderer({
               }`}
             ></div>
             <h3 className={`font-medium text-xs ${columnStyle.header}`}>{displayTitle}</h3>
-            <span className="text-micro text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded-full">
+            <span className="text-micro text-gray-800 dark:text-lia-text-primary bg-gray-100 dark:bg-lia-bg-secondary px-1.5 py-0.5 rounded-full">
               {filteredCandidates.length}
             </span>
             {stageId === "screening" && (currentJob.backendId || currentJob.id) && (
@@ -378,14 +378,14 @@ export function KanbanColumnRenderer({
             draggable
             onDragStart={(e) => onDragStart(e, candidate, stageId)}
             onDragEnd={onDragEnd}
-            className={`bg-white dark:bg-gray-800 rounded-md border relative overflow-hidden ${
+            className={`bg-white dark:bg-lia-bg-secondary rounded-md border relative overflow-hidden ${
               candidate.needsAction
-                ? "border-l-4 border-l-gray-800 border-gray-200 dark:border-gray-700"
+                ? "border-l-4 border-l-gray-800 border-lia-border-subtle dark:border-lia-border-subtle"
                 : (candidate.status === "triado_aprovado" || candidate.status === "triado") &&
                   stageId === "screening"
-                ? "border-l-4 border-l-green-500 border-gray-200 dark:border-gray-700 bg-status-success/10/30 dark:bg-status-success/20"
-                : "border-gray-200 dark:border-gray-700"
-            } hover:transition-all duration-300 cursor-move group`}
+                ? "border-l-4 border-l-green-500 border-lia-border-subtle dark:border-lia-border-subtle bg-status-success/10/30 dark:bg-status-success/20"
+                : "border-lia-border-subtle dark:border-lia-border-subtle"
+            } transition-colors duration-300 cursor-move group`}
             style={{animationDelay: `${index * 50}ms`,
               minHeight: "110px",
               transition: "all 0.3s ease",
@@ -421,7 +421,7 @@ export function KanbanColumnRenderer({
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
-                      className="p-1 hover:bg-gray-100 rounded-md transition-opacity bg-white/80"
+                      className="p-1 hover:bg-gray-100 rounded-md transition-opacity bg-lia-bg-primary/80"
                       onClick={(e) => e.stopPropagation()}
                       title="Mais opções"
                       aria-label="Mais opções do candidato"
@@ -435,7 +435,7 @@ export function KanbanColumnRenderer({
                         e.stopPropagation()
                         onSendEmail(candidate)
                       }}
-                      className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer"
+                      className="text-xs text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer"
                     >
                       <Mail className="w-3.5 h-3.5 mr-2 text-gray-500" />
                       Enviar Email
@@ -445,7 +445,7 @@ export function KanbanColumnRenderer({
                         e.stopPropagation()
                         onSendWhatsApp(candidate)
                       }}
-                      className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer"
+                      className="text-xs text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer"
                     >
                       <MessageCircle className="w-3.5 h-3.5 mr-2 text-gray-500" />
                       Enviar WhatsApp
@@ -455,7 +455,7 @@ export function KanbanColumnRenderer({
                         e.stopPropagation()
                         onScheduleInterview(candidate)
                       }}
-                      className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer"
+                      className="text-xs text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer"
                     >
                       <Calendar className="w-3.5 h-3.5 mr-2 text-gray-500" />
                       Agendar Entrevista
@@ -465,7 +465,7 @@ export function KanbanColumnRenderer({
                         e.stopPropagation()
                         onSendWSIInvite(candidate)
                       }}
-                      className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer"
+                      className="text-xs text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer"
                     >
                       <ClipboardList className="w-3.5 h-3.5 mr-2 text-gray-500" />
                       Triagem WSI
@@ -475,7 +475,7 @@ export function KanbanColumnRenderer({
                         e.stopPropagation()
                         onSendFeedback(candidate)
                       }}
-                      className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer"
+                      className="text-xs text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer"
                     >
                       <MessageSquareText className="w-3.5 h-3.5 mr-2 text-gray-500" />
                       Enviar Feedback
@@ -486,7 +486,7 @@ export function KanbanColumnRenderer({
                         e.stopPropagation()
                         onToggleShortList(candidate.id)
                       }}
-                      className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer"
+                      className="text-xs text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer"
                     >
                       <Bookmark
                         className={`w-3.5 h-3.5 mr-2 ${
@@ -504,7 +504,7 @@ export function KanbanColumnRenderer({
                         e.stopPropagation()
                         onToggleFavorite(candidate.id)
                       }}
-                      className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer"
+                      className="text-xs text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer"
                     >
                       <Heart
                         className={`w-3.5 h-3.5 mr-2 ${
@@ -522,7 +522,7 @@ export function KanbanColumnRenderer({
 
                 {/* Botão de Preview */}
                 <button
-                  className="p-1 hover:bg-gray-100 rounded-md transition-colors bg-white/80"
+                  className="p-1 hover:bg-gray-100 rounded-md transition-colors bg-lia-bg-primary/80"
                   onClick={(e) => {
                     e.stopPropagation()
                     onOpenPreview(candidate)
@@ -530,7 +530,7 @@ export function KanbanColumnRenderer({
                   title="Ver detalhes do candidato"
                   aria-label={`Ver detalhes de ${candidate.name}`}
                 >
-                  <Eye className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" aria-hidden="true" />
+                  <Eye className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" aria-hidden="true" />
                 </button>
               </div>
 
@@ -540,7 +540,7 @@ export function KanbanColumnRenderer({
                 <input
                   type="checkbox"
                   checked={selectedCandidates.has(candidate.id)}
-                  className="w-3 h-3 rounded-md cursor-pointer flex-shrink-0 border border-gray-200"
+                  className="w-3 h-3 rounded-md cursor-pointer flex-shrink-0 border border-lia-border-subtle"
                   aria-label={`Selecionar candidato ${candidate.name}`}
                   onClick={(e) => {
                     e.stopPropagation()
@@ -558,7 +558,7 @@ export function KanbanColumnRenderer({
                 {/* D9 — Checkbox para comparação de candidatos */}
                 <input
                   type="checkbox"
-                  className="w-3 h-3 rounded-md cursor-pointer flex-shrink-0 border border-gray-300 accent-gray-900"
+                  className="w-3 h-3 rounded-md cursor-pointer flex-shrink-0 border border-lia-border-default accent-gray-900"
                   checked={selectedForCompare.has(candidate.id)}
                   onChange={(e) => {
                     setSelectedForCompare((prev: Set<string>) => {
@@ -1025,7 +1025,7 @@ export function KanbanColumnRenderer({
               stageId === "screening" ||
               stageId.startsWith("interview_") ||
               stageId === "offer") && (
-              <div className="border-t border-gray-100 p-2 max-h-0 overflow-hidden opacity-0 group-hover:max-h-20 group-hover:opacity-100 transition-all duration-200 ease-out relative z-20 bg-gray-50">
+              <div className="border-t border-lia-border-subtle p-2 max-h-0 overflow-hidden opacity-0 group-hover:max-h-20 group-hover:opacity-100 transition-opacity duration-200 ease-out relative z-20 bg-gray-50">
                 {/* Botões para FUNIL */}
                 {stageId === "sourcing" && (
                   <div className="flex gap-1">

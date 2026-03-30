@@ -150,8 +150,8 @@ export function FilterAutocomplete({
     <div ref={containerRef} className={cn("relative", className)}>
       <div 
         className={cn(
-          "flex flex-wrap items-center gap-1.5 p-2 min-h-[38px] rounded-md border bg-white dark:bg-gray-800 transition-all",
-          isFocused ? "border-gray-300 ring-2 ring-gray-200" : "border-gray-200 dark:border-gray-700",
+          "flex flex-wrap items-center gap-1.5 p-2 min-h-[38px] rounded-md border bg-white dark:bg-lia-bg-secondary transition-colors",
+          isFocused ? "border-lia-border-default ring-2 ring-gray-200" : "border-lia-border-subtle dark:border-lia-border-subtle",
           disabled && "opacity-50 cursor-not-allowed"
         )}
         onClick={() => inputRef.current?.focus()}
@@ -159,7 +159,7 @@ export function FilterAutocomplete({
         {selectedValues.map((value) => (
           <span
             key={value}
-            className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-800 dark:text-gray-200 border border-gray-200"
+            className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-gray-100 lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle"
           >
             {value}
             <button
@@ -185,22 +185,22 @@ export function FilterAutocomplete({
             onKeyDown={handleKeyDown}
             placeholder={selectedValues.length === 0 ? placeholder : "Adicionar..."}
             disabled={disabled || (maxSelections !== undefined && selectedValues.length >= maxSelections)}
-            className="w-full bg-transparent text-xs text-gray-950 dark:text-gray-50 placeholder-gray-400 focus:outline-none"
+            className="w-full bg-transparent text-xs lia-text-950 dark:lia-text-50 placeholder-gray-400 focus:outline-none"
            
           />
           {isLoading && (
             <div className="absolute right-0 top-1/2 -translate-y-1/2">
-              <Loader2 className="w-3 h-3 text-gray-600 dark:text-gray-400 animate-spin" />
+              <Loader2 className="w-3 h-3 lia-text-600 dark:text-lia-text-tertiary animate-spin" />
             </div>
           )}
         </div>
       </div>
 
       {showDropdown && (
-        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 rounded-md max-h-60 overflow-auto">
+        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-lia-bg-secondary rounded-md max-h-60 overflow-auto">
           {isLoading ? (
-            <div className="flex items-center justify-center gap-2 p-3 text-xs text-gray-800 dark:text-gray-200">
-              <Loader2 className="w-4 h-4 animate-spin text-gray-600 dark:text-gray-400" />
+            <div className="flex items-center justify-center gap-2 p-3 text-xs lia-text-800 dark:text-lia-text-primary">
+              <Loader2 className="w-4 h-4 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
               <span>Buscando...</span>
             </div>
           ) : suggestions.length > 0 ? (
@@ -215,22 +215,22 @@ export function FilterAutocomplete({
                     className={cn(
                       "w-full flex items-center justify-between px-3 py-2 text-left transition-colors",
                       isSelected
-                        ? "bg-gray-100 text-gray-800 dark:text-gray-200"
+                        ? "bg-gray-100 lia-text-800 dark:text-lia-text-primary"
                         : "hover:bg-gray-50 dark:hover:bg-gray-700"
                     )}
                   >
                     <div className="flex items-center gap-2 flex-1 min-w-0">
                       {isSelected ? (
-                        <Check className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400 flex-shrink-0" />
+                        <Check className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary flex-shrink-0" />
                       ) : (
-                        <Plus className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
+                        <Plus className="w-3.5 h-3.5 lia-text-600 flex-shrink-0" />
                       )}
                       <div className="flex-1 min-w-0">
-                        <span className="text-xs font-medium text-gray-950 dark:text-gray-50 truncate block">
+                        <span className="text-xs font-medium lia-text-950 dark:lia-text-50 truncate block">
                           {suggestion.label}
                         </span>
                         {suggestion.aliases && suggestion.aliases.length > 0 && (
-                          <span className="text-xs text-gray-600 truncate block">
+                          <span className="text-xs lia-text-600 truncate block">
                             Também: {suggestion.aliases.slice(0, 2).join(", ")}
                           </span>
                         )}
@@ -246,13 +246,13 @@ export function FilterAutocomplete({
                           </span>
                         )}
                         {suggestion.global_count && suggestion.global_count > 0 && (
-                          <span className="flex items-center gap-0.5 text-xs text-gray-600 dark:text-gray-400 font-medium">
+                          <span className="flex items-center gap-0.5 text-xs lia-text-600 dark:text-lia-text-tertiary font-medium">
                             <Globe className="w-3 h-3" />
                             +{suggestion.global_count > 1000 ? `${(suggestion.global_count / 1000).toFixed(1)}K` : suggestion.global_count}
                           </span>
                         )}
                         {suggestion.source === "suggested" && suggestion.local_count === 0 && (
-                          <span className="text-xs text-gray-600 px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700">
+                          <span className="text-xs lia-text-600 px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-lia-bg-elevated">
                             Sugerido
                           </span>
                         )}
@@ -264,7 +264,7 @@ export function FilterAutocomplete({
             </div>
           ) : query.length >= 2 ? (
             <div className="p-3 text-center">
-              <p className="text-xs text-gray-800 dark:text-gray-200 mb-2">Nenhum resultado encontrado</p>
+              <p className="text-xs lia-text-800 dark:text-lia-text-primary mb-2">Nenhum resultado encontrado</p>
               <button
                 onClick={() => {
                   if (!selectedValues.includes(query.trim())) {
@@ -273,7 +273,7 @@ export function FilterAutocomplete({
                   setQuery("")
                   setSuggestions([])
                 }}
-                className="text-xs text-gray-800 dark:text-gray-200 hover:underline"
+                className="text-xs lia-text-800 dark:text-lia-text-primary hover:underline"
               >
                 Adicionar "{query}" mesmo assim
               </button>
@@ -318,7 +318,7 @@ export function TagInput({
   return (
     <div 
       className={cn(
-        "flex flex-wrap items-center gap-1.5 p-2 min-h-[38px] rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus-within:border-gray-300 focus-within:ring-2 focus-within:ring-gray-200 transition-all",
+        "flex flex-wrap items-center gap-1.5 p-2 min-h-[38px] rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary focus-within:border-lia-border-default focus-within:ring-2 focus-within:ring-gray-200 transition-colors",
         disabled && "opacity-50 cursor-not-allowed",
         className
       )}
@@ -327,7 +327,7 @@ export function TagInput({
       {value.map((val) => (
         <span
           key={val}
-          className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-800 dark:text-gray-200 border border-gray-200"
+          className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-gray-100 lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle"
         >
           {val}
           <button
@@ -351,7 +351,7 @@ export function TagInput({
         onKeyDown={handleKeyDown}
         placeholder={value.length === 0 ? placeholder : ""}
         disabled={disabled}
-        className="flex-1 min-w-[100px] bg-transparent text-xs text-gray-950 dark:text-gray-50 placeholder-gray-400 focus:outline-none"
+        className="flex-1 min-w-[100px] bg-transparent text-xs lia-text-950 dark:lia-text-50 placeholder-gray-400 focus:outline-none"
        
       />
     </div>

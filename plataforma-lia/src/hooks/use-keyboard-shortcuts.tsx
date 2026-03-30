@@ -113,10 +113,10 @@ export function useKeyboardShortcuts({
     const helpModal = document.createElement('div')
     helpModal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-toast'
     helpModal.innerHTML = `
-      <div class="bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 p-6 max-w-md w-full mx-4">
+      <div class="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle p-6 max-w-md w-full mx-4">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-semibold text-gray-950 dark:text-gray-50">Atalhos de Teclado</h3>
-          <button id="close-help" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+          <h3 class="text-lg font-semibold text-gray-950">Atalhos de Teclado</h3>
+          <button id="close-help" class="text-gray-500 hover:text-gray-700 dark:text-lia-text-tertiary dark:hover:text-gray-200">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
@@ -125,33 +125,33 @@ export function useKeyboardShortcuts({
 
         <div class="space-y-3 text-sm">
           <div class="flex justify-between">
-            <span class="text-gray-600 dark:text-gray-400">Ativar IA Copilot</span>
-            <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-md text-xs font-mono">Ctrl+K</kbd>
+            <span class="text-gray-600 dark:text-lia-text-tertiary">Ativar IA Copilot</span>
+            <kbd class="px-2 py-1 bg-gray-100 dark:bg-lia-bg-elevated rounded-md text-xs font-mono">Ctrl+K</kbd>
           </div>
           <div class="flex justify-between">
-            <span class="text-gray-600 dark:text-gray-400">Busca por Voz</span>
-            <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-md text-xs font-mono">Ctrl+;</kbd>
+            <span class="text-gray-600 dark:text-lia-text-tertiary">Busca por Voz</span>
+            <kbd class="px-2 py-1 bg-gray-100 dark:bg-lia-bg-elevated rounded-md text-xs font-mono">Ctrl+;</kbd>
           </div>
           <div class="flex justify-between">
-            <span class="text-gray-600 dark:text-gray-400">Biblioteca LIA</span>
-            <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-md text-xs font-mono">Ctrl+Shift+L</kbd>
+            <span class="text-gray-600 dark:text-lia-text-tertiary">Biblioteca LIA</span>
+            <kbd class="px-2 py-1 bg-gray-100 dark:bg-lia-bg-elevated rounded-md text-xs font-mono">Ctrl+Shift+L</kbd>
           </div>
           <div class="flex justify-between">
-            <span class="text-gray-600 dark:text-gray-400">Chat com LIA</span>
-            <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-md text-xs font-mono">Ctrl+Shift+C</kbd>
+            <span class="text-gray-600 dark:text-lia-text-tertiary">Chat com LIA</span>
+            <kbd class="px-2 py-1 bg-gray-100 dark:bg-lia-bg-elevated rounded-md text-xs font-mono">Ctrl+Shift+C</kbd>
           </div>
           <div class="flex justify-between">
-            <span class="text-gray-600 dark:text-gray-400">Fechar Modal</span>
-            <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-md text-xs font-mono">Esc</kbd>
+            <span class="text-gray-600 dark:text-lia-text-tertiary">Fechar Modal</span>
+            <kbd class="px-2 py-1 bg-gray-100 dark:bg-lia-bg-elevated rounded-md text-xs font-mono">Esc</kbd>
           </div>
           <div class="flex justify-between">
-            <span class="text-gray-600 dark:text-gray-400">Esta Ajuda</span>
-            <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-md text-xs font-mono">F1</kbd>
+            <span class="text-gray-600 dark:text-lia-text-tertiary">Esta Ajuda</span>
+            <kbd class="px-2 py-1 bg-gray-100 dark:bg-lia-bg-elevated rounded-md text-xs font-mono">F1</kbd>
           </div>
         </div>
 
-        <div class="mt-4 p-3 bg-gray-100 dark:bg-gray-800 rounded-md">
-          <p class="text-xs text-wedo-cyan-dark dark:text-gray-400">
+        <div class="mt-4 p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+          <p class="text-xs text-wedo-cyan-dark dark:text-lia-text-tertiary">
             💡 Dica: Use Ctrl+K em qualquer página para ativar rapidamente a busca com IA
           </p>
         </div>

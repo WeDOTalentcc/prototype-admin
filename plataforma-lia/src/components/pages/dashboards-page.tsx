@@ -162,7 +162,7 @@ export function DashboardsPage({ onNavigate }: DashboardsPageProps = {}) {
                 <CardTitle className="text-center font-sans">Dashboard Não Encontrado</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-center text-gray-600 dark:text-gray-400">
+                <p className="text-center text-gray-600 dark:text-lia-text-tertiary">
                   O dashboard solicitado não está disponível. 
                   Por favor, selecione uma das opções disponíveis no menu lateral.
                 </p>
@@ -203,10 +203,10 @@ export function DashboardsPage({ onNavigate }: DashboardsPageProps = {}) {
   }
 
   return (
-    <div className="flex gap-3 h-full px-3 pt-3 pb-6 bg-gray-50 dark:bg-gray-900 overflow-hidden">
+    <div className="flex gap-3 h-full px-3 pt-3 pb-6 bg-gray-50 dark:bg-lia-bg-primary overflow-hidden">
       {/* Menu Lateral de Dashboards - Retrátil com Auto-Expand */}
       <div 
-        className={`bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-800 rounded-md p-4 space-y-4 shrink-0 transition-all duration-300 ${
+        className={`bg-gray-50 dark:bg-gray-850 border border-lia-border-subtle dark:border-gray-800 rounded-md p-4 space-y-4 shrink-0 transition-colors duration-300 ${
           shouldExpand ? 'w-64' : 'w-16'
         }`}
         onMouseEnter={handleMouseEnter}
@@ -218,10 +218,10 @@ export function DashboardsPage({ onNavigate }: DashboardsPageProps = {}) {
               {shouldExpand && (
                 <div className="flex-1">
                   <h2 className={`${textStyles.label} uppercase tracking-[0.08em] flex items-center gap-2 mb-1`}>
-                    <Activity className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                    <Activity className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                     Dashboards
                   </h2>
-                  <p className={`${textStyles.description} dark:text-gray-400`}>
+                  <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>
                     Selecione um dashboard
                   </p>
                 </div>
@@ -232,9 +232,9 @@ export function DashboardsPage({ onNavigate }: DashboardsPageProps = {}) {
                 title={isMenuLocked ? "Destravar menu (auto-expand habilitado)" : "Travar menu expandido"}
               >
                 {isMenuLocked ? (
-                  <Lock className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                  <Lock className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                 ) : (
-                  <Unlock className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
+                  <Unlock className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
                 )}
               </button>
             </div>
@@ -249,9 +249,9 @@ export function DashboardsPage({ onNavigate }: DashboardsPageProps = {}) {
                     key={item.id}
                     onClick={() => setActiveDashboard(item.id)}
                     title={!shouldExpand ? item.label : undefined}
-                    className={`w-full ${!shouldExpand ? 'flex justify-center' : 'text-left'} p-2 rounded-md transition-all ${
+                    className={`w-full ${!shouldExpand ? 'flex justify-center' : 'text-left'} p-2 rounded-md transition-colors ${
                       isActive
-                        ? 'bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600'
+                        ? 'bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default'
                         : 'hover:bg-gray-50 dark:hover:bg-gray-800/50 border border-transparent'
                     }`}
                   >
@@ -259,8 +259,8 @@ export function DashboardsPage({ onNavigate }: DashboardsPageProps = {}) {
                       // Modo colapsado: apenas ícone
                       <div className={`p-1.5 rounded-md ${
                         isActive
-                          ? 'bg-white dark:bg-gray-900'
-                          : 'bg-gray-100 dark:bg-gray-800'
+                          ? 'bg-white dark:bg-lia-bg-primary'
+                          : 'bg-gray-100 dark:bg-lia-bg-secondary'
                       }`}>
                         <Icon 
                           className="w-3.5 h-3.5" 
@@ -273,8 +273,8 @@ export function DashboardsPage({ onNavigate }: DashboardsPageProps = {}) {
                         <div className="flex items-start gap-2 flex-1 min-w-0">
                           <div className={`p-1.5 rounded-md ${
                             isActive
-                              ? 'bg-white dark:bg-gray-900'
-                              : 'bg-gray-100 dark:bg-gray-800'
+                              ? 'bg-white dark:bg-lia-bg-primary'
+                              : 'bg-gray-100 dark:bg-lia-bg-secondary'
                           }`}>
                             <Icon 
                               className="w-3.5 h-3.5" 
@@ -289,7 +289,7 @@ export function DashboardsPage({ onNavigate }: DashboardsPageProps = {}) {
                             }`}>
                               {item.label}
                             </h3>
-                            <p className={`${textStyles.description} dark:text-gray-400 line-clamp-2`}>
+                            <p className={`${textStyles.description} dark:text-lia-text-tertiary line-clamp-2`}>
                               {item.description}
                             </p>
                           </div>

@@ -170,7 +170,7 @@ export function AgentExplainabilityPanel({
         </div>
         <ChevronDown
           className={cn(
-            "h-4 w-4 text-zinc-400 transition-transform duration-200",
+ "h-4 w-4 text-zinc-400 transition-transform duration-200",
             isOpen && "rotate-180"
           )}
         />
@@ -214,7 +214,7 @@ export function AgentExplainabilityPanel({
                     <div className="flex flex-col items-center">
                       <div
                         className={cn(
-                          "flex h-6 w-6 items-center justify-center rounded-full text-micro font-bold",
+ "flex h-6 w-6 items-center justify-center rounded-full text-micro font-bold",
                           isLast
                             ? "bg-wedo-cyan text-zinc-900"
                             : "bg-zinc-600 text-zinc-300"
@@ -229,14 +229,14 @@ export function AgentExplainabilityPanel({
 
                     <div
                       className={cn(
-                        "mb-3 flex-1 rounded-md bg-gray-900 p-3",
+ "mb-3 flex-1 rounded-md bg-gray-900 p-3",
                         isLast && "mb-0"
                       )}
                     >
                       <div className="flex items-center gap-2 mb-1.5">
                         <div
                           className={cn(
-                            "flex items-center gap-1 rounded-md px-1.5 py-0.5",
+ "flex items-center gap-1 rounded-md px-1.5 py-0.5",
                             phase.bgColor
                           )}
                         >
@@ -245,7 +245,7 @@ export function AgentExplainabilityPanel({
                           />
                           <span
                             className={cn(
-                              "text-micro font-semibold",
+ "text-micro font-semibold",
                               phase.color
                             )}
                           >

@@ -61,7 +61,7 @@ function SectionHeader({
   icon: Icon, 
   title, 
   isLocked = false,
-  iconColor = "text-gray-600 dark:text-gray-400"
+  iconColor = "text-gray-600 dark:text-lia-text-tertiary"
 }: { 
   icon: React.ElementType
   title: string
@@ -77,9 +77,9 @@ function SectionHeader({
       <Badge 
         variant="outline" 
         className={cn(
-          "text-micro h-4 px-1.5 border",
+ "text-micro h-4 px-1.5 border",
           isLocked 
-            ? "bg-gray-100 text-gray-600 border-gray-300 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600"
+            ? "bg-gray-100 text-gray-600 border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-tertiary dark:border-lia-border-default"
             : "bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30 dark:text-wedo-cyan-dark dark:border-wedo-cyan/30"
         )}
       >
@@ -100,10 +100,10 @@ function WeightStars({ weight }: { weight: number }) {
         <Star
           key={i}
           className={cn(
-            "h-2.5 w-2.5",
+ "h-2.5 w-2.5",
             i <= weight 
               ? "fill-amber-400 text-status-warning" 
-              : "text-gray-300 dark:text-gray-600"
+              : "text-gray-300"
           )}
         />
       ))}
@@ -148,15 +148,15 @@ export function VacancyFullSummary({
   if (isLoading) {
     return (
       <div className="flex items-start gap-3 max-w-[85%]">
-        <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-gray-300 dark:border-gray-600">
+        <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-lia-border-default dark:border-lia-border-default">
           <AvatarImage src="/images/lia-avatar.png" alt="LIA" />
           <AvatarFallback className="bg-gradient-to-br from-gray-100 dark:from-gray-800 to-wedo-cyan-dark text-white text-xs font-medium">
             LIA
           </AvatarFallback>
         </Avatar>
-        <div className="rounded-2xl rounded-tl-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4">
+        <div className="rounded-xl rounded-tl-sm bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle p-4">
           <div className="flex items-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin text-gray-600 dark:text-gray-400" />
+            <Loader2 className="h-4 w-4 animate-spin text-gray-600 dark:text-lia-text-tertiary" />
             <span className="text-sm text-muted-foreground">Carregando detalhes da vaga...</span>
           </div>
         </div>
@@ -171,7 +171,7 @@ export function VacancyFullSummary({
 
   return (
     <div className="flex items-start gap-3 max-w-[95%]">
-      <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-gray-300 dark:border-gray-600">
+      <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-lia-border-default dark:border-lia-border-default">
         <AvatarImage src="/images/lia-avatar.png" alt="LIA" />
         <AvatarFallback className="bg-gradient-to-br from-gray-100 dark:from-gray-800 to-wedo-cyan-dark text-white text-xs font-medium">
           LIA
@@ -179,8 +179,8 @@ export function VacancyFullSummary({
       </Avatar>
 
       <div className="flex-1 space-y-3">
-        <div className="rounded-2xl rounded-tl-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 space-y-4">
-          <div className="pb-2 border-b border-gray-200 dark:border-gray-700">
+        <div className="rounded-xl rounded-tl-sm bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle p-4 space-y-4">
+          <div className="pb-2 border-b border-lia-border-subtle dark:border-lia-border-subtle">
             <h3 className="text-sm font-bold text-gray-800 dark:text-white">{vacancy.title}</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
               Resumo completo da vaga baseada em processo anterior
@@ -191,27 +191,27 @@ export function VacancyFullSummary({
             <div>
               <SectionHeader icon={Tag} title="🏷️ Informações Básicas" isLocked={isFieldLocked('basic_info')} />
               <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="flex items-center gap-1.5 p-2 rounded-md bg-gray-50 dark:bg-gray-900">
+                <div className="flex items-center gap-1.5 p-2 rounded-md bg-gray-50 dark:bg-lia-bg-primary">
                   <Building2 className="h-3 w-3 text-muted-foreground" />
                   <span className="text-muted-foreground">Área:</span>
                   <span className="font-medium">{vacancy.department}</span>
                 </div>
-                <div className="flex items-center gap-1.5 p-2 rounded-md bg-gray-50 dark:bg-gray-900">
+                <div className="flex items-center gap-1.5 p-2 rounded-md bg-gray-50 dark:bg-lia-bg-primary">
                   <MapPin className="h-3 w-3 text-muted-foreground" />
                   <span className="text-muted-foreground">Local:</span>
                   <span className="font-medium">{vacancy.location}</span>
                 </div>
-                <div className="flex items-center gap-1.5 p-2 rounded-md bg-gray-50 dark:bg-gray-900">
+                <div className="flex items-center gap-1.5 p-2 rounded-md bg-gray-50 dark:bg-lia-bg-primary">
                   <Briefcase className="h-3 w-3 text-muted-foreground" />
                   <span className="text-muted-foreground">Modelo:</span>
                   <span className="font-medium">{WORK_MODEL_LABELS[vacancy.work_model.toLowerCase()] || vacancy.work_model}</span>
                 </div>
-                <div className="flex items-center gap-1.5 p-2 rounded-md bg-gray-50 dark:bg-gray-900">
+                <div className="flex items-center gap-1.5 p-2 rounded-md bg-gray-50 dark:bg-lia-bg-primary">
                   <Briefcase className="h-3 w-3 text-muted-foreground" />
                   <span className="text-muted-foreground">Contrato:</span>
                   <span className="font-medium">{EMPLOYMENT_TYPE_LABELS[vacancy.employment_type.toLowerCase()] || vacancy.employment_type}</span>
                 </div>
-                <div className="flex items-center gap-1.5 p-2 rounded-md bg-gray-50 dark:bg-gray-900 col-span-2">
+                <div className="flex items-center gap-1.5 p-2 rounded-md bg-gray-50 dark:bg-lia-bg-primary col-span-2">
                   <User className="h-3 w-3 text-muted-foreground" />
                   <span className="text-muted-foreground">Gestor:</span>
                   <span className="font-medium">{vacancy.manager}</span>
@@ -258,14 +258,14 @@ export function VacancyFullSummary({
             </div>
 
             <div>
-              <SectionHeader icon={Wrench} title="🔧 Competências Técnicas" isLocked={true} iconColor="text-gray-600 dark:text-gray-400" />
+              <SectionHeader icon={Wrench} title="🔧 Competências Técnicas" isLocked={true} iconColor="text-gray-600 dark:text-lia-text-tertiary" />
               <div className="space-y-1.5 max-h-[150px] overflow-y-auto pr-1">
                 {vacancy.technical_skills.map((skill, idx) => {
                   const levelConfig = LEVEL_CONFIG[skill.level] || LEVEL_CONFIG['Intermediário']
                   return (
-                    <div key={idx} className="flex items-center justify-between gap-2 p-2 rounded-md bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+                    <div key={idx} className="flex items-center justify-between gap-2 p-2 rounded-md bg-gray-50 dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle">
                       <div className="flex items-center gap-2 min-w-0">
-                        <Wrench className="h-3 w-3 text-gray-600 dark:text-gray-400 flex-shrink-0" />
+                        <Wrench className="h-3 w-3 text-gray-600 dark:text-lia-text-tertiary flex-shrink-0" />
                         <span className="text-xs font-medium truncate">{skill.name}</span>
                         {skill.required && (
                           <Badge variant="outline" className="text-micro h-3.5 px-1 border-status-error/30 bg-status-error/10 text-status-error dark:border-status-error/30 dark:bg-status-error/30 dark:text-status-error">
@@ -289,7 +289,7 @@ export function VacancyFullSummary({
               <SectionHeader icon={Brain} title="🧠 Competências Comportamentais" isLocked={true} iconColor="text-wedo-purple" />
               <div className="space-y-1.5 max-h-[120px] overflow-y-auto pr-1">
                 {vacancy.behavioral_competencies.map((comp, idx) => (
-                  <div key={idx} className="flex items-center justify-between gap-2 p-2 rounded-md bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+                  <div key={idx} className="flex items-center justify-between gap-2 p-2 rounded-md bg-gray-50 dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle">
                     <div className="flex items-center gap-2 min-w-0">
                       <Brain className="h-3 w-3 text-wedo-purple flex-shrink-0" />
                       <span className="text-xs font-medium truncate">{comp.name}</span>
@@ -304,7 +304,7 @@ export function VacancyFullSummary({
               <SectionHeader icon={MessageSquare} title="📱 Perguntas de Triagem WSI" isLocked={true} iconColor="text-wedo-orange" />
               <div className="space-y-1.5 max-h-[120px] overflow-y-auto pr-1">
                 {vacancy.screening_questions.map((q, idx) => (
-                  <div key={idx} className="p-2 rounded-md bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+                  <div key={idx} className="p-2 rounded-md bg-gray-50 dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle">
                     <p className="text-xs text-gray-800 dark:text-white">{idx + 1}. {q.question}</p>
                     <div className="flex items-center gap-2 mt-1">
                       <Badge variant="secondary" className="text-micro h-3.5 px-1">
@@ -317,8 +317,8 @@ export function VacancyFullSummary({
             </div>
 
             <div>
-              <SectionHeader icon={FileText} title="📝 Job Description" isLocked={isFieldLocked('job_description')} iconColor="text-gray-500" />
-              <div className="p-2 rounded-md bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 max-h-[100px] overflow-y-auto">
+              <SectionHeader icon={FileText} title="📝 Job Description" isLocked={isFieldLocked('job_description')} iconColor="lia-text-secondary" />
+              <div className="p-2 rounded-md bg-gray-50 dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle max-h-[100px] overflow-y-auto">
                 <p className="text-xs text-muted-foreground whitespace-pre-wrap">
                   {vacancy.job_description}
                 </p>
@@ -326,14 +326,14 @@ export function VacancyFullSummary({
             </div>
           </div>
 
-          <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
-            <div className="p-3 rounded-md bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600">
+          <div className="pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="p-3 rounded-md bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default">
               <p className="text-xs text-gray-800 dark:text-white leading-relaxed">
                 <span className="font-semibold">📌 O que você pode fazer:</span>
               </p>
               <ul className="text-xs text-muted-foreground mt-1.5 space-y-1">
-                <li>• Se quiser <span className="font-medium text-gray-600 dark:text-gray-400">confirmar e publicar</span>, digite <span className="font-mono bg-gray-200 dark:bg-gray-700 px-1 rounded-md">'confirmar'</span></li>
-                <li>• Se quiser <span className="font-medium text-gray-600 dark:text-gray-400">fazer ajustes</span>, me diga o que quer mudar</li>
+                <li>• Se quiser <span className="font-medium text-gray-600 dark:text-lia-text-tertiary">confirmar e publicar</span>, digite <span className="font-mono bg-gray-200 dark:bg-lia-bg-elevated px-1 rounded-md">'confirmar'</span></li>
+                <li>• Se quiser <span className="font-medium text-gray-600 dark:text-lia-text-tertiary">fazer ajustes</span>, me diga o que quer mudar</li>
               </ul>
               <p className="text-micro text-muted-foreground mt-2 italic">
                 Exemplos: "salário para 18 a 23k", "modelo híbrido", "adicionar benefício vale alimentação"

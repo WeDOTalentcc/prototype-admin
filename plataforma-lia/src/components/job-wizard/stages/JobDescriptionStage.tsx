@@ -61,7 +61,7 @@ export function JobDescriptionStage() {
     <div className="space-y-2.5">
       {/* Cargo */}
       <div>
-        <label className="flex items-center gap-2 text-micro font-medium text-gray-500 mb-1">
+        <label className="flex items-center gap-2 text-micro font-medium lia-text-secondary mb-1">
           Cargo *
           {fieldOrigins['job_title'] && (
             <FieldOriginBadge 
@@ -76,7 +76,7 @@ export function JobDescriptionStage() {
           value={basicInfoFields.cargo}
           onChange={(e) => handleFieldChange('cargo', e.target.value)}
           placeholder="Ex: Desenvolvedor Python Sr"
-          className="w-full px-3 py-1.5 border border-gray-200 rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors"
+          className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors"
          
           aria-label="Título do cargo"
           aria-required="true"
@@ -85,7 +85,7 @@ export function JobDescriptionStage() {
 
       {/* Área */}
       <div>
-        <label className="flex items-center gap-2 text-micro font-medium text-gray-500 mb-1">
+        <label className="flex items-center gap-2 text-micro font-medium lia-text-secondary mb-1">
           Área/Departamento *
           {fieldOrigins['department'] && (
             <FieldOriginBadge 
@@ -98,7 +98,7 @@ export function JobDescriptionStage() {
         <select
           value={basicInfoFields.area}
           onChange={(e) => handleFieldChange('area', e.target.value)}
-          className="w-full px-3 py-1.5 border border-gray-200 rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors bg-white"
+          className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors bg-lia-bg-primary"
          
           aria-label="Área ou departamento"
           aria-required="true"
@@ -112,7 +112,7 @@ export function JobDescriptionStage() {
 
       {/* Gestor */}
       <div>
-        <label className="block text-micro font-medium text-gray-500 mb-1">
+        <label className="block text-micro font-medium lia-text-secondary mb-1">
           Gestor Responsável
         </label>
         <input
@@ -120,7 +120,7 @@ export function JobDescriptionStage() {
           value={basicInfoFields.gestor}
           onChange={(e) => setBasicInfoFields(prev => ({ ...prev, gestor: e.target.value }))}
           placeholder="Ex: João Silva"
-          className="w-full px-3 py-1.5 border border-gray-200 rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors"
+          className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors"
          
           aria-label="Nome do gestor responsável"
         />
@@ -128,7 +128,7 @@ export function JobDescriptionStage() {
 
       {/* Localidade */}
       <div>
-        <label className="flex items-center gap-2 text-micro font-medium text-gray-500 mb-1">
+        <label className="flex items-center gap-2 text-micro font-medium lia-text-secondary mb-1">
           Localidade
           {fieldOrigins['location'] && (
             <FieldOriginBadge 
@@ -139,13 +139,13 @@ export function JobDescriptionStage() {
           )}
         </label>
         <div className="relative">
-          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 lia-text-secondary" />
           <input
             type="text"
             value={basicInfoFields.localidade}
             onChange={(e) => handleFieldChange('localidade', e.target.value)}
             placeholder="Ex: São Paulo, SP"
-            className="w-full pl-9 pr-3 py-1.5 border border-gray-200 rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors"
+            className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors"
            
             aria-label="Localidade ou cidade"
           />
@@ -154,7 +154,7 @@ export function JobDescriptionStage() {
 
       {/* Modelo de Trabalho */}
       <div>
-        <label className="flex items-center gap-2 text-micro font-medium text-gray-500 mb-1">
+        <label className="flex items-center gap-2 text-micro font-medium lia-text-secondary mb-1">
           Modelo de Trabalho
           {fieldOrigins['work_model'] && (
             <FieldOriginBadge 
@@ -170,10 +170,10 @@ export function JobDescriptionStage() {
               key={modelo}
               onClick={() => handleFieldChange('modeloTrabalho', modelo)}
               className={cn(
-                "flex-1 py-1.5 px-2 rounded-md text-xs font-medium transition-all",
+ "flex-1 py-1.5 px-2 rounded-md text-xs font-medium transition-colors",
                 basicInfoFields.modeloTrabalho === modelo
-                  ? "bg-gray-900 dark:bg-gray-50 text-white"
-                  : "border border-gray-200 text-gray-500 hover:border-gray-900 dark:hover:border-gray-50"
+                  ? "bg-gray-900 text-white"
+                  : "border border-lia-border-subtle lia-text-secondary hover:border-gray-900 dark:hover:border-gray-50"
               )}
              
             >
@@ -186,7 +186,7 @@ export function JobDescriptionStage() {
       {/* Dias Híbridos - só aparece se modelo for híbrido */}
       {basicInfoFields.modeloTrabalho === 'Híbrido' && (
         <div>
-          <label className="block text-micro font-medium text-gray-500 mb-1">
+          <label className="block text-micro font-medium lia-text-secondary mb-1">
             Dias Presenciais por Semana
           </label>
           <div className="flex gap-1.5">
@@ -195,11 +195,11 @@ export function JobDescriptionStage() {
                 key={dias}
                 onClick={() => setJobConfig(prev => ({ ...prev, hybridDaysOnsite: dias }))}
                 className={cn(
-                  "flex-1 py-1.5 px-2 rounded-md text-xs font-medium transition-all",
+ "flex-1 py-1.5 px-2 rounded-md text-xs font-medium transition-colors",
                   jobConfig.hybridDaysOnsite === dias || 
                   (jobConfig.hybridDaysOnsite === undefined && dias === (companyConfig?.hybridDaysOnsite || 3))
-                    ? "bg-gray-900 dark:bg-gray-50 text-white"
-                    : "border border-gray-200 text-gray-500 hover:border-gray-900 dark:hover:border-gray-50"
+                    ? "bg-gray-900 text-white"
+                    : "border border-lia-border-subtle lia-text-secondary hover:border-gray-900 dark:hover:border-gray-50"
                 )}
                
               >
@@ -212,7 +212,7 @@ export function JobDescriptionStage() {
 
       {/* Tipo de Contrato */}
       <div>
-        <label className="block text-micro font-medium text-gray-500 mb-1">
+        <label className="block text-micro font-medium lia-text-secondary mb-1">
           Tipo de Contrato
         </label>
         <div className="flex flex-wrap gap-2">
@@ -221,10 +221,10 @@ export function JobDescriptionStage() {
               key={tipo}
               onClick={() => setBasicInfoFields(prev => ({ ...prev, tipoContrato: tipo }))}
               className={cn(
-                "py-1.5 px-3 rounded-md text-xs font-medium transition-all",
+ "py-1.5 px-3 rounded-md text-xs font-medium transition-colors",
                 basicInfoFields.tipoContrato === tipo
-                  ? "bg-gray-900 dark:bg-gray-50 text-white"
-                  : "border border-gray-200 text-gray-500 hover:border-gray-900 dark:hover:border-gray-50"
+                  ? "bg-gray-900 text-white"
+                  : "border border-lia-border-subtle lia-text-secondary hover:border-gray-900 dark:hover:border-gray-50"
               )}
              
             >

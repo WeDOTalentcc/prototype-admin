@@ -138,9 +138,9 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
     switch (status) {
       case 'active': return 'bg-status-success/15 text-status-success border-status-success/30'
       case 'planning': return 'bg-status-warning/15 text-status-warning border-status-warning/30'
-      case 'paused': return 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200'
-      case 'completed': return 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600'
-      default: return 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200'
+      case 'paused': return 'bg-gray-100 text-gray-800 dark:text-lia-text-primary border-lia-border-subtle'
+      case 'completed': return 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default'
+      default: return 'bg-gray-100 text-gray-800 dark:text-lia-text-primary border-lia-border-subtle'
     }
   }
 
@@ -149,17 +149,17 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
       case 'high': return 'bg-status-error/15 text-status-error'
       case 'medium': return 'bg-status-warning/15 text-status-warning'
       case 'low': return 'bg-status-success/15 text-status-success'
-      default: return 'bg-gray-100 text-gray-800 dark:text-gray-200'
+      default: return 'bg-gray-100 text-gray-800 dark:text-lia-text-primary'
     }
   }
 
   const getContactStatusIcon = (status: string) => {
     switch (status) {
-      case 'contacted': return <Mail className="w-3 h-3 text-gray-600 dark:text-gray-400" />
+      case 'contacted': return <Mail className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
       case 'approached': return <Phone className="w-3 h-3 text-wedo-orange" />
-      case 'research': return <Eye className="w-3 h-3 text-gray-600" />
+      case 'research': return <Eye className="w-3 h-3 lia-text-base" />
       case 'scheduled': return <Calendar className="w-3 h-3 text-status-success" />
-      default: return <User className="w-3 h-3 text-gray-600" />
+      default: return <User className="w-3 h-3 lia-text-base" />
     }
   }
 
@@ -167,15 +167,15 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-md max-w-6xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-white dark:bg-lia-bg-primary rounded-md max-w-6xl w-full max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="p-6 bg-status-error/10 dark:bg-status-error/20">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold font-sans text-gray-950 dark:text-gray-50 flex items-center gap-2">
+              <h2 className="text-xl font-bold font-sans text-gray-950 flex items-center gap-2">
                 ⚔️ War Room - Operações Estratégicas
               </h2>
-              <p className="text-sm text-gray-800 dark:text-gray-200 mt-1">
+              <p className="text-sm text-gray-800 dark:text-lia-text-primary mt-1">
                 Campanhas focadas de aquisição de talentos competitivos
               </p>
             </div>
@@ -187,10 +187,10 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
 
         <div className="flex h-[calc(90vh-120px)]">
           {/* Sidebar - Lista de Campanhas */}
-          <div className="w-80 bg-white dark:bg-gray-800 overflow-y-auto">
+          <div className="w-80 bg-white dark:bg-lia-bg-secondary overflow-y-auto">
             <div className="p-4">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-medium font-sans text-gray-950 dark:text-gray-50">
+                <h3 className="font-medium font-sans text-gray-950">
                   Campanhas Ativas ({campaigns.length})
                 </h3>
                 <Button size="sm" className="h-7">
@@ -204,13 +204,13 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
                   <Card
                     key={campaign.id}
                     className={`cursor-pointer transition-colors ${
-                      selectedCampaign === campaign.id ? 'border-gray-900 dark:border-gray-50 bg-gray-100 dark:bg-gray-800' : ''
+ selectedCampaign === campaign.id ? 'border-gray-900 bg-gray-100 dark:bg-lia-bg-secondary' : ''
                     }`}
                     onClick={() => setSelectedCampaign(campaign.id)}
                   >
                     <CardContent className="p-3">
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium text-sm text-gray-950 dark:text-gray-50">
+                        <h4 className="font-medium text-sm text-gray-950">
                           {campaign.name}
                         </h4>
                         <Badge className={`text-xs ${getStatusColor(campaign.status)}`}>
@@ -218,7 +218,7 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
                         </Badge>
                       </div>
 
-                      <div className="text-xs text-gray-800 dark:text-gray-200 mb-2">
+                      <div className="text-xs text-gray-800 dark:text-lia-text-primary mb-2">
                         Target: {campaign.target}
                       </div>
 
@@ -229,7 +229,7 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-1">
                           <div
-                            className="bg-gray-700 dark:bg-gray-300 h-1 rounded-full transition-all"
+                            className="bg-gray-700 h-1 rounded-full transition-[width,height]"
                             style={{width: `${campaign.progress}%`}}
                           />
                         </div>
@@ -253,10 +253,10 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
                 {/* Campaign Header */}
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-lg font-semibold font-sans text-gray-950 dark:text-gray-50">
+                    <h3 className="text-lg font-semibold font-sans text-gray-950">
                       {selectedCampaignData.name}
                     </h3>
-                    <p className="text-sm text-gray-800 dark:text-gray-200">
+                    <p className="text-sm text-gray-800 dark:text-lia-text-primary">
                       Empresa alvo: {selectedCampaignData.target} • {selectedCampaignData.targets.length} talentos identificados
                     </p>
                   </div>
@@ -278,10 +278,10 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
                   <Card className="">
                     <CardContent className="p-4">
                       <div className="flex items-center gap-2">
-                        <Target className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                        <Target className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
                         <div>
-                          <p className="text-sm text-gray-800 dark:text-gray-200">Alvos Identificados</p>
-                          <p className="text-xl font-semibold text-gray-950 dark:text-gray-50">
+                          <p className="text-sm text-gray-800 dark:text-lia-text-primary">Alvos Identificados</p>
+                          <p className="text-xl font-semibold text-gray-950">
                             {selectedCampaignData.metrics.targets_identified}
                           </p>
                         </div>
@@ -294,8 +294,8 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
                       <div className="flex items-center gap-2">
                         <Mail className="w-4 h-4 text-status-success" />
                         <div>
-                          <p className="text-sm text-gray-800 dark:text-gray-200">Contatos Realizados</p>
-                          <p className="text-xl font-semibold text-gray-950 dark:text-gray-50">
+                          <p className="text-sm text-gray-800 dark:text-lia-text-primary">Contatos Realizados</p>
+                          <p className="text-xl font-semibold text-gray-950">
                             {selectedCampaignData.metrics.contacts_made}
                           </p>
                         </div>
@@ -308,8 +308,8 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
                       <div className="flex items-center gap-2">
                         <TrendingUp className="w-4 h-4 text-wedo-purple" />
                         <div>
-                          <p className="text-sm text-gray-800 dark:text-gray-200">Taxa Resposta</p>
-                          <p className="text-xl font-semibold text-gray-950 dark:text-gray-50">
+                          <p className="text-sm text-gray-800 dark:text-lia-text-primary">Taxa Resposta</p>
+                          <p className="text-xl font-semibold text-gray-950">
                             {selectedCampaignData.metrics.contacts_made > 0
                               ? Math.round((selectedCampaignData.metrics.responses_received / selectedCampaignData.metrics.contacts_made) * 100)
                               : 0}%
@@ -324,8 +324,8 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
                       <div className="flex items-center gap-2">
                         <CheckCircle className="w-4 h-4 text-wedo-orange" />
                         <div>
-                          <p className="text-sm text-gray-800 dark:text-gray-200">ROI Estimado</p>
-                          <p className="text-xl font-semibold text-gray-950 dark:text-gray-50">
+                          <p className="text-sm text-gray-800 dark:text-lia-text-primary">ROI Estimado</p>
+                          <p className="text-xl font-semibold text-gray-950">
                             {selectedCampaignData.strategy.success_rate}
                           </p>
                         </div>
@@ -345,20 +345,20 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <h4 className="font-medium font-sans text-gray-950 dark:text-gray-50 mb-2">Abordagem</h4>
-                        <p className="text-sm text-gray-800 dark:text-gray-200 mb-4">
+                        <h4 className="font-medium font-sans text-gray-950 mb-2">Abordagem</h4>
+                        <p className="text-sm text-gray-800 dark:text-lia-text-primary mb-4">
                           {selectedCampaignData.strategy.approach}
                         </p>
 
-                        <h4 className="font-medium font-sans text-gray-950 dark:text-gray-50 mb-2">Mensagem Principal</h4>
-                        <p className="text-sm text-gray-800 dark:text-gray-200">
+                        <h4 className="font-medium font-sans text-gray-950 mb-2">Mensagem Principal</h4>
+                        <p className="text-sm text-gray-800 dark:text-lia-text-primary">
                           "{selectedCampaignData.strategy.message}"
                         </p>
                       </div>
 
                       <div>
-                        <h4 className="font-medium font-sans text-gray-950 dark:text-gray-50 mb-2">Métricas Estratégicas</h4>
-                        <div className="space-y-2 text-sm text-gray-800 dark:text-gray-200">
+                        <h4 className="font-medium font-sans text-gray-950 mb-2">Métricas Estratégicas</h4>
+                        <div className="space-y-2 text-sm text-gray-800 dark:text-lia-text-primary">
                           <div className="flex justify-between">
                             <span>Budget por contratação:</span>
                             <span className="font-medium">R$ {selectedCampaignData.strategy.budget_per_hire.toLocaleString()}</span>
@@ -381,31 +381,31 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
                 <Card className="">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 font-sans">
-                      <Users className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                      <Users className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
                       Talentos Alvo ({selectedCampaignData.targets.length})
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
                       {selectedCampaignData.targets.map((target) => (
-                        <div key={target.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                        <div key={target.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                           <div className="flex items-center gap-3">
                             <Avatar className="w-10 h-10">
-                              <AvatarFallback className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 font-medium text-sm">
+                              <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary font-medium text-sm">
                                 {target.name.split(' ').map(n => n[0]).join('')}
                               </AvatarFallback>
                             </Avatar>
 
                             <div>
                               <div className="flex items-center gap-2">
-                                <span className="font-medium text-gray-950 dark:text-gray-50">
+                                <span className="font-medium text-gray-950">
                                   {target.name}
                                 </span>
                                 <Badge className={`text-xs ${getPriorityColor(target.priority)}`}>
                                   {target.priority}
                                 </Badge>
                               </div>
-                              <p className="text-sm text-gray-800 dark:text-gray-200">
+                              <p className="text-sm text-gray-800 dark:text-lia-text-primary">
                                 {target.role}
                               </p>
                             </div>
@@ -414,7 +414,7 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
                           <div className="flex items-center gap-2">
                             <div className="text-center">
                               {getContactStatusIcon(target.status)}
-                              <div className="text-xs text-gray-600 mt-1">
+                              <div className="text-xs lia-text-base mt-1">
                                 {target.status}
                               </div>
                             </div>
@@ -444,11 +444,11 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
               </div>
             ) : (
               <div className="p-6 text-center">
-                <Target className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                <h3 className="text-lg font-medium font-sans text-gray-950 dark:text-gray-50 mb-2">
+                <Target className="w-12 h-12 lia-text-base mx-auto mb-4" />
+                <h3 className="text-lg font-medium font-sans text-gray-950 mb-2">
                   Selecione uma campanha
                 </h3>
-                <p className="text-gray-800 dark:text-gray-200">
+                <p className="text-gray-800 dark:text-lia-text-primary">
                   Escolha uma campanha para ver os detalhes e gerenciar a operação
                 </p>
               </div>

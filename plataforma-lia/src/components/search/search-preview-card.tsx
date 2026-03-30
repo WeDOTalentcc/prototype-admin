@@ -49,22 +49,22 @@ export function SearchPreviewCard({
           style={{backgroundColor: 'var(--gray-50)',
             borderColor: 'var(--gray-300)'}}
         >
-          <Search className="w-4 h-4 text-gray-700" />
+          <Search className="w-4 h-4 lia-text-700" />
           <span 
-            className="text-sm font-medium text-gray-800 dark:text-gray-100"
+            className="text-sm font-medium lia-text-800 dark:text-lia-text-primary"
           >
             Preview da Busca
           </span>
           {isStillSearching && (
-            <Loader2 className="w-4 h-4 animate-spin ml-auto text-gray-700" />
+            <Loader2 className="w-4 h-4 animate-spin ml-auto lia-text-700" />
           )}
         </div>
 
         <div className="p-4 space-y-4">
           <p 
-            className="text-sm text-gray-500 dark:text-gray-400"
+            className="text-sm lia-text-500 dark:text-lia-text-tertiary"
           >
-            Busca: <span className="font-medium text-gray-800 dark:text-gray-100">"{data.query}"</span>
+            Busca: <span className="font-medium lia-text-800 dark:text-lia-text-primary">"{data.query}"</span>
           </p>
 
           <div className="grid gap-3">
@@ -77,7 +77,7 @@ export function SearchPreviewCard({
               }}
               disabled={!hasLocalResults && !data.isSearchingLocal}
               className={cn(
-                "flex items-start gap-3 p-3 rounded-md border text-left transition-all",
+                "flex items-start gap-3 p-3 rounded-md border text-left transition-colors",
                 selectedOption === "local" && "ring-2",
                 !hasLocalResults && !data.isSearchingLocal && "opacity-50 cursor-not-allowed"
               )}
@@ -88,17 +88,17 @@ export function SearchPreviewCard({
                 className="p-2 rounded-md shrink-0"
                 style={{backgroundColor: "var(--green-50, #f0fdf4)"}}
               >
-                <Database className="w-4 h-4 text-gray-700" />
+                <Database className="w-4 h-4 lia-text-700" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
                   <span 
-                    className="text-sm font-medium text-gray-800 dark:text-gray-100"
+                    className="text-sm font-medium lia-text-800 dark:text-lia-text-primary"
                   >
                     Banco Proprietário
                   </span>
                   {data.isSearchingLocal ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-gray-700" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin lia-text-700" />
                   ) : (
                     <span 
                       className="text-xs font-medium px-2 py-0.5 rounded-full"
@@ -110,7 +110,7 @@ export function SearchPreviewCard({
                   )}
                 </div>
                 <p 
-                  className="text-xs mt-1 text-gray-400 dark:text-gray-500"
+                  className="text-xs mt-1 lia-text-400 dark:lia-text-500"
                 >
                   Candidatos já cadastrados na sua base - sem custo
                 </p>
@@ -123,7 +123,7 @@ export function SearchPreviewCard({
               }}
               disabled={!hasPearchResults && !data.isEstimatingPearch}
               className={cn(
-                "flex items-start gap-3 p-3 rounded-md border text-left transition-all",
+                "flex items-start gap-3 p-3 rounded-md border text-left transition-colors",
                 selectedOption === "hybrid" && "ring-2",
                 !hasPearchResults && !data.isEstimatingPearch && "opacity-50 cursor-not-allowed"
               )}
@@ -134,27 +134,27 @@ export function SearchPreviewCard({
                 className="p-2 rounded-md shrink-0"
                 style={{backgroundColor: 'var(--gray-50)'}}
               >
-                <Globe className="w-4 h-4 text-gray-700" />
+                <Globe className="w-4 h-4 lia-text-700" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
                   <span 
-                    className="text-sm font-medium text-gray-800 dark:text-gray-100"
+                    className="text-sm font-medium lia-text-800 dark:text-lia-text-primary"
                   >
                     Busca Híbrida (Local + Global)
                   </span>
                   {data.isEstimatingPearch ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-gray-700" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin lia-text-700" />
                   ) : (
                     <span 
-                      className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-700"
+                      className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 lia-text-700"
                     >
                       ~{data.pearchEstimate} estimados
                     </span>
                   )}
                 </div>
                 <p 
-                  className="text-xs mt-1 text-gray-400 dark:text-gray-500"
+                  className="text-xs mt-1 lia-text-400 dark:lia-text-500"
                 >
                   Inclui acesso a 800M+ perfis do banco global
                 </p>
@@ -182,11 +182,11 @@ export function SearchPreviewCard({
             >
               <div className="flex items-center justify-between mb-2">
                 <span>Custo estimado:</span>
-                <span className="font-semibold text-gray-700">
+                <span className="font-semibold lia-text-700">
                   {data.pearchCredits} créditos
                 </span>
               </div>
-              <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+              <div className="flex items-center justify-between text-xs lia-text-500 dark:text-lia-text-tertiary">
                 <span>Saldo após busca:</span>
                 <span>{Math.max(0, availableCredits - data.pearchCredits)} créditos</span>
               </div>

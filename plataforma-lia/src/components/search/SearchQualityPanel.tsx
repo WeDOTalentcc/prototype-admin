@@ -25,21 +25,21 @@ export function SearchQualityPanel({ searchAnalysis, onAlertActionClick }: Searc
     score >= 60 ? 'var(--status-success)' : score >= 40 ? 'var(--status-warning)' : 'var(--status-error)'
 
   return (
-    <div className="space-y-2 pt-2 mt-2 border-t border-gray-300 dark:border-gray-600">
+    <div className="space-y-2 pt-2 mt-2 border-t border-lia-border-default dark:border-lia-border-default">
       {/* Barra de completude */}
       <div className="flex items-center gap-3">
         <div className="flex-1">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+            <span className="text-xs font-medium lia-text-500 dark:text-lia-text-tertiary">
               Qualidade da busca
             </span>
             <span className="text-xs font-bold" style={{color: scoreColor}}>
               {score}%
             </span>
           </div>
-          <div className="h-1.5 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800">
+          <div className="h-1.5 rounded-full overflow-hidden bg-gray-100 dark:bg-lia-bg-secondary">
             <div
-              className="h-full rounded-full transition-all duration-500"
+              className="h-full rounded-full transition-[width,height] duration-500"
               style={{width: `${score}%`, backgroundColor: scoreColor}}
             />
           </div>
@@ -71,14 +71,14 @@ export function SearchQualityPanel({ searchAnalysis, onAlertActionClick }: Searc
               {alert.severity === 'warning' ? (
                 <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-status-warning" />
               ) : (
-                <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-600" />
+                <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 lia-text-600" />
               )}
               <div className="flex-1 min-w-0">
                 <span>{alert.message}</span>
                 {alert.suggestion && alert.action_value && (
                   <button
                     onClick={() => onAlertActionClick(alert.action_value!)}
-                    className="ml-1 font-medium hover:underline text-gray-700"
+                    className="ml-1 font-medium hover:underline lia-text-700"
                   >
                     {alert.suggestion}
                   </button>

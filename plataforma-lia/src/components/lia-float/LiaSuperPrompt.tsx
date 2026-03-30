@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useRef, useCallback, useEffect, useMemo } from "react"
-import { motion, AnimatePresence } from "framer-motion"
 import {
   X, Minimize2, Send, Search, Brain,
   Mic, Paperclip, MessageSquare, LayoutDashboard,
@@ -22,6 +21,7 @@ import { MessageFeedback } from "@/components/chat/message-feedback"
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
 import { useRouter } from "next/navigation"
 
+// [OPT-043] TODO: revisar inline styles dinâmicos (23 ocorrências)
 const CATEGORY_COLORS: Record<string, { icon: string; bg: string; border: string; hoverBg: string }> = {
   vagas: { icon: 'var(--gray-600)', bg: 'var(--gray-50)', border: 'var(--gray-200)', hoverBg: 'var(--gray-100)' },
   candidatos: { icon: 'var(--status-success)', bg: 'var(--gray-50)', border: 'var(--status-success)', hoverBg: 'var(--gray-100)' },
@@ -201,14 +201,10 @@ export function LiaSuperPrompt() {
   }, [setSharedMessages, setSharedConversationId, loadHistory])
 
   return (
-    <AnimatePresence>
+    <>
       {isExpanded && (
-        <motion.div
-          className="fixed inset-0 z-overlay flex items-center justify-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
+        <div
+          className="fixed inset-0 z-overlay flex items-center justify-center animate-in fade-in duration-200"
         >
           <div
             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
@@ -216,21 +212,18 @@ export function LiaSuperPrompt() {
             aria-hidden="true"
           />
 
-          <motion.div
-            className="relative flex flex-col overflow-hidden rounded-xl border shadow-2xl bg-white dark:bg-gray-900"
+          {/* OPT-027: CSS scale/fade replacing framer-motion spring */}
+          <div
+            className="relative flex flex-col overflow-hidden rounded-xl border shadow-2xl bg-white dark:bg-lia-bg-primary animate-in fade-in zoom-in-90 slide-in-from-bottom-4 duration-300"
             style={{width: "95vw",
               height: "95vh",
               maxWidth: "1400px",
               maxHeight: "900px",
               borderColor: "var(--gray-200)"}}
-            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
           >
             {/* Header */}
             <div
-              className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0"
+              className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle dark:border-lia-border-subtle flex-shrink-0"
               style={{backgroundColor: "var(--gray-50)"}}
             >
               <div className="flex items-center gap-4">
@@ -270,7 +263,7 @@ export function LiaSuperPrompt() {
               <div className="flex items-center gap-1">
                 <button
                   onClick={handleNewChat}
-                  className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                  className="p-2 rounded-lg lia-text-secondary hover:lia-text-base hover:bg-gray-100 transition-colors"
                   title="Novo chat"
                   aria-label="Iniciar novo chat"
                 >
@@ -279,7 +272,7 @@ export function LiaSuperPrompt() {
                 <button
                   onClick={handleClear}
                   disabled={messages.length === 0}
-                  className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="p-2 rounded-lg lia-text-secondary hover:lia-text-base hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                   title="Limpar mensagens"
                   aria-label="Limpar mensagens"
                 >
@@ -288,9 +281,9 @@ export function LiaSuperPrompt() {
                 <button
                   onClick={handleToggleHistory}
                   className={`p-2 rounded-lg transition-colors ${
-                    showHistory
+ showHistory
                       ? "text-chat-cyan bg-gray-100"
-                      : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                      : "lia-text-secondary hover:lia-text-base hover:bg-gray-100"
                   }`}
                   title="Histórico de conversas"
                   aria-label="Ver histórico de conversas"
@@ -300,7 +293,7 @@ export function LiaSuperPrompt() {
                 <div className="w-px h-5 bg-gray-200 mx-1" />
                 <button
                   onClick={collapse}
-                  className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                  className="p-2 rounded-lg lia-text-secondary hover:lia-text-base hover:bg-gray-100 transition-colors"
                   title="Minimizar para chat pequeno"
                   aria-label="Minimizar"
                 >
@@ -308,7 +301,7 @@ export function LiaSuperPrompt() {
                 </button>
                 <button
                   onClick={closeAll}
-                  className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                  className="p-2 rounded-lg lia-text-secondary hover:lia-text-base hover:bg-gray-100 transition-colors"
                   title="Fechar"
                   aria-label="Fechar"
                 >
@@ -323,11 +316,11 @@ export function LiaSuperPrompt() {
                   {/* History panel */}
                   {showHistory ? (
                     <div className="flex-1 overflow-y-auto px-6 py-4">
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3" >
+                      <p className="text-xs font-semibold lia-text-secondary uppercase tracking-wide mb-3" >
                         Conversas recentes
                       </p>
                       {recentChats.length === 0 ? (
-                        <p className="text-base-ui text-gray-400 text-center mt-10">
+                        <p className="text-base-ui lia-text-secondary text-center mt-10">
                           Nenhuma conversa anterior encontrada.
                         </p>
                       ) : (
@@ -338,12 +331,12 @@ export function LiaSuperPrompt() {
                               onClick={() => handleLoadConversation(chat.id)}
                               className="w-full flex items-start gap-3 px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors text-left group"
                             >
-                              <Clock className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
+                              <Clock className="w-4 h-4 lia-text-secondary flex-shrink-0 mt-0.5" />
                               <div className="flex-1 min-w-0">
-                                <p className="text-base-ui text-gray-700 truncate group-hover:text-gray-900 transition-colors">
+                                <p className="text-base-ui lia-text-base truncate group-hover:lia-text-strong transition-colors">
                                   {chat.title}
                                 </p>
-                                <p className="text-xs text-gray-400 mt-0.5">
+                                <p className="text-xs lia-text-secondary mt-0.5">
                                   {new Date(chat.timestamp).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                                 </p>
                               </div>
@@ -362,7 +355,7 @@ export function LiaSuperPrompt() {
                               className="text-3xl font-semibold mb-3"
                               style={{color: "var(--gray-800)"}}
                             >
-                              Oi, eu sou a <span className="text-gray-700">LIA</span>.
+                              Oi, eu sou a <span className="lia-text-base">LIA</span>.
                             </h2>
                             <p
                               className="text-base mb-2"
@@ -385,7 +378,7 @@ export function LiaSuperPrompt() {
                                 <button
                                   key={suggestion.id}
                                   onClick={() => handleSuggestionClick(suggestion)}
-                                  className="p-4 rounded-lg transition-all text-left group"
+                                  className="p-4 rounded-lg transition-colors text-left group"
                                   style={{border: `1px solid ${colors.bg}`,
                                     backgroundColor: "var(--white)"}}
                                   onMouseEnter={(e) => {
@@ -420,7 +413,7 @@ export function LiaSuperPrompt() {
                                         {suggestion.description}
                                       </p>
                                       {suggestion.actionType === "redirect" && (
-                                        <span className="inline-block mt-1 text-micro px-1.5 py-0.5 rounded-md bg-gray-100 text-gray-500">
+                                        <span className="inline-block mt-1 text-micro px-1.5 py-0.5 rounded-md bg-gray-100 lia-text-secondary">
                                           Abre em nova tela
                                         </span>
                                       )}
@@ -455,7 +448,7 @@ export function LiaSuperPrompt() {
                                   <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
                                 </div>
                               </div>
-                              <div className="bg-white border border-gray-200 rounded-[14px] rounded-bl-[4px] p-4">
+                              <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-[14px] rounded-bl-[4px] p-4">
                                 <div className="flex items-center gap-1.5">
                                   <div className="w-2 h-2 rounded-full bg-chat-cyan animate-bounce" style={{animationDelay: "0ms"}} />
                                   <div className="w-2 h-2 rounded-full bg-chat-cyan animate-bounce" style={{animationDelay: "150ms"}} />
@@ -472,9 +465,9 @@ export function LiaSuperPrompt() {
                   )}
 
                   {/* Input */}
-                  <div className="px-6 py-4 border-t border-gray-200 flex-shrink-0" style={{backgroundColor: "var(--gray-50)"}}>
+                  <div className="px-6 py-4 border-t border-lia-border-subtle flex-shrink-0" style={{backgroundColor: "var(--gray-50)"}}>
                     <div className="max-w-3xl mx-auto">
-                      <div className="flex items-center gap-2 px-4 py-2.5 rounded-[24px] bg-white border border-gray-200">
+                      <div className="flex items-center gap-2 px-4 py-2.5 rounded-[24px] bg-lia-bg-primary border border-lia-border-subtle">
                         <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center">
                           <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
                         </div>
@@ -496,9 +489,9 @@ export function LiaSuperPrompt() {
                           onClick={() => handleSendMessage()}
                           disabled={!input.trim() || isCreating || isStreaming}
                           className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-                            input.trim() && !isCreating && !isStreaming
+ input.trim() && !isCreating && !isStreaming
                               ? "bg-chat-cyan text-white hover:opacity-90"
-                              : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                              : "bg-gray-200 lia-text-secondary cursor-not-allowed"
                           }`}
                           aria-label="Enviar mensagem"
                         >
@@ -516,10 +509,10 @@ export function LiaSuperPrompt() {
                 </div>
               )}
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       )}
-    </AnimatePresence>
+    </>
   )
 }
 
@@ -541,17 +534,17 @@ function SuperPromptBubble({ message, conversationId }: { message: { id: string;
               style={{backgroundColor: "var(--gray-50)"}}
             >
               <div
-                className="text-base-ui leading-relaxed text-gray-700"
+                className="text-base-ui leading-relaxed lia-text-base"
                
                 dangerouslySetInnerHTML={{ __html: html }}
               />
             </div>
-            <span className="text-xs text-gray-400 px-1" style={{fontFamily: '"Inter", sans-serif'}}>
+            <span className="text-xs lia-text-secondary px-1" style={{fontFamily: '"Inter", sans-serif'}}>
               {message.timestamp}
             </span>
           </div>
           <div className="flex-shrink-0 w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center mt-1">
-            <User className="w-3.5 h-3.5 text-gray-500" />
+            <User className="w-3.5 h-3.5 lia-text-secondary" />
           </div>
         </div>
       </div>
@@ -567,16 +560,16 @@ function SuperPromptBubble({ message, conversationId }: { message: { id: string;
       </div>
       <div className="flex-1 flex flex-col gap-1">
         <div className="flex items-center gap-1.5 px-1">
-          <span className="text-xs font-bold text-gray-800" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
-          <span className="text-xs text-gray-400" style={{fontFamily: '"Inter", sans-serif'}}>
+          <span className="text-xs font-bold lia-text-strong" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
+          <span className="text-xs lia-text-secondary" style={{fontFamily: '"Inter", sans-serif'}}>
             {message.timestamp}
           </span>
         </div>
         <div
-          className="rounded-[14px] rounded-bl-[4px] px-4 py-3 bg-white border border-gray-200"
+          className="rounded-[14px] rounded-bl-[4px] px-4 py-3 bg-lia-bg-primary border border-lia-border-subtle"
         >
           <div
-            className="text-base-ui leading-relaxed text-gray-700"
+            className="text-base-ui leading-relaxed lia-text-base"
            
             dangerouslySetInnerHTML={{ __html: html }}
           />
@@ -601,11 +594,11 @@ function SuperPromptStreamingBubble({ content }: { content: string }) {
   return (
     <div className="flex-1 flex flex-col gap-1">
       <div className="flex items-center gap-1.5 px-1">
-        <span className="text-xs font-bold text-gray-800" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
+        <span className="text-xs font-bold lia-text-strong" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
       </div>
-      <div className="rounded-[14px] rounded-bl-[4px] px-4 py-3 bg-white border border-gray-200">
+      <div className="rounded-[14px] rounded-bl-[4px] px-4 py-3 bg-lia-bg-primary border border-lia-border-subtle">
         <div
-          className="text-base-ui leading-relaxed text-gray-700"
+          className="text-base-ui leading-relaxed lia-text-base"
          
           dangerouslySetInnerHTML={{ __html: html }}
         />

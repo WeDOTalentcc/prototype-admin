@@ -63,19 +63,19 @@ export function MockupShadcnVuePage() {
           <h1 className="text-2xl font-bold text-gray-950 dark:text-gray-50 font-sans">
             🔬 Mockup shadcn-vue
           </h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-sm text-gray-600 dark:text-lia-text-tertiary mt-1">
             Comparação: Versão Atual vs Versão Otimizada para shadcn-vue
           </p>
         </div>
       </div>
 
       {/* Info Alert */}
-      <Card className="border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800">
+      <Card className="border-lia-border-default dark:border-lia-border-default bg-gray-100 dark:bg-lia-bg-secondary">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
  <Info className="w-5 h-5 text-gray-600 flex-shrink-0 mt-0.5" />
             <div className="space-y-2 text-sm">
- <p className="text-gray-700 dark:text-gray-400 font-medium">
+ <p className="text-gray-700 dark:text-lia-text-tertiary font-medium">
                 Esta página demonstra as otimizações propostas para facilitar a migração para Vue.js + shadcn-vue
               </p>
  <ul className="space-y-1 text-gray-600/80 text-xs">
@@ -130,7 +130,7 @@ function DashboardVersaoAtual() {
             <Brain className="w-5 h-5 text-wedo-cyan" />
             Dashboard Previsões & IA
           </h2>
-          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-1">
             Versão Atual: React + Recharts + Framer Motion
           </p>
         </div>
@@ -254,7 +254,7 @@ function DashboardVersaoOtimizada() {
             <Brain className="w-5 h-5 text-wedo-cyan" />
             Dashboard Previsões & IA
           </h2>
-          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-1">
             Versão Otimizada: React + Chart.js + CSS Animations (compatível Vue)
           </p>
         </div>
@@ -455,7 +455,7 @@ function KPICard({
     <Card className="hover:transition-shadow duration-200">
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-2">
-          <div className="text-gray-600 dark:text-gray-400">
+          <div className="text-gray-600 dark:text-lia-text-tertiary">
             {icon}
           </div>
           <Badge 
@@ -473,7 +473,7 @@ function KPICard({
           <div className="text-2xl font-bold text-gray-950 dark:text-gray-50">
             {value}
           </div>
-          <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+          <div className="text-xs text-gray-600 dark:text-lia-text-tertiary font-medium">
             {title}
           </div>
           <div className="text-xs text-gray-500 dark:text-gray-500">
@@ -567,7 +567,7 @@ function KPICardOptimized({
       <Card className="kpi-card-optimized">
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-gray-600 dark:text-gray-400 kpi-icon-optimized">
+            <div className="text-gray-600 dark:text-lia-text-tertiary kpi-icon-optimized">
               {icon}
             </div>
             <Badge 
@@ -585,7 +585,7 @@ function KPICardOptimized({
             <div className="text-2xl font-bold text-gray-950 dark:text-gray-50 kpi-value-optimized">
               {value}
             </div>
-            <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+            <div className="text-xs text-gray-600 dark:text-lia-text-tertiary font-medium">
               {title}
             </div>
             <div className="text-xs text-gray-500 dark:text-gray-500">

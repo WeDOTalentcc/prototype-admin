@@ -180,12 +180,12 @@ export function JobTemplatesPage() {
       case "alta": return "bg-status-success/15 text-status-success border-status-success/30"
       case "média": return "bg-status-warning/15 text-status-warning border-status-warning/30"
       case "baixa": return "bg-status-error/15 text-status-error border-status-error/30"
-      default: return "bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200"
+      default: return "bg-gray-100 text-gray-800 dark:text-lia-text-primary border-lia-border-subtle"
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary">
       <div className="max-w-full mx-auto px-6 py-6">
         {/* Header */}
         <div className="mb-6">
@@ -195,7 +195,7 @@ export function JobTemplatesPage() {
                 <Brain className="w-6 h-6 text-wedo-cyan" />
                 Templates de Vagas com IA
               </h1>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-gray-600 dark:text-lia-text-tertiary">
                 Acelere a criação de vagas com templates inteligentes e sugestões da IA
               </p>
             </div>
@@ -226,8 +226,8 @@ export function JobTemplatesPage() {
                   <p className="text-2xl font-bold text-gray-950">{templates.length}</p>
                   <p className="text-xs text-status-success">+3 este mês</p>
                 </div>
-                <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                <div className="w-10 h-10 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
                 </div>
               </div>
             </CardContent>
@@ -297,7 +297,7 @@ export function JobTemplatesPage() {
                     placeholder="Buscar templates por nome, cargo, tags..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800"
+                    className="w-full pl-10 pr-4 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
                   />
                 </div>
               </div>
@@ -306,7 +306,7 @@ export function JobTemplatesPage() {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as any)}
-                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800"
+                  className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
                 >
                   <option value="usage">Mais Usados</option>
                   <option value="success">Maior Sucesso</option>
@@ -372,13 +372,13 @@ export function JobTemplatesPage() {
                   {template.name}
                 </CardTitle>
 
-                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-lia-text-tertiary">
                   <Building className="w-4 h-4" />
                   <span>{template.department}</span>
                   <span>•</span>
                   <span>{template.level}</span>
                   <Badge variant="outline" className={`text-xs ${
-                    template.workModel === 'remoto' ? 'border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400' :
+                    template.workModel === 'remoto' ? 'border-lia-border-default dark:border-lia-border-default bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary' :
                     template.workModel === 'híbrido' ? 'border-wedo-purple/30 bg-wedo-purple/10 text-wedo-purple' :
                     'border-status-success/30 bg-status-success/10 text-status-success'
                   }`}>
@@ -386,7 +386,7 @@ export function JobTemplatesPage() {
                   </Badge>
                 </div>
 
-                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                <p className="text-sm text-gray-600 dark:text-lia-text-tertiary line-clamp-2">
                   {template.template.description}
                 </p>
               </CardHeader>
@@ -396,27 +396,27 @@ export function JobTemplatesPage() {
                 <div className="grid grid-cols-3 gap-4 mb-4">
                   <div className="text-center">
                     <div className="text-xs font-bold text-gray-950 dark:text-gray-50">{template.usage}</div>
-                    <div className="text-xs text-gray-800 dark:text-gray-200">usos</div>
+                    <div className="text-xs text-gray-800 dark:text-lia-text-primary">usos</div>
                   </div>
                   <div className="text-center">
                     <div className={`text-xs font-bold ${getSuccessColor(template.successRate)}`}>
                       {template.successRate}%
                     </div>
-                    <div className="text-xs text-gray-800 dark:text-gray-200">sucesso</div>
+                    <div className="text-xs text-gray-800 dark:text-lia-text-primary">sucesso</div>
                   </div>
                   <div className="text-center">
                     <div className="text-xs font-bold text-wedo-orange">{template.avgTimeToHire}d</div>
-                    <div className="text-xs text-gray-800 dark:text-gray-200">tempo</div>
+                    <div className="text-xs text-gray-800 dark:text-lia-text-primary">tempo</div>
                   </div>
                 </div>
 
                 {/* AI Insights */}
-                <div className="bg-gray-100 dark:bg-gray-800 rounded-md p-3 mb-4">
+                <div className="bg-gray-100 dark:bg-lia-bg-secondary rounded-md p-3 mb-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Brain className="w-4 h-4 text-wedo-cyan" />
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400/80">Insights da IA</span>
+                    <span className="text-sm font-medium text-gray-600 dark:text-lia-text-tertiary/80">Insights da IA</span>
                   </div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400/80 space-y-1">
+                  <div className="text-xs text-gray-600 dark:text-lia-text-tertiary/80 space-y-1">
                     <div>Previsão: {template.aiInsights.predictedApplications} candidatos</div>
                     <div>Competitividade: {template.aiInsights.competitiveness}/10</div>
                   </div>
@@ -450,7 +450,7 @@ export function JobTemplatesPage() {
                   </Button>
                 </div>
 
-                <div className="text-xs text-gray-800 dark:text-gray-200 mt-3">
+                <div className="text-xs text-gray-800 dark:text-lia-text-primary mt-3">
                   Último uso: {new Date(template.lastUsed).toLocaleDateString("pt-BR")}
                 </div>
               </CardContent>
@@ -461,7 +461,7 @@ export function JobTemplatesPage() {
         {/* AI Generator Modal */}
         {showAIGenerator && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-md w-full max-w-2xl p-6">
+            <div className="bg-white dark:bg-lia-bg-secondary rounded-md w-full max-w-2xl p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xs font-semibold flex items-center gap-2">
                   <Brain className="w-5 h-5 text-wedo-purple" />
@@ -478,14 +478,14 @@ export function JobTemplatesPage() {
                   <input
                     type="text"
                     placeholder="Ex: Desenvolvedor Frontend, UX Designer, Product Manager..."
-                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md"
+                    className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium mb-2 block">Departamento</label>
-                    <select className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md">
+                    <select className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md">
                       <option>Tecnologia</option>
                       <option>Design</option>
                       <option>Produto</option>
@@ -495,7 +495,7 @@ export function JobTemplatesPage() {
                   </div>
                   <div>
                     <label className="text-sm font-medium mb-2 block">Nível</label>
-                    <select className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md">
+                    <select className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md">
                       <option>Júnior</option>
                       <option>Pleno</option>
                       <option>Sênior</option>
@@ -510,7 +510,7 @@ export function JobTemplatesPage() {
                   <textarea
                     rows={3}
                     placeholder="Descreva características específicas da empresa, cultura, stack tecnológico..."
-                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md"
+                    className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md"
                   />
                 </div>
 

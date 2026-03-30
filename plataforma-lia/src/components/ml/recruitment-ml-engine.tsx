@@ -411,7 +411,7 @@ export function RecruitmentMLDashboard({
     switch (trend) {
       case 'up': return <TrendingUp className="w-5 h-5 text-status-success" />
       case 'down': return <TrendingDown className="w-5 h-5 text-status-error" />
-      default: return <Activity className="w-5 h-5 text-gray-600" />
+      default: return <Activity className="w-5 h-5 lia-text-base" />
     }
   }
 
@@ -426,8 +426,8 @@ export function RecruitmentMLDashboard({
       <Card className="w-full">
         <CardContent className="p-8">
           <div className="flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-50"></div>
-            <span className="ml-3 text-gray-600">Processando dados com ML...</span>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            <span className="ml-3 lia-text-base">Processando dados com ML...</span>
           </div>
         </CardContent>
       </Card>
@@ -445,7 +445,7 @@ export function RecruitmentMLDashboard({
                 <Brain className="w-5 h-5 text-wedo-cyan" />
                 Inteligência Artificial em Recrutamento
               </CardTitle>
-              <p className="text-sm text-gray-800 dark:text-gray-200 mt-1">
+              <p className="text-sm text-gray-800 dark:text-lia-text-primary mt-1">
                 Análises preditivas e insights baseados em Machine Learning
               </p>
             </div>
@@ -453,7 +453,7 @@ export function RecruitmentMLDashboard({
               <select
                 value={selectedTimeframe}
                 onChange={(e) => setSelectedTimeframe(Number(e.target.value) as 30 | 60 | 90)}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                className="px-3 py-2 border border-lia-border-default rounded-md text-sm"
               >
                 <option value={30}>Próximos 30 dias</option>
                 <option value={60}>Próximos 60 dias</option>
@@ -485,31 +485,31 @@ export function RecruitmentMLDashboard({
 
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Atual:</span>
+                  <span className="lia-text-base">Atual:</span>
                   <span className="font-medium">{prediction.currentValue}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Previsto:</span>
+                  <span className="lia-text-base">Previsto:</span>
                   <span className={`font-bold ${
-                    prediction.trend === 'up' ? 'text-status-success' :
-                    prediction.trend === 'down' ? 'text-status-error' : 'text-gray-600'
+ prediction.trend === 'up' ? 'text-status-success' :
+                    prediction.trend === 'down' ? 'text-status-error' : 'lia-text-base'
                   }`}>
                     {prediction.predictedValue}
                   </span>
                 </div>
-                <div className="text-xs text-gray-800 dark:text-gray-200">
+                <div className="text-xs text-gray-800 dark:text-lia-text-primary">
                   Variação: {prediction.trend === 'up' ? '+' : prediction.trend === 'down' ? '-' : ''}
                   {Math.abs(prediction.predictedValue - prediction.currentValue)}
                 </div>
               </div>
 
               <div className="mt-3 pt-3 border-t">
-                <p className="text-xs text-gray-600">{prediction.recommendation}</p>
+                <p className="text-xs lia-text-base">{prediction.recommendation}</p>
               </div>
 
               {/* Fatores influenciadores */}
               <div className="mt-2">
-                <p className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-1">Fatores chave:</p>
+                <p className="text-xs font-medium text-gray-800 dark:text-lia-text-primary mb-1">Fatores chave:</p>
                 <div className="flex flex-wrap gap-1">
                   {prediction.factors.slice(0, 2).map((factor, i) => (
                     <Badge key={i} variant="outline" className="text-xs">
@@ -538,22 +538,22 @@ export function RecruitmentMLDashboard({
                 <div
                   key={index}
                   className={`p-4 rounded-md border-l-4 ${
-                    insight.impact === 'high' ? 'bg-status-error/10 border-status-error' :
+ insight.impact === 'high' ? 'bg-status-error/10 border-status-error' :
                     insight.impact === 'medium' ? 'bg-status-warning/10 border-status-warning' :
-                    'bg-gray-100 dark:bg-gray-800 border-gray-900 dark:border-gray-50'
+                    'bg-gray-100 dark:bg-lia-bg-secondary border-gray-900'
                   }`}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <h4 className={`font-medium mb-1 ${
-                        insight.impact === 'high' ? 'text-status-error/90' :
+ insight.impact === 'high' ? 'text-status-error/90' :
                         insight.impact === 'medium' ? 'text-status-warning/90' :
                         'text-wedo-cyan-dark'
                       }`}>
                         {insight.title}
                       </h4>
                       <p className={`text-sm mb-2 ${
-                        insight.impact === 'high' ? 'text-status-error' :
+ insight.impact === 'high' ? 'text-status-error' :
                         insight.impact === 'medium' ? 'text-status-warning' :
                         'text-wedo-cyan-dark'
                       }`}>
@@ -561,7 +561,7 @@ export function RecruitmentMLDashboard({
                       </p>
                       {insight.suggestion && (
                         <p className={`text-sm font-medium ${
-                          insight.impact === 'high' ? 'text-status-error/90' :
+ insight.impact === 'high' ? 'text-status-error/90' :
                           insight.impact === 'medium' ? 'text-status-warning/90' :
                           'text-wedo-cyan-dark'
                         }`}>
@@ -571,16 +571,16 @@ export function RecruitmentMLDashboard({
                     </div>
                     <div className="flex items-center gap-2 ml-4">
                       <Badge className={`text-xs ${
-                        insight.impact === 'high' ? 'bg-status-error/10 text-status-error' :
+ insight.impact === 'high' ? 'bg-status-error/10 text-status-error' :
                         insight.impact === 'medium' ? 'bg-status-warning/10 text-status-warning' :
-                        'bg-gray-100 dark:bg-gray-800 text-wedo-cyan-dark'
+                        'bg-gray-100 dark:bg-lia-bg-secondary text-wedo-cyan-dark'
                       }`}>
                         {insight.type}
                       </Badge>
                       <Badge className={`text-xs ${
-                        insight.impact === 'high' ? 'bg-status-error text-white' :
+ insight.impact === 'high' ? 'bg-status-error text-white' :
                         insight.impact === 'medium' ? 'bg-status-warning text-white' :
-                        'bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900'
+                        'bg-gray-900 text-white'
                       }`}>
                         {insight.impact}
                       </Badge>
@@ -590,7 +590,7 @@ export function RecruitmentMLDashboard({
               ))}
             </div>
           ) : (
-            <div className="text-center py-6 text-gray-600">
+            <div className="text-center py-6 lia-text-base">
               <Brain className="w-12 h-12 mx-auto mb-4 text-wedo-cyan" />
               <p>Nenhuma anomalia detectada</p>
               <p className="text-sm">Tudo funcionando dentro dos padrões esperados</p>
@@ -611,11 +611,11 @@ export function RecruitmentMLDashboard({
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {candidateScores.slice(0, 6).map((score, index) => (
-                <div key={index} className="p-4 border border-gray-200 rounded-md">
+                <div key={index} className="p-4 border border-lia-border-subtle rounded-md">
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-medium text-gray-950 dark:text-gray-50">{score.name}</h4>
+                    <h4 className="font-medium text-gray-950">{score.name}</h4>
                     <Badge className={`${
-                      score.overallScore >= 85 ? 'bg-status-success/10 text-status-success' :
+ score.overallScore >= 85 ? 'bg-status-success/10 text-status-success' :
                       score.overallScore >= 70 ? 'bg-status-warning/10 text-status-warning' :
                       'bg-status-error/10 text-status-error'
                     }`}>
@@ -625,19 +625,19 @@ export function RecruitmentMLDashboard({
 
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Skills Match:</span>
+                      <span className="lia-text-base">Skills Match:</span>
                       <span className="font-medium">{score.skillsMatch}%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Experiência:</span>
+                      <span className="lia-text-base">Experiência:</span>
                       <span className="font-medium">{score.experienceScore}%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Fit Cultural:</span>
+                      <span className="lia-text-base">Fit Cultural:</span>
                       <span className="font-medium">{score.culturalFit}%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Prob. Sucesso:</span>
+                      <span className="lia-text-base">Prob. Sucesso:</span>
                       <span className="font-medium text-status-success">{score.successProbability}%</span>
                     </div>
                   </div>

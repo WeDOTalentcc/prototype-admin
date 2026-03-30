@@ -46,7 +46,7 @@ export function FundingStagesInput({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {value.length > 0 && (
-            <span className={cn("text-xs", disabled ? "text-gray-400" : "text-gray-500")}>
+            <span className={cn("text-xs", disabled ? "lia-text-400" : "lia-text-500")}>
               {value.length} stage{value.length !== 1 ? 's' : ''} selected
             </span>
           )}
@@ -54,7 +54,7 @@ export function FundingStagesInput({
         {value.length > 0 && !disabled && (
           <button
             onClick={clearAll}
-            className="text-xs text-gray-900 dark:text-gray-50 hover:text-gray-700 dark:hover:text-gray-300 font-medium"
+            className="text-xs lia-text-900 dark:lia-text-50 hover:lia-text-700 dark:hover:lia-text-300 font-medium"
           >
             Clear all
           </button>
@@ -70,12 +70,12 @@ export function FundingStagesInput({
               disabled={disabled}
               onClick={() => toggleStage(stage.value)}
               className={cn(
-                "px-3 py-1.5 rounded-full text-xs font-medium border transition-all",
+                "px-3 py-1.5 rounded-full text-xs font-medium border transition-[width,height]",
                 disabled
-                  ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
+                  ? "border-lia-border-subtle bg-gray-100 lia-text-400 cursor-not-allowed"
                   : isSelected 
-                    ? "border-gray-900 dark:border-gray-50 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50" 
-                    : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                    ? "border-gray-900 dark:lia-border-50 bg-gray-100 dark:bg-lia-bg-secondary lia-text-900 dark:lia-text-50" 
+                    : "border-lia-border-subtle bg-lia-bg-primary lia-text-600 hover:border-lia-border-default hover:bg-gray-50"
               )}
             >
               {stage.label}

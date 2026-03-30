@@ -1,0 +1,1161 @@
+"use client"
+
+import React from "react"
+import { textStyles, cardStyles, badgeStyles } from "@/lib/design-tokens"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Input } from "@/components/ui/input"
+import {
+  CheckCircle2, Clock, AlertCircle, Calendar, ChevronLeft, ChevronRight,
+  Plus, UserPlus, Upload, Search, Share2, Send, FileText, Users, Briefcase,
+  TrendingUp, Filter, MoreVertical, Eye, Edit, MessageSquare, Mail,
+  Phone, Video, MapPin, DollarSign, Target, Zap, Brain,
+  CheckCircle, XCircle, AlertTriangle, Info, ChevronUp, ChevronDown, User,
+  Linkedin, Globe, ExternalLink, Copy, Trash2, ArrowUpDown, SlidersHorizontal, X,
+  Bell, Play, Download, Paperclip, History, Activity
+} from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ActivityFeed } from "@/components/activity-feed"
+import { DailyBriefingCard } from "@/components/daily-briefing-card"
+
+// Camada 1 (hook): Estado e ações centralizadas
+import { useTasksCore } from "./use-tasks-core"
+// Camada 2 (helpers puros): Formatação e badges
+import {
+  getTaskPriorityStyle, getAlertSeverityStyle, getPriorityLabel, getSeverityLabel,
+  getTaskTypeIcon, getAlertIcon, getAlertStyle, getUrgencyBadge, getConversionRate,
+  getConversionStyle, getRequestStatusBadge, getRequestPriorityBadge, getWorkModelLabel
+} from "./task-helpers"
+
+interface TasksPageProps {
+  onNavigate?: (page: string) => void
+}
+
+// Camada 3 (componente com estado): Usa hook da Camada 1
+export function TasksPage({ onNavigate }: TasksPageProps = {}) {
+  const { state, actions } = useTasksCore(onNavigate)
+  const {
+    pendingTasks, activeAlerts, tasks, jobsWithAlerts, jobRequests, metrics,
+    filteredPendingTasks, filteredAndSortedJobs, filteredAndSortedRequests,
+    pendingTaskFilter, showJobFilters, jobSearchTerm, selectedDepartments,
+    selectedUrgencies, selectedPublications, jobSortBy, activeJobFiltersCount,
+    uniqueDepartments, showRequestFilters, requestSearchTerm, selectedRequestStatus,
+    selectedRequestDepartments, requestSortBy, activeRequestFiltersCount,
+    uniqueRequestDepartments, selectedActivity, showActivityModal
+  } = state
+  const {
+    setPendingTaskFilter, setShowJobFilters, setJobSearchTerm, setSelectedDepartments,
+    setSelectedUrgencies, setSelectedPublications, setJobSortBy, clearJobFilters,
+    setShowRequestFilters, setRequestSearchTerm, setSelectedRequestStatus,
+    setSelectedRequestDepartments, setRequestSortBy, clearRequestFilters,
+    setShowActivityModal, handleConfirmTask, handleRejectTask, handleAlertAction,
+    handleLIAAction, handleRequestAction, handleActivityClick
+  } = actions
+
+  return (
+    <>
+    <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-950 overflow-hidden">
+      <div className="p-2 max-w-full overflow-x-auto">
+
+        {/* Header - Saudação no topo (alinhado com outras páginas) */}
+        <div className="flex items-center justify-between mb-1.5">
+          <div>
+            <h1 className="text-base font-['Open_Sans',sans-serif] font-semibold wedo-text-black mb-0.5 flex items-center gap-2">
+              <Target className="w-4 h-4 text-gray-950 dark:text-gray-50" />
+              Painel de Controle
+            </h1>
+            <p className={`${textStyles.bodySmall} wedo-text-gray`}>
+              Você tem 30 novos candidatos e 4 vagas abertas.
+            </p>
+          </div>
+          <Button 
+            className="gap-1.5 h-7 px-2.5 font-open-sans text-xs"
+            onClick={() => {
+              if (onNavigate) {
+                onNavigate('Chat com LIA')
+                setTimeout(() => {
+                  window.dispatchEvent(new CustomEvent('lia-new-task'))
+                }, 100)
+              }
+            }}
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Nova Tarefa
+          </Button>
+        </div>
+
+        {/* Daily Briefing Card - Resumo do dia gerado por LIA */}
+        <div className="mb-2">
+          <DailyBriefingCard 
+            onNavigate={onNavigate}
+            onActionClick={(action, context) => {
+              if (action === 'open_pipeline_chat') {
+                if (onNavigate) {
+                  onNavigate('Chat com LIA')
+                  setTimeout(() => {
+                    window.dispatchEvent(new CustomEvent('lia-open-pipeline', { 
+                      detail: context 
+                    }))
+                  }, 100)
+                }
+              }
+            }}
+          />
+        </div>
+
+        <div className="space-y-2">
+
+            {/* Cards de Status de Tarefas - LINHA HORIZONTAL ULTRA COMPACTA */}
+            <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md">
+                <Briefcase className="w-3 h-3 text-gray-950 dark:text-gray-50" />
+                <span className="text-sm font-inter font-medium text-gray-950 dark:text-gray-50">{metrics.total}</span>
+                <span className={`${textStyles.description} dark:text-gray-500`}>Total</span>
+              </div>
+              <div className="w-px h-6 bg-gray-300 dark:bg-gray-700"></div>
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md">
+                <CheckCircle2 className="w-3 h-3 text-gray-950 dark:text-gray-50 font-semibold" />
+                <span className="text-sm font-inter font-medium text-gray-950 dark:text-gray-50">{metrics.completed}</span>
+                <span className={`${textStyles.description} dark:text-gray-500`}>Concluídas</span>
+              </div>
+              <div className="w-px h-6 bg-gray-300 dark:bg-gray-700"></div>
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md">
+                <Clock className="w-3 h-3 text-gray-950 dark:text-gray-50" />
+                <span className="text-sm font-inter font-medium text-gray-950 dark:text-gray-50">{metrics.pending}</span>
+                <span className={`${textStyles.description} dark:text-gray-500`}>Pendentes</span>
+              </div>
+              <div className="w-px h-6 bg-gray-300 dark:bg-gray-700"></div>
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md">
+                <Brain className="w-3 h-3 text-wedo-cyan" />
+                <span className="text-sm font-inter font-medium text-gray-950 dark:text-gray-50">{metrics.iaTasks}</span>
+                <span className={`${textStyles.description} dark:text-gray-500`}>IA</span>
+              </div>
+            </div>
+
+            {/* Grid 2 colunas: Minhas Tarefas + Alertas Ativos */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+              
+              {/* Card: Minhas Tarefas */}
+              <Card className="border-gray-200 dark:border-gray-800">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-gray-950 dark:text-gray-50" />
+                      <CardTitle className={`${textStyles.label} font-semibold wedo-text-black`}>Minhas Tarefas</CardTitle>
+                      <Badge variant="outline" className="text-xs font-inter">
+                        {filteredPendingTasks.length}
+                      </Badge>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0 pb-2">
+                  <Tabs defaultValue="tarefas" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 h-8 mb-3 bg-gray-100 dark:bg-gray-800 p-0.5">
+                      <TabsTrigger value="tarefas" className="text-xs font-open-sans h-7 data-[state=active]:font-semibold data-[state=active]:bg-white data-[state=active]:text-gray-950 dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-gray-50">
+                        Tarefas ({filteredPendingTasks.length})
+                      </TabsTrigger>
+                      <TabsTrigger value="historico" className="text-xs font-open-sans h-7 data-[state=active]:font-semibold data-[state=active]:bg-white data-[state=active]:text-gray-950 dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-gray-50">
+                        Histórico
+                      </TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="tarefas" className="mt-0">
+                      {/* Filtros por tipo */}
+                      <div className="flex items-center gap-1.5 mb-3 flex-wrap">
+                        <button
+                          onClick={() => setPendingTaskFilter('all')}
+                          className={`px-2 py-1 text-xs font-open-sans rounded-full transition-colors ${
+                            pendingTaskFilter === 'all'
+                              ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-950 font-medium'
+                              : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'
+                          }`}
+                        >
+                          Todos ({pendingTasks.length})
+                        </button>
+                        <button
+                          onClick={() => setPendingTaskFilter('feedback')}
+                          className={`px-2 py-1 text-xs font-open-sans rounded-full transition-colors flex items-center gap-1 ${
+                            pendingTaskFilter === 'feedback'
+                              ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-950 font-medium'
+                              : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'
+                          }`}
+                        >
+                          <MessageSquare className="w-2.5 h-2.5" />
+                          Feedback ({pendingTasks.filter(t => t.type === 'feedback').length})
+                        </button>
+                        <button
+                          onClick={() => setPendingTaskFilter('entrevista')}
+                          className={`px-2 py-1 text-xs font-open-sans rounded-full transition-colors flex items-center gap-1 ${
+                            pendingTaskFilter === 'entrevista'
+                              ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-950 font-medium'
+                              : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'
+                          }`}
+                        >
+                          <Calendar className="w-2.5 h-2.5" />
+                          Entrevista ({pendingTasks.filter(t => t.type === 'entrevista').length})
+                        </button>
+                        <button
+                          onClick={() => setPendingTaskFilter('sourcing')}
+                          className={`px-2 py-1 text-xs font-open-sans rounded-full transition-colors flex items-center gap-1 ${
+                            pendingTaskFilter === 'sourcing'
+                              ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-950 font-medium'
+                              : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'
+                          }`}
+                        >
+                          <Search className="w-2.5 h-2.5" />
+                          Sourcing ({pendingTasks.filter(t => t.type === 'sourcing').length})
+                        </button>
+                      </div>
+                      
+                      <div className="max-h-[320px] overflow-y-auto space-y-3">
+                        {/* Sessão Manhã */}
+                        {(() => {
+                          const morningTasks = filteredPendingTasks.filter(t => t.dueDate.getHours() < 12)
+                          if (morningTasks.length === 0) return null
+                          return (
+                            <div>
+                              <div className="flex items-center gap-1.5 mb-1.5">
+                                <div className="w-1.5 h-1.5 rounded-full" style={{backgroundColor: 'var(--yellow-50, #fefce8)'}}></div>
+                                <h3 className="text-xs font-open-sans font-semibold text-gray-800 dark:text-gray-200">Sessão Manhã</h3>
+                                <span className="text-xs font-open-sans text-gray-800 dark:text-gray-400">{morningTasks.length} atividades</span>
+                              </div>
+                              <div className="space-y-1.5">
+                                {morningTasks.map((task) => (
+                                  <div
+                                    key={task.id}
+                                    className="border border-gray-200 dark:border-gray-700 rounded-md p-2.5 transition-colors bg-white dark:bg-gray-900"
+                                  >
+                                    <div className="flex items-start justify-between gap-2">
+                                      <div className="flex items-start gap-2 flex-1">
+                                        <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 bg-gray-100 dark:bg-gray-800">
+                                          {getTaskTypeIcon(task.type)}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                                            <span className="text-xs font-inter font-medium text-gray-950 dark:text-gray-50">
+                                              {task.dueDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                            </span>
+                                            <h4 className="text-xs font-inter font-semibold text-gray-950 dark:text-gray-50">
+                                              {task.title}
+                                            </h4>
+                                            <Badge 
+                                              className="border-0 text-xs py-0 px-1.5 font-medium"
+                                              style={getTaskPriorityStyle(task.priority)}
+                                            >
+                                              {getPriorityLabel(task.priority)}
+                                            </Badge>
+                                          </div>
+                                          <p className="text-xs font-open-sans text-gray-800 dark:text-gray-500 mb-1 line-clamp-1">
+                                            {task.description}
+                                          </p>
+                                          <div className="flex items-center gap-2 text-xs text-gray-800 dark:text-gray-500">
+                                            {task.candidateName && (
+                                              <span className="flex items-center gap-0.5">
+                                                <User className="w-2.5 h-2.5" />
+                                                {task.candidateName}
+                                              </span>
+                                            )}
+                                            {task.relatedJob && (
+                                              <span className="flex items-center gap-0.5">
+                                                <Briefcase className="w-2.5 h-2.5" />
+                                                {task.relatedJob}
+                                              </span>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div className="flex flex-col gap-1 flex-shrink-0">
+                                        {task.type === 'feedback' && (
+                                          <div className="flex items-center gap-1">
+                                            <Button
+                                              size="sm"
+                                              onClick={() => handleConfirmTask(task)}
+                                              className="h-5 px-2 text-xs gap-1 border-0"
+                                              style={{backgroundColor: 'var(--green-50, #f0fdf4)', color: 'var(--gray-800)'}}
+                                            >
+                                              <MessageSquare className="w-2.5 h-2.5" />
+                                              Avaliar
+                                            </Button>
+                                            <Button
+                                              size="sm"
+                                              variant="outline"
+                                              className="h-5 px-2 text-xs gap-1"
+                                            >
+                                              <FileText className="w-2.5 h-2.5" />
+                                              Ver CV
+                                            </Button>
+                                          </div>
+                                        )}
+                                        {task.type === 'entrevista' && (
+                                          <div className="flex items-center gap-1">
+                                            <Button
+                                              size="sm"
+                                              onClick={() => handleConfirmTask(task)}
+                                              className="h-5 px-2 text-xs gap-1 border-0"
+                                              style={{backgroundColor: 'var(--green-50, #f0fdf4)', color: 'var(--gray-800)'}}
+                                            >
+                                              <Play className="w-2.5 h-2.5" />
+                                              Iniciar
+                                            </Button>
+                                            <Button
+                                              size="sm"
+                                              variant="outline"
+                                              className="h-5 px-2 text-xs gap-1"
+                                            >
+                                              <FileText className="w-2.5 h-2.5" />
+                                              Ver CV
+                                            </Button>
+                                          </div>
+                                        )}
+                                        {task.type === 'sourcing' && (
+                                          <div className="flex items-center gap-1">
+                                            <Button
+                                              size="sm"
+                                              onClick={() => handleConfirmTask(task)}
+                                              className="h-5 px-2 text-xs gap-1 border-0"
+                                              style={{backgroundColor: 'var(--green-50, #f0fdf4)', color: 'var(--gray-800)'}}
+                                            >
+                                              <Search className="w-2.5 h-2.5" />
+                                              Buscar
+                                            </Button>
+                                            <Button
+                                              size="sm"
+                                              variant="outline"
+                                              className="h-5 px-2 text-xs gap-1"
+                                            >
+                                              <Users className="w-2.5 h-2.5" />
+                                              Ver Perfis
+                                            </Button>
+                                          </div>
+                                        )}
+                                        <div className="flex items-center gap-1">
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={() => handleConfirmTask(task)}
+                                            className="h-5 px-1.5 text-xs gap-0.5"
+                                          >
+                                            <CheckCircle className="w-2.5 h-2.5" />
+                                            Confirmar
+                                          </Button>
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={() => handleRejectTask(task)}
+                                            className="h-5 px-1.5 text-xs gap-0.5 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+                                          >
+                                            <XCircle className="w-2.5 h-2.5" />
+                                            Rejeitar
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )
+                        })()}
+                        
+                        {/* Sessão Tarde */}
+                        {(() => {
+                          const afternoonTasks = filteredPendingTasks.filter(t => t.dueDate.getHours() >= 12)
+                          if (afternoonTasks.length === 0) return null
+                          return (
+                            <div>
+                              <div className="flex items-center gap-1.5 mb-1.5">
+                                <div className="w-1.5 h-1.5 rounded-full" style={{backgroundColor: 'var(--blue-50, #eff6ff)'}}></div>
+                                <h3 className="text-xs font-open-sans font-semibold text-gray-800 dark:text-gray-200">Sessão Tarde</h3>
+                                <span className="text-xs font-open-sans text-gray-800 dark:text-gray-400">{afternoonTasks.length} atividades</span>
+                              </div>
+                              <div className="space-y-1.5">
+                                {afternoonTasks.map((task) => (
+                                  <div
+                                    key={task.id}
+                                    className="border border-gray-200 dark:border-gray-700 rounded-md p-2.5 transition-colors bg-white dark:bg-gray-900"
+                                  >
+                                    <div className="flex items-start justify-between gap-2">
+                                      <div className="flex items-start gap-2 flex-1">
+                                        <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 bg-gray-100 dark:bg-gray-800">
+                                          {getTaskTypeIcon(task.type)}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                                            <span className="text-xs font-inter font-medium text-gray-950 dark:text-gray-50">
+                                              {task.dueDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                            </span>
+                                            <h4 className="text-xs font-inter font-semibold text-gray-950 dark:text-gray-50">
+                                              {task.title}
+                                            </h4>
+                                            <Badge 
+                                              className="border-0 text-xs py-0 px-1.5 font-medium"
+                                              style={getTaskPriorityStyle(task.priority)}
+                                            >
+                                              {getPriorityLabel(task.priority)}
+                                            </Badge>
+                                          </div>
+                                          <p className="text-xs font-open-sans text-gray-800 dark:text-gray-500 mb-1 line-clamp-1">
+                                            {task.description}
+                                          </p>
+                                          <div className="flex items-center gap-2 text-xs text-gray-800 dark:text-gray-500">
+                                            {task.candidateName && (
+                                              <span className="flex items-center gap-0.5">
+                                                <User className="w-2.5 h-2.5" />
+                                                {task.candidateName}
+                                              </span>
+                                            )}
+                                            {task.relatedJob && (
+                                              <span className="flex items-center gap-0.5">
+                                                <Briefcase className="w-2.5 h-2.5" />
+                                                {task.relatedJob}
+                                              </span>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div className="flex flex-col gap-1 flex-shrink-0">
+                                        {task.type === 'feedback' && (
+                                          <div className="flex items-center gap-1">
+                                            <Button
+                                              size="sm"
+                                              onClick={() => handleConfirmTask(task)}
+                                              className="h-5 px-2 text-xs gap-1 border-0"
+                                              style={{backgroundColor: 'var(--green-50, #f0fdf4)', color: 'var(--gray-800)'}}
+                                            >
+                                              <MessageSquare className="w-2.5 h-2.5" />
+                                              Avaliar
+                                            </Button>
+                                            <Button
+                                              size="sm"
+                                              variant="outline"
+                                              className="h-5 px-2 text-xs gap-1"
+                                            >
+                                              <FileText className="w-2.5 h-2.5" />
+                                              Ver CV
+                                            </Button>
+                                          </div>
+                                        )}
+                                        {task.type === 'entrevista' && (
+                                          <div className="flex items-center gap-1">
+                                            <Button
+                                              size="sm"
+                                              onClick={() => handleConfirmTask(task)}
+                                              className="h-5 px-2 text-xs gap-1 border-0"
+                                              style={{backgroundColor: 'var(--green-50, #f0fdf4)', color: 'var(--gray-800)'}}
+                                            >
+                                              <Play className="w-2.5 h-2.5" />
+                                              Iniciar
+                                            </Button>
+                                            <Button
+                                              size="sm"
+                                              variant="outline"
+                                              className="h-5 px-2 text-xs gap-1"
+                                            >
+                                              <FileText className="w-2.5 h-2.5" />
+                                              Ver CV
+                                            </Button>
+                                          </div>
+                                        )}
+                                        {task.type === 'sourcing' && (
+                                          <div className="flex items-center gap-1">
+                                            <Button
+                                              size="sm"
+                                              onClick={() => handleConfirmTask(task)}
+                                              className="h-5 px-2 text-xs gap-1 border-0"
+                                              style={{backgroundColor: 'var(--green-50, #f0fdf4)', color: 'var(--gray-800)'}}
+                                            >
+                                              <Search className="w-2.5 h-2.5" />
+                                              Buscar
+                                            </Button>
+                                            <Button
+                                              size="sm"
+                                              variant="outline"
+                                              className="h-5 px-2 text-xs gap-1"
+                                            >
+                                              <Users className="w-2.5 h-2.5" />
+                                              Ver Perfis
+                                            </Button>
+                                          </div>
+                                        )}
+                                        <div className="flex items-center gap-1">
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={() => handleConfirmTask(task)}
+                                            className="h-5 px-1.5 text-xs gap-0.5"
+                                          >
+                                            <CheckCircle className="w-2.5 h-2.5" />
+                                            Confirmar
+                                          </Button>
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={() => handleRejectTask(task)}
+                                            className="h-5 px-1.5 text-xs gap-0.5 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+                                          >
+                                            <XCircle className="w-2.5 h-2.5" />
+                                            Rejeitar
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )
+                        })()}
+                        
+                        {filteredPendingTasks.length === 0 && (
+                          <div className="text-center py-8">
+                            <CheckCircle2 className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-3" />
+                            <p className="text-sm font-medium text-gray-900 dark:text-gray-50 mb-1">Nenhuma tarefa pendente</p>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">Todas as tarefas foram concluídas</p>
+                          </div>
+                        )}
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="historico" className="mt-0">
+                      <ActivityFeed limit={15} className="max-h-[400px] overflow-y-auto" />
+                    </TabsContent>
+                  </Tabs>
+                </CardContent>
+              </Card>
+
+              {/* Card: Alertas Ativos */}
+              <Card className="border-gray-200 dark:border-gray-800">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Bell className="w-3.5 h-3.5 text-gray-950 dark:text-gray-50" />
+                      <CardTitle className={`${textStyles.label} font-semibold wedo-text-black`}>Alertas Ativos</CardTitle>
+                      <Badge variant="outline" className="text-xs font-inter">
+                        {activeAlerts.length}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Badge 
+                        className="border-0 text-xs font-medium"
+                        style={{backgroundColor: 'var(--pink-50, #fdf2f8)', color: 'var(--gray-800)'}}
+                      >
+                        {activeAlerts.filter(a => a.severity === 'high').length} Alto
+                      </Badge>
+                      <Badge 
+                        className="border-0 text-xs font-medium"
+                        style={{backgroundColor: 'var(--yellow-50, #fefce8)', color: 'var(--gray-800)'}}
+                      >
+                        {activeAlerts.filter(a => a.severity === 'medium').length} Médio
+                      </Badge>
+                      <Badge 
+                        className="border-0 text-xs font-medium"
+                        style={{backgroundColor: 'var(--blue-50, #eff6ff)', color: 'var(--gray-800)'}}
+                      >
+                        {activeAlerts.filter(a => a.severity === 'low').length} Baixo
+                      </Badge>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0 pb-2 max-h-[280px] overflow-y-auto">
+                  <div className="space-y-2">
+                    {activeAlerts.map((alert) => (
+                      <div
+                        key={alert.id}
+                        className="border border-gray-200 dark:border-gray-700 rounded-md p-2.5 transition-colors"
+                        style={{backgroundColor: getAlertSeverityStyle(alert.severity).backgroundColor + '40'}}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-start gap-2 flex-1">
+                            {/* Ícone de severidade */}
+                            <div 
+                              className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
+                              style={getAlertSeverityStyle(alert.severity)}
+                            >
+                              {alert.severity === 'high' && <AlertTriangle className="w-3.5 h-3.5" />}
+                              {alert.severity === 'medium' && <AlertCircle className="w-3.5 h-3.5" />}
+                              {alert.severity === 'low' && <Info className="w-3.5 h-3.5" />}
+                            </div>
+                            
+                            {/* Conteúdo */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                                <h4 className="text-xs font-inter font-semibold text-gray-950 dark:text-gray-50">
+                                  {alert.title}
+                                </h4>
+                                <Badge 
+                                  className="border-0 text-xs py-0 px-1.5 font-medium"
+                                  style={getAlertSeverityStyle(alert.severity)}
+                                >
+                                  {getSeverityLabel(alert.severity)}
+                                </Badge>
+                              </div>
+                              <p className="text-xs font-open-sans text-gray-800 dark:text-gray-500 mb-1 line-clamp-1">
+                                {alert.description}
+                              </p>
+                              <div className="flex items-center gap-2 text-xs text-gray-800 dark:text-gray-500">
+                                <span className="flex items-center gap-0.5">
+                                  <Briefcase className="w-2.5 h-2.5" />
+                                  {alert.jobTitle}
+                                </span>
+                                <span className="flex items-center gap-0.5">
+                                  <Clock className="w-2.5 h-2.5" />
+                                  {alert.createdAt.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Botão de ação com LIA */}
+                          <Button
+                            size="sm"
+                            onClick={() => handleAlertAction(alert)}
+                            className="h-6 px-2 text-xs gap-1 flex-shrink-0"
+                          >
+                            <Brain className="w-3 h-3 text-wedo-cyan" />
+                            {alert.action}
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {activeAlerts.length === 0 && (
+                      <div className="text-center py-8">
+                        <Bell className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-3" />
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-50 mb-1">Nenhum alerta ativo</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">Sem alertas no momento</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Tabela de Vagas Ativas - COM BUSCA E FILTROS */}
+            <Card className="border-gray-200 dark:border-gray-800">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-open-sans font-semibold wedo-text-black">Minhas Vagas Ativas</CardTitle>
+                  <div className="flex items-center gap-2">
+                    {/* Contador de resultados */}
+                    <Badge variant="outline" className="text-xs font-inter">
+                      {filteredAndSortedJobs.length} vaga{filteredAndSortedJobs.length !== 1 ? 's' : ''}
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Barra de Busca e Filtros */}
+                <div className="mt-3 space-y-2">
+                  <div className="flex items-center gap-2">
+                    {/* Input de Busca */}
+                    <div className="flex-1 relative">
+                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+                      <Input
+                        placeholder="Buscar vagas por título, ID, gestor ou departamento..."
+                        value={jobSearchTerm}
+                        onChange={(e) => setJobSearchTerm(e.target.value)}
+                        className="pl-8 h-8 text-xs"
+                      />
+                      {jobSearchTerm && (
+                        <button
+                          onClick={() => setJobSearchTerm("")}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+                          aria-label="Limpar busca"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Botão de Filtros */}
+                    <Button
+                      variant={showJobFilters || activeJobFiltersCount > 0 ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setShowJobFilters(!showJobFilters)}
+                      className="gap-1.5 h-8 px-3 text-xs"
+                    >
+                      <SlidersHorizontal className="w-3.5 h-3.5" />
+                      Filtros
+                      {activeJobFiltersCount > 0 && (
+                        <Badge className="ml-1 bg-white text-gray-950 dark:bg-gray-800 dark:text-gray-50 text-xs h-4 px-1 font-semibold">
+                          {activeJobFiltersCount}
+                        </Badge>
+                      )}
+                    </Button>
+
+                    {/* Dropdown de Ordenação */}
+                    <div className="relative group">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5 h-8 px-3 text-xs"
+                      >
+                        <ArrowUpDown className="w-3.5 h-3.5" />
+                        Ordenar
+                      </Button>
+
+                      {/* Menu de Ordenação */}
+                      <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-200 z-10">
+                        <div className="py-1">
+                          <button
+                            onClick={() => setJobSortBy('urgency')}
+                            className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                              jobSortBy === 'urgency' ? 'bg-gray-200 text-gray-950 dark:bg-gray-700 dark:text-gray-50 font-semibold' : ''
+                            }`}
+                          >
+                            Por Urgência
+                          </button>
+                          <button
+                            onClick={() => setJobSortBy('daysOpen')}
+                            className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                              jobSortBy === 'daysOpen' ? 'bg-gray-200 text-gray-950 dark:bg-gray-700 dark:text-gray-50 font-semibold' : ''
+                            }`}
+                          >
+                            Por Dias em Aberto
+                          </button>
+                          <button
+                            onClick={() => setJobSortBy('candidates')}
+                            className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                              jobSortBy === 'candidates' ? 'bg-gray-200 text-gray-950 dark:bg-gray-700 dark:text-gray-50 font-semibold' : ''
+                            }`}
+                          >
+                            Por Nº Candidatos
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Painel de Filtros Expandido */}
+                  {showJobFilters && (
+                    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-md p-3 space-y-3 border border-gray-200 dark:border-gray-700">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-open-sans font-semibold text-gray-800 dark:text-gray-200">Filtros Avançados</span>
+                        {activeJobFiltersCount > 0 && (
+                          <button
+                            onClick={clearJobFilters}
+                            className="text-xs text-gray-800 hover:text-gray-950 dark:text-gray-200 dark:hover:text-gray-100 flex items-center gap-1 "
+                          >
+                            <X className="w-3 h-3" />
+                            Limpar filtros
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-3">
+                        {/* Filtro por Departamento */}
+                        <div>
+                          <label className="text-xs font-open-sans font-medium text-gray-800 dark:text-gray-500 mb-1.5 block">
+                            Departamento
+                          </label>
+                          <div className="space-y-1">
+                            {uniqueDepartments.map(dept => (
+                              <label key={dept} className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedDepartments.includes(dept)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedDepartments([...selectedDepartments, dept])
+                                    } else {
+                                      setSelectedDepartments(selectedDepartments.filter(d => d !== dept))
+                                    }
+                                  }}
+                                  className="w-4 h-4 rounded-sm border-gray-300 accent-gray-900 focus:ring-2 focus:ring-gray-900/20"
+                                />
+                                <span className="text-xs text-gray-800 dark:text-gray-200">{dept}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Filtro por Urgência */}
+                        <div>
+                          <label className="text-xs font-open-sans font-medium text-gray-800 dark:text-gray-500 mb-1.5 block">
+                            Urgência
+                          </label>
+                          <div className="space-y-1">
+                            {['critical', 'urgent', 'normal'].map(urgency => (
+                              <label key={urgency} className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedUrgencies.includes(urgency)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedUrgencies([...selectedUrgencies, urgency])
+                                    } else {
+                                      setSelectedUrgencies(selectedUrgencies.filter(u => u !== urgency))
+                                    }
+                                  }}
+                                  className="w-4 h-4 rounded-sm border-gray-300 accent-gray-900 focus:ring-2 focus:ring-gray-900/20"
+                                />
+                                <span className="text-xs text-gray-800 dark:text-gray-200 capitalize">
+                                  {urgency === 'critical' ? 'Crítico' : urgency === 'urgent' ? 'Urgente' : 'Normal'}
+                                </span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Filtro por Publicação */}
+                        <div>
+                          <label className="text-xs font-open-sans font-medium text-gray-800 dark:text-gray-500 mb-1.5 block">
+                            Publicado em
+                          </label>
+                          <div className="space-y-1">
+                            {[
+                              { id: 'linkedin', label: 'LinkedIn' },
+                              { id: 'site', label: 'Site' },
+                              { id: 'indeed', label: 'Indeed' }
+                            ].map(pub => (
+                              <label key={pub.id} className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedPublications.includes(pub.id)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedPublications([...selectedPublications, pub.id])
+                                    } else {
+                                      setSelectedPublications(selectedPublications.filter(p => p !== pub.id))
+                                    }
+                                  }}
+                                  className="w-4 h-4 rounded-sm border-gray-300 accent-gray-900 focus:ring-2 focus:ring-gray-900/20"
+                                />
+                                <span className="text-xs text-gray-800 dark:text-gray-200">{pub.label}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Filtros Ativos (Tags) */}
+                  {activeJobFiltersCount > 0 && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs text-gray-800 dark:text-gray-500">Filtros ativos:</span>
+                      {selectedDepartments.map(dept => (
+                        <Badge
+                          key={dept}
+                          variant="secondary"
+                          className="text-xs flex items-center gap-1 pr-1"
+                        >
+                          {dept}
+                          <button
+                            onClick={() => setSelectedDepartments(selectedDepartments.filter(d => d !== dept))}
+                            className="hover:bg-gray-300 dark:hover:bg-gray-600 rounded-full p-0.5" aria-label="Remover filtro"
+                          >
+                            <X className="w-2.5 h-2.5" />
+                          </button>
+                        </Badge>
+                      ))}
+                      {selectedUrgencies.map(urgency => (
+                        <Badge
+                          key={urgency}
+                          variant="secondary"
+                          className="text-xs flex items-center gap-1 pr-1"
+                        >
+                          {urgency === 'critical' ? 'Crítico' : urgency === 'urgent' ? 'Urgente' : 'Normal'}
+                          <button
+                            onClick={() => setSelectedUrgencies(selectedUrgencies.filter(u => u !== urgency))}
+                            className="hover:bg-gray-300 dark:hover:bg-gray-600 rounded-full p-0.5" aria-label="Remover filtro"
+                          >
+                            <X className="w-2.5 h-2.5" />
+                          </button>
+                        </Badge>
+                      ))}
+                      {selectedPublications.map(pub => (
+                        <Badge
+                          key={pub}
+                          variant="secondary"
+                          className="text-xs flex items-center gap-1 pr-1"
+                        >
+                          {pub === 'linkedin' ? 'LinkedIn' : pub === 'site' ? 'Site' : 'Indeed'}
+                          <button
+                            onClick={() => setSelectedPublications(selectedPublications.filter(p => p !== pub))}
+                            className="hover:bg-gray-300 dark:hover:bg-gray-600 rounded-full p-0.5" aria-label="Remover filtro"
+                          >
+                            <X className="w-2.5 h-2.5" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </CardHeader>
+
+              <CardContent className="pt-0">
+                {/* Mensagem de resultados vazios */}
+                {filteredAndSortedJobs.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Search className="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
+                    <p className="text-base font-medium text-gray-900 dark:text-gray-50 mb-1">Nenhuma vaga encontrada</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Tente ajustar os filtros ou buscar por outros termos
+                    </p>
+                    {activeJobFiltersCount > 0 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={clearJobFilters}
+                        className="mt-3 text-xs"
+                      >
+                        Limpar filtros
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {filteredAndSortedJobs.map((job) => (
+                      <div key={job.id} className="border border-gray-200 dark:border-gray-700 rounded-md p-3 hover:border-gray-400 hover:border-gray-400 dark:hover:border-gray-500 hover:scale-[1.01] transition-[color,background-color,border-color,transform] duration-200 bg-white dark:bg-gray-900 cursor-pointer">
+                        {/* Header da Vaga - Compacto com publicação inline */}
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1 space-y-1">
+                            {/* Linha 1: Título + Badges + Publicação */}
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="font-semibold text-sm text-gray-950 dark:text-gray-50">{job.title}</h3>
+                              <Badge variant="outline" className="text-xs">{job.jobId}</Badge>
+                              {getUrgencyBadge(job.urgencyLevel, job.daysOpen)}
+                              {job.publishedLinkedIn && (
+                                <Badge className="bg-gray-100 text-gray-950 border-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 text-xs flex items-center gap-1 font-medium">
+                                  <Linkedin className="w-2.5 h-2.5" />
+                                  LI
+                                </Badge>
+                              )}
+                              {job.publishedWebsite && (
+                                <Badge className="bg-gray-100 text-gray-950 border-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 text-xs flex items-center gap-1 font-medium">
+                                  <Globe className="w-2.5 h-2.5" />
+                                  Site
+                                </Badge>
+                              )}
+                              {job.publishedIndeed && (
+                                <Badge className="bg-gray-100 text-gray-950 border-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 text-xs flex items-center gap-1 font-medium">
+                                  <Briefcase className="w-2.5 h-2.5" />
+                                  Indeed
+                                </Badge>
+                              )}
+                            </div>
+                            {/* Linha 2: Informações inline compactas */}
+                            <div className="flex items-center gap-3 text-xs text-gray-800 dark:text-gray-500 flex-wrap">
+                              <div className="flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                <span className={`font-medium ${getUrgencyColor(job.urgencyLevel)}`}>{job.daysOpen}d</span>
+                              </div>
+                              <span className="text-gray-500 dark:text-gray-500">•</span>
+                              <div className="flex items-center gap-1">
+                                <User className="w-3 h-3" />
+                                <span>{job.manager.split(' ')[0]}</span>
+                              </div>
+                              <span className="text-gray-500 dark:text-gray-500">•</span>
+                              <div className="flex items-center gap-1">
+                                <MapPin className="w-3 h-3" />
+                                <span>{job.department}</span>
+                              </div>
+                              <span className="text-gray-500 dark:text-gray-500">•</span>
+                              <div className="flex items-center gap-1">
+                                <Users className="w-3 h-3" />
+                                <span>{job.totalCandidates} candidatos</span>
+                              </div>
+                            </div>
+                          </div>
+                          {/* Menu Dropdown de Ações Rápidas - Integrado com LIA */}
+                          <div className="relative group">
+                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0" aria-label="Ações da vaga">
+                              <MoreVertical className="w-3.5 h-3.5" />
+                            </Button>
+                            {/* Dropdown Menu */}
+                            <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-200 z-10">
+                              <div className="py-1">
+                                <button
+                                  onClick={() => handleLIAAction('kanban', job)}
+                                  className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-950 dark:hover:text-gray-100 transition-colors flex items-center gap-2"
+                                >
+                                  <Eye className="w-3 h-3" />
+                                  Ver Kanban Completo
+                                </button>
+                                <button
+                                  onClick={() => handleLIAAction('report', job)}
+                                  className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-950 dark:hover:text-gray-100 transition-colors flex items-center gap-2"
+                                >
+                                  <FileText className="w-3 h-3" />
+                                  Gerar Relatório
+                                </button>
+                                <button
+                                  onClick={() => handleLIAAction('share', job)}
+                                  className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-950 dark:hover:text-gray-100 transition-colors flex items-center gap-2"
+                                >
+                                  <Share2 className="w-3 h-3" />
+                                  Compartilhar Vaga
+                                </button>
+                                <button
+                                  onClick={() => handleLIAAction('edit', job)}
+                                  className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-950 dark:hover:text-gray-100 transition-colors flex items-center gap-2"
+                                >
+                                  <Edit className="w-3 h-3" />
+                                  Editar Requisitos
+                                </button>
+                                <button
+                                  onClick={() => handleLIAAction('duplicate', job)}
+                                  className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-950 dark:hover:text-gray-100 transition-colors flex items-center gap-2"
+                                >
+                                  <Copy className="w-3 h-3" />
+                                  Duplicar Vaga
+                                </button>
+                                <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                                <button
+                                  onClick={() => handleLIAAction('cancel', job)}
+                                  className="w-full px-3 py-2 text-left text-xs hover:bg-status-error/10 dark:hover:bg-status-error/20 text-status-error hover:text-status-error dark:hover:text-status-error transition-colors flex items-center gap-2"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                  Cancelar Vaga
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Funil Horizontal Unificado - Ultra Compacto */}
+                        <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-1.5 mb-1.5">
+                          <div className="flex items-center justify-between gap-1">
+                            {/* Novos */}
+                            <div className="flex flex-col items-center">
+                              <span className="text-xs font-medium text-gray-950 dark:text-gray-50">{job.stages.new}</span>
+                              <span className="text-xs text-gray-800 dark:text-gray-500 uppercase">Novos</span>
+                            </div>
+                            <div className="flex flex-col items-center">
+                              <span className={`text-xs font-medium ${getConversionColor(getConversionRate(job.stages.new, job.stages.uncontacted))}`}>
+                                {getConversionRate(job.stages.new, job.stages.uncontacted)}%
+                              </span>
+                              <span className="text-xs text-gray-800 dark:text-gray-400">→</span>
+                            </div>
+
+                            {/* Não Contactados */}
+                            <div className="flex flex-col items-center">
+                              <span className="text-xs font-medium text-gray-950 dark:text-gray-50">{job.stages.uncontacted}</span>
+                              <span className="text-xs text-gray-800 dark:text-gray-500 uppercase">Triag</span>
+                            </div>
+                            <div className="flex flex-col items-center">
+                              <span className={`text-xs font-medium ${getConversionColor(getConversionRate(job.stages.uncontacted, job.stages.contacted))}`}>
+                                {getConversionRate(job.stages.uncontacted, job.stages.contacted)}%
+                              </span>
+                              <span className="text-xs text-gray-800 dark:text-gray-400">→</span>
+                            </div>
+
+                            {/* Contactados */}
+                            <div className="flex flex-col items-center">
+                              <span className="text-xs font-medium text-gray-950 dark:text-gray-50">{job.stages.contacted}</span>
+                              <span className="text-xs text-gray-800 dark:text-gray-500 uppercase">Cont</span>
+                            </div>
+                            <div className="flex flex-col items-center">
+                              <span className={`text-xs font-medium ${getConversionColor(getConversionRate(job.stages.contacted, job.stages.replied))}`}>
+                                {getConversionRate(job.stages.contacted, job.stages.replied)}%
+                              </span>
+                              <span className="text-xs text-gray-800 dark:text-gray-400">→</span>
+                            </div>
+
+                            {/* Respondidos */}
+                            <div className="flex flex-col items-center">
+                              <span className="text-xs font-medium text-gray-950 dark:text-gray-50">{job.stages.replied}</span>
+                              <span className="text-xs text-gray-800 dark:text-gray-500 uppercase">Resp</span>
+                            </div>
+                            <div className="flex flex-col items-center">
+                              <span className={`text-xs font-medium ${getConversionColor(getConversionRate(job.stages.replied, job.stages.phoneScreen))}`}>
+                                {getConversionRate(job.stages.replied, job.stages.phoneScreen)}%
+                              </span>
+                              <span className="text-xs text-gray-800 dark:text-gray-400">→</span>
+                            </div>
+
+                            {/* Telefone */}
+                            <div className="flex flex-col items-center">
+                              <span className="text-xs font-medium text-gray-950 dark:text-gray-50">{job.stages.phoneScreen}</span>
+                              <span className="text-xs text-gray-800 dark:text-gray-500 uppercase">Tel</span>
+                            </div>
+                            <div className="flex flex-col items-center">
+                              <span className={`text-xs font-medium ${getConversionColor(getConversionRate(job.stages.phoneScreen, job.stages.onsite))}`}>
+                                {getConversionRate(job.stages.phoneScreen, job.stages.onsite)}%
+                              </span>
+                              <span className="text-xs text-gray-800 dark:text-gray-400">→</span>
+                            </div>
+
+                            {/* Entrevista */}
+                            <div className="flex flex-col items-center">
+                              <span className="text-xs font-medium text-gray-950 dark:text-gray-50">{job.stages.onsite}</span>
+                              <span className="text-xs text-gray-800 dark:text-gray-500 uppercase">Entrev</span>
+                            </div>
+                            <div className="flex flex-col items-center">
+                              <span className={`text-xs font-medium ${getConversionColor(getConversionRate(job.stages.onsite, job.stages.makeOffer))}`}>
+                                {getConversionRate(job.stages.onsite, job.stages.makeOffer)}%
+                              </span>
+                              <span className="text-xs text-gray-800 dark:text-gray-400">→</span>
+                            </div>
+
+                            {/* Oferta */}
+                            <div className="flex flex-col items-center">
+                              <span className="text-xs font-medium text-gray-950 dark:text-gray-50">{job.stages.makeOffer}</span>
+                              <span className="text-xs text-gray-800 dark:text-gray-500 uppercase">Ofert</span>
+                            </div>
+                            <div className="flex flex-col items-center">
+                              <span className={`text-xs font-medium ${getConversionColor(getConversionRate(job.stages.makeOffer, job.stages.hired))}`}>
+                                {getConversionRate(job.stages.makeOffer, job.stages.hired)}%
+                              </span>
+                              <span className="text-xs text-gray-800 dark:text-gray-400">→</span>
+                            </div>
+
+                            {/* Contratados */}
+                            <div className="flex flex-col items-center">
+                              <span className="text-xs font-medium text-gray-950 dark:text-gray-50">{job.stages.hired}</span>
+                              <span className="text-xs text-gray-800 dark:text-gray-500 uppercase">Contr</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Pendências e Alerta em Linha - Ultra Compacto */}
+                        <div className="flex items-center gap-1.5">
+                          {/* Pendências LIA */}
+                          {job.liaPendencies.length > 0 && (
+                            <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md px-1.5 py-1 flex-1">
+                              <Brain className="w-2.5 h-2.5 text-wedo-cyan flex-shrink-0" />
+                              <span className="text-xs text-gray-950 dark:text-gray-200 truncate font-medium">
+                                {job.liaPendencies.length} pendência{job.liaPendencies.length > 1 ? 's' : ''}
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Alerta LIA */}
+                          <div 
+                            className={`flex items-center gap-1 ${getAlertColor(job.alert.type)} rounded-md px-1.5 py-1 flex-1`}
+                            style={getAlertStyle(job.alert.type)}
+                          >
+                            {getAlertIcon(job.alert.type)}
+                            <span className="text-xs font-medium truncate flex-1">{job.alert.message}</span>
+                            <Button
+                              size="sm"
+                              className="gap-0.5 h-4 text-xs px-1 hover:scale-105 transition-transform flex-shrink-0"
+                              onClick={() => {
+                                const actionPrompt = `${job.alert.action} para a vaga ${job.title} (${job.jobId})`
+                                if (typeof window !== 'undefined') {
+                                  localStorage.setItem('liaPrompt', actionPrompt)
+                                }
+                                if (onNavigate) {
+                                  onNavigate('Chat com LIA')
+                                }
+                              }}
+                            >
+                              {job.alert.action}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+        </div>
+      </div>
+    </div>
+    </>
+  )
+}

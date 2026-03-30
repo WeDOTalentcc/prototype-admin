@@ -794,7 +794,7 @@ export function useExpandedChatSubHooks(ctx) {
 
   const containerClasses = inline
     ? cn(
-        "flex flex-col bg-white dark:bg-gray-800 overflow-hidden rounded-md border border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out",
+        "flex flex-col bg-white dark:bg-lia-bg-secondary overflow-hidden rounded-md border border-lia-border-subtle dark:border-lia-border-subtle transition-colors duration-300 ease-in-out",
         isFullscreen 
           ? "fixed inset-4 z-50 animate-in zoom-in-95 duration-200" 
           : "h-full"
@@ -805,9 +805,9 @@ export function useExpandedChatSubHooks(ctx) {
       )
 
   const contentClasses = inline
-    ? "flex-1 flex flex-col bg-white min-h-0 h-full transition-all duration-300"
+    ? "flex-1 flex flex-col bg-lia-bg-primary min-h-0 h-full transition-[width,height] duration-300"
     : cn(
-        "bg-white w-full rounded-md flex flex-col overflow-hidden border border-gray-900 dark:border-gray-50 transition-all duration-300 ease-in-out",
+        "bg-lia-bg-primary w-full rounded-md flex flex-col overflow-hidden border border-gray-900 transition-colors duration-300 ease-in-out",
         "animate-in fade-in-0 zoom-in-95 duration-300",
         isFullscreen 
           ? "max-w-[98vw] h-[95vh]" 

@@ -260,16 +260,16 @@ export function CandidateComparison({
   const getVerdictIcon = (verdict: 'winner' | 'close' | 'lower') => {
     switch (verdict) {
       case 'winner': return <Trophy className="w-4 h-4 text-status-warning" />
-      case 'close': return <Star className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-      case 'lower': return <Flame className="w-4 h-4 text-gray-800 dark:text-gray-200" />
+      case 'close': return <Star className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+      case 'lower': return <Flame className="w-4 h-4 text-gray-800 dark:text-lia-text-primary" />
     }
   }
 
   const getVerdictColor = (verdict: 'winner' | 'close' | 'lower') => {
     switch (verdict) {
       case 'winner': return 'bg-status-warning/10 border-status-warning/30 text-status-warning'
-      case 'close': return 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400'
-      case 'lower': return 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400'
+      case 'close': return 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default text-gray-600 dark:text-lia-text-tertiary'
+      case 'lower': return 'bg-gray-50 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle text-gray-600 dark:text-lia-text-tertiary'
     }
   }
 
@@ -277,15 +277,15 @@ export function CandidateComparison({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-md w-full max-w-7xl max-h-[95vh] overflow-y-auto">
+      <div className="bg-white dark:bg-lia-bg-secondary rounded-md w-full max-w-7xl max-h-[95vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div>
-            <h3 className="text-xl font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-2">
-              <Users className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <h3 className="text-xl font-semibold text-gray-950 flex items-center gap-2">
+              <Users className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
               Comparação Inteligente de Candidatos
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">
               Análise comparativa com insights da LIA • {candidates.length} candidatos
             </p>
           </div>
@@ -326,7 +326,7 @@ export function CandidateComparison({
             ) : liaAnalysis && (
               <div className="space-y-6">
                 {/* Executive Summary */}
-                <div className="bg-white dark:bg-gray-800 rounded-md p-4 border border-status-success/30">
+                <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-4 border border-status-success/30">
                   <h5 className="font-semibold text-status-success dark:text-status-success mb-2 flex items-center gap-2">
                     <Brain className="w-4 h-4 text-wedo-cyan" />
                     Recomendação Final da LIA
@@ -348,7 +348,7 @@ export function CandidateComparison({
                 </div>
 
                 {/* Scenario Analysis */}
-                <div className="bg-white dark:bg-gray-800 rounded-md p-4 border border-status-success/30">
+                <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-4 border border-status-success/30">
                   <h5 className="font-semibold text-status-success dark:text-status-success mb-4 flex items-center gap-2">
                     <Target className="w-4 h-4" />
                     Análise por Cenário
@@ -360,9 +360,9 @@ export function CandidateComparison({
                         key={key}
                         onClick={() => setSelectedScenario(key as any)}
                         className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                          selectedScenario === key
+ selectedScenario === key
                             ? 'bg-status-success/15 text-status-success border border-status-success/30'
-                            : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
+                            : 'bg-gray-100 dark:bg-lia-bg-elevated text-gray-800 dark:text-lia-text-primary hover:bg-gray-200 dark:hover:bg-gray-600'
                         }`}
                       >
                         {key === 'shortTerm' ? 'Curto Prazo' :
@@ -393,7 +393,7 @@ export function CandidateComparison({
                 </div>
 
                 {/* Action Plan */}
-                <div className="bg-white dark:bg-gray-800 rounded-md p-4 border border-status-success/30">
+                <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-4 border border-status-success/30">
                   <h5 className="font-semibold text-status-success dark:text-status-success mb-3 flex items-center gap-2">
                     <Rocket className="w-4 h-4" />
                     Plano de Ação Recomendado
@@ -434,18 +434,18 @@ export function CandidateComparison({
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
-                      <h4 className="font-semibold text-gray-950 dark:text-gray-50 mb-1">
+                      <h4 className="font-semibold text-gray-950 mb-1">
                         {candidate.name}
                       </h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                      <p className="text-sm text-gray-600 dark:text-lia-text-tertiary mb-2">
                         {candidate.role} • {candidate.seniority}
                       </p>
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                        <Badge variant="outline" className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary">
                           {candidate.matchPercentage}% Match
                         </Badge>
                         <Badge variant="outline" className={
-                          candidate.riskLevel === 'Baixo' ? 'text-status-success border-status-success/30' :
+ candidate.riskLevel === 'Baixo' ? 'text-status-success border-status-success/30' :
                           candidate.riskLevel === 'Médio' ? 'text-status-warning border-status-warning/30' :
                           'text-status-error border-status-error/30'
                         }>
@@ -459,15 +459,15 @@ export function CandidateComparison({
                 <CardContent className="space-y-4">
                   {/* Quick Info */}
                   <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                    <div className="flex items-center gap-2 text-gray-600 dark:text-lia-text-tertiary">
                       <MapPin className="w-3 h-3" />
                       {candidate.location}
                     </div>
-                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                    <div className="flex items-center gap-2 text-gray-600 dark:text-lia-text-tertiary">
                       <Briefcase className="w-3 h-3" />
                       {candidate.experience}
                     </div>
-                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                    <div className="flex items-center gap-2 text-gray-600 dark:text-lia-text-tertiary">
                       <Clock className="w-3 h-3" />
                       {candidate.availability}
                     </div>
@@ -475,7 +475,7 @@ export function CandidateComparison({
 
                   {/* Skills */}
                   <div>
-                    <h6 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-2">
+                    <h6 className="text-xs font-medium text-gray-800 dark:text-lia-text-primary mb-2">
                       Principais Skills
                     </h6>
                     <div className="flex flex-wrap gap-1">
@@ -494,7 +494,7 @@ export function CandidateComparison({
 
                   {/* LIA Analysis for this candidate */}
                   {liaAnalysis && liaAnalysis.comparison[candidate.id] && (
-                    <div className="space-y-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                    <div className="space-y-3 pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                       <h6 className="text-xs font-medium text-status-success dark:text-status-success flex items-center gap-1">
                         <Brain className="w-3 h-3 text-wedo-cyan" />
                         Análise da LIA
@@ -536,7 +536,7 @@ export function CandidateComparison({
                   )}
 
                   {/* Actions */}
-                  <div className="flex gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                  <div className="flex gap-2 pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                     <Button
                       variant="outline"
                       size="sm"
@@ -569,14 +569,14 @@ export function CandidateComparison({
           </div>
 
           {/* Final Actions */}
-          <div className="flex justify-center gap-4 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex justify-center gap-4 mt-8 pt-6 border-t border-lia-border-subtle dark:border-lia-border-subtle">
             <Button variant="outline" onClick={onClose}>
               Fechar Comparação
             </Button>
             {liaAnalysis && (
               <Button
                 onClick={() => onSelectCandidate(liaAnalysis.winner)}
-                className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
               >
                 <Crown className="w-4 h-4" />
                 Ver Candidato Recomendado

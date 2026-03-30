@@ -242,10 +242,10 @@ export default function ClientOverviewPage({
         <div className="w-16 h-16 rounded-full bg-status-error/10 dark:bg-status-error/20 flex items-center justify-center mb-4">
           <AlertCircle className="w-8 h-8 text-status-error" />
         </div>
-        <h3 className="text-lg font-medium mb-1 text-gray-800 dark:text-gray-100">
+        <h3 className="text-lg font-medium mb-1 lia-text-800 dark:text-lia-text-primary">
           Erro ao carregar dados
         </h3>
-        <p className="text-sm mb-4 text-gray-400 dark:text-gray-500">
+        <p className="text-sm mb-4 lia-text-400 dark:lia-text-500">
           {error}
         </p>
         <Button variant="outline" onClick={fetchClient}>
@@ -263,11 +263,11 @@ export default function ClientOverviewPage({
       <div className="flex items-center justify-between">
         <div>
           <h2 
-            className="text-lg font-semibold text-gray-800 dark:text-gray-100"
+            className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary"
           >
             Visão Geral
           </h2>
-          <p className="text-sm text-gray-400 dark:text-gray-500">
+          <p className="text-sm lia-text-400 dark:lia-text-500">
             Dashboard de métricas e atividades do cliente
           </p>
         </div>
@@ -283,7 +283,7 @@ export default function ClientOverviewPage({
             variant={client?.status === 'suspended' ? 'default' : 'outline'}
             onClick={handleToggleStatus}
             disabled={togglingStatus}
-            className={client?.status === 'suspended' ? 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200' : ''}
+            className={client?.status === 'suspended' ? 'bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200' : ''}
           >
             {togglingStatus ? (
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -309,12 +309,12 @@ export default function ClientOverviewPage({
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-gray-400 dark:text-gray-500">
+                <p className="text-sm lia-text-400 dark:lia-text-500">
                   Usuários Ativos
                 </p>
-                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
+                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
                   {metrics.active_users}
-                  <span className="text-sm font-normal text-gray-400 dark:text-gray-500">
+                  <span className="text-sm font-normal lia-text-400 dark:lia-text-500">
                     /{client?.user_limit || metrics.total_users}
                   </span>
                 </p>
@@ -323,8 +323,8 @@ export default function ClientOverviewPage({
                   <span className="text-xs text-status-success">+2 este mês</span>
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                <Users className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <div className="w-10 h-10 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
+                <Users className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
               </div>
             </div>
           </CardContent>
@@ -334,10 +334,10 @@ export default function ClientOverviewPage({
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-gray-400 dark:text-gray-500">
+                <p className="text-sm lia-text-400 dark:lia-text-500">
                   Vagas Abertas
                 </p>
-                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
+                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
                   {metrics.open_vacancies}
                 </p>
                 <div className="flex items-center gap-1 mt-1">
@@ -356,10 +356,10 @@ export default function ClientOverviewPage({
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-gray-400 dark:text-gray-500">
+                <p className="text-sm lia-text-400 dark:lia-text-500">
                   Candidatos
                 </p>
-                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
+                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
                   {metrics.total_candidates}
                 </p>
                 <div className="flex items-center gap-1 mt-1">
@@ -378,18 +378,18 @@ export default function ClientOverviewPage({
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-gray-400 dark:text-gray-500">
+                <p className="text-sm lia-text-400 dark:lia-text-500">
                   Créditos IA
                 </p>
-                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
+                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
                   {metrics.ai_credits_used.toLocaleString()}
-                  <span className="text-sm font-normal text-gray-400 dark:text-gray-500">
+                  <span className="text-sm font-normal lia-text-400 dark:lia-text-500">
                     /{metrics.ai_credits_limit.toLocaleString()}
                   </span>
                 </p>
                 <Progress value={aiCreditsPercent} className="h-1.5 mt-2" />
               </div>
- <div className="w-10 h-10 rounded-md bg-gray-50 dark:bg-gray-800 flex items-center justify-center">
+ <div className="w-10 h-10 rounded-md bg-gray-50 dark:bg-lia-bg-secondary flex items-center justify-center">
                 <Brain className="w-5 h-5 text-wedo-cyan" />
               </div>
             </div>
@@ -400,14 +400,14 @@ export default function ClientOverviewPage({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
+            <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
               Informações do Contrato
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
-                <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                <p className="text-xs uppercase tracking-wide lia-text-400 dark:lia-text-500">
                   Status
                 </p>
                 <div className="mt-1">
@@ -415,68 +415,68 @@ export default function ClientOverviewPage({
                 </div>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                <p className="text-xs uppercase tracking-wide lia-text-400 dark:lia-text-500">
                   Plano
                 </p>
-                <p className="text-sm font-medium mt-1 text-gray-800 dark:text-gray-100">
+                <p className="text-sm font-medium mt-1 lia-text-800 dark:text-lia-text-primary">
                   {client?.plan_id || 'Starter'}
                 </p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                <p className="text-xs uppercase tracking-wide lia-text-400 dark:lia-text-500">
                   Início do Contrato
                 </p>
-                <p className="text-sm font-medium mt-1 text-gray-800 dark:text-gray-100">
+                <p className="text-sm font-medium mt-1 lia-text-800 dark:text-lia-text-primary">
                   {client?.contract_start_date ? formatDate(client.contract_start_date) : '-'}
                 </p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                <p className="text-xs uppercase tracking-wide lia-text-400 dark:lia-text-500">
                   Fim do Contrato
                 </p>
-                <p className="text-sm font-medium mt-1 text-gray-800 dark:text-gray-100">
+                <p className="text-sm font-medium mt-1 lia-text-800 dark:text-lia-text-primary">
                   {client?.contract_end_date ? formatDate(client.contract_end_date) : '-'}
                 </p>
               </div>
             </div>
 
-            <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="mt-6 pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                  <p className="text-xs uppercase tracking-wide lia-text-400 dark:lia-text-500">
                     CNPJ
                   </p>
-                  <p className="text-sm font-medium mt-1 text-gray-800 dark:text-gray-100">
+                  <p className="text-sm font-medium mt-1 lia-text-800 dark:text-lia-text-primary">
                     {client?.cnpj || '-'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                  <p className="text-xs uppercase tracking-wide lia-text-400 dark:lia-text-500">
                     Email
                   </p>
                   <div className="flex items-center gap-1 mt-1">
-                    <Mail className="w-3 h-3 text-gray-400 dark:text-gray-500" />
-                    <p className="text-sm text-gray-800 dark:text-gray-100">
+                    <Mail className="w-3 h-3 lia-text-400 dark:lia-text-500" />
+                    <p className="text-sm lia-text-800 dark:text-lia-text-primary">
                       {client?.primary_email || '-'}
                     </p>
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                  <p className="text-xs uppercase tracking-wide lia-text-400 dark:lia-text-500">
                     Telefone
                   </p>
                   <div className="flex items-center gap-1 mt-1">
-                    <Phone className="w-3 h-3 text-gray-400 dark:text-gray-500" />
-                    <p className="text-sm text-gray-800 dark:text-gray-100">
+                    <Phone className="w-3 h-3 lia-text-400 dark:lia-text-500" />
+                    <p className="text-sm lia-text-800 dark:text-lia-text-primary">
                       {client?.primary_phone || '-'}
                     </p>
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                  <p className="text-xs uppercase tracking-wide lia-text-400 dark:lia-text-500">
                     Limite Usuários
                   </p>
-                  <p className="text-sm font-medium mt-1 text-gray-800 dark:text-gray-100">
+                  <p className="text-sm font-medium mt-1 lia-text-800 dark:text-lia-text-primary">
                     {client?.user_limit || '-'}
                   </p>
                 </div>
@@ -488,10 +488,10 @@ export default function ClientOverviewPage({
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
+              <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
                 Progresso Onboarding
               </CardTitle>
-              <span className="text-sm font-medium text-gray-900 dark:text-gray-50">{Math.round(onboardingPercent)}%</span>
+              <span className="text-sm font-medium lia-text-900 dark:lia-text-50">{Math.round(onboardingPercent)}%</span>
             </div>
           </CardHeader>
           <CardContent>
@@ -502,16 +502,16 @@ export default function ClientOverviewPage({
                   <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
                     step.completed 
                       ? 'bg-status-success/15 dark:bg-status-success/30' 
-                      : 'bg-gray-100 dark:bg-gray-800'
+                      : 'bg-gray-100 dark:bg-lia-bg-secondary'
                   }`}>
                     {step.completed ? (
                       <CheckCircle2 className="w-3 h-3 text-status-success dark:text-status-success" />
                     ) : (
-                      <Clock className="w-3 h-3 text-gray-400" />
+                      <Clock className="w-3 h-3 lia-text-400" />
                     )}
                   </div>
                   <span
-                    className={`text-sm ${step.completed ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-800 dark:text-gray-100'}`}
+                    className={`text-sm ${step.completed ? 'line-through lia-text-400 dark:lia-text-500' : 'lia-text-800 dark:text-lia-text-primary'}`}
                   >
                     {step.label}
                   </span>
@@ -525,7 +525,7 @@ export default function ClientOverviewPage({
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
+            <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
               Atividades Recentes
             </CardTitle>
             <Button variant="ghost" size="sm">
@@ -540,21 +540,21 @@ export default function ClientOverviewPage({
               const Icon = activityIcons[activity.type] || FileText
               return (
                 <div key={activity.id} className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0">
-                    <Icon className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                  <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center shrink-0">
+                    <Icon className="w-4 h-4 lia-text-400 dark:lia-text-500" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-800 dark:text-gray-100">
+                    <p className="text-sm lia-text-800 dark:text-lia-text-primary">
                       {activity.description}
                     </p>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs text-gray-400 dark:text-gray-500">
+                      <span className="text-xs lia-text-400 dark:lia-text-500">
                         {formatDateTime(activity.timestamp)}
                       </span>
                       {activity.user && (
                         <>
-                          <span className="text-gray-400 dark:text-gray-500">•</span>
-                          <span className="text-xs text-gray-400 dark:text-gray-500">
+                          <span className="lia-text-400 dark:lia-text-500">•</span>
+                          <span className="text-xs lia-text-400 dark:lia-text-500">
                             {activity.user}
                           </span>
                         </>

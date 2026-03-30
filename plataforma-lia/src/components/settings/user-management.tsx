@@ -264,14 +264,14 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
       case 'ativo': return `${badgeStyles.success} border-status-success/30`
       case 'inativo': return `${badgeStyles.error} border-status-error/30`
       case 'pendente': return `${badgeStyles.warning} border-status-warning/30`
-      default: return `${badgeStyles.default} border-gray-200`
+      default: return `${badgeStyles.default} border-lia-border-subtle`
     }
   }
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-6">
-        <div className="text-xs text-gray-500 dark:text-gray-400">Carregando usuários...</div>
+        <div className="text-xs lia-text-500 dark:text-lia-text-tertiary">Carregando usuários...</div>
       </div>
     )
   }
@@ -327,7 +327,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                     type="text"
                     value={formData.name || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full py-1.5 px-2 text-xs border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900"
+                    className="w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated lia-text-900 dark:text-lia-text-primary focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900"
                     placeholder="Ex: Ana Silva"
                   />
                 </div>
@@ -338,7 +338,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                     type="email"
                     value={formData.email || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full py-1.5 px-2 text-xs border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900"
+                    className="w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated lia-text-900 dark:text-lia-text-primary focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900"
                     placeholder="ana.silva@empresa.com"
                   />
                 </div>
@@ -349,7 +349,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                     type="tel"
                     value={formData.phone || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                    className="w-full py-1.5 px-2 text-xs border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900"
+                    className="w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated lia-text-900 dark:text-lia-text-primary focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900"
                     placeholder="+55 11 99999-9999"
                   />
                 </div>
@@ -360,7 +360,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                     type="tel"
                     value={formData.whatsapp || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, whatsapp: e.target.value }))}
-                    className="w-full py-1.5 px-2 text-xs border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900"
+                    className="w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated lia-text-900 dark:text-lia-text-primary focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900"
                     placeholder="+55 11 99999-9999"
                   />
                 </div>
@@ -371,7 +371,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                     type="text"
                     value={formData.location || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                    className="w-full py-1.5 px-2 text-xs border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900"
+                    className="w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated lia-text-900 dark:text-lia-text-primary focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900"
                     placeholder="São Paulo, SP"
                   />
                 </div>
@@ -390,7 +390,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                     type="text"
                     value={formData.role || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
-                    className="w-full py-1.5 px-2 text-xs border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900"
+                    className="w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated lia-text-900 dark:text-lia-text-primary focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900"
                     placeholder="Ex: Recrutadora Sênior"
                   />
                 </div>
@@ -400,7 +400,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                   <select
                     value={formData.department || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
-                    className="w-full py-1.5 px-2 text-xs border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900"
+                    className="w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated lia-text-900 dark:text-lia-text-primary focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900"
                   >
                     <option value="">Selecione...</option>
                     <option value="Talent Acquisition">Talent Acquisition</option>
@@ -416,7 +416,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                     type="text"
                     value={formData.position || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, position: e.target.value }))}
-                    className="w-full py-1.5 px-2 text-xs border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900"
+                    className="w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated lia-text-900 dark:text-lia-text-primary focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900"
                     placeholder="Senior Recruiter"
                   />
                 </div>
@@ -426,7 +426,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                   <select
                     value={formData.status || 'ativo'}
                     onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as any }))}
-                    className="w-full py-1.5 px-2 text-xs border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900"
+                    className="w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated lia-text-900 dark:text-lia-text-primary focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900"
                   >
                     <option value="ativo">Ativo</option>
                     <option value="inativo">Inativo</option>
@@ -440,7 +440,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                       type="checkbox"
                       checked={formData.isManager || false}
                       onChange={(e) => setFormData(prev => ({ ...prev, isManager: e.target.checked }))}
-                      className="w-3.5 h-3.5 rounded-md border-gray-300"
+                      className="w-3.5 h-3.5 rounded-md border-lia-border-default"
                     />
                     <span className={textStyles.label}>É Gestor</span>
                   </label>
@@ -477,7 +477,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                           setFormData(prev => ({ ...prev, permissions: permissions.filter(p => p !== permission.id) }))
                         }
                       }}
-                      className="w-3.5 h-3.5 rounded-md border-gray-300"
+                      className="w-3.5 h-3.5 rounded-md border-lia-border-default"
                     />
                     <span className={textStyles.label}>{permission.label}</span>
                   </label>
@@ -599,20 +599,20 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
       {/* Filters */}
       <div className="flex items-center gap-3">
         <div className="flex-1 relative">
-          <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400" />
+          <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 transform -translate-y-1/2 lia-text-500 dark:text-lia-text-tertiary" />
           <input
             type="text"
             placeholder="Buscar usuários..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-300 rounded-md focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+            className="w-full pl-8 pr-3 py-1.5 text-xs border border-lia-border-default rounded-md focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900 dark:bg-lia-bg-elevated dark:border-lia-border-default dark:text-lia-text-primary"
           />
         </div>
 
         <select
           value={departmentFilter}
           onChange={(e) => setDepartmentFilter(e.target.value)}
-          className="px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+          className="px-2 py-1.5 text-xs border border-lia-border-default rounded-md focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900 dark:bg-lia-bg-elevated dark:border-lia-border-default dark:text-lia-text-primary"
         >
           <option value="all">Todos os Departamentos</option>
           {departments.map(dept => (
@@ -623,7 +623,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+          className="px-2 py-1.5 text-xs border border-lia-border-default rounded-md focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900 dark:bg-lia-bg-elevated dark:border-lia-border-default dark:text-lia-text-primary"
         >
           <option value="all">Todos os Status</option>
           <option value="ativo">Ativo</option>
@@ -631,13 +631,13 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
           <option value="pendente">Pendente</option>
         </select>
 
-        <div className="flex bg-gray-100 dark:bg-gray-800 rounded-md p-0.5">
+        <div className="flex bg-gray-100 dark:bg-lia-bg-secondary rounded-md p-0.5">
           <button
             onClick={() => setViewMode('cards')}
             className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
               viewMode === 'cards'
-                ? 'bg-white text-gray-950 dark:text-gray-50'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                ? 'bg-lia-bg-primary lia-text-950 dark:lia-text-50'
+                : 'lia-text-600 dark:text-lia-text-tertiary hover:lia-text-900 dark:hover:lia-text-100'
             }`}
           >
             Cards
@@ -646,8 +646,8 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
             onClick={() => setViewMode('table')}
             className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
               viewMode === 'table'
-                ? 'bg-white text-gray-950 dark:text-gray-50'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                ? 'bg-lia-bg-primary lia-text-950 dark:lia-text-50'
+                : 'lia-text-600 dark:text-lia-text-tertiary hover:lia-text-900 dark:hover:lia-text-100'
             }`}
           >
             Tabela
@@ -677,7 +677,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                           {user.status}
                         </Badge>
                         {user.isScimManaged && (
-                          <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 text-micro">
+                          <Badge className="bg-gray-100 dark:bg-lia-bg-secondary lia-text-700 dark:text-lia-text-secondary border-lia-border-subtle dark:border-lia-border-subtle text-micro">
                             <Shield className="w-2.5 h-2.5 mr-0.5" />
                             SSO
                           </Badge>
@@ -710,7 +710,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex items-center gap-3 text-micro text-gray-600 dark:text-gray-400">
+                  <div className="flex items-center gap-3 text-micro lia-text-600 dark:text-lia-text-tertiary">
                     <span className="flex items-center gap-1">
                       <Mail className="w-3 h-3" />
                       {user.email}
@@ -722,7 +722,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                   </div>
 
                   {user.isManager && (
-                    <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 text-micro">
+                    <Badge className="bg-gray-100 dark:bg-lia-bg-secondary lia-text-700 dark:text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-micro">
                       <Users className="w-3 h-3 mr-1" />
                       Gestor
                     </Badge>
@@ -759,25 +759,25 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 dark:bg-gray-800">
+                <thead className="bg-gray-50 dark:bg-lia-bg-secondary">
                   <tr>
-                    <th className="px-2 py-2.5 text-left text-micro font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-2 py-2.5 text-left text-micro font-medium lia-text-600 dark:text-lia-text-tertiary uppercase tracking-wider">
                       Usuário
                     </th>
-                    <th className="px-2 py-2.5 text-left text-micro font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-2 py-2.5 text-left text-micro font-medium lia-text-600 dark:text-lia-text-tertiary uppercase tracking-wider">
                       Cargo
                     </th>
-                    <th className="px-2 py-2.5 text-left text-micro font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-2 py-2.5 text-left text-micro font-medium lia-text-600 dark:text-lia-text-tertiary uppercase tracking-wider">
                       Status
                     </th>
                     {!isSCIMEnabled && (
-                      <th className="px-2 py-2.5 text-center text-micro font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                      <th className="px-2 py-2.5 text-center text-micro font-medium lia-text-600 dark:text-lia-text-tertiary uppercase tracking-wider">
                         Ações
                       </th>
                     )}
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-lia-bg-secondary divide-y divide-gray-200 dark:lia-divide-700">
                   {filteredUsers.map((user) => (
                     <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                       <td className="px-2 py-1.5 whitespace-nowrap">
@@ -804,7 +804,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                             {user.status}
                           </Badge>
                           {user.isScimManaged && (
-                            <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 text-micro">
+                            <Badge className="bg-gray-100 dark:bg-lia-bg-secondary lia-text-700 dark:text-lia-text-secondary border-lia-border-subtle dark:border-lia-border-subtle text-micro">
                               <Shield className="w-2.5 h-2.5 mr-0.5" />
                               SSO
                             </Badge>
@@ -847,7 +847,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
       {filteredUsers.length === 0 && (
         <Card className="rounded-md">
           <CardContent className="p-4 text-center">
-            <div className="text-gray-600 dark:text-gray-400">
+            <div className="lia-text-600 dark:text-lia-text-tertiary">
               <Users className="w-10 h-10 mx-auto mb-3 opacity-50" />
               <h3 className={textStyles.subtitle}>Nenhum usuário encontrado</h3>
               <p className={textStyles.description + " mt-1"}>Ajuste os filtros ou crie um novo usuário</p>

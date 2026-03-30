@@ -166,13 +166,13 @@ export function ProactiveActionsBell({
           {candidate ? (
             <Avatar className="h-8 w-8 flex-shrink-0">
               <AvatarImage src={candidate.avatar_url} alt={candidate.name} />
-              <AvatarFallback className="text-micro bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
+              <AvatarFallback className="text-micro bg-gray-100 dark:bg-lia-bg-elevated text-gray-600 dark:text-lia-text-tertiary">
                 {candidate.name?.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() || '??'}
               </AvatarFallback>
             </Avatar>
           ) : (
             <div className={cn(
-              "w-2 h-2 rounded-full mt-1.5 shrink-0",
+ "w-2 h-2 rounded-full mt-1.5 shrink-0",
               action.priority === 'urgent' && "bg-status-error",
               action.priority === 'high' && "bg-wedo-orange",
               action.priority === 'normal' && "bg-wedo-cyan",
@@ -182,33 +182,33 @@ export function ProactiveActionsBell({
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-1.5 min-w-0">
-                <p className="text-xs font-medium text-gray-900 dark:text-gray-100 line-clamp-1">
+                <p className="text-xs font-medium text-gray-900 dark:text-lia-text-primary line-clamp-1">
                   {candidate?.name || action.title}
                 </p>
                 {candidate?.score && (
                   <span className={cn(
-                    "text-micro font-bold px-1.5 py-0.5 rounded-full flex-shrink-0",
+ "text-micro font-bold px-1.5 py-0.5 rounded-full flex-shrink-0",
                     getScoreColor(candidate.score)
                   )}>
                     {Math.round(candidate.score)}
                   </span>
                 )}
               </div>
-              <span className="text-micro text-gray-400 shrink-0">
+              <span className="text-micro lia-text-secondary shrink-0">
                 {formatTimeAgo(action.created_at)}
               </span>
             </div>
             {candidate && (
-              <p className="text-micro font-medium text-gray-700 dark:text-gray-300 line-clamp-1 mt-0.5">
+              <p className="text-micro font-medium text-gray-700 dark:text-lia-text-secondary line-clamp-1 mt-0.5">
                 {action.title}
               </p>
             )}
-            <p className="text-micro text-gray-500 dark:text-gray-400 line-clamp-2 mt-0.5">
+            <p className="text-micro text-gray-500 dark:text-lia-text-tertiary line-clamp-2 mt-0.5">
               {action.description}
             </p>
             <div className="flex items-center gap-1 mt-2">
-              <ArrowRight className="h-3 w-3 text-gray-600 dark:text-gray-400 shrink-0" />
-              <span className="text-micro text-gray-600 dark:text-gray-400 font-medium line-clamp-1">
+              <ArrowRight className="h-3 w-3 text-gray-600 dark:text-lia-text-tertiary shrink-0" />
+              <span className="text-micro text-gray-600 dark:text-lia-text-tertiary font-medium line-clamp-1">
                 {typeof action.suggested_action === 'string' 
                   ? action.suggested_action 
                   : action.suggested_action?.label || action.suggested_action?.action || 'Ver detalhes'}
@@ -218,7 +218,7 @@ export function ProactiveActionsBell({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 px-2 text-micro text-gray-500 hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error/20"
+                className="h-6 px-2 text-micro lia-text-secondary hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error/20"
                 onClick={() => handleReject(action.id)}
                 disabled={isProcessing}
               >
@@ -228,7 +228,7 @@ export function ProactiveActionsBell({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 px-2 text-micro text-gray-500 hover:text-status-warning hover:bg-status-warning/10 dark:hover:bg-status-warning/20"
+                className="h-6 px-2 text-micro lia-text-secondary hover:text-status-warning hover:bg-status-warning/10 dark:hover:bg-status-warning/20"
                 onClick={() => handleDefer(action.id)}
                 disabled={isProcessing}
               >
@@ -238,7 +238,7 @@ export function ProactiveActionsBell({
               <Button
                 variant="default"
                 size="sm"
-                className="h-6 px-2 text-micro bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
+                className="h-6 px-2 text-micro bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200"
                 onClick={() => handleAccept(action.id)}
                 disabled={isProcessing}
               >
@@ -265,19 +265,19 @@ export function ProactiveActionsBell({
           variant="ghost"
           size="sm"
           className={cn(
-            "relative h-9 w-9 p-0 rounded-full",
+ "relative h-9 w-9 p-0 rounded-full",
             hasUrgent && "animate-pulse",
             className
           )}
         >
           <Bell className={cn(
-            "h-5 w-5",
-            hasUrgent ? "text-gray-600 dark:text-gray-400" : "text-gray-500"
+ "h-5 w-5",
+            hasUrgent ? "text-gray-600 dark:text-lia-text-tertiary" : "text-gray-500"
           )} />
           {pendingCount > 0 && (
             <span className={cn(
-              "absolute -top-0.5 -right-0.5 h-4 min-w-4 rounded-full flex items-center justify-center text-micro font-bold text-white px-1",
-              hasUrgent ? "bg-status-error" : "bg-gray-900 dark:bg-gray-50"
+ "absolute -top-0.5 -right-0.5 h-4 min-w-4 rounded-full flex items-center justify-center text-micro font-bold text-white px-1",
+              hasUrgent ? "bg-status-error" : "bg-gray-900"
             )}>
               {pendingCount > 9 ? '9+' : pendingCount}
             </span>
@@ -289,11 +289,11 @@ export function ProactiveActionsBell({
         align="end"
         sideOffset={8}
       >
-        <div className="p-3 border-b border-gray-100 dark:border-gray-800">
+        <div className="p-3 border-b border-lia-border-subtle">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Brain className="h-4 w-4 text-wedo-cyan-dark" />
-              <span className="text-xs font-semibold text-gray-900 dark:text-gray-100">
+              <span className="text-xs font-semibold text-gray-900 dark:text-lia-text-primary">
                 Sugestões da LIA
               </span>
             </div>
@@ -308,14 +308,14 @@ export function ProactiveActionsBell({
         <div className="max-h-[400px] overflow-y-auto">
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-5 w-5 animate-spin text-gray-600 dark:text-gray-400" />
+              <Loader2 className="h-5 w-5 animate-spin text-gray-600 dark:text-lia-text-tertiary" />
             </div>
           ) : visibleActions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 px-4">
-              <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-3">
+              <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center mb-3">
                 <Brain className="h-5 w-5 text-wedo-cyan" />
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+              <p className="text-xs text-gray-500 dark:text-lia-text-tertiary text-center">
                 {deferredIds.size > 0 ? 'Todas as sugestões foram adiadas' : 'Nenhuma sugestão pendente'}
               </p>
               {deferredIds.size > 0 && (
@@ -333,8 +333,8 @@ export function ProactiveActionsBell({
             <div>
               {groupedByVacancy.map((group) => (
                 <div key={group.vacancyId}>
-                  <div className="px-3 py-1.5 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
-                    <span className="text-micro font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                  <div className="px-3 py-1.5 bg-gray-50 dark:bg-lia-bg-secondary/50 border-b border-lia-border-subtle">
+                    <span className="text-micro font-semibold text-gray-600 dark:text-lia-text-tertiary uppercase tracking-wide">
                       {group.vacancyTitle}
                     </span>
                     <Badge variant="outline" className="ml-2 text-micro py-0 h-4">
@@ -355,12 +355,12 @@ export function ProactiveActionsBell({
         </div>
 
         {(visibleActions.length > 0 || deferredIds.size > 0) && (
-          <div className="p-2 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
+          <div className="p-2 border-t border-lia-border-subtle flex items-center justify-between">
             {deferredIds.size > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-micro text-gray-500 hover:text-gray-700"
+                className="text-micro lia-text-secondary hover:lia-text-base"
                 onClick={() => setDeferredIds(new Set())}
               >
                 <Clock className="h-3 w-3 mr-1" />
@@ -370,7 +370,7 @@ export function ProactiveActionsBell({
             <Button
               variant="ghost"
               size="sm"
-              className="ml-auto text-xs text-gray-600 dark:text-gray-400 hover:text-wedo-cyan-dark"
+              className="ml-auto text-xs text-gray-600 dark:text-lia-text-tertiary hover:text-wedo-cyan-dark"
               onClick={() => setOpen(false)}
             >
               Ver todas as sugestões

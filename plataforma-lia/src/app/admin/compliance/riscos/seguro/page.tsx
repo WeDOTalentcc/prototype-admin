@@ -92,7 +92,7 @@ const getStatusBadge = (status: string) => {
         Ativo
       </Badge>
     case 'expired':
-      return <Badge className="bg-gray-100 text-gray-600 hover:bg-gray-100">
+      return <Badge className="bg-gray-100 lia-text-600 hover:bg-gray-100">
         Expirado
       </Badge>
     case 'pending':
@@ -112,7 +112,7 @@ const getStatusBadge = (status: string) => {
 const getClaimStatusBadge = (status: string) => {
   switch (status) {
     case 'open':
- return <Badge className="text-gray-600 dark:text-gray-400 hover:bg-gray-100">Aberto</Badge>
+ return <Badge className="lia-text-600 dark:text-lia-text-tertiary hover:bg-gray-100">Aberto</Badge>
     case 'under_review':
       return <Badge className="bg-status-warning/15 text-status-warning hover:bg-status-warning/15">Em Análise</Badge>
     case 'approved':
@@ -122,7 +122,7 @@ const getClaimStatusBadge = (status: string) => {
     case 'paid':
       return <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15">Pago</Badge>
     case 'closed':
-      return <Badge className="bg-gray-100 text-gray-600 hover:bg-gray-100">Encerrado</Badge>
+      return <Badge className="bg-gray-100 lia-text-600 hover:bg-gray-100">Encerrado</Badge>
     default:
       return <Badge variant="secondary">{status}</Badge>
   }
@@ -135,9 +135,9 @@ const getAlertSeverityStyle = (severity: string) => {
     case 'high':
       return { bg: 'var(--status-warning-bg)', border: 'var(--status-warning)', icon: 'text-status-warning' }
     case 'medium':
-      return { bg: 'var(--gray-bg-30)', border: 'var(--gray-200)', icon: 'text-gray-600 dark:text-gray-400' }
+      return { bg: 'var(--gray-bg-30)', border: 'var(--gray-200)', icon: 'lia-text-600 dark:text-lia-text-tertiary' }
     default:
-      return { bg: 'var(--gray-bg-10)', border: 'var(--gray-400)', icon: 'text-gray-500' }
+      return { bg: 'var(--gray-bg-10)', border: 'var(--gray-400)', icon: 'lia-text-500' }
   }
 }
 
@@ -371,8 +371,8 @@ export default function SeguroCiberneticoPage() {
     return (
       <div className="p-6 flex items-center justify-center min-h-[400px]">
         <div className="flex items-center gap-3">
-          <Loader2 className="w-6 h-6 animate-spin text-gray-600 dark:text-gray-400" />
-          <span className="text-gray-500 dark:text-gray-400" >Carregando dados do seguro...</span>
+          <Loader2 className="w-6 h-6 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+          <span className="lia-text-500 dark:text-lia-text-tertiary" >Carregando dados do seguro...</span>
         </div>
       </div>
     )
@@ -386,16 +386,16 @@ export default function SeguroCiberneticoPage() {
             <div 
               className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
             >
-              <ShieldPlus className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <ShieldPlus className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+                className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary"
                 
               >
                 Seguro Cibernético BCB 498
               </h1>
-              <p className="text-sm text-gray-400 dark:text-gray-500" >
+              <p className="text-sm lia-text-400 dark:lia-text-500" >
                 Gestão de apólice e conformidade com Resolução BCB 498/2025
               </p>
             </div>
@@ -424,8 +424,8 @@ export default function SeguroCiberneticoPage() {
                 >
                   <AlertTriangle className={`w-5 h-5 ${style.icon}`} />
                   <div className="flex-1">
-                    <p className="font-medium text-gray-800 dark:text-gray-100" >{alert.title}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400" >{alert.message}</p>
+                    <p className="font-medium lia-text-800 dark:text-lia-text-primary" >{alert.title}</p>
+                    <p className="text-sm lia-text-500 dark:text-lia-text-tertiary" >{alert.message}</p>
                   </div>
                   {alert.dueDate && (
                     <Badge variant="outline">{new Date(alert.dueDate).toLocaleDateString('pt-BR')}</Badge>
@@ -472,8 +472,8 @@ export default function SeguroCiberneticoPage() {
                   <Shield className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400 dark:text-gray-500" >Status da Apólice</p>
-                  <p className="font-medium text-gray-800 dark:text-gray-100" >
+                  <p className="text-xs lia-text-400 dark:lia-text-500" >Status da Apólice</p>
+                  <p className="font-medium lia-text-800 dark:text-lia-text-primary" >
                     {activePolicy ? 'Ativa' : 'Sem apólice ativa'}
                   </p>
                 </div>
@@ -484,12 +484,12 @@ export default function SeguroCiberneticoPage() {
           <Card >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-100 dark:bg-gray-800">
-                  <Clock className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-100 dark:bg-lia-bg-secondary">
+                  <Clock className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400 dark:text-gray-500" >Dias até Vencimento</p>
-                  <p className={`font-medium ${isExpiringSoon ? 'text-status-warning' : isExpired ? 'text-status-error' : 'text-gray-800 dark:text-gray-100'}`}>
+                  <p className="text-xs lia-text-400 dark:lia-text-500" >Dias até Vencimento</p>
+                  <p className={`font-medium ${isExpiringSoon ? 'text-status-warning' : isExpired ? 'text-status-error' : 'lia-text-800 dark:text-lia-text-primary'}`}>
                     {isExpired ? 'Expirado' : daysRemaining > 0 ? `${daysRemaining} dias` : 'N/A'}
                   </p>
                 </div>
@@ -504,7 +504,7 @@ export default function SeguroCiberneticoPage() {
                   <DollarSign className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400 dark:text-gray-500" >Valor Coberto</p>
+                  <p className="text-xs lia-text-400 dark:lia-text-500" >Valor Coberto</p>
                   <p className="font-medium text-status-success">
                     {activePolicy ? formatCurrency(activePolicy.coverage) : 'R$ 0,00'}
                   </p>
@@ -520,8 +520,8 @@ export default function SeguroCiberneticoPage() {
                   <FileCheck className="w-5 h-5 text-wedo-purple" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400 dark:text-gray-500" >Conformidade BCB</p>
-                  <p className="font-medium text-gray-800 dark:text-gray-100" >
+                  <p className="text-xs lia-text-400 dark:lia-text-500" >Conformidade BCB</p>
+                  <p className="font-medium lia-text-800 dark:text-lia-text-primary" >
                     {coveredCount}/{displayChecklist.length} ({compliancePercentage}%)
                   </p>
                 </div>
@@ -536,8 +536,8 @@ export default function SeguroCiberneticoPage() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                    <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
+                    <Shield className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                    <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
                       Dados da Apólice Ativa
                     </CardTitle>
                   </div>
@@ -552,57 +552,57 @@ export default function SeguroCiberneticoPage() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
-                    <div className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-gray-900" >
-                      <Building2 className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-0.5" />
+                    <div className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-lia-bg-primary" >
+                      <Building2 className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary mt-0.5" />
                       <div>
-                        <p className="text-xs text-gray-400 dark:text-gray-500" >Seguradora</p>
-                        <p className="font-medium text-gray-800 dark:text-gray-100" >{activePolicy.insurer}</p>
+                        <p className="text-xs lia-text-400 dark:lia-text-500" >Seguradora</p>
+                        <p className="font-medium lia-text-800 dark:text-lia-text-primary" >{activePolicy.insurer}</p>
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-gray-900" >
-                      <FileText className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-0.5" />
+                    <div className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-lia-bg-primary" >
+                      <FileText className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary mt-0.5" />
                       <div>
-                        <p className="text-xs text-gray-400 dark:text-gray-500" >Número da Apólice</p>
-                        <p className="font-mono font-medium text-gray-800 dark:text-gray-100" >{activePolicy.policyNumber}</p>
+                        <p className="text-xs lia-text-400 dark:lia-text-500" >Número da Apólice</p>
+                        <p className="font-mono font-medium lia-text-800 dark:text-lia-text-primary" >{activePolicy.policyNumber}</p>
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-gray-900" >
+                    <div className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-lia-bg-primary" >
                       <DollarSign className="w-5 h-5 text-status-success mt-0.5" />
                       <div>
-                        <p className="text-xs text-gray-400 dark:text-gray-500" >Valor de Cobertura</p>
+                        <p className="text-xs lia-text-400 dark:lia-text-500" >Valor de Cobertura</p>
                         <p className="font-medium text-status-success text-lg">{formatCurrency(activePolicy.coverage)}</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="space-y-4">
-                    <div className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-gray-900" >
+                    <div className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-lia-bg-primary" >
                       <DollarSign className="w-5 h-5 text-status-warning mt-0.5" />
                       <div>
-                        <p className="text-xs text-gray-400 dark:text-gray-500" >Franquia</p>
-                        <p className="font-medium text-gray-800 dark:text-gray-100" >{formatCurrency(activePolicy.deductible)}</p>
+                        <p className="text-xs lia-text-400 dark:lia-text-500" >Franquia</p>
+                        <p className="font-medium lia-text-800 dark:text-lia-text-primary" >{formatCurrency(activePolicy.deductible)}</p>
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-gray-900" >
-                      <Calendar className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-0.5" />
+                    <div className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-lia-bg-primary" >
+                      <Calendar className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary mt-0.5" />
                       <div>
-                        <p className="text-xs text-gray-400 dark:text-gray-500" >Vigência</p>
-                        <p className="font-medium text-gray-800 dark:text-gray-100" >
+                        <p className="text-xs lia-text-400 dark:lia-text-500" >Vigência</p>
+                        <p className="font-medium lia-text-800 dark:text-lia-text-primary" >
                           {new Date(activePolicy.startDate).toLocaleDateString('pt-BR')} a {new Date(activePolicy.endDate).toLocaleDateString('pt-BR')}
                         </p>
                       </div>
                     </div>
 
-                    <div className="p-3 rounded-md bg-gray-50 dark:bg-gray-900" >
+                    <div className="p-3 rounded-md bg-gray-50 dark:bg-lia-bg-primary" >
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <Clock className="w-4 h-4 text-gray-400 dark:text-gray-500"  />
-                          <span className="text-xs text-gray-400 dark:text-gray-500" >Tempo restante</span>
+                          <Clock className="w-4 h-4 lia-text-400 dark:lia-text-500"  />
+                          <span className="text-xs lia-text-400 dark:lia-text-500" >Tempo restante</span>
                         </div>
-                        <span className={`text-sm font-medium ${isExpiringSoon ? 'text-status-warning' : isExpired ? 'text-status-error' : 'text-gray-800 dark:text-gray-100'}`}>
+                        <span className={`text-sm font-medium ${isExpiringSoon ? 'text-status-warning' : isExpired ? 'text-status-error' : 'lia-text-800 dark:text-lia-text-primary'}`}>
                           {isExpired ? 'Expirado' : `${daysRemaining} dias`}
                         </span>
                       </div>
@@ -618,8 +618,8 @@ export default function SeguroCiberneticoPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                  <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
+                  <FileText className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                  <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
                     Documentos
                   </CardTitle>
                 </div>
@@ -637,14 +637,14 @@ export default function SeguroCiberneticoPage() {
                   {documents.map((doc) => (
                     <div 
                       key={doc.id}
-                      className="p-3 rounded-md flex items-center justify-between bg-gray-50 dark:bg-gray-900"
+                      className="p-3 rounded-md flex items-center justify-between bg-gray-50 dark:bg-lia-bg-primary"
                       
                     >
                       <div className="flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                        <FileText className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                         <div>
-                          <p className="text-sm font-medium text-gray-800 dark:text-gray-100" >{doc.filename}</p>
-                          <p className="text-xs text-gray-400 dark:text-gray-500" >
+                          <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary" >{doc.filename}</p>
+                          <p className="text-xs lia-text-400 dark:lia-text-500" >
                             {new Date(doc.uploadedAt).toLocaleDateString('pt-BR')} • {doc.documentType}
                           </p>
                         </div>
@@ -656,7 +656,7 @@ export default function SeguroCiberneticoPage() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-sm text-gray-400 dark:text-gray-500" >
+                <div className="text-center py-8 text-sm lia-text-400 dark:lia-text-500" >
                   Nenhum documento anexado
                 </div>
               )}
@@ -669,8 +669,8 @@ export default function SeguroCiberneticoPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <ShieldPlus className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                  <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
+                  <ShieldPlus className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                  <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
                     Coberturas Incluídas
                   </CardTitle>
                 </div>
@@ -688,14 +688,14 @@ export default function SeguroCiberneticoPage() {
                   {coverages.map((coverage) => (
                     <div 
                       key={coverage.id}
-                      className="p-3 rounded-md bg-gray-50 dark:bg-gray-900"
+                      className="p-3 rounded-md bg-gray-50 dark:bg-lia-bg-primary"
                       
                     >
                       <div className="flex items-start gap-3">
                         <CheckCircle2 className="w-4 h-4 text-status-success mt-0.5" />
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-gray-800 dark:text-gray-100" >
+                            <span className="text-sm font-medium lia-text-800 dark:text-lia-text-primary" >
                               {coverage.name}
                             </span>
                             {coverage.bcbArticle && (
@@ -703,7 +703,7 @@ export default function SeguroCiberneticoPage() {
                             )}
                           </div>
                           {coverage.description && (
-                            <p className="text-xs mt-1 text-gray-400 dark:text-gray-500" >
+                            <p className="text-xs mt-1 lia-text-400 dark:lia-text-500" >
                               {coverage.description}
                             </p>
                           )}
@@ -718,7 +718,7 @@ export default function SeguroCiberneticoPage() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-sm text-gray-400 dark:text-gray-500" >
+                <div className="text-center py-8 text-sm lia-text-400 dark:lia-text-500" >
                   Nenhuma cobertura cadastrada
                 </div>
               )}
@@ -728,14 +728,14 @@ export default function SeguroCiberneticoPage() {
           <Card >
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <FileCheck className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
+                <FileCheck className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
                   Checklist BCB 498/2025
                 </CardTitle>
               </div>
               <div className="flex items-center gap-2 mt-2">
                 <Progress value={compliancePercentage} className="flex-1 h-2" />
-                <span className="text-sm font-medium text-gray-800 dark:text-gray-100" >
+                <span className="text-sm font-medium lia-text-800 dark:text-lia-text-primary" >
                   {compliancePercentage}%
                 </span>
               </div>
@@ -745,7 +745,7 @@ export default function SeguroCiberneticoPage() {
                 {displayChecklist.map((item, index) => (
                   <div 
                     key={index}
-                    className="flex items-center justify-between p-3 rounded-md bg-gray-50 dark:bg-gray-900"
+                    className="flex items-center justify-between p-3 rounded-md bg-gray-50 dark:bg-lia-bg-primary"
                     
                   >
                     <div className="flex-1">
@@ -755,7 +755,7 @@ export default function SeguroCiberneticoPage() {
                         ) : (
                           <XCircle className="w-4 h-4 text-status-error" />
                         )}
-                        <span className="text-sm text-gray-800 dark:text-gray-100" >
+                        <span className="text-sm lia-text-800 dark:text-lia-text-primary" >
                           {item.name}
                         </span>
                       </div>
@@ -779,7 +779,7 @@ export default function SeguroCiberneticoPage() {
               </div>
 
               <div className="mt-4 p-3 rounded-md border-l-4 border-l-gray-300 bg-gray-200/20">
-                <p className="text-xs text-gray-400 dark:text-gray-500" >
+                <p className="text-xs lia-text-400 dark:lia-text-500" >
                   <strong>Resolução BCB 498/2025</strong> - Dispõe sobre a política de segurança cibernética e sobre os requisitos para a contratação de serviços de processamento e armazenamento de dados e de computação em nuvem.
                 </p>
               </div>
@@ -791,8 +791,8 @@ export default function SeguroCiberneticoPage() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <History className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
+                <History className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
                   Histórico de Apólices
                 </CardTitle>
               </div>
@@ -820,7 +820,7 @@ export default function SeguroCiberneticoPage() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <span className="font-medium text-gray-800 dark:text-gray-100" >
+                        <span className="font-medium lia-text-800 dark:text-lia-text-primary" >
                           {policy.insurer}
                         </span>
                       </TableCell>
@@ -830,7 +830,7 @@ export default function SeguroCiberneticoPage() {
                         </span>
                       </TableCell>
                       <TableCell>
-                        <span className="text-sm text-gray-500 dark:text-gray-400" >
+                        <span className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
                           {new Date(policy.startDate).toLocaleDateString('pt-BR')} - {new Date(policy.endDate).toLocaleDateString('pt-BR')}
                         </span>
                       </TableCell>
@@ -852,7 +852,7 @@ export default function SeguroCiberneticoPage() {
                 </TableBody>
               </Table>
             ) : (
-              <div className="text-center py-8 text-sm text-gray-400 dark:text-gray-500" >
+              <div className="text-center py-8 text-sm lia-text-400 dark:lia-text-500" >
                 Nenhuma apólice cadastrada
               </div>
             )}
@@ -863,8 +863,8 @@ export default function SeguroCiberneticoPage() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
+                <AlertTriangle className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
                   Histórico de Sinistros
                 </CardTitle>
               </div>
@@ -900,12 +900,12 @@ export default function SeguroCiberneticoPage() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <span className="text-sm text-gray-500 dark:text-gray-400" >
+                        <span className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
                           {new Date(claim.incidentDate).toLocaleDateString('pt-BR')}
                         </span>
                       </TableCell>
                       <TableCell>
-                        <span className="text-sm text-gray-800 dark:text-gray-100" >
+                        <span className="text-sm lia-text-800 dark:text-lia-text-primary" >
                           {claim.description.length > 50 ? `${claim.description.substring(0, 50)}...` : claim.description}
                         </span>
                       </TableCell>
@@ -915,7 +915,7 @@ export default function SeguroCiberneticoPage() {
                             {formatCurrency(claim.claimAmount)}
                           </span>
                         ) : (
-                          <span className="text-sm text-gray-400 dark:text-gray-500" >-</span>
+                          <span className="text-sm lia-text-400 dark:lia-text-500" >-</span>
                         )}
                       </TableCell>
                       <TableCell>
@@ -926,7 +926,7 @@ export default function SeguroCiberneticoPage() {
                 </TableBody>
               </Table>
             ) : (
-              <div className="text-center py-8 text-sm text-gray-400 dark:text-gray-500" >
+              <div className="text-center py-8 text-sm lia-text-400 dark:lia-text-500" >
                 Nenhum sinistro registrado
               </div>
             )}

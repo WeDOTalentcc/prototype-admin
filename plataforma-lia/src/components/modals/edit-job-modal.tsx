@@ -226,8 +226,8 @@ const COMPETENCY_WEIGHTS = [
   { value: 'Desejável', label: 'Desejável' },
 ]
 
-const inputStyle = "h-9 text-xs text-gray-800 bg-gray-50 border-gray-200 focus:border-gray-400 focus:ring-1 focus:ring-gray-900/20"
-const selectTriggerStyle = "h-9 text-xs text-gray-800 bg-gray-50 border-gray-200 focus:border-gray-400 focus:ring-1 focus:ring-gray-900/20"
+const inputStyle = "h-9 text-xs text-gray-800 bg-gray-50 border-lia-border-subtle focus:border-gray-400 focus:ring-1 focus:ring-gray-900/20"
+const selectTriggerStyle = "h-9 text-xs text-gray-800 bg-gray-50 border-lia-border-subtle focus:border-gray-400 focus:ring-1 focus:ring-gray-900/20"
 
 export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps) {
   const { interviewStages: companyStages, sla, isLoading: isLoadingStages } = useRecruitmentStages()
@@ -811,9 +811,9 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
       'Frameworks': 'bg-status-success/10 text-status-success border-status-success/30',
       'Banco de Dados': 'bg-wedo-orange/10 text-wedo-orange border-wedo-orange/30',
       'Cloud': 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30',
-      'Containers': 'bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 border-gray-300 dark:border-gray-600',
+      'Containers': 'bg-gray-50 dark:bg-lia-bg-primary text-gray-900 dark:text-gray-50 border-lia-border-default dark:border-lia-border-default',
       'CI/CD': 'bg-wedo-magenta/10 text-wedo-magenta border-wedo-magenta/30',
-      'Outros': 'bg-gray-50 text-gray-700 border-gray-200',
+      'Outros': 'bg-gray-50 text-gray-700 border-lia-border-subtle',
     }
     return colors[category] || colors['Outros']
   }
@@ -824,7 +824,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
       'Importante': 'bg-status-warning/10 text-status-warning border-status-warning/30',
       'Desejável': 'bg-status-success/10 text-status-success border-status-success/30',
     }
-    return colors[weight] || 'bg-gray-50 text-gray-700 border-gray-200'
+    return colors[weight] || 'bg-gray-50 text-gray-700 border-lia-border-subtle'
   }
 
   return (
@@ -834,15 +834,15 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
         onClick={onClose}
       />
       
-      <div className="relative bg-white dark:bg-gray-800 rounded-md w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shrink-0">
+      <div className="relative bg-white dark:bg-lia-bg-secondary rounded-md w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-              <Briefcase className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+            <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-lia-bg-elevated flex items-center justify-center">
+              <Briefcase className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
             </div>
             <div>
               <h2 className="text-sm font-semibold text-gray-950 dark:text-gray-50">Editar Vaga</h2>
-              <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+              <p className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-0.5">
                 <span className="text-gray-600 font-medium mr-1.5">{job.jobId}</span>
                 {job.title}
               </p>
@@ -961,7 +961,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                   </div>
                 </section>
 
-                <hr className="border-gray-100" />
+                <hr className="border-lia-border-subtle" />
 
                 <section>
                   <div className="flex items-center gap-2 mb-3">
@@ -970,7 +970,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                   </div>
                   
                   <div className="space-y-4">
-                    <div className="p-3 bg-gray-50 rounded-md border border-gray-100">
+                    <div className="p-3 bg-gray-50 rounded-md border border-lia-border-subtle">
                       <p className="text-xs font-medium uppercase text-gray-600 mb-2">Recrutador(a)</p>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
@@ -978,7 +978,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                           <Input
                             value={formData.recruiter || ''}
                             onChange={(e) => updateField('recruiter', e.target.value)}
-                            className={`${inputStyle} bg-white`}
+                            className={`${inputStyle} bg-lia-bg-secondary`}
                             placeholder="Nome do recrutador"
                           />
                         </div>
@@ -987,14 +987,14 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                           <Input
                             value={formData.recruiterEmail || ''}
                             onChange={(e) => updateField('recruiterEmail', e.target.value)}
-                            className={`${inputStyle} bg-white`}
+                            className={`${inputStyle} bg-lia-bg-secondary`}
                             placeholder="email@empresa.com"
                           />
                         </div>
                       </div>
                     </div>
 
-                    <div className="p-3 bg-gray-50 rounded-md border border-gray-100">
+                    <div className="p-3 bg-gray-50 rounded-md border border-lia-border-subtle">
                       <p className="text-xs font-medium uppercase text-gray-600 mb-2">Gestor(a) Solicitante</p>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
@@ -1002,7 +1002,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                           <Input
                             value={formData.manager || ''}
                             onChange={(e) => updateField('manager', e.target.value)}
-                            className={`${inputStyle} bg-white`}
+                            className={`${inputStyle} bg-lia-bg-secondary`}
                             placeholder="Nome do gestor"
                           />
                         </div>
@@ -1011,7 +1011,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                           <Input
                             value={formData.managerEmail || ''}
                             onChange={(e) => updateField('managerEmail', e.target.value)}
-                            className={`${inputStyle} bg-white`}
+                            className={`${inputStyle} bg-lia-bg-secondary`}
                             placeholder="email@empresa.com"
                           />
                         </div>
@@ -1020,7 +1020,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                   </div>
                 </section>
 
-                <hr className="border-gray-100" />
+                <hr className="border-lia-border-subtle" />
 
                 <section>
                   <div className="flex items-center gap-2 mb-3">
@@ -1028,7 +1028,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                     <h3 className="text-base-ui font-semibold text-gray-950">Timeline do Processo</h3>
                   </div>
                   
-                  <div className="relative pl-4 border-l-2 border-gray-300 space-y-4">
+                  <div className="relative pl-4 border-l-2 border-lia-border-default space-y-4">
                     <div className="relative">
                       <div className="absolute -left-[21px] w-3 h-3 rounded-full bg-status-success border-2 border-white" />
                       <div className="ml-4">
@@ -1094,7 +1094,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                   </div>
                 </section>
 
-                <hr className="border-gray-100" />
+                <hr className="border-lia-border-subtle" />
 
                 <section>
                   <div className="flex items-center gap-2 mb-4">
@@ -1108,7 +1108,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                       <Textarea
                         value={formData.description || ''}
                         onChange={(e) => updateField('description', e.target.value)}
-                        className="min-h-[100px] text-sm resize-none bg-gray-50 border-gray-200 focus:border-gray-400 focus:ring-1 focus:ring-gray-900/20"
+                        className="min-h-[100px] text-sm resize-none bg-gray-50 border-lia-border-subtle focus:border-gray-400 focus:ring-1 focus:ring-gray-900/20"
                         placeholder="Descreva as responsabilidades, objetivos e contexto da vaga..."
                       />
                     </div>
@@ -1116,7 +1116,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                   </div>
                 </section>
 
-                <hr className="border-gray-100" />
+                <hr className="border-lia-border-subtle" />
 
                 <section>
                   <div className="flex items-center gap-2 mb-4">
@@ -1184,11 +1184,11 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                           <Badge
                             key={idx}
                             variant="outline"
-                            className="flex items-center gap-1 py-0.5 px-2 text-xs bg-white dark:bg-gray-900"
+                            className="flex items-center gap-1 py-0.5 px-2 text-xs bg-white dark:bg-lia-bg-primary"
                           >
                             <button
                               onClick={() => removeBenefit(idx)}
-                              className="text-gray-600 dark:text-gray-400 hover:text-status-error dark:hover:text-status-error mr-0.5"
+                              className="text-gray-600 dark:text-lia-text-tertiary hover:text-status-error dark:hover:text-status-error mr-0.5"
                               type="button"
                             >
                               ×
@@ -1213,7 +1213,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                                   className={`text-xs px-2 py-0.5 cursor-pointer transition-colors ${
                                     isAdded 
                                       ? 'bg-gray-100 border-gray-900 text-gray-900' 
-                                      : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100 hover:border-gray-400 hover:text-gray-800'
+                                      : 'bg-gray-50 border-lia-border-subtle text-gray-600 hover:bg-gray-100 hover:border-gray-400 hover:text-gray-800'
                                   }`}
                                   onClick={() => {
                                     if (!isAdded) {
@@ -1255,7 +1255,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                   </div>
                 </section>
 
-                <hr className="border-gray-100" />
+                <hr className="border-lia-border-subtle" />
 
                 <section>
                   <div className="flex items-center justify-between mb-4">
@@ -1263,7 +1263,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                       <Layers className="w-4 h-4 text-gray-600" />
                       <h3 className="text-base-ui font-semibold text-gray-950">Etapas do Processo Seletivo</h3>
                       {(formData.interviewStages || []).length > 0 && (
-                        <Badge variant="outline" className="text-xs bg-gray-100 border-gray-300 text-gray-700">
+                        <Badge variant="outline" className="text-xs bg-gray-100 border-lia-border-default text-gray-700">
                           {(formData.interviewStages || []).length} etapas
                         </Badge>
                       )}
@@ -1278,7 +1278,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                           }
                         }}
                       >
-                        <SelectTrigger className="h-8 w-[180px] text-xs bg-white border-gray-200">
+                        <SelectTrigger className="h-8 w-[180px] text-xs bg-lia-bg-secondary border-lia-border-subtle">
                           {isLoadingTemplates ? (
                             <span className="flex items-center gap-1.5">
                               <Loader2 className="w-3 h-3 animate-spin" />
@@ -1306,7 +1306,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                   
                   <div className="space-y-2 mb-4">
                     {(formData.interviewStages || []).map((stage: InterviewStage, idx: number) => (
-                      <div key={idx} className="flex items-center gap-3 p-3 bg-gray-50 rounded-md border border-gray-100">
+                      <div key={idx} className="flex items-center gap-3 p-3 bg-gray-50 rounded-md border border-lia-border-subtle">
                         <div className="flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 text-gray-700 text-sm font-semibold shrink-0">
                           {stage.order || idx + 1}
                         </div>
@@ -1314,7 +1314,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                           <Input
                             value={stage.stageName || ''}
                             onChange={(e) => updateInterviewStage(idx, 'stageName', e.target.value)}
-                            className="h-8 text-sm bg-white border-gray-200 focus:border-gray-400"
+                            className="h-8 text-sm bg-lia-bg-primary border-lia-border-subtle focus:border-gray-400"
                             placeholder="Nome da etapa"
                           />
                         </div>
@@ -1325,7 +1325,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                               value={String(stage.sla || 3)} 
                               onValueChange={(v) => updateInterviewStage(idx, 'sla', parseInt(v))}
                             >
-                              <SelectTrigger className="h-8 w-16 text-xs bg-white border-gray-200">
+                              <SelectTrigger className="h-8 w-16 text-xs bg-lia-bg-secondary border-lia-border-subtle">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
@@ -1339,7 +1339,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                             value={stage.type || 'manual'} 
                             onValueChange={(v) => updateInterviewStage(idx, 'type', v)}
                           >
-                            <SelectTrigger className="h-8 w-24 text-xs bg-white border-gray-200">
+                            <SelectTrigger className="h-8 w-24 text-xs bg-lia-bg-secondary border-lia-border-subtle">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -1374,7 +1374,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                     <div className="flex items-center gap-1">
                       <span className="text-xs text-gray-500">SLA:</span>
                       <Select value={newInterviewStageSLA} onValueChange={setNewInterviewStageSLA}>
-                        <SelectTrigger className="h-10 w-16 text-xs bg-gray-50 border-gray-200">
+                        <SelectTrigger className="h-10 w-16 text-xs bg-gray-50 border-lia-border-subtle">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -1385,7 +1385,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                       </Select>
                     </div>
                     <Select value={newInterviewStageType} onValueChange={setNewInterviewStageType}>
-                      <SelectTrigger className="h-10 w-24 text-xs bg-gray-50 border-gray-200">
+                      <SelectTrigger className="h-10 w-24 text-xs bg-gray-50 border-lia-border-subtle">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -1405,7 +1405,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                   </div>
                 </section>
 
-                <hr className="border-gray-100" />
+                <hr className="border-lia-border-subtle" />
 
                 {/* NEW: Configuração de Confidencialidade para LIA */}
                 <section>
@@ -1448,7 +1448,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                               masked_intro: e.target.value
                             } as any)
                           }}
-                          className="h-8 text-xs bg-white border-status-warning/30"
+                          className="h-8 text-xs bg-lia-bg-primary border-status-warning/30"
                           placeholder="Uma empresa líder no segmento de pagamentos"
                         />
                       </div>
@@ -1488,7 +1488,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                   </div>
                 </section>
 
-                <hr className="border-gray-100" />
+                <hr className="border-lia-border-subtle" />
 
                 <section>
                   <div className="flex items-center gap-2 mb-4">
@@ -1553,7 +1553,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                       </Select>
                     </div>
 
-                    <div className="p-4 bg-gray-50 rounded-md border border-gray-100 space-y-3">
+                    <div className="p-4 bg-gray-50 rounded-md border border-lia-border-subtle space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Shield className="w-4 h-4 text-wedo-orange" />
@@ -1589,10 +1589,10 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                                 <div
                                   key={option.value}
                                   className={cn(
-                                    "p-2.5 rounded-md border cursor-pointer transition-all",
+                                    "p-2.5 rounded-md border cursor-pointer transition-colors",
                                     formData.affirmativeType === option.value
                                       ? "border-wedo-purple/30 bg-wedo-purple/15"
-                                      : "border-wedo-purple/30 bg-white hover:border-wedo-purple/30"
+                                      : "border-wedo-purple/30 bg-lia-bg-primary hover:border-wedo-purple/30"
                                   )}
                                   onClick={() => updateField('affirmativeType', formData.affirmativeType === option.value ? undefined : option.value as Job['affirmativeType'])}
                                 >
@@ -1641,7 +1641,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                           </div>
                           <div className="flex flex-wrap gap-1.5">
                             {(formData.accessList || []).map((email, idx) => (
-                              <Badge key={idx} variant="secondary" className="text-xs py-1 px-2 bg-white border border-gray-200">
+                              <Badge key={idx} variant="secondary" className="text-xs py-1 px-2 bg-lia-bg-primary border border-lia-border-subtle">
                                 <UserPlus className="w-3 h-3 mr-1 text-gray-400" />
                                 {email}
                                 <button
@@ -1660,7 +1660,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                   </div>
                 </section>
 
-                <hr className="border-gray-100" />
+                <hr className="border-lia-border-subtle" />
 
                 <section>
                   <div className="flex items-center gap-2 mb-4">
@@ -1668,7 +1668,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                     <h3 className="text-base-ui font-semibold text-gray-950">Publicação</h3>
                   </div>
                   
-                  <div className="p-4 bg-gray-50 rounded-md border border-gray-100 space-y-3">
+                  <div className="p-4 bg-gray-50 rounded-md border border-lia-border-subtle space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Linkedin className="w-4 h-4 text-gray-600" />
@@ -1702,7 +1702,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                   </div>
                 </section>
 
-                <hr className="border-gray-100" />
+                <hr className="border-lia-border-subtle" />
 
                 {/* Informações do Registro (Read-only) */}
                 {(job?.createdBy || job?.createdAt) && (
@@ -1710,12 +1710,12 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                     <div className="flex items-center gap-2 mb-4">
                       <Users className="w-4 h-4 text-gray-400" />
                       <h3 className="text-xs font-semibold text-gray-500">Informações do Registro</h3>
-                      <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-gray-50 text-gray-400 border-gray-200">
+                      <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-gray-50 text-gray-400 border-lia-border-subtle">
                         Somente leitura
                       </Badge>
                     </div>
                     
-                    <div className="p-4 bg-gray-50 rounded-md border border-gray-100">
+                    <div className="p-4 bg-gray-50 rounded-md border border-lia-border-subtle">
                       <div className="grid grid-cols-2 gap-4">
                         {job?.createdBy && (
                           <div>
@@ -1745,7 +1745,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                   </section>
                 )}
 
-                <hr className="border-gray-100" />
+                <hr className="border-lia-border-subtle" />
 
                 <section>
                   <div className="flex items-center gap-2 mb-4">
@@ -1757,7 +1757,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                     <Textarea
                       value={formData.targetAudience || ''}
                       onChange={(e) => updateField('targetAudience', e.target.value)}
-                      className="min-h-20 text-sm resize-none bg-gray-50 border-gray-200 focus:border-gray-400 focus:ring-1 focus:ring-gray-900/20"
+                      className="min-h-20 text-sm resize-none bg-gray-50 border-lia-border-subtle focus:border-gray-400 focus:ring-1 focus:ring-gray-900/20"
                       placeholder="Descreva o perfil ideal de candidato para esta vaga..."
                     />
                     
@@ -1784,7 +1784,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                   </div>
                 </section>
 
-                <hr className="border-gray-100" />
+                <hr className="border-lia-border-subtle" />
 
                 <section>
                   <div className="flex items-center gap-2 mb-4">
@@ -1805,7 +1805,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                       placeholder="Ex: Inglês"
                     />
                     <Select value={newLanguageLevel} onValueChange={setNewLanguageLevel}>
-                      <SelectTrigger className="w-32 h-9 text-xs bg-gray-50 border-gray-200">
+                      <SelectTrigger className="w-32 h-9 text-xs bg-gray-50 border-lia-border-subtle">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -1844,11 +1844,11 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
               </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50 dark:bg-gray-900 dark:border-gray-700 shrink-0">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle shrink-0">
           <Button
             variant="outline"
             onClick={onClose}
-            className="h-9 px-4 text-xs font-medium bg-white border border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
+            className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 text-gray-700 dark:text-lia-text-primary"
           >
             Cancelar
           </Button>
@@ -1874,8 +1874,8 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
 
       {showImportQuestionsModal && (
         <div className="fixed inset-0 bg-black/50 dark:bg-gray-950/70 flex items-center justify-center z-overlay p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-md max-w-lg w-full max-h-[80vh] flex flex-col">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-lia-bg-secondary rounded-md max-w-lg w-full max-h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="flex items-center gap-2">
                 <Download className="w-4 h-4 text-status-warning" />
                 <h3 className="text-base-ui font-semibold text-gray-950">Importar Perguntas Padrão</h3>
@@ -1908,14 +1908,14 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                       className={`flex items-start gap-3 p-3 rounded-md border cursor-pointer transition-colors ${
                         selectedDefaultQuestions.has(q.id)
                           ? 'bg-status-warning/10 border-status-warning/30'
-                          : 'bg-white border-gray-200 hover:border-gray-300'
+                          : 'bg-lia-bg-primary border-lia-border-subtle hover:border-lia-border-default'
                       }`}
                     >
                       <div className="mt-0.5">
                         <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${
                           selectedDefaultQuestions.has(q.id)
                             ? 'bg-status-warning border-status-warning/30'
-                            : 'border-gray-300'
+                            : 'border-lia-border-default'
                         }`}>
                           {selectedDefaultQuestions.has(q.id) && (
                             <Check className="w-3.5 h-3.5 text-white" />
@@ -1931,7 +1931,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-gray-800">{q.question_text}</p>
                         <div className="flex items-center gap-2 mt-1.5">
-                          <Badge variant="outline" className="text-micro bg-gray-50 text-gray-600 border-gray-200">
+                          <Badge variant="outline" className="text-micro bg-gray-50 text-gray-600 border-lia-border-subtle">
                             {getCategoryLabel(q.category)}
                           </Badge>
                           <Badge variant="outline" className="text-micro bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30">
@@ -1953,7 +1953,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
               )}
             </div>
             
-            <div className="flex items-center justify-between px-5 py-4 border-t border-gray-200 bg-gray-50 dark:bg-gray-900 dark:border-gray-700">
+            <div className="flex items-center justify-between px-5 py-4 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle">
               <p className="text-xs text-gray-500">
                 {selectedDefaultQuestions.size} pergunta(s) selecionada(s)
               </p>

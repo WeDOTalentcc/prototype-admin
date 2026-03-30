@@ -36,10 +36,10 @@ export function ClientFilters({
   mounted = true,
 }: ClientFiltersProps) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 p-4 mb-6">
+    <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle p-4 mb-6">
       <div className="flex flex-col lg:flex-row gap-4">
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 lia-text-secondary" />
           <Input
             placeholder="Buscar por nome, CNPJ ou email..."
             value={search}
@@ -75,15 +75,15 @@ export function ClientFilters({
             </>
           ) : (
             <>
-              <div className="w-full sm:w-[180px] h-10 bg-gray-100 dark:bg-gray-700 rounded-md animate-pulse" />
+              <div className="w-full sm:w-[180px] h-10 bg-gray-100 dark:bg-lia-bg-elevated rounded-md animate-pulse" />
               {onPlanFilterChange && (
-                <div className="w-full sm:w-[180px] h-10 bg-gray-100 dark:bg-gray-700 rounded-md animate-pulse" />
+                <div className="w-full sm:w-[180px] h-10 bg-gray-100 dark:bg-lia-bg-elevated rounded-md animate-pulse" />
               )}
             </>
           )}
         </div>
       </div>
-      <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+      <div className="mt-3 text-xs text-gray-500 dark:text-lia-text-tertiary">
         {isLoading ? (
           <span>Carregando...</span>
         ) : (

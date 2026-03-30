@@ -146,11 +146,11 @@ export function SalaryStage({
               <span className="text-xs font-medium text-status-success">
                 Remuneração pré-configurada
               </span>
-              <p className="text-micro text-gray-500 mt-0.5">
+              <p className="text-micro lia-text-secondary mt-0.5">
                 Valores baseados nas políticas salariais da empresa.
                 <button
                   onClick={handleToggleExpand}
-                  className="ml-1 text-gray-600 dark:text-gray-400 hover:underline font-medium"
+                  className="ml-1 text-gray-600 dark:text-lia-text-tertiary hover:underline font-medium"
                 >
                   {isExpanded ? 'Ocultar' : 'Editar manualmente'}
                 </button>
@@ -158,11 +158,11 @@ export function SalaryStage({
             </div>
             <button
               onClick={handleToggleExpand}
-              className="p-1.5 hover:bg-white/50 rounded-md transition-colors"
+              className="p-1.5 hover:bg-lia-bg-primary/50 rounded-md transition-colors"
               aria-label={isExpanded ? 'Recolher painel de salário' : 'Expandir painel de salário'}
             >
               <ChevronDown className={cn(
-                "w-4 h-4 text-gray-500 transition-transform",
+ "w-4 h-4 lia-text-secondary transition-transform",
                 isExpanded && "rotate-180"
               )} />
             </button>
@@ -173,10 +173,10 @@ export function SalaryStage({
       {(isFieldRequired || isExpanded) && (
         <>
           {salaryBenchmark && (salaryBenchmark.market || salaryBenchmark.internal) && (
-            <div className="p-3 bg-gradient-to-r from-gray-50 dark:from-gray-900 to-green-500/5 rounded-md border border-gray-300 dark:border-gray-600">
+            <div className="p-3 bg-gradient-to-r from-gray-50 dark:from-gray-900 to-green-500/5 rounded-md border border-lia-border-default dark:border-lia-border-default">
               <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                <span className="text-xs font-medium text-gray-800">
+                <TrendingUp className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                <span className="text-xs font-medium lia-text-strong">
                   Benchmark de Mercado
                 </span>
                 {salaryBenchmark.market?.learning_adjusted && (
@@ -187,29 +187,29 @@ export function SalaryStage({
               </div>
 
               {salaryBenchmark.internal && salaryBenchmark.internal.sample_size > 0 && (
-                <div className="mb-2 p-2 bg-white/50 rounded-md">
+                <div className="mb-2 p-2 bg-lia-bg-primary/50 rounded-md">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-micro text-gray-500">Dados internos ({salaryBenchmark.internal.sample_size} vagas)</span>
+                    <span className="text-micro lia-text-secondary">Dados internos ({salaryBenchmark.internal.sample_size} vagas)</span>
                     {salaryBenchmark.internal.trend && salaryBenchmark.internal.trend !== 'stable' && (
                       <span className={`text-micro ${salaryBenchmark.internal.trend === 'increasing' ? 'text-status-success' : 'text-status-error'}`}>
                         {salaryBenchmark.internal.trend === 'increasing' ? '↑ Em alta' : '↓ Em queda'}
                       </span>
                     )}
                   </div>
-                  <div className="text-xs font-semibold text-gray-800">
+                  <div className="text-xs font-semibold lia-text-strong">
                     R$ {salaryBenchmark.internal.min.toLocaleString()} - R$ {salaryBenchmark.internal.max.toLocaleString()}
                   </div>
                 </div>
               )}
 
               {salaryBenchmark.market && salaryBenchmark.market.min > 0 && (
-                <div className="mb-2 p-2 bg-white/50 rounded-md">
+                <div className="mb-2 p-2 bg-lia-bg-primary/50 rounded-md">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-micro text-gray-500">
+                    <span className="text-micro lia-text-secondary">
                       Dados de mercado ({salaryBenchmark.market.sources?.slice(0, 2).join(', ')})
                     </span>
                     <span className={`text-micro px-1.5 py-0.5 rounded-full ${
-                      salaryBenchmark.market.confidence === 'high' ? 'bg-status-success/10 text-status-success' :
+ salaryBenchmark.market.confidence === 'high' ? 'bg-status-success/10 text-status-success' :
                       salaryBenchmark.market.confidence === 'medium' ? 'bg-status-warning/10 text-status-warning' :
                       'bg-status-error/10 text-status-error'
                     }`}>
@@ -217,7 +217,7 @@ export function SalaryStage({
                        salaryBenchmark.market.confidence === 'medium' ? 'Média confiança' : 'Baixa confiança'}
                     </span>
                   </div>
-                  <div className="text-xs font-semibold text-gray-800">
+                  <div className="text-xs font-semibold lia-text-strong">
                     R$ {salaryBenchmark.market.min.toLocaleString()} - R$ {salaryBenchmark.market.max.toLocaleString()}
                   </div>
                 </div>
@@ -231,66 +231,66 @@ export function SalaryStage({
                       maxSalary: salaryBenchmark.combined!.max.toLocaleString()
                     })
                   }}
-                  className="w-full py-1.5 mt-1 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 text-micro font-medium rounded-md transition-colors flex items-center justify-center gap-1 focus-visible:ring-2 focus-visible:ring-gray-400"
+                  className="w-full py-1.5 mt-1 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 text-micro font-medium rounded-md transition-colors flex items-center justify-center gap-1 focus-visible:ring-2 focus-visible:ring-gray-400"
                 >
                   <Brain className="w-3 h-3 text-wedo-cyan" />
                   Aplicar sugestão: R$ {salaryBenchmark.combined.min.toLocaleString()} - R$ {salaryBenchmark.combined.max.toLocaleString()}
                 </button>
               )}
 
-              <p className="text-micro text-gray-400 mt-2 italic">
+              <p className="text-micro lia-text-secondary mt-2 italic">
                 Estimativa baseada em dados públicos. Valores podem variar.
               </p>
             </div>
           )}
 
           {isLoadingBenchmark && (
-            <div className="p-3 bg-gray-50 rounded-md border border-gray-200 flex items-center gap-2">
-              <Loader2 className="w-4 h-4 text-gray-600 dark:text-gray-400 animate-spin" />
-              <span className="text-xs text-gray-500">Buscando benchmark de mercado...</span>
+            <div className="p-3 bg-gray-50 rounded-md border border-lia-border-subtle flex items-center gap-2">
+              <Loader2 className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary animate-spin" />
+              <span className="text-xs lia-text-secondary">Buscando benchmark de mercado...</span>
             </div>
           )}
 
           <div className={cn(
-            "transition-all duration-300",
+ "transition-colors duration-300",
             (isFieldHighlighted('minSalary') || isFieldHighlighted('maxSalary') || isFieldHighlighted('salary') || isFieldHighlighted('salario')) && "field-highlight field-pulse"
           )}>
-            <label className={`block ${textStyles.label} text-gray-500 uppercase tracking-wide mb-2`}>
-              <DollarSign className="w-3.5 h-3.5 inline mr-1 text-gray-600 dark:text-gray-400" />
+            <label className={`block ${textStyles.label} lia-text-secondary uppercase tracking-wide mb-2`}>
+              <DollarSign className="w-3.5 h-3.5 inline mr-1 text-gray-600 dark:text-lia-text-tertiary" />
               Salário Base (CLT)
             </label>
             <div className="flex gap-2">
               <div className="flex-1">
-                <span className="text-micro text-gray-400">De</span>
+                <span className="text-micro lia-text-secondary">De</span>
                 <div className={cn(
-                  "relative mt-1",
+ "relative mt-1",
                   isFieldHighlighted('minSalary') && "field-highlight field-pulse"
                 )}>
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">R$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs lia-text-secondary">R$</span>
                   <input
                     type="text"
                     value={salaryInfo.minSalary}
                     onChange={(e) => onSalaryChange({ minSalary: e.target.value })}
                     placeholder="12.000"
-                    className="w-full pl-9 pr-3 py-1.5 border border-gray-200 rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors"
+                    className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors"
                    
                     aria-label="Salário mínimo base"
                   />
                 </div>
               </div>
               <div className="flex-1">
-                <span className="text-micro text-gray-400">Até</span>
+                <span className="text-micro lia-text-secondary">Até</span>
                 <div className={cn(
-                  "relative mt-1",
+ "relative mt-1",
                   isFieldHighlighted('maxSalary') && "field-highlight field-pulse"
                 )}>
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">R$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs lia-text-secondary">R$</span>
                   <input
                     type="text"
                     value={salaryInfo.maxSalary}
                     onChange={(e) => onSalaryChange({ maxSalary: e.target.value })}
                     placeholder="18.000"
-                    className="w-full pl-9 pr-3 py-1.5 border border-gray-200 rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors"
+                    className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors"
                    
                     aria-label="Salário máximo base"
                   />
@@ -300,39 +300,39 @@ export function SalaryStage({
           </div>
 
           <div className={cn(
-            "transition-all duration-300",
+ "transition-colors duration-300",
             (isFieldHighlighted('minBonus') || isFieldHighlighted('maxBonus') || isFieldHighlighted('bonus')) && "field-highlight field-pulse"
           )}>
-            <label className={`block ${textStyles.label} text-gray-500 uppercase tracking-wide mb-2`}>
-              <Star className="w-3.5 h-3.5 inline mr-1 text-gray-600 dark:text-gray-400" />
+            <label className={`block ${textStyles.label} lia-text-secondary uppercase tracking-wide mb-2`}>
+              <Star className="w-3.5 h-3.5 inline mr-1 text-gray-600 dark:text-lia-text-tertiary" />
               Bônus Anual
             </label>
             <div className="flex gap-2 mb-1.5">
               <div className="flex-1">
-                <span className="text-micro text-gray-400">De</span>
+                <span className="text-micro lia-text-secondary">De</span>
                 <div className="relative mt-1">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">R$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs lia-text-secondary">R$</span>
                   <input
                     type="text"
                     value={salaryInfo.minBonus}
                     onChange={(e) => onSalaryChange({ minBonus: e.target.value })}
                     placeholder="10.000"
-                    className="w-full pl-9 pr-3 py-1.5 border border-gray-200 rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors"
+                    className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors"
                    
                     aria-label="Bônus mínimo anual"
                   />
                 </div>
               </div>
               <div className="flex-1">
-                <span className="text-micro text-gray-400">Até</span>
+                <span className="text-micro lia-text-secondary">Até</span>
                 <div className="relative mt-1">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">R$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs lia-text-secondary">R$</span>
                   <input
                     type="text"
                     value={salaryInfo.maxBonus}
                     onChange={(e) => onSalaryChange({ maxBonus: e.target.value })}
                     placeholder="20.000"
-                    className="w-full pl-9 pr-3 py-1.5 border border-gray-200 rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors"
+                    className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors"
                    
                     aria-label="Bônus máximo anual"
                   />
@@ -344,20 +344,20 @@ export function SalaryStage({
               value={salaryInfo.bonusCriteria}
               onChange={(e) => onSalaryChange({ bonusCriteria: e.target.value })}
               placeholder="Critérios: Desempenho individual + metas da empresa"
-              className="w-full px-3 py-1.5 border border-gray-200 rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors"
+              className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors"
              
             />
           </div>
 
           <div className={cn(
-            "transition-all duration-300",
+ "transition-colors duration-300",
             (isFieldHighlighted('benefit') || isFieldHighlighted('benefits') || isFieldHighlighted('beneficios')) && "field-highlight field-pulse"
           )}>
-            <label className={`block ${textStyles.label} text-gray-500 uppercase tracking-wide mb-2`}>
-              <CheckCircle2 className="w-3.5 h-3.5 inline mr-1 text-gray-600 dark:text-gray-400" />
+            <label className={`block ${textStyles.label} lia-text-secondary uppercase tracking-wide mb-2`}>
+              <CheckCircle2 className="w-3.5 h-3.5 inline mr-1 text-gray-600 dark:text-lia-text-tertiary" />
               Benefícios
               {companyConfig?.benefits && companyConfig.benefits.length > 0 && (
-                <Settings className="w-3 h-3 inline ml-1.5 text-gray-600 dark:text-gray-400" />
+                <Settings className="w-3 h-3 inline ml-1.5 text-gray-600 dark:text-lia-text-tertiary" />
               )}
             </label>
             <div className="space-y-3">
@@ -369,11 +369,11 @@ export function SalaryStage({
                 return (
                   <div key={categoryId}>
                     <div className="flex items-center gap-1.5 mb-1.5">
-                      <CategoryIcon className="w-3 h-3 text-gray-500" />
-                      <span className="text-micro font-semibold text-gray-500 uppercase tracking-wide">
+                      <CategoryIcon className="w-3 h-3 lia-text-secondary" />
+                      <span className="text-micro font-semibold lia-text-secondary uppercase tracking-wide">
                         {meta.name}
                       </span>
-                      <span className="text-micro text-gray-400">({categoryBenefits.length})</span>
+                      <span className="text-micro lia-text-secondary">({categoryBenefits.length})</span>
                     </div>
                     <div className="grid grid-cols-2 gap-1.5">
                       {categoryBenefits.map((benefit) => {
@@ -383,36 +383,36 @@ export function SalaryStage({
                             key={benefit.id || benefit.name}
                             onClick={() => handleBenefitToggle(benefit.id || benefit.name)}
                             className={cn(
-                              "flex items-center gap-1.5 p-2 rounded-md text-left transition-all",
+ "flex items-center gap-1.5 p-2 rounded-md text-left transition-colors",
                               benefit.enabled
-                                ? "bg-gray-100 dark:bg-gray-800 border border-gray-900 dark:border-gray-50"
-                                : "bg-gray-50 border border-transparent hover:border-gray-200"
+                                ? "bg-gray-100 dark:bg-lia-bg-secondary border border-gray-900"
+                                : "bg-gray-50 border border-transparent hover:border-lia-border-subtle"
                             )}
                             aria-label={benefit.enabled ? `Remover benefício: ${benefit.name}` : `Adicionar benefício: ${benefit.name}`}
                           >
                             <div className={cn(
-                              "w-3.5 h-3.5 rounded-md flex items-center justify-center flex-shrink-0",
-                              benefit.enabled ? "bg-gray-900 dark:bg-gray-50" : "border border-gray-200"
+ "w-3.5 h-3.5 rounded-md flex items-center justify-center flex-shrink-0",
+                              benefit.enabled ? "bg-gray-900" : "border border-lia-border-subtle"
                             )}>
                               {benefit.enabled && <Check className="w-2.5 h-2.5 text-white" />}
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1">
-                                <span className="text-micro font-medium text-gray-800 block truncate">
+                                <span className="text-micro font-medium lia-text-strong block truncate">
                                   {benefit.name}
                                 </span>
                                 {benefit.is_highlighted && (
                                   <Heart className="w-2.5 h-2.5 text-wedo-magenta fill-pink-500 flex-shrink-0" />
                                 )}
                                 {benefit.is_mandatory && (
-                                  <span className="text-micro px-1 py-0 rounded-md bg-gray-200 text-gray-600 flex-shrink-0">obrig.</span>
+                                  <span className="text-micro px-1 py-0 rounded-md bg-gray-200 lia-text-base flex-shrink-0">obrig.</span>
                                 )}
                               </div>
                               {valueDisplay && (
-                                <span className={`${textStyles.description} text-gray-400`}>{valueDisplay}</span>
+                                <span className={`${textStyles.description} lia-text-secondary`}>{valueDisplay}</span>
                               )}
                               {benefit.provider && (
-                                <span className="text-micro text-gray-400 block truncate">{benefit.provider}</span>
+                                <span className="text-micro lia-text-secondary block truncate">{benefit.provider}</span>
                               )}
                             </div>
                           </button>
@@ -425,17 +425,17 @@ export function SalaryStage({
             </div>
             <button
               onClick={onShowAddBenefitModal}
-              className="w-full mt-1.5 py-1.5 border border-dashed border-gray-200 rounded-md text-xs text-gray-600 dark:text-gray-400 hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-gray-800/50 transition-all flex items-center justify-center gap-2"
+              className="w-full mt-1.5 py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-gray-600 dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors flex items-center justify-center gap-2"
               aria-label="Adicionar benefício para a vaga"
             >
               <Plus className="w-3.5 h-3.5" /> Adicionar benefício
             </button>
           </div>
 
-          <div className="p-2 bg-gray-50 rounded-md border border-gray-300 dark:border-gray-600">
+          <div className="p-2 bg-gray-50 rounded-md border border-lia-border-default dark:border-lia-border-default">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-gray-500">Benefícios selecionados:</span>
-              <span className="font-semibold text-gray-900 dark:text-gray-50">{salaryInfo.benefits.filter(b => b.enabled).length}</span>
+              <span className="lia-text-secondary">Benefícios selecionados:</span>
+              <span className="font-semibold text-gray-900">{salaryInfo.benefits.filter(b => b.enabled).length}</span>
             </div>
           </div>
         </>

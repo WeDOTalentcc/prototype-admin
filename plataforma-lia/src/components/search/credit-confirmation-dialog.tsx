@@ -52,16 +52,16 @@ export function CreditConfirmationDialog({
             <div 
               className="w-8 h-8 rounded-full flex items-center justify-center bg-wedo-cyan/15"
             >
-              <Coins className="w-4 h-4 text-gray-700" />
+              <Coins className="w-4 h-4 lia-text-700" />
             </div>
             <div>
               <AlertDialogTitle 
-                className="text-base-ui font-semibold text-gray-950 dark:text-gray-50"
+                className="text-base-ui font-semibold lia-text-950 dark:lia-text-50"
               >
                 Confirmar Busca Global
               </AlertDialogTitle>
               <div 
-                className="text-micro text-gray-500"
+                className="text-micro lia-text-500"
               >
                 Esta busca irá consultar a Busca Global com 800M+ perfis
               </div>
@@ -69,37 +69,37 @@ export function CreditConfirmationDialog({
           </div>
 
           <div 
-            className="rounded-md p-3 border border-gray-100 bg-gray-50"
+            className="rounded-md p-3 border border-lia-border-subtle bg-gray-50"
           >
             <div
-              className="text-xs mb-2.5 font-medium text-gray-600"
+              className="text-xs mb-2.5 font-medium lia-text-600"
             >
               {searchTypeTexts[searchType]}
             </div>
             
             <div className="space-y-1.5">
               <div className="flex justify-between items-center text-xs">
-                <span className="text-gray-500">Limite:</span>
-                <span className="font-medium text-gray-950 dark:text-gray-50">
+                <span className="lia-text-500">Limite:</span>
+                <span className="font-medium lia-text-950 dark:lia-text-50">
                   {candidateLimit} candidatos
                 </span>
               </div>
               
               <div className="flex justify-between items-center text-xs">
-                <span className="text-gray-500">Custo por candidato:</span>
-                <span className="font-medium text-gray-950 dark:text-gray-50">
+                <span className="lia-text-500">Custo por candidato:</span>
+                <span className="font-medium lia-text-950 dark:lia-text-50">
                   {creditPerCandidate} crédito
                 </span>
               </div>
               
               <div 
-                className="flex justify-between items-center pt-2 border-t text-xs border border-gray-200"
+                className="flex justify-between items-center pt-2 border-t text-xs border border-lia-border-subtle"
               >
-                <span className="font-medium text-gray-700">
+                <span className="font-medium lia-text-700">
                   Total estimado:
                 </span>
                 <span 
-                  className="font-semibold text-gray-700"
+                  className="font-semibold lia-text-700"
                 >
                   {totalCredits} créditos
                 </span>
@@ -108,7 +108,7 @@ export function CreditConfirmationDialog({
           </div>
 
           <div 
-            className="text-micro text-center text-gray-400"
+            className="text-micro text-center lia-text-400"
           >
             Créditos serão consumidos ao executar a busca
           </div>
@@ -117,7 +117,7 @@ export function CreditConfirmationDialog({
         <AlertDialogFooter className="flex flex-row justify-end gap-2.5 sm:justify-end pt-3">
           <AlertDialogCancel
             disabled={isLoading}
-            className="mt-0 h-8 text-xs px-4 font-medium text-gray-600" style={{backgroundColor: 'transparent', borderRadius: '6px'}}
+            className="mt-0 h-8 text-xs px-4 font-medium lia-text-600" style={{backgroundColor: 'transparent', borderRadius: '6px'}}
           >
             Cancelar
           </AlertDialogCancel>

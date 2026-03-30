@@ -485,7 +485,7 @@ export function JobStatusModal({
     ]
 
     return (
-      <div className="flex items-center justify-center gap-1 mb-4 pb-3 border-b border-gray-200">
+      <div className="flex items-center justify-center gap-1 mb-4 pb-3 border-b border-lia-border-subtle">
         {steps.map((step, index) => (
           <React.Fragment key={step.id}>
             <div className="flex items-center gap-1.5">
@@ -526,9 +526,9 @@ export function JobStatusModal({
           Vagas Selecionadas
         </h4>
         <ScrollArea className="max-h-[100px]">
-          <div className="space-y-1 bg-gray-50 rounded-md p-2 border border-gray-200">
+          <div className="space-y-1 bg-gray-50 rounded-md p-2 border border-lia-border-subtle">
             {jobs.map((job) => (
-              <div key={job.id} className="flex items-center justify-between py-1.5 px-2 bg-white rounded-md border border-gray-200">
+              <div key={job.id} className="flex items-center justify-between py-1.5 px-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
                   <Briefcase className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
                   <div className="flex items-center gap-1.5 min-w-0 flex-1">
@@ -569,7 +569,7 @@ export function JobStatusModal({
               </p>
               <div className="mt-2 space-y-1">
                 {candidatesInProposal.slice(0, 3).map(c => (
-                  <Badge key={c.id} variant="outline" className="text-micro bg-white border-status-error/30 text-status-error">
+                  <Badge key={c.id} variant="outline" className="text-micro bg-lia-bg-primary border-status-error/30 text-status-error">
                     {c.name}
                   </Badge>
                 ))}
@@ -588,7 +588,7 @@ export function JobStatusModal({
             Motivo (Opcional)
           </h4>
           <Select value={pauseReason} onValueChange={setPauseReason}>
-            <SelectTrigger className="h-9 text-xs border-gray-200">
+            <SelectTrigger className="h-9 text-xs border-lia-border-subtle">
               <SelectValue placeholder="Selecione um motivo..." />
             </SelectTrigger>
             <SelectContent>
@@ -604,7 +604,7 @@ export function JobStatusModal({
               value={customReason}
               onChange={(e) => setCustomReason(e.target.value)}
               placeholder="Digite o motivo para pausar..."
-              className="mt-2 h-16 text-xs border-gray-200 resize-none"
+              className="mt-2 h-16 text-xs border-lia-border-subtle resize-none"
             />
           )}
         </div>
@@ -613,7 +613,7 @@ export function JobStatusModal({
           <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
             Impacto
           </h4>
-          <div className="space-y-1.5 p-3 rounded-md bg-gray-50 border border-gray-200">
+          <div className="space-y-1.5 p-3 rounded-md bg-gray-50 border border-lia-border-subtle">
             <div className="flex items-start gap-2 text-xs text-gray-800">
               <span className="flex-shrink-0">⏸️</span>
               <span>Triagens em andamento serão pausadas</span>
@@ -634,7 +634,7 @@ export function JobStatusModal({
         </div>
       </div>
 
-      <div className="space-y-3 bg-gray-50 rounded-md p-3 border border-gray-200">
+      <div className="space-y-3 bg-gray-50 rounded-md p-3 border border-lia-border-subtle">
         <h4 className="text-xs font-semibold text-gray-950 flex items-center gap-2">
           <CalendarOff className="w-3.5 h-3.5 text-gray-600" />
           Ações ao Pausar
@@ -647,7 +647,7 @@ export function JobStatusModal({
               checked={cancelScreenings}
               onCheckedChange={(checked) => setCancelScreenings(checked === true)}
               disabled={hasProposalBlock}
-              className="border-gray-300 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+              className="border-lia-border-default data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
             />
             <Label htmlFor="cancelScreenings" className="text-xs text-gray-800 cursor-pointer flex items-center gap-1">
               <Filter className="w-3 h-3 text-gray-400" />
@@ -661,7 +661,7 @@ export function JobStatusModal({
               checked={cancelInterviews}
               onCheckedChange={(checked) => setCancelInterviews(checked === true)}
               disabled={hasProposalBlock}
-              className="border-gray-300 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+              className="border-lia-border-default data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
             />
             <Label htmlFor="cancelInterviews" className="text-xs text-gray-800 cursor-pointer flex items-center gap-1">
               <Calendar className="w-3 h-3 text-gray-400" />
@@ -675,7 +675,7 @@ export function JobStatusModal({
               checked={cancelTests}
               onCheckedChange={(checked) => setCancelTests(checked === true)}
               disabled={hasProposalBlock}
-              className="border-gray-300 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+              className="border-lia-border-default data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
             />
             <Label htmlFor="cancelTests" className="text-xs text-gray-800 cursor-pointer flex items-center gap-1">
               <FileText className="w-3 h-3 text-gray-400" />
@@ -685,7 +685,7 @@ export function JobStatusModal({
         </div>
       </div>
 
-      <div className="space-y-3 bg-gray-50 rounded-md p-3 border border-gray-200">
+      <div className="space-y-3 bg-gray-50 rounded-md p-3 border border-lia-border-subtle">
         <h4 className="text-xs font-semibold text-gray-950 flex items-center gap-2">
           <Megaphone className="w-3.5 h-3.5 text-gray-600" />
           Notificações
@@ -697,7 +697,7 @@ export function JobStatusModal({
               id="notifyRecruiters"
               checked={notifyRecruiters}
               onCheckedChange={(checked) => setNotifyRecruiters(checked === true)}
-              className="mt-0.5 border-gray-300 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+              className="mt-0.5 border-lia-border-default data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
             />
             <div className="flex-1">
               <Label htmlFor="notifyRecruiters" className="text-xs font-medium text-gray-950 cursor-pointer">
@@ -720,7 +720,7 @@ export function JobStatusModal({
                           "h-6 px-2 text-micro gap-1",
                           recruiterChannel === channel 
                             ? "bg-gray-900 hover:bg-gray-800 text-white" 
-                            : "border border-gray-300 text-gray-600"
+                            : "border border-lia-border-default text-gray-600"
                         )}
                       >
                         {channel === 'email' && <Mail className="w-3 h-3" />}
@@ -735,14 +735,14 @@ export function JobStatusModal({
             </div>
           </div>
 
-          <div className="border-t border-gray-200 pt-3">
+          <div className="border-t border-lia-border-subtle pt-3">
             <div className="flex items-start gap-2">
               <Checkbox
                 id="notifyApplicants"
                 checked={notifyApplicants}
                 onCheckedChange={(checked) => setNotifyApplicants(checked === true)}
                 disabled={hasProposalBlock}
-                className="mt-0.5 border-gray-300 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+                className="mt-0.5 border-lia-border-default data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
               />
               <div className="flex-1">
                 <Label htmlFor="notifyApplicants" className="text-xs font-medium text-gray-950 cursor-pointer">
@@ -767,7 +767,7 @@ export function JobStatusModal({
 
   const renderActivateOptionsStep = () => (
     <div className="space-y-4">
-      <div className="p-2.5 rounded-md border bg-gray-50 border-gray-200">
+      <div className="p-2.5 rounded-md border bg-gray-50 border-lia-border-subtle">
         <div className="flex items-center gap-2">
           <CheckCircle className="w-4 h-4 text-status-success flex-shrink-0" />
           <span className="text-xs text-gray-800 leading-relaxed">
@@ -781,9 +781,9 @@ export function JobStatusModal({
           Vagas Selecionadas
         </h4>
         <ScrollArea className="max-h-[120px]">
-          <div className="space-y-1 bg-gray-50 rounded-md p-2 border border-gray-200">
+          <div className="space-y-1 bg-gray-50 rounded-md p-2 border border-lia-border-subtle">
             {jobs.map((job) => (
-              <div key={job.id} className="flex items-center justify-between py-1.5 px-2 bg-white rounded-md border border-gray-200">
+              <div key={job.id} className="flex items-center justify-between py-1.5 px-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
                   <Briefcase className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
                   <span className="text-xs font-medium text-gray-950 truncate">{job.title}</span>
@@ -798,7 +798,7 @@ export function JobStatusModal({
         </ScrollArea>
       </div>
 
-      <div className="space-y-3 bg-gray-50 rounded-md p-3 border border-gray-200">
+      <div className="space-y-3 bg-gray-50 rounded-md p-3 border border-lia-border-subtle">
         <h4 className="text-xs font-semibold text-gray-950">Ações ao Ativar</h4>
         
         <div className="space-y-2">
@@ -807,7 +807,7 @@ export function JobStatusModal({
               id="resumeScreening"
               checked={resumeScreening}
               onCheckedChange={(checked) => setResumeScreening(checked === true)}
-              className="border-gray-300 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+              className="border-lia-border-default data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
             />
             <Label htmlFor="resumeScreening" className="text-xs text-gray-800 cursor-pointer flex items-center gap-1">
               <Filter className="w-3 h-3 text-gray-400" />
@@ -820,7 +820,7 @@ export function JobStatusModal({
               id="republish"
               checked={republish}
               onCheckedChange={(checked) => setRepublish(checked === true)}
-              className="border-gray-300 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+              className="border-lia-border-default data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
             />
             <Label htmlFor="republish" className="text-xs text-gray-800 cursor-pointer flex items-center gap-1">
               <Megaphone className="w-3 h-3 text-gray-400" />
@@ -833,7 +833,7 @@ export function JobStatusModal({
               id="updateDeadlines"
               checked={updateDeadlines}
               onCheckedChange={(checked) => setUpdateDeadlines(checked === true)}
-              className="border-gray-300 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+              className="border-lia-border-default data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
             />
             <Label htmlFor="updateDeadlines" className="text-xs text-gray-800 cursor-pointer flex items-center gap-1">
               <Calendar className="w-3 h-3 text-gray-400" />
@@ -843,7 +843,7 @@ export function JobStatusModal({
         </div>
       </div>
 
-      <div className="space-y-2 bg-gray-50 rounded-md p-3 border border-gray-200">
+      <div className="space-y-2 bg-gray-50 rounded-md p-3 border border-lia-border-subtle">
         <h4 className="text-xs font-semibold text-gray-950">Notificações</h4>
         
         <div className="flex items-center space-x-2">
@@ -851,7 +851,7 @@ export function JobStatusModal({
             id="notifyRecruitersActivate"
             checked={notifyRecruiters}
             onCheckedChange={(checked) => setNotifyRecruiters(checked === true)}
-            className="border-gray-300 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+            className="border-lia-border-default data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
           />
           <Label htmlFor="notifyRecruitersActivate" className="text-xs text-gray-800 cursor-pointer flex items-center gap-1">
             <Megaphone className="w-3 h-3 text-gray-400" />
@@ -864,7 +864,7 @@ export function JobStatusModal({
             id="notifyApplicantsActivate"
             checked={notifyApplicants}
             onCheckedChange={(checked) => setNotifyApplicants(checked === true)}
-            className="border-gray-300 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+            className="border-lia-border-default data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
           />
           <Label htmlFor="notifyApplicantsActivate" className="text-xs text-gray-800 cursor-pointer flex items-center gap-1">
             <Mail className="w-3 h-3 text-gray-400" />
@@ -877,7 +877,7 @@ export function JobStatusModal({
 
   const renderCommunicationStep = () => (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 p-2.5 rounded-md bg-gray-100 border border-gray-200">
+      <div className="flex items-center gap-2 p-2.5 rounded-md bg-gray-100 border border-lia-border-subtle">
         <Mail className="w-4 h-4 text-gray-600" />
         <span className="text-xs text-gray-800">
           Configure a mensagem para {jobCandidates.length - candidatesInProposal.length} candidato(s)
@@ -900,7 +900,7 @@ export function JobStatusModal({
                 "h-8 px-3 text-xs gap-1.5",
                 notificationChannel === channel 
                   ? "bg-gray-900 hover:bg-gray-800 text-white" 
-                  : "border border-gray-300 text-gray-600"
+                  : "border border-lia-border-default text-gray-600"
               )}
             >
               {channel === 'email' && <Mail className="w-3.5 h-3.5" />}
@@ -923,7 +923,7 @@ export function JobStatusModal({
           </div>
         ) : (
           <Select value={selectedTemplateId} onValueChange={handleTemplateChange}>
-            <SelectTrigger className="h-9 text-xs border-gray-200">
+            <SelectTrigger className="h-9 text-xs border-lia-border-subtle">
               <SelectValue placeholder="Selecione um template..." />
             </SelectTrigger>
             <SelectContent>
@@ -946,7 +946,7 @@ export function JobStatusModal({
             value={notificationSubject}
             onChange={(e) => setNotificationSubject(e.target.value)}
             placeholder="Assunto do email..."
-            className="h-9 text-xs border-gray-200"
+            className="h-9 text-xs border-lia-border-subtle"
           />
         </div>
       )}
@@ -959,7 +959,7 @@ export function JobStatusModal({
           value={notificationMessage}
           onChange={(e) => setNotificationMessage(e.target.value)}
           placeholder="Mensagem para os candidatos..."
-          className="h-32 text-xs border-gray-200 resize-none"
+          className="h-32 text-xs border-lia-border-subtle resize-none"
         />
       </div>
     </div>
@@ -974,7 +974,7 @@ export function JobStatusModal({
         </span>
       </div>
 
-      <div className="space-y-2 p-3 rounded-md bg-gray-50 border border-gray-200">
+      <div className="space-y-2 p-3 rounded-md bg-gray-50 border border-lia-border-subtle">
         <h4 className="text-xs font-semibold text-gray-950 mb-2">Resumo das Ações</h4>
         
         <div className="space-y-1.5">
@@ -1025,7 +1025,7 @@ export function JobStatusModal({
       </div>
 
       {pauseReason && (
-        <div className="p-3 rounded-md bg-gray-50 border border-gray-200">
+        <div className="p-3 rounded-md bg-gray-50 border border-lia-border-subtle">
           <h4 className="text-xs font-semibold text-gray-600 mb-1">Motivo</h4>
           <p className="text-xs text-gray-800">
             {pauseReason === 'other' ? customReason : PAUSE_REASONS.find(r => r.value === pauseReason)?.label}
@@ -1053,8 +1053,8 @@ export function JobStatusModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="max-w-2xl bg-white border border-gray-200">
-        <DialogHeader className="pb-3 border-b border-gray-200">
+      <DialogContent className="max-w-2xl bg-lia-bg-primary border border-lia-border-subtle">
+        <DialogHeader className="pb-3 border-b border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-100">
               {isPauseMode ? (
@@ -1083,7 +1083,7 @@ export function JobStatusModal({
           {currentStep === 'complete' && renderCompleteStep()}
         </div>
 
-        <DialogFooter className="pt-3 border-t border-gray-200 gap-2">
+        <DialogFooter className="pt-3 border-t border-lia-border-subtle gap-2">
           {currentStep === 'complete' ? (
             <Button
               onClick={handleClose}
@@ -1097,7 +1097,7 @@ export function JobStatusModal({
                 <Button
                   variant="outline"
                   onClick={() => setCurrentStep(currentStep === 'confirmation' ? (notifyApplicants ? 'communication' : 'options') : 'options')}
-                  className="h-9 px-4 text-xs font-medium border border-gray-300 text-gray-700 hover:bg-gray-50"
+                  className="h-9 px-4 text-xs font-medium border border-lia-border-default text-gray-700 hover:bg-gray-50"
                 >
                   Voltar
                 </Button>
@@ -1105,7 +1105,7 @@ export function JobStatusModal({
               <Button
                 variant="outline"
                 onClick={handleClose}
-                className="h-9 px-4 text-xs font-medium border border-gray-300 text-gray-700 hover:bg-gray-50"
+                className="h-9 px-4 text-xs font-medium border border-lia-border-default text-gray-700 hover:bg-gray-50"
               >
                 Cancelar
               </Button>

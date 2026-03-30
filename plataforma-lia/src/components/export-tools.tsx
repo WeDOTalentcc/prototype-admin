@@ -99,7 +99,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
       format: 'csv' as const,
       label: 'CSV',
       description: 'Dados brutos para análise',
-      color: 'bg-gray-100 dark:bg-gray-800 text-wedo-cyan-dark border-gray-300 dark:border-gray-600',
+      color: 'bg-gray-100 dark:bg-lia-bg-secondary text-wedo-cyan-dark border-lia-border-default dark:border-lia-border-default',
       recommended: false
     },
     {
@@ -113,7 +113,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
       format: 'json' as const,
       label: 'JSON',
       description: 'Dados estruturados',
-      color: 'bg-gray-100 text-gray-800 border-gray-200',
+      color: 'bg-gray-100 lia-text-strong border-lia-border-subtle',
       recommended: false
     }
   ]
@@ -123,7 +123,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Download className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <Download className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
             Exportação de Dados
           </CardTitle>
         </CardHeader>
@@ -132,7 +132,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
 
           {/* Formatos de exportação */}
           <div>
-            <h3 className="text-sm font-medium text-gray-950 dark:text-gray-50 mb-3">
+            <h3 className="text-sm font-medium text-gray-950 mb-3">
               Formatos Disponíveis
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -141,10 +141,10 @@ export function ExportTools({ data, className }: ExportToolsProps) {
                   key={format.format}
                   onClick={() => handleExport(format.format)}
                   disabled={isExporting}
-                  className={`relative p-4 border rounded-md text-left transition-all duration-200 hover:disabled:opacity-50 disabled:cursor-not-allowed ${
-                    format.format === exportConfig.format
- ? 'border-gray-900 dark:border-gray-50 bg-gray-50 dark:bg-gray-800'
-                      : 'border-gray-200 hover:border-gray-300'
+                  className={`relative p-4 border rounded-md text-left transition-opacity duration-200 hover:disabled:opacity-50 disabled:cursor-not-allowed ${
+ format.format === exportConfig.format
+ ? 'border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary'
+                      : 'border-lia-border-subtle hover:border-lia-border-default'
                   }`}
                 >
                   {format.recommended && (
@@ -155,12 +155,12 @@ export function ExportTools({ data, className }: ExportToolsProps) {
 
                   <div className="flex items-center gap-3 mb-2">
                     {getFormatIcon(format.format)}
-                    <span className="font-medium text-gray-950 dark:text-gray-50">
+                    <span className="font-medium text-gray-950">
                       {format.label}
                     </span>
                   </div>
 
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+                  <p className="text-xs text-gray-600 dark:text-lia-text-tertiary mb-3">
                     {format.description}
                   </p>
 
@@ -170,12 +170,12 @@ export function ExportTools({ data, className }: ExportToolsProps) {
                     </Badge>
 
                     {isExporting ? (
-                      <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
-                        <div className="w-3 h-3 border-2 border-gray-900 dark:border-gray-50 border-t-transparent rounded-full animate-spin"></div>
+                      <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-lia-text-tertiary">
+                        <div className="w-3 h-3 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
                         Exportando...
                       </div>
                     ) : (
-                      <Download className="w-4 h-4 text-gray-600" />
+                      <Download className="w-4 h-4 lia-text-base" />
                     )}
                   </div>
                 </button>
@@ -184,8 +184,8 @@ export function ExportTools({ data, className }: ExportToolsProps) {
           </div>
 
           {/* Configurações de exportação */}
-          <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-            <h3 className="text-sm font-medium text-gray-950 dark:text-gray-50 mb-3">
+          <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-6">
+            <h3 className="text-sm font-medium text-gray-950 mb-3">
               Configurações de Exportação
             </h3>
 
@@ -193,7 +193,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
 
               {/* Período */}
               <div>
-                <label className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-2 block">
+                <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary mb-2 block">
                   Período dos Dados
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -202,9 +202,9 @@ export function ExportTools({ data, className }: ExportToolsProps) {
                       key={period}
                       onClick={() => setExportConfig(prev => ({ ...prev, dateRange: period }))}
                       className={`px-3 py-2 text-xs rounded-md border transition-colors ${
-                        exportConfig.dateRange === period
-                          ? 'border-gray-900 dark:border-gray-50 bg-gray-50 dark:bg-gray-900 text-wedo-cyan-dark'
-                          : 'border-gray-200 text-gray-600 hover:border-gray-300'
+ exportConfig.dateRange === period
+                          ? 'border-gray-900 bg-gray-50 dark:bg-lia-bg-primary text-wedo-cyan-dark'
+                          : 'border-lia-border-subtle lia-text-base hover:border-lia-border-default'
                       }`}
                     >
                       {period === '30d' ? '30 dias' :
@@ -217,7 +217,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
 
               {/* Conteúdo */}
               <div>
-                <label className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-2 block">
+                <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary mb-2 block">
                   Incluir no Relatório
                 </label>
                 <div className="space-y-2">
@@ -234,9 +234,9 @@ export function ExportTools({ data, className }: ExportToolsProps) {
                           ...prev,
                           [option.key]: e.target.checked
                         }))}
-                        className="w-3 h-3 rounded-md border-gray-300"
+                        className="w-3 h-3 rounded-md border-lia-border-default"
                       />
-                      <span className="text-xs text-gray-600 dark:text-gray-400">
+                      <span className="text-xs text-gray-600 dark:text-lia-text-tertiary">
                         {option.label}
                       </span>
                     </label>
@@ -247,8 +247,8 @@ export function ExportTools({ data, className }: ExportToolsProps) {
           </div>
 
           {/* Ações rápidas */}
-          <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-            <h3 className="text-sm font-medium text-gray-950 dark:text-gray-50 mb-3">
+          <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-6">
+            <h3 className="text-sm font-medium text-gray-950 mb-3">
               Ações Rápidas
             </h3>
 
@@ -284,7 +284,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
 
           {/* Status da última exportação */}
           {lastExport && (
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+            <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-6">
               <div className="flex items-center gap-2 p-3 bg-status-success/10 dark:bg-status-success/20 rounded-md">
                 <CheckCircle className="w-4 h-4 text-status-success" />
                 <span className="text-sm text-status-success dark:text-status-success">
@@ -295,15 +295,15 @@ export function ExportTools({ data, className }: ExportToolsProps) {
           )}
 
           {/* Informações adicionais */}
-          <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
- <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-4">
+          <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-6">
+ <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-4">
               <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-0.5" />
+                <AlertCircle className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary mt-0.5" />
                 <div>
- <h4 className="text-sm font-medium text-wedo-cyan-dark dark:text-gray-300 mb-1">
+ <h4 className="text-sm font-medium text-wedo-cyan-dark dark:text-lia-text-secondary mb-1">
                     Dicas de Exportação
                   </h4>
- <ul className="text-xs text-wedo-cyan-dark dark:text-gray-300 space-y-1">
+ <ul className="text-xs text-wedo-cyan-dark dark:text-lia-text-secondary space-y-1">
                     <li>• Use <strong>Excel</strong> para análises detalhadas com gráficos</li>
                     <li>• Use <strong>PDF</strong> para apresentações executivas</li>
                     <li>• Use <strong>CSV</strong> para importar em outras ferramentas</li>

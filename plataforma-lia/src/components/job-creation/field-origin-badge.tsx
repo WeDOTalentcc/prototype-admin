@@ -40,7 +40,7 @@ const ORIGIN_CONFIG: Record<FieldOrigin, {
   manual: {
     label: 'Manual',
     icon: PenLine,
-    className: 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700',
+    className: 'bg-gray-100 text-gray-600 border-lia-border-subtle hover:bg-gray-200 dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-subtle',
     description: 'Editado manualmente'
   },
   suggested: {
@@ -90,7 +90,7 @@ export function FieldOriginBadge({
     <Badge 
       variant="outline"
       className={cn(
-        'gap-1 font-normal',
+ 'gap-1 font-normal',
         size === 'sm' ? 'text-xs px-1.5 py-0' : 'text-sm px-2 py-0.5',
         config.className,
         className

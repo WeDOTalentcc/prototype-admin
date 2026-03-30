@@ -345,10 +345,10 @@ export function AddToJobModal({
         ref={modalRef}
         className={`relative ${cardStyles.default} w-full max-w-lg mx-4 max-h-[90vh] overflow-hidden flex flex-col`}
       >
-        <div className="border-b border-gray-200 dark:border-gray-700 p-5">
+        <div className="border-b border-lia-border-subtle dark:border-lia-border-subtle p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Briefcase className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <Briefcase className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
               <h2 id="add-to-job-modal-title" className={textStyles.title}>
                 Adicionar candidatos à vaga
               </h2>
@@ -380,7 +380,7 @@ export function AddToJobModal({
 
           <div className={`${cardStyles.flat} p-3`}>
             <div className="flex items-center gap-2 mb-2">
-              <Users className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              <Users className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
               <span className={textStyles.label}>
                 {effectiveCandidateIds.length} candidato{effectiveCandidateIds.length !== 1 ? 's' : ''} selecionado{effectiveCandidateIds.length !== 1 ? 's' : ''}
               </span>
@@ -388,9 +388,9 @@ export function AddToJobModal({
             {displayNames.length > 0 && (
               <div className="flex items-center gap-1.5 flex-wrap">
                 {displayNames.map((name, idx) => (
-                  <div key={idx} className="flex items-center gap-1.5 bg-white dark:bg-gray-700 rounded-full px-2 py-1 border border-gray-100 dark:border-gray-600">
+                  <div key={idx} className="flex items-center gap-1.5 bg-white dark:bg-lia-bg-elevated rounded-full px-2 py-1 border border-lia-border-subtle dark:border-lia-border-default">
                     <Avatar className="w-5 h-5">
-                      <AvatarFallback className="text-micro bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
+                      <AvatarFallback className="text-micro bg-gray-100 dark:bg-lia-bg-elevated text-gray-600 dark:text-lia-text-tertiary">
                         {getInitials(name)}
                       </AvatarFallback>
                     </Avatar>
@@ -415,12 +415,12 @@ export function AddToJobModal({
               placeholder="Buscar vaga..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 border-gray-200 text-xs placeholder:text-gray-400 focus:ring-1 focus:ring-gray-400 focus:border-gray-500"
+              className="pl-9 border-lia-border-subtle text-xs placeholder:text-gray-400 focus:ring-1 focus:ring-gray-400 focus:border-gray-500"
               aria-label="Buscar vagas"
             />
           </div>
 
-          <ScrollArea className="flex-1 border border-gray-100 rounded-md min-h-[180px] max-h-[220px]">
+          <ScrollArea className="flex-1 border border-lia-border-subtle rounded-md min-h-[180px] max-h-[220px]">
             {isLoading ? (
               <div className="flex flex-col items-center justify-center h-[180px] text-gray-600">
                 <Loader2 className="w-6 h-6 animate-spin text-gray-500 mb-2" />
@@ -447,9 +447,9 @@ export function AddToJobModal({
                     key={job.id}
                     onClick={() => setSelectedJobId(job.id)}
                     className={cn(
-                      "flex items-start gap-3 p-3 rounded-md cursor-pointer transition-all",
+                      "flex items-start gap-3 p-3 rounded-md cursor-pointer transition-colors",
                       selectedJobId === job.id
-                        ? "bg-gray-100 dark:bg-gray-700 border border-gray-500"
+                        ? "bg-gray-100 dark:bg-lia-bg-elevated border border-gray-500"
                         : "hover:bg-gray-50 border border-transparent"
                     )}
                   >
@@ -463,7 +463,7 @@ export function AddToJobModal({
                           {job.title}
                         </Label>
                         {selectedJobId === job.id && (
-                          <Check className="w-4 h-4 text-gray-700 dark:text-gray-300 flex-shrink-0" />
+                          <Check className="w-4 h-4 text-gray-700 dark:text-lia-text-secondary flex-shrink-0" />
                         )}
                       </div>
                       <div className={`flex items-center gap-3 mt-1 ${textStyles.caption}`}>
@@ -512,11 +512,11 @@ export function AddToJobModal({
           )}
 
           {selectedJobId && (
-            <div className="space-y-3 pt-2 border-t border-gray-100">
+            <div className="space-y-3 pt-2 border-t border-lia-border-subtle">
               <div className="space-y-2">
                 <Label className={textStyles.label}>Etapa inicial</Label>
                 <Select value={selectedStage} onValueChange={setSelectedStage}>
-                  <SelectTrigger className="w-full border-gray-200 text-xs">
+                  <SelectTrigger className="w-full border-lia-border-subtle text-xs">
                     <SelectValue placeholder="Selecione a etapa" />
                   </SelectTrigger>
                   <SelectContent>
@@ -566,7 +566,7 @@ export function AddToJobModal({
           )}
         </div>
 
-        <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-between gap-2">
+        <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary p-4 flex items-center justify-between gap-2">
           <div className="text-xs text-gray-500">
             {finalCandidateIds.length} candidato{finalCandidateIds.length !== 1 ? 's' : ''} será{finalCandidateIds.length !== 1 ? 'ão' : ''} adicionado{finalCandidateIds.length !== 1 ? 's' : ''}
           </div>
@@ -575,7 +575,7 @@ export function AddToJobModal({
               variant="outline"
               onClick={onClose}
               disabled={isSubmitting}
-              className="h-9 px-4 text-xs font-medium bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 dark:text-gray-200"
+              className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default text-gray-700 hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 dark:text-lia-text-primary"
             >
               Cancelar
             </Button>

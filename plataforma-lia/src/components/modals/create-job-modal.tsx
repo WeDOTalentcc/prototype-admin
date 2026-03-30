@@ -162,13 +162,13 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
       aria-labelledby="create-job-modal-title"
     >
       <div
-        className="bg-white dark:bg-gray-800 rounded-md shadow-xl w-full max-w-md mx-4 animate-in fade-in zoom-in-95 duration-200"
+        className="bg-white dark:bg-lia-bg-secondary rounded-md shadow-lia-lg w-full max-w-md mx-4 animate-in fade-in zoom-in-95 duration-200"
         onClick={e => e.stopPropagation()}
       >
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-lia-border-subtle dark:border-lia-border-subtle flex items-center justify-between">
           <h2
             id="create-job-modal-title"
-            className="text-base font-semibold text-gray-900 dark:text-gray-100 font-['Open_Sans',sans-serif]"
+            className="text-base font-semibold text-gray-900 dark:text-lia-text-primary font-['Open_Sans',sans-serif]"
           >
             {step === "choose" ? "Nova Vaga" : "Criar Vaga Manualmente"}
           </h2>
@@ -184,36 +184,36 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
         <div className="px-6 py-4">
           {step === "choose" && (
             <div className="space-y-3">
-              <p className="text-xs text-gray-600 dark:text-gray-400 font-['Open_Sans',sans-serif] mb-4">
+              <p className="text-xs text-gray-600 dark:text-lia-text-tertiary font-['Open_Sans',sans-serif] mb-4">
                 Como você deseja criar a vaga?
               </p>
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={handleChooseWizard}
-                  className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md p-4 text-left transition-all duration-150 hover:shadow-md hover:-translate-y-0.5 cursor-pointer group"
+                  className="bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4 text-left transition-transform duration-150 hover:shadow-lia-default hover:-translate-y-0.5 cursor-pointer group"
                 >
                   <div className="w-10 h-10 rounded-md bg-wedo-cyan/10 flex items-center justify-center mb-3">
                     <Brain className="w-5 h-5 text-wedo-cyan" />
                   </div>
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 font-['Open_Sans',sans-serif] mb-1">
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-lia-text-primary font-['Open_Sans',sans-serif] mb-1">
                     Criar com a LIA
                   </h3>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 font-['Open_Sans',sans-serif]">
+                  <p className="text-xs text-gray-600 dark:text-lia-text-tertiary font-['Open_Sans',sans-serif]">
                     A LIA guia você no processo
                   </p>
                 </button>
 
                 <button
                   onClick={handleChooseManual}
-                  className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md p-4 text-left transition-all duration-150 hover:shadow-md hover:-translate-y-0.5 cursor-pointer group"
+                  className="bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4 text-left transition-transform duration-150 hover:shadow-lia-default hover:-translate-y-0.5 cursor-pointer group"
                 >
-                  <div className="w-10 h-10 rounded-md bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-3">
-                    <ClipboardList className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  <div className="w-10 h-10 rounded-md bg-gray-100 dark:bg-lia-bg-elevated flex items-center justify-center mb-3">
+                    <ClipboardList className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
                   </div>
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 font-['Open_Sans',sans-serif] mb-1">
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-lia-text-primary font-['Open_Sans',sans-serif] mb-1">
                     Criar manualmente
                   </h3>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 font-['Open_Sans',sans-serif]">
+                  <p className="text-xs text-gray-600 dark:text-lia-text-tertiary font-['Open_Sans',sans-serif]">
                     Preencha os dados diretamente
                   </p>
                 </button>
@@ -226,7 +226,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
               <div className="space-y-1.5">
                 <label
                   htmlFor="job-title"
-                  className="text-xs font-semibold text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block"
+                  className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary font-['Open_Sans',sans-serif] block"
                 >
                   Título da Vaga <span className="text-status-error">*</span>
                 </label>
@@ -236,10 +236,10 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                   value={formData.title}
                   onChange={e => updateField("title", e.target.value)}
                   placeholder="Ex: Engenheiro de Software Senior"
-                  className={`w-full px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 bg-white dark:bg-gray-800 border rounded-md transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 font-['Open_Sans',sans-serif] ${
+                  className={`w-full px-3 py-2 text-sm text-gray-900 dark:text-lia-text-primary placeholder:text-gray-400 bg-white dark:bg-lia-bg-secondary border rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 font-['Open_Sans',sans-serif] ${
                     errors.title
                       ? "border-status-error/30 focus:ring-red-500/20 bg-status-error/10 dark:bg-status-error/10"
-                      : "border-gray-300 dark:border-gray-600 hover:border-gray-400 focus:border-gray-900 dark:focus:border-gray-50"
+                      : "border-lia-border-default dark:border-lia-border-default hover:border-gray-400 focus:border-gray-900 dark:focus:border-gray-50"
                   }`}
                   aria-required="true"
                 />
@@ -254,7 +254,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
               <div className="space-y-1.5">
                 <label
                   htmlFor="job-department"
-                  className="text-xs font-semibold text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block"
+                  className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary font-['Open_Sans',sans-serif] block"
                 >
                   Departamento
                 </label>
@@ -262,7 +262,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                   id="job-department"
                   value={formData.department}
                   onChange={e => updateField("department", e.target.value)}
-                  className="w-full px-3 py-2 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md transition-all duration-150 hover:border-gray-400 focus:border-gray-900 dark:focus:border-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 cursor-pointer font-['Open_Sans',sans-serif]"
+                  className="w-full px-3 py-2 text-sm text-gray-900 dark:text-lia-text-primary bg-white dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md transition-colors duration-150 hover:border-gray-400 focus:border-gray-900 dark:focus:border-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 cursor-pointer font-['Open_Sans',sans-serif]"
                 >
                   <option value="">Selecione...</option>
                   {DEPARTMENT_OPTIONS.map(dept => (
@@ -275,7 +275,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                 <div className="space-y-1.5">
                   <label
                     htmlFor="job-work-model"
-                    className="text-xs font-semibold text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block"
+                    className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary font-['Open_Sans',sans-serif] block"
                   >
                     Modelo de Trabalho
                   </label>
@@ -283,7 +283,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                     id="job-work-model"
                     value={formData.workModel}
                     onChange={e => updateField("workModel", e.target.value)}
-                    className="w-full px-3 py-2 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md transition-all duration-150 hover:border-gray-400 focus:border-gray-900 dark:focus:border-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 cursor-pointer font-['Open_Sans',sans-serif]"
+                    className="w-full px-3 py-2 text-sm text-gray-900 dark:text-lia-text-primary bg-white dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md transition-colors duration-150 hover:border-gray-400 focus:border-gray-900 dark:focus:border-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 cursor-pointer font-['Open_Sans',sans-serif]"
                   >
                     <option value="">Selecione...</option>
                     {WORK_MODEL_OPTIONS.map(opt => (
@@ -295,7 +295,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                 <div className="space-y-1.5">
                   <label
                     htmlFor="job-employment-type"
-                    className="text-xs font-semibold text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block"
+                    className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary font-['Open_Sans',sans-serif] block"
                   >
                     Forma de Contratação
                   </label>
@@ -303,7 +303,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                     id="job-employment-type"
                     value={formData.employmentType}
                     onChange={e => updateField("employmentType", e.target.value)}
-                    className="w-full px-3 py-2 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md transition-all duration-150 hover:border-gray-400 focus:border-gray-900 dark:focus:border-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 cursor-pointer font-['Open_Sans',sans-serif]"
+                    className="w-full px-3 py-2 text-sm text-gray-900 dark:text-lia-text-primary bg-white dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md transition-colors duration-150 hover:border-gray-400 focus:border-gray-900 dark:focus:border-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 cursor-pointer font-['Open_Sans',sans-serif]"
                   >
                     <option value="">Selecione...</option>
                     {EMPLOYMENT_TYPE_OPTIONS.map(opt => (
@@ -316,7 +316,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
               <div className="space-y-1.5">
                 <label
                   htmlFor="job-manager"
-                  className="text-xs font-semibold text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block"
+                  className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary font-['Open_Sans',sans-serif] block"
                 >
                   Gestor Responsável <span className="text-status-error">*</span>
                 </label>
@@ -326,10 +326,10 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                   value={formData.manager}
                   onChange={e => updateField("manager", e.target.value)}
                   placeholder="Nome do gestor"
-                  className={`w-full px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 bg-white dark:bg-gray-800 border rounded-md transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 font-['Open_Sans',sans-serif] ${
+                  className={`w-full px-3 py-2 text-sm text-gray-900 dark:text-lia-text-primary placeholder:text-gray-400 bg-white dark:bg-lia-bg-secondary border rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 font-['Open_Sans',sans-serif] ${
                     errors.manager
                       ? "border-status-error/30 focus:ring-red-500/20 bg-status-error/10 dark:bg-status-error/10"
-                      : "border-gray-300 dark:border-gray-600 hover:border-gray-400 focus:border-gray-900 dark:focus:border-gray-50"
+                      : "border-lia-border-default dark:border-lia-border-default hover:border-gray-400 focus:border-gray-900 dark:focus:border-gray-50"
                   }`}
                   aria-required="true"
                 />
@@ -344,7 +344,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
               <div className="space-y-1.5">
                 <label
                   htmlFor="job-manager-email"
-                  className="text-xs font-semibold text-gray-800 dark:text-gray-200 font-['Open_Sans',sans-serif] block"
+                  className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary font-['Open_Sans',sans-serif] block"
                 >
                   Email do Gestor <span className="text-status-error">*</span>
                 </label>
@@ -354,10 +354,10 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                   value={formData.managerEmail}
                   onChange={e => updateField("managerEmail", e.target.value)}
                   placeholder="gestor@empresa.com"
-                  className={`w-full px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 bg-white dark:bg-gray-800 border rounded-md transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 font-['Open_Sans',sans-serif] ${
+                  className={`w-full px-3 py-2 text-sm text-gray-900 dark:text-lia-text-primary placeholder:text-gray-400 bg-white dark:bg-lia-bg-secondary border rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 font-['Open_Sans',sans-serif] ${
                     errors.managerEmail
                       ? "border-status-error/30 focus:ring-red-500/20 bg-status-error/10 dark:bg-status-error/10"
-                      : "border-gray-300 dark:border-gray-600 hover:border-gray-400 focus:border-gray-900 dark:focus:border-gray-50"
+                      : "border-lia-border-default dark:border-lia-border-default hover:border-gray-400 focus:border-gray-900 dark:focus:border-gray-50"
                   }`}
                   aria-required="true"
                 />
@@ -373,20 +373,20 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
         </div>
 
         {step === "manual-form" && (
-          <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+          <div className="px-6 py-4 bg-gray-50 dark:bg-lia-bg-secondary/50 border-t border-lia-border-subtle dark:border-lia-border-subtle flex items-center justify-between">
             <button
               onClick={() => {
                 setStep("choose")
                 setErrors({})
               }}
-              className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 font-medium font-['Open_Sans',sans-serif] transition-colors"
+              className="text-xs text-gray-600 dark:text-lia-text-tertiary hover:text-gray-900 dark:hover:text-gray-200 font-medium font-['Open_Sans',sans-serif] transition-colors"
             >
               Voltar
             </button>
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="px-4 py-2 text-sm font-medium rounded-md bg-gray-900 text-white hover:bg-gray-800 active:bg-gray-700 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-gray-900/20 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed font-['Open_Sans',sans-serif] flex items-center gap-2"
+              className="px-4 py-2 text-sm font-medium rounded-md bg-gray-900 text-white hover:bg-gray-800 active:bg-gray-700 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-gray-900/20 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed font-['Open_Sans',sans-serif] flex items-center gap-2"
             >
               {isSubmitting ? (
                 <>

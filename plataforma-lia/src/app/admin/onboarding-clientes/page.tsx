@@ -128,7 +128,7 @@ function OnboardingStepsChecklist({ steps }: { steps: OnboardingStep[] }) {
           return (
             <div
               key={step.id}
-              className="flex items-center gap-2 text-xs text-gray-300 italic"
+              className="flex items-center gap-2 text-xs lia-text-300 italic"
             >
               <Circle className="w-3.5 h-3.5" />
               <span className="truncate">{step.label}</span>
@@ -140,7 +140,7 @@ function OnboardingStepsChecklist({ steps }: { steps: OnboardingStep[] }) {
           <div
             key={step.id}
             className={`flex items-center gap-2 text-xs ${
-              step.completed ? "text-status-success" : "text-gray-400"
+              step.completed ? "text-status-success" : "lia-text-400"
             }`}
           >
             {step.completed ? (
@@ -162,7 +162,7 @@ function ClientRow({ data, onResendEmail }: { data: ClientOnboardingData; onRese
   return (
     <>
       <tr 
-        className={`border-b border-gray-100 hover:bg-gray-50/50 transition-colors cursor-pointer ${
+        className={`border-b border-lia-border-subtle hover:bg-gray-50/50 transition-colors cursor-pointer ${
           data.status === "stalled" ? "bg-status-error/10/30" : ""
         }`}
         onClick={() => setShowSteps(!showSteps)}
@@ -175,22 +175,22 @@ function ClientRow({ data, onResendEmail }: { data: ClientOnboardingData; onRese
               {data.client.name.charAt(0).toUpperCase()}
             </div>
             <div>
-              <p className="font-medium text-gray-950 dark:text-gray-50">{data.client.name}</p>
-              <p className="text-xs text-gray-500">{data.client.email || 'Sem email'}</p>
+              <p className="font-medium lia-text-950 dark:lia-text-50">{data.client.name}</p>
+              <p className="text-xs lia-text-500">{data.client.email || 'Sem email'}</p>
             </div>
           </div>
         </td>
         <td className="py-4 px-4">
           <div className="flex items-center gap-3">
             <Progress value={data.progress} className="w-24 h-2" />
-            <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{data.progress}%</span>
+            <span className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">{data.progress}%</span>
           </div>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs lia-text-500 mt-1">
             {data.steps.filter(s => s.completed && !s.unavailable).length}/{data.steps.filter(s => !s.unavailable).length} etapas
           </p>
         </td>
         <td className="py-4 px-4">
-          <span className={`text-sm ${data.daysSinceLastActivity > 7 ? 'text-status-error font-medium' : 'text-gray-600'}`}>
+          <span className={`text-sm ${data.daysSinceLastActivity > 7 ? 'text-status-error font-medium' : 'lia-text-600'}`}>
             {formatLastActivity(data.daysSinceLastActivity)}
           </span>
           {data.daysSinceLastActivity > 7 && (
@@ -233,7 +233,7 @@ function ClientRow({ data, onResendEmail }: { data: ClientOnboardingData; onRese
         <tr className="bg-gray-50">
           <td colSpan={5} className="py-4 px-6">
             <div className="pl-12">
-              <p className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-3">Etapas de Onboarding:</p>
+              <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3">Etapas de Onboarding:</p>
               <OnboardingStepsChecklist steps={data.steps} />
             </div>
           </td>
@@ -334,19 +334,19 @@ export default function OnboardingClientesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <h1
-            className="text-2xl font-semibold mb-1 text-gray-800 dark:text-gray-100"
+            className="text-2xl font-semibold mb-1 lia-text-800 dark:text-lia-text-primary"
             
           >
             Onboarding de Clientes
           </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400" >
+          <p className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
             Status consolidado de todos os clientes
           </p>
         </div>
         <Button 
           onClick={handleRefresh}
           disabled={isRefreshing}
-          className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+          className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
         >
           <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
           Atualizar
@@ -355,46 +355,46 @@ export default function OnboardingClientesPage() {
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
         <Card 
-          className={`p-4 cursor-pointer transition-all ${filter === 'all' ? 'ring-2 ring-gray-900/20' : ''}`}
+          className={`p-4 cursor-pointer transition-colors ${filter === 'all' ? 'ring-2 ring-gray-900/20' : ''}`}
           onClick={() => setFilter('all')}
         >
-          <p className="text-xs text-gray-500 uppercase tracking-wider">Total</p>
-          <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">{stats.total}</p>
+          <p className="text-xs lia-text-500 uppercase tracking-wider">Total</p>
+          <p className="text-2xl font-bold lia-text-950 dark:lia-text-50">{stats.total}</p>
         </Card>
         <Card 
-          className={`p-4 cursor-pointer transition-all ${filter === 'pending' ? 'ring-2 ring-gray-900/20' : ''}`}
+          className={`p-4 cursor-pointer transition-colors ${filter === 'pending' ? 'ring-2 ring-gray-900/20' : ''}`}
           onClick={() => setFilter('pending')}
         >
-          <p className="text-xs text-gray-500 uppercase tracking-wider">Pendentes</p>
+          <p className="text-xs lia-text-500 uppercase tracking-wider">Pendentes</p>
           <p className="text-2xl font-bold text-wedo-orange">{stats.pending}</p>
         </Card>
         <Card 
-          className={`p-4 cursor-pointer transition-all ${filter === 'in_progress' ? 'ring-2 ring-gray-900/20' : ''}`}
+          className={`p-4 cursor-pointer transition-colors ${filter === 'in_progress' ? 'ring-2 ring-gray-900/20' : ''}`}
           onClick={() => setFilter('in_progress')}
         >
-          <p className="text-xs text-gray-500 uppercase tracking-wider">Em Progresso</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">{stats.inProgress}</p>
+          <p className="text-xs lia-text-500 uppercase tracking-wider">Em Progresso</p>
+          <p className="text-2xl font-bold lia-text-900 dark:lia-text-50">{stats.inProgress}</p>
         </Card>
         <Card 
-          className={`p-4 cursor-pointer transition-all ${filter === 'complete' ? 'ring-2 ring-gray-900/20' : ''}`}
+          className={`p-4 cursor-pointer transition-colors ${filter === 'complete' ? 'ring-2 ring-gray-900/20' : ''}`}
           onClick={() => setFilter('complete')}
         >
-          <p className="text-xs text-gray-500 uppercase tracking-wider">Completos</p>
+          <p className="text-xs lia-text-500 uppercase tracking-wider">Completos</p>
           <p className="text-2xl font-bold text-status-success">{stats.complete}</p>
         </Card>
         <Card 
-          className={`p-4 cursor-pointer transition-all ${filter === 'stalled' ? 'ring-2 ring-gray-900/20' : ''}`}
+          className={`p-4 cursor-pointer transition-colors ${filter === 'stalled' ? 'ring-2 ring-gray-900/20' : ''}`}
           onClick={() => setFilter('stalled')}
         >
-          <p className="text-xs text-gray-500 uppercase tracking-wider">Parados (+7 dias)</p>
+          <p className="text-xs lia-text-500 uppercase tracking-wider">Parados (+7 dias)</p>
           <p className="text-2xl font-bold text-status-error">{stats.stalled}</p>
         </Card>
       </div>
 
       <Card className="overflow-hidden">
-        <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+        <div className="p-4 border-b border-lia-border-subtle flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">
+            <span className="text-sm lia-text-600">
               Mostrando {filteredData.length} cliente(s)
             </span>
           </div>
@@ -422,8 +422,8 @@ export default function OnboardingClientesPage() {
 
         {isLoading ? (
           <div className="p-8 text-center">
-            <RefreshCw className="w-8 h-8 animate-spin mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500">Carregando clientes...</p>
+            <RefreshCw className="w-8 h-8 animate-spin mx-auto lia-text-400 mb-4" />
+            <p className="lia-text-500">Carregando clientes...</p>
           </div>
         ) : error ? (
           <div className="p-8 text-center">
@@ -435,26 +435,26 @@ export default function OnboardingClientesPage() {
           </div>
         ) : filteredData.length === 0 ? (
           <div className="p-8 text-center">
-            <Building2 className="w-12 h-12 mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500">Nenhum cliente encontrado com esse filtro</p>
+            <Building2 className="w-12 h-12 mx-auto lia-text-300 mb-4" />
+            <p className="lia-text-500">Nenhum cliente encontrado com esse filtro</p>
           </div>
         ) : (
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="text-left py-3 px-4 text-xs font-semibold lia-text-500 uppercase tracking-wider">
                   Cliente
                 </th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="text-left py-3 px-4 text-xs font-semibold lia-text-500 uppercase tracking-wider">
                   Progresso
                 </th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="text-left py-3 px-4 text-xs font-semibold lia-text-500 uppercase tracking-wider">
                   Última Atividade
                 </th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="text-left py-3 px-4 text-xs font-semibold lia-text-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="text-left py-3 px-4 text-xs font-semibold lia-text-500 uppercase tracking-wider">
                   Ações
                 </th>
               </tr>

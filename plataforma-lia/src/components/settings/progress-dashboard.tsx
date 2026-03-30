@@ -117,21 +117,21 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
 
   // v4: Cores de categoria em grayscale (90% gray + 10% accent apenas para contexto LIA)
   const categoryColors = {
-    basic: { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', border: 'border-gray-200 dark:border-gray-700' },
-    advanced: { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', border: 'border-gray-200 dark:border-gray-700' },
-    integrations: { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', border: 'border-gray-200 dark:border-gray-700' }
+    basic: { bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: 'lia-text-700 dark:text-lia-text-secondary', border: 'border-lia-border-subtle dark:border-lia-border-subtle' },
+    advanced: { bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: 'lia-text-700 dark:text-lia-text-secondary', border: 'border-lia-border-subtle dark:border-lia-border-subtle' },
+    integrations: { bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: 'lia-text-700 dark:text-lia-text-secondary', border: 'border-lia-border-subtle dark:border-lia-border-subtle' }
   }
 
   // v4: Cores de prioridade semânticas
   const priorityColors = {
     high: { bg: 'bg-status-error/10 dark:bg-status-error/20', text: 'text-status-error dark:text-status-error', icon: AlertTriangle },
     medium: { bg: 'bg-status-warning/10 dark:bg-status-warning/20', text: 'text-status-warning dark:text-status-warning', icon: Clock },
-    low: { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', icon: Info }
+    low: { bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: 'lia-text-700 dark:text-lia-text-secondary', icon: Info }
   }
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-md w-full max-w-6xl h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-lia-bg-primary rounded-md w-full max-w-6xl h-[90vh] overflow-y-auto border border-lia-border-subtle dark:border-lia-border-subtle">
         <div className="p-6">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
@@ -160,10 +160,10 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
 
           {/* Métricas Principais - v4: Cards com grayscale, métricas com Inter */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <Card className="rounded-md border-gray-200 dark:border-gray-700">
+            <Card className="rounded-md border-lia-border-subtle dark:border-lia-border-subtle">
               <CardContent className="p-6 text-center">
-                <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Gauge className="w-8 h-8 text-gray-700 dark:text-gray-300" />
+                <div className="w-16 h-16 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Gauge className="w-8 h-8 lia-text-700 dark:text-lia-text-secondary" />
                 </div>
                 <div className={`${textStyles.metricLarge} mb-1`}>
                   {Math.round(progressMetrics.overall)}%
@@ -177,7 +177,7 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
                   ) : progressMetrics.trend === 'down' ? (
                     <TrendingDown className="w-4 h-4 text-status-error dark:text-status-error" />
                   ) : (
-                    <Activity className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                    <Activity className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                   )}
                   <span className={textStyles.metricSmall}>
                     {progressMetrics.velocity} seções/dia
@@ -186,7 +186,7 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
               </CardContent>
             </Card>
 
-            <Card className="rounded-md border-gray-200 dark:border-gray-700">
+            <Card className="rounded-md border-lia-border-subtle dark:border-lia-border-subtle">
               <CardContent className="p-6 text-center">
                 <div className="w-16 h-16 bg-status-success/10 dark:bg-status-success/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <CheckCircle className="w-8 h-8 text-status-success dark:text-status-success" />
@@ -203,7 +203,7 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
               </CardContent>
             </Card>
 
-            <Card className="rounded-md border-gray-200 dark:border-gray-700">
+            <Card className="rounded-md border-lia-border-subtle dark:border-lia-border-subtle">
               <CardContent className="p-6 text-center">
                 <div className="w-16 h-16 bg-status-warning/10 dark:bg-status-warning/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Timer className="w-8 h-8 text-status-warning dark:text-status-warning" />
@@ -220,7 +220,7 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
               </CardContent>
             </Card>
 
-            <Card className="rounded-md border-gray-200 dark:border-gray-700">
+            <Card className="rounded-md border-lia-border-subtle dark:border-lia-border-subtle">
               <CardContent className="p-6 text-center">
                 <div className="w-16 h-16 bg-status-error/10 dark:bg-status-error/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <AlertTriangle className="w-8 h-8 text-status-error dark:text-status-error" />
@@ -246,7 +246,7 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
               const completedInCategory = sectionsInCategory.filter(s => s.status === 'completed').length
 
               return (
-                <Card key={category} className="rounded-md border-gray-200 dark:border-gray-700">
+                <Card key={category} className="rounded-md border-lia-border-subtle dark:border-lia-border-subtle">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className={textStyles.subtitle}>
@@ -257,9 +257,9 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
                       </Badge>
                     </div>
 
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-3">
+                    <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-3 mb-3">
                       <div
-                        className="h-3 rounded-full transition-all duration-500 bg-gray-900 dark:bg-gray-100"
+                        className="h-3 rounded-full transition-[width,height] duration-500 bg-gray-900 dark:lia-bg-100"
                         style={{width: `${progress}%`}}
                       />
                     </div>
@@ -279,10 +279,10 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
           </div>
 
           {/* Próximas Ações Recomendadas - v4 */}
-          <Card className="mb-8 rounded-md border-gray-200 dark:border-gray-700">
+          <Card className="mb-8 rounded-md border-lia-border-subtle dark:border-lia-border-subtle">
             <CardHeader>
               <CardTitle className={`flex items-center gap-2 ${textStyles.subtitle}`}>
-                <Lightbulb className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                <Lightbulb className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                 Próximas Ações Recomendadas
               </CardTitle>
             </CardHeader>
@@ -296,17 +296,17 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
                   return (
                     <div
                       key={section.id}
-                      className="flex items-center gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
+                      className="flex items-center gap-4 p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
                       onClick={() => onSectionSelect(section.id)}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-md flex items-center justify-center">
+                        <div className="w-8 h-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-md flex items-center justify-center">
                           <span className={textStyles.metricSmall}>
                             {index + 1}
                           </span>
                         </div>
-                        <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center">
-                          <SectionIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                        <div className="w-10 h-10 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+                          <SectionIcon className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                         </div>
                       </div>
 
@@ -355,7 +355,7 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
           </Card>
 
           {/* Lista Detalhada de Seções - v4 */}
-          <Card className="rounded-md border-gray-200 dark:border-gray-700">
+          <Card className="rounded-md border-lia-border-subtle dark:border-lia-border-subtle">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className={`flex items-center gap-2 ${textStyles.subtitle}`}>
@@ -389,11 +389,11 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
                   return (
                     <div
                       key={section.id}
-                      className="flex items-center gap-4 p-3 border border-gray-200 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
+                      className="flex items-center gap-4 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
                       onClick={() => onSectionSelect(section.id)}
                     >
-                      <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center">
-                        <SectionIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                      <div className="w-10 h-10 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+                        <SectionIcon className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                       </div>
 
                       <div className="flex-1">
@@ -452,7 +452,7 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
           </Card>
 
           {/* Footer - v4 */}
-          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+          <div className="mt-6 pt-6 border-t border-lia-border-subtle dark:border-lia-border-subtle flex items-center justify-between">
             <div className={textStyles.description}>
               Última atualização: {new Date(progressMetrics.lastUpdated).toLocaleString('pt-BR')}
             </div>

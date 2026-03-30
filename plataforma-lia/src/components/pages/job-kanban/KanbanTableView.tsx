@@ -236,10 +236,10 @@ export function KanbanTableView({
     <>
     {/* Painel de Filtros - TABLE */}
     {showTableFiltersPanel && (
-      <div className="flex-shrink-0 w-72 transition-all duration-300">
-        <Card className="h-[calc(100vh-12rem)] flex flex-col overflow-hidden border border-gray-200 dark:border-gray-700 rounded-md">
+      <div className="flex-shrink-0 w-72 transition-colors duration-300">
+        <Card className="h-[calc(100vh-12rem)] flex flex-col overflow-hidden border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
           {/* Header do Painel de Filtros */}
-          <div className="flex-shrink-0 p-4 border-b border-gray-100">
+          <div className="flex-shrink-0 p-4 border-b border-lia-border-subtle">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Filter className="w-4 h-4 text-gray-600" />
@@ -265,7 +265,7 @@ export function KanbanTableView({
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {/* Filtro por Etapa */}
             <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-800 dark:text-gray-200">
+              <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">
                 Etapa do Pipeline
               </label>
               <div className="space-y-1.5">
@@ -281,7 +281,7 @@ export function KanbanTableView({
                           onTableStageFilterChange(tableStageFilter.filter(s => s !== stage.id))
                         }
                       }}
-                      className="w-3.5 h-3.5 rounded-md border-gray-300 text-gray-900 focus:ring-gray-900/20"
+                      className="w-3.5 h-3.5 rounded-md border-lia-border-default text-gray-900 focus:ring-gray-900/20"
                     />
                     <span className="text-xs text-gray-600">
                       {stage.displayName}
@@ -293,7 +293,7 @@ export function KanbanTableView({
 
             {/* Filtro por Score LIA */}
             <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-800 dark:text-gray-200">
+              <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">
                 Score LIA Mínimo
               </label>
               <div className="flex items-center gap-2">
@@ -310,7 +310,7 @@ export function KanbanTableView({
 
             {/* Filtro por Status */}
             <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-800 dark:text-gray-200">
+              <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">
                 Status
               </label>
               <div className="space-y-1.5">
@@ -318,7 +318,7 @@ export function KanbanTableView({
                   <label key={status} className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
-                      className="w-3.5 h-3.5 rounded-md border-gray-300 text-gray-900 focus:ring-gray-900/20"
+                      className="w-3.5 h-3.5 rounded-md border-lia-border-default text-gray-900 focus:ring-gray-900/20"
                     />
                     <span className="text-xs text-gray-600">
                       {status}
@@ -330,7 +330,7 @@ export function KanbanTableView({
 
             {/* Filtro por Modelo de Trabalho */}
             <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-800 dark:text-gray-200">
+              <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">
                 Modelo de Trabalho
               </label>
               <div className="space-y-1.5">
@@ -338,7 +338,7 @@ export function KanbanTableView({
                   <label key={modelo} className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
-                      className="w-3.5 h-3.5 rounded-md border-gray-300 text-gray-900 focus:ring-gray-900/20"
+                      className="w-3.5 h-3.5 rounded-md border-lia-border-default text-gray-900 focus:ring-gray-900/20"
                     />
                     <span className="text-xs text-gray-600">
                       {modelo}
@@ -350,13 +350,13 @@ export function KanbanTableView({
           </div>
 
           {/* Footer com Ações */}
-          <div className="flex-shrink-0 p-4 border-t border-gray-100 bg-gray-50">
+          <div className="flex-shrink-0 p-4 border-t border-lia-border-subtle bg-gray-50">
             <div className="flex gap-2">
               <button
                 onClick={() => {
                   onTableStageFilterChange([])
                 }}
-                className="flex-1 px-3 py-2 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                className="flex-1 px-3 py-2 text-xs font-medium text-gray-600 bg-lia-bg-primary border border-lia-border-subtle rounded-md hover:bg-gray-50 transition-colors"
 
               >
                 Limpar
@@ -452,7 +452,7 @@ export function KanbanTableView({
               switch (columnId) {
                 case 'id':
                   return (
-                    <div className="text-xs font-mono text-gray-600 dark:text-gray-400">
+                    <div className="text-xs font-mono text-gray-600 dark:text-lia-text-tertiary">
                       {candidate.candidateCode || candidate.id?.substring(0, 6).toUpperCase()}
                     </div>
                   )
@@ -735,7 +735,7 @@ export function KanbanTableView({
                                 key={stage.id}
                                 className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs transition-colors ${
                                   isCurrent
-                                    ? 'bg-gray-100 dark:bg-gray-800 font-bold'
+                                    ? 'bg-gray-100 dark:bg-lia-bg-secondary font-bold'
                                     : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
                                 }`}
 
@@ -749,7 +749,7 @@ export function KanbanTableView({
                                   className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                                   style={{backgroundColor: stage.color}}
                                 />
-                                <span className="flex-1 text-left text-gray-800 dark:text-gray-200 truncate">
+                                <span className="flex-1 text-left text-gray-800 dark:text-lia-text-primary truncate">
                                   {stage.displayName}
                                 </span>
                                 {isCurrent && <CheckCircle className="w-3.5 h-3.5 text-wedo-cyan flex-shrink-0" />}
@@ -809,7 +809,7 @@ export function KanbanTableView({
 
                 case 'is_top_universities':
                   return candidate.is_top_universities ? (
-                    <Badge className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">Top University</Badge>
+                    <Badge className="text-xs bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary">Top University</Badge>
                   ) : <span className="text-xs text-gray-400">—</span>
 
                 case 'is_hiring':
@@ -818,26 +818,26 @@ export function KanbanTableView({
                   ) : <span className="text-xs text-gray-400">—</span>
 
                 case 'headline':
-                  return <span className="text-xs text-gray-800 dark:text-gray-200 truncate">{candidate.headline || ''}</span>
+                  return <span className="text-xs text-gray-800 dark:text-lia-text-primary truncate">{candidate.headline || ''}</span>
 
                 case 'expertise':
                   const expertiseArray = candidate.expertise
-                  return <span className="text-xs text-gray-800 dark:text-gray-200 truncate">{Array.isArray(expertiseArray) ? expertiseArray.join(', ') : (expertiseArray || '')}</span>
+                  return <span className="text-xs text-gray-800 dark:text-lia-text-primary truncate">{Array.isArray(expertiseArray) ? expertiseArray.join(', ') : (expertiseArray || '')}</span>
 
                 case 'linkedin_followers_count':
                   return candidate.linkedin_followers_count ? (
-                    <span className="text-xs text-gray-800 dark:text-gray-200">{candidate.linkedin_followers_count.toLocaleString('pt-BR')}</span>
+                    <span className="text-xs text-gray-800 dark:text-lia-text-primary">{candidate.linkedin_followers_count.toLocaleString('pt-BR')}</span>
                   ) : <span className="text-xs text-gray-400">—</span>
 
                 case 'linkedin_connections_count':
                   return candidate.linkedin_connections_count ? (
-                    <span className="text-xs text-gray-800 dark:text-gray-200">{candidate.linkedin_connections_count.toLocaleString('pt-BR')}</span>
+                    <span className="text-xs text-gray-800 dark:text-lia-text-primary">{candidate.linkedin_connections_count.toLocaleString('pt-BR')}</span>
                   ) : <span className="text-xs text-gray-400">—</span>
 
                 case 'outreach_message':
                   return candidate.outreach_message ? (
                     <div className="flex items-center gap-1">
-                      <span className="text-xs text-gray-800 dark:text-gray-200 truncate max-w-sidebar-content">{candidate.outreach_message.slice(0, 50)}...</span>
+                      <span className="text-xs text-gray-800 dark:text-lia-text-primary truncate max-w-sidebar-content">{candidate.outreach_message.slice(0, 50)}...</span>
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
@@ -853,7 +853,7 @@ export function KanbanTableView({
 
                 case 'best_personal_email':
                   return candidate.best_personal_email ? (
-                    <a href={`mailto:${candidate.best_personal_email}`} className="text-xs text-gray-700 hover:text-gray-900 hover:underline truncate dark:text-gray-300 dark:hover:text-gray-100">
+                    <a href={`mailto:${candidate.best_personal_email}`} className="text-xs text-gray-700 hover:text-gray-900 hover:underline truncate dark:text-lia-text-secondary dark:hover:text-gray-100">
                       {candidate.best_personal_email}
                     </a>
                   ) : <span className="text-xs text-gray-400">—</span>
@@ -865,23 +865,23 @@ export function KanbanTableView({
                   const activePhoneTypes = Object.entries(candidate.phone_types)
                     .filter(([_, active]) => active)
                     .map(([type]) => type)
-                  return <span className="text-xs text-gray-800 dark:text-gray-200">{activePhoneTypes.join(', ') || '—'}</span>
+                  return <span className="text-xs text-gray-800 dark:text-lia-text-primary">{activePhoneTypes.join(', ') || '—'}</span>
 
                 case 'estimated_age':
                   return candidate.estimated_age ? (
-                    <span className="text-xs text-gray-800 dark:text-gray-200">{candidate.estimated_age} anos</span>
+                    <span className="text-xs text-gray-800 dark:text-lia-text-primary">{candidate.estimated_age} anos</span>
                   ) : <span className="text-xs text-gray-400">—</span>
 
                 case 'match_reasoning':
                   return candidate.pearch_insights?.match_reasoning ? (
-                    <span className="text-xs text-gray-800 dark:text-gray-200 truncate" title={candidate.pearch_insights.match_reasoning}>
+                    <span className="text-xs text-gray-800 dark:text-lia-text-primary truncate" title={candidate.pearch_insights.match_reasoning}>
                       {candidate.pearch_insights.match_reasoning.slice(0, 60)}...
                     </span>
                   ) : <span className="text-xs text-gray-400">—</span>
 
                 case 'overall_summary':
                   return candidate.pearch_insights?.overall_summary ? (
-                    <span className="text-xs text-gray-800 dark:text-gray-200 truncate" title={candidate.pearch_insights.overall_summary}>
+                    <span className="text-xs text-gray-800 dark:text-lia-text-primary truncate" title={candidate.pearch_insights.overall_summary}>
                       {candidate.pearch_insights.overall_summary.slice(0, 60)}...
                     </span>
                   ) : <span className="text-xs text-gray-400">—</span>
@@ -916,17 +916,17 @@ export function KanbanTableView({
 
                 case 'pearch_insights':
                   return candidate.pearch_insights?.overall_summary ? (
-                    <span className="text-xs text-gray-800 dark:text-gray-200 truncate">{candidate.pearch_insights.overall_summary.slice(0, 50)}...</span>
+                    <span className="text-xs text-gray-800 dark:text-lia-text-primary truncate">{candidate.pearch_insights.overall_summary.slice(0, 50)}...</span>
                   ) : <span className="text-xs text-gray-400">—</span>
 
                 case 'middle_name':
                   return candidate.middle_name ? (
-                    <span className="text-xs text-gray-800 dark:text-gray-200 truncate">{candidate.middle_name}</span>
+                    <span className="text-xs text-gray-800 dark:text-lia-text-primary truncate">{candidate.middle_name}</span>
                   ) : <span className="text-xs text-gray-400">—</span>
 
                 case 'best_business_email':
                   return candidate.best_business_email ? (
-                    <a href={`mailto:${candidate.best_business_email}`} className="text-xs text-gray-700 hover:text-gray-900 hover:underline truncate dark:text-gray-300 dark:hover:text-gray-100">
+                    <a href={`mailto:${candidate.best_business_email}`} className="text-xs text-gray-700 hover:text-gray-900 hover:underline truncate dark:text-lia-text-secondary dark:hover:text-gray-100">
                       {candidate.best_business_email}
                     </a>
                   ) : <span className="text-xs text-gray-400">—</span>
@@ -937,7 +937,7 @@ export function KanbanTableView({
                     return <span className="text-xs text-gray-400">—</span>
                   }
                   return (
-                    <span className="text-xs text-gray-800 dark:text-gray-200 truncate" title={personalEmails.join(', ')}>
+                    <span className="text-xs text-gray-800 dark:text-lia-text-primary truncate" title={personalEmails.join(', ')}>
                       {personalEmails.length === 1 ? personalEmails[0] : `${personalEmails[0]} (+${personalEmails.length - 1})`}
                     </span>
                   )
@@ -948,14 +948,14 @@ export function KanbanTableView({
                     return <span className="text-xs text-gray-400">—</span>
                   }
                   return (
-                    <span className="text-xs text-gray-800 dark:text-gray-200 truncate" title={businessEmails.join(', ')}>
+                    <span className="text-xs text-gray-800 dark:text-lia-text-primary truncate" title={businessEmails.join(', ')}>
                       {businessEmails.length === 1 ? businessEmails[0] : `${businessEmails[0]} (+${businessEmails.length - 1})`}
                     </span>
                   )
 
                 case 'company_followers_count':
                   return candidate.company_followers_count != null ? (
-                    <span className="text-xs text-gray-800 dark:text-gray-200">{candidate.company_followers_count.toLocaleString('pt-BR')}</span>
+                    <span className="text-xs text-gray-800 dark:text-lia-text-primary">{candidate.company_followers_count.toLocaleString('pt-BR')}</span>
                   ) : <span className="text-xs text-gray-400">—</span>
 
                 case 'company_keywords':
@@ -966,7 +966,7 @@ export function KanbanTableView({
                   return (
                     <div className="flex flex-wrap gap-1">
                       {companyKeywords.slice(0, 3).map((keyword: string, idx: number) => (
-                        <Badge key={idx} variant="outline" className="text-micro px-1 py-0 bg-gray-50 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                        <Badge key={idx} variant="outline" className="text-micro px-1 py-0 bg-gray-50 text-gray-700 dark:bg-lia-bg-elevated dark:text-lia-text-secondary">
                           {keyword}
                         </Badge>
                       ))}
@@ -1031,7 +1031,7 @@ export function KanbanTableView({
                               e.stopPropagation()
                               onOpenAnalysis(candidate)
                             }}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-800 dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
                           >
                             <Eye className="w-4 h-4" />
                             Ver perfil completo
@@ -1041,7 +1041,7 @@ export function KanbanTableView({
                               e.stopPropagation()
                               onOpenTriagem(candidate)
                             }}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-800 dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
                           >
                             <Brain className="w-4 h-4 text-wedo-cyan" />
                             Ver triagem LIA
@@ -1053,12 +1053,12 @@ export function KanbanTableView({
                               onSetScoreModalCandidate(candidate)
                               onSetShowBigFiveModal(true)
                             }}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-800 dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
                           >
                             <Fingerprint className="w-4 h-4 text-gray-600" />
                             Ver BigFive
                           </button>
-                          <div className="my-1 border-t border-gray-200 dark:border-gray-700" />
+                          <div className="my-1 border-t border-lia-border-subtle dark:border-lia-border-subtle" />
                           <button
                             onClick={(e) => {
                               e.stopPropagation()
@@ -1069,7 +1069,7 @@ export function KanbanTableView({
                                 openDecisionFlowModal(candidate, 'approve')
                               }
                             }}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-800 dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
                           >
                             <ThumbsUp className="w-4 h-4" />
                             Aprovar
@@ -1144,7 +1144,7 @@ export function KanbanTableView({
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                        <MoreVertical className="w-4 h-4 text-gray-500 hover:text-gray-800 dark:text-gray-200" />
+                        <MoreVertical className="w-4 h-4 text-gray-500 hover:text-gray-800 dark:text-lia-text-primary" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
@@ -1199,9 +1199,9 @@ export function KanbanTableView({
 
       {/* Paginação */}
       {getPaginatedCandidates().totalPages > 1 && (
-        <div className="bg-white dark:bg-gray-900 rounded-md p-3">
+        <div className="bg-white dark:bg-lia-bg-primary rounded-md p-3">
           <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-600 dark:text-gray-400">
+            <div className="text-sm text-gray-600 dark:text-lia-text-tertiary">
               Mostrando {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, getPaginatedCandidates().total)} de {getPaginatedCandidates().total} candidatos
             </div>
             <div className="flex items-center gap-2">
@@ -1280,8 +1280,8 @@ export function KanbanTableView({
 
     {/* Preview do Candidato - Painel Lateral Direito */}
     {isPreviewOpen && previewCandidate && (
-      <div className={`flex-shrink-0 transition-all duration-300 ${isPreviewMaximized ? 'w-[600px]' : 'w-panel-lg'}`}>
-        <div className="bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 h-[calc(100vh-6rem)] overflow-hidden">
+      <div className={`flex-shrink-0 transition-colors duration-300 ${isPreviewMaximized ? 'w-[600px]' : 'w-panel-lg'}`}>
+        <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
         <React.Suspense fallback={null}>
           <CandidatePreviewDynamic
             candidate={previewCandidate}

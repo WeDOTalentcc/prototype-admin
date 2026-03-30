@@ -96,7 +96,7 @@ const sourceLabels: Record<SuggestionSource, string> = {
 const impactColors: Record<SuggestionImpact, string> = {
   high: 'bg-status-success/15 text-status-success border-status-success/30',
   medium: 'bg-status-warning/15 text-status-warning border-status-warning/30',
-  low: 'bg-gray-100 text-gray-600 border-gray-200'
+  low: 'bg-gray-100 lia-text-base border-lia-border-subtle'
 }
 
 export function EnrichedJDStage({
@@ -161,14 +161,14 @@ export function EnrichedJDStage({
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center p-8 space-y-4">
-        <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center animate-pulse">
+        <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center animate-pulse">
           <Brain className="w-6 h-6 text-wedo-cyan" />
         </div>
         <div className="text-center">
-          <p className={cn(textStyles.body, "text-gray-600 dark:text-gray-300")}>
+          <p className={cn(textStyles.body, "text-gray-600 dark:text-lia-text-secondary")}>
             Analisando e enriquecendo a descrição...
           </p>
-          <p className={cn(textStyles.caption, "text-gray-400 dark:text-gray-500 mt-1")}>
+          <p className={cn(textStyles.caption, "text-gray-400 mt-1")}>
             Consultando mercado, histórico e catálogos
           </p>
         </div>
@@ -178,35 +178,35 @@ export function EnrichedJDStage({
 
   if (!enrichedData) {
     return (
-      <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-md border border-gray-200 dark:border-gray-700">
+      <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-            <FileText className="w-4 h-4 text-gray-500" />
+          <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-lia-bg-elevated flex items-center justify-center">
+            <FileText className="w-4 h-4 lia-text-secondary" />
           </div>
           <div>
-            <p className={cn(textStyles.body, "text-gray-600 dark:text-gray-300")}>
+            <p className={cn(textStyles.body, "text-gray-600 dark:text-lia-text-secondary")}>
               Dados detectados aguardando enriquecimento
             </p>
-            <p className={cn(textStyles.caption, "text-gray-400 dark:text-gray-500")}>
+            <p className={cn(textStyles.caption, "text-gray-400")}>
               Continue conversando com a LIA para gerar sugestões
             </p>
           </div>
         </div>
         
         {detectedCriteria?.cargo && (
-          <div className="mt-4 p-3 bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-600">
-            <h4 className={cn(textStyles.label, "text-gray-700 dark:text-gray-200 mb-2")}>
+          <div className="mt-4 p-3 bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-default">
+            <h4 className={cn(textStyles.label, "text-gray-700 dark:text-lia-text-primary mb-2")}>
               Dados Detectados
             </h4>
             <div className="space-y-1.5 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-500">Cargo:</span>
-                <span className="font-medium text-gray-800 dark:text-gray-200">{detectedCriteria.cargo}</span>
+                <span className="lia-text-secondary">Cargo:</span>
+                <span className="font-medium text-gray-800 dark:text-lia-text-primary">{detectedCriteria.cargo}</span>
               </div>
               {detectedCriteria.senioridade && (
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Senioridade:</span>
-                  <span className="font-medium text-gray-800 dark:text-gray-200">{detectedCriteria.senioridade}</span>
+                  <span className="lia-text-secondary">Senioridade:</span>
+                  <span className="font-medium text-gray-800 dark:text-lia-text-primary">{detectedCriteria.senioridade}</span>
                 </div>
               )}
             </div>
@@ -218,16 +218,16 @@ export function EnrichedJDStage({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-100 dark:from-gray-800 to-green-500/10 rounded-md border border-gray-300 dark:border-gray-600">
+      <div className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-100 dark:from-gray-800 to-green-500/10 rounded-md border border-lia-border-default dark:border-lia-border-default">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
             <Brain className="w-4 h-4 text-wedo-cyan" />
           </div>
           <div>
-            <p className={cn(textStyles.label, "text-gray-800 dark:text-gray-200")}>
+            <p className={cn(textStyles.label, "text-gray-800 dark:text-lia-text-primary")}>
               Qualidade WSI: {enrichedData.wsiQualityScore}%
             </p>
-            <p className={cn(textStyles.caption, "text-gray-500 dark:text-gray-400")}>
+            <p className={cn(textStyles.caption, "text-gray-500 dark:text-lia-text-tertiary")}>
               {enrichedData.totalSuggestions} sugestões para melhorar
             </p>
           </div>
@@ -235,7 +235,7 @@ export function EnrichedJDStage({
         {enrichedData.totalSuggestions > 0 && (
           <button
             onClick={handleAcceptAll}
-            className="px-3 py-1.5 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-gray-400"
+            className="px-3 py-1.5 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-gray-400"
            
           >
             Aceitar todas
@@ -268,19 +268,19 @@ export function EnrichedJDStage({
         return (
           <div 
             key={section.sectionName}
-            className="bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 overflow-hidden"
+            className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle overflow-hidden"
           >
             <button
               onClick={() => toggleSection(sectionKey)}
               className="w-full flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
             >
               <div className="flex items-center gap-2">
-                <Lightbulb className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                <span className={cn(textStyles.label, "text-gray-800 dark:text-gray-200")}>
+                <Lightbulb className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                <span className={cn(textStyles.label, "text-gray-800 dark:text-lia-text-primary")}>
                   {section.sectionName}
                 </span>
                 {section.suggestions.length > 0 && (
-                  <span className="px-1.5 py-0.5 text-micro font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full">
+                  <span className="px-1.5 py-0.5 text-micro font-medium bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary rounded-full">
                     +{section.suggestions.length}
                   </span>
                 )}
@@ -292,24 +292,24 @@ export function EnrichedJDStage({
                 )}
               </div>
               {isExpanded ? (
-                <ChevronUp className="w-4 h-4 text-gray-400" />
+                <ChevronUp className="w-4 h-4 lia-text-secondary" />
               ) : (
-                <ChevronDown className="w-4 h-4 text-gray-400" />
+                <ChevronDown className="w-4 h-4 lia-text-secondary" />
               )}
             </button>
 
             {isExpanded && (
-              <div className="border-t border-gray-200 dark:border-gray-700">
+              <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle">
                 {section.detectedItems.length > 0 && (
-                  <div className="p-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
-                    <p className={cn(textStyles.caption, "text-gray-500 dark:text-gray-400 mb-2")}>
+                  <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary/50 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+                    <p className={cn(textStyles.caption, "text-gray-500 dark:text-lia-text-tertiary mb-2")}>
                       Já detectados:
                     </p>
                     <div className="flex flex-wrap gap-1.5">
                       {section.detectedItems.map((item, idx) => (
                         <span 
                           key={idx}
-                          className="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md"
+                          className="px-2 py-1 text-xs bg-gray-200 dark:bg-lia-bg-elevated text-gray-700 dark:text-lia-text-secondary rounded-md"
                         >
                           {item}
                         </span>
@@ -326,20 +326,20 @@ export function EnrichedJDStage({
                         <div 
                           key={suggestion.id}
                           className={cn(
-                            "p-3 rounded-md border transition-all",
+ "p-3 rounded-md border transition-colors",
                             state === 'accepted' && "bg-status-success/10 dark:bg-status-success/20 border-status-success/30 dark:border-status-success/30",
-                            state === 'rejected' && "bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-600 opacity-50",
-                            state === 'pending' && "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 hover:border-gray-900 dark:hover:border-gray-50"
+                            state === 'rejected' && "bg-gray-50 dark:bg-lia-bg-secondary/50 border-lia-border-subtle dark:border-lia-border-default opacity-50",
+                            state === 'pending' && "bg-white dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-default hover:border-gray-900 dark:hover:border-gray-50"
                           )}
                         >
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-1">
-                                <span className={cn(textStyles.body, "font-medium text-gray-800 dark:text-gray-200")}>
+                                <span className={cn(textStyles.body, "font-medium text-gray-800 dark:text-lia-text-primary")}>
                                   {suggestion.value}
                                 </span>
                                 <span className={cn(
-                                  "px-1.5 py-0.5 text-micro font-medium rounded-full border flex items-center gap-1",
+ "px-1.5 py-0.5 text-micro font-medium rounded-full border flex items-center gap-1",
                                   impactColors[suggestion.impactLevel]
                                 )}>
                                   {sourceIcons[suggestion.source]}
@@ -347,12 +347,12 @@ export function EnrichedJDStage({
                                 </span>
                               </div>
                               
-                              <p className={cn(textStyles.caption, "text-gray-500 dark:text-gray-400")}>
+                              <p className={cn(textStyles.caption, "text-gray-500 dark:text-lia-text-tertiary")}>
                                 {suggestion.justification}
                               </p>
                               
                               {suggestion.wsiQualityNote && (
-                                <div className="mt-1.5 flex items-center gap-1 text-gray-600 dark:text-gray-400">
+                                <div className="mt-1.5 flex items-center gap-1 text-gray-600 dark:text-lia-text-tertiary">
                                   <Brain className="w-3 h-3 text-wedo-cyan" />
                                   <span className="text-micro font-medium">
                                     {suggestion.wsiQualityNote}
@@ -363,12 +363,12 @@ export function EnrichedJDStage({
                               {suggestion.metrics && Object.keys(suggestion.metrics).length > 0 && (
                                 <div className="mt-1.5 flex flex-wrap gap-2">
                                   {suggestion.metrics.market_percentage && (
-                                    <span className="text-micro text-gray-500 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full">
+                                    <span className="text-micro lia-text-secondary bg-gray-100 dark:bg-lia-bg-elevated px-1.5 py-0.5 rounded-full">
                                       {suggestion.metrics.market_percentage}% do mercado
                                     </span>
                                   )}
                                   {suggestion.metrics.company_history_percentage && (
-                                    <span className="text-micro text-gray-500 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full">
+                                    <span className="text-micro lia-text-secondary bg-gray-100 dark:bg-lia-bg-elevated px-1.5 py-0.5 rounded-full">
                                       {suggestion.metrics.company_history_percentage}% das suas vagas
                                     </span>
                                   )}
@@ -388,11 +388,11 @@ export function EnrichedJDStage({
                                 </button>
                                 <button
                                   onClick={() => handleReject(suggestion.id)}
-                                  className="w-7 h-7 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-gray-400"
+                                  className="w-7 h-7 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-lia-bg-elevated dark:hover:bg-gray-600 flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-gray-400"
                                   title="Rejeitar sugestão"
                                   aria-label="Rejeitar sugestão"
                                 >
-                                  <X className="w-3.5 h-3.5 text-gray-500" />
+                                  <X className="w-3.5 h-3.5 lia-text-secondary" />
                                 </button>
                               </div>
                             )}
@@ -409,17 +409,17 @@ export function EnrichedJDStage({
                   </div>
                 ) : (
                   <div className="p-4 text-center">
-                    <p className={cn(textStyles.caption, "text-gray-400")}>
+                    <p className={cn(textStyles.caption, "lia-text-secondary")}>
                       Sem sugestões para esta seção
                     </p>
                   </div>
                 )}
 
                 {section.wsiQualityNote && (
-                  <div className="p-2 mx-3 mb-3 bg-gray-100 dark:bg-gray-800 rounded-md border border-gray-300 dark:border-gray-600">
+                  <div className="p-2 mx-3 mb-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default">
                     <div className="flex items-center gap-2">
                       <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-                      <span className={cn(textStyles.caption, "text-gray-600 dark:text-gray-400 font-medium")}>
+                      <span className={cn(textStyles.caption, "text-gray-600 dark:text-lia-text-tertiary font-medium")}>
                         {section.wsiQualityNote}
                       </span>
                     </div>
@@ -432,32 +432,32 @@ export function EnrichedJDStage({
       })}
 
       {enrichedData.compensation && (
-        <div className="bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 p-3">
+        <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle p-3">
           <div className="flex items-center gap-2 mb-3">
-            <DollarSign className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-            <span className={cn(textStyles.label, "text-gray-800 dark:text-gray-200")}>
+            <DollarSign className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+            <span className={cn(textStyles.label, "text-gray-800 dark:text-lia-text-primary")}>
               Remuneração
             </span>
           </div>
           
           {enrichedData.compensation.marketRange && enrichedData.compensation.currentRange && (
             <div className="space-y-2">
-              <div className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-md">
-                <span className="text-sm text-gray-500">Sua proposta:</span>
-                <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+              <div className="flex justify-between items-center p-2 bg-gray-50 dark:bg-lia-bg-elevated/50 rounded-md">
+                <span className="text-sm lia-text-secondary">Sua proposta:</span>
+                <span className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
                   R$ {enrichedData.compensation.currentRange.min.toLocaleString()} - R$ {enrichedData.compensation.currentRange.max.toLocaleString()}
                 </span>
               </div>
-              <div className="flex justify-between items-center p-2 bg-gray-100 dark:bg-gray-800 rounded-md">
-                <span className="text-sm text-gray-500">Benchmark:</span>
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              <div className="flex justify-between items-center p-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+                <span className="text-sm lia-text-secondary">Benchmark:</span>
+                <span className="text-sm font-medium text-gray-600 dark:text-lia-text-tertiary">
                   R$ {enrichedData.compensation.marketRange.min.toLocaleString()} - R$ {enrichedData.compensation.marketRange.max.toLocaleString()}
                 </span>
               </div>
               
               {enrichedData.compensation.marketPosition && (
                 <div className={cn(
-                  "text-xs font-medium text-center py-1.5 rounded-md",
+ "text-xs font-medium text-center py-1.5 rounded-md",
                   enrichedData.compensation.marketPosition === 'competitive' && "bg-status-success/15 text-status-success",
                   enrichedData.compensation.marketPosition === 'below' && "bg-status-warning/15 text-status-warning",
                   enrichedData.compensation.marketPosition === 'above' && "bg-wedo-cyan/15 text-wedo-cyan-dark"

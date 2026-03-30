@@ -170,8 +170,8 @@ export function JobInsightsModal({
   const funnelData = useMemo(() => {
     const stages = [
       { name: "Inscritos", value: aggregateMetrics.totalCandidates, color: "bg-gray-200" },
-      { name: "Em Triagem", value: aggregateMetrics.totalScreening, color: "bg-gray-200 dark:bg-gray-700" },
-      { name: "Aprovados", value: aggregateMetrics.totalApproved, color: "bg-gray-200 dark:bg-gray-700" },
+      { name: "Em Triagem", value: aggregateMetrics.totalScreening, color: "bg-gray-200 dark:bg-lia-bg-elevated" },
+      { name: "Aprovados", value: aggregateMetrics.totalApproved, color: "bg-gray-200 dark:bg-lia-bg-elevated" },
       { name: "Contratados", value: Math.round(aggregateMetrics.totalApproved * 0.3), color: "bg-gray-900 dark:bg-gray-50" },
     ]
     const maxValue = Math.max(...stages.map(s => s.value), 1)
@@ -537,7 +537,7 @@ export function JobInsightsModal({
 
   const getScoreColor = (score?: number) => {
     if (!score) return "text-gray-500"
-    if (score >= 85) return "text-gray-600 dark:text-gray-400 font-semibold"
+    if (score >= 85) return "text-gray-600 dark:text-lia-text-tertiary font-semibold"
     if (score >= 70) return "text-gray-950"
     if (score >= 50) return "text-gray-800"
     return "text-gray-600"
@@ -725,14 +725,14 @@ export function JobInsightsModal({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent 
-        className="max-w-4xl max-h-[85vh] bg-white border border-gray-200 flex flex-col"
+        className="max-w-4xl max-h-[85vh] bg-lia-bg-primary border border-lia-border-subtle flex flex-col"
        
         aria-describedby="insights-modal-description"
       >
-        <DialogHeader className="pb-3 border-b border-gray-200 flex-shrink-0">
+        <DialogHeader className="pb-3 border-b border-lia-border-subtle flex-shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-              <BarChart3 className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+            <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
+              <BarChart3 className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
             </div>
             <div>
               <DialogTitle className="text-sm font-semibold text-gray-950">
@@ -749,21 +749,21 @@ export function JobInsightsModal({
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto py-4 space-y-4">
-          <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
+          <div className="bg-gray-50 rounded-md p-4 border border-lia-border-subtle">
             <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-              <Target className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+              <Target className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
               Resumo Agregado
             </h3>
             <div className="grid grid-cols-6 gap-3">
-              <div className="bg-white rounded-md p-3 border border-gray-200">
+              <div className="bg-lia-bg-primary rounded-md p-3 border border-lia-border-subtle">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <Users className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                  <Users className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                   <span className="text-xs text-gray-600">Total Candidatos</span>
                 </div>
                 <p className="text-xl font-bold text-gray-950">{aggregateMetrics.totalCandidates}</p>
               </div>
 
-              <div className="bg-white rounded-md p-3 border border-gray-200">
+              <div className="bg-lia-bg-primary rounded-md p-3 border border-lia-border-subtle">
                 <div className="flex items-center gap-1.5 mb-1">
                   <Filter className="w-3.5 h-3.5 text-gray-500" />
                   <span className="text-xs text-gray-600">Em Triagem</span>
@@ -771,7 +771,7 @@ export function JobInsightsModal({
                 <p className="text-xl font-bold text-gray-800">{aggregateMetrics.totalScreening}</p>
               </div>
 
-              <div className="bg-white rounded-md p-3 border border-gray-200">
+              <div className="bg-lia-bg-primary rounded-md p-3 border border-lia-border-subtle">
                 <div className="flex items-center gap-1.5 mb-1">
                   <CheckCircle className="w-3.5 h-3.5 text-status-success" />
                   <span className="text-xs text-gray-600">Aprovados</span>
@@ -779,7 +779,7 @@ export function JobInsightsModal({
                 <p className="text-xl font-bold text-status-success">{aggregateMetrics.totalApproved}</p>
               </div>
 
-              <div className="bg-white rounded-md p-3 border border-gray-200">
+              <div className="bg-lia-bg-primary rounded-md p-3 border border-lia-border-subtle">
                 <div className="flex items-center gap-1.5 mb-1">
                   <XCircle className="w-3.5 h-3.5 text-gray-500" />
                   <span className="text-xs text-gray-600">Rejeitados</span>
@@ -787,7 +787,7 @@ export function JobInsightsModal({
                 <p className="text-xl font-bold text-gray-700">{aggregateMetrics.totalRejected}</p>
               </div>
 
-              <div className="bg-white rounded-md p-3 border border-gray-200">
+              <div className="bg-lia-bg-primary rounded-md p-3 border border-lia-border-subtle">
                 <div className="flex items-center gap-1.5 mb-1">
                   <Clock className="w-3.5 h-3.5 text-gray-500" />
                   <span className="text-xs text-gray-600">Tempo/Etapa</span>
@@ -795,9 +795,9 @@ export function JobInsightsModal({
                 <p className="text-xl font-bold text-gray-950">{aggregateMetrics.avgTimePerStage}<span className="text-xs font-normal text-gray-500">d</span></p>
               </div>
 
-              <div className="bg-white rounded-md p-3 border border-gray-200">
+              <div className="bg-lia-bg-primary rounded-md p-3 border border-lia-border-subtle">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <TrendingUp className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                  <TrendingUp className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                   <span className="text-xs text-gray-600">Conversão</span>
                 </div>
                 <p className="text-xl font-bold text-gray-900 dark:text-gray-50">{aggregateMetrics.conversionRate}%</p>
@@ -806,9 +806,9 @@ export function JobInsightsModal({
           </div>
 
           {/* Análise LIA Textual */}
-          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-md p-4 border border-gray-300 dark:border-gray-600">
+          <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-default dark:border-lia-border-default">
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
                 <Brain className="w-4 h-4 text-wedo-cyan" />
               </div>
               <div>
@@ -825,7 +825,7 @@ export function JobInsightsModal({
             </div>
           </div>
 
-          <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
+          <div className="bg-gray-50 rounded-md p-4 border border-lia-border-subtle">
             <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
               <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
               Funil de Triagem LIA
@@ -834,23 +834,23 @@ export function JobInsightsModal({
               )}
             </h3>
             <div className="grid grid-cols-5 gap-3">
-              <div className="bg-white rounded-md p-3 border border-gray-200">
+              <div className="bg-lia-bg-primary rounded-md p-3 border border-lia-border-subtle">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <GitBranch className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                  <GitBranch className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                   <span className="text-xs text-gray-600">Pipeline LIA</span>
                 </div>
                 <p className="text-xl font-bold text-gray-950">{liaFunnelMetrics.pipeline_lia}</p>
               </div>
 
-              <div className="bg-white rounded-md p-3 border border-gray-200">
+              <div className="bg-lia-bg-primary rounded-md p-3 border border-lia-border-subtle">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <CalendarCheck className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                  <CalendarCheck className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                   <span className="text-xs text-gray-600">Triagens Agendadas</span>
                 </div>
                 <p className="text-xl font-bold text-gray-800">{liaFunnelMetrics.triagens_agendadas}</p>
               </div>
 
-              <div className="bg-white rounded-md p-3 border border-gray-200">
+              <div className="bg-lia-bg-primary rounded-md p-3 border border-lia-border-subtle">
                 <div className="flex items-center gap-1.5 mb-1">
                   <PhoneCall className="w-3.5 h-3.5 text-status-success" />
                   <span className="text-xs text-gray-600">Triagens Realizadas</span>
@@ -858,7 +858,7 @@ export function JobInsightsModal({
                 <p className="text-xl font-bold text-status-success">{liaFunnelMetrics.triagens_realizadas}</p>
               </div>
 
-              <div className="bg-white rounded-md p-3 border border-gray-200">
+              <div className="bg-lia-bg-primary rounded-md p-3 border border-lia-border-subtle">
                 <div className="flex items-center gap-1.5 mb-1">
                   <MessageCircleX className="w-3.5 h-3.5 text-gray-500" />
                   <span className="text-xs text-gray-600">Sem Resposta</span>
@@ -866,9 +866,9 @@ export function JobInsightsModal({
                 <p className="text-xl font-bold text-gray-600">{liaFunnelMetrics.sem_resposta}</p>
               </div>
 
-              <div className="bg-white rounded-md p-3 border border-gray-200">
+              <div className="bg-lia-bg-primary rounded-md p-3 border border-lia-border-subtle">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <Calendar className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                  <Calendar className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                   <span className="text-xs text-gray-600">Entrevistas Agendadas</span>
                 </div>
                 <p className="text-xl font-bold text-gray-900 dark:text-gray-50">{liaFunnelMetrics.entrevistas_agendadas}</p>
@@ -876,9 +876,9 @@ export function JobInsightsModal({
             </div>
           </div>
 
-          <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
+          <div className="bg-gray-50 rounded-md p-4 border border-lia-border-subtle">
             <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-              <ArrowDownRight className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+              <ArrowDownRight className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
               Taxa de Conversão por Etapa
             </h3>
             <div className="grid grid-cols-2 gap-3">
@@ -899,7 +899,7 @@ export function JobInsightsModal({
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 h-2 bg-white/50 rounded-full overflow-hidden">
+                      <div className="flex-1 h-2 bg-lia-bg-primary/50 rounded-full overflow-hidden">
                         <div 
                           className={`h-full ${rate.status === 'good' ? 'bg-status-success' : rate.status === 'warning' ? 'bg-status-warning' : 'bg-status-error'}`}
                           style={{width: `${Math.min(rate.rate, 100)}%`}}
@@ -916,21 +916,21 @@ export function JobInsightsModal({
             </div>
           </div>
 
-          <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
+          <div className="bg-gray-50 rounded-md p-4 border border-lia-border-subtle">
             <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-              <TrendingUp className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+              <TrendingUp className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
               Tendência Temporal
               <span className="text-micro text-gray-400 font-normal ml-1">(estimativa)</span>
             </h3>
             
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white rounded-md p-3 border border-gray-200">
+              <div className="bg-lia-bg-primary rounded-md p-3 border border-lia-border-subtle">
                 <h4 className="text-micro font-medium text-gray-500 mb-3">Candidatos Acumulados</h4>
                 <div className="flex items-end justify-between h-20 gap-1">
                   {trendData.candidatesTrend.map((val, i) => (
                     <div key={i} className="flex-1 flex flex-col items-center">
                       <div 
-                        className="w-full bg-gray-900 dark:bg-gray-50 rounded-t transition-all"
+                        className="w-full bg-gray-900 dark:bg-gray-50 rounded-t transition-colors"
                         style={{height: `${(val / trendData.maxCandidates) * 100}%`}}
                       />
                       <span className="text-micro text-gray-500 mt-1">{trendData.weeks[i]}</span>
@@ -940,13 +940,13 @@ export function JobInsightsModal({
                 </div>
               </div>
               
-              <div className="bg-white rounded-md p-3 border border-gray-200">
+              <div className="bg-lia-bg-primary rounded-md p-3 border border-lia-border-subtle">
                 <h4 className="text-micro font-medium text-gray-500 mb-3">Taxa de Conversão (%)</h4>
                 <div className="flex items-end justify-between h-20 gap-1">
                   {trendData.conversionTrend.map((val, i) => (
                     <div key={i} className="flex-1 flex flex-col items-center">
                       <div 
-                        className="w-full bg-status-success rounded-t transition-all"
+                        className="w-full bg-status-success rounded-t transition-colors"
                         style={{height: `${(val / 100) * 100}%`}}
                       />
                       <span className="text-micro text-gray-500 mt-1">{trendData.weeks[i]}</span>
@@ -958,9 +958,9 @@ export function JobInsightsModal({
             </div>
           </div>
 
-          <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
+          <div className="bg-gray-50 rounded-md p-4 border border-lia-border-subtle">
             <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-              <BarChart3 className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+              <BarChart3 className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
               Funil de Recrutamento
             </h3>
             <div className="space-y-2">
@@ -969,7 +969,7 @@ export function JobInsightsModal({
                   <div className="w-24 text-xs font-medium text-gray-700 text-right">{stage.name}</div>
                   <div className="flex-1 h-7 bg-gray-100 rounded-md overflow-hidden relative">
                     <div 
-                      className={`h-full ${stage.color} transition-all duration-500`}
+                      className={`h-full ${stage.color} transition-[width,height] duration-500`}
                       style={{width: `${stage.percentage}%`}}
                     />
                     <div className="absolute inset-0 flex items-center px-2">
@@ -987,9 +987,9 @@ export function JobInsightsModal({
 
           {(demographicData.cities.length > 0 || demographicData.workModels.length > 0 || demographicData.genders.length > 0 || demographicData.ageRanges.length > 0 || demographicData.educationLevels.length > 0 || demographicData.experienceYears.length > 0) ? (
             <div className="grid grid-cols-3 gap-4">
-              <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
+              <div className="bg-gray-50 rounded-md p-4 border border-lia-border-subtle">
                 <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                  <MapPin className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                   Por Cidade
                 </h3>
                 <div className="space-y-2">
@@ -1014,9 +1014,9 @@ export function JobInsightsModal({
                 </div>
               </div>
 
-              <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
+              <div className="bg-gray-50 rounded-md p-4 border border-lia-border-subtle">
                 <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-                  <Building2 className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                  <Building2 className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                   Por Modelo de Trabalho
                 </h3>
                 <div className="space-y-2">
@@ -1041,9 +1041,9 @@ export function JobInsightsModal({
                 </div>
               </div>
 
-              <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
+              <div className="bg-gray-50 rounded-md p-4 border border-lia-border-subtle">
                 <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-                  <UserCircle className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                  <UserCircle className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                   Por Gênero
                 </h3>
                 <div className="space-y-2">
@@ -1069,9 +1069,9 @@ export function JobInsightsModal({
               </div>
 
               {demographicData.ageRanges.length > 0 && (
-                <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
+                <div className="bg-gray-50 rounded-md p-4 border border-lia-border-subtle">
                   <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                    <Calendar className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                     Por Faixa Etária
                   </h3>
                   <div className="space-y-2">
@@ -1094,9 +1094,9 @@ export function JobInsightsModal({
               )}
 
               {demographicData.educationLevels.length > 0 && (
-                <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
+                <div className="bg-gray-50 rounded-md p-4 border border-lia-border-subtle">
                   <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-                    <Award className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                    <Award className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                     Por Escolaridade
                   </h3>
                   <div className="space-y-2">
@@ -1119,9 +1119,9 @@ export function JobInsightsModal({
               )}
 
               {demographicData.experienceYears.length > 0 && (
-                <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
+                <div className="bg-gray-50 rounded-md p-4 border border-lia-border-subtle">
                   <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                    <Clock className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                     Por Anos de Experiência
                   </h3>
                   <div className="space-y-2">
@@ -1144,9 +1144,9 @@ export function JobInsightsModal({
               )}
             </div>
           ) : (
-            <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
+            <div className="bg-gray-50 rounded-md p-4 border border-lia-border-subtle">
               <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                <Users className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                 Dados Demográficos
               </h3>
               <p className="text-xs text-gray-500 italic">
@@ -1156,14 +1156,14 @@ export function JobInsightsModal({
           )}
 
           {jobs.some(job => job.behavioral_competencies && job.behavioral_competencies.length > 0) && (
-            <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
+            <div className="bg-gray-50 rounded-md p-4 border border-lia-border-subtle">
               <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-                <Lightbulb className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                <Lightbulb className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                 Competências Requeridas
               </h3>
               <div className="space-y-3 max-h-[180px] overflow-y-auto">
                 {jobs.filter(job => job.behavioral_competencies && job.behavioral_competencies.length > 0).map(job => (
-                  <div key={job.id} className="bg-white rounded-md p-2.5 border border-gray-200">
+                  <div key={job.id} className="bg-lia-bg-primary rounded-md p-2.5 border border-lia-border-subtle">
                     <span className="text-micro font-medium text-gray-500">{job.title}</span>
                     <div className="flex flex-wrap gap-1 mt-1.5">
                       {job.behavioral_competencies?.map((comp, i) => (
@@ -1179,14 +1179,14 @@ export function JobInsightsModal({
           )}
 
           {jobs.some(job => job.benefits && job.benefits.length > 0) && (
-            <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
+            <div className="bg-gray-50 rounded-md p-4 border border-lia-border-subtle">
               <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-                <Award className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                <Award className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                 Benefícios Oferecidos
               </h3>
               <div className="space-y-3 max-h-[180px] overflow-y-auto">
                 {jobs.filter(job => job.benefits && job.benefits.length > 0).map(job => (
-                  <div key={job.id} className="bg-white rounded-md p-2.5 border border-gray-200">
+                  <div key={job.id} className="bg-lia-bg-primary rounded-md p-2.5 border border-lia-border-subtle">
                     <span className="text-micro font-medium text-gray-500">{job.title}</span>
                     <div className="flex flex-wrap gap-1 mt-1.5">
                       {job.benefits?.map((benefit, i) => (
@@ -1209,7 +1209,7 @@ export function JobInsightsModal({
               </h3>
               <div className="space-y-2">
                 {bottlenecks.map((b, index) => (
-                  <div key={index} className="bg-white rounded-md p-3 border border-status-warning/30">
+                  <div key={index} className="bg-lia-bg-primary rounded-md p-3 border border-status-warning/30">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-semibold text-gray-950">{b.stage}</span>
                       {b.stuckCount > 0 && (
@@ -1246,7 +1246,7 @@ export function JobInsightsModal({
               </h3>
               <div className="space-y-2">
                 {jobs.filter(job => (job.days_open || 0) > 30 && (job.approved_count || 0) === 0).map(job => (
-                  <div key={job.id} className="bg-white rounded-md p-3 border border-status-error/30">
+                  <div key={job.id} className="bg-lia-bg-primary rounded-md p-3 border border-status-error/30">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         {job.code && (
@@ -1271,25 +1271,25 @@ export function JobInsightsModal({
           )}
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
+            <div className="bg-gray-50 rounded-md p-4 border border-lia-border-subtle">
               <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-                <DollarSign className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                <DollarSign className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                 Análise Salarial
               </h3>
               <div className="space-y-3">
-                <div className="flex items-center justify-between bg-white rounded-md p-2.5 border border-gray-200">
+                <div className="flex items-center justify-between bg-lia-bg-primary rounded-md p-2.5 border border-lia-border-subtle">
                   <span className="text-xs text-gray-600">Faixa da Vaga</span>
                   <span className="text-xs font-semibold text-gray-950">
                     R$ {salaryData.vagaMin.toLocaleString()} - R$ {salaryData.vagaMax.toLocaleString()}
                   </span>
                 </div>
-                <div className="flex items-center justify-between bg-white rounded-md p-2.5 border border-gray-200">
+                <div className="flex items-center justify-between bg-lia-bg-primary rounded-md p-2.5 border border-lia-border-subtle">
                   <span className="text-xs text-gray-600">Média Pretensão Candidatos</span>
                   <span className="text-xs font-semibold text-gray-950">
                     R$ {salaryData.mediaInscritos.toLocaleString()}
                   </span>
                 </div>
-                <div className="flex items-center justify-between bg-white rounded-md p-2.5 border border-gray-200">
+                <div className="flex items-center justify-between bg-lia-bg-primary rounded-md p-2.5 border border-lia-border-subtle">
                   <span className="text-xs text-gray-600">Candidatos Dentro da Faixa</span>
                   <span className="text-xs font-semibold text-gray-900 dark:text-gray-50">
                     {salaryData.dentroFaixa} ({salaryData.percentualDentro}%)
@@ -1298,25 +1298,25 @@ export function JobInsightsModal({
               </div>
             </div>
 
-            <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
+            <div className="bg-gray-50 rounded-md p-4 border border-lia-border-subtle">
               <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-                <Star className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                <Star className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                 Indicadores de Qualidade
               </h3>
               <div className="space-y-3">
-                <div className="flex items-center justify-between bg-white rounded-md p-2.5 border border-gray-200">
+                <div className="flex items-center justify-between bg-lia-bg-primary rounded-md p-2.5 border border-lia-border-subtle">
                   <span className="text-xs text-gray-600">Score Médio (Todos)</span>
                   <span className={`text-xs font-semibold ${getScoreColor(qualityMetrics.avgScoreTodos)}`}>
                     {qualityMetrics.avgScoreTodos}%
                   </span>
                 </div>
-                <div className="flex items-center justify-between bg-white rounded-md p-2.5 border border-gray-200">
+                <div className="flex items-center justify-between bg-lia-bg-primary rounded-md p-2.5 border border-lia-border-subtle">
                   <span className="text-xs text-gray-600">Score Médio (Triados)</span>
                   <span className={`text-xs font-semibold ${getScoreColor(qualityMetrics.avgScoreTriados)}`}>
                     {qualityMetrics.avgScoreTriados}%
                   </span>
                 </div>
-                <div className="flex items-center justify-between bg-white rounded-md p-2.5 border border-gray-200">
+                <div className="flex items-center justify-between bg-lia-bg-primary rounded-md p-2.5 border border-lia-border-subtle">
                   <span className="text-xs text-gray-600">Taxa Triagem → Aprovação</span>
                   <span className="text-xs font-semibold text-gray-900 dark:text-gray-50">
                     {qualityMetrics.taxaAprovacao}%
@@ -1326,10 +1326,10 @@ export function JobInsightsModal({
             </div>
           </div>
 
-          <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
+          <div className="bg-gray-50 rounded-md p-4 border border-lia-border-subtle">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide flex items-center gap-1.5">
-                <Target className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                <Target className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                 Métricas WSI
                 <span className="text-micro text-gray-400 font-normal ml-1">(estimativa baseada em performance)</span>
               </h3>
@@ -1348,7 +1348,7 @@ export function JobInsightsModal({
                   </div>
                   <div className="flex-1 h-4 bg-gray-200 rounded-full overflow-hidden">
                     <div 
-                      className={`h-full rounded-full transition-all ${
+                      className={`h-full rounded-full transition-[width,height] ${
                         dim.score >= 80 ? 'bg-gray-900 dark:bg-gray-50' : 
                         dim.score >= 60 ? 'bg-status-warning' : 'bg-status-error'
                       }`}
@@ -1356,7 +1356,7 @@ export function JobInsightsModal({
                     />
                   </div>
                   <span className={`text-xs font-semibold w-10 text-right ${
-                    dim.score >= 80 ? 'text-gray-600 dark:text-gray-400' : 
+                    dim.score >= 80 ? 'text-gray-600 dark:text-lia-text-tertiary' : 
                     dim.score >= 60 ? 'text-status-warning' : 'text-status-error'
                   }`}>
                     {dim.score}%
@@ -1366,9 +1366,9 @@ export function JobInsightsModal({
             </div>
           </div>
 
-          <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
+          <div className="bg-gray-50 rounded-md p-4 border border-lia-border-subtle">
             <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-              <Lightbulb className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+              <Lightbulb className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
               Insights Categorizados
             </h3>
 
@@ -1401,9 +1401,9 @@ export function JobInsightsModal({
           </div>
 
           {jobs.length > 0 && (
-            <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
+            <div className="bg-gray-50 rounded-md p-4 border border-lia-border-subtle">
               <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                <Calendar className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                 Detalhamento por Vaga
               </h3>
               <div className="space-y-2 max-h-[160px] overflow-y-auto">
@@ -1411,12 +1411,12 @@ export function JobInsightsModal({
                   const daysRemaining = getDaysRemaining(job.deadline)
 
                   return (
-                    <div key={job.id} className="bg-white border border-gray-200 rounded-md p-3">
+                    <div key={job.id} className="bg-lia-bg-primary border border-lia-border-subtle rounded-md p-3">
                       <div className="flex items-center justify-between">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             {job.code && (
-                              <span className="text-micro font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded-full">{job.code}</span>
+                              <span className="text-micro font-medium text-gray-600 dark:text-lia-text-tertiary bg-gray-100 dark:bg-lia-bg-secondary px-1.5 py-0.5 rounded-full">{job.code}</span>
                             )}
                             <span className="text-xs font-semibold text-gray-950 truncate">{job.title}</span>
                           </div>
@@ -1459,14 +1459,14 @@ export function JobInsightsModal({
           )}
         </div>
 
-        <DialogFooter className="pt-3 border-t border-gray-200 flex-shrink-0">
+        <DialogFooter className="pt-3 border-t border-lia-border-subtle flex-shrink-0">
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleExportReport}
-                className="h-8 px-3 text-xs gap-1.5 border-gray-200 text-gray-700 hover:bg-gray-50"
+                className="h-8 px-3 text-xs gap-1.5 border-lia-border-subtle text-gray-700 hover:bg-gray-50"
               >
                 <Download className="w-3.5 h-3.5" />
                 Exportar PDF
@@ -1476,7 +1476,7 @@ export function JobInsightsModal({
                 size="sm"
                 onClick={handleSendEmail}
                 disabled={!onSendEmail}
-                className="h-8 px-3 text-xs gap-1.5 border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                className="h-8 px-3 text-xs gap-1.5 border-lia-border-subtle text-gray-700 hover:bg-gray-50 disabled:opacity-50"
               >
                 <Mail className="w-3.5 h-3.5" />
                 Enviar por Email

@@ -138,10 +138,10 @@ export function ScreeningMediaModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
-        <DialogHeader className="px-6 py-4 border-b border-gray-100 flex flex-row items-center justify-between">
+        <DialogHeader className="px-6 py-4 border-b border-lia-border-subtle flex flex-row items-center justify-between">
           <div className="flex items-center gap-3">
             {type === 'audio' ? (
-              <Mic className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <Mic className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
             ) : (
               <Video className="w-5 h-5 text-wedo-purple" />
             )}
@@ -171,11 +171,11 @@ export function ScreeningMediaModal({
         </DialogHeader>
 
         <div className="flex flex-1 min-h-0 overflow-hidden">
-          <div className="flex-1 p-6 space-y-6 overflow-y-auto border-r border-gray-100">
-            <div className="flex flex-col items-center justify-center py-8 bg-gradient-to-b from-gray-50 to-white rounded-md border border-gray-100">
-              <div className="w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+          <div className="flex-1 p-6 space-y-6 overflow-y-auto border-r border-lia-border-subtle">
+            <div className="flex flex-col items-center justify-center py-8 bg-gradient-to-b from-gray-50 to-white rounded-md border border-lia-border-subtle">
+              <div className="w-20 h-20 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center mb-4">
                 {type === 'audio' ? (
-                  <Mic className="w-10 h-10 text-gray-600 dark:text-gray-400" />
+                  <Mic className="w-10 h-10 text-gray-600 dark:text-lia-text-tertiary" />
                 ) : (
                   <Video className="w-10 h-10 text-wedo-purple" />
                 )}
@@ -286,7 +286,7 @@ export function ScreeningMediaModal({
             </h3>
             
             <div className="mb-3">
-              <Badge variant="outline" className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600">
+              <Badge variant="outline" className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default">
                 {type === 'audio' ? 'Áudio de Triagem' : 'Vídeo de Entrevista'}
               </Badge>
               <span className={`${textStyles.caption} ml-2`}>Duração: {duration}</span>
@@ -296,9 +296,9 @@ export function ScreeningMediaModal({
               <div className="space-y-3 pr-2">
                 {transcription && transcription.length > 0 ? (
                   transcription.map((segment, idx) => (
-                    <div key={idx} className="bg-white p-3 rounded-md border border-gray-100">
+                    <div key={idx} className="bg-lia-bg-primary p-3 rounded-md border border-lia-border-subtle">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-micro font-medium text-gray-600 dark:text-gray-400">{segment.timestamp}</span>
+                        <span className="text-micro font-medium text-gray-600 dark:text-lia-text-tertiary">{segment.timestamp}</span>
                         <span className="text-micro text-gray-500">•</span>
                         <span className="text-micro font-medium text-gray-800">{segment.speaker}</span>
                       </div>
@@ -307,9 +307,9 @@ export function ScreeningMediaModal({
                   ))
                 ) : questions.length > 0 ? (
                   questions.map((q, idx) => (
-                    <div key={q.id} className="bg-white p-3 rounded-md border border-gray-100">
+                    <div key={q.id} className="bg-lia-bg-primary p-3 rounded-md border border-lia-border-subtle">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-micro font-medium text-gray-600 dark:text-gray-400">{q.timestamp || `${idx}:00`}</span>
+                        <span className="text-micro font-medium text-gray-600 dark:text-lia-text-tertiary">{q.timestamp || `${idx}:00`}</span>
                         <span className="text-micro text-gray-500">•</span>
                         <span className="text-micro font-medium text-gray-800">Candidato</span>
                       </div>
@@ -326,7 +326,7 @@ export function ScreeningMediaModal({
             </ScrollArea>
 
             {highlights && highlights.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-gray-200">
+              <div className="mt-4 pt-4 border-t border-lia-border-subtle">
                 <h4 className={`${textStyles.label} flex items-center gap-1 mb-2`}>
                   <Brain className="w-3 h-3 text-wedo-cyan" />
                   Highlights da LIA
@@ -334,7 +334,7 @@ export function ScreeningMediaModal({
                 <div className="space-y-1">
                   {highlights.map((h, idx) => (
                     <div key={idx} className="flex items-start gap-2 text-xs">
-                      <ChevronRight className="w-3 h-3 text-gray-600 dark:text-gray-400 flex-shrink-0 mt-0.5" />
+                      <ChevronRight className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary flex-shrink-0 mt-0.5" />
                       <span className={textStyles.bodySmall}>{h}</span>
                     </div>
                   ))}

@@ -2,7 +2,6 @@
 
 import './onboarding-styles.css'
 import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -191,20 +190,15 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
   if (step === 'validating') {
     return (
       <div className="lia-onboarding-container lia-bg-cream flex items-center justify-center p-8">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6 }}
-          className="lia-card max-w-md w-full"
+        <Card
+          className="max-w-md w-full animate-in fade-in zoom-in-95 duration-500"
         >
           <div className="text-center p-8">
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            <div
               className="w-20 h-20 lia-bg-blue rounded-full flex items-center justify-center mx-auto mb-8"
             >
-              <Loader2 className="w-10 h-10 lia-text-white" />
-            </motion.div>
+              <Loader2 className="w-10 h-10 lia-text-white animate-spin" />
+            </div>
 
             <h2 className="lia-title-large lia-text-black mb-4">
               Validando seu acesso
@@ -213,7 +207,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
               Verificando o token de convite e carregando os dados da sua empresa.
             </p>
           </div>
-        </motion.div>
+        </Card>
       </div>
     )
   }
@@ -222,11 +216,8 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
   if (step === 'error') {
     return (
       <div className="lia-onboarding-container lia-bg-cream flex items-center justify-center p-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="lia-card max-w-md w-full"
+        <Card
+          className="max-w-md w-full animate-in fade-in slide-in-from-bottom-4 duration-500"
         >
           <div className="text-center p-8">
             <div className="w-20 h-20 lia-bg-coral rounded-full flex items-center justify-center mx-auto mb-8">
@@ -257,7 +248,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
               </Button>
             </div>
           </div>
-        </motion.div>
+        </Card>
       </div>
     )
   }
@@ -274,11 +265,8 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
       <div className="container mx-auto px-8 py-12">
 
         {/* Header Premium */}
-        <motion.div
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-16"
+        <div
+          className="text-center mb-16 animate-in fade-in slide-in-from-top-6 duration-700"
         >
           {/* Logo LIA blob */}
           <div className="relative w-32 h-32 mx-auto mb-8">
@@ -294,20 +282,18 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
             Você foi convidado para acessar a plataforma de recrutamento mais avançada do mercado.
             Vamos criar sua conta e começar esta jornada transformadora?
           </p>
-        </motion.div>
+        </div>
 
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12">
 
           {/* Dados da Empresa - Premium */}
-          <motion.div
-            initial={{ opacity: 0, x: -40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+          <div
+            className="animate-in fade-in slide-in-from-left-6 duration-700"
           >
-            <div className="lia-card">
+            <Card className="">
               <div className="mb-8">
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="w-16 h-16 lia-bg-blue rounded-2xl flex items-center justify-center">
+                  <div className="w-16 h-16 lia-bg-blue rounded-xl flex items-center justify-center">
                     <Building className="w-8 h-8 lia-text-white" />
                   </div>
                   <div>
@@ -327,19 +313,19 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                   </div>
 
                   <div className="space-y-4 lia-text-medium">
-                    <div className="flex items-center gap-4 p-4 lia-bg-cream rounded-md border border-gray-200">
+                    <div className="flex items-center gap-4 p-4 lia-bg-cream rounded-md border border-lia-border-subtle">
                       <Building className="w-5 h-5 lia-text-blue flex-shrink-0" />
                       <span>{accessData?.companyData.razaoSocial}</span>
                     </div>
-                    <div className="flex items-center gap-4 p-4 lia-bg-cream rounded-md border border-gray-200">
+                    <div className="flex items-center gap-4 p-4 lia-bg-cream rounded-md border border-lia-border-subtle">
                       <MapPin className="w-5 h-5 lia-text-blue flex-shrink-0" />
                       <span>{accessData?.companyData.endereco}</span>
                     </div>
-                    <div className="flex items-center gap-4 p-4 lia-bg-cream rounded-md border border-gray-200">
+                    <div className="flex items-center gap-4 p-4 lia-bg-cream rounded-md border border-lia-border-subtle">
                       <Phone className="w-5 h-5 lia-text-blue flex-shrink-0" />
                       <span>{accessData?.companyData.telefone}</span>
                     </div>
-                    <div className="flex items-center gap-4 p-4 lia-bg-cream rounded-md border border-gray-200">
+                    <div className="flex items-center gap-4 p-4 lia-bg-cream rounded-md border border-lia-border-subtle">
                       <Calendar className="w-5 h-5 lia-text-blue flex-shrink-0" />
                       <span>Convite expira em {new Date(accessData?.expiresAt || '').toLocaleDateString('pt-BR')}</span>
                     </div>
@@ -347,7 +333,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                 </div>
 
                 {/* Contato que enviou o convite */}
-                <div className="pt-8 border-t border-gray-200 mt-8">
+                <div className="pt-8 border-t border-lia-border-subtle mt-8">
                   <h4 className="lia-title-medium lia-text-black mb-4">
                     Convite enviado por:
                   </h4>
@@ -366,19 +352,17 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                   </div>
                 </div>
               </div>
-            </div>
-          </motion.div>
+            </Card>
+          </div>
 
           {/* Formulário de Registro Premium */}
-          <motion.div
-            initial={{ opacity: 0, x: 40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
+          <div
+            className="animate-in fade-in slide-in-from-right-6 duration-700"
           >
-            <div className="lia-card">
+            <Card className="">
               <div className="mb-8">
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="w-16 h-16 lia-bg-coral rounded-2xl flex items-center justify-center">
+                  <div className="w-16 h-16 lia-bg-coral rounded-xl flex items-center justify-center">
                     <User className="w-8 h-8 lia-text-white" />
                   </div>
                   <div>
@@ -398,7 +382,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                     type="text"
                     value={userData.name}
                     onChange={(e) => setUserData(prev => ({...prev, name: e.target.value}))}
-                    className="w-full px-6 py-4 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-white lia-font-sans lia-text-medium transition-all duration-200"
+                    className="w-full px-6 py-4 border-2 border-lia-border-subtle rounded-lg focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-lia-bg-primary lia-font-sans lia-text-medium transition-colors duration-200"
                     placeholder="Seu nome completo"
                   />
                 </div>
@@ -412,7 +396,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                     type="email"
                     value={userData.email}
                     onChange={(e) => setUserData(prev => ({...prev, email: e.target.value}))}
-                    className="w-full px-6 py-4 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-white lia-font-sans lia-text-medium transition-all duration-200"
+                    className="w-full px-6 py-4 border-2 border-lia-border-subtle rounded-lg focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-lia-bg-primary lia-font-sans lia-text-medium transition-colors duration-200"
                     placeholder="seu.email@empresa.com"
                   />
                 </div>
@@ -426,7 +410,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                     type="tel"
                     value={userData.phone}
                     onChange={(e) => setUserData(prev => ({...prev, phone: e.target.value}))}
-                    className="w-full px-6 py-4 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-white lia-font-sans lia-text-medium transition-all duration-200"
+                    className="w-full px-6 py-4 border-2 border-lia-border-subtle rounded-lg focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-lia-bg-primary lia-font-sans lia-text-medium transition-colors duration-200"
                     placeholder="+55 11 99999-9999"
                   />
                 </div>
@@ -439,7 +423,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                   <select
                     value={userData.role}
                     onChange={(e) => setUserData(prev => ({...prev, role: e.target.value}))}
-                    className="w-full px-6 py-4 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-white lia-font-sans lia-text-medium transition-all duration-200"
+                    className="w-full px-6 py-4 border-2 border-lia-border-subtle rounded-lg focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-lia-bg-primary lia-font-sans lia-text-medium transition-colors duration-200"
                   >
                     <option value="Recrutador">Recrutador</option>
                     <option value="Coordenador de RH">Coordenador de RH</option>
@@ -459,7 +443,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                       type={showPassword ? "text" : "password"}
                       value={userData.password}
                       onChange={(e) => setUserData(prev => ({...prev, password: e.target.value}))}
-                      className="w-full px-6 py-4 pr-14 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-white lia-font-sans lia-text-medium transition-all duration-200"
+                      className="w-full px-6 py-4 pr-14 border-2 border-lia-border-subtle rounded-lg focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-lia-bg-primary lia-font-sans lia-text-medium transition-colors duration-200"
                       placeholder="Mínimo 8 caracteres"
                     />
                     <button
@@ -481,7 +465,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                     type="password"
                     value={userData.confirmPassword}
                     onChange={(e) => setUserData(prev => ({...prev, confirmPassword: e.target.value}))}
-                    className="w-full px-6 py-4 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-white lia-font-sans lia-text-medium transition-all duration-200"
+                    className="w-full px-6 py-4 border-2 border-lia-border-subtle rounded-lg focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-lia-bg-primary lia-font-sans lia-text-medium transition-colors duration-200"
                     placeholder="Confirme sua senha"
                   />
                 </div>
@@ -493,7 +477,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                     id="terms"
                     checked={userData.acceptTerms}
                     onChange={(e) => setUserData(prev => ({...prev, acceptTerms: e.target.checked}))}
-                    className="mt-1 w-5 h-5 rounded-md text-gray-600 dark:text-gray-400 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                    className="mt-1 w-5 h-5 rounded-md text-gray-600 dark:text-lia-text-tertiary focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
                   />
                   <label htmlFor="terms" className="lia-text-medium lia-text-black">
                     Aceito os <a href="#" className="lia-text-blue hover:underline lia-text-bold">termos de uso</a> e a{' '}
@@ -503,7 +487,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
 
                 {/* Error Message */}
                 {error && (
-                  <div className="p-6 lia-bg-salmon rounded-2xl border border-status-error/30">
+                  <div className="p-6 lia-bg-salmon rounded-xl border border-status-error/30">
                     <div className="flex items-center gap-3">
                       <AlertCircle className="w-5 h-5 lia-text-coral flex-shrink-0" />
                       <span className="lia-text-medium lia-text-coral lia-font-sans font-semibold">{error}</span>
@@ -526,22 +510,19 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                   {isLoading ? 'Criando conta...' : 'Criar Conta e Continuar'}
                 </Button>
               </form>
-            </div>
-          </motion.div>
+            </Card>
+          </div>
         </div>
 
         {/* Footer Premium */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="text-center mt-16"
+        <div
+          className="text-center mt-16 animate-in fade-in slide-in-from-bottom-4 duration-700"
         >
-          <div className="inline-flex items-center gap-4 lia-font-sans lia-text-medium lia-text-black lia-bg-white rounded-full px-8 py-4 border border-gray-200">
+          <div className="inline-flex items-center gap-4 lia-font-sans lia-text-medium lia-text-black lia-bg-lia-bg-primary rounded-full px-8 py-4 border border-lia-border-subtle">
             <Shield className="w-6 h-6 lia-text-mint" />
             Seus dados estão seguros e protegidos
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   )

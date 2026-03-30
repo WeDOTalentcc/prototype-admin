@@ -248,3 +248,22 @@ Serviço central: `app/services/notification_service.py`
 8. /testing-patterns → cobertura das 5 camadas
 9. /feature-audit    → auditoria 14 dimensões antes de concluir
 ```
+
+
+---
+
+## Regras de Design System (OPT-028 — 2026-03-29)
+
+### Tailwind: transition-colors vs transition-all
+
+```
+// DS Rule: Use transition-colors para mudanças de cor/bg, transition-all apenas quando
+// height/width/transform também animam. Racional: transition-all em GPU layers causa
+// sub-pixel text blur (corrigido em globals.css seletor *, Sprint 1).
+// Impacto: 797 ocorrências de transition-all em src/ — NÃO fazer replace em massa.
+// Migrar apenas em novos componentes e durante refatorações planejadas.
+```
+
+Padrão correto:
+- `className="transition-colors duration-200"` — para hover de cor, bg, border
+- `className="transition-all duration-200"` — SOMENTE quando width/height/transform também mudam (ex: expansão de painel, slide-in)

@@ -141,7 +141,7 @@ export function SidePanelContainer({
         )
       default:
         return (
-          <div className="flex flex-col items-center justify-center h-64 text-muted-foreground dark:text-gray-400">
+          <div className="flex flex-col items-center justify-center h-64 text-muted-foreground dark:text-lia-text-tertiary">
             <p>Painel "{panelType}" em desenvolvimento</p>
           </div>
         )
@@ -155,19 +155,19 @@ export function SidePanelContainer({
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <SheetContent 
         side="right" 
-        className="w-panel-xl sm:max-w-panel-xl overflow-y-auto rounded-md dark:bg-gray-800 dark:border-gray-700"
+        className="w-panel-xl sm:max-w-panel-xl overflow-y-auto rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle"
       >
-        <SheetHeader className="pb-4 border-b border-gray-200 dark:border-gray-700">
+        <SheetHeader className="pb-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-2xl">{icon}</span>
-              <SheetTitle className="text-xl font-semibold font-sans dark:text-gray-100">
+              <SheetTitle className="text-xl font-semibold font-sans dark:text-lia-text-primary">
                 {displayTitle}
               </SheetTitle>
             </div>
           </div>
           {isLoading && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground dark:text-gray-400 mt-2">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground dark:text-lia-text-tertiary mt-2">
               <Loader2 className="h-4 w-4 animate-spin" />
               Salvando...
             </div>

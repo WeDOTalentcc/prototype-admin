@@ -175,18 +175,18 @@ export function AsyncJobProgress({
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           {status === "processing" || status === "queued" ? (
-            <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
+            <Loader2 className="h-4 w-4 animate-spin lia-text-secondary" />
           ) : status === "completed" ? (
             <CheckCircle2 className="h-4 w-4 text-status-success" />
           ) : (
             <XCircle className="h-4 w-4 text-status-error" />
           )}
-          <span className="text-sm font-medium text-gray-800">{label}</span>
+          <span className="text-sm font-medium lia-text-strong">{label}</span>
         </div>
 
         <div className="flex items-center gap-2">
           {usePolling && status !== "completed" && status !== "failed" && (
-            <Badge variant="outline" className="text-xs px-1.5 py-0 text-gray-400">
+            <Badge variant="outline" className="text-xs px-1.5 py-0 lia-text-secondary">
               <RefreshCw className="h-2.5 w-2.5 mr-1" />
               polling
             </Badge>
@@ -194,11 +194,11 @@ export function AsyncJobProgress({
           <Badge
             variant="outline"
             className={`text-xs px-1.5 py-0 ${
-              status === "completed"
+ status === "completed"
                 ? "text-status-success border-status-success/30"
                 : status === "failed"
                 ? "text-status-error border-status-error/30"
-                : "text-gray-500"
+                : "lia-text-secondary"
             }`}
           >
             {status === "queued" ? "Na fila" :
@@ -212,7 +212,7 @@ export function AsyncJobProgress({
       <Progress value={progress} className="h-1.5" />
 
       {/* Message */}
-      <p className="text-xs text-gray-500 leading-relaxed">{message}</p>
+      <p className="text-xs lia-text-secondary leading-relaxed">{message}</p>
 
       {/* Retry on failure */}
       {status === "failed" && (
@@ -238,7 +238,7 @@ export function AsyncJobProgress({
   if (!showCard) return content
 
   return (
-    <Card className="border border-gray-200">
+    <Card className="border border-lia-border-subtle">
       <CardContent className="p-4">{content}</CardContent>
     </Card>
   )

@@ -316,9 +316,9 @@ export function IndustryFilterInput({
       <div className="flex items-center gap-2">
         <Popover open={isTimeFilterOpen} onOpenChange={setIsTimeFilterOpen}>
           <PopoverTrigger asChild>
-            <button className="flex items-center gap-2 px-2.5 py-1 rounded-md border border-gray-200 text-xs hover:bg-gray-50 transition-colors">
-              <span className="text-gray-800 dark:text-gray-200">{currentTimeOption?.label}</span>
-              <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+            <button className="flex items-center gap-2 px-2.5 py-1 rounded-md border border-lia-border-subtle text-xs hover:bg-gray-50 transition-colors">
+              <span className="lia-text-800 dark:text-lia-text-primary">{currentTimeOption?.label}</span>
+              <ChevronDown className="w-3.5 h-3.5 lia-text-400" />
             </button>
           </PopoverTrigger>
           <PopoverContent className="w-80 p-0" align="start">
@@ -336,12 +336,12 @@ export function IndustryFilterInput({
                   )}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-gray-800 dark:text-gray-200">{option.label}</span>
+                    <span className="text-xs font-medium lia-text-800 dark:text-lia-text-primary">{option.label}</span>
                     {timeFilter === option.value && (
-                      <div className="w-2 h-2 rounded-full bg-gray-900 dark:bg-gray-50" />
+                      <div className="w-2 h-2 rounded-full bg-gray-900 dark:lia-bg-50" />
                     )}
                   </div>
-                  <p className="text-xs text-gray-500 mt-0.5">{option.description}</p>
+                  <p className="text-xs lia-text-500 mt-0.5">{option.description}</p>
                 </button>
               ))}
             </div>
@@ -352,7 +352,7 @@ export function IndustryFilterInput({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {value.length > 0 && (
-            <span className="text-xs text-gray-500">
+            <span className="text-xs lia-text-500">
               {value.length} setor{value.length !== 1 ? 'es' : ''} selecionado{value.length !== 1 ? 's' : ''}
             </span>
           )}
@@ -360,7 +360,7 @@ export function IndustryFilterInput({
         {value.length > 0 && (
           <button
             onClick={clearAll}
-            className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 font-medium"
+            className="text-xs lia-text-600 dark:text-lia-text-tertiary hover:lia-text-900 font-medium"
           >
             Limpar tudo
           </button>
@@ -369,7 +369,7 @@ export function IndustryFilterInput({
 
       <div className="relative">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-400" />
           <Input
             ref={inputRef}
             value={inputValue}
@@ -377,11 +377,11 @@ export function IndustryFilterInput({
             onKeyDown={handleKeyDown}
             onFocus={() => inputValue.length > 0 && setIsDropdownOpen(true)}
             placeholder={placeholder}
-            className="pl-9 pr-3 border-gray-200 focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+            className="pl-9 pr-3 border-lia-border-subtle focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
           />
           {isLoadingAI && (
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <Loader2 className="w-4 h-4 animate-spin text-gray-600 dark:text-gray-400" />
+              <Loader2 className="w-4 h-4 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
             </div>
           )}
         </div>
@@ -389,10 +389,10 @@ export function IndustryFilterInput({
         {isDropdownOpen && (dropdownItems.length > 0 || aiError) && (
           <div 
             ref={dropdownRef}
-            className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md max-h-64 overflow-y-auto"
+            className="absolute z-50 w-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-md max-h-64 overflow-y-auto"
           >
             {aiError && (
-              <div className="px-3 py-2 text-sm text-status-warning flex items-center gap-2 border-b border-gray-100">
+              <div className="px-3 py-2 text-sm text-status-warning flex items-center gap-2 border-b border-lia-border-subtle">
                 <AlertCircle className="w-4 h-4" />
                 <span>{aiError}</span>
               </div>
@@ -410,7 +410,7 @@ export function IndustryFilterInput({
                 className={cn(
                   "w-full text-left px-3 py-2 text-sm transition-colors",
                   focusedIndex === index ? "bg-gray-100" : "hover:bg-gray-50",
-                  item.type === 'ai' && "border-b border-gray-100"
+                  item.type === 'ai' && "border-b border-lia-border-subtle"
                 )}
               >
                 {item.type === 'ai' ? (
@@ -419,16 +419,16 @@ export function IndustryFilterInput({
                     <span>{item.label}</span>
                   </div>
                 ) : item.type === 'ai-suggestion' ? (
-                  <div className="flex items-center gap-2 text-gray-800 dark:text-gray-200">
+                  <div className="flex items-center gap-2 lia-text-800 dark:text-lia-text-primary">
                     <Brain className="w-3 h-3 text-wedo-purple" />
                     <span>{item.label}</span>
                     <span className="text-micro px-1.5 py-0.5 bg-wedo-purple/15 text-wedo-purple rounded-full ml-auto">AI</span>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-between text-gray-800 dark:text-gray-200">
+                  <div className="flex items-center justify-between lia-text-800 dark:text-lia-text-primary">
                     <span>{item.labelPt}</span>
                     {item.labelPt !== item.label && (
-                      <span className="text-xs text-gray-400 ml-2">{item.label}</span>
+                      <span className="text-xs lia-text-400 ml-2">{item.label}</span>
                     )}
                   </div>
                 )}
@@ -443,7 +443,7 @@ export function IndustryFilterInput({
           {value.map(industry => (
             <Badge
               key={industry}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:text-gray-200 border border-gray-200"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle"
             >
               <span>{industry}</span>
               <button

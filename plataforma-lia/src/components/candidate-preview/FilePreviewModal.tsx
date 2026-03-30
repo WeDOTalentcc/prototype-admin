@@ -56,15 +56,15 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-overlay flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-md max-w-4xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-white dark:bg-lia-bg-primary rounded-md max-w-4xl w-full max-h-[90vh] overflow-hidden">
         {/* Header do Preview */}
-        <div className="flex items-center justify-between p-3 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-900">
+        <div className="flex items-center justify-between p-3 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary">
           <div className="flex items-center gap-2">
-            {previewType === 'pdf' && <FileText className="w-4 h-4 text-gray-800 dark:text-gray-200" />}
-            {previewType === 'image' && <Image className="w-4 h-4 text-gray-800 dark:text-gray-200" />}
+            {previewType === 'pdf' && <FileText className="w-4 h-4 text-gray-800 dark:text-lia-text-primary" />}
+            {previewType === 'image' && <Image className="w-4 h-4 text-gray-800 dark:text-lia-text-primary" />}
             {previewType === 'video' && <FileVideo className="w-4 h-4 text-status-error" />}
-            {previewType === 'audio' && <Mic className="w-4 h-4 text-gray-500 dark:text-gray-400" />}
-            <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+            {previewType === 'audio' && <Mic className="w-4 h-4 text-gray-500 dark:text-lia-text-tertiary" />}
+            <span className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
               {selectedFile.name}
             </span>
           </div>
@@ -73,11 +73,11 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
             {/* Controles específicos por tipo */}
             {previewType === 'pdf' && (
               <>
-                <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-md px-2 py-1">
+                <div className="flex items-center gap-1 bg-gray-100 dark:bg-lia-bg-secondary rounded-md px-2 py-1">
                   <Button size="sm" variant="ghost" className="p-0.5 h-5 w-5" onClick={() => setPdfPage(Math.max(1, pdfPage - 1))}>
                     <ChevronLeft className="w-3 h-3" />
                   </Button>
-                  <span className="text-xs text-gray-600 dark:text-gray-400 px-1">
+                  <span className="text-xs text-gray-600 dark:text-lia-text-tertiary px-1">
                     {pdfPage} / {pdfTotalPages || 5}
                   </span>
                   <Button size="sm" variant="ghost" className="p-0.5 h-5 w-5" onClick={() => setPdfPage(Math.min(pdfTotalPages || 5, pdfPage + 1))}>
@@ -92,7 +92,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                 <Button size="sm" variant="ghost" className="p-1 h-6 w-6" onClick={() => setImageZoom(Math.max(25, imageZoom - 25))}>
                   <ZoomOut className="w-3 h-3" />
                 </Button>
-                <span className="text-xs text-gray-600 dark:text-gray-400 w-10 text-center">
+                <span className="text-xs text-gray-600 dark:text-lia-text-tertiary w-10 text-center">
                   {imageZoom}%
                 </span>
                 <Button size="sm" variant="ghost" className="p-1 h-6 w-6" onClick={() => setImageZoom(Math.min(200, imageZoom + 25))}>
@@ -145,13 +145,13 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
         {/* Conteúdo do Preview com Transcrição para Vídeos */}
         <div className="p-4 overflow-auto" style={{maxHeight: 'calc(90vh - 100px)'}}>
           {previewType === 'pdf' && (
-            <div className="bg-gray-100 dark:bg-gray-800 rounded-md p-6 min-h-[600px] flex items-center justify-center">
+            <div className="bg-gray-100 dark:bg-lia-bg-secondary rounded-md p-6 min-h-[600px] flex items-center justify-center">
               <div className="text-center">
-                <FileText className="w-16 h-16 text-gray-600 dark:text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-600 dark:text-gray-400 mb-2">
+                <FileText className="w-16 h-16 text-gray-600 dark:text-lia-text-tertiary mx-auto mb-3" />
+                <p className="text-gray-600 dark:text-lia-text-tertiary mb-2">
                   Visualizando página {pdfPage} de {pdfTotalPages || 5}
                 </p>
-                <p className="text-sm text-gray-800 dark:text-gray-200">
+                <p className="text-sm text-gray-800 dark:text-lia-text-primary">
                   [Conteúdo do PDF seria renderizado aqui]
                 </p>
               </div>
@@ -164,7 +164,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                 src={selectedFile.url || candidate.avatar_url || candidate.avatar}
                 alt={selectedFile.name}
                 style={{width: `${imageZoom}%`, maxWidth: '100%'}}
-                className="rounded-md transition-all duration-300 "
+                className="rounded-md transition-colors duration-300 "
               />
             </div>
           )}
@@ -175,11 +175,11 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
               <div className="col-span-2">
                 <div className="bg-black rounded-md aspect-video flex items-center justify-center">
                   <div className="text-center">
-                    <FileVideo className="w-16 h-16 text-gray-600 dark:text-gray-400 mx-auto mb-3" />
+                    <FileVideo className="w-16 h-16 text-gray-600 dark:text-lia-text-tertiary mx-auto mb-3" />
                     <p className="text-white mb-2">
                       {videoPlaying ? 'Reproduzindo vídeo...' : 'Clique para reproduzir'}
                     </p>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm">
+                    <p className="text-gray-600 dark:text-lia-text-tertiary text-sm">
                       {selectedFile.name}
                     </p>
                   </div>
@@ -187,9 +187,9 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
 
                 {/* Perguntas de Triagem (se for vídeo de prescreening) */}
                 {selectedFile.videoType === 'prescreening' && (
-                  <div className="mt-4 bg-white dark:bg-gray-800 rounded-md p-3">
-                    <h4 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
-                      <MessageSquareText className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
+                  <div className="mt-4 bg-white dark:bg-lia-bg-secondary rounded-md p-3">
+                    <h4 className="text-xs font-medium text-gray-800 dark:text-lia-text-primary mb-2 flex items-center gap-1">
+                      <MessageSquareText className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
                       Perguntas de Triagem
                     </h4>
                     <div className="space-y-2">
@@ -222,51 +222,51 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                 )}
 
                 {/* Análise de IA com Parecer da LIA */}
-                <div className="mt-4 bg-white dark:bg-gray-800 rounded-md p-3">
-                  <h4 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
+                <div className="mt-4 bg-white dark:bg-lia-bg-secondary rounded-md p-3">
+                  <h4 className="text-xs font-medium text-gray-800 dark:text-lia-text-primary mb-2 flex items-center gap-1">
                     <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                     Análise da LIA
                   </h4>
                   <div className="grid grid-cols-4 gap-2 mb-3">
                     <div className="text-center">
                       <p className={textStyles.bodySmall}>Confiança</p>
-                      <p className="text-sm font-bold text-gray-800 dark:text-gray-200">92%</p>
+                      <p className="text-sm font-bold text-gray-800 dark:text-lia-text-primary">92%</p>
                     </div>
                     <div className="text-center">
                       <p className={textStyles.bodySmall}>Comunicação</p>
-                      <p className="text-sm font-bold text-gray-800 dark:text-gray-200">95%</p>
+                      <p className="text-sm font-bold text-gray-800 dark:text-lia-text-primary">95%</p>
                     </div>
                     <div className="text-center">
                       <p className={textStyles.bodySmall}>Clareza</p>
-                      <p className="text-sm font-bold text-gray-800 dark:text-gray-200">88%</p>
+                      <p className="text-sm font-bold text-gray-800 dark:text-lia-text-primary">88%</p>
                     </div>
                     <div className="text-center">
                       <p className={textStyles.bodySmall}>Entusiasmo</p>
-                      <p className="text-sm font-bold text-gray-800 dark:text-gray-200">90%</p>
+                      <p className="text-sm font-bold text-gray-800 dark:text-lia-text-primary">90%</p>
                     </div>
                   </div>
 
                   {/* Parecer da LIA */}
-                  <div className="border-t border-gray-100 dark:border-gray-700 pt-3">
-                    <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
+                  <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-3">
+                    <h5 className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary mb-2 flex items-center gap-1">
                       <Brain className="w-3 h-3 text-wedo-cyan" />
                       Parecer da LIA
                     </h5>
-                    <div className="space-y-2 text-xs text-gray-600 dark:text-gray-400">
+                    <div className="space-y-2 text-xs text-gray-600 dark:text-lia-text-tertiary">
                       <p>
-                        <span className="font-semibold text-gray-800 dark:text-gray-200">Pontos Fortes:</span> O candidato demonstra excelente capacidade de comunicação,
+                        <span className="font-semibold text-gray-800 dark:text-lia-text-primary">Pontos Fortes:</span> O candidato demonstra excelente capacidade de comunicação,
                         com respostas claras e estruturadas. Apresenta postura profissional e confiante durante toda a entrevista.
                         Suas experiências são relevantes para a posição.
                       </p>
                       <p>
-                        <span className="font-semibold text-gray-800 dark:text-gray-200">Pontos de Atenção:</span> Poderia ter elaborado mais sobre metodologias
+                        <span className="font-semibold text-gray-800 dark:text-lia-text-primary">Pontos de Atenção:</span> Poderia ter elaborado mais sobre metodologias
                         específicas de design. A resposta sobre trabalho em equipe foi um pouco genérica.
                       </p>
                       <p>
-                        <span className="font-semibold text-gray-800 dark:text-gray-200">Recomendação:</span> Candidato altamente recomendado para próxima fase.
+                        <span className="font-semibold text-gray-800 dark:text-lia-text-primary">Recomendação:</span> Candidato altamente recomendado para próxima fase.
                         Sugiro aprofundar questionamentos sobre liderança técnica e experiência com design systems em escala.
                       </p>
-                      <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+                      <div className="flex items-center justify-between mt-2 pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                         <span className={textStyles.bodySmall}>Score Geral</span>
                         <Badge className="text-xs px-2 py-0.5 bg-status-success text-white" >
                           91% - Altamente Recomendado
@@ -279,13 +279,13 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
 
               {/* Feed de Transcrição - Melhorado */}
               <div className="col-span-1">
-                <div className="bg-white dark:bg-gray-800 rounded-md p-3 h-full overflow-y-auto">
-                  <h4 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-3 sticky top-0 bg-white pb-2 border-b border-gray-100 dark:border-gray-700">
+                <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-3 h-full overflow-y-auto">
+                  <h4 className="text-xs font-medium text-gray-800 dark:text-lia-text-primary mb-3 sticky top-0 bg-lia-bg-primary pb-2 border-b border-lia-border-subtle dark:border-lia-border-subtle">
                     📝 Transcrição
                   </h4>
 
                   {/* Indicador do tipo de vídeo */}
-                  <div className="mb-3 p-2 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-md">
+                  <div className="mb-3 p-2 bg-gray-50 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
                     <div className="flex items-center gap-2">
                       <Badge className="text-xs px-1.5 py-0.5" style={{backgroundColor: 'var(--gray-700)', color: 'var(--white)'}}>
                         {selectedFile.videoType === 'interview' ? 'Entrevista Gravada' : 'Vídeo de Triagem'}
@@ -298,29 +298,29 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                     {selectedFile.transcript && selectedFile.transcript.length > 0 ? (
                       <>
                         {selectedFile.transcript.map((segment, idx) => (
-                          <div key={idx} className="border-l-2 border-gray-400 dark:border-gray-500 pl-3">
+                          <div key={idx} className="border-l-2 border-gray-400 dark:border-lia-border-medium pl-3">
                             <p className={`${textStyles.bodySmall} mb-1`}>
                               {segment.timestamp || segment.time || ''} • {segment.speaker || segment.role || 'Participante'}
                             </p>
-                            <p className="text-gray-800 dark:text-gray-200">
+                            <p className="text-gray-800 dark:text-lia-text-primary">
                               "{segment.text || segment.content || ''}"
                             </p>
                           </div>
                         ))}
                       </>
                     ) : (
-                      <div className="text-center py-4 text-gray-600 dark:text-gray-400">
+                      <div className="text-center py-4 text-gray-600 dark:text-lia-text-tertiary">
                         <p className="text-xs">Transcrição não disponível para este vídeo</p>
                       </div>
                     )}
 
                     {/* Highlights identificados pela LIA - only show if data available */}
                     {selectedFile.highlights && selectedFile.highlights.length > 0 && (
-                      <div className="mt-4 p-2 bg-white dark:bg-gray-800 rounded-md">
-                        <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">
+                      <div className="mt-4 p-2 bg-white dark:bg-lia-bg-secondary rounded-md">
+                        <p className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary mb-1">
                           🎯 Highlights da LIA
                         </p>
-                        <ul className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
+                        <ul className="space-y-1 text-xs text-gray-600 dark:text-lia-text-tertiary">
                           {selectedFile.highlights.map((highlight, idx) => (
                             <li key={idx}>• {highlight}</li>
                           ))}
@@ -339,17 +339,17 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
               {/* Áudio Player e Conteúdo Principal */}
               <div className="col-span-2">
                 {/* Player de Áudio */}
-                <div className="bg-gray-100 dark:bg-gray-800 rounded-md p-4 flex items-center justify-center">
+                <div className="bg-gray-100 dark:bg-lia-bg-secondary rounded-md p-4 flex items-center justify-center">
                   <div className="text-center w-full">
                     <div className="flex items-center justify-center mb-3">
-                      <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                        <Mic className="w-8 h-8 text-gray-600 dark:text-gray-400" />
+                      <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-lia-bg-elevated flex items-center justify-center">
+                        <Mic className="w-8 h-8 text-gray-600 dark:text-lia-text-tertiary" />
                       </div>
                     </div>
-                    <p className="text-gray-800 dark:text-gray-200 mb-2">
+                    <p className="text-gray-800 dark:text-lia-text-primary mb-2">
                       {audioPlaying ? 'Reproduzindo áudio...' : 'Clique para reproduzir'}
                     </p>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm mb-3">
+                    <p className="text-gray-500 dark:text-lia-text-tertiary text-sm mb-3">
                       {selectedFile.name}
                     </p>
                     {/* Barra de progresso */}
@@ -357,17 +357,17 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                       <Button
                         size="sm"
                         variant="outline"
-                        className="p-2 h-8 w-8 rounded-full bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 border-0"
+                        className="p-2 h-8 w-8 rounded-full bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 border-0"
                         onClick={() => setAudioPlaying(!audioPlaying)}
                       >
                         {audioPlaying ? <Pause className="w-4 h-4 text-white" /> : <Play className="w-4 h-4 text-white" />}
                       </Button>
                       <div className="flex-1">
-                        <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                          <div className="h-full bg-gray-700 dark:bg-gray-400 rounded-full transition-all" style={{width: audioPlaying ? '35%' : '0%'}} />
+                        <div className="h-2 bg-gray-200 dark:bg-lia-bg-elevated rounded-full overflow-hidden">
+                          <div className="h-full bg-gray-700 rounded-full transition-[width,height]" style={{width: audioPlaying ? '35%' : '0%'}} />
                         </div>
                       </div>
-                      <span className="text-xs text-gray-600 dark:text-gray-400 font-mono w-20 text-right">
+                      <span className="text-xs text-gray-600 dark:text-lia-text-tertiary font-mono w-20 text-right">
                         {audioPlaying ? '1:35' : '0:00'} / {selectedFile.duration || '4:32'}
                       </span>
                     </div>
@@ -376,9 +376,9 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
 
                 {/* Perguntas de Triagem (se for áudio de prescreening) */}
                 {selectedFile.audioType === 'prescreening' && (
-                  <div className="mt-4 bg-white dark:bg-gray-800 rounded-md p-3">
-                    <h4 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
-                      <MessageSquareText className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
+                  <div className="mt-4 bg-white dark:bg-lia-bg-secondary rounded-md p-3">
+                    <h4 className="text-xs font-medium text-gray-800 dark:text-lia-text-primary mb-2 flex items-center gap-1">
+                      <MessageSquareText className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
                       Perguntas de Triagem
                     </h4>
                     <div className="space-y-2">
@@ -411,50 +411,50 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                 )}
 
                 {/* Análise de IA com Parecer da LIA */}
-                <div className="mt-4 bg-white dark:bg-gray-800 rounded-md p-3">
-                  <h4 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
+                <div className="mt-4 bg-white dark:bg-lia-bg-secondary rounded-md p-3">
+                  <h4 className="text-xs font-medium text-gray-800 dark:text-lia-text-primary mb-2 flex items-center gap-1">
                     <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                     Análise da LIA
                   </h4>
                   <div className="grid grid-cols-4 gap-2 mb-3">
                     <div className="text-center">
                       <p className={textStyles.bodySmall}>Clareza</p>
-                      <p className="text-sm font-bold text-gray-800 dark:text-gray-200">94%</p>
+                      <p className="text-sm font-bold text-gray-800 dark:text-lia-text-primary">94%</p>
                     </div>
                     <div className="text-center">
                       <p className={textStyles.bodySmall}>Confiança</p>
-                      <p className="text-sm font-bold text-gray-800 dark:text-gray-200">91%</p>
+                      <p className="text-sm font-bold text-gray-800 dark:text-lia-text-primary">91%</p>
                     </div>
                     <div className="text-center">
                       <p className={textStyles.bodySmall}>Conhecimento</p>
-                      <p className="text-sm font-bold text-gray-800 dark:text-gray-200">96%</p>
+                      <p className="text-sm font-bold text-gray-800 dark:text-lia-text-primary">96%</p>
                     </div>
                     <div className="text-center">
                       <p className={textStyles.bodySmall}>Comunicação</p>
-                      <p className="text-sm font-bold text-gray-800 dark:text-gray-200">89%</p>
+                      <p className="text-sm font-bold text-gray-800 dark:text-lia-text-primary">89%</p>
                     </div>
                   </div>
 
                   {/* Parecer da LIA */}
-                  <div className="border-t border-gray-100 dark:border-gray-700 pt-3">
-                    <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
+                  <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-3">
+                    <h5 className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary mb-2 flex items-center gap-1">
                       <Brain className="w-3 h-3 text-wedo-cyan" />
                       Parecer da LIA
                     </h5>
-                    <div className="space-y-2 text-xs text-gray-600 dark:text-gray-400">
+                    <div className="space-y-2 text-xs text-gray-600 dark:text-lia-text-tertiary">
                       <p>
-                        <span className="font-semibold text-gray-800 dark:text-gray-200">Pontos Fortes:</span> O candidato demonstra excelente articulação e domínio técnico.
+                        <span className="font-semibold text-gray-800 dark:text-lia-text-primary">Pontos Fortes:</span> O candidato demonstra excelente articulação e domínio técnico.
                         Experiência sólida em liderança de times mobile, com resultados mensuráveis (redução de 40% no tempo de desenvolvimento).
                       </p>
                       <p>
-                        <span className="font-semibold text-gray-800 dark:text-gray-200">Pontos de Atenção:</span> Poderia detalhar mais sobre gestão de conflitos e metodologias ágeis.
+                        <span className="font-semibold text-gray-800 dark:text-lia-text-primary">Pontos de Atenção:</span> Poderia detalhar mais sobre gestão de conflitos e metodologias ágeis.
                         A experiência com React Native é recente (últimos 2 anos).
                       </p>
                       <p>
-                        <span className="font-semibold text-gray-800 dark:text-gray-200">Recomendação:</span> Candidato altamente recomendado para próxima fase.
+                        <span className="font-semibold text-gray-800 dark:text-lia-text-primary">Recomendação:</span> Candidato altamente recomendado para próxima fase.
                         Sugiro aprofundar sobre arquitetura de apps e experiência com CI/CD mobile.
                       </p>
-                      <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+                      <div className="flex items-center justify-between mt-2 pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                         <span className={textStyles.bodySmall}>Score Geral</span>
                         <Badge className="text-xs px-2 py-0.5 bg-status-success text-white" >
                           93% - Altamente Recomendado
@@ -467,15 +467,15 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
 
               {/* Feed de Transcrição - Deepgram */}
               <div className="col-span-1">
-                <div className="bg-white dark:bg-gray-800 rounded-md p-3 h-full overflow-y-auto">
-                  <h4 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-3 sticky top-0 bg-white pb-2 border-b border-gray-100 dark:border-gray-700">
+                <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-3 h-full overflow-y-auto">
+                  <h4 className="text-xs font-medium text-gray-800 dark:text-lia-text-primary mb-3 sticky top-0 bg-lia-bg-primary pb-2 border-b border-lia-border-subtle dark:border-lia-border-subtle">
                     📝 Transcrição
                   </h4>
 
                   {/* Indicador do tipo de áudio */}
-                  <div className="mb-3 p-2 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-md">
+                  <div className="mb-3 p-2 bg-gray-50 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
                     <div className="flex items-center gap-2">
-                      <Badge className="text-xs px-1.5 py-0.5 bg-gray-700 dark:bg-gray-600 text-white border-0">
+                      <Badge className="text-xs px-1.5 py-0.5 bg-gray-700 text-white border-0">
                         {selectedFile.audioType === 'interview' ? 'Entrevista Gravada' : 'Áudio de Triagem'}
                       </Badge>
                       <span className={textStyles.bodySmall}>Duração: {selectedFile.duration || '4:32'}</span>
@@ -484,48 +484,48 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
 
                   <div className="space-y-3 text-xs">
                     {/* Transcrição de exemplo */}
-                    <div className="border-l-2 border-gray-200 dark:border-gray-700 pl-3">
+                    <div className="border-l-2 border-lia-border-subtle dark:border-lia-border-subtle pl-3">
                       <p className={`${textStyles.bodySmall} mb-1`}>
                         0:00 • Candidato
                       </p>
-                      <p className="text-gray-800 dark:text-gray-200">
+                      <p className="text-gray-800 dark:text-lia-text-primary">
                         "Olá, meu nome é Bruno Carvalho Dias e estou muito interessado nessa oportunidade de Tech Lead Mobile. Tenho mais de 8 anos de experiência em desenvolvimento mobile, sendo os últimos 4 anos focado em liderança técnica..."
                       </p>
                     </div>
 
-                    <div className="border-l-2 border-gray-200 dark:border-gray-700 pl-3">
+                    <div className="border-l-2 border-lia-border-subtle dark:border-lia-border-subtle pl-3">
                       <p className={`${textStyles.bodySmall} mb-1`}>
                         1:15 • Candidato
                       </p>
-                      <p className="text-gray-800 dark:text-gray-200">
+                      <p className="text-gray-800 dark:text-lia-text-primary">
                         "Trabalhei na Unicorn Startup onde liderei um time de 6 desenvolvedores. Implementamos React Native para unificar as plataformas iOS e Android, reduzindo o tempo de desenvolvimento em 40%..."
                       </p>
                     </div>
 
-                    <div className="border-l-2 border-gray-200 dark:border-gray-700 pl-3">
+                    <div className="border-l-2 border-lia-border-subtle dark:border-lia-border-subtle pl-3">
                       <p className={`${textStyles.bodySmall} mb-1`}>
                         2:30 • Candidato
                       </p>
-                      <p className="text-gray-800 dark:text-gray-200">
+                      <p className="text-gray-800 dark:text-lia-text-primary">
                         "Sobre minhas principais conquistas, destaco a migração completa de duas aplicações nativas para React Native, mantendo 99.5% de uptime durante todo o processo..."
                       </p>
                     </div>
 
-                    <div className="border-l-2 border-gray-200 dark:border-gray-700 pl-3">
+                    <div className="border-l-2 border-lia-border-subtle dark:border-lia-border-subtle pl-3">
                       <p className={`${textStyles.bodySmall} mb-1`}>
                         3:45 • Candidato
                       </p>
-                      <p className="text-gray-800 dark:text-gray-200">
+                      <p className="text-gray-800 dark:text-lia-text-primary">
                         "Estou disponível para início imediato e minha expectativa salarial está na faixa de R$ 25.000 a R$ 30.000, considerando o nível de senioridade e responsabilidades da posição."
                       </p>
                     </div>
 
                     {/* Highlights identificados pela LIA */}
-                    <div className="mt-4 p-2 bg-gray-100 dark:bg-gray-800 rounded-md">
-                      <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">
+                    <div className="mt-4 p-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+                      <p className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary mb-1">
                         🎯 Highlights da LIA
                       </p>
-                      <ul className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
+                      <ul className="space-y-1 text-xs text-gray-600 dark:text-lia-text-tertiary">
                         <li>• 8+ anos de experiência em mobile</li>
                         <li>• Liderança de time de 6 devs</li>
                         <li>• Redução de 40% no tempo de dev</li>

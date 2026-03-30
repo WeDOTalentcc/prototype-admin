@@ -18,41 +18,41 @@ export function getUrgencyLevel(score: number): UrgencyLevel {
     return {
       level: 'excellent',
       label: 'Excelente',
-      color: 'text-gray-950 dark:text-gray-50'
+      color: 'lia-text-950 dark:lia-text-50'
     }
   }
   if (score >= 80) {
     return {
       level: 'great',
       label: 'Ótimo',
-      color: 'text-gray-800 dark:text-gray-200'
+      color: 'lia-text-800 dark:lia-text-200'
     }
   }
   if (score >= 70) {
     return {
       level: 'good',
       label: 'Bom',
-      color: 'text-gray-800 dark:text-gray-200'
+      color: 'lia-text-800 dark:lia-text-200'
     }
   }
   if (score >= 60) {
     return {
       level: 'average',
       label: 'Médio',
-      color: 'text-gray-600 dark:text-gray-400'
+      color: 'lia-text-600 dark:lia-text-400'
     }
   }
   if (score >= 50) {
     return {
       level: 'below',
       label: 'Abaixo',
-      color: 'text-gray-800 dark:text-gray-200'
+      color: 'lia-text-800 dark:lia-text-200'
     }
   }
   return {
     level: 'low',
     label: 'Baixo',
-    color: 'text-gray-600 dark:text-gray-600'
+    color: 'lia-text-600 dark:lia-text-600'
   }
 }
 
@@ -115,17 +115,17 @@ export function formatScoreDisplay(score: number | null | undefined, decimals: n
 }
 
 export const URGENCY_ICON_COLORS = {
-  excellent: 'text-gray-950 dark:text-gray-50',
-  great: 'text-gray-800 dark:text-gray-200',
-  good: 'text-gray-800 dark:text-gray-200',
-  average: 'text-gray-600 dark:text-gray-400',
-  below: 'text-gray-800 dark:text-gray-200',
-  low: 'text-gray-600 dark:text-gray-600'
+  excellent: 'lia-text-950 dark:lia-text-50',
+  great: 'lia-text-800 dark:lia-text-200',
+  good: 'lia-text-800 dark:lia-text-200',
+  average: 'lia-text-600 dark:lia-text-400',
+  below: 'lia-text-800 dark:lia-text-200',
+  low: 'lia-text-600 dark:lia-text-600'
 } as const
 
 export const ALERT_COLORS = {
-  urgent: 'bg-gray-900 text-white border-gray-900 dark:bg-gray-200 dark:text-gray-950 dark:border-gray-200',
-  action: 'bg-gray-200 text-gray-800 border-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700',
-  warning: 'bg-gray-300 text-gray-950 border-gray-400 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600',
-  pending: 'bg-gray-200 text-gray-800 border-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'
+  urgent: 'bg-gray-900 text-white border-gray-900 dark:lia-bg-200 dark:lia-text-950 dark:border-lia-border-subtle',
+  action: 'bg-gray-200 lia-text-800 border-lia-border-default dark:lia-bg-800 dark:lia-text-200 dark:lia-border-700',
+  warning: 'bg-gray-300 lia-text-950 border-gray-400 dark:lia-bg-700 dark:lia-text-100 dark:lia-border-600',
+  pending: 'bg-gray-200 lia-text-800 border-lia-border-default dark:lia-bg-700 dark:lia-text-200 dark:lia-border-600'
 } as const

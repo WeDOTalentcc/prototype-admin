@@ -141,7 +141,7 @@ export function AddToListModal({
       <DialogContent className={`max-w-md ${cardStyles.default}`}>
         <DialogHeader>
           <DialogTitle className={`${textStyles.title} flex items-center gap-2`}>
-            <List className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <List className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
             Adicionar à Lista
           </DialogTitle>
           <DialogDescription className={textStyles.bodySmall} asChild>
@@ -153,7 +153,7 @@ export function AddToListModal({
                 </span>
               </span>
               {displayNames.length > 0 && (
-                <span className="block mt-2 text-gray-800 dark:text-gray-200">
+                <span className="block mt-2 text-gray-800 dark:text-lia-text-primary">
                   {displayNames.join(', ')}
                   {remainingCount > 0 && ` e mais ${remainingCount}`}
                 </span>
@@ -183,7 +183,7 @@ export function AddToListModal({
                       <div
                         key={list.id}
                         className={cn(
-                          "flex items-center space-x-3 p-3 rounded-md border border-gray-100 cursor-pointer transition-all hover:border-gray-300",
+                          "flex items-center space-x-3 p-3 rounded-md border border-lia-border-subtle cursor-pointer transition-colors hover:border-lia-border-default",
                           selectedListId === list.id && "border-gray-800 bg-gray-50"
                         )}
                         onClick={() => setSelectedListId(list.id)}
@@ -205,7 +205,7 @@ export function AddToListModal({
                           </span>
                         </div>
                         {selectedListId === list.id && (
-                          <Check className="w-4 h-4 flex-shrink-0 text-gray-600 dark:text-gray-400" />
+                          <Check className="w-4 h-4 flex-shrink-0 text-gray-600 dark:text-lia-text-tertiary" />
                         )}
                       </div>
                     ))}
@@ -218,7 +218,7 @@ export function AddToListModal({
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full border-dashed border-gray-300 text-gray-800 dark:text-gray-200 hover:border-gray-400 hover:text-gray-800"
+                    className="w-full border-dashed border-lia-border-default text-gray-800 dark:text-lia-text-primary hover:border-gray-400 hover:text-gray-800"
                     onClick={() => {
                       setIsCreatingNew(true)
                       setSelectedListId(null)
@@ -241,7 +241,7 @@ export function AddToListModal({
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="h-6 px-2 text-xs text-gray-800 dark:text-gray-200 hover:text-gray-800"
+                        className="h-6 px-2 text-xs text-gray-800 dark:text-lia-text-primary hover:text-gray-800"
                         onClick={() => {
                           setIsCreatingNew(false)
                           setNewListName('')
@@ -263,7 +263,7 @@ export function AddToListModal({
                       value={newListName}
                       onChange={(e) => setNewListName(e.target.value)}
                       placeholder="Ex: Candidatos Finalistas"
-                      className="border-gray-100 rounded-md"
+                      className="border-lia-border-subtle rounded-md"
                       autoFocus
                     />
                   </div>
@@ -278,7 +278,7 @@ export function AddToListModal({
                           key={color.value}
                           type="button"
                           className={cn(
-                            "w-8 h-8 rounded-md border-2 transition-all flex items-center justify-center",
+                            "w-8 h-8 rounded-md border-2 transition-colors flex items-center justify-center",
                             newListColor === color.value
                               ? "border-gray-900 scale-110"
                               : "border-transparent hover:scale-105"
@@ -300,13 +300,13 @@ export function AddToListModal({
           )}
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4 -mx-6 -mb-6 rounded-b-xl">
+        <DialogFooter className="gap-2 sm:gap-2 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary p-4 -mx-6 -mb-6 rounded-b-xl">
           <Button
             type="button"
             variant="outline"
             onClick={handleClose}
             disabled={isSubmitting}
-            className="h-9 px-4 text-xs font-medium bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 dark:text-gray-200"
+            className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default text-gray-700 hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 dark:text-lia-text-primary"
           >
             Cancelar
           </Button>

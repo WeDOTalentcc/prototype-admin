@@ -51,29 +51,29 @@ export function ScreeningNotificationCard({
 
   return (
     <div
-      className={`rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 border-l-4 ${config.borderColor} ${className}`}
+      className={`rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary border-l-4 ${config.borderColor} ${className}`}
     >
       <div className="p-4">
         <div className="flex items-center gap-2 mb-3">
           <div className="p-1.5 rounded-md bg-wedo-cyan/10 dark:bg-wedo-cyan-dark/20">
             <Brain className="w-4 h-4 text-wedo-cyan" />
           </div>
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-50">
+          <h3 className="text-sm font-semibold text-gray-900">
             Triagem Automática Concluída
           </h3>
         </div>
 
         <div className="space-y-3">
           <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Candidato</p>
-            <p className="text-sm font-medium text-gray-900 dark:text-gray-50">
+            <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">Candidato</p>
+            <p className="text-sm font-medium text-gray-900">
               {candidateName}
             </p>
           </div>
 
           <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Vaga</p>
-            <p className="text-sm font-medium text-gray-900 dark:text-gray-50">
+            <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">Vaga</p>
+            <p className="text-sm font-medium text-gray-900">
               {jobTitle}
             </p>
           </div>
@@ -81,17 +81,17 @@ export function ScreeningNotificationCard({
           {wsiScore !== undefined && (
             <div>
               <div className="flex items-center justify-between mb-1">
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
                   Pontuação WSI
                 </p>
-                <p className="font-['Inter',sans-serif] text-sm font-semibold text-gray-900 dark:text-gray-50">
+                <p className="font-['Inter',sans-serif] text-sm font-semibold text-gray-900">
                   {wsiScore}/100
                 </p>
               </div>
-              <div className="h-2 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+              <div className="h-2 rounded-full bg-gray-200 dark:bg-lia-bg-elevated overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all ${
-                    wsiScore >= 75
+                  className={`h-full rounded-full transition-[width,height] ${
+ wsiScore >= 75
                       ? "bg-status-success/10"
                       : wsiScore >= 50
                         ? "bg-status-warning/10"
@@ -105,19 +105,19 @@ export function ScreeningNotificationCard({
 
           {wsiBlocks && wsiBlocks.length > 0 && (
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+              <p className="text-xs text-gray-500 dark:text-lia-text-tertiary mb-2">
                 Dimensões
               </p>
               <div className="grid grid-cols-2 gap-2">
                 {wsiBlocks.map((block, index) => (
                   <div
                     key={index}
-                    className="p-2 rounded-md bg-gray-50 dark:bg-gray-700/50"
+                    className="p-2 rounded-md bg-gray-50 dark:bg-lia-bg-elevated/50"
                   >
-                    <p className="text-micro text-gray-600 dark:text-gray-400">
+                    <p className="text-micro text-gray-600 dark:text-lia-text-tertiary">
                       {block.name}
                     </p>
-                    <p className="font-['Inter',sans-serif] text-xs font-semibold text-gray-900 dark:text-gray-50">
+                    <p className="font-['Inter',sans-serif] text-xs font-semibold text-gray-900">
                       {block.score}
                     </p>
                   </div>
@@ -134,8 +134,8 @@ export function ScreeningNotificationCard({
             </span>
           </div>
 
-          <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
-            <p className="text-micro text-gray-500 dark:text-gray-400">
+          <div className="pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
+            <p className="text-micro text-gray-500 dark:text-lia-text-tertiary">
               Triagem automática via inscrição pelo website
             </p>
           </div>
@@ -143,7 +143,7 @@ export function ScreeningNotificationCard({
       </div>
 
       {onViewDetails && (
-        <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30 rounded-b-md">
+        <div className="px-4 py-3 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-elevated/30 rounded-b-md">
           <button
             onClick={onViewDetails}
             className="flex items-center gap-1.5 text-sm font-medium text-wedo-cyan-dark dark:text-wedo-cyan hover:text-wedo-cyan-dark dark:hover:text-wedo-cyan transition-colors"

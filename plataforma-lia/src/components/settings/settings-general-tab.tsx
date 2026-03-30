@@ -33,7 +33,7 @@ function PreferencesTab({ onSettingsChange }: { onSettingsChange: (changed: bool
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-3 block">
+            <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
               Tema
             </label>
             <div className="grid grid-cols-3 gap-3">
@@ -50,8 +50,8 @@ function PreferencesTab({ onSettingsChange }: { onSettingsChange: (changed: bool
                   }}
                   className={`p-3 rounded-md border text-center transition-colors ${
                     theme === themeOption.id
- ? 'border-gray-900 dark:border-gray-50 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-300'
-                      : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
+ ? 'border-gray-900 dark:lia-border-50 bg-gray-50 dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-secondary'
+                      : 'border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 >
                   <themeOption.icon className="w-5 h-5 mx-auto mb-1" />
@@ -62,7 +62,7 @@ function PreferencesTab({ onSettingsChange }: { onSettingsChange: (changed: bool
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-3 block">
+            <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
               Idioma
             </label>
             <select
@@ -71,7 +71,7 @@ function PreferencesTab({ onSettingsChange }: { onSettingsChange: (changed: bool
                 setLanguage(e.target.value)
                 onSettingsChange(true)
               }}
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-sm"
+              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary text-sm"
             >
               <option value="pt-BR">Português (Brasil)</option>
               <option value="en-US">English (US)</option>
@@ -90,7 +90,7 @@ function PreferencesTab({ onSettingsChange }: { onSettingsChange: (changed: bool
         </CardHeader>
         <CardContent>
           <div>
-            <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-3 block">
+            <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
               Fuso Horário
             </label>
             <select
@@ -99,7 +99,7 @@ function PreferencesTab({ onSettingsChange }: { onSettingsChange: (changed: bool
                 setTimezone(e.target.value)
                 onSettingsChange(true)
               }}
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-sm"
+              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary text-sm"
             >
               <option value="America/Sao_Paulo">São Paulo (UTC-3)</option>
               <option value="America/New_York">New York (UTC-5)</option>
@@ -133,7 +133,7 @@ function LIATab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => 
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-3 block">
+            <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
               Estilo de Comunicação
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -151,12 +151,12 @@ function LIATab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => 
                   }}
                   className={`p-3 rounded-md border text-left transition-colors ${
                     liaSettings.personality === style.id
-                      ? 'border-gray-900 dark:border-gray-50 bg-wedo-cyan/10 dark:bg-wedo-cyan/20'
-                      : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
+                      ? 'border-gray-900 dark:lia-border-50 bg-wedo-cyan/10 dark:bg-wedo-cyan/20'
+                      : 'border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 >
                   <div className="font-medium text-sm">{style.name}</div>
-                  <div className="text-xs text-gray-800 dark:text-gray-400">{style.desc}</div>
+                  <div className="text-xs lia-text-800 dark:text-lia-text-tertiary">{style.desc}</div>
                 </button>
               ))}
             </div>
@@ -169,7 +169,7 @@ function LIATab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => 
               { key: "proactiveInsights", label: "Insights Proativos", desc: "Análises e alertas automáticos" },
               { key: "learningMode", label: "Modo Aprendizado", desc: "LIA aprende com suas preferências" }
             ].map((setting) => (
-              <div key={setting.key} className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+              <div key={setting.key} className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                 <input
                   type="checkbox"
                   checked={liaSettings[setting.key as keyof typeof liaSettings] as boolean}
@@ -180,8 +180,8 @@ function LIATab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => 
                   className="mt-1"
                 />
                 <div>
-                  <div className="text-sm font-medium text-gray-950 dark:text-gray-50">{setting.label}</div>
-                  <div className="text-xs text-gray-800 dark:text-gray-400">{setting.desc}</div>
+                  <div className="text-sm font-medium lia-text-950 dark:lia-text-50">{setting.label}</div>
+                  <div className="text-xs lia-text-800 dark:text-lia-text-tertiary">{setting.desc}</div>
                 </div>
               </div>
             ))}

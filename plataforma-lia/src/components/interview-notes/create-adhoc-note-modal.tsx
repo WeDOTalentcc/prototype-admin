@@ -89,11 +89,11 @@ export function CreateAdhocNoteModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-lg rounded-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-lg dark:text-gray-50">
-            <Plus className="w-5 h-5 text-gray-700" />
+          <DialogTitle className="flex items-center gap-2 text-lg">
+            <Plus className="w-5 h-5 lia-text-base" />
             Nova Nota de Entrevista
           </DialogTitle>
-          <DialogDescription className="dark:text-gray-400">
+          <DialogDescription className="dark:text-lia-text-tertiary">
             Crie uma nota de entrevista avulsa (ad-hoc) para uma entrevista não agendada.
           </DialogDescription>
         </DialogHeader>
@@ -101,12 +101,12 @@ export function CreateAdhocNoteModal({
         <div className="space-y-5 py-4">
           {/* Candidate Selection */}
           <div className="space-y-2">
-            <Label htmlFor="candidate" className="text-sm font-medium text-gray-800 dark:text-gray-200">
+            <Label htmlFor="candidate" className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
               Candidato *
             </Label>
             <div className="relative">
               <User
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 lia-text-secondary"
               />
               <Select value={selectedCandidateId} onValueChange={setSelectedCandidateId}>
                 <SelectTrigger id="candidate" className="pl-10">
@@ -125,12 +125,12 @@ export function CreateAdhocNoteModal({
 
           {/* Interview Date */}
           <div className="space-y-2">
-            <Label htmlFor="interview-date" className="text-sm font-medium text-gray-800 dark:text-gray-200">
+            <Label htmlFor="interview-date" className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
               Data da Entrevista *
             </Label>
             <div className="relative">
               <Calendar
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 lia-text-secondary"
               />
               <Input
                 id="interview-date"
@@ -144,12 +144,12 @@ export function CreateAdhocNoteModal({
 
           {/* Job Link (Optional) */}
           <div className="space-y-2">
-            <Label htmlFor="job" className="text-sm font-medium text-gray-800 dark:text-gray-200">
+            <Label htmlFor="job" className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
               Vincular a uma vaga
             </Label>
             <div className="relative">
               <Briefcase
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 lia-text-secondary"
               />
               <Select value={selectedJobId} onValueChange={setSelectedJobId}>
                 <SelectTrigger id="job" className="pl-10">
@@ -173,9 +173,9 @@ export function CreateAdhocNoteModal({
               className="flex gap-3 rounded-md p-3 text-sm bg-gray-200/30 border border-wedo-cyan/30"
             >
               <AlertCircle
-                className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-700"
+                className="w-4 h-4 mt-0.5 flex-shrink-0 lia-text-base"
               />
-              <p className="text-gray-800">
+              <p className="lia-text-strong">
                 Ao vincular a uma vaga, perguntas sugeridas serão geradas automaticamente.
               </p>
             </div>
@@ -183,7 +183,7 @@ export function CreateAdhocNoteModal({
 
           {/* Initial Notes */}
           <div className="space-y-2">
-            <Label htmlFor="initial-notes" className="text-sm font-medium text-gray-800 dark:text-gray-200">
+            <Label htmlFor="initial-notes" className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
               Observações iniciais
             </Label>
             <Textarea
@@ -197,14 +197,14 @@ export function CreateAdhocNoteModal({
           </div>
         </div>
 
-        <DialogFooter className="gap-3 border-t border-gray-200 bg-gray-50 dark:bg-gray-900 dark:border-gray-700 pt-4">
-          <Button variant="outline" onClick={onClose} className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
+        <DialogFooter className="gap-3 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle pt-4">
+          <Button variant="outline" onClick={onClose} className="dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-700">
             Cancelar
           </Button>
           <Button
             onClick={handleSubmit}
             disabled={!isFormValid}
-            className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 disabled:bg-gray-300 disabled:text-gray-500"
+            className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 disabled:bg-gray-300 disabled:text-gray-500"
           >
             <Plus className="w-4 h-4 mr-2" />
             Criar Nota

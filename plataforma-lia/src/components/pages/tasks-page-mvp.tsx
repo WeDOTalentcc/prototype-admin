@@ -128,10 +128,10 @@ function getStatusLabel(status: string): string {
 
 function getStatusClasses(status: string): string {
   switch (status) {
-    case 'completed': return 'bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'
-    case 'cancelled': return 'bg-gray-100 text-gray-500 border-gray-200 dark:bg-gray-800 dark:text-gray-500 dark:border-gray-700'
-    case 'rescheduled': return 'bg-gray-100 text-gray-500 border-gray-200 dark:bg-gray-800 dark:text-gray-500 dark:border-gray-700'
-    default: return 'bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'
+    case 'completed': return 'bg-gray-100 text-gray-600 border-lia-border-subtle dark:bg-lia-bg-secondary dark:text-lia-text-tertiary dark:border-lia-border-subtle'
+    case 'cancelled': return 'bg-gray-100 text-gray-500 border-lia-border-subtle dark:bg-lia-bg-secondary dark:text-gray-500 dark:border-lia-border-subtle'
+    case 'rescheduled': return 'bg-gray-100 text-gray-500 border-lia-border-subtle dark:bg-lia-bg-secondary dark:text-gray-500 dark:border-lia-border-subtle'
+    default: return 'bg-gray-100 text-gray-600 border-lia-border-subtle dark:bg-lia-bg-secondary dark:text-lia-text-tertiary dark:border-lia-border-subtle'
   }
 }
 
@@ -433,17 +433,17 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
   const renderCandidateInfo = (interview: ScheduledInterview) => (
     <div className="grid grid-cols-2 gap-4 text-xs">
       <div className="space-y-0.5 min-w-0">
-        <span className="text-base-ui font-[Open_Sans,sans-serif] font-medium text-gray-800 dark:text-gray-200 truncate block">
+        <span className="text-base-ui font-[Open_Sans,sans-serif] font-medium text-gray-800 dark:text-lia-text-primary truncate block">
           {interview.candidateName}
         </span>
         {interview.candidateRole && (
-          <span className="flex items-center gap-1 text-gray-500 dark:text-gray-400 truncate">
+          <span className="flex items-center gap-1 text-gray-500 dark:text-lia-text-tertiary truncate">
             <Briefcase className="w-3 h-3 flex-shrink-0" />
             {interview.candidateRole}
           </span>
         )}
         {interview.company && (
-          <span className="flex items-center gap-1 text-gray-500 dark:text-gray-400 truncate">
+          <span className="flex items-center gap-1 text-gray-500 dark:text-lia-text-tertiary truncate">
             <Building2 className="w-3 h-3 flex-shrink-0" />
             {interview.company}
           </span>
@@ -452,7 +452,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
       <div className="space-y-0.5 min-w-0">
         {renderJobLink(interview)}
         {interview.jobManager && (
-          <span className="flex items-center gap-1 text-gray-500 dark:text-gray-400 truncate">
+          <span className="flex items-center gap-1 text-gray-500 dark:text-lia-text-tertiary truncate">
             <User className="w-3 h-3 flex-shrink-0" />
             {interview.jobManager}
           </span>
@@ -468,7 +468,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
           <div className="flex items-center gap-3">
             <div>
               <h1 className="text-xl font-['Open_Sans',sans-serif] font-semibold wedo-text-black flex items-center gap-2">
-                <LayoutDashboard className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                <LayoutDashboard className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
                 Painel de Controle
               </h1>
             </div>
@@ -482,16 +482,16 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
             {getGreeting()}, Ana
           </h1>
         </div>
-        <p className="text-base-ui font-[Open_Sans,sans-serif] text-gray-500 dark:text-gray-400 pl-7">
+        <p className="text-base-ui font-[Open_Sans,sans-serif] text-gray-500 dark:text-lia-text-tertiary pl-7">
           Sua agenda — {getFormattedDate()}
         </p>
         {!isLoading && todayInterviews.length > 0 && (
-          <p className="text-xs font-[Open_Sans,sans-serif] text-gray-500 dark:text-gray-400 pl-7 mt-1">
-            <span className="font-[Inter,sans-serif] font-semibold text-gray-900 dark:text-gray-100">{scheduledCount}</span> entrevista{scheduledCount !== 1 ? 's' : ''} hoje{futureInterviews.length > 0 ? ` · ${futureInterviews.length} próxima${futureInterviews.length !== 1 ? 's' : ''}` : ''}
+          <p className="text-xs font-[Open_Sans,sans-serif] text-gray-500 dark:text-lia-text-tertiary pl-7 mt-1">
+            <span className="font-[Inter,sans-serif] font-semibold text-gray-900 dark:text-lia-text-primary">{scheduledCount}</span> entrevista{scheduledCount !== 1 ? 's' : ''} hoje{futureInterviews.length > 0 ? ` · ${futureInterviews.length} próxima${futureInterviews.length !== 1 ? 's' : ''}` : ''}
             {timeUntilNext && (
               <>
                 <span className="text-gray-300 dark:text-gray-600 mx-2">|</span>
-                Próxima em <span className="font-[Inter,sans-serif] font-semibold text-gray-900 dark:text-gray-100">{timeUntilNext}</span>
+                Próxima em <span className="font-[Inter,sans-serif] font-semibold text-gray-900 dark:text-lia-text-primary">{timeUntilNext}</span>
               </>
             )}
           </p>
@@ -500,16 +500,16 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
 
       <div className="flex-1 overflow-y-auto px-4 pt-3 pb-4">
         <Tabs defaultValue="entrevistas" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 h-9 bg-gray-100 dark:bg-gray-800 p-1 rounded-md">
+          <TabsList className="grid w-full grid-cols-2 h-9 bg-gray-100 dark:bg-lia-bg-secondary p-1 rounded-md">
             <TabsTrigger
               value="entrevistas"
-              className="text-sm-ui font-[Open_Sans,sans-serif] h-7 rounded-md data-[state=active]:font-semibold data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-gray-50"
+              className="text-sm-ui font-[Open_Sans,sans-serif] h-7 rounded-md data-[state=active]:font-semibold data-[state=active]:bg-lia-bg-primary data-[state=active]:text-gray-900 data-[state=active]:shadow-lia-sm dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-gray-50"
             >
               Entrevistas ({todayInterviews.length})
             </TabsTrigger>
             <TabsTrigger
               value="historico"
-              className="text-sm-ui font-[Open_Sans,sans-serif] h-7 rounded-md data-[state=active]:font-semibold data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-gray-50"
+              className="text-sm-ui font-[Open_Sans,sans-serif] h-7 rounded-md data-[state=active]:font-semibold data-[state=active]:bg-lia-bg-primary data-[state=active]:text-gray-900 data-[state=active]:shadow-lia-sm dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-gray-50"
             >
               Histórico ({pastInterviews.length})
             </TabsTrigger>
@@ -519,12 +519,12 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
             {isLoading ? (
               <div className="py-16 text-center">
                 <Loader2 className="w-8 h-8 text-gray-400 dark:text-gray-500 mx-auto mb-3 animate-spin" />
-                <p className="text-base-ui font-[Open_Sans,sans-serif] text-gray-500 dark:text-gray-400">Carregando entrevistas...</p>
+                <p className="text-base-ui font-[Open_Sans,sans-serif] text-gray-500 dark:text-lia-text-tertiary">Carregando entrevistas...</p>
               </div>
             ) : error ? (
               <div className="py-16 text-center">
                 <Calendar className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-                <p className="text-base-ui font-semibold text-gray-700 dark:text-gray-300 mb-1">Erro ao carregar</p>
+                <p className="text-base-ui font-semibold text-gray-700 dark:text-lia-text-secondary mb-1">Erro ao carregar</p>
                 <p className="text-xs text-gray-500 dark:text-gray-500 mb-3">{error}</p>
                 <Button size="sm" variant="outline" onClick={fetchInterviews} className="h-7 px-3 text-xs gap-1.5">
                   <RefreshCw className="w-3 h-3" /> Tentar novamente
@@ -533,7 +533,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
             ) : todayInterviews.length === 0 ? (
               <div className="py-16 text-center">
                 <Calendar className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-                <p className="text-base-ui font-semibold text-gray-700 dark:text-gray-300 mb-1">Nenhuma entrevista agendada</p>
+                <p className="text-base-ui font-semibold text-gray-700 dark:text-lia-text-secondary mb-1">Nenhuma entrevista agendada</p>
                 <p className="text-xs text-gray-500 dark:text-gray-500">Sua agenda está livre.</p>
               </div>
             ) : (
@@ -542,13 +542,13 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                   <div className="flex items-center gap-2 pt-1 pb-0.5 px-1">
                     <Sun className="w-3.5 h-3.5 text-status-warning" />
                     <span className="text-xs font-[Inter,sans-serif] font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">Manhã</span>
-                    <div className="flex-1 border-t border-gray-100 dark:border-gray-800" />
+                    <div className="flex-1 border-t border-lia-border-subtle dark:border-gray-800" />
                   </div>
                 )}
                 {morningInterviews.map((interview) => (
                   <div
                     key={interview.id}
-                    className="border border-gray-200 dark:border-gray-700 rounded-md p-3.5 bg-white dark:bg-gray-900 transition-all duration-150 hover:border-gray-300 dark:hover:border-gray-600"
+                    className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3.5 bg-white dark:bg-lia-bg-primary transition-colors duration-150 hover:border-lia-border-default dark:hover:border-gray-600"
                   >
                     <div className="flex gap-3">
                       <Avatar className="w-10 h-10 flex-shrink-0 mt-0.5">
@@ -569,7 +569,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                               {interview.type}
                             </span>
                             <span className="text-gray-300 dark:text-gray-600">·</span>
-                            <span className="text-xs font-[Open_Sans,sans-serif] text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                            <span className="text-xs font-[Open_Sans,sans-serif] text-gray-500 dark:text-lia-text-tertiary flex items-center gap-1">
                               {getPlatformIcon(interview.platform)}
                               {getPlatformLabel(interview.platform)}
                               <button
@@ -581,7 +581,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                               </button>
                             </span>
                             <span className="text-gray-300 dark:text-gray-600">·</span>
-                            <span className="text-xs font-[Inter,sans-serif] tabular-nums text-gray-500 dark:text-gray-400">
+                            <span className="text-xs font-[Inter,sans-serif] tabular-nums text-gray-500 dark:text-lia-text-tertiary">
                               {interview.duration}min
                             </span>
                           </div>
@@ -599,7 +599,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                               size="sm"
                               variant="outline"
                               onClick={() => handleReschedule(interview)}
-                              className="h-7 px-2.5 text-xs font-[Open_Sans,sans-serif] font-medium gap-1 text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-800 rounded-md"
+                              className="h-7 px-2.5 text-xs font-[Open_Sans,sans-serif] font-medium gap-1 text-gray-700 border-lia-border-default hover:bg-gray-50 hover:border-gray-400 dark:text-lia-text-secondary dark:border-lia-border-default dark:hover:bg-gray-800 rounded-md"
                             >
                               <CalendarClock className="w-3 h-3" />
                               Alterar Horário
@@ -625,13 +625,13 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                   <div className="flex items-center gap-2 pt-2 pb-0.5 px-1">
                     <Sunset className="w-3.5 h-3.5 text-wedo-orange" />
                     <span className="text-xs font-[Inter,sans-serif] font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">Tarde</span>
-                    <div className="flex-1 border-t border-gray-100 dark:border-gray-800" />
+                    <div className="flex-1 border-t border-lia-border-subtle dark:border-gray-800" />
                   </div>
                 )}
                 {afternoonInterviews.map((interview) => (
                   <div
                     key={interview.id}
-                    className="border border-gray-200 dark:border-gray-700 rounded-md p-3.5 bg-white dark:bg-gray-900 transition-all duration-150 hover:border-gray-300 dark:hover:border-gray-600"
+                    className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3.5 bg-white dark:bg-lia-bg-primary transition-colors duration-150 hover:border-lia-border-default dark:hover:border-gray-600"
                   >
                     <div className="flex gap-3">
                       <Avatar className="w-10 h-10 flex-shrink-0 mt-0.5">
@@ -652,7 +652,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                               {interview.type}
                             </span>
                             <span className="text-gray-300 dark:text-gray-600">·</span>
-                            <span className="text-xs font-[Open_Sans,sans-serif] text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                            <span className="text-xs font-[Open_Sans,sans-serif] text-gray-500 dark:text-lia-text-tertiary flex items-center gap-1">
                               {getPlatformIcon(interview.platform)}
                               {getPlatformLabel(interview.platform)}
                               <button
@@ -664,7 +664,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                               </button>
                             </span>
                             <span className="text-gray-300 dark:text-gray-600">·</span>
-                            <span className="text-xs font-[Inter,sans-serif] tabular-nums text-gray-500 dark:text-gray-400">
+                            <span className="text-xs font-[Inter,sans-serif] tabular-nums text-gray-500 dark:text-lia-text-tertiary">
                               {interview.duration}min
                             </span>
                           </div>
@@ -682,7 +682,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                               size="sm"
                               variant="outline"
                               onClick={() => handleReschedule(interview)}
-                              className="h-7 px-2.5 text-xs font-[Open_Sans,sans-serif] font-medium gap-1 text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-800 rounded-md"
+                              className="h-7 px-2.5 text-xs font-[Open_Sans,sans-serif] font-medium gap-1 text-gray-700 border-lia-border-default hover:bg-gray-50 hover:border-gray-400 dark:text-lia-text-secondary dark:border-lia-border-default dark:hover:bg-gray-800 rounded-md"
                             >
                               <CalendarClock className="w-3 h-3" />
                               Alterar Horário
@@ -715,12 +715,12 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                       <div className="flex items-center gap-2 pt-3 pb-0.5 px-1">
                         <Calendar className="w-3.5 h-3.5 text-gray-400" />
                         <span className="text-xs font-[Inter,sans-serif] font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">{dateLabel}</span>
-                        <div className="flex-1 border-t border-gray-100 dark:border-gray-800" />
+                        <div className="flex-1 border-t border-lia-border-subtle dark:border-gray-800" />
                       </div>
                       {interviews.map((interview) => (
                         <div
                           key={interview.id}
-                          className="border border-gray-200 dark:border-gray-700 rounded-md p-3.5 bg-white dark:bg-gray-900 transition-all duration-150 hover:border-gray-300 dark:hover:border-gray-600"
+                          className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3.5 bg-white dark:bg-lia-bg-primary transition-colors duration-150 hover:border-lia-border-default dark:hover:border-gray-600"
                         >
                           <div className="flex gap-3">
                             <Avatar className="w-10 h-10 flex-shrink-0 mt-0.5">
@@ -741,7 +741,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                                     {interview.type}
                                   </span>
                                   <span className="text-gray-300 dark:text-gray-600">·</span>
-                                  <span className="text-xs font-[Open_Sans,sans-serif] text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                  <span className="text-xs font-[Open_Sans,sans-serif] text-gray-500 dark:text-lia-text-tertiary flex items-center gap-1">
                                     {getPlatformIcon(interview.platform)}
                                     {getPlatformLabel(interview.platform)}
                                     <button
@@ -753,7 +753,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                                     </button>
                                   </span>
                                   <span className="text-gray-300 dark:text-gray-600">·</span>
-                                  <span className="text-xs font-[Inter,sans-serif] tabular-nums text-gray-500 dark:text-gray-400">
+                                  <span className="text-xs font-[Inter,sans-serif] tabular-nums text-gray-500 dark:text-lia-text-tertiary">
                                     {interview.duration}min
                                   </span>
                                 </div>
@@ -771,7 +771,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                                     size="sm"
                                     variant="outline"
                                     onClick={() => handleReschedule(interview)}
-                                    className="h-7 px-2.5 text-xs font-[Open_Sans,sans-serif] font-medium gap-1 text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-800 rounded-md"
+                                    className="h-7 px-2.5 text-xs font-[Open_Sans,sans-serif] font-medium gap-1 text-gray-700 border-lia-border-default hover:bg-gray-50 hover:border-gray-400 dark:text-lia-text-secondary dark:border-lia-border-default dark:hover:bg-gray-800 rounded-md"
                                   >
                                     <CalendarClock className="w-3 h-3" />
                                     Alterar Horário
@@ -804,7 +804,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
             {pastInterviews.length === 0 ? (
               <div className="py-16 text-center">
                 <Clock className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-                <p className="text-base-ui font-semibold text-gray-700 dark:text-gray-300 mb-1">Nenhum histórico</p>
+                <p className="text-base-ui font-semibold text-gray-700 dark:text-lia-text-secondary mb-1">Nenhum histórico</p>
                 <p className="text-xs text-gray-500 dark:text-gray-500">Suas entrevistas passadas aparecerão aqui.</p>
               </div>
             ) : (
@@ -812,7 +812,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                 {pastInterviews.map((interview) => (
                   <div
                     key={interview.id}
-                    className="border border-gray-200 dark:border-gray-700 rounded-md p-3.5 bg-white dark:bg-gray-900 transition-all duration-150"
+                    className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3.5 bg-white dark:bg-lia-bg-primary transition-colors duration-150"
                   >
                     <div className="flex gap-3">
                       <Avatar className="w-10 h-10 flex-shrink-0 mt-0.5">
@@ -833,7 +833,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                               {interview.type}
                             </span>
                             <span className="text-gray-300 dark:text-gray-600">·</span>
-                            <span className="text-xs font-[Open_Sans,sans-serif] text-gray-500 dark:text-gray-400">
+                            <span className="text-xs font-[Open_Sans,sans-serif] text-gray-500 dark:text-lia-text-tertiary">
                               {getPlatformLabel(interview.platform)}
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleCopyLink(interview) }}
@@ -844,7 +844,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                               </button>
                             </span>
                             <span className="text-gray-300 dark:text-gray-600">·</span>
-                            <span className="text-xs font-[Inter,sans-serif] tabular-nums text-gray-500 dark:text-gray-400">
+                            <span className="text-xs font-[Inter,sans-serif] tabular-nums text-gray-500 dark:text-lia-text-tertiary">
                               {interview.duration}min
                             </span>
                             <Badge className={`text-micro px-1.5 py-0 ml-1 border font-medium flex items-center gap-1 ${getStatusClasses(interview.status)}`}>
@@ -861,7 +861,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                               <ExternalLink className="w-3 h-3" />
                               Abrir Reunião
                             </Button>
-                            <span className="text-xs font-[Inter,sans-serif] text-gray-500 dark:text-gray-400 tabular-nums">
+                            <span className="text-xs font-[Inter,sans-serif] text-gray-500 dark:text-lia-text-tertiary tabular-nums">
                               {interview.completedAt || interview.cancelledAt}
                             </span>
                           </div>

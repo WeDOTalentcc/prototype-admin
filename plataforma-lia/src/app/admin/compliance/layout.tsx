@@ -76,26 +76,26 @@ export default function ComplianceLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary">
       <div 
-        className="border-b bg-white dark:bg-gray-950 border-gray-200 dark:border-gray-700"
+        className="border-b bg-white dark:lia-bg-950 border-lia-border-subtle dark:border-lia-border-subtle"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex items-center gap-2 py-3 text-sm">
             <Link 
               href="/admin"
-              className="hover:text-gray-900 dark:hover:text-gray-50 transition-colors text-gray-400 dark:text-gray-500"
+              className="hover:lia-text-900 dark:hover:lia-text-50 transition-colors lia-text-400 dark:lia-text-500"
             >
               Admin
             </Link>
-            <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+            <ChevronRight className="w-4 h-4 lia-text-400 dark:lia-text-500" />
             <div className="flex items-center gap-2">
-              <span className="text-gray-800 dark:text-gray-100">
+              <span className="lia-text-800 dark:text-lia-text-primary">
                 Compliance & Segurança
               </span>
               <Badge 
                 variant="outline" 
-                className="text-micro font-medium border-gray-300"
+                className="text-micro font-medium border-lia-border-default"
               >
                 GLOBAL
               </Badge>
@@ -107,15 +107,15 @@ export default function ComplianceLayout({
               <div 
                 className="w-12 h-12 rounded-md flex items-center justify-center bg-gray-200/30"
               >
-                <Shield className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+                <Shield className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />
               </div>
               <div>
                 <h1 
-                  className="text-2xl font-semibold text-gray-800 dark:text-gray-100"
+                  className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary"
                 >
                   Compliance & Segurança
                 </h1>
-                <p className="text-sm text-gray-400 dark:text-gray-500">
+                <p className="text-sm lia-text-400 dark:lia-text-500">
                   Governança, controles e conformidade regulatória
                 </p>
               </div>
@@ -133,8 +133,8 @@ export default function ComplianceLayout({
                   className={cn(
                     "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
                     active
-                      ? "border-gray-900 dark:border-gray-50 text-gray-600 dark:text-gray-400"
-                      : "border-transparent hover:border-gray-300 dark:hover:border-gray-600 text-gray-500 dark:text-gray-400"
+                      ? "border-gray-900 dark:lia-border-50 lia-text-600 dark:text-lia-text-tertiary"
+                      : "border-transparent hover:border-lia-border-default dark:hover:border-gray-600 lia-text-500 dark:text-lia-text-tertiary"
                   )}
                   title={section.description}
                 >

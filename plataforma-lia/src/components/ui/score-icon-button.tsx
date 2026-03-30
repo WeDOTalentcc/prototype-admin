@@ -51,7 +51,7 @@ export function ScoreIconButton({
       onClick={isClickable ? onClick : undefined}
       disabled={isDisabled}
       className={cn(
-        "flex items-center gap-1 transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-400 rounded-full",
+ "flex items-center gap-1 transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-400 rounded-full",
         isClickable 
           ? "cursor-pointer hover:scale-105 hover:drop-active:scale-95" 
           : "cursor-default opacity-25"
@@ -63,7 +63,7 @@ export function ScoreIconButton({
         style={{color: isClickable ? activeColor : inactiveColor}} 
       />
       {hasScore && displayValue && (
-        <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
+        <span className="text-xs font-bold text-gray-700 dark:text-lia-text-secondary">
           {displayValue}
         </span>
       )}

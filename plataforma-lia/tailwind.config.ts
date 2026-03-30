@@ -9,6 +9,10 @@ export default {
   ],
   theme: {
     extend: {
+      boxShadow: {
+        'lia-focus': '0 0 0 2px rgba(0,0,0,0.1)',
+        'lia-focus-primary': '0 0 0 2px var(--wedo-coral)',
+      },
       fontSize: {
         'xs':       ['var(--font-size-xs)',      { lineHeight: 'var(--line-height-normal)' }],
         'micro':    ['var(--font-size-micro)',    { lineHeight: 'var(--line-height-tight)' }],
@@ -40,6 +44,14 @@ export default {
         'status-warning-border-light': 'var(--status-warning-border-light)',
         'gray-border':                 'var(--gray-border)',
         'white-token':                 '#FFFFFF',
+        // ──────────────────────────────────────────────
+        // BRAND EXTERNALS — LinkedIn
+        // Tokens: text-brand-linkedin, hover:text-brand-linkedin-hover
+        // ──────────────────────────────────────────────
+        brand: {
+          linkedin:         '#0A66C2',
+          'linkedin-hover': '#004182',
+        },
         // ──────────────────────────────────────────────
         // CHART — tons monocromáticos para visualização
         // Fonte de verdade: design-tokens.css (--chart-*)
@@ -111,7 +123,7 @@ export default {
         // ──────────────────────────────────────────────
         'wedo-green': '#5DA47A',
         'wedo-green-light': '#7BC29A',
-        'wedo-green-pastel': '#A8D5B7',
+        'wedo-green-pastel': '#A8D5B7',  // [OPT-010] Verde pastel suave — usado em badges de status positivo e indicadores de qualidade (Big Five, screening)
         'wedo-green-bright': '#60D186',
         'wedo-orange': '#D19960',
         'wedo-purple': '#9860D1',
@@ -124,7 +136,7 @@ export default {
         'whatsapp-bg': '#E5DDD5',      // Fundo do chat WhatsApp
         'whatsapp-bubble': '#DCF8C6',  // Bolha de mensagem enviada WhatsApp
         'whatsapp-green': '#25D366',   // Verde do ícone WhatsApp
-        'wedo-blue': '#3B82F6',        // Azul informativo (legado)
+        // 'wedo-blue': '#3B82F6',        // [OPT-058] REMOVIDO -- migrado para text-blue-500/bg-blue-500
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {
@@ -199,7 +211,6 @@ export default {
         'inter': ['var(--font-inter)', 'sans-serif'],
         'open-sans': ['var(--font-open-sans)', 'sans-serif'],
         'crimson': ['var(--font-crimson)', 'serif'],
-        'source-serif-4': ['var(--font-source-serif-4)', 'serif'],
         'brand': ['var(--font-open-sans)', 'sans-serif'],
         'data': ['var(--font-inter)', 'sans-serif'],
       },

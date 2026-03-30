@@ -66,7 +66,7 @@ const CATEGORY_CONFIG: Record<PolicyCategory, { label: string; icon: React.Eleme
   data_retention: {
     label: 'Retenção de Dados',
     icon: Database,
-    color: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400',
+    color: 'bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary',
     description: 'Políticas de armazenamento e exclusão de dados conforme LGPD e SOX',
   },
   ai_usage: {
@@ -257,10 +257,10 @@ export default function GlobalPoliciesPage() {
 
   if (isLoading && policies.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-gray-600 dark:text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-500">Carregando políticas...</p>
+          <Loader2 className="w-8 h-8 animate-spin lia-text-600 dark:text-lia-text-tertiary mx-auto mb-4" />
+          <p className="lia-text-500">Carregando políticas...</p>
         </div>
       </div>
     )
@@ -268,13 +268,13 @@ export default function GlobalPoliciesPage() {
 
   if (error && policies.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary flex items-center justify-center">
         <div className="text-center">
           <AlertTriangle className="w-12 h-12 text-status-warning mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-950 dark:text-gray-50 mb-2">
+          <h3 className="text-lg font-medium lia-text-950 dark:lia-text-50 mb-2">
             Erro ao carregar políticas
           </h3>
-          <p className="text-gray-500 mb-4">{error.message}</p>
+          <p className="lia-text-500 mb-4">{error.message}</p>
           <Button onClick={refetch} className="gap-2">
             <RefreshCw className="w-4 h-4" />
             Tentar novamente
@@ -285,7 +285,7 @@ export default function GlobalPoliciesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div className="flex items-center gap-4">
@@ -293,16 +293,16 @@ export default function GlobalPoliciesPage() {
               variant="ghost"
               size="sm"
               onClick={() => window.history.back()}
-              className="text-gray-600"
+              className="lia-text-600"
             >
               <ArrowLeft className="w-4 h-4 mr-1" />
               Voltar
             </Button>
             <div>
-              <h1 className="text-2xl font-semibold text-gray-950 dark:text-gray-50">
+              <h1 className="text-2xl font-semibold lia-text-950 dark:lia-text-50">
                 Políticas Globais
               </h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-sm lia-text-500 dark:text-lia-text-tertiary mt-1">
                 Configure políticas de compliance, segurança e uso da plataforma
               </p>
             </div>
@@ -333,13 +333,13 @@ export default function GlobalPoliciesPage() {
         </div>
 
         {/* Templates por Setor — P3-3 */}
-        <Card className="mb-6 border-gray-200 dark:border-gray-700">
+        <Card className="mb-6 border-lia-border-subtle dark:border-lia-border-subtle">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-950 dark:text-gray-50 flex items-center gap-2">
+            <CardTitle className="text-sm font-medium lia-text-950 dark:lia-text-50 flex items-center gap-2">
               <Zap className="w-4 h-4" />
               Templates por Setor
             </CardTitle>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs lia-text-500 dark:text-lia-text-tertiary">
               Aplique políticas padrão pré-configuradas para o setor da empresa. Sobrescreve valores atuais.
             </p>
           </CardHeader>
@@ -363,7 +363,7 @@ export default function GlobalPoliciesPage() {
               <Button
                 onClick={handleApplySector}
                 disabled={!selectedSector || isApplyingSector}
-                className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 gap-2 sm:w-auto"
+                className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 gap-2 sm:w-auto"
               >
                 {isApplyingSector ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -383,7 +383,7 @@ export default function GlobalPoliciesPage() {
             return (
               <Card
                 key={key}
-                className={`cursor-pointer transition-all ${activeTab === key ? 'ring-2 ring-gray-900/20' : ''}`}
+                className={`cursor-pointer transition-colors ${activeTab === key ? 'ring-2 ring-gray-900/20' : ''}`}
                 onClick={() => setActiveTab(activeTab === key ? 'all' : key)}
               >
                 <CardContent className="p-4">
@@ -392,10 +392,10 @@ export default function GlobalPoliciesPage() {
                       <Icon className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-950 dark:text-gray-50">
+                      <p className="text-sm font-medium lia-text-950 dark:lia-text-50">
                         {config.label}
                       </p>
-                      <p className="text-2xl font-semibold text-gray-950 dark:text-gray-50">
+                      <p className="text-2xl font-semibold lia-text-950 dark:lia-text-50">
                         {count}
                       </p>
                     </div>
@@ -408,7 +408,7 @@ export default function GlobalPoliciesPage() {
 
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 lia-text-400" />
             <Input
               placeholder="Buscar políticas..."
               value={searchQuery}
@@ -419,7 +419,7 @@ export default function GlobalPoliciesPage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as PolicyCategory | 'all')} className="space-y-6">
-          <TabsList className="bg-gray-100 dark:bg-gray-800">
+          <TabsList className="bg-gray-100 dark:bg-lia-bg-secondary">
             <TabsTrigger value="all" className="gap-2">
               <Settings className="w-4 h-4" />
               Todas
@@ -447,43 +447,43 @@ export default function GlobalPoliciesPage() {
               <Card className="border-dashed">
                 <CardContent className="py-12">
                   <div className="text-center">
-                    <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-950 dark:text-gray-50 mb-2">
+                    <FileText className="w-12 h-12 lia-text-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium lia-text-950 dark:lia-text-50 mb-2">
                       Nenhuma política encontrada
                     </h3>
-                    <p className="text-gray-500">
+                    <p className="lia-text-500">
                       Tente ajustar os filtros de busca
                     </p>
                   </div>
                 </CardContent>
               </Card>
             ) : (
-              <div className="bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-                        <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">
+                      <tr className="border-b border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary/50">
+                        <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-6 py-3">
                           Política
                         </th>
-                        <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">
+                        <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-6 py-3">
                           Categoria
                         </th>
-                        <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">
+                        <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-6 py-3">
                           Valor Atual
                         </th>
-                        <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">
+                        <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-6 py-3">
                           Última Atualização
                         </th>
-                        <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">
+                        <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-6 py-3">
                           Status
                         </th>
-                        <th className="text-right text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">
+                        <th className="text-right text-xs font-medium lia-text-500 uppercase tracking-wider px-6 py-3">
                           Ações
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                    <tbody className="divide-y divide-gray-200 dark:lia-divide-700">
                       {filteredPolicies.map((policy) => {
                         const categoryConfig = CATEGORY_CONFIG[policy.category]
                         if (!categoryConfig) return null
@@ -495,10 +495,10 @@ export default function GlobalPoliciesPage() {
                           >
                             <td className="px-6 py-4">
                               <div>
-                                <p className="text-sm font-medium text-gray-950 dark:text-gray-50">
+                                <p className="text-sm font-medium lia-text-950 dark:lia-text-50">
                                   {policy.name}
                                 </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-md">
+                                <p className="text-xs lia-text-500 dark:text-lia-text-tertiary mt-1 max-w-md">
                                   {policy.description}
                                 </p>
                               </div>
@@ -510,16 +510,16 @@ export default function GlobalPoliciesPage() {
                               </Badge>
                             </td>
                             <td className="px-6 py-4">
-                              <span className="text-sm font-medium text-gray-950 dark:text-gray-50">
+                              <span className="text-sm font-medium lia-text-950 dark:lia-text-50">
                                 {formatValue(policy)}
                               </span>
                             </td>
                             <td className="px-6 py-4">
                               <div>
-                                <p className="text-sm text-gray-950 dark:text-gray-50">
+                                <p className="text-sm lia-text-950 dark:lia-text-50">
                                   {formatDate(policy.updatedAt)}
                                 </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                <p className="text-xs lia-text-500 dark:text-lia-text-tertiary">
                                   por {policy.updatedBy}
                                 </p>
                               </div>
@@ -531,7 +531,7 @@ export default function GlobalPoliciesPage() {
                                   onCheckedChange={() => handleTogglePolicy(policy.id, policy.isActive)}
                                   disabled={isUpdating}
                                 />
-                                <span className={`text-xs ${policy.isActive ? 'text-status-success' : 'text-gray-500'}`}>
+                                <span className={`text-xs ${policy.isActive ? 'text-status-success' : 'lia-text-500'}`}>
                                   {policy.isActive ? 'Ativo' : 'Inativo'}
                                 </span>
                               </div>
@@ -541,7 +541,7 @@ export default function GlobalPoliciesPage() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleEditPolicy(policy)}
-                                className="text-gray-600 hover:text-gray-900 dark:hover:text-gray-50"
+                                className="lia-text-600 hover:lia-text-900 dark:hover:lia-text-50"
                                 disabled={isUpdating}
                               >
                                 <Edit className="w-4 h-4" />
@@ -570,7 +570,7 @@ export default function GlobalPoliciesPage() {
             {editingPolicy && (
               <div className="space-y-4 py-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2 block">
+                  <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2 block">
                     {editingPolicy.name}
                   </label>
                   
@@ -580,7 +580,7 @@ export default function GlobalPoliciesPage() {
                         checked={editValue as boolean}
                         onCheckedChange={(checked: boolean) => setEditValue(checked)}
                       />
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm lia-text-600">
                         {editValue ? 'Ativado' : 'Desativado'}
                       </span>
                     </div>
@@ -597,7 +597,7 @@ export default function GlobalPoliciesPage() {
                         className="flex-1"
                       />
                       {editingPolicy.unit && (
-                        <span className="text-sm text-gray-500 min-w-20">
+                        <span className="text-sm lia-text-500 min-w-20">
                           {editingPolicy.unit}
                         </span>
                       )}
@@ -630,7 +630,7 @@ export default function GlobalPoliciesPage() {
                   )}
                   
                   {editingPolicy.valueType === 'number' && (editingPolicy.minValue || editingPolicy.maxValue) && (
-                    <p className="text-xs text-gray-500 mt-2">
+                    <p className="text-xs lia-text-500 mt-2">
                       Valor permitido: {editingPolicy.minValue} - {editingPolicy.maxValue} {editingPolicy.unit}
                     </p>
                   )}
@@ -645,7 +645,7 @@ export default function GlobalPoliciesPage() {
               </Button>
               <Button 
                 onClick={handleSavePolicy}
-                className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
                 disabled={isUpdating}
               >
                 {isUpdating ? (
@@ -674,14 +674,14 @@ export default function GlobalPoliciesPage() {
             <div className="space-y-4 py-4">
               {history.length === 0 ? (
                 <div className="text-center py-8">
-                  <History className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">Nenhum histórico de alterações encontrado</p>
+                  <History className="w-12 h-12 lia-text-400 mx-auto mb-4" />
+                  <p className="lia-text-500">Nenhum histórico de alterações encontrado</p>
                 </div>
               ) : (
                 history.map((entry) => (
                   <div 
                     key={entry.id}
-                    className="p-4 rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50"
+                    className="p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary/50"
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-2">
@@ -692,9 +692,9 @@ export default function GlobalPoliciesPage() {
                           <AlertTriangle className="w-4 h-4 text-status-warning" />
                         )}
                         {entry.changeType === 'update' && (
-                          <Edit className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                          <Edit className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                         )}
-                        <span className="text-sm font-medium text-gray-950 dark:text-gray-50">
+                        <span className="text-sm font-medium lia-text-950 dark:lia-text-50">
                           {entry.policyName}
                         </span>
                       </div>
@@ -710,14 +710,14 @@ export default function GlobalPoliciesPage() {
                         <X className="w-3 h-3" />
                         <span className="line-through">{entry.previousValue}</span>
                       </div>
-                      <span className="text-gray-400">→</span>
+                      <span className="lia-text-400">→</span>
                       <div className="flex items-center gap-1 text-status-success dark:text-status-success">
                         <CheckCircle2 className="w-3 h-3" />
                         <span>{entry.newValue}</span>
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
+                    <div className="flex items-center gap-4 text-xs lia-text-500">
                       <div className="flex items-center gap-1">
                         <Users className="w-3 h-3" />
                         {entry.changedBy}

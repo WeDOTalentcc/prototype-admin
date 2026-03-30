@@ -370,11 +370,11 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
             onClick={cancelMove}
           />
           <div 
-            className="relative bg-white dark:bg-gray-900 rounded-md w-full max-w-md mx-4 overflow-hidden border border-gray-200 dark:border-gray-700"
+            className="relative bg-white dark:bg-lia-bg-primary rounded-md w-full max-w-md mx-4 overflow-hidden border border-lia-border-subtle dark:border-lia-border-subtle"
            
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary/50">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
                   <ArrowRight className="w-5 h-5 text-gray-600" />
@@ -383,7 +383,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
                   <h2 className="text-lg font-semibold text-gray-950 dark:text-gray-50">
                     Confirmar Movimentação
                   </h2>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">
                     Selecione o status detalhado
                   </p>
                 </div>
@@ -399,21 +399,21 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
             {/* Content */}
             <div className="p-6 space-y-5">
               {/* Candidato Info */}
-              <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-md">
+              <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
                 <Avatar className="w-10 h-10">
                   <AvatarImage src={pendingMove.candidate.avatar} alt={pendingMove.candidate.name} />
                   <AvatarFallback>{pendingMove.candidate.name?.split(' ').map((n: string) => n[0]).join('') || 'C'}</AvatarFallback>
                 </Avatar>
                 <div>
                   <p className="font-medium text-gray-950 dark:text-gray-50">{pendingMove.candidate.name}</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{pendingMove.candidate.role || pendingMove.candidate.cargo || 'Candidato'}</p>
+                  <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">{pendingMove.candidate.role || pendingMove.candidate.cargo || 'Candidato'}</p>
                 </div>
               </div>
 
               {/* Transição de Etapa */}
               <div className="flex items-center gap-3 justify-center">
-                <div className="px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-md">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <div className="px-3 py-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+                  <span className="text-sm font-medium text-gray-700 dark:text-lia-text-secondary">
                     {getStageDisplayName(pendingMove.fromColumn)}
                   </span>
                 </div>
@@ -428,15 +428,15 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
               {/* Status Sugerido pela LIA */}
               {getSuggestedSubStatus(pendingMove.toColumn) && (
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                  <label className="text-sm font-medium text-gray-700 dark:text-lia-text-secondary flex items-center gap-2">
                     <Brain className="w-4 h-4 text-wedo-cyan" />
                     Status Sugerido pela LIA
                   </label>
                   <div 
-                    className={`p-3 rounded-md border-2 cursor-pointer transition-all ${
+                    className={`p-3 rounded-md border-2 cursor-pointer transition-colors ${
                       selectedSubStatus === getSuggestedSubStatus(pendingMove.toColumn)
-                        ? 'bg-gray-100 dark:bg-gray-800 border-gray-900 dark:border-gray-50'
- : 'bg-gray-50 dark:bg-gray-800/50 border-gray-200 hover:border-gray-300 dark:border-gray-600'
+                        ? 'bg-gray-100 dark:bg-lia-bg-secondary border-gray-900 dark:border-gray-50'
+ : 'bg-gray-50 dark:bg-lia-bg-secondary/50 border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-default'
                     }`}
                     onClick={() => setSelectedSubStatus(getSuggestedSubStatus(pendingMove.toColumn))}
                   >
@@ -451,7 +451,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
 
               {/* Seleção Manual de Status */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label className="text-sm font-medium text-gray-700 dark:text-lia-text-secondary">
                   Selecionar outro status
                 </label>
                 <Select 
@@ -482,7 +482,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary/50">
               <Button
                 variant="outline"
                 onClick={cancelMove}
@@ -514,11 +514,11 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
             }}
           />
           <div 
-            className="relative bg-white dark:bg-gray-900 rounded-md w-full max-w-2xl mx-4 max-h-[85vh] overflow-hidden border border-gray-200 dark:border-gray-700"
+            className="relative bg-white dark:bg-lia-bg-primary rounded-md w-full max-w-2xl mx-4 max-h-[85vh] overflow-hidden border border-lia-border-subtle dark:border-lia-border-subtle"
            
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary/50">
               <div className="flex items-center gap-3">
                 {activeModal === 'notaGeral' && <BrainCircuit className="w-5 h-5 text-gray-950 dark:text-gray-50" />}
                 {activeModal === 'triagem' && <BrainCircuit className="w-5 h-5 text-wedo-cyan" />}
@@ -531,7 +531,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
                     {activeModal === 'testeTecnico' && 'Teste Técnico'}
                     {activeModal === 'testeIngles' && 'Teste Inglês'}
                   </h2>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{selectedCandidateForModal.name}</p>
+                  <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">{selectedCandidateForModal.name}</p>
                 </div>
               </div>
               <button
@@ -551,27 +551,27 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
               {activeModal === 'notaGeral' && (
                 <div className="space-y-6">
                   <div className="text-center py-8">
-                    <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 mb-4">
+                    <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gray-100 dark:bg-lia-bg-secondary mb-4">
                       <span className="text-4xl font-bold text-gray-950 dark:text-gray-50">
                         {calculateNotaLiaGeral(selectedCandidateForModal)}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Pontuação Geral do Candidato</p>
+                    <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">Pontuação Geral do Candidato</p>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-md">
+                    <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
                       <p className="text-xs text-gray-500 mb-1">Nota Triagem</p>
                       <p className="text-lg font-semibold text-gray-950 dark:text-gray-50">
                         {formatScorePercent(selectedCandidateForModal.liaScore ?? selectedCandidateForModal.score, 0)}
                       </p>
                     </div>
-                    <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-md">
+                    <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
                       <p className="text-xs text-gray-500 mb-1">Nota CV</p>
                       <p className="text-lg font-semibold text-gray-950 dark:text-gray-50">
                         {formatScorePercent(selectedCandidateForModal.skillsMatch || selectedCandidateForModal.fitScore || 0, 0)}
                       </p>
                     </div>
-                    <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-md">
+                    <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
                       <p className="text-xs text-gray-500 mb-1">Teste Técnico</p>
                       <p className="text-lg font-semibold text-gray-950 dark:text-gray-50">
                         {selectedCandidateForModal.technicalTestScore !== null && selectedCandidateForModal.technicalTestScore !== undefined 
@@ -579,7 +579,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
                           : '—'}
                       </p>
                     </div>
-                    <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-md">
+                    <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
                       <p className="text-xs text-gray-500 mb-1">Teste Inglês</p>
                       <p className="text-lg font-semibold text-gray-950 dark:text-gray-50">
                         {selectedCandidateForModal.englishTestScore !== null && selectedCandidateForModal.englishTestScore !== undefined 
@@ -603,11 +603,11 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
                         {formatScorePercent(selectedCandidateForModal.liaScore ?? selectedCandidateForModal.score, 0)}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Score de Triagem LIA</p>
+                    <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">Score de Triagem LIA</p>
                   </div>
-                  <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-md">
+                  <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
                     <h4 className="text-sm font-semibold text-gray-950 dark:text-gray-50 mb-3">Análise da LIA</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                    <p className="text-sm text-gray-600 dark:text-lia-text-tertiary leading-relaxed">
                       Candidato avaliado automaticamente pela LIA com base em critérios de experiência, 
                       competências e aderência ao perfil da vaga. A triagem considera fatores como 
                       histórico profissional, formação acadêmica e habilidades técnicas declaradas.
@@ -631,11 +631,11 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
                         {formatScorePercent(selectedCandidateForModal.technicalTestScore, 0)}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Resultado do Teste Técnico</p>
+                    <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">Resultado do Teste Técnico</p>
                   </div>
-                  <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-md">
+                  <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
                     <h4 className="text-sm font-semibold text-gray-950 dark:text-gray-50 mb-3">Detalhes do Teste</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                    <p className="text-sm text-gray-600 dark:text-lia-text-tertiary leading-relaxed">
                       Avaliação técnica realizada através de teste prático com foco nas competências 
                       técnicas requeridas para a posição. Inclui análise de código, resolução de 
                       problemas e conhecimento de ferramentas específicas.
@@ -659,11 +659,11 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
                         {formatScorePercent(selectedCandidateForModal.englishTestScore, 0)}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Resultado do Teste de Inglês</p>
+                    <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">Resultado do Teste de Inglês</p>
                   </div>
-                  <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-md">
+                  <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
                     <h4 className="text-sm font-semibold text-gray-950 dark:text-gray-50 mb-3">Nível de Proficiência</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                    <p className="text-sm text-gray-600 dark:text-lia-text-tertiary leading-relaxed">
                       Avaliação de proficiência em inglês cobrindo compreensão escrita, 
                       expressão oral e vocabulário técnico relevante para a posição.
                     </p>
@@ -674,13 +674,13 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary/50">
               <button
                 onClick={() => {
                   setActiveModal(null)
                   setSelectedCandidateForModal(null)
                 }}
-                className="px-4 py-2 text-sm font-medium text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-gray-800 dark:text-lia-text-primary bg-white dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 Fechar
               </button>
@@ -719,7 +719,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
       {selectedForCompare.size >= 2 && (
         <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2">
           <button
-            className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-700 transition-colors shadow-lg"
+            className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-700 transition-colors shadow-lia-md"
             onClick={() => {
               const selectedIds = Array.from(selectedForCompare)
               const resolvedCandidates = allTableCandidates
@@ -733,7 +733,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
             <span>Comparar ({selectedForCompare.size})</span>
           </button>
           <button
-            className="bg-white border border-gray-200 text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-50 transition-colors shadow-lg"
+            className="bg-lia-bg-primary border border-lia-border-subtle text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-50 transition-colors shadow-lia-md"
             onClick={() => setSelectedForCompare(new Set())}
             aria-label="Limpar seleção de comparação"
           >
@@ -887,14 +887,14 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
 
       {showPublishSuccess && publicLink && (
         <div className="fixed inset-0 bg-gray-900/50 dark:bg-gray-950/70 z-50 flex items-center justify-center" onClick={() => setShowPublishSuccess(false)}>
-          <div className="bg-white dark:bg-gray-800 rounded-md shadow-xl w-full max-w-sm mx-4 animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 font-['Open_Sans',sans-serif]">
+          <div className="bg-white dark:bg-lia-bg-secondary rounded-md shadow-lia-lg w-full max-w-sm mx-4 animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+            <div className="px-6 py-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-lia-text-primary font-['Open_Sans',sans-serif]">
                 Vaga Publicada!
               </h3>
             </div>
             <div className="px-6 py-4 space-y-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400 font-['Open_Sans',sans-serif]">
+              <p className="text-sm text-gray-600 dark:text-lia-text-tertiary font-['Open_Sans',sans-serif]">
                 A vaga está ativa. Compartilhe o link abaixo com candidatos:
               </p>
               <div className="flex items-center gap-2">
@@ -902,7 +902,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
                   type="text"
                   readOnly
                   value={publicLink}
-                  className="flex-1 px-3 py-2 text-xs text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md font-['Open_Sans',sans-serif] select-all"
+                  className="flex-1 px-3 py-2 text-xs text-gray-700 dark:text-lia-text-secondary bg-gray-50 dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md font-['Open_Sans',sans-serif] select-all"
                   onClick={e => (e.target as HTMLInputElement).select()}
                 />
                 <button
@@ -928,10 +928,10 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
                 </button>
               </div>
             </div>
-            <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+            <div className="px-6 py-4 bg-gray-50 dark:bg-lia-bg-secondary/50 border-t border-lia-border-subtle dark:border-lia-border-subtle flex justify-end">
               <button
                 onClick={() => setShowPublishSuccess(false)}
-                className="px-4 py-2 text-sm font-medium rounded-md bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 transition-all font-['Open_Sans',sans-serif]"
+                className="px-4 py-2 text-sm font-medium rounded-md bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 transition-colors font-['Open_Sans',sans-serif]"
               >
                 Fechar
               </button>

@@ -175,7 +175,7 @@ export function CandidateTableRow({
         const value = candidate[columnId]
         if (value === null || value === undefined) return null
         if (typeof value === 'object') return JSON.stringify(value)
-        return <span className="text-xs text-gray-800 dark:text-gray-200">{String(value)}</span>
+        return <span className="text-xs text-gray-800 dark:text-lia-text-primary">{String(value)}</span>
     }
   }
 
@@ -192,8 +192,8 @@ export function CandidateTableRow({
   return (
     <tr
       className={`group cursor-pointer transition-colors relative ${
-        isSelected 
-          ? 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200/70 dark:hover:bg-gray-700/70' 
+ isSelected 
+          ? 'bg-gray-100 dark:bg-lia-bg-secondary hover:bg-gray-200/70 dark:hover:bg-gray-700/70' 
           : 'hover:bg-gray-100 dark:hover:bg-gray-800/50'
       }`}
       style={rowStyle}
@@ -203,7 +203,7 @@ export function CandidateTableRow({
         <td 
           key={column.id}
           className={`px-3 py-2.5 relative ${
-            column.align === 'center' ? 'text-center' : 
+ column.align === 'center' ? 'text-center' : 
             column.align === 'right' ? 'text-right' : 'text-left'
           }`}
           style={{width: column.width,
@@ -215,7 +215,7 @@ export function CandidateTableRow({
               className="absolute left-0 top-0 h-full flex items-center pl-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center gap-0.5 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-md px-1.5 py-1 border border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-0.5 bg-white/95 dark:bg-lia-bg-primary/95 backdrop-blur-sm rounded-md px-1.5 py-1 border border-lia-border-subtle dark:border-lia-border-subtle">
                 {overlayContent}
               </div>
             </div>

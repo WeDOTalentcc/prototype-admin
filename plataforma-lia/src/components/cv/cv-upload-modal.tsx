@@ -279,12 +279,12 @@ export function CVUploadModal({ isOpen, onClose, onParsed }: CVUploadModalProps)
     const ext = fileName.split('.').pop()?.toLowerCase()
     switch (ext) {
       case 'pdf':
-        return <FileText className="w-8 h-8 text-gray-800 dark:text-gray-200" />
+        return <FileText className="w-8 h-8 text-gray-800 dark:text-lia-text-primary" />
       case 'docx':
       case 'doc':
-        return <FileText className="w-8 h-8 text-gray-800 dark:text-gray-200" />
+        return <FileText className="w-8 h-8 text-gray-800 dark:text-lia-text-primary" />
       default:
-        return <File className="w-8 h-8 text-gray-800 dark:text-gray-200" />
+        return <File className="w-8 h-8 text-gray-800 dark:text-lia-text-primary" />
     }
   }
 
@@ -296,13 +296,13 @@ export function CVUploadModal({ isOpen, onClose, onParsed }: CVUploadModalProps)
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-xl rounded-md bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
-        <DialogHeader className="border-b border-gray-200 dark:border-gray-700 pb-4">
-          <DialogTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-50">
-            <FileUp className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+      <DialogContent className="max-w-xl rounded-md bg-white dark:bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle">
+        <DialogHeader className="border-b border-lia-border-subtle dark:border-lia-border-subtle pb-4">
+          <DialogTitle className="flex items-center gap-2 text-gray-900">
+            <FileUp className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
             Upload de CV
           </DialogTitle>
-          <DialogDescription className="text-gray-600 dark:text-gray-400">
+          <DialogDescription className="text-gray-600 dark:text-lia-text-tertiary">
             Envie um currículo para extração automática de dados com IA
           </DialogDescription>
         </DialogHeader>
@@ -337,17 +337,17 @@ export function CVUploadModal({ isOpen, onClose, onParsed }: CVUploadModalProps)
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
                 className={cn(
-                  "border-2 border-dashed rounded-md p-8 text-center cursor-pointer transition-all",
+ "border-2 border-dashed rounded-md p-8 text-center cursor-pointer transition-colors",
                   isDragging
                     ? "border-gray-400 bg-gray-50"
-                    : "border-gray-300 hover:border-gray-400 hover:bg-gray-50"
+                    : "border-lia-border-default hover:border-gray-400 hover:bg-gray-50"
                 )}
               >
-                <Upload className="w-10 h-10 mx-auto mb-3 text-gray-600" />
-                <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                <Upload className="w-10 h-10 mx-auto mb-3 lia-text-base" />
+                <p className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
                   {isDragging ? "Solte o arquivo aqui" : "Arraste ou clique para selecionar"}
                 </p>
-                <p className="text-xs text-gray-800 dark:text-gray-200 mt-1">
+                <p className="text-xs text-gray-800 dark:text-lia-text-primary mt-1">
                   PDF, DOCX, DOC ou TXT (máx. 5MB)
                 </p>
               </div>
@@ -356,10 +356,10 @@ export function CVUploadModal({ isOpen, onClose, onParsed }: CVUploadModalProps)
                 <div className="flex items-center gap-3">
                   {getFileIcon(selectedFile.name)}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-950 dark:text-gray-50 truncate">
+                    <p className="text-sm font-medium text-gray-950 truncate">
                       {selectedFile.name}
                     </p>
-                    <p className="text-xs text-gray-800 dark:text-gray-200">
+                    <p className="text-xs text-gray-800 dark:text-lia-text-primary">
                       {formatFileSize(selectedFile.size)}
                     </p>
                   </div>
@@ -377,7 +377,7 @@ export function CVUploadModal({ isOpen, onClose, onParsed }: CVUploadModalProps)
 
             {isUploading && (
               <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs text-gray-600">
+                <div className="flex items-center justify-between text-xs lia-text-base">
                   <span>Processando CV com IA...</span>
                   <span>{uploadProgress}%</span>
                 </div>
@@ -398,9 +398,9 @@ export function CVUploadModal({ isOpen, onClose, onParsed }: CVUploadModalProps)
                 className="resize-none"
                 disabled={isUploading}
               />
-              <div className="flex justify-between text-xs text-gray-800 dark:text-gray-200">
+              <div className="flex justify-between text-xs text-gray-800 dark:text-lia-text-primary">
                 <span>Mínimo 50 caracteres</span>
-                <span className={cvText.length < 50 ? "text-gray-500" : "text-gray-800 dark:text-gray-200"}>
+                <span className={cvText.length < 50 ? "text-gray-500" : "text-gray-800 dark:text-lia-text-primary"}>
                   {cvText.length} caracteres
                 </span>
               </div>
@@ -408,7 +408,7 @@ export function CVUploadModal({ isOpen, onClose, onParsed }: CVUploadModalProps)
 
             {isUploading && (
               <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs text-gray-600">
+                <div className="flex items-center justify-between text-xs lia-text-base">
                   <span>Extraindo dados com IA...</span>
                   <span>{uploadProgress}%</span>
                 </div>
@@ -425,15 +425,15 @@ export function CVUploadModal({ isOpen, onClose, onParsed }: CVUploadModalProps)
           </div>
         )}
 
-        <DialogFooter className="gap-2 sm:gap-0 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4 -mx-6 -mb-6 rounded-b-xl">
-          <Button variant="outline" onClick={handleClose} disabled={isUploading} className="bg-white border border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700">
+        <DialogFooter className="gap-2 sm:gap-0 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary p-4 -mx-6 -mb-6 rounded-b-xl">
+          <Button variant="outline" onClick={handleClose} disabled={isUploading} className="bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700">
             Cancelar
           </Button>
           {activeTab === "upload" ? (
             <Button
               onClick={handleUploadFile}
               disabled={!selectedFile || isUploading}
-              className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+              className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
             >
               {isUploading ? (
                 <>
@@ -451,7 +451,7 @@ export function CVUploadModal({ isOpen, onClose, onParsed }: CVUploadModalProps)
             <Button
               onClick={handleParseText}
               disabled={cvText.trim().length < 50 || isUploading}
-              className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+              className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
             >
               {isUploading ? (
                 <>

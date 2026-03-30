@@ -92,13 +92,13 @@
         <>
         {/* Header - Apenas botões de controle à direita */}
         {/* Header com botões de busca e fullscreen - sempre visível */}
-        <div className="px-4 py-2 flex-shrink-0 bg-white">
+        <div className="px-4 py-2 flex-shrink-0 bg-lia-bg-primary">
             <div className="flex items-center justify-end">
               <div className="flex items-center gap-1">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6 text-gray-400 hover:text-gray-500 hover:bg-gray-100"
+                  className="h-6 w-6 lia-text-secondary hover:lia-text-secondary hover:bg-gray-100"
                   aria-label="Buscar"
                 >
                   <Search className="w-3.5 h-3.5" />
@@ -115,7 +115,7 @@
                           content: m.content,
                           timestamp: m.timestamp
                         })))}
-                        className="h-6 w-6 text-gray-400 hover:text-gray-500 hover:bg-gray-100"
+                        className="h-6 w-6 lia-text-secondary hover:lia-text-secondary hover:bg-gray-100"
                         title="Voltar para prompt lateral"
                         aria-label="Voltar para prompt lateral"
                       >
@@ -126,7 +126,7 @@
                       variant="ghost"
                       size="icon"
                       onClick={() => setIsFullscreen(!isFullscreen)}
-                      className="h-6 w-6 text-gray-400 hover:text-gray-500 hover:bg-gray-100"
+                      className="h-6 w-6 lia-text-secondary hover:lia-text-secondary hover:bg-gray-100"
                       title={isFullscreen ? "Reduzir" : "Expandir tela cheia"}
                       aria-label={isFullscreen ? "Reduzir diálogo" : "Expandir para tela cheia"}
                     >
@@ -136,7 +136,7 @@
                       variant="ghost"
                       size="icon"
                       onClick={onClose}
-                      className="h-6 w-6 text-gray-400 hover:text-gray-500 hover:bg-gray-100"
+                      className="h-6 w-6 lia-text-secondary hover:lia-text-secondary hover:bg-gray-100"
                       title="Fechar"
                       aria-label="Fechar diálogo"
                     >
@@ -149,7 +149,7 @@
                       variant="ghost"
                       size="icon"
                       onClick={() => setIsFullscreen(!isFullscreen)}
-                      className="h-6 w-6 text-gray-400 hover:text-gray-500 hover:bg-gray-100"
+                      className="h-6 w-6 lia-text-secondary hover:lia-text-secondary hover:bg-gray-100"
                       title={isFullscreen ? "Reduzir" : "Expandir tela cheia"}
                       aria-label={isFullscreen ? "Reduzir diálogo" : "Expandir para tela cheia"}
                     >
@@ -160,7 +160,7 @@
                         variant="ghost"
                         size="icon"
                         onClick={onMinimize}
-                        className="h-6 w-6 text-gray-400 hover:text-gray-500 hover:bg-gray-100"
+                        className="h-6 w-6 lia-text-secondary hover:lia-text-secondary hover:bg-gray-100"
                         aria-label="Minimizar diálogo"
                       >
                         <Minimize2 className="w-3.5 h-3.5" />
@@ -170,7 +170,7 @@
                       variant="ghost"
                       size="icon"
                       onClick={onClose}
-                      className="h-6 w-6 text-gray-400 hover:text-gray-500 hover:bg-gray-100"
+                      className="h-6 w-6 lia-text-secondary hover:lia-text-secondary hover:bg-gray-100"
                       aria-label="Fechar diálogo"
                     >
                       <X className="w-3.5 h-3.5" />
@@ -182,10 +182,10 @@
           </div>
 
         {/* Main Content - Split for job-creation, Full for general */}
-        <div className="flex-1 flex overflow-hidden bg-white min-h-0 h-full">
+        <div className="flex-1 flex overflow-hidden bg-lia-bg-primary min-h-0 h-full">
           {/* Chat Section */}
           <div className={cn(
-            "flex flex-col transition-all duration-300 h-full min-h-0",
+ "flex flex-col transition-colors duration-300 h-full min-h-0",
             isInJobCreationMode 
               ? "flex-1" 
               : "w-full"
@@ -193,7 +193,7 @@
             {/* Messages Area - Scrollable, preenche o espaço disponível */}
             <div 
               className={cn(
-                "flex-1 overflow-y-auto overflow-x-hidden px-4 min-h-0",
+ "flex-1 overflow-y-auto overflow-x-hidden px-4 min-h-0",
                 isInJobCreationMode ? "pt-6 pb-3" : "py-3"
               )}
               role="region"
@@ -232,9 +232,9 @@
                   </div>
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-1.5 px-1">
-                      <span className="text-xs font-bold text-gray-800" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
+                      <span className="text-xs font-bold lia-text-strong" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
                     </div>
-                    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-[14px] rounded-bl-[4px] p-3 inline-block">
+                    <div className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-[14px] rounded-bl-[4px] p-3 inline-block">
                       <div className="flex items-center gap-1">
                         <span className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{animationDelay: '0ms'}} />
                         <span className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{animationDelay: '150ms'}} />
@@ -298,7 +298,7 @@
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsPanelOpen(true)}
-                className="h-7 px-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 gap-1"
+                className="h-7 px-2 lia-text-secondary hover:lia-text-base hover:bg-gray-100 gap-1"
                 title="Mostrar painel de etapas"
                 aria-label="Mostrar painel de etapas do wizard"
               >
@@ -589,7 +589,7 @@
         <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
-              <Upload className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+              <Upload className="h-5 w-5 text-gray-600 dark:text-lia-text-tertiary" />
               Analisar Arquivo
             </AlertDialogTitle>
             <AlertDialogDescription>

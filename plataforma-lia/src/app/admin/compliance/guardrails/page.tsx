@@ -1,3 +1,4 @@
+// TODO: Sprint 4 Dark Mode — File exceeds 400 lines. Needs manual dark: class review.
 "use client"
 
 import React, { useState, useEffect, useCallback } from "react"
@@ -188,10 +189,10 @@ export default function GuardrailsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Shield className="h-6 w-6 text-gray-700" />
+          <Shield className="h-6 w-6 lia-text-700" />
           <div>
-            <h1 className="text-lg font-semibold text-gray-900">Guardrails de Agentes</h1>
-            <p className="text-xs text-gray-500">
+            <h1 className="text-lg font-semibold lia-text-900">Guardrails de Agentes</h1>
+            <p className="text-xs lia-text-500">
               Regras de comportamento editáveis em produção sem deploy
             </p>
           </div>
@@ -209,22 +210,22 @@ export default function GuardrailsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
-        <Card className="border border-gray-200">
+        <Card className="border border-lia-border-subtle">
           <CardContent className="p-4">
-            <div className="text-2xl font-semibold text-gray-900">{guardrails.length}</div>
-            <div className="text-xs text-gray-500 mt-0.5">Total de guardrails</div>
+            <div className="text-2xl font-semibold lia-text-900">{guardrails.length}</div>
+            <div className="text-xs lia-text-500 mt-0.5">Total de guardrails</div>
           </CardContent>
         </Card>
-        <Card className="border border-gray-200">
+        <Card className="border border-lia-border-subtle">
           <CardContent className="p-4">
             <div className="text-2xl font-semibold text-status-success">{activeCount}</div>
-            <div className="text-xs text-gray-500 mt-0.5">Ativos</div>
+            <div className="text-xs lia-text-500 mt-0.5">Ativos</div>
           </CardContent>
         </Card>
-        <Card className="border border-gray-200">
+        <Card className="border border-lia-border-subtle">
           <CardContent className="p-4">
-            <div className="text-2xl font-semibold text-gray-700">{primaryCount}</div>
-            <div className="text-xs text-gray-500 mt-0.5">Primários (todos os agentes)</div>
+            <div className="text-2xl font-semibold lia-text-700">{primaryCount}</div>
+            <div className="text-xs lia-text-500 mt-0.5">Primários (todos os agentes)</div>
           </CardContent>
         </Card>
       </div>
@@ -270,15 +271,15 @@ export default function GuardrailsPage() {
       <div className="space-y-2">
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+            <Loader2 className="h-6 w-6 animate-spin lia-text-400" />
           </div>
         ) : guardrails.length === 0 ? (
-          <div className="text-center py-12 text-gray-400 text-sm">
+          <div className="text-center py-12 lia-text-400 text-sm">
             Nenhum guardrail encontrado
           </div>
         ) : (
           guardrails.map(g => (
-            <Card key={g.id} className={`border ${g.is_active ? "border-gray-200" : "border-gray-100 opacity-60"}`}>
+            <Card key={g.id} className={`border ${g.is_active ? "border-lia-border-subtle" : "border-lia-border-subtle opacity-60"}`}>
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
@@ -292,7 +293,7 @@ export default function GuardrailsPage() {
                         </Badge>
                       )}
                       {g.tool && (
-                        <span className="text-xs font-mono text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded-md">
+                        <span className="text-xs font-mono lia-text-500 bg-gray-50 px-1.5 py-0.5 rounded-md">
                           tool: {g.tool}
                         </span>
                       )}
@@ -301,13 +302,13 @@ export default function GuardrailsPage() {
                           <CheckCircle2 className="h-3 w-3" /> Ativo
                         </span>
                       ) : (
-                        <span className="flex items-center gap-0.5 text-xs text-gray-400">
+                        <span className="flex items-center gap-0.5 text-xs lia-text-400">
                           <AlertTriangle className="h-3 w-3" /> Inativo
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-gray-700 leading-relaxed">{g.rule}</p>
-                    <p className="text-xs text-gray-400 mt-1 italic">
+                    <p className="text-xs lia-text-700 leading-relaxed">{g.rule}</p>
+                    <p className="text-xs lia-text-400 mt-1 italic">
                       Mensagem: &ldquo;{g.blocking_message}&rdquo;
                     </p>
                   </div>
@@ -328,7 +329,7 @@ export default function GuardrailsPage() {
                     >
                       {g.is_active
                         ? <ToggleRight className="h-4 w-4 text-status-success" />
-                        : <ToggleLeft className="h-4 w-4 text-gray-400" />
+                        : <ToggleLeft className="h-4 w-4 lia-text-400" />
                       }
                     </Button>
                   </div>

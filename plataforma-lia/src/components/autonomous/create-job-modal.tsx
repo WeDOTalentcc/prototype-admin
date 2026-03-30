@@ -218,13 +218,13 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md rounded-md dark:bg-gray-800 dark:border-gray-700">
+      <DialogContent className="max-w-md rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Brain className="h-5 w-5 text-wedo-cyan" />
-            <span className="text-gray-950 dark:text-gray-50">Novo Job Autônomo</span>
+            <span className="text-gray-950">Novo Job Autônomo</span>
           </DialogTitle>
-          <DialogDescription className="dark:text-gray-400">
+          <DialogDescription className="dark:text-lia-text-tertiary">
             Configure uma tarefa para a LIA executar em background
           </DialogDescription>
         </DialogHeader>
@@ -242,7 +242,7 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
                   return (
                     <SelectItem key={type.value} value={type.value}>
                       <div className="flex items-center gap-2">
-                        <Icon className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                        <Icon className="h-4 w-4 text-gray-600 dark:text-lia-text-tertiary" />
                         <span>{type.label}</span>
                       </div>
                     </SelectItem>
@@ -251,7 +251,7 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
               </SelectContent>
             </Select>
             {selectedJobType && (
-              <p className="text-micro text-gray-500 mt-1">
+              <p className="text-micro lia-text-secondary mt-1">
                 {selectedJobType.description}
               </p>
             )}
@@ -280,10 +280,10 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
                     type="button"
                     onClick={() => setScheduleType(option.value)}
                     className={cn(
-                      "flex items-center justify-center gap-2 p-3 rounded-md border transition-all text-xs",
+ "flex items-center justify-center gap-2 p-3 rounded-md border transition-colors text-xs",
                       scheduleType === option.value
-                        ? "border-gray-900 dark:border-gray-50 bg-gray-50 dark:bg-gray-800/50 text-gray-600 dark:text-gray-400"
-                        : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                        ? "border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50 text-gray-600 dark:text-lia-text-tertiary"
+                        : "border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default dark:hover:border-gray-600"
                     )}
                   >
                     <Icon className="h-4 w-4" />
@@ -330,7 +330,7 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
             <Button
               type="submit"
               disabled={loading || !jobType || !jobName}
-              className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+              className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
             >
               {loading ? (
                 <>

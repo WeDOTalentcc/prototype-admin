@@ -122,10 +122,10 @@ export function WSIQuestionsStage() {
       <div 
         key={question.id}
         className={cn(
-          "p-3 rounded-md border transition-all",
+ "p-3 rounded-md border transition-colors",
           question.selected
-            ? "bg-gray-50 dark:bg-gray-800/50 border-gray-900 dark:border-gray-50"
-            : "bg-white border-gray-200 hover:border-gray-300 dark:border-gray-600"
+            ? "bg-gray-50 dark:bg-lia-bg-secondary/50 border-gray-900"
+            : "bg-lia-bg-primary border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-default"
         )}
       >
         <div className="flex items-start gap-2">
@@ -134,12 +134,12 @@ export function WSIQuestionsStage() {
             onClick={() => toggleQuestionSelection(question.id)}
             disabled={!question.selected && selectedCount >= 5}
             className={cn(
-              "w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5 transition-all",
+ "w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors",
               question.selected
-                ? "bg-gray-900 dark:bg-gray-50 text-white"
+                ? "bg-gray-900 text-white"
                 : selectedCount >= 5
-                  ? "border border-gray-200 cursor-not-allowed"
-                  : "border-2 border-gray-200 hover:border-gray-900 dark:hover:border-gray-50"
+                  ? "border border-lia-border-subtle cursor-not-allowed"
+                  : "border-2 border-lia-border-subtle hover:border-gray-900 dark:hover:border-gray-50"
             )}
           >
             {question.selected && <Check className="w-3 h-3" strokeWidth={3} />}
@@ -147,7 +147,7 @@ export function WSIQuestionsStage() {
           
           {/* Question content */}
           <div className="flex-1 min-w-0">
-            <p className="text-xs text-gray-800 leading-relaxed">
+            <p className="text-xs lia-text-strong leading-relaxed">
               {question.question}
             </p>
             
@@ -155,18 +155,18 @@ export function WSIQuestionsStage() {
             <div className="flex items-center gap-2 mt-2 flex-wrap">
               {/* Category badge */}
               <span className={cn(
-                "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-micro font-medium",
+ "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-micro font-medium",
                 question.category === 'technical' ? "bg-wedo-cyan/10 text-wedo-cyan-dark" :
                 question.category === 'behavioral' ? "bg-wedo-purple/10 text-wedo-purple" :
                 question.category === 'situacional' ? "bg-status-warning/10 text-status-warning" :
-                "bg-gray-50 text-gray-600"
+                "bg-gray-50 lia-text-base"
               )}>
                 <CategoryIcon className="w-2.5 h-2.5" />
                 {QUESTION_CATEGORIES.find(c => c.id === question.category)?.label || 'Geral'}
               </span>
               
               {/* Type badge */}
-              <span className="px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded-full text-micro">
+              <span className="px-1.5 py-0.5 bg-gray-100 lia-text-secondary rounded-full text-micro">
                 {question.type === 'yes-no' ? 'Sim/Não' :
                  question.type === 'numeric' ? 'Numérica' :
                  question.type === 'multiple-choice' ? 'Múltipla escolha' :
@@ -177,10 +177,10 @@ export function WSIQuestionsStage() {
               <button
                 onClick={() => toggleWSIFlag(question.id)}
                 className={cn(
-                  "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-micro font-medium transition-all",
+ "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-micro font-medium transition-colors",
                   question.isWSI
                     ? "bg-status-success/10 text-status-success"
-                    : "bg-gray-100 text-gray-500 hover:bg-status-success/10"
+                    : "bg-gray-100 lia-text-secondary hover:bg-status-success/10"
                 )}
               >
                 <Brain className="w-2.5 h-2.5 text-wedo-cyan" />
@@ -192,7 +192,7 @@ export function WSIQuestionsStage() {
           {/* Delete button */}
           <button
             onClick={() => deleteQuestion(question.id)}
-            className="p-1 text-gray-400 hover:text-status-error transition-colors"
+            className="p-1 lia-text-secondary hover:text-status-error transition-colors"
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
@@ -207,23 +207,23 @@ export function WSIQuestionsStage() {
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
           <Phone className="w-3.5 h-3.5 text-whatsapp-green" />
-          <span className="text-micro font-semibold text-gray-500 uppercase tracking-wide">
+          <span className="text-micro font-semibold lia-text-secondary uppercase tracking-wide">
             Perguntas de Triagem WSI
           </span>
         </div>
         <div className="flex items-center gap-1 flex-wrap justify-end">
           <span className={cn(
-            "text-xs font-semibold",
-            selectedCount === 5 ? "text-status-success" : "text-gray-600 dark:text-gray-400"
+ "text-xs font-semibold",
+            selectedCount === 5 ? "text-status-success" : "text-gray-600 dark:text-lia-text-tertiary"
           )}>
             {selectedCount}
           </span>
-          <span className="text-micro text-gray-400">/ 5 selecionadas</span>
+          <span className="text-micro lia-text-secondary">/ 5 selecionadas</span>
           {enabledCompanyQuestionsCount > 0 && (
             <>
-              <span className="text-micro text-gray-400">(+</span>
-              <span className="text-micro font-medium text-gray-600 dark:text-gray-400">{enabledCompanyQuestionsCount}</span>
-              <span className="text-micro text-gray-400">da empresa)</span>
+              <span className="text-micro lia-text-secondary">(+</span>
+              <span className="text-micro font-medium text-gray-600 dark:text-lia-text-tertiary">{enabledCompanyQuestionsCount}</span>
+              <span className="text-micro lia-text-secondary">da empresa)</span>
             </>
           )}
         </div>
@@ -233,9 +233,9 @@ export function WSIQuestionsStage() {
       <div className="w-full h-1 bg-gray-200 rounded-full overflow-hidden">
         <div 
           className={cn(
-            "h-full transition-all duration-300",
+ "h-full transition-[width,height] duration-300",
             selectedCount >= 5 ? "bg-status-success" : 
-            selectedCount >= 3 ? "bg-gray-900 dark:bg-gray-50" : "bg-status-warning"
+            selectedCount >= 3 ? "bg-gray-900" : "bg-status-warning"
           )}
           style={{width: `${(selectedCount / 5) * 100}%`}}
         />
@@ -243,20 +243,20 @@ export function WSIQuestionsStage() {
 
       {/* Company Default Questions Section */}
       {companyDefaultQuestions.length > 0 && (
-        <div className="mb-4 p-3 bg-gray-50 rounded-md border border-gray-200">
+        <div className="mb-4 p-3 bg-gray-50 rounded-md border border-lia-border-subtle">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Settings className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+              <Settings className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+              <span className="text-xs font-semibold lia-text-secondary uppercase tracking-wide">
                 Perguntas Padrão da Empresa
               </span>
-              <span className="text-micro text-gray-400">
+              <span className="text-micro lia-text-secondary">
                 ({companyDefaultQuestions.filter(q => q.enabled).length}/{companyDefaultQuestions.length} ativas)
               </span>
             </div>
             <button
               onClick={() => setCompanyDefaultQuestions(prev => prev.map(q => ({ ...q, enabled: false })))}
-              className="text-micro text-gray-600 dark:text-gray-400 hover:underline"
+              className="text-micro text-gray-600 dark:text-lia-text-tertiary hover:underline"
             >
               Desabilitar todas
             </button>
@@ -269,27 +269,27 @@ export function WSIQuestionsStage() {
           </div>
           <div className="space-y-2">
             {companyDefaultQuestions.map(q => (
-              <div key={q.id} className="flex items-center justify-between p-2 bg-white rounded-md border border-gray-200">
+              <div key={q.id} className="flex items-center justify-between p-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
                 <div className="flex items-center gap-2 flex-1">
                   <button
                     onClick={() => toggleCompanyQuestion(q.id)}
                     className={cn(
-                      "w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-all",
+ "w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-colors",
                       q.enabled 
-                        ? "bg-gray-900 dark:bg-gray-50 text-white" 
-                        : "border-2 border-gray-200 hover:border-gray-900 dark:hover:border-gray-50"
+                        ? "bg-gray-900 text-white" 
+                        : "border-2 border-lia-border-subtle hover:border-gray-900 dark:hover:border-gray-50"
                     )}
                   >
                     {q.enabled && <Check className="w-2.5 h-2.5" strokeWidth={3} />}
                   </button>
                   <span className={cn(
-                    "text-xs",
-                    q.enabled ? "text-gray-800" : "text-gray-400"
+ "text-xs",
+                    q.enabled ? "lia-text-strong" : "lia-text-secondary"
                   )}>
                     {q.question}
                   </span>
                 </div>
-                <span className="px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded-full text-micro">
+                <span className="px-1.5 py-0.5 bg-gray-100 lia-text-secondary rounded-full text-micro">
                   {q.type === 'yes-no' ? 'Sim/Não' : q.type === 'numeric' ? 'Numérica' : q.type === 'multiple-choice' ? 'Múltipla' : 'Aberta'}
                 </span>
               </div>
@@ -300,9 +300,9 @@ export function WSIQuestionsStage() {
 
       {/* Loading indicator */}
       {isGeneratingWSI && (
-        <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-md border border-gray-300 dark:border-gray-600 flex items-center justify-center gap-2">
-          <Loader2 className="w-4 h-4 text-gray-600 dark:text-gray-400 animate-spin" />
-          <span className="text-xs text-gray-600 dark:text-gray-400">
+        <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md border border-lia-border-default dark:border-lia-border-default flex items-center justify-center gap-2">
+          <Loader2 className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary animate-spin" />
+          <span className="text-xs text-gray-600 dark:text-lia-text-tertiary">
             Gerando perguntas personalizadas para esta vaga...
           </span>
         </div>
@@ -313,7 +313,7 @@ export function WSIQuestionsStage() {
         <div className="space-y-2">
           <div className="flex items-center gap-2 mb-2">
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-            <span className="text-micro font-semibold text-gray-500 uppercase tracking-wide">
+            <span className="text-micro font-semibold lia-text-secondary uppercase tracking-wide">
               Perguntas Sugeridas por LIA
             </span>
           </div>
@@ -324,7 +324,7 @@ export function WSIQuestionsStage() {
       {/* Add Custom Question Button */}
       <button
         onClick={() => setShowCustomQuestionForm(true)}
-        className="w-full py-2 px-3 rounded-md border border-dashed border-gray-900 dark:border-gray-50 text-gray-600 dark:text-gray-400 text-xs font-medium hover:bg-gray-50 dark:bg-gray-800/50 transition-all flex items-center justify-center gap-1.5"
+        className="w-full py-2 px-3 rounded-md border border-dashed border-gray-900 text-gray-600 dark:text-lia-text-tertiary text-xs font-medium hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors flex items-center justify-center gap-1.5"
       >
         <Plus className="w-3.5 h-3.5" />
         Adicionar Pergunta Personalizada
@@ -332,12 +332,12 @@ export function WSIQuestionsStage() {
 
       {/* Custom Question Form */}
       {showCustomQuestionForm && (
-        <div className="p-3 bg-gray-50 rounded-md border border-gray-200 space-y-2">
+        <div className="p-3 bg-gray-50 rounded-md border border-lia-border-subtle space-y-2">
           <textarea
             value={customQuestionText}
             onChange={(e) => setCustomQuestionText(e.target.value)}
             placeholder="Digite sua pergunta personalizada..."
-            className="w-full px-3 py-2 border border-gray-200 rounded-md text-xs resize-none"
+            className="w-full px-3 py-2 border border-lia-border-subtle rounded-md text-xs resize-none"
             rows={2}
             autoFocus
           />
@@ -345,7 +345,7 @@ export function WSIQuestionsStage() {
             <select
               value={customQuestionType}
               onChange={(e) => setCustomQuestionType(e.target.value as any)}
-              className="flex-1 px-3 py-1.5 border border-gray-200 rounded-md text-xs bg-white"
+              className="flex-1 px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs bg-lia-bg-primary"
             >
               <option value="open">Aberta</option>
               <option value="yes-no">Sim/Não</option>
@@ -355,7 +355,7 @@ export function WSIQuestionsStage() {
             <select
               value={customQuestionCategory}
               onChange={(e) => setCustomQuestionCategory(e.target.value)}
-              className="flex-1 px-3 py-1.5 border border-gray-200 rounded-md text-xs bg-white"
+              className="flex-1 px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs bg-lia-bg-primary"
             >
               {QUESTION_CATEGORIES.map(cat => (
                 <option key={cat.id} value={cat.id}>{cat.label}</option>
@@ -368,14 +368,14 @@ export function WSIQuestionsStage() {
                 setShowCustomQuestionForm(false)
                 setCustomQuestionText('')
               }}
-              className="flex-1 py-1.5 px-3 rounded-md border border-gray-200 text-xs text-gray-500"
+              className="flex-1 py-1.5 px-3 rounded-md border border-lia-border-subtle text-xs lia-text-secondary"
             >
               Cancelar
             </button>
             <button
               onClick={addCustomQuestion}
               disabled={!customQuestionText.trim()}
-              className="flex-1 py-1.5 px-3 rounded-md bg-gray-900 dark:bg-gray-50 text-white text-xs disabled:opacity-50"
+              className="flex-1 py-1.5 px-3 rounded-md bg-gray-900 text-white text-xs disabled:opacity-50"
             >
               Adicionar
             </button>

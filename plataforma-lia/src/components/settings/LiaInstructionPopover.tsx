@@ -67,8 +67,8 @@ export function LiaInstructionPopover({
           className={cn(
             "inline-flex items-center justify-center w-5 h-5 rounded-full transition-colors",
             hasInstruction
- ? "text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:bg-gray-700"
-              : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700",
+ ? "lia-text-700 dark:text-lia-text-secondary hover:bg-gray-200 dark:bg-lia-bg-elevated"
+              : "bg-gray-100 lia-text-500 hover:bg-gray-200 hover:lia-text-700",
             className
           )}
           title={hasInstruction ? "Editar instrução para LIA" : "Adicionar instrução para LIA"}
@@ -77,7 +77,7 @@ export function LiaInstructionPopover({
         </button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-80 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 p-0 rounded-md"
+        className="w-80 bg-white dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle p-0 rounded-md"
         side="right"
         align="start"
       >
@@ -85,30 +85,30 @@ export function LiaInstructionPopover({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Brain className="w-4 h-4 text-chat-cyan" />
-              <span className="text-sm font-semibold text-gray-950 dark:text-gray-50">Instrução para LIA</span>
+              <span className="text-sm font-semibold lia-text-950 dark:lia-text-50">Instrução para LIA</span>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-gray-500 hover:text-gray-700 transition-colors"
+              className="lia-text-500 hover:lia-text-700 transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="text-xs text-gray-600 dark:text-gray-400">
-            Campo: <span className="text-gray-800 dark:text-gray-200 font-medium">{fieldLabel}</span>
+          <div className="text-xs lia-text-600 dark:text-lia-text-tertiary">
+            Campo: <span className="lia-text-800 dark:text-lia-text-primary font-medium">{fieldLabel}</span>
           </div>
 
           <Textarea
             value={instruction}
             onChange={(e) => setInstruction(e.target.value)}
             placeholder="Adicione instruções que ajudarão a LIA a interpretar melhor este campo..."
-            className="min-h-[100px] text-xs border-gray-200 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 resize-none"
+            className="min-h-[100px] text-xs border-lia-border-subtle focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 resize-none"
           />
 
           {examples.length > 0 && (
-            <div className="space-y-2 p-3 bg-gray-50 dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-1 text-xs font-medium uppercase text-gray-600">
+            <div className="space-y-2 p-3 bg-gray-50 dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+              <div className="flex items-center gap-1 text-xs font-medium uppercase lia-text-600">
                 <Info className="w-3 h-3" />
                 <span>Exemplos de instruções</span>
               </div>
@@ -117,7 +117,7 @@ export function LiaInstructionPopover({
                   <button
                     key={idx}
                     onClick={() => setInstruction(example)}
-                    className="block w-full text-left text-xs text-gray-600 hover:text-gray-700 dark:hover:text-gray-300 p-1.5 rounded-md hover:bg-white transition-colors"
+                    className="block w-full text-left text-xs lia-text-600 hover:lia-text-700 dark:hover:lia-text-300 p-1.5 rounded-md hover:bg-lia-bg-primary transition-colors"
                   >
                     "{example}"
                   </button>
@@ -126,12 +126,12 @@ export function LiaInstructionPopover({
             </div>
           )}
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex justify-end gap-2 pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
             <Button
               variant="outline"
               size="sm"
               onClick={() => setIsOpen(false)}
-              className="h-9 px-4 text-xs font-medium border-gray-200 text-gray-700 hover:bg-gray-50"
+              className="h-9 px-4 text-xs font-medium border-lia-border-subtle lia-text-700 hover:bg-gray-50"
             >
               Cancelar
             </Button>
@@ -139,7 +139,7 @@ export function LiaInstructionPopover({
               size="sm"
               onClick={handleSave}
               disabled={isSaving}
-              className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+              className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
             >
               {isSaving ? (
                 <span className="flex items-center gap-1.5">

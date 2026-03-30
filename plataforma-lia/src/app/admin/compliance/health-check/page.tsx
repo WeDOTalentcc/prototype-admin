@@ -124,13 +124,13 @@ interface RawHealthCheckItemFromAPI {
 const API_BASE = '/api/backend-proxy/health-check/'
 
 const FRAMEWORK_ICONS: Record<string, React.ReactNode> = {
-  'SOX': <Scale className="w-5 h-5 text-gray-600 dark:text-gray-400" />,
-  'SOC2': <Shield className="w-5 h-5 text-gray-600 dark:text-gray-400" />,
-  'ISO27001': <Lock className="w-5 h-5 text-gray-600 dark:text-gray-400" />,
-  'LGPD': <FileCheck className="w-5 h-5 text-gray-600 dark:text-gray-400" />,
-  'BCB498': <Building2 className="w-5 h-5 text-gray-600 dark:text-gray-400" />,
-  'EUAI': <ShieldCheck className="w-5 h-5 text-gray-600 dark:text-gray-400" />,
-  'NYC144': <ClipboardCheck className="w-5 h-5 text-gray-600 dark:text-gray-400" />,
+  'SOX': <Scale className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />,
+  'SOC2': <Shield className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />,
+  'ISO27001': <Lock className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />,
+  'LGPD': <FileCheck className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />,
+  'BCB498': <Building2 className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />,
+  'EUAI': <ShieldCheck className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />,
+  'NYC144': <ClipboardCheck className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />,
 }
 
 const FRAMEWORK_NAMES: Record<string, string> = {
@@ -235,7 +235,7 @@ export default function HealthCheckPage() {
             pending: fw.pending || 0,
             na: fw.not_applicable || fw.na || 0,
             total: fw.total || 0,
-            icon: FRAMEWORK_ICONS[fw.framework] || <ShieldCheck className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            icon: FRAMEWORK_ICONS[fw.framework] || <ShieldCheck className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
           }))
           if (isMounted) {
             setSummary(mappedSummary)
@@ -317,7 +317,7 @@ export default function HealthCheckPage() {
           pending: fw.pending || 0,
           na: fw.not_applicable || fw.na || 0,
           total: fw.total || 0,
-          icon: FRAMEWORK_ICONS[fw.framework] || <ShieldCheck className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+          icon: FRAMEWORK_ICONS[fw.framework] || <ShieldCheck className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
         }))
         setSummary(mappedSummary)
       } else {
@@ -480,8 +480,8 @@ export default function HealthCheckPage() {
     return (
       <div className="p-6">
         <div className="max-w-7xl mx-auto flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-gray-600 dark:text-gray-400" />
-          <span className="ml-3 text-sm text-gray-400 dark:text-gray-500">
+          <Loader2 className="w-8 h-8 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+          <span className="ml-3 text-sm lia-text-400 dark:lia-text-500">
             Carregando Health Check...
           </span>
         </div>
@@ -497,15 +497,15 @@ export default function HealthCheckPage() {
             <div 
               className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
             >
-              <ClipboardCheck className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <ClipboardCheck className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+                className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary"
               >
                 Compliance Health Check
               </h1>
-              <p className="text-sm text-gray-400 dark:text-gray-500">
+              <p className="text-sm lia-text-400 dark:lia-text-500">
                 Verificação consolidada de requisitos de conformidade
               </p>
             </div>
@@ -542,7 +542,7 @@ export default function HealthCheckPage() {
                     >
                       {fw.icon}
                     </div>
-                    <span className="text-sm font-medium text-gray-800 dark:text-gray-100">
+                    <span className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
                       {fw.name}
                     </span>
                   </div>
@@ -556,7 +556,7 @@ export default function HealthCheckPage() {
                   </div>
                   <Progress value={fw.compliancePercentage} className="h-1.5 mt-2" />
                 </div>
-                <div className="grid grid-cols-2 gap-1 text-micro text-gray-400 dark:text-gray-500">
+                <div className="grid grid-cols-2 gap-1 text-micro lia-text-400 dark:lia-text-500">
                   <div className="flex items-center gap-1">
                     <div className="w-2 h-2 rounded-full bg-status-success" />
                     <span>{fw.implemented} impl.</span>
@@ -583,7 +583,7 @@ export default function HealthCheckPage() {
           <CardContent className="p-4">
             <div className="flex flex-col md:flex-row gap-3 mb-4">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-400" />
                 <Input
                   placeholder="Buscar por ID ou requisito..."
                   value={searchTerm}
@@ -627,10 +627,10 @@ export default function HealthCheckPage() {
               </Select>
             </div>
 
-            <div className="rounded-md border overflow-hidden border-gray-200 dark:border-gray-700">
+            <div className="rounded-md border overflow-hidden border-lia-border-subtle dark:border-lia-border-subtle">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-gray-50 dark:bg-gray-800/50">
+                  <TableRow className="bg-gray-50 dark:bg-lia-bg-secondary/50">
                     <TableHead className="w-10">
                       <Checkbox
                         checked={selectedItems.size === filteredItems.length && filteredItems.length > 0}
@@ -659,18 +659,18 @@ export default function HealthCheckPage() {
                             onCheckedChange={() => toggleItemSelection(item.id)}
                           />
                         </TableCell>
-                        <TableCell className="font-mono text-xs text-gray-400 dark:text-gray-500">
+                        <TableCell className="font-mono text-xs lia-text-400 dark:lia-text-500">
                           {item.reqId}
                         </TableCell>
                         <TableCell>
                           <div>
-                            <p className="text-sm text-gray-800 dark:text-gray-100">
+                            <p className="text-sm lia-text-800 dark:text-lia-text-primary">
                               {item.requirement}
                             </p>
                             <div className="flex items-center gap-2 mt-1">
                               <Badge variant="lilac" className="text-micro">{FRAMEWORK_NAMES[item.framework] || item.framework}</Badge>
                               {item.comment && (
-                                <span className="text-micro flex items-center gap-1 text-gray-400 dark:text-gray-500">
+                                <span className="text-micro flex items-center gap-1 lia-text-400 dark:lia-text-500">
                                   <MessageSquare className="w-3 h-3" />
                                   Comentário
                                 </span>
@@ -682,12 +682,12 @@ export default function HealthCheckPage() {
                           {getStatusBadge(item.status)}
                         </TableCell>
                         <TableCell>
-                          <span className="text-xs text-gray-400 dark:text-gray-500">
+                          <span className="text-xs lia-text-400 dark:lia-text-500">
                             {item.evidence || '-'}
                           </span>
                         </TableCell>
                         <TableCell>
-                          <span className="text-xs text-gray-400 dark:text-gray-500">
+                          <span className="text-xs lia-text-400 dark:lia-text-500">
                             {item.lastVerification 
                               ? new Date(item.lastVerification).toLocaleDateString('pt-BR')
                               : '-'
@@ -700,7 +700,7 @@ export default function HealthCheckPage() {
                               href={item.referenceUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-xs flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:underline"
+                              className="text-xs flex items-center gap-1 lia-text-600 dark:text-lia-text-tertiary hover:underline"
                               title={item.referenceLabel || 'Ver legislação'}
                             >
                               <ExternalLink className="w-3 h-3" />
@@ -709,7 +709,7 @@ export default function HealthCheckPage() {
                               </span>
                             </a>
                           ) : (
-                            <span className="text-xs text-gray-400 dark:text-gray-500">
+                            <span className="text-xs lia-text-400 dark:lia-text-500">
                               -
                             </span>
                           )}
@@ -739,7 +739,7 @@ export default function HealthCheckPage() {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={8} className="text-center py-8">
-                        <p className="text-gray-400 dark:text-gray-500">
+                        <p className="lia-text-400 dark:lia-text-500">
                           {items.length === 0 
                             ? 'Nenhum requisito cadastrado. Clique em "Seed Data" para carregar dados de demonstração.'
                             : 'Nenhum requisito encontrado com os filtros aplicados.'
@@ -753,7 +753,7 @@ export default function HealthCheckPage() {
             </div>
 
             <div className="mt-3 flex items-center justify-between">
-              <span className="text-xs text-gray-400 dark:text-gray-500">
+              <span className="text-xs lia-text-400 dark:lia-text-500">
                 {selectedItems.size > 0 && (
                   <span className="mr-4">{selectedItems.size} selecionado(s)</span>
                 )}
@@ -766,7 +766,7 @@ export default function HealthCheckPage() {
         <Dialog open={isVerifyModalOpen} onOpenChange={setIsVerifyModalOpen}>
           <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="text-base font-semibold text-gray-800 dark:text-gray-100">
+              <DialogTitle className="text-base font-semibold lia-text-800 dark:text-lia-text-primary">
                 Verificar Requisito
               </DialogTitle>
               <DialogDescription>
@@ -794,23 +794,23 @@ export default function HealthCheckPage() {
                 />
               </div>
               {selectedItem && (
-                <div className="p-3 rounded-md bg-gray-100 dark:bg-gray-800">
+                <div className="p-3 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div>
-                      <span className="text-gray-400 dark:text-gray-500">Framework:</span>
-                      <p className="text-gray-800 dark:text-gray-100">{FRAMEWORK_NAMES[selectedItem.framework]}</p>
+                      <span className="lia-text-400 dark:lia-text-500">Framework:</span>
+                      <p className="lia-text-800 dark:text-lia-text-primary">{FRAMEWORK_NAMES[selectedItem.framework]}</p>
                     </div>
                     <div>
-                      <span className="text-gray-400 dark:text-gray-500">Status Atual:</span>
+                      <span className="lia-text-400 dark:lia-text-500">Status Atual:</span>
                       <div className="mt-1">{getStatusBadge(selectedItem.status)}</div>
                     </div>
                     <div>
-                      <span className="text-gray-400 dark:text-gray-500">Evidência:</span>
-                      <p className="text-gray-800 dark:text-gray-100">{selectedItem.evidence || 'Não anexada'}</p>
+                      <span className="lia-text-400 dark:lia-text-500">Evidência:</span>
+                      <p className="lia-text-800 dark:text-lia-text-primary">{selectedItem.evidence || 'Não anexada'}</p>
                     </div>
                     <div>
-                      <span className="text-gray-400 dark:text-gray-500">Última Verificação:</span>
-                      <p className="text-gray-800 dark:text-gray-100">
+                      <span className="lia-text-400 dark:lia-text-500">Última Verificação:</span>
+                      <p className="lia-text-800 dark:text-lia-text-primary">
                         {selectedItem.lastVerification 
                           ? new Date(selectedItem.lastVerification).toLocaleDateString('pt-BR')
                           : 'Nunca verificado'
@@ -819,13 +819,13 @@ export default function HealthCheckPage() {
                     </div>
                   </div>
                   {selectedItem.referenceUrl && (
-                    <div className="mt-3 pt-3 border-t border-gray-300 dark:border-gray-600">
-                      <span className="text-gray-400 dark:text-gray-500">Legislação de Referência:</span>
+                    <div className="mt-3 pt-3 border-t border-lia-border-default dark:border-lia-border-default">
+                      <span className="lia-text-400 dark:lia-text-500">Legislação de Referência:</span>
                       <a
                         href={selectedItem.referenceUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-1 mt-1 text-gray-600 dark:text-gray-400 hover:underline text-sm"
+                        className="flex items-center gap-1 mt-1 lia-text-600 dark:text-lia-text-tertiary hover:underline text-sm"
                       >
                         <ExternalLink className="w-4 h-4" />
                         {selectedItem.referenceLabel || 'Ver documento oficial'}
@@ -833,8 +833,8 @@ export default function HealthCheckPage() {
                     </div>
                   )}
                   {selectedItem.checklistItems && selectedItem.checklistItems.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-gray-300 dark:border-gray-600">
-                      <span className="text-xs font-medium text-gray-400 dark:text-gray-500">
+                    <div className="mt-3 pt-3 border-t border-lia-border-default dark:border-lia-border-default">
+                      <span className="text-xs font-medium lia-text-400 dark:lia-text-500">
                         Lista de Verificação ({selectedItem.checklistItems.filter(i => i.completed).length}/{selectedItem.checklistItems.length})
                       </span>
                       <div className="mt-2 space-y-2">
@@ -845,7 +845,7 @@ export default function HealthCheckPage() {
                               className="mt-0.5"
                             />
                             <span
-                              className={`text-xs ${checkItem.completed ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-800 dark:text-gray-100'}`}
+                              className={`text-xs ${checkItem.completed ? 'line-through lia-text-400 dark:lia-text-500' : 'lia-text-800 dark:text-lia-text-primary'}`}
                             >
                               {checkItem.text}
                             </span>
@@ -855,12 +855,12 @@ export default function HealthCheckPage() {
                     </div>
                   )}
                   {selectedItem.evidenceDetails && (
-                    <div className="mt-3 pt-3 border-t border-gray-300 dark:border-gray-600">
-                      <span className="text-xs font-medium text-gray-400 dark:text-gray-500">
+                    <div className="mt-3 pt-3 border-t border-lia-border-default dark:border-lia-border-default">
+                      <span className="text-xs font-medium lia-text-400 dark:lia-text-500">
                         Documentação Requerida:
                       </span>
                       <pre 
-                        className="mt-2 text-xs whitespace-pre-wrap text-gray-500 dark:text-gray-400" style={{fontFamily: 'inherit'}}
+                        className="mt-2 text-xs whitespace-pre-wrap lia-text-500 dark:text-lia-text-tertiary font-[inherit]"
                       >
                         {selectedItem.evidenceDetails}
                       </pre>
@@ -876,7 +876,7 @@ export default function HealthCheckPage() {
               <Button 
                 onClick={handleVerify} 
                 disabled={isVerifying}
-                className="bg-gray-900" style={{color: 'white'}}
+                className="bg-gray-900 text-white"
               >
                 {isVerifying ? (
                   <>

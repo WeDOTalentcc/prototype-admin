@@ -170,10 +170,10 @@ export function AudioRecordButton({
         disabled={disabled || isTranscribing}
         title={tooltipText}
         className={cn(
-          "h-8 w-8 transition-colors",
+ "h-8 w-8 transition-colors",
           isRecording
             ? "text-status-error hover:text-status-error hover:bg-status-error/10 animate-pulse"
-            : "text-gray-500 hover:text-gray-900 dark:hover:text-gray-50 hover:bg-gray-100"
+            : "lia-text-secondary hover:lia-text-strong dark:hover:lia-text-subtle hover:bg-gray-100"
         )}
       >
         {isTranscribing ? (

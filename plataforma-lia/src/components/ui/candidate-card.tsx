@@ -39,7 +39,7 @@ const getStatusIcon = (status: string) => {
     case 'read':
       return <Check className="w-3 h-3 text-status-success" />
     case 'sent':
-      return <Send className="w-3 h-3 text-gray-600 dark:text-gray-400" />
+      return <Send className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
     case 'failed':
       return <AlertCircle className="w-3 h-3 text-status-error" />
     case 'pending':
@@ -70,7 +70,7 @@ const getChannelIcon = (channel: string) => {
       return <MessageSquare className="w-3.5 h-3.5 text-status-success" />
     case 'email':
     default:
-      return <Mail className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+      return <Mail className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
   }
 }
 
@@ -144,28 +144,28 @@ export function CandidateCard({
   }
 
   return (
-    <Card className="border border-gray-200 dark:border-gray-700 hover:transition-shadow rounded-md bg-white dark:bg-gray-900">
+    <Card className="border border-lia-border-subtle dark:border-lia-border-subtle hover:transition-shadow rounded-md bg-white dark:bg-lia-bg-primary">
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2">
-              <h4 className="font-semibold text-base truncate text-gray-800 dark:text-gray-100">
+              <h4 className="font-semibold text-base truncate text-gray-800 dark:text-lia-text-primary">
                 {name}
               </h4>
-              <Badge variant="secondary" className={`text-xs shrink-0 border-0 text-gray-500 ${source_badge.includes("Banco Proprietário") ? 'bg-stone-50' : 'bg-wedo-cyan/10'}`}>
+              <Badge variant="secondary" className={`text-xs shrink-0 border-0 lia-text-secondary ${source_badge.includes("Banco Proprietário") ? 'bg-stone-50' : 'bg-wedo-cyan/10'}`}>
                 {source_badge}
               </Badge>
             </div>
             
             {title && (
-              <div className="flex items-center gap-1.5 text-sm mb-1 text-gray-500 dark:text-gray-400">
+              <div className="flex items-center gap-1.5 text-sm mb-1 text-gray-500 dark:text-lia-text-tertiary">
                 <Building className="w-3.5 h-3.5 shrink-0" />
                 <span className="truncate">{title} {company && `• ${company}`}</span>
               </div>
             )}
             
             {location && (
-              <div className="flex items-center gap-1.5 text-sm mb-3 text-gray-400 dark:text-gray-500">
+              <div className="flex items-center gap-1.5 text-sm mb-3 text-gray-400">
                 <MapPin className="w-3.5 h-3.5 shrink-0" />
                 <span className="truncate">{location}</span>
               </div>
@@ -177,13 +177,13 @@ export function CandidateCard({
                   <Badge
                     key={`${name}-${skill}`}
                     variant="outline"
-                    className="text-xs px-2 py-0.5 border-gray-200 text-gray-500"
+                    className="text-xs px-2 py-0.5 border-lia-border-subtle lia-text-secondary"
                   >
                     {skill}
                   </Badge>
                 ))}
                 {skills.length > 6 && (
-                  <Badge variant="outline" className="text-xs px-2 py-0.5 border-gray-200 text-gray-400">
+                  <Badge variant="outline" className="text-xs px-2 py-0.5 border-lia-border-subtle lia-text-secondary">
                     +{skills.length - 6}
                   </Badge>
                 )}
@@ -192,8 +192,8 @@ export function CandidateCard({
             
             {match_score !== null && match_score !== undefined && (
               <div className="flex items-center gap-1.5 mb-3">
-                <Award className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <Award className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+                <span className="text-sm font-medium text-gray-600 dark:text-lia-text-tertiary">
                   {match_score}% match
                 </span>
               </div>
@@ -215,7 +215,7 @@ export function CandidateCard({
                 <Button 
                   variant="ghost" 
                   size="sm" 
- className="h-7 text-xs px-2 text-gray-600 hover:text-gray-600"
+ className="h-7 text-xs px-2 lia-text-base hover:lia-text-base"
                   onClick={onScheduleInterview}
                 >
                   <Calendar className="w-3 h-3 mr-1" />
@@ -242,13 +242,13 @@ export function CandidateCard({
             </div>
 
             {candidateId && (
-              <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+              <div className="mt-3 pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                 <Button
                   variant="ghost"
                   size="sm"
                   className="w-full h-8 text-xs justify-between px-2"
                   onClick={handleToggleHistory}
-                  className="text-gray-500 dark:text-gray-400"
+                  className="text-gray-500 dark:text-lia-text-tertiary"
                 >
                   <span className="flex items-center gap-1.5">
                     <MessageSquare className="w-3.5 h-3.5" />
@@ -273,7 +273,7 @@ export function CandidateCard({
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-400"></div>
                       </div>
                     ) : communications.length === 0 ? (
-                      <div className="text-center py-3 text-xs text-gray-400 dark:text-gray-500">
+                      <div className="text-center py-3 text-xs text-gray-400">
                         Nenhuma comunicação registrada
                       </div>
                     ) : (
@@ -281,18 +281,18 @@ export function CandidateCard({
                         {communications.map((comm) => (
                           <div
                             key={comm.id}
-                            className="flex items-start gap-2 p-2 rounded-md bg-gray-50 dark:bg-gray-800/50"
+                            className="flex items-start gap-2 p-2 rounded-md bg-gray-50 dark:bg-lia-bg-secondary/50"
                           >
                             <div className="shrink-0 mt-0.5">
                               {getChannelIcon(comm.channel)}
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5 mb-0.5">
-                                <span className="text-xs font-medium truncate text-gray-800 dark:text-gray-100">
+                                <span className="text-xs font-medium truncate text-gray-800 dark:text-lia-text-primary">
                                   {comm.subject || comm.message_preview?.slice(0, 50) || 'Mensagem'}
                                 </span>
                               </div>
-                              <div className="flex items-center gap-2 text-micro text-gray-400 dark:text-gray-500">
+                              <div className="flex items-center gap-2 text-micro text-gray-400">
                                 <span>{formatDate(comm.sent_at || comm.created_at)}</span>
                                 <span className="flex items-center gap-0.5">
                                   {getStatusIcon(comm.status)}

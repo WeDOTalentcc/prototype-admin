@@ -23,7 +23,7 @@ const tipCategories = [
     id: "general",
     name: "Geral",
     icon: Brain,
-    color: "text-gray-600 dark:text-gray-400",
+    color: "text-gray-600 dark:text-lia-text-tertiary",
     tips: [
       "Use linguagem natural - a LIA entende contexto e nuances",
       "Seja específico nos critérios e filtros para melhores resultados",
@@ -39,7 +39,7 @@ const tipCategories = [
     id: "candidates",
     name: "Candidatos",
     icon: Users,
-    color: "text-gray-600 dark:text-gray-400",
+    color: "text-gray-600 dark:text-lia-text-tertiary",
     tips: [
       "Analise perfis individuais: 'Analise o perfil do João Silva'",
       "Compare candidatos: 'Compare os top 5 para UX Designer'",
@@ -55,7 +55,7 @@ const tipCategories = [
     id: "jobs",
     name: "Vagas",
     icon: Briefcase,
-    color: "text-gray-600 dark:text-gray-400",
+    color: "text-gray-600 dark:text-lia-text-tertiary",
     tips: [
       "Crie vagas: 'Nova vaga para Data Scientist Sênior'",
       "Publique vagas: 'Publique Frontend Developer no LinkedIn'",
@@ -71,7 +71,7 @@ const tipCategories = [
     id: "analytics",
     name: "Indicadores",
     icon: BarChart3,
-    color: "text-gray-600 dark:text-gray-400",
+    color: "text-gray-600 dark:text-lia-text-tertiary",
     tips: [
       "Explique tendências: 'Por que caiu o Time to Hire?'",
       "Gere relatórios: 'Relatório diversidade mensal'",
@@ -87,7 +87,7 @@ const tipCategories = [
     id: "automation",
     name: "Automações",
     icon: Zap,
-    color: "text-gray-600 dark:text-gray-400",
+    color: "text-gray-600 dark:text-lia-text-tertiary",
     tips: [
       "Configure triagem automática para posições",
       "Setup follow-ups automáticos para candidatos",
@@ -103,7 +103,7 @@ const tipCategories = [
     id: "integration",
     name: "Integrações",
     icon: Database,
-    color: "text-gray-600 dark:text-gray-400",
+    color: "text-gray-600 dark:text-lia-text-tertiary",
     tips: [
       "Todas as ações são sincronizadas com seu ATS automaticamente",
       "Dados de candidatos e vagas são registrados em tempo real",
@@ -220,7 +220,7 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
             size="sm"
             variant="ghost"
             onClick={() => handleTestInChat(tip)}
-            className="h-6 px-2 text-xs text-gray-600 dark:text-gray-400 hover:text-wedo-cyan-dark"
+            className="h-6 px-2 text-xs text-gray-600 dark:text-lia-text-tertiary hover:text-wedo-cyan-dark"
             title="Testar no chat"
           >
             <Play className="w-3 h-3" />
@@ -253,26 +253,26 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div 
-        className="bg-white dark:bg-gray-900 rounded-md w-full max-w-3xl max-h-[80vh] overflow-hidden border border-gray-200 dark:border-gray-700"
+        className="bg-white dark:bg-lia-bg-primary rounded-md w-full max-w-3xl max-h-[80vh] overflow-hidden border border-lia-border-subtle dark:border-lia-border-subtle"
        
       >
         {/* Header */}
-        <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+        <div className="px-4 py-3 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-md flex items-center justify-center bg-wedo-cyan/15">
                 <Brain className="w-5 h-5 text-wedo-cyan" />
               </div>
               <div>
-                <h2 className="text-sm font-semibold text-gray-950 dark:text-gray-50">
+                <h2 className="text-sm font-semibold text-gray-950">
                   Dicas e Comandos da LIA
                 </h2>
-                <p className="text-xs text-gray-800 dark:text-gray-200">
+                <p className="text-xs text-gray-800 dark:text-lia-text-primary">
                   Aprenda a maximizar o potencial da sua assistente de IA
                 </p>
               </div>
             </div>
-            <Button variant="ghost" size="sm" onClick={onClose} className="h-7 w-7 p-0 text-gray-600 hover:text-gray-700">
+            <Button variant="ghost" size="sm" onClick={onClose} className="h-7 w-7 p-0 lia-text-base hover:lia-text-base">
               <X className="w-4 h-4" />
             </Button>
           </div>
@@ -280,22 +280,22 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
 
         <div className="flex h-[calc(80vh-70px)]">
           {/* Sidebar Categories */}
-          <div className="w-56 bg-gray-50 dark:bg-gray-900/50 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+          <div className="w-56 bg-gray-50 dark:bg-lia-bg-primary/50 border-r border-lia-border-subtle dark:border-lia-border-subtle overflow-y-auto">
             <div className="p-3">
-              <h3 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-2 uppercase tracking-wide">Categorias</h3>
+              <h3 className="text-xs font-medium text-gray-800 dark:text-lia-text-primary mb-2 uppercase tracking-wide">Categorias</h3>
               <div className="space-y-0.5">
                 {tipCategories.map((category) => (
                   <button
                     key={category.id}
                     onClick={() => setActiveCategory(category.id)}
                     className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-md text-left transition-colors ${
-                      activeCategory === category.id
-                        ? 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
-                        : 'hover:bg-white dark:hover:bg-gray-800 border border-transparent'
+ activeCategory === category.id
+                        ? 'bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle'
+                        : 'hover:bg-lia-bg-primary dark:hover:bg-gray-800 border border-transparent'
                     }`}
                   >
-                    <category.icon className={`w-3.5 h-3.5 ${activeCategory === category.id ? 'text-gray-800 dark:text-gray-200' : 'text-gray-600'}`} />
- <span className={`text-xs font-medium ${activeCategory === category.id ? 'text-gray-950' : 'text-gray-600 dark:text-gray-400'}`}>
+                    <category.icon className={`w-3.5 h-3.5 ${activeCategory === category.id ? 'text-gray-800 dark:text-lia-text-primary' : 'text-gray-600'}`} />
+ <span className={`text-xs font-medium ${activeCategory === category.id ? 'text-gray-950' : 'text-gray-600 dark:text-lia-text-tertiary'}`}>
                       {category.name}
                     </span>
                   </button>
@@ -305,13 +305,13 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900/50">
+          <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-lia-bg-primary/50">
             <div className="p-4">
               {/* Context-specific tips for current page */}
               {activeCategory === "general" && (
-                <Card className="mb-4 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                <Card className="mb-4 bg-white dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle">
                   <CardHeader className="pb-3 pt-3 px-4">
-                    <CardTitle className="text-xs flex items-center gap-2 font-medium text-gray-800 dark:text-gray-200">
+                    <CardTitle className="text-xs flex items-center gap-2 font-medium text-gray-800 dark:text-lia-text-primary">
                       <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                       Dicas para "{currentPage}"
                     </CardTitle>
@@ -319,11 +319,11 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
                   <CardContent className="px-4 pb-3">
                     <div className="space-y-2">
                       {currentContextTips.map((tip, index) => (
-                        <div key={index} className="group p-2.5 bg-gray-50 dark:bg-gray-900/50 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-800 transition-colors">
+                        <div key={index} className="group p-2.5 bg-gray-50 dark:bg-lia-bg-primary/50 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:bg-white dark:hover:bg-gray-800 transition-colors">
                           <div className="flex items-start gap-2">
-                            <span className="text-gray-600 mt-0.5 text-xs">•</span>
+                            <span className="lia-text-base mt-0.5 text-xs">•</span>
                             <div className="flex-1">
-                              <p className="text-xs text-gray-800 dark:text-gray-200">{tip}</p>
+                              <p className="text-xs text-gray-800 dark:text-lia-text-primary">{tip}</p>
                               <TipActionButtons tip={tip} isCommand={tip.includes('"') || tip.includes('Analise') || tip.includes('Compare')} />
                             </div>
                           </div>
@@ -342,7 +342,7 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
                     <div key={category.id}>
                       <div className="flex items-center gap-2 mb-3">
                         <category.icon className={`w-4 h-4 ${category.color}`} />
-                        <h3 className="text-base-ui font-semibold text-gray-950 dark:text-gray-50">
+                        <h3 className="text-base-ui font-semibold text-gray-950">
                           {category.name}
                         </h3>
                       </div>
@@ -350,9 +350,9 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
                         {category.tips.map((tip, index) => (
                           <div
                             key={index}
-                            className="group p-2.5 bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 hover:transition-all duration-200"
+                            className="group p-2.5 bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle transition-colors duration-200"
                           >
-                            <p className="text-xs text-gray-800 dark:text-gray-200">
+                            <p className="text-xs text-gray-800 dark:text-lia-text-primary">
                               {tip}
                             </p>
                             <TipActionButtons
@@ -410,30 +410,30 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
               )}
 
               {/* Actions Help */}
-              <Card className="mt-4 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+              <Card className="mt-4 bg-gray-50 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle">
                 <CardHeader className="pb-2 pt-3 px-3">
                   <CardTitle className="text-xs flex items-center gap-2 font-medium">
-                    <HelpCircle className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                    <HelpCircle className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                     Ações Disponíveis
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="px-3 pb-3">
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className="flex items-center gap-1.5">
-                      <Copy className="w-3 h-3 text-gray-800 dark:text-gray-200" />
-                      <span className="text-gray-600 dark:text-gray-400">Copiar dica</span>
+                      <Copy className="w-3 h-3 text-gray-800 dark:text-lia-text-primary" />
+                      <span className="text-gray-600 dark:text-lia-text-tertiary">Copiar dica</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <Play className="w-3 h-3 text-gray-600 dark:text-gray-400" />
-                      <span className="text-gray-600 dark:text-gray-400">Testar no chat</span>
+                      <Play className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
+                      <span className="text-gray-600 dark:text-lia-text-tertiary">Testar no chat</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <BookOpen className="w-3 h-3 text-status-success" />
-                      <span className="text-gray-600 dark:text-gray-400">Usar na biblioteca</span>
+                      <span className="text-gray-600 dark:text-lia-text-tertiary">Usar na biblioteca</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Filter className="w-3 h-3 text-wedo-purple" />
-                      <span className="text-gray-600 dark:text-gray-400">Aplicar como filtro</span>
+                      <span className="text-gray-600 dark:text-lia-text-tertiary">Aplicar como filtro</span>
                     </div>
                   </div>
                 </CardContent>

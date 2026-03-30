@@ -448,12 +448,12 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
         <div className="space-y-6">
           <Card className="border-0 rounded-md backdrop-blur-sm animate-pulse">
             <CardHeader className="pb-4">
-              <div className="h-5 w-48 rounded-md bg-gray-400" style={{opacity: 0.3}}></div>
+              <div className="h-5 w-48 rounded-md bg-gray-400 opacity-30"></div>
             </CardHeader>
             <CardContent>
               <div className="flex gap-2">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="w-28 h-16 rounded-md bg-gray-400" style={{opacity: 0.2}}></div>
+                  <div key={i} className="w-28 h-16 rounded-md bg-gray-400 opacity-20"></div>
                 ))}
               </div>
             </CardContent>
@@ -480,7 +480,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             {isEditingPipeline && hasStageChanges && (
-              <Badge variant="outline" className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700 text-micro">
+              <Badge variant="outline" className="bg-gray-100 lia-text-700 dark:bg-lia-bg-secondary dark:text-lia-text-secondary border-lia-border-subtle dark:border-lia-border-subtle text-micro">
                 Alterações não salvas
               </Badge>
             )}
@@ -525,7 +525,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
           </div>
         </div>
 
-        <Card className="border border-gray-200/50 dark:border-gray-700/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-md">
+        <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-white/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
           <CardContent className="p-6">
             <RecruitmentJourneyConfig
               stages={recruitmentStages}
@@ -554,18 +554,18 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
         </div>
       )}
 
-      <div className="px-3 py-2.5 rounded-md bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
-        <p className={`${textStyles.caption} text-gray-500`}>
-          <span className="font-semibold text-gray-700 dark:text-gray-300">Perguntas automáticas</span> (modelo de trabalho, localização, idiomas, regime de contratação) são geradas automaticamente pela LIA a partir dos campos de cada vaga — não precisam ser configuradas aqui.
+      <div className="px-3 py-2.5 rounded-md bg-gray-50 dark:bg-lia-bg-secondary/50 border border-lia-border-subtle dark:border-lia-border-subtle">
+        <p className={`${textStyles.caption} lia-text-500`}>
+          <span className="font-semibold lia-text-700 dark:text-lia-text-secondary">Perguntas automáticas</span> (modelo de trabalho, localização, idiomas, regime de contratação) são geradas automaticamente pela LIA a partir dos campos de cada vaga — não precisam ser configuradas aqui.
         </p>
       </div>
 
-      <Card className="border border-gray-200/50 dark:border-gray-700/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-md">
+      <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-white/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className={`${textStyles.h4} flex items-center gap-2`}>
-                <MessageSquare className="w-3.5 h-3.5 text-gray-700 dark:text-gray-300" />
+                <MessageSquare className="w-3.5 h-3.5 lia-text-700 dark:text-lia-text-secondary" />
                 Catálogo de Perguntas de Elegibilidade
               </CardTitle>
               <p className={`${textStyles.description} mt-1`}>
@@ -628,7 +628,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           {isEditingQuestions && showQuestionBank && (
-            <Card className="border-2 border-dashed border-gray-300 bg-gray-50/30 dark:bg-gray-800/10 rounded-md">
+            <Card className="border-2 border-dashed border-lia-border-default bg-gray-50/30 dark:bg-lia-bg-secondary/10 rounded-md">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -654,7 +654,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                   const categoryInfo = QUESTION_CATEGORIES[category]
                   
                   return (
-                    <div key={category} className="border border-gray-200 rounded-md overflow-hidden">
+                    <div key={category} className="border border-lia-border-subtle rounded-md overflow-hidden">
                       <button
                         onClick={() => toggleCategory(category)}
                         className="w-full flex items-center justify-between p-2.5 bg-gray-50 hover:bg-gray-100 transition-colors"
@@ -669,14 +669,14 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                           </Badge>
                         </div>
                         {isExpanded ? (
-                          <ChevronUp className="w-3.5 h-3.5 text-gray-400" />
+                          <ChevronUp className="w-3.5 h-3.5 lia-text-400" />
                         ) : (
-                          <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+                          <ChevronDown className="w-3.5 h-3.5 lia-text-400" />
                         )}
                       </button>
                       
                       {isExpanded && (
-                        <div className="p-2 space-y-1.5 bg-white">
+                        <div className="p-2 space-y-1.5 bg-lia-bg-primary">
                           {categoryQuestions.map(q => {
                             const isAdded = isQuestionAlreadyAdded(q)
                             const isSelected = selectedBankQuestions.has(q.id)
@@ -686,10 +686,10 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                                 key={q.id}
                                 className={`flex items-start gap-2 p-2 rounded-md border transition-colors ${
                                   isAdded 
-                                    ? 'bg-gray-100 border-gray-200 opacity-60 dark:bg-gray-700 dark:border-gray-600' 
+                                    ? 'bg-gray-100 border-lia-border-subtle opacity-60 dark:bg-lia-bg-elevated dark:border-lia-border-default' 
                                     : isSelected 
-                                      ? 'bg-gray-100 border-gray-300 dark:bg-gray-700 dark:border-gray-600' 
-                                      : 'bg-white border-gray-100 hover:border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:hover:border-gray-600'
+                                      ? 'bg-gray-100 border-lia-border-default dark:bg-lia-bg-elevated dark:border-lia-border-default' 
+                                      : 'bg-white border-lia-border-subtle hover:border-lia-border-subtle dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:border-gray-600'
                                 }`}
                               >
                                 <input
@@ -697,7 +697,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                                   checked={isSelected}
                                   disabled={isAdded}
                                   onChange={() => toggleBankQuestion(q.id)}
-                                  className="mt-0.5 rounded-md border-gray-300"
+                                  className="mt-0.5 rounded-md border-lia-border-default"
                                 />
                                 <div className="flex-1 min-w-0">
                                   <p className={textStyles.bodySmall}>
@@ -727,11 +727,11 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                 })}
                 
                 {selectedBankQuestions.size > 0 && (
-                  <div className="sticky bottom-0 pt-3 bg-gradient-to-t from-gray-50/80 to-transparent dark:from-gray-800/80">
+                  <div className="sticky bottom-0 pt-3 bg-gradient-to-t from-gray-50/80 to-transparent dark:lia-from-800/80">
                     <Button 
                       onClick={handleAddFromBank}
                       size="sm" 
-                      className={`w-full gap-1.5 rounded-md py-2 bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 ${textStyles.label}`}
+                      className={`w-full gap-1.5 rounded-md py-2 bg-gray-900 text-white hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 ${textStyles.label}`}
                     >
                       <Plus className="w-3.5 h-3.5" />
                       Adicionar {selectedBankQuestions.size} pergunta{selectedBankQuestions.size > 1 ? 's' : ''} selecionada{selectedBankQuestions.size > 1 ? 's' : ''}
@@ -743,7 +743,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
           )}
 
           {isEditingQuestions && showQuestionForm && (
-            <Card className="border border-gray-200/50 dark:border-gray-700/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-md">
+            <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-white/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
               <CardContent className="p-3 space-y-4">
                 <div>
                   <label className={`block mb-1.5 ${textStyles.labelSmall}`}>Pergunta</label>
@@ -751,7 +751,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                     type="text"
                     value={newQuestion.question}
                     onChange={(e) => setNewQuestion(prev => ({ ...prev, question: e.target.value }))}
-                    className={`w-full px-2 py-1.5 border border-gray-200 rounded-md bg-white ${textStyles.body}`}
+                    className={`w-full px-2 py-1.5 border border-lia-border-subtle rounded-md bg-lia-bg-primary ${textStyles.body}`}
                     placeholder="Digite a pergunta..."
                   />
                 </div>
@@ -761,7 +761,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                     <select
                       value={newQuestion.type}
                       onChange={(e) => setNewQuestion(prev => ({ ...prev, type: e.target.value as 'text' | 'yesno' | 'scale' | 'multiple' }))}
-                      className={`w-full px-2 py-1.5 border border-gray-200 rounded-md bg-white ${textStyles.body}`}
+                      className={`w-full px-2 py-1.5 border border-lia-border-subtle rounded-md bg-lia-bg-primary ${textStyles.body}`}
                     >
                       <option value="text">Texto livre</option>
                       <option value="yesno">Sim/Não</option>
@@ -802,7 +802,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                           value="Sim"
                           checked={newQuestion.expected_answer === 'Sim'}
                           onChange={(e) => setNewQuestion(prev => ({ ...prev, expected_answer: e.target.value }))}
-                          className="border-gray-300"
+                          className="border-lia-border-default"
                         />
                         Sim
                       </label>
@@ -813,7 +813,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                           value="Não"
                           checked={newQuestion.expected_answer === 'Não'}
                           onChange={(e) => setNewQuestion(prev => ({ ...prev, expected_answer: e.target.value }))}
-                          className="border-gray-300"
+                          className="border-lia-border-default"
                         />
                         Não
                       </label>
@@ -827,7 +827,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                   <Button variant="ghost" size="sm" className={`py-1.5 px-2 ${textStyles.label}`} onClick={() => setShowQuestionForm(false)}>
                     Cancelar
                   </Button>
-                  <Button size="sm" className={`py-1.5 px-2 bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 ${textStyles.label}`} onClick={handleAddQuestion}>
+                  <Button size="sm" className={`py-1.5 px-2 bg-gray-900 text-white hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 ${textStyles.label}`} onClick={handleAddQuestion}>
                     <Save className="w-3.5 h-3.5 mr-1" />
                     Salvar
                   </Button>
@@ -842,17 +842,17 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                 key={q.id} 
                 className={`flex items-center gap-3 p-3 rounded-md border group transition-colors ${
                   isEditingQuestions 
-                    ? 'bg-gray-50 dark:bg-gray-800/50 border-gray-100 dark:border-gray-700' 
-                    : 'bg-gray-50/60 dark:bg-gray-800/30 border-gray-100/60 dark:border-gray-700/60'
+                    ? 'bg-gray-50 dark:bg-lia-bg-secondary/50 border-lia-border-subtle dark:border-lia-border-subtle' 
+                    : 'bg-gray-50/60 dark:bg-lia-bg-secondary/30 border-lia-border-subtle/60 dark:border-lia-border-subtle/60'
                 }`}
               >
                 <div 
-                  className={`flex items-center justify-center w-6 h-6 rounded-full bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900 transition-opacity ${!isEditingQuestions ? 'opacity-60' : ''} ${textStyles.labelSmall}`}
+                  className={`flex items-center justify-center w-6 h-6 rounded-full bg-gray-900 text-white dark:lia-bg-50 dark:lia-text-900 transition-opacity ${!isEditingQuestions ? 'opacity-60' : ''} ${textStyles.labelSmall}`}
                 >
                   {index + 1}
                 </div>
                 <div className="flex-1">
- <p className={`${textStyles.body} transition-colors ${isEditingQuestions ? 'text-gray-950' : 'text-gray-600 dark:text-gray-400'}`}>
+ <p className={`${textStyles.body} transition-colors ${isEditingQuestions ? 'lia-text-950' : 'lia-text-600 dark:text-lia-text-tertiary'}`}>
                     {q.question}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -860,7 +860,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                       {q.type === 'text' ? 'Texto' : q.type === 'yesno' ? 'Sim/Não' : 'Escala'}
                     </Badge>
                     {q.required && (
-                      <Badge className={`text-micro py-0 px-1.5 bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900 ${!isEditingQuestions ? 'opacity-60' : ''}`}>Obrigatória</Badge>
+                      <Badge className={`text-micro py-0 px-1.5 bg-gray-900 text-white dark:lia-bg-50 dark:lia-text-900 ${!isEditingQuestions ? 'opacity-60' : ''}`}>Obrigatória</Badge>
                     )}
                     {q.is_eliminatory && (
                       <Badge className={`text-micro py-0 px-1.5 bg-status-error/15 text-status-error border border-status-error/30 ${!isEditingQuestions ? 'opacity-60' : ''}`}>
@@ -868,7 +868,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                       </Badge>
                     )}
                     {q.isDefault && (
-                      <span className="text-micro text-gray-400">Padrão</span>
+                      <span className="text-micro lia-text-400">Padrão</span>
                     )}
                   </div>
                 </div>
@@ -880,7 +880,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                       className="h-7 w-7 p-0"
                       onClick={() => handleToggleRequired(q.id)}
                     >
-                      {q.required ? <Lock className="w-3.5 h-3.5 text-gray-400" /> : <Eye className="w-3.5 h-3.5 text-gray-400" />}
+                      {q.required ? <Lock className="w-3.5 h-3.5 lia-text-400" /> : <Eye className="w-3.5 h-3.5 lia-text-400" />}
                     </Button>
                     <Button
                       variant="ghost"

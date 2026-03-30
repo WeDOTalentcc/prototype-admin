@@ -76,14 +76,14 @@ export function MessageBubble({
           className={cn(
             "px-3.5 py-2.5",
             isLia
-              ? "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-[14px] rounded-bl-[4px]"
-              : "bg-gray-100 dark:bg-gray-800 rounded-[14px] rounded-br-[4px]"
+              ? "bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-[14px] rounded-bl-[4px]"
+              : "bg-gray-100 dark:bg-lia-bg-secondary rounded-[14px] rounded-br-[4px]"
           )}
         >
           <RichTextContent
             html={renderedContent}
             className={cn(
-              "text-base-ui leading-relaxed font-['Open_Sans',sans-serif] text-gray-700 dark:text-gray-200"
+              "text-base-ui leading-relaxed font-['Open_Sans',sans-serif] lia-text-700 dark:text-lia-text-primary"
             )}
           />
 
@@ -99,7 +99,7 @@ export function MessageBubble({
         <div className="flex items-center justify-between px-1">
           <span
             className={cn(
-              "text-xs font-['Inter',sans-serif] tabular-nums text-gray-400 dark:text-gray-500",
+              "text-xs font-['Inter',sans-serif] tabular-nums lia-text-400 dark:lia-text-500",
               !isLia && "ml-auto"
             )}
           >
@@ -123,7 +123,7 @@ export function MessageBubble({
             {userAvatar ? (
               <AvatarImage src={userAvatar} alt={userName || "User"} />
             ) : null}
-            <AvatarFallback className="bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-micro">
+            <AvatarFallback className="bg-gray-200 dark:lia-bg-600 lia-text-600 dark:text-lia-text-secondary text-micro">
               {userName ? userName.charAt(0).toUpperCase() : <User className="w-3.5 h-3.5" />}
             </AvatarFallback>
           </Avatar>

@@ -116,8 +116,8 @@ export function JobAssignRecruiterModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="max-w-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md">
-        <DialogHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
+      <DialogContent className="max-w-2xl bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
+        <DialogHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-md bg-gray-100 flex items-center justify-center">
               <Users className="w-4 h-4 text-gray-600" />
@@ -144,10 +144,10 @@ export function JobAssignRecruiterModal({
                   {jobs.map((job) => (
                     <div
                       key={job.id}
-                      className="p-2.5 rounded-md bg-gray-50 border border-gray-200"
+                      className="p-2.5 rounded-md bg-gray-50 border border-lia-border-subtle"
                     >
                       <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-md bg-white border border-gray-200 flex items-center justify-center flex-shrink-0">
+                        <div className="w-7 h-7 rounded-md bg-lia-bg-primary border border-lia-border-subtle flex items-center justify-center flex-shrink-0">
                           <Briefcase className="w-3.5 h-3.5 text-gray-600" />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -175,7 +175,7 @@ export function JobAssignRecruiterModal({
                 <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
                   Opções
                 </h4>
-                <div className="space-y-2 p-3 rounded-md bg-gray-50 border border-gray-200">
+                <div className="space-y-2 p-3 rounded-md bg-gray-50 border border-lia-border-subtle">
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="notify"
@@ -183,7 +183,7 @@ export function JobAssignRecruiterModal({
                       onCheckedChange={(checked) =>
                         setNotifyRecruiter(checked === true)
                       }
-                      className="border-gray-200 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+                      className="border-lia-border-subtle data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
                     />
                     <Label
                       htmlFor="notify"
@@ -200,7 +200,7 @@ export function JobAssignRecruiterModal({
                       onCheckedChange={(checked) =>
                         setTransferCommunications(checked === true)
                       }
-                      className="border-gray-200 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+                      className="border-lia-border-subtle data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
                     />
                     <Label
                       htmlFor="transfer"
@@ -214,9 +214,9 @@ export function JobAssignRecruiterModal({
               </div>
 
               {recommendedRecruiter && (
-                <div className="p-3 rounded-md bg-gray-50 border border-gray-200">
+                <div className="p-3 rounded-md bg-gray-50 border border-lia-border-subtle">
                   <div className="flex items-start gap-2">
-                    <div className="w-6 h-6 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+                    <div className="w-6 h-6 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
                       <Brain className="w-3 h-3 text-wedo-cyan" />
                     </div>
                     <div>
@@ -242,11 +242,11 @@ export function JobAssignRecruiterModal({
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Buscar recrutador..."
-                  className="h-8 pl-9 text-xs border-gray-200 focus:ring-gray-900/20 focus:border-gray-400"
+                  className="h-8 pl-9 text-xs border-lia-border-subtle focus:ring-gray-900/20 focus:border-gray-400"
                 />
               </div>
 
-              <div className="space-y-1.5 max-h-[200px] overflow-y-auto border border-gray-200 rounded-md p-2">
+              <div className="space-y-1.5 max-h-[200px] overflow-y-auto border border-lia-border-subtle rounded-md p-2">
                 {filteredRecruiters.length === 0 ? (
                   <div className="text-center py-4 text-xs text-gray-500">
                     Nenhum recrutador encontrado
@@ -260,10 +260,10 @@ export function JobAssignRecruiterModal({
                       <div
                         key={recruiter.id}
                         onClick={() => setSelectedRecruiterId(recruiter.id)}
-                        className={`p-2.5 rounded-md cursor-pointer transition-all ${
+                        className={`p-2.5 rounded-md cursor-pointer transition-colors ${
                           isSelected
                             ? "bg-gray-100 border-2 border-gray-900"
-                            : "bg-gray-50 border border-gray-200 hover:border-gray-400"
+                            : "bg-gray-50 border border-lia-border-subtle hover:border-gray-400"
                         }`}
                       >
                         <div className="flex items-center gap-2">
@@ -271,7 +271,7 @@ export function JobAssignRecruiterModal({
                             {recruiter.avatar ? (
                               <AvatarImage src={recruiter.avatar} alt={recruiter.name} />
                             ) : null}
-                            <AvatarFallback className={`text-micro font-medium ${isRecommended ? "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400" : "bg-gray-100 text-gray-600"}`}>
+                            <AvatarFallback className={`text-micro font-medium ${isRecommended ? "bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary" : "bg-gray-100 text-gray-600"}`}>
                               {getInitials(recruiter.name)}
                             </AvatarFallback>
                           </Avatar>
@@ -281,7 +281,7 @@ export function JobAssignRecruiterModal({
                                 {recruiter.name}
                               </span>
                               {isRecommended && (
-                                <span className="flex items-center gap-0.5 text-micro font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded-full">
+                                <span className="flex items-center gap-0.5 text-micro font-medium text-gray-600 dark:text-lia-text-tertiary bg-gray-100 dark:bg-lia-bg-secondary px-1.5 py-0.5 rounded-full">
                                   <Star className="w-2.5 h-2.5" />
                                   Recom.
                                 </span>
@@ -305,11 +305,11 @@ export function JobAssignRecruiterModal({
           </div>
         </div>
 
-        <DialogFooter className="pt-3 border-t border-gray-200 bg-gray-50 dark:bg-gray-900 dark:border-gray-700 gap-2">
+        <DialogFooter className="pt-3 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle gap-2">
           <Button
             variant="outline"
             onClick={handleClose}
-            className="h-9 px-4 text-xs font-medium bg-white border border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
+            className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 text-gray-700 dark:text-lia-text-primary"
           >
             Cancelar
           </Button>

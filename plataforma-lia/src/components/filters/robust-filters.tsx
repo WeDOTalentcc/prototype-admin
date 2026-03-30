@@ -47,7 +47,7 @@ interface RobustFiltersProps {
 }
 
 const candidateStatuses = [
-  { id: 'novo', label: 'Novo', color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400', count: 45 },
+  { id: 'novo', label: 'Novo', color: 'bg-gray-100 text-gray-600 dark:bg-lia-bg-secondary dark:text-lia-text-tertiary', count: 45 },
   { id: 'em_triagem', label: 'Em Triagem', color: 'bg-status-warning/10 text-status-warning', count: 23 },
   { id: 'aprovado', label: 'Aprovado', color: 'bg-status-success/10 text-status-success', count: 12 },
   { id: 'entrevista', label: 'Entrevista', color: 'bg-wedo-purple/15 text-wedo-purple', count: 8 },
@@ -58,9 +58,9 @@ const candidateStatuses = [
 const jobStatuses = [
   { id: 'ativa', label: 'Ativa', color: 'bg-status-success/10 text-status-success', count: 15 },
   { id: 'pausada', label: 'Pausada', color: 'bg-status-warning/10 text-status-warning', count: 5 },
-  { id: 'fechada', label: 'Fechada', color: 'bg-gray-100 text-gray-800', count: 8 },
+  { id: 'fechada', label: 'Fechada', color: 'bg-gray-100 lia-text-strong', count: 8 },
   { id: 'urgente', label: 'Urgente', color: 'bg-status-error/10 text-status-error', count: 3 },
-  { id: 'rascunho', label: 'Rascunho', color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400', count: 2 }
+  { id: 'rascunho', label: 'Rascunho', color: 'bg-gray-100 text-gray-600 dark:bg-lia-bg-secondary dark:text-lia-text-tertiary', count: 2 }
 ]
 
 const locations = ['São Paulo', 'Rio de Janeiro', 'Belo Horizonte', 'Porto Alegre', 'Remoto', 'Híbrido']
@@ -130,19 +130,19 @@ export function RobustFilters({
     <div className={cn("space-y-4", className)}>
       {/* Search Bar */}
       <div className="relative">
-        <div className="relative rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-shadow duration-200 focus-within:shadow-[0_0_0_2px_black/10]">
+        <div className="relative rounded-md bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle transition-shadow duration-200 focus-within:shadow-lia-focus">
           <div className="flex items-center">
-            <Search className="absolute left-3 w-4 h-4 text-gray-600" />
+            <Search className="absolute left-3 w-4 h-4 lia-text-base" />
             <input
               type="text"
               placeholder={type === 'candidates' ? "Buscar candidatos..." : "Buscar vagas..."}
               value={filters.search}
               onChange={(e) => updateFilter('search', e.target.value)}
-              className="w-full pl-10 pr-20 py-3 bg-transparent border-0 focus:outline-none text-gray-950 dark:text-gray-50 placeholder-gray-600"
+              className="w-full pl-10 pr-20 py-3 bg-transparent border-0 focus:outline-none text-gray-950 placeholder-gray-600"
             />
             <div className="absolute right-2 flex items-center gap-2">
               {resultsCount !== undefined && (
-                <span className="text-xs text-gray-600 dark:text-gray-400">
+                <span className="text-xs text-gray-600 dark:text-lia-text-tertiary">
                   {resultsCount} resultado{resultsCount !== 1 ? 's' : ''}
                 </span>
               )}
@@ -156,8 +156,8 @@ export function RobustFilters({
                 size="sm"
                 onClick={() => setShowAdvanced(!showAdvanced)}
                 className={cn(
-                  "h-8 w-8 p-0",
-                  showAdvanced && "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50"
+ "h-8 w-8 p-0",
+                  showAdvanced && "bg-gray-100 dark:bg-lia-bg-secondary text-gray-900"
                 )}
               >
                 <SlidersHorizontal className="w-4 h-4" />
@@ -174,11 +174,11 @@ export function RobustFilters({
             key={status.id}
             onClick={() => toggleArrayFilter('status', status.id)}
             className={cn(
-              "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
+ "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-[width,height] border",
               "hover:scale-[1.02] active:scale-[0.98]",
               filters.status.includes(status.id)
                 ? status.color + " border-current"
-                : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-700"
+                : "bg-gray-100 text-gray-600 border-lia-border-subtle hover:bg-gray-200 dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-subtle dark:hover:bg-gray-700"
             )}
           >
             {status.label}
@@ -205,14 +205,14 @@ export function RobustFilters({
           className="overflow-hidden"
           style={{animation: 'slideInUp 0.3s ease-out'}}
         >
-          <div className="border border-gray-200 dark:border-gray-700 rounded-md p-4 bg-gray-50 dark:bg-gray-800/50 space-y-6">
+          <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 space-y-6">
 
             {/* Grid Layout */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
               {/* Localização */}
               <div>
-                <h4 className="text-sm font-medium text-gray-950 dark:text-gray-50 mb-3 flex items-center gap-2">
+                <h4 className="text-sm font-medium text-gray-950 mb-3 flex items-center gap-2">
                   <MapPin className="w-4 h-4" />
                   Localização
                 </h4>
@@ -222,11 +222,11 @@ export function RobustFilters({
                       key={location}
                       onClick={() => toggleArrayFilter('location', location)}
                       className={cn(
-                        "w-full text-left px-3 py-2 rounded-md text-sm transition-all border",
+ "w-full text-left px-3 py-2 rounded-md text-sm transition-colors border",
                         "hover:scale-[1.02] active:scale-[0.98]",
                         filters.location.includes(location)
-                          ? "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50 border-gray-900 dark:border-gray-50"
-                          : "bg-white text-gray-800 dark:text-gray-200 border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
+                          ? "bg-gray-100 dark:bg-lia-bg-secondary text-gray-900 border-gray-900"
+                          : "bg-white text-gray-800 dark:text-lia-text-primary border-lia-border-subtle hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-gray-700"
                       )}
                     >
                       {location}
@@ -237,7 +237,7 @@ export function RobustFilters({
 
               {/* Experiência */}
               <div>
-                <h4 className="text-sm font-medium text-gray-950 dark:text-gray-50 mb-3 flex items-center gap-2">
+                <h4 className="text-sm font-medium text-gray-950 mb-3 flex items-center gap-2">
                   <Briefcase className="w-4 h-4" />
                   Experiência
                 </h4>
@@ -247,11 +247,11 @@ export function RobustFilters({
                       key={level}
                       onClick={() => toggleArrayFilter('experience', level)}
                       className={cn(
-                        "w-full text-left px-3 py-2 rounded-md text-sm transition-all border",
+ "w-full text-left px-3 py-2 rounded-md text-sm transition-colors border",
                         "hover:scale-[1.02] active:scale-[0.98]",
                         filters.experience.includes(level)
                           ? "bg-status-success/10 text-status-success border-status-success/30"
-                          : "bg-white text-gray-800 dark:text-gray-200 border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
+                          : "bg-white text-gray-800 dark:text-lia-text-primary border-lia-border-subtle hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-gray-700"
                       )}
                     >
                       {level}
@@ -262,7 +262,7 @@ export function RobustFilters({
 
               {/* Tipo de Contrato */}
               <div>
-                <h4 className="text-sm font-medium text-gray-950 dark:text-gray-50 mb-3 flex items-center gap-2">
+                <h4 className="text-sm font-medium text-gray-950 mb-3 flex items-center gap-2">
                   <Clock className="w-4 h-4" />
                   Tipo de Contrato
                 </h4>
@@ -272,11 +272,11 @@ export function RobustFilters({
                       key={contract}
                       onClick={() => toggleArrayFilter('contractType', contract)}
                       className={cn(
-                        "w-full text-left px-3 py-2 rounded-md text-sm transition-all border",
+ "w-full text-left px-3 py-2 rounded-md text-sm transition-colors border",
                         "hover:scale-[1.02] active:scale-[0.98]",
                         filters.contractType.includes(contract)
                           ? "bg-wedo-purple/15 text-wedo-purple border-wedo-purple/30"
-                          : "bg-white text-gray-800 dark:text-gray-200 border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
+                          : "bg-white text-gray-800 dark:text-lia-text-primary border-lia-border-subtle hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-gray-700"
                       )}
                     >
                       {contract}
@@ -288,13 +288,13 @@ export function RobustFilters({
 
             {/* Salary Range */}
             <div>
-              <h4 className="text-sm font-medium text-gray-950 dark:text-gray-50 mb-3 flex items-center gap-2">
+              <h4 className="text-sm font-medium text-gray-950 mb-3 flex items-center gap-2">
                 <DollarSign className="w-4 h-4" />
                 Faixa Salarial
               </h4>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">
+                  <label className="text-xs text-gray-600 dark:text-lia-text-tertiary mb-1 block">
                     Salário Mínimo
                   </label>
                   <input
@@ -305,11 +305,11 @@ export function RobustFilters({
                       ...filters.salary,
                       min: e.target.value ? Number(e.target.value) : null
                     })}
-                    className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-950 dark:text-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                    className="w-full px-3 py-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-secondary text-gray-950 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">
+                  <label className="text-xs text-gray-600 dark:text-lia-text-tertiary mb-1 block">
                     Salário Máximo
                   </label>
                   <input
@@ -320,7 +320,7 @@ export function RobustFilters({
                       ...filters.salary,
                       max: e.target.value ? Number(e.target.value) : null
                     })}
-                    className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-950 dark:text-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                    className="w-full px-3 py-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-secondary text-gray-950 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
                   />
                 </div>
               </div>
@@ -328,7 +328,7 @@ export function RobustFilters({
 
             {/* Skills */}
             <div>
-              <h4 className="text-sm font-medium text-gray-950 dark:text-gray-50 mb-3 flex items-center gap-2">
+              <h4 className="text-sm font-medium text-gray-950 mb-3 flex items-center gap-2">
                 <TrendingUp className="w-4 h-4" />
                 Habilidades Populares
               </h4>
@@ -338,11 +338,11 @@ export function RobustFilters({
                     key={skill}
                     onClick={() => toggleArrayFilter('skills', skill)}
                     className={cn(
-                      "px-3 py-1 rounded-full text-xs font-medium transition-all",
+ "px-3 py-1 rounded-full text-xs font-medium transition-[width,height]",
                       "hover:scale-[1.05] active:scale-[0.95]",
                       filters.skills.includes(skill)
                         ? "bg-wedo-orange/15 text-wedo-orange"
- : "text-gray-800 hover:dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+ : "text-gray-800 hover:dark:bg-lia-bg-elevated dark:text-lia-text-secondary dark:hover:bg-gray-600"
                     )}
                   >
                     {skill}
@@ -353,7 +353,7 @@ export function RobustFilters({
 
             {/* All Status Options */}
             <div>
-              <h4 className="text-sm font-medium text-gray-950 dark:text-gray-50 mb-3 flex items-center gap-2">
+              <h4 className="text-sm font-medium text-gray-950 mb-3 flex items-center gap-2">
                 <Users className="w-4 h-4" />
                 Status Completo
               </h4>
@@ -363,11 +363,11 @@ export function RobustFilters({
                     key={status.id}
                     onClick={() => toggleArrayFilter('status', status.id)}
                     className={cn(
-                      "flex items-center justify-between px-3 py-2 rounded-md text-sm transition-all border",
+ "flex items-center justify-between px-3 py-2 rounded-md text-sm transition-colors border",
                       "hover:scale-[1.02] active:scale-[0.98]",
                       filters.status.includes(status.id)
                         ? status.color + " border-current"
-                        : "bg-white text-gray-800 dark:text-gray-200 border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
+                        : "bg-white text-gray-800 dark:text-lia-text-primary border-lia-border-subtle hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-gray-700"
                     )}
                   >
                     <span>{status.label}</span>
@@ -383,10 +383,10 @@ export function RobustFilters({
       {/* Active Filters Summary */}
       {activeFiltersCount > 0 && (
         <div
-          className="flex flex-wrap items-center gap-2 p-3 bg-gray-100 dark:bg-gray-800 rounded-md"
+          className="flex flex-wrap items-center gap-2 p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md"
           style={{animation: 'fadeIn 0.3s ease-out'}}
         >
-          <span className="text-sm font-medium text-gray-900 dark:text-gray-50">
+          <span className="text-sm font-medium text-gray-900">
             Filtros aplicados ({activeFiltersCount}):
           </span>
           {filters.status.map((status) => (

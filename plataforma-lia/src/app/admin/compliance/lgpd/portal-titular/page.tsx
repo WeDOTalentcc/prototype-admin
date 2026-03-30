@@ -147,7 +147,7 @@ export default function PortalTitularPage() {
         )
       case 'planned':
         return (
- <Badge className="text-gray-600 dark:text-gray-400 hover:bg-gray-100">
+ <Badge className="lia-text-600 dark:text-lia-text-tertiary hover:bg-gray-100">
             <Clock className="w-3 h-3 mr-1" />
             Planejado
           </Badge>
@@ -170,10 +170,10 @@ export default function PortalTitularPage() {
 
     const colorClasses: Record<string, string> = {
       'amber': 'bg-status-warning/15 text-status-warning hover:bg-status-warning/15',
- 'blue': 'text-gray-600 dark:text-gray-400 hover:bg-gray-100',
+ 'blue': 'lia-text-600 dark:text-lia-text-tertiary hover:bg-gray-100',
       'emerald': 'bg-status-success/15 text-status-success hover:bg-status-success/15',
       'red': 'bg-status-error/15 text-status-error hover:bg-status-error/15',
-      'gray': 'bg-gray-100 text-gray-800 dark:text-gray-200 hover:bg-gray-100',
+      'gray': 'bg-gray-100 lia-text-800 dark:text-lia-text-primary hover:bg-gray-100',
     }
 
     return <Badge className={colorClasses[config.color]}>{config.label}</Badge>
@@ -287,16 +287,16 @@ export default function PortalTitularPage() {
             <div 
               className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
             >
-              <UserCircle className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <UserCircle className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+                className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary"
                 
               >
                 Portal Self-Service (Art. 18)
               </h1>
-              <p className="text-sm text-gray-400 dark:text-gray-500" >
+              <p className="text-sm lia-text-400 dark:lia-text-500" >
                 Portal para exercício de direitos dos titulares de dados
               </p>
             </div>
@@ -320,13 +320,13 @@ export default function PortalTitularPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
-                  <FileSearch className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  <FileSearch className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >
+                  <p className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary" >
                     {loading ? '-' : stats?.totalRequests || 0}
                   </p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500" >DSRs Recebidos</p>
+                  <p className="text-xs lia-text-400 dark:lia-text-500" >DSRs Recebidos</p>
                 </div>
               </div>
             </CardContent>
@@ -339,10 +339,10 @@ export default function PortalTitularPage() {
                   <Loader2 className="w-5 h-5 text-status-warning" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >
+                  <p className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary" >
                     {loading ? '-' : (stats?.pendingRequests || 0) + (stats?.inProgressRequests || 0)}
                   </p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500" >Em Andamento</p>
+                  <p className="text-xs lia-text-400 dark:lia-text-500" >Em Andamento</p>
                 </div>
               </div>
             </CardContent>
@@ -355,10 +355,10 @@ export default function PortalTitularPage() {
                   <CheckCircle2 className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >
+                  <p className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary" >
                     {loading ? '-' : stats?.completedRequests || 0}
                   </p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500" >Concluídos</p>
+                  <p className="text-xs lia-text-400 dark:lia-text-500" >Concluídos</p>
                 </div>
               </div>
             </CardContent>
@@ -368,13 +368,13 @@ export default function PortalTitularPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
-                  <Clock className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  <Clock className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >
+                  <p className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary" >
                     {loading ? '-' : `${stats?.avgResponseTime?.toFixed(1) || 0} dias`}
                   </p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500" >Tempo Médio</p>
+                  <p className="text-xs lia-text-400 dark:lia-text-500" >Tempo Médio</p>
                 </div>
               </div>
             </CardContent>
@@ -405,7 +405,7 @@ export default function PortalTitularPage() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
+                    <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
                       Solicitações de Direitos (DSRs)
                     </CardTitle>
                     <CardDescription>
@@ -415,7 +415,7 @@ export default function PortalTitularPage() {
                 </div>
                 <div className="flex gap-3 mt-4">
                   <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-400" />
                     <Input
                       placeholder="Buscar por nome ou email..."
                       value={searchTerm}
@@ -454,12 +454,12 @@ export default function PortalTitularPage() {
               <CardContent>
                 {loading ? (
                   <div className="flex items-center justify-center py-12">
-                    <Loader2 className="w-8 h-8 animate-spin text-gray-600 dark:text-gray-400" />
+                    <Loader2 className="w-8 h-8 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
                   </div>
                 ) : requests.length === 0 ? (
                   <div className="text-center py-12">
-                    <FileSearch className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                    <p className="text-sm text-gray-400 dark:text-gray-500" >
+                    <FileSearch className="w-12 h-12 mx-auto mb-4 lia-text-300" />
+                    <p className="text-sm lia-text-400 dark:lia-text-500" >
                       Nenhuma solicitação encontrada
                     </p>
                   </div>
@@ -485,19 +485,19 @@ export default function PortalTitularPage() {
                               <TableCell>
                                 <div className="flex items-center gap-2">
                                   <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-200/30">
-                                    <Icon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                                    <Icon className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                                   </div>
-                                  <span className="font-medium text-gray-800 dark:text-gray-100" >{typeInfo.label}</span>
+                                  <span className="font-medium lia-text-800 dark:text-lia-text-primary" >{typeInfo.label}</span>
                                 </div>
                               </TableCell>
                               <TableCell>
                                 <div>
-                                  <p className="text-gray-800 dark:text-gray-100" >{request.requesterName}</p>
-                                  <p className="text-xs text-gray-400 dark:text-gray-500" >{request.requesterEmail}</p>
+                                  <p className="lia-text-800 dark:text-lia-text-primary" >{request.requesterName}</p>
+                                  <p className="text-xs lia-text-400 dark:lia-text-500" >{request.requesterEmail}</p>
                                 </div>
                               </TableCell>
                               <TableCell>
-                                <span className="text-gray-500 dark:text-gray-400" >
+                                <span className="lia-text-500 dark:text-lia-text-tertiary" >
                                   {new Date(request.createdAt).toLocaleDateString('pt-BR')}
                                 </span>
                               </TableCell>
@@ -551,7 +551,7 @@ export default function PortalTitularPage() {
                     
                     {totalPages > 1 && (
                       <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                        <p className="text-sm text-gray-400 dark:text-gray-500" >
+                        <p className="text-sm lia-text-400 dark:lia-text-500" >
                           Página {currentPage} de {totalPages}
                         </p>
                         <div className="flex gap-2">
@@ -583,7 +583,7 @@ export default function PortalTitularPage() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
+                    <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
                       Direitos Suportados
                     </CardTitle>
                     <CardDescription>
@@ -609,17 +609,17 @@ export default function PortalTitularPage() {
                     return (
                       <div 
                         key={direito.id}
-                        className="flex items-center gap-3 p-3 rounded-md hover:bg-gray-50 transition-colors bg-gray-100 dark:bg-gray-800"
+                        className="flex items-center gap-3 p-3 rounded-md hover:bg-gray-50 transition-colors bg-gray-100 dark:bg-lia-bg-secondary"
                         
                       >
                         <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
-                          <Icon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                          <Icon className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-800 dark:text-gray-100" >
+                          <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary" >
                             {direito.right}
                           </p>
-                          <p className="text-xs text-gray-400 dark:text-gray-500" >
+                          <p className="text-xs lia-text-400 dark:lia-text-500" >
                             {direito.description}
                           </p>
                         </div>
@@ -635,7 +635,7 @@ export default function PortalTitularPage() {
           <div className="space-y-6">
             <Card >
               <CardHeader>
-                <CardTitle className="text-base font-medium flex items-center gap-2 text-gray-800 dark:text-gray-100" >
+                <CardTitle className="text-base font-medium flex items-center gap-2 lia-text-800 dark:text-lia-text-primary" >
                   <Settings className="w-4 h-4" />
                   Configuração do Portal
                 </CardTitle>
@@ -654,12 +654,12 @@ export default function PortalTitularPage() {
                       {copied ? <Check className="w-4 h-4 text-status-success" /> : <Copy className="w-4 h-4" />}
                     </Button>
                   </div>
-                  <p className="text-xs text-gray-400 dark:text-gray-500" >
+                  <p className="text-xs lia-text-400 dark:lia-text-500" >
                     URL onde o portal será acessível publicamente
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-gray-200 dark:border-gray-700" >
+                <div className="pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle" >
                   <Button className="w-full" variant="outline" asChild>
                     <Link href="/privacidade" target="_blank">
                       <ExternalLink className="w-4 h-4 mr-2" />
@@ -672,28 +672,28 @@ export default function PortalTitularPage() {
 
             <Card >
               <CardHeader>
-                <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
+                <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
                   Métricas de Desempenho
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-gray-800" >
-                    <span className="text-sm text-gray-500 dark:text-gray-400" >Taxa de Conclusão</span>
+                  <div className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-lia-bg-secondary" >
+                    <span className="text-sm lia-text-500 dark:text-lia-text-tertiary" >Taxa de Conclusão</span>
                     <span className="font-semibold text-status-success">
                       {stats && stats.totalRequests > 0 
                         ? `${Math.round((stats.completedRequests / stats.totalRequests) * 100)}%`
                         : '0%'}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-gray-800" >
-                    <span className="text-sm text-gray-500 dark:text-gray-400" >SLA Compliance</span>
+                  <div className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-lia-bg-secondary" >
+                    <span className="text-sm lia-text-500 dark:text-lia-text-tertiary" >SLA Compliance</span>
                     <span className={`font-semibold ${(stats?.slaComplianceRate || 0) >= 90 ? 'text-status-success' : (stats?.slaComplianceRate || 0) >= 70 ? 'text-status-warning' : 'text-status-error'}`}>
                       {stats?.slaComplianceRate?.toFixed(0) || 0}%
                     </span>
                   </div>
-                  <div className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-gray-800" >
-                    <span className="text-sm text-gray-500 dark:text-gray-400" >Atrasados</span>
+                  <div className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-lia-bg-secondary" >
+                    <span className="text-sm lia-text-500 dark:text-lia-text-tertiary" >Atrasados</span>
                     <span className={`font-semibold ${(stats?.overdueRequests || 0) === 0 ? 'text-status-success' : 'text-status-error'}`}>
                       {stats?.overdueRequests || 0}
                     </span>
@@ -704,37 +704,37 @@ export default function PortalTitularPage() {
 
             <Card >
               <CardHeader>
-                <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
+                <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
                   Por Tipo de Solicitação
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-gray-800" >
+                  <div className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-lia-bg-secondary" >
                     <div className="flex items-center gap-2">
-                      <Eye className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                      <span className="text-sm text-gray-500 dark:text-gray-400" >Acesso</span>
+                      <Eye className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                      <span className="text-sm lia-text-500 dark:text-lia-text-tertiary" >Acesso</span>
                     </div>
                     <Badge variant="outline">{accessCount}</Badge>
                   </div>
-                  <div className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-gray-800" >
+                  <div className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-lia-bg-secondary" >
                     <div className="flex items-center gap-2">
-                      <Edit className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                      <span className="text-sm text-gray-500 dark:text-gray-400" >Retificação</span>
+                      <Edit className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                      <span className="text-sm lia-text-500 dark:text-lia-text-tertiary" >Retificação</span>
                     </div>
                     <Badge variant="outline">{correctionCount}</Badge>
                   </div>
-                  <div className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-gray-800" >
+                  <div className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-lia-bg-secondary" >
                     <div className="flex items-center gap-2">
-                      <Trash2 className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                      <span className="text-sm text-gray-500 dark:text-gray-400" >Exclusão</span>
+                      <Trash2 className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                      <span className="text-sm lia-text-500 dark:text-lia-text-tertiary" >Exclusão</span>
                     </div>
                     <Badge variant="outline">{deletionCount}</Badge>
                   </div>
-                  <div className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-gray-800" >
+                  <div className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-lia-bg-secondary" >
                     <div className="flex items-center gap-2">
-                      <ArrowRightLeft className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                      <span className="text-sm text-gray-500 dark:text-gray-400" >Portabilidade</span>
+                      <ArrowRightLeft className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                      <span className="text-sm lia-text-500 dark:text-lia-text-tertiary" >Portabilidade</span>
                     </div>
                     <Badge variant="outline">{portabilityCount}</Badge>
                   </div>
@@ -745,12 +745,12 @@ export default function PortalTitularPage() {
             <Card style={{borderColor: 'var(--wedo-cyan-border)', backgroundColor: 'var(--wedo-cyan-bg-02)'}}>
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
-                  <Shield className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-0.5" />
+                  <Shield className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-gray-800 dark:text-gray-100" >
+                    <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary" >
                       Prazo Legal: 15 Dias
                     </p>
-                    <p className="text-xs mt-1 text-gray-500 dark:text-gray-400" >
+                    <p className="text-xs mt-1 lia-text-500 dark:text-lia-text-tertiary" >
                       As solicitações devem ser atendidas em até 15 dias contados da data do requerimento 
                       do titular, conforme Art. 18, §3º da LGPD.
                     </p>
@@ -774,14 +774,14 @@ export default function PortalTitularPage() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <Label className="text-xs text-gray-500">Tipo</Label>
+                  <Label className="text-xs lia-text-500">Tipo</Label>
                   <div className="flex items-center gap-2">
                     {(() => {
                       const typeInfo = getTypeLabel(selectedRequest.requestType)
                       const Icon = typeInfo.icon
                       return (
                         <>
-                          <Icon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                          <Icon className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                           <span className="font-medium">{typeInfo.label}</span>
                         </>
                       )
@@ -789,23 +789,23 @@ export default function PortalTitularPage() {
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs text-gray-500">Status</Label>
+                  <Label className="text-xs lia-text-500">Status</Label>
                   <div>{getRequestStatusBadge(selectedRequest.status)}</div>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <Label className="text-xs text-gray-500">Solicitante</Label>
+                  <Label className="text-xs lia-text-500">Solicitante</Label>
                   <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-gray-400" />
+                    <User className="w-4 h-4 lia-text-400" />
                     <span>{selectedRequest.requesterName}</span>
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs text-gray-500">Email</Label>
+                  <Label className="text-xs lia-text-500">Email</Label>
                   <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-gray-400" />
+                    <Mail className="w-4 h-4 lia-text-400" />
                     <span>{selectedRequest.requesterEmail}</span>
                   </div>
                 </div>
@@ -813,16 +813,16 @@ export default function PortalTitularPage() {
 
               {selectedRequest.requesterCpf && (
                 <div className="space-y-1">
-                  <Label className="text-xs text-gray-500">CPF</Label>
+                  <Label className="text-xs lia-text-500">CPF</Label>
                   <p>{selectedRequest.requesterCpf}</p>
                 </div>
               )}
 
               {selectedRequest.requesterPhone && (
                 <div className="space-y-1">
-                  <Label className="text-xs text-gray-500">Telefone</Label>
+                  <Label className="text-xs lia-text-500">Telefone</Label>
                   <div className="flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-gray-400" />
+                    <Phone className="w-4 h-4 lia-text-400" />
                     <span>{selectedRequest.requesterPhone}</span>
                   </div>
                 </div>
@@ -830,25 +830,25 @@ export default function PortalTitularPage() {
 
               {selectedRequest.description && (
                 <div className="space-y-1">
-                  <Label className="text-xs text-gray-500">Descrição</Label>
+                  <Label className="text-xs lia-text-500">Descrição</Label>
                   <p className="text-sm bg-gray-50 p-3 rounded-md">{selectedRequest.description}</p>
                 </div>
               )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <Label className="text-xs text-gray-500">Data da Solicitação</Label>
+                  <Label className="text-xs lia-text-500">Data da Solicitação</Label>
                   <p>{new Date(selectedRequest.createdAt).toLocaleString('pt-BR')}</p>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs text-gray-500">Prazo</Label>
+                  <Label className="text-xs lia-text-500">Prazo</Label>
                   <p>{new Date(selectedRequest.deadlineAt).toLocaleDateString('pt-BR')}</p>
                 </div>
               </div>
 
               {selectedRequest.identityVerified && (
                 <div className="space-y-1">
-                  <Label className="text-xs text-gray-500">Identidade Verificada</Label>
+                  <Label className="text-xs lia-text-500">Identidade Verificada</Label>
                   <div className="flex items-center gap-2">
                     <UserCheck className="w-4 h-4 text-status-success" />
                     <span className="text-status-success">
@@ -860,7 +860,7 @@ export default function PortalTitularPage() {
 
               {selectedRequest.response && (
                 <div className="space-y-1">
-                  <Label className="text-xs text-gray-500">Resposta</Label>
+                  <Label className="text-xs lia-text-500">Resposta</Label>
                   <p className="text-sm bg-status-success/10 p-3 rounded-md border border-status-success/30">
                     {selectedRequest.response}
                   </p>
@@ -869,7 +869,7 @@ export default function PortalTitularPage() {
 
               {selectedRequest.rejectionReason && (
                 <div className="space-y-1">
-                  <Label className="text-xs text-gray-500">Motivo da Rejeição</Label>
+                  <Label className="text-xs lia-text-500">Motivo da Rejeição</Label>
                   <p className="text-sm bg-status-error/10 p-3 rounded-md border border-status-error/30">
                     {selectedRequest.rejectionReason}
                   </p>

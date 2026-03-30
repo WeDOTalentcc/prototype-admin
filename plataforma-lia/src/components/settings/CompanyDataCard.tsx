@@ -77,8 +77,8 @@ export function CompanyDataCard({
   return (
     <div 
       className={cn(
-        "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md px-4 py-3 transition-all",
-        localIsActive ? "border-l-[3px] border-l-gray-900 dark:border-l-gray-50" : "border-l-[3px] border-l-gray-200 dark:border-l-gray-700",
+        "bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md px-4 py-3 transition-colors",
+        localIsActive ? "border-l-[3px] border-l-gray-900 dark:lia-border-l-50" : "border-l-[3px] border-l-gray-200 dark:lia-border-l-700",
         !localIsActive && "opacity-60",
         className
       )}
@@ -89,7 +89,7 @@ export function CompanyDataCard({
             {label}
           </span>
           {category && (
-            <span className={cn(textStyles.caption, "bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full")}>
+            <span className={cn(textStyles.caption, "bg-gray-100 dark:bg-lia-bg-elevated px-1.5 py-0.5 rounded-full")}>
               {category}
             </span>
           )}
@@ -108,46 +108,46 @@ export function CompanyDataCard({
                 "inline-flex items-center justify-center w-7 h-7 rounded-md transition-colors flex-shrink-0",
                 (!localIsActive || !isEditing) && "opacity-40 cursor-not-allowed",
                 localIsActive && isEditing && hasInstruction
- ? "text-gray-600 dark:text-gray-400 hover:bg-gray-100"
-                  : "bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-600 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
+ ? "lia-text-600 dark:text-lia-text-tertiary hover:bg-gray-100"
+                  : "bg-gray-50 lia-text-500 hover:bg-gray-100 hover:lia-text-600 dark:bg-lia-bg-elevated dark:text-lia-text-tertiary dark:hover:bg-gray-600"
               )}
             >
               <Bot className="w-4 h-4" />
             </button>
           </PopoverTrigger>
           <PopoverContent 
-            className="w-80 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 p-0"
+            className="w-80 bg-white dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle p-0"
             side="left"
             align="start"
           >
             <div className="p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Bot className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                  <Bot className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                   <span className={textStyles.h4}>Instrução para LIA</span>
                 </div>
                 <button
                   onClick={() => setIsPopoverOpen(false)}
-                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                  className="lia-text-500 hover:lia-text-700 dark:text-lia-text-tertiary dark:hover:lia-text-200 transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
               <div className={textStyles.description}>
-                Campo: <span className="text-gray-800 dark:text-gray-200 font-medium">{label}</span>
+                Campo: <span className="lia-text-800 dark:text-lia-text-primary font-medium">{label}</span>
               </div>
 
               <Textarea
                 value={instruction}
                 onChange={(e) => setInstruction(e.target.value)}
                 placeholder="Adicione instruções que ajudarão a LIA a interpretar melhor este campo..."
-                className="min-h-[100px] text-xs border-gray-200 dark:border-gray-600 focus:ring-gray-900 focus:border-gray-900 dark:focus:ring-gray-50 dark:focus:border-gray-50 resize-none"
+                className="min-h-[100px] text-xs border-lia-border-subtle dark:border-lia-border-default focus:ring-gray-900 focus:border-gray-900 dark:focus:ring-gray-50 dark:focus:border-gray-50 resize-none"
               />
 
               {examples.length > 0 && (
-                <div className="space-y-2 p-3 bg-gray-50 dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center gap-1 text-xs font-medium uppercase text-gray-600 dark:text-gray-400">
+                <div className="space-y-2 p-3 bg-gray-50 dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+                  <div className="flex items-center gap-1 text-xs font-medium uppercase lia-text-600 dark:text-lia-text-tertiary">
                     <Info className="w-3 h-3" />
                     <span>Exemplos</span>
                   </div>
@@ -156,7 +156,7 @@ export function CompanyDataCard({
                       <button
                         key={idx}
                         onClick={() => setInstruction(example)}
-                        className="block w-full text-left text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-50 p-1.5 rounded-md hover:bg-white dark:hover:bg-gray-800 transition-colors"
+                        className="block w-full text-left text-xs lia-text-600 dark:text-lia-text-tertiary hover:lia-text-900 dark:hover:lia-text-50 p-1.5 rounded-md hover:bg-lia-bg-primary dark:hover:bg-gray-800 transition-colors"
                       >
                         "{example}"
                       </button>
@@ -165,7 +165,7 @@ export function CompanyDataCard({
                 </div>
               )}
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex justify-end gap-2 pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                 <Button
                   variant="outline"
                   size="sm"
@@ -178,7 +178,7 @@ export function CompanyDataCard({
                   size="sm"
                   onClick={handleSaveInstruction}
                   disabled={isSaving}
-                  className="text-xs h-8 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                  className="text-xs h-8 bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
                 >
                   {isSaving ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" />
@@ -201,9 +201,9 @@ export function CompanyDataCard({
       </div>
 
       {hasInstruction && (
-        <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-600 rounded-md">
+        <div className="mt-2 p-2 bg-gray-50 dark:bg-lia-bg-secondary/50 border border-lia-border-default dark:border-lia-border-default rounded-md">
           <div className="flex items-start gap-2">
-            <Bot className="w-3 h-3 text-gray-600 dark:text-gray-400 mt-0.5 flex-shrink-0" />
+            <Bot className="w-3 h-3 lia-text-600 dark:text-lia-text-tertiary mt-0.5 flex-shrink-0" />
             <p className={cn(textStyles.caption, "leading-relaxed")}>
               {currentInstruction}
             </p>
@@ -234,7 +234,7 @@ export function SimpleDataCard({
   return (
     <div 
       className={cn(
-        "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md px-4 py-3 transition-all",
+        "bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md px-4 py-3 transition-colors",
         className
       )}
     >
@@ -244,7 +244,7 @@ export function SimpleDataCard({
             {label}
           </span>
           {category && (
-            <span className={cn(textStyles.caption, "bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full")}>
+            <span className={cn(textStyles.caption, "bg-gray-100 dark:bg-lia-bg-elevated px-1.5 py-0.5 rounded-full")}>
               {category}
             </span>
           )}

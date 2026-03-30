@@ -93,7 +93,7 @@ export default function ClientAutomacoesPage({
   const getActionIcon = (action: string) => {
     switch (action) {
       case 'send_email':
-        return <Mail className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+        return <Mail className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
       case 'send_whatsapp':
         return <MessageSquare className="w-5 h-5 text-status-success" />
       case 'send_notification':
@@ -101,14 +101,14 @@ export default function ClientAutomacoesPage({
       case 'webhook':
         return <Webhook className="w-5 h-5 text-wedo-orange" />
       default:
-        return <Zap className="w-5 h-5 text-gray-600" />
+        return <Zap className="w-5 h-5 lia-text-600" />
     }
   }
 
   const getActionBgColor = (action: string) => {
     switch (action) {
       case 'send_email':
-        return 'bg-gray-100 dark:bg-gray-800'
+        return 'bg-gray-100 dark:bg-lia-bg-secondary'
       case 'send_whatsapp':
         return 'bg-status-success/15 dark:bg-status-success/30'
       case 'send_notification':
@@ -116,7 +116,7 @@ export default function ClientAutomacoesPage({
       case 'webhook':
         return 'bg-wedo-orange/15 dark:bg-wedo-orange/30'
       default:
-        return 'bg-gray-100 dark:bg-gray-900/30'
+        return 'bg-gray-100 dark:bg-lia-bg-primary/30'
     }
   }
 
@@ -128,14 +128,14 @@ export default function ClientAutomacoesPage({
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <Zap className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+            <Zap className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />
             <h2 
-              className="text-lg font-semibold text-gray-800 dark:text-gray-100"
+              className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary"
             >
               Automações
             </h2>
           </div>
-          <p className="text-sm text-gray-400 dark:text-gray-500">
+          <p className="text-sm lia-text-400 dark:lia-text-500">
             Regras automáticas de comunicação e ações
           </p>
         </div>
@@ -167,10 +167,10 @@ export default function ClientAutomacoesPage({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-semibold text-gray-900 dark:text-gray-50">
+            <p className="text-2xl font-semibold lia-text-900 dark:lia-text-50">
               {loading ? '-' : automations.length}
             </p>
-            <p className="text-sm text-gray-400 dark:text-gray-500">
+            <p className="text-sm lia-text-400 dark:lia-text-500">
               Total de Automações
             </p>
           </CardContent>
@@ -180,7 +180,7 @@ export default function ClientAutomacoesPage({
             <p className="text-2xl font-semibold text-status-success">
               {loading ? '-' : activeCount}
             </p>
-            <p className="text-sm text-gray-400 dark:text-gray-500">
+            <p className="text-sm lia-text-400 dark:lia-text-500">
               Ativas
             </p>
           </CardContent>
@@ -190,7 +190,7 @@ export default function ClientAutomacoesPage({
             <p className="text-2xl font-semibold text-wedo-purple">
               {loading ? '-' : totalExecutions}
             </p>
-            <p className="text-sm text-gray-400 dark:text-gray-500">
+            <p className="text-sm lia-text-400 dark:lia-text-500">
               Execuções
             </p>
           </CardContent>
@@ -199,8 +199,8 @@ export default function ClientAutomacoesPage({
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-gray-600 dark:text-gray-400" />
-          <span className="ml-3 text-sm text-gray-400 dark:text-gray-500">
+          <Loader2 className="w-8 h-8 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+          <span className="ml-3 text-sm lia-text-400 dark:lia-text-500">
             Carregando automações...
           </span>
         </div>
@@ -221,11 +221,11 @@ export default function ClientAutomacoesPage({
       ) : automations.length === 0 ? (
         <Card>
           <CardContent className="p-12 text-center">
-            <Zap className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-200 mb-4" />
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            <Zap className="w-12 h-12 mx-auto lia-text-300 dark:text-lia-text-primary mb-4" />
+            <p className="text-sm font-medium lia-text-500 dark:text-lia-text-tertiary">
               Nenhuma automação configurada
             </p>
-            <p className="text-xs mt-1 text-gray-400 dark:text-gray-500">
+            <p className="text-xs mt-1 lia-text-400 dark:lia-text-500">
               Clique em "Nova Automação" para criar a primeira.
             </p>
           </CardContent>
@@ -245,7 +245,7 @@ export default function ClientAutomacoesPage({
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <h3 
-                        className="font-medium text-gray-800 dark:text-gray-100"
+                        className="font-medium lia-text-800 dark:text-lia-text-primary"
                       >
                         {automation.name}
                       </h3>
@@ -254,16 +254,16 @@ export default function ClientAutomacoesPage({
                       </Badge>
                     </div>
                     <p 
-                      className="text-sm text-gray-400 dark:text-gray-500"
+                      className="text-sm lia-text-400 dark:lia-text-500"
                     >
                       {automation.description}
                     </p>
                   </div>
                   <div className="text-right mr-4">
-                    <p className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                    <p className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary">
                       {automation.trigger_count || 0}
                     </p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500">
+                    <p className="text-xs lia-text-400 dark:lia-text-500">
                       execuções
                     </p>
                   </div>

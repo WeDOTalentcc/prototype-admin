@@ -124,27 +124,27 @@ export default function ClientLayout({
   const status = client?.status ? (statusConfig[client.status] || statusConfig.pending_setup) : statusConfig.pending_setup
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary">
       <div 
-        className="border-b bg-white dark:bg-gray-950 border-gray-200 dark:border-gray-700"
+        className="border-b bg-white dark:lia-bg-950 border-lia-border-subtle dark:border-lia-border-subtle"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex items-center gap-2 py-3 text-sm">
             <Link 
               href="/admin"
-              className="hover:text-gray-900 dark:hover:text-gray-50 transition-colors text-gray-400 dark:text-gray-500"
+              className="hover:lia-text-900 dark:hover:lia-text-50 transition-colors lia-text-400 dark:lia-text-500"
             >
               Admin
             </Link>
-            <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+            <ChevronRight className="w-4 h-4 lia-text-400 dark:lia-text-500" />
             <Link 
               href="/admin/clientes"
-              className="hover:text-gray-900 dark:hover:text-gray-50 transition-colors text-gray-400 dark:text-gray-500"
+              className="hover:lia-text-900 dark:hover:lia-text-50 transition-colors lia-text-400 dark:lia-text-500"
             >
               Clientes
             </Link>
-            <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-            <span className="text-gray-800 dark:text-gray-100">
+            <ChevronRight className="w-4 h-4 lia-text-400 dark:lia-text-500" />
+            <span className="lia-text-800 dark:text-lia-text-primary">
               {loading ? '...' : (client?.name || 'Cliente')}
             </span>
           </nav>
@@ -177,19 +177,19 @@ export default function ClientLayout({
                     <img
                       src={client.logo_url}
                       alt={client.name}
-                      className="w-14 h-14 rounded-md object-cover border border-gray-200 dark:border-gray-700"
+                      className="w-14 h-14 rounded-md object-cover border border-lia-border-subtle dark:border-lia-border-subtle"
                     />
                   ) : (
                     <div 
-                      className="w-14 h-14 rounded-md flex items-center justify-center border bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700"
+                      className="w-14 h-14 rounded-md flex items-center justify-center border bg-gray-50 dark:bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle"
                     >
-                      <Building2 className="w-7 h-7 text-gray-400 dark:text-gray-500" />
+                      <Building2 className="w-7 h-7 lia-text-400 dark:lia-text-500" />
                     </div>
                   )}
                   <div>
                     <div className="flex items-center gap-3">
                       <h1 
-                        className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+                        className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary"
                       >
                         {client.name}
                       </h1>
@@ -197,7 +197,7 @@ export default function ClientLayout({
                     </div>
                     <div className="flex items-center gap-4 mt-1">
                       {client.trade_name && (
-                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                        <span className="text-sm lia-text-500 dark:text-lia-text-tertiary">
                           {client.trade_name}
                         </span>
                       )}
@@ -207,7 +207,7 @@ export default function ClientLayout({
                         </Badge>
                       )}
                       {client.primary_email && (
-                        <span className="text-sm text-gray-400 dark:text-gray-500">
+                        <span className="text-sm lia-text-400 dark:lia-text-500">
                           {client.primary_email}
                         </span>
                       )}
@@ -229,8 +229,8 @@ export default function ClientLayout({
                   className={cn(
                     "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
                     isActive
-                      ? "border-gray-900 dark:border-gray-50 text-gray-900 dark:text-gray-50"
-                      : "border-transparent hover:border-gray-300 dark:hover:border-gray-600 text-gray-500 dark:text-gray-400"
+                      ? "border-gray-900 dark:lia-border-50 lia-text-900 dark:lia-text-50"
+                      : "border-transparent hover:border-lia-border-default dark:hover:border-gray-600 lia-text-500 dark:text-lia-text-tertiary"
                   )}
                 >
                   <Icon className="w-4 h-4" />

@@ -26,6 +26,29 @@ const eslintConfig = [...compat.extends("next/core-web-vitals", "next/typescript
     "jsx-a11y/alt-text": "off",
     // Ignorar conflitos de tipos entre HTML events e motion events
     "@typescript-eslint/ban-ts-comment": "off",
+    // ──────────────────────────────────────────────
+    // WeDo DS — Regras de enforçamento de tokens
+    // Sprint 10: prevenir regressões de padronização
+    // ──────────────────────────────────────────────
+    "no-restricted-syntax": [
+      "warn",
+      {
+        "selector": "JSXAttribute[name.name='className'][value.value=/transition-all/]",
+        "message": "[WeDo DS] Use transition-colors, transition-opacity ou transition-transform em vez de transition-all"
+      },
+      {
+        "selector": "JSXAttribute[name.name='className'][value.value=/rounded-2xl/]",
+        "message": "[WeDo DS] rounded-2xl não é canônico. Use rounded-xl (cards/modais) ou rounded-lg (inputs)"
+      },
+      {
+        "selector": "JSXAttribute[name.name='className'][value.value=/text-wedo-apoio/]",
+        "message": "[WeDo DS] Token wedo-apoio-* está deprecated. Use tokens lia-* ou status-* equivalentes"
+      },
+      {
+        "selector": "JSXAttribute[name.name='className'][value.value=/bg-wedo-apoio/]",
+        "message": "[WeDo DS] Token wedo-apoio-* está deprecated. Use tokens lia-* ou status-* equivalentes"
+      }
+    ],
   },
 }, ...storybook.configs["flat/recommended"]];
 

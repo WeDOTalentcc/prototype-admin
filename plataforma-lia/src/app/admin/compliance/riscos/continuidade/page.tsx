@@ -109,7 +109,7 @@ const getStatusBadge = (status: string) => {
     case 'review':
       return <Badge className="bg-status-warning/15 text-status-warning hover:bg-status-warning/15">Em Revisão</Badge>
     case 'draft':
-      return <Badge className="bg-gray-100 text-gray-800 dark:text-gray-200 hover:bg-gray-100">Rascunho</Badge>
+      return <Badge className="bg-gray-100 lia-text-800 dark:text-lia-text-primary hover:bg-gray-100">Rascunho</Badge>
     default:
       return <Badge variant="secondary">{status}</Badge>
   }
@@ -159,16 +159,16 @@ export default function ContinuidadePage() {
             <div 
               className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
             >
-              <RefreshCw className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <RefreshCw className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+                className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary"
                 
               >
                 Continuidade de Negócios
               </h1>
-              <p className="text-sm text-gray-400 dark:text-gray-500" >
+              <p className="text-sm lia-text-400 dark:lia-text-500" >
                 PCN/PRD, RTO/RPO e planos de recuperação
               </p>
             </div>
@@ -198,7 +198,7 @@ export default function ContinuidadePage() {
                     Em implementação
                   </Badge>
                 </div>
-                <p className="text-sm text-gray-500 dark:text-gray-400" >
+                <p className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
                   A Resolução BCB 498/2025 exige plano de continuidade de negócios com definição clara de RTO/RPO 
                   e testes periódicos de recuperação de desastres. Mantenha os planos atualizados e realize 
                   testes de DR trimestralmente.
@@ -213,15 +213,15 @@ export default function ContinuidadePage() {
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
-                  <Clock className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  <Clock className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
-                    <p className="text-lg font-semibold text-gray-800 dark:text-gray-100" >{objectives.rtoTarget}</p>
+                    <p className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary" >{objectives.rtoTarget}</p>
                     <Badge variant="outline" className="text-xs">RTO</Badge>
                   </div>
-                  <p className="text-xs mt-1 text-gray-400 dark:text-gray-500" >Recovery Time Objective</p>
-                  <p className="text-xs mt-2 p-2 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400" >
+                  <p className="text-xs mt-1 lia-text-400 dark:lia-text-500" >Recovery Time Objective</p>
+                  <p className="text-xs mt-2 p-2 rounded-md bg-gray-50 dark:bg-lia-bg-primary lia-text-500 dark:text-lia-text-tertiary" >
                     <Info className="w-3 h-3 inline mr-1" />
                     Tempo máximo aceitável de indisponibilidade do sistema
                   </p>
@@ -238,11 +238,11 @@ export default function ContinuidadePage() {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
-                    <p className="text-lg font-semibold text-gray-800 dark:text-gray-100" >{objectives.rpoTarget}</p>
+                    <p className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary" >{objectives.rpoTarget}</p>
                     <Badge variant="outline" className="text-xs">RPO</Badge>
                   </div>
-                  <p className="text-xs mt-1 text-gray-400 dark:text-gray-500" >Recovery Point Objective</p>
-                  <p className="text-xs mt-2 p-2 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400" >
+                  <p className="text-xs mt-1 lia-text-400 dark:lia-text-500" >Recovery Point Objective</p>
+                  <p className="text-xs mt-2 p-2 rounded-md bg-gray-50 dark:bg-lia-bg-primary lia-text-500 dark:text-lia-text-tertiary" >
                     <Info className="w-3 h-3 inline mr-1" />
                     Perda máxima de dados aceitável em caso de falha
                   </p>
@@ -260,10 +260,10 @@ export default function ContinuidadePage() {
                   <CheckCircle2 className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold text-gray-800 dark:text-gray-100" >
+                  <p className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary" >
                     {new Date(objectives.lastTest).toLocaleDateString('pt-BR')}
                   </p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500" >Último Teste DR</p>
+                  <p className="text-xs lia-text-400 dark:lia-text-500" >Último Teste DR</p>
                 </div>
               </div>
             </CardContent>
@@ -276,8 +276,8 @@ export default function ContinuidadePage() {
                   <Calendar className="w-5 h-5 text-status-warning" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold text-gray-800 dark:text-gray-100" >{daysUntilTest > 0 ? `${daysUntilTest} dias` : 'Hoje'}</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500" >Próximo Teste Agendado</p>
+                  <p className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary" >{daysUntilTest > 0 ? `${daysUntilTest} dias` : 'Hoje'}</p>
+                  <p className="text-xs lia-text-400 dark:lia-text-500" >Próximo Teste Agendado</p>
                 </div>
               </div>
             </CardContent>
@@ -288,8 +288,8 @@ export default function ContinuidadePage() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Server className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
+                <Server className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
                   Sistemas Críticos - RTO/RPO
                 </CardTitle>
               </div>
@@ -318,9 +318,9 @@ export default function ContinuidadePage() {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-200/30">
-                            <Icon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                            <Icon className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                           </div>
-                          <span className="font-medium text-gray-800 dark:text-gray-100" >
+                          <span className="font-medium lia-text-800 dark:text-lia-text-primary" >
                             {system.name}
                           </span>
                         </div>
@@ -336,12 +336,12 @@ export default function ContinuidadePage() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <span className="text-sm text-gray-500 dark:text-gray-400" >
+                        <span className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
                           {system.lastBackup}
                         </span>
                       </TableCell>
                       <TableCell>
-                        <span className="text-sm text-gray-500 dark:text-gray-400" >
+                        <span className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
                           {new Date(system.lastTest).toLocaleDateString('pt-BR')}
                         </span>
                       </TableCell>
@@ -361,8 +361,8 @@ export default function ContinuidadePage() {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <RefreshCw className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                  <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
+                  <RefreshCw className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                  <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
                     Histórico de Testes de DR
                   </CardTitle>
                 </div>
@@ -376,15 +376,15 @@ export default function ContinuidadePage() {
                 {drTests.map((test) => (
                   <div 
                     key={test.id}
-                    className="p-4 rounded-md border bg-white dark:bg-gray-950 border-gray-200 dark:border-gray-700"
+                    className="p-4 rounded-md border bg-white dark:lia-bg-950 border-lia-border-subtle dark:border-lia-border-subtle"
                     
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div>
-                        <p className="font-medium text-sm text-gray-800 dark:text-gray-100" >
+                        <p className="font-medium text-sm lia-text-800 dark:text-lia-text-primary" >
                           {test.type}
                         </p>
-                        <p className="text-xs text-gray-400 dark:text-gray-500" >
+                        <p className="text-xs lia-text-400 dark:lia-text-500" >
                           {new Date(test.date).toLocaleDateString('pt-BR')}
                         </p>
                       </div>
@@ -392,15 +392,15 @@ export default function ContinuidadePage() {
                     </div>
                     <div className="flex items-center gap-4 mb-2">
                       <div className="text-xs">
-                        <span className="text-gray-400 dark:text-gray-500" >RTO: </span>
+                        <span className="lia-text-400 dark:lia-text-500" >RTO: </span>
                         <Badge variant="outline" className="font-mono text-micro">{test.rtoAchieved}</Badge>
                       </div>
                       <div className="text-xs">
-                        <span className="text-gray-400 dark:text-gray-500" >RPO: </span>
+                        <span className="lia-text-400 dark:lia-text-500" >RPO: </span>
                         <Badge variant="outline" className="font-mono text-micro">{test.rpoAchieved}</Badge>
                       </div>
                     </div>
-                    <p className="text-xs p-2 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400" >
+                    <p className="text-xs p-2 rounded-md bg-gray-50 dark:bg-lia-bg-primary lia-text-500 dark:text-lia-text-tertiary" >
                       {test.notes}
                     </p>
                   </div>
@@ -412,8 +412,8 @@ export default function ContinuidadePage() {
           <Card >
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
+                <FileText className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
                   Planos de Continuidade
                 </CardTitle>
               </div>
@@ -423,19 +423,19 @@ export default function ContinuidadePage() {
                 {continuityPlans.map((plan) => (
                   <div 
                     key={plan.id}
-                    className="p-4 rounded-md border bg-white dark:bg-gray-950 border-gray-200 dark:border-gray-700"
+                    className="p-4 rounded-md border bg-white dark:lia-bg-950 border-lia-border-subtle dark:border-lia-border-subtle"
                     
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                        <span className="font-medium text-sm text-gray-800 dark:text-gray-100" >
+                        <FileText className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                        <span className="font-medium text-sm lia-text-800 dark:text-lia-text-primary" >
                           {plan.name}
                         </span>
                       </div>
                       {getStatusBadge(plan.status)}
                     </div>
-                    <div className="flex items-center gap-4 text-xs text-gray-400 dark:text-gray-500" >
+                    <div className="flex items-center gap-4 text-xs lia-text-400 dark:lia-text-500" >
                       <span>Versão: {plan.version}</span>
                       <span>Atualizado: {new Date(plan.lastUpdate).toLocaleDateString('pt-BR')}</span>
                       <span>Owner: {plan.owner}</span>

@@ -38,7 +38,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
       label: 'Híbrido',
       value: 489,
       percentage: 48.9,
-      color: 'bg-gray-700 dark:bg-gray-300',
+      color: 'bg-gray-700',
       icon: <Globe className="w-4 h-4" />
     },
     {
@@ -112,7 +112,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
                   strokeWidth="20"
                   strokeDasharray={strokeDasharray}
                   strokeDashoffset={strokeDashoffset}
-                  className="transition-all duration-300"
+                  className="transition-colors duration-300"
                 />
               )
             })}
@@ -121,10 +121,10 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
           {/* Centro do donut */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
-              <div className="text-2xl font-bold text-gray-950 dark:text-gray-50">
+              <div className="text-2xl font-bold text-gray-950">
                 {total}
               </div>
-              <div className="text-xs text-gray-800 dark:text-gray-200">
+              <div className="text-xs text-gray-800 dark:text-lia-text-primary">
                 Total
               </div>
             </div>
@@ -140,10 +140,10 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
                 {item.icon}
               </div>
               <div>
-                <div className="font-medium text-gray-950 dark:text-gray-50">
+                <div className="font-medium text-gray-950">
                   {item.label}
                 </div>
-                <div className="text-sm text-gray-800 dark:text-gray-200">
+                <div className="text-sm text-gray-800 dark:text-lia-text-primary">
                   {item.value} ({item.percentage}%)
                 </div>
               </div>
@@ -160,10 +160,10 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
       {cargoData.map((item, index) => (
         <div key={index} className="space-y-2">
           <div className="flex items-center justify-between">
-            <h4 className="font-medium text-gray-950 dark:text-gray-50">
+            <h4 className="font-medium text-gray-950">
               {item.cargo}
             </h4>
-            <span className="text-sm text-gray-800 dark:text-gray-200">
+            <span className="text-sm text-gray-800 dark:text-lia-text-primary">
               {item.remoto + item.hibrido + item.presencial} candidatos
             </span>
           </div>
@@ -171,51 +171,51 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
           <div className="space-y-1">
             {/* Remoto */}
             <div className="flex items-center gap-3">
-              <div className="w-16 text-xs text-gray-600 flex items-center gap-1">
+              <div className="w-16 text-xs lia-text-base flex items-center gap-1">
                 <Home className="w-3 h-3 text-status-success" />
                 Remoto
               </div>
-              <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div className="flex-1 bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
                 <div
-                  className="bg-status-success h-2 rounded-full transition-all duration-300"
+                  className="bg-status-success h-2 rounded-full transition-[width,height] duration-300"
                   style={{width: `${(item.remoto / maxValue) * 100}%`}}
                 ></div>
               </div>
-              <div className="w-8 text-xs text-gray-600 text-right">
+              <div className="w-8 text-xs lia-text-base text-right">
                 {item.remoto}
               </div>
             </div>
 
             {/* Híbrido */}
             <div className="flex items-center gap-3">
-              <div className="w-16 text-xs text-gray-600 flex items-center gap-1">
-                <Globe className="w-3 h-3 text-gray-600 dark:text-gray-400" />
+              <div className="w-16 text-xs lia-text-base flex items-center gap-1">
+                <Globe className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
                 Híbrido
               </div>
-              <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div className="flex-1 bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
                 <div
-                  className="bg-gray-700 dark:bg-gray-300 h-2 rounded-full transition-all duration-300"
+                  className="bg-gray-700 h-2 rounded-full transition-[width,height] duration-300"
                   style={{width: `${(item.hibrido / maxValue) * 100}%`}}
                 ></div>
               </div>
-              <div className="w-8 text-xs text-gray-600 text-right">
+              <div className="w-8 text-xs lia-text-base text-right">
                 {item.hibrido}
               </div>
             </div>
 
             {/* Presencial */}
             <div className="flex items-center gap-3">
-              <div className="w-16 text-xs text-gray-600 flex items-center gap-1">
-                <Building className="w-3 h-3 text-gray-600" />
+              <div className="w-16 text-xs lia-text-base flex items-center gap-1">
+                <Building className="w-3 h-3 lia-text-base" />
                 Presencial
               </div>
-              <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div className="flex-1 bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
                 <div
-                  className="bg-gray-500 h-2 rounded-full transition-all duration-300"
+                  className="bg-gray-500 h-2 rounded-full transition-[width,height] duration-300"
                   style={{width: `${(item.presencial / maxValue) * 100}%`}}
                 ></div>
               </div>
-              <div className="w-8 text-xs text-gray-600 text-right">
+              <div className="w-8 text-xs lia-text-base text-right">
                 {item.presencial}
               </div>
             </div>
@@ -234,7 +234,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
         <div className="grid grid-cols-5 gap-4">
           {trendData.map((item, index) => (
             <div key={index} className="text-center">
-              <div className="mb-2 text-xs font-medium text-gray-600 dark:text-gray-400">
+              <div className="mb-2 text-xs font-medium text-gray-600 dark:text-lia-text-tertiary">
                 {item.period}
               </div>
 
@@ -244,7 +244,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
                   minHeight: '4px'}} title={`Remoto: ${item.remoto}`}></div>
 
                 {/* Híbrido */}
-                <div className="w-3 bg-gray-700 dark:bg-gray-300 rounded-t" style={{height: `${(item.hibrido / maxTrendValue) * 100}%`,
+                <div className="w-3 bg-gray-700 rounded-t" style={{height: `${(item.hibrido / maxTrendValue) * 100}%`,
                   minHeight: '4px'}} title={`Híbrido: ${item.hibrido}`}></div>
 
                 {/* Presencial */}
@@ -252,7 +252,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
                   minHeight: '4px'}} title={`Presencial: ${item.presencial}`}></div>
               </div>
 
-              <div className="mt-2 text-xs text-gray-800">
+              <div className="mt-2 text-xs lia-text-strong">
                 {item.remoto + item.hibrido + item.presencial}
               </div>
             </div>
@@ -260,18 +260,18 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
         </div>
 
         {/* Legenda */}
-        <div className="flex items-center justify-center gap-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-center gap-6 pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-status-success rounded-md"></div>
-            <span className="text-xs text-gray-600">Remoto</span>
+            <span className="text-xs lia-text-base">Remoto</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-gray-700 dark:bg-gray-300 rounded-md"></div>
-            <span className="text-xs text-gray-600">Híbrido</span>
+            <div className="w-3 h-3 bg-gray-700 rounded-md"></div>
+            <span className="text-xs lia-text-base">Híbrido</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-gray-500 rounded-md"></div>
-            <span className="text-xs text-gray-600">Presencial</span>
+            <span className="text-xs lia-text-base">Presencial</span>
           </div>
         </div>
       </div>
@@ -307,7 +307,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
           {regionData.map((region, index) => (
             <div
               key={index}
-              className={`p-4 rounded-md text-white text-center transition-all duration-300 hover:scale-105 ${getDensityColor(region.densidade)}`}
+              className={`p-4 rounded-md text-white text-center transition-transform duration-300 hover:scale-105 ${getDensityColor(region.densidade)}`}
             >
               <div className="font-bold text-lg">{region.regiao}</div>
               <div className="text-sm opacity-90">{region.total} candidatos</div>
@@ -317,18 +317,18 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
         </div>
 
         {/* Legenda do heatmap */}
-        <div className="flex items-center justify-center gap-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-center gap-6 pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-status-success rounded-md"></div>
-            <span className="text-xs text-gray-600">Baixa densidade (&lt;60)</span>
+            <span className="text-xs lia-text-base">Baixa densidade (&lt;60)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-status-warning rounded-md"></div>
-            <span className="text-xs text-gray-600">Média densidade (60-100)</span>
+            <span className="text-xs lia-text-base">Média densidade (60-100)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-status-error rounded-md"></div>
-            <span className="text-xs text-gray-600">Alta densidade (&gt;200)</span>
+            <span className="text-xs lia-text-base">Alta densidade (&gt;200)</span>
           </div>
         </div>
       </div>
@@ -341,18 +341,18 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <BarChart3 className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
               Visualizações Interativas
             </CardTitle>
 
             {/* Seletor de tipo de gráfico */}
-            <div className="flex bg-gray-100 dark:bg-gray-800 rounded-md p-1">
+            <div className="flex bg-gray-100 dark:bg-lia-bg-secondary rounded-md p-1">
               <button
                 onClick={() => setSelectedChart('donut')}
                 className={`px-3 py-1 text-xs rounded-md transition-colors flex items-center gap-1 ${
-                  selectedChart === 'donut'
-                    ? 'bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900'
-                    : 'text-gray-600 hover:text-gray-900'
+ selectedChart === 'donut'
+                    ? 'bg-gray-900 text-white'
+                    : 'lia-text-base hover:lia-text-strong'
                 }`}
               >
                 <PieChart className="w-3 h-3" />
@@ -361,9 +361,9 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
               <button
                 onClick={() => setSelectedChart('bar')}
                 className={`px-3 py-1 text-xs rounded-md transition-colors flex items-center gap-1 ${
-                  selectedChart === 'bar'
-                    ? 'bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900'
-                    : 'text-gray-600 hover:text-gray-900'
+ selectedChart === 'bar'
+                    ? 'bg-gray-900 text-white'
+                    : 'lia-text-base hover:lia-text-strong'
                 }`}
               >
                 <BarChart3 className="w-3 h-3" />
@@ -372,9 +372,9 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
               <button
                 onClick={() => setSelectedChart('trend')}
                 className={`px-3 py-1 text-xs rounded-md transition-colors flex items-center gap-1 ${
-                  selectedChart === 'trend'
-                    ? 'bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900'
-                    : 'text-gray-600 hover:text-gray-900'
+ selectedChart === 'trend'
+                    ? 'bg-gray-900 text-white'
+                    : 'lia-text-base hover:lia-text-strong'
                 }`}
               >
                 <TrendingUp className="w-3 h-3" />
@@ -383,9 +383,9 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
               <button
                 onClick={() => setSelectedChart('heatmap')}
                 className={`px-3 py-1 text-xs rounded-md transition-colors flex items-center gap-1 ${
-                  selectedChart === 'heatmap'
-                    ? 'bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900'
-                    : 'text-gray-600 hover:text-gray-900'
+ selectedChart === 'heatmap'
+                    ? 'bg-gray-900 text-white'
+                    : 'lia-text-base hover:lia-text-strong'
                 }`}
               >
                 <MapPin className="w-3 h-3" />

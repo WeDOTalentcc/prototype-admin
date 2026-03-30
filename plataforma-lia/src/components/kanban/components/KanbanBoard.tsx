@@ -122,7 +122,7 @@ export function KanbanBoard({
       
       {finalStages.length > 0 && (
         <>
-          <div className="flex-shrink-0 w-px bg-gray-300 dark:bg-gray-600 mx-1" />
+          <div className="flex-shrink-0 w-px bg-gray-300 dark:lia-bg-600 mx-1" />
           {finalStages.map(renderColumn)}
         </>
       )}

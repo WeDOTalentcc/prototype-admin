@@ -451,24 +451,24 @@ Boa sorte com as triagens! 🚀`,
             <Card className="">
               <CardHeader>
                 <CardTitle className="text-sm flex items-center gap-2 font-sans">
-                  <Target className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                  <Target className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
                   Visão Geral da Triagem
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   <div>
-                    <label className="text-xs font-medium text-gray-800 dark:text-gray-200">Objetivo:</label>
-                    <p className="text-sm text-gray-800 dark:text-gray-200 bg-gray-50 p-2 rounded-md">
+                    <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Objetivo:</label>
+                    <p className="text-sm text-gray-800 dark:text-lia-text-primary bg-gray-50 p-2 rounded-md">
                       {screeningData.overview.objective}
                     </p>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-gray-800 dark:text-gray-200">Duração:</label>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{screeningData.overview.duration}</p>
+                    <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Duração:</label>
+                    <p className="text-sm font-medium text-gray-600 dark:text-lia-text-tertiary">{screeningData.overview.duration}</p>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-gray-800 dark:text-gray-200">Critérios de Avaliação:</label>
+                    <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Critérios de Avaliação:</label>
                     <div className="space-y-1">
                       {screeningData.overview.criteria.map((criterion, index) => (
                         <div key={index} className="flex items-center justify-between text-sm">
@@ -497,11 +497,11 @@ Boa sorte com as triagens! 🚀`,
               <CardContent>
                 <div className="space-y-3">
                   <div>
-                    <label className="text-xs font-medium text-gray-800 dark:text-gray-200">Tom da Conversa:</label>
+                    <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Tom da Conversa:</label>
                     <p className="text-sm text-status-success font-medium">{screeningData.approach.tone}</p>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-gray-800 dark:text-gray-200">Estrutura:</label>
+                    <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Estrutura:</label>
                     <div className="space-y-2">
                       {screeningData.approach.structure.map((step, index) => (
                         <div key={index} className="flex items-center gap-2 text-sm">
@@ -565,7 +565,7 @@ Boa sorte com as triagens! 🚀`,
                       <h4 className="font-medium text-wedo-purple text-sm mb-2">{section.category}</h4>
                       <div className="space-y-1">
                         {section.questions.map((question, qIndex) => (
-                          <div key={qIndex} className="text-xs text-gray-600">• {question}</div>
+                          <div key={qIndex} className="text-xs lia-text-base">• {question}</div>
                         ))}
                       </div>
                     </div>
@@ -589,25 +589,25 @@ Boa sorte com as triagens! 🚀`,
               <CardContent>
                 <div className="space-y-3">
                   <div>
-                    <label className="text-xs font-medium text-gray-600">Empresa:</label>
-                    <p className="text-sm text-gray-800 dark:text-gray-200 bg-status-warning/10 p-2 rounded-md">
+                    <label className="text-xs font-medium lia-text-base">Empresa:</label>
+                    <p className="text-sm text-gray-800 dark:text-lia-text-primary bg-status-warning/10 p-2 rounded-md">
                       Líder em inovação tecnológica, focada em soluções impactantes
                     </p>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-gray-600">Vaga:</label>
-                    <p className="text-sm text-gray-800 dark:text-gray-200 bg-status-warning/10 p-2 rounded-md">
+                    <label className="text-xs font-medium lia-text-base">Vaga:</label>
+                    <p className="text-sm text-gray-800 dark:text-lia-text-primary bg-status-warning/10 p-2 rounded-md">
                       {jobData?.title} - Projetos desafiadores e de grande impacto
                     </p>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-gray-600">Time:</label>
-                    <p className="text-sm text-gray-800 dark:text-gray-200 bg-status-warning/10 p-2 rounded-md">
+                    <label className="text-xs font-medium lia-text-base">Time:</label>
+                    <p className="text-sm text-gray-800 dark:text-lia-text-primary bg-status-warning/10 p-2 rounded-md">
                       Equipe multidisciplinar, colaborativa e de excelência
                     </p>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-gray-600">Benefícios:</label>
+                    <label className="text-xs font-medium lia-text-base">Benefícios:</label>
                     <div className="flex flex-wrap gap-1">
                       {(jobData?.benefits || ['Benefícios competitivos']).map((benefit: string, index: number) => (
                         <Badge key={index} variant="secondary" className="text-xs">{benefit}</Badge>
@@ -645,7 +645,7 @@ Boa sorte com as triagens! 🚀`,
                     </div>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-gray-600">Diretrizes:</label>
+                    <label className="text-xs font-medium lia-text-base">Diretrizes:</label>
                     <div className="space-y-1 mt-1">
                       {[
                         "Sempre construtivo e respeitoso",
@@ -653,7 +653,7 @@ Boa sorte com as triagens! 🚀`,
                         "Sugerir desenvolvimento",
                         "Manter relacionamento positivo"
                       ].map((guideline, index) => (
-                        <div key={index} className="text-xs text-gray-600 flex items-center gap-1">
+                        <div key={index} className="text-xs lia-text-base flex items-center gap-1">
                           <Star className="w-3 h-3 text-wedo-magenta" />
                           {guideline}
                         </div>
@@ -672,7 +672,7 @@ Boa sorte com as triagens! 🚀`,
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                  <Clock className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
                   Timeline de Execução
                 </CardTitle>
               </CardHeader>
@@ -684,14 +684,14 @@ Boa sorte com as triagens! 🚀`,
                     { step: "Avaliação", time: "10 min após", desc: "Análise e decisão" },
                     { step: "Feedback", time: "24-48h após", desc: "Retorno personalizado" }
                   ].map((item, index) => (
-                    <div key={index} className="flex items-start gap-3 p-2 bg-gray-100 dark:bg-gray-800 rounded-md">
-                      <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-400 text-xs font-bold">
+                    <div key={index} className="flex items-start gap-3 p-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+                      <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center text-gray-600 dark:text-lia-text-tertiary text-xs font-bold">
                         {index + 1}
                       </div>
                       <div className="flex-1">
                         <div className="text-sm font-medium text-wedo-cyan-dark">{item.step}</div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400">{item.time}</div>
-                        <div className="text-xs text-gray-600">{item.desc}</div>
+                        <div className="text-xs text-gray-600 dark:text-lia-text-tertiary">{item.time}</div>
+                        <div className="text-xs lia-text-base">{item.desc}</div>
                       </div>
                     </div>
                   ))}
@@ -727,7 +727,7 @@ Boa sorte com as triagens! 🚀`,
                       "✅ Estratégia de feedback",
                       "✅ Timeline estruturada"
                     ].map((item, index) => (
-                      <div key={index} className="text-xs text-gray-600">{item}</div>
+                      <div key={index} className="text-xs lia-text-base">{item}</div>
                     ))}
                   </div>
                   <div className="pt-3 border-t">
@@ -757,7 +757,7 @@ Boa sorte com as triagens! 🚀`,
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-md w-full max-w-7xl h-[90vh] flex flex-col">
+      <div className="bg-white dark:bg-lia-bg-secondary rounded-md w-full max-w-7xl h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 bg-status-success/10 dark:bg-status-success/20">
           <div className="flex items-center gap-3">
@@ -765,10 +765,10 @@ Boa sorte com as triagens! 🚀`,
               <Brain className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold font-sans text-gray-950 dark:text-gray-50">
+              <h3 className="text-lg font-semibold font-sans text-gray-950">
                 Construção de Roteiro de Triagem
               </h3>
-              <p className="text-sm text-gray-800 dark:text-gray-200">
+              <p className="text-sm text-gray-800 dark:text-lia-text-primary">
                 {jobData?.title} • Criando roteiro personalizado
               </p>
             </div>
@@ -795,9 +795,9 @@ Boa sorte com as triagens! 🚀`,
                   className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div className={`max-w-[80%] ${
-                    message.sender === 'user'
-                      ? 'bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900 rounded-l-2xl rounded-tr-2xl'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-950 dark:text-gray-50 rounded-r-2xl rounded-tl-2xl'
+ message.sender === 'user'
+                      ? 'bg-gray-900 text-white rounded-l-2xl rounded-tr-2xl'
+                      : 'bg-gray-100 dark:bg-lia-bg-elevated text-gray-950 rounded-r-2xl rounded-tl-2xl'
                   } p-3`}>
                     <div className="text-sm whitespace-pre-line">{message.content}</div>
 
@@ -807,7 +807,7 @@ Boa sorte com as triagens! 🚀`,
                           <button
                             key={index}
                             onClick={() => handleOptionSelect(option)}
-                            className="block w-full text-left p-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-md text-sm transition-colors"
+                            className="block w-full text-left p-2 bg-lia-bg-primary bg-opacity-20 hover:bg-opacity-30 rounded-md text-sm transition-colors"
                           >
                             {option}
                           </button>
@@ -820,10 +820,10 @@ Boa sorte com as triagens! 🚀`,
 
               {isLiaTyping && (
                 <div className="flex justify-start">
-                  <div className="bg-gray-100 dark:bg-gray-700 rounded-r-2xl rounded-tl-2xl p-3">
+                  <div className="bg-gray-100 dark:bg-lia-bg-elevated rounded-r-2xl rounded-tl-2xl p-3">
                     <div className="flex items-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin text-status-success" />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">LIA está digitando...</span>
+                      <span className="text-sm text-gray-600 dark:text-lia-text-tertiary">LIA está digitando...</span>
                     </div>
                   </div>
                 </div>
@@ -832,7 +832,7 @@ Boa sorte com as triagens! 🚀`,
             </div>
 
             {/* Input Area */}
-            <div className="p-4 bg-gray-50 dark:bg-gray-800">
+            <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary">
               <div className="flex items-center gap-3">
                 <div className="flex-1 relative">
                   <input
@@ -842,7 +842,7 @@ Boa sorte com as triagens! 🚀`,
                     onChange={(e) => setCurrentInput(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                     placeholder="Digite sua resposta..."
-                    className="w-full p-3 pr-12 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 bg-white dark:bg-gray-700 text-gray-950 dark:text-gray-50"
+                    className="w-full p-3 pr-12 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 bg-white dark:bg-lia-bg-elevated text-gray-950"
                   />
                   <Button
                     onClick={handleSendMessage}
@@ -857,9 +857,9 @@ Boa sorte com as triagens! 🚀`,
           </div>
 
           {/* Right Panel */}
-          <div className="w-96 bg-gray-50 dark:bg-gray-800 p-4 overflow-y-auto">
+          <div className="w-96 bg-gray-50 dark:bg-lia-bg-secondary p-4 overflow-y-auto">
             <div className="mb-4">
-              <h4 className="font-medium font-sans text-gray-950 dark:text-gray-50 mb-2">
+              <h4 className="font-medium font-sans text-gray-950 mb-2">
                 {currentStep === 'overview' && '📋 Configurando Visão Geral'}
                 {currentStep === 'approach' && '🗣️ Definindo Abordagem'}
                 {currentStep === 'questions' && '❓ Criando Perguntas'}
@@ -868,7 +868,7 @@ Boa sorte com as triagens! 🚀`,
                 {currentStep === 'timeline' && '⏰ Timeline de Execução'}
                 {currentStep === 'review' && '✅ Roteiro Finalizado'}
               </h4>
-              <div className="text-xs text-gray-600">
+              <div className="text-xs lia-text-base">
                 Etapa {['overview', 'approach', 'questions', 'presentation', 'feedback', 'timeline', 'review'].indexOf(currentStep) + 1} de 7
               </div>
             </div>
@@ -880,7 +880,7 @@ Boa sorte com as triagens! 🚀`,
       {/* Company Settings Modal */}
       {showCompanySettings && (
         <div className="fixed inset-0 bg-black bg-opacity-75 z-60 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-md max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+          <div className="bg-white dark:bg-lia-bg-secondary rounded-md max-w-2xl w-full max-h-[80vh] overflow-y-auto">
             <div className="p-4 border-b">
               <div className="flex items-center justify-between">
                 <h4 className="font-medium">Configurações da Empresa</h4>
@@ -893,15 +893,15 @@ Boa sorte com as triagens! 🚀`,
               <div className="space-y-4 text-sm">
                 <div className="p-3 border rounded-md">
                   <div className="font-medium">Template Padrão</div>
-                  <div className="text-xs text-gray-600 mt-1">Duração: 25-30 min • Foco: Técnico + Cultural</div>
+                  <div className="text-xs lia-text-base mt-1">Duração: 25-30 min • Foco: Técnico + Cultural</div>
                 </div>
                 <div className="p-3 border rounded-md">
                   <div className="font-medium">Abordagem</div>
-                  <div className="text-xs text-gray-600 mt-1">Tom: Profissional, mas acolhedor</div>
+                  <div className="text-xs lia-text-base mt-1">Tom: Profissional, mas acolhedor</div>
                 </div>
                 <div className="p-3 border rounded-md">
                   <div className="font-medium">Feedback</div>
-                  <div className="text-xs text-gray-600 mt-1">Aprovados: 24h • Reprovados: 48h</div>
+                  <div className="text-xs lia-text-base mt-1">Aprovados: 24h • Reprovados: 48h</div>
                 </div>
               </div>
             </div>

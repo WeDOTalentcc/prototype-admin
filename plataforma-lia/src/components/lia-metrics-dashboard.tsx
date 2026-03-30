@@ -93,8 +93,8 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
       rate: contactRate,
       avgTime: avgTimeContact,
       icon: <Phone className="w-4 h-4" />,
-      color: 'text-gray-600 dark:text-gray-400',
-      bgColor: 'bg-gray-100 dark:bg-gray-800'
+      color: 'text-gray-600 dark:text-lia-text-tertiary',
+      bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary'
     },
     {
       stage: 'Triagem Iniciada',
@@ -103,8 +103,8 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
       rate: contacted > 0 ? (triageStarted / contacted) * 100 : 0,
       avgTime: avgTimeTriage,
       icon: <Target className="w-4 h-4" />,
-      color: 'text-gray-900 dark:text-gray-50',
- bgColor: 'bg-gray-50 dark:bg-gray-800'
+      color: 'text-gray-900',
+ bgColor: 'bg-gray-50 dark:bg-lia-bg-secondary'
     },
     {
       stage: 'Triagem Completa',
@@ -193,15 +193,15 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
         <Card>
           <CardContent className="p-3">
             <div className="flex items-center justify-between mb-1">
-              <Phone className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              <Phone className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
               <Badge className={`text-xs px-1.5 py-0.5 ${contactRate >= 80 ? 'bg-status-success' : contactRate >= 60 ? 'bg-status-warning' : 'bg-status-error'} text-white`}>
                 {contactRate.toFixed(0)}%
               </Badge>
             </div>
-            <div className={`text-lg font-bold text-gray-950 dark:text-gray-50`}>
+            <div className={`text-lg font-bold text-gray-950`}>
               {contacted}/{totalCandidates}
             </div>
-            <div className={`${textStyles.bodySmall} dark:text-gray-200`}>
+            <div className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>
               Taxa de Contato
             </div>
           </CardContent>
@@ -216,10 +216,10 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                 {triageConversionRate.toFixed(0)}%
               </Badge>
             </div>
-            <div className={`text-lg font-bold text-gray-950 dark:text-gray-50`}>
+            <div className={`text-lg font-bold text-gray-950`}>
               {triageCompleted}/{contacted}
             </div>
-            <div className={`${textStyles.bodySmall} dark:text-gray-200`}>
+            <div className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>
               Taxa de Triagem
             </div>
           </CardContent>
@@ -234,10 +234,10 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                 {triageApprovalRate.toFixed(0)}%
               </Badge>
             </div>
-            <div className={`text-lg font-bold text-gray-950 dark:text-gray-50`}>
+            <div className={`text-lg font-bold text-gray-950`}>
               {triageApproved}/{triageCompleted}
             </div>
-            <div className={`${textStyles.bodySmall} dark:text-gray-200`}>
+            <div className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>
               Taxa de Aprovação
             </div>
           </CardContent>
@@ -252,10 +252,10 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                 {interviewConversionRate.toFixed(0)}%
               </Badge>
             </div>
-            <div className={`text-lg font-bold text-gray-950 dark:text-gray-50`}>
+            <div className={`text-lg font-bold text-gray-950`}>
               {interviewScheduled}/{triageApproved}
             </div>
-            <div className={`${textStyles.bodySmall} dark:text-gray-200`}>
+            <div className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>
               Agendamentos
             </div>
           </CardContent>
@@ -268,10 +268,10 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
               <Clock className="w-4 h-4 text-wedo-orange" />
               <TrendingUp className="w-3 h-3 text-status-success" />
             </div>
-            <div className={`text-lg font-bold text-gray-950 dark:text-gray-50`}>
+            <div className={`text-lg font-bold text-gray-950`}>
               {avgTimeContact.toFixed(1)}h
             </div>
-            <div className={`${textStyles.bodySmall} dark:text-gray-200`}>
+            <div className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>
               Tempo Contato
             </div>
           </CardContent>
@@ -281,15 +281,15 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
         <Card>
           <CardContent className="p-3">
             <div className="flex items-center justify-between mb-1">
-              <Zap className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-              <Badge className="text-xs px-1.5 py-0.5 bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900">
+              <Zap className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+              <Badge className="text-xs px-1.5 py-0.5 bg-gray-900 text-white">
                 {avgLiaScore.toFixed(1)}
               </Badge>
             </div>
-            <div className={`text-lg font-bold text-gray-950 dark:text-gray-50`}>
+            <div className={`text-lg font-bold text-gray-950`}>
               {avgSkillsMatch}%
             </div>
-            <div className={`${textStyles.bodySmall} dark:text-gray-200`}>
+            <div className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>
               Score/Match
             </div>
           </CardContent>
@@ -316,11 +316,11 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
-                        <span className={`${textStyles.label} dark:text-gray-200`}>
+                        <span className={`${textStyles.label} dark:text-lia-text-primary`}>
                           {stage.stage}
                         </span>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-600">
+                          <span className="text-xs lia-text-base">
                             {stage.count}/{stage.total}
                           </span>
                           <Badge className="text-xs px-1.5 py-0.5" variant="outline">
@@ -328,10 +328,10 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                           </Badge>
                         </div>
                       </div>
-                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                      <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-1.5">
                         <div
                           className={`h-1.5 rounded-full ${
-                            stage.rate >= 70 ? 'bg-wedo-green' :
+ stage.rate >= 70 ? 'bg-wedo-green' :
                             stage.rate >= 50 ? 'bg-wedo-orange' :
                             'bg-status-error'
                           }`}
@@ -347,7 +347,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                     )}
                   </div>
                   {index < funnelStages.length - 1 && (
-                    <ArrowRight className="w-3 h-3 text-gray-600 ml-4 my-1" />
+                    <ArrowRight className="w-3 h-3 lia-text-base ml-4 my-1" />
                   )}
                 </div>
               ))}
@@ -381,7 +381,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className={`${textStyles.title} flex items-center gap-2`}>
-              <Phone className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              <Phone className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
               Taxa de Contato (7 dias)
             </CardTitle>
           </CardHeader>
@@ -466,7 +466,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className={`${textStyles.title} flex items-center gap-2`}>
-            <Users className="w-4 h-4 text-gray-900 dark:text-gray-50" />
+            <Users className="w-4 h-4 text-gray-900" />
             Performance por Fonte
           </CardTitle>
         </CardHeader>
@@ -474,18 +474,18 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
           <div className="space-y-2">
             {sourceMetrics.map((source) => (
               <div key={source.source} className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center">
-                  <Users className="w-3 h-3 text-gray-600" />
+                <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+                  <Users className="w-3 h-3 lia-text-base" />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="font-medium text-gray-800 dark:text-gray-200">{source.source}</span>
+                    <span className="font-medium text-gray-800 dark:text-lia-text-primary">{source.source}</span>
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className="text-xs px-1 py-0">
                         {source.count} cand.
                       </Badge>
                       <Badge className={`text-xs px-1 py-0 ${
-                        source.conversionRate >= 70 ? 'bg-status-success' :
+ source.conversionRate >= 70 ? 'bg-status-success' :
                         source.conversionRate >= 50 ? 'bg-status-warning' :
                         'bg-status-error'
                       } text-white`}>
@@ -493,10 +493,10 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                       </Badge>
                     </div>
                   </div>
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1">
+                  <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-1">
                     <div
                       className={`h-1 rounded-full ${
-                        source.conversionRate >= 70 ? 'bg-status-success' :
+ source.conversionRate >= 70 ? 'bg-status-success' :
                         source.conversionRate >= 50 ? 'bg-status-warning' :
                         'bg-status-error'
                       }`}
@@ -520,11 +520,11 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
             <CardContent className="p-2">
               <div className="flex items-center justify-between mb-1">
                 {status.icon}
-                <span className="text-xs font-bold text-gray-950 dark:text-gray-50">
+                <span className="text-xs font-bold text-gray-950">
                   {status.count}
                 </span>
               </div>
-              <div className={`${textStyles.bodySmall} dark:text-gray-200 truncate`}>
+              <div className={`${textStyles.bodySmall} dark:text-lia-text-primary truncate`}>
                 {status.status}
               </div>
               <div className={textStyles.bodySmall}>
@@ -547,17 +547,17 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {/* Insight 1: Taxa de Contato */}
             <div className={`p-3 rounded-md ${
-              contactRate >= 80 ? 'bg-status-success/10' :
+ contactRate >= 80 ? 'bg-status-success/10' :
               contactRate >= 60 ? 'bg-status-warning/10' :
               'bg-status-error/10'
             }`}>
               <div className="flex items-center gap-2 mb-1">
-                <Phone className="w-3 h-3 text-gray-600 dark:text-gray-400" />
-                <span className="text-xs font-semibold text-gray-950 dark:text-gray-50">
+                <Phone className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
+                <span className="text-xs font-semibold text-gray-950">
                   Taxa de Contato
                 </span>
               </div>
-              <p className="text-xs text-gray-800 dark:text-gray-200">
+              <p className="text-xs text-gray-800 dark:text-lia-text-primary">
                 {contactRate >= 80 ?
                   '✅ Excelente! Continue assim.' :
                   contactRate >= 60 ?
@@ -569,17 +569,17 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
 
             {/* Insight 2: Taxa de Conversão */}
             <div className={`p-3 rounded-md ${
-              triageConversionRate >= 70 ? 'bg-status-success/10' :
+ triageConversionRate >= 70 ? 'bg-status-success/10' :
               triageConversionRate >= 50 ? 'bg-status-warning/10' :
               'bg-status-error/10'
             }`}>
               <div className="flex items-center gap-2 mb-1">
                 <Target className="w-3 h-3 text-status-success" />
-                <span className="text-xs font-semibold text-gray-950 dark:text-gray-50">
+                <span className="text-xs font-semibold text-gray-950">
                   Taxa de Conversão
                 </span>
               </div>
-              <p className="text-xs text-gray-800 dark:text-gray-200">
+              <p className="text-xs text-gray-800 dark:text-lia-text-primary">
                 {triageConversionRate >= 70 ?
                   '✅ Ótima conversão na triagem!' :
                   triageConversionRate >= 50 ?
@@ -591,17 +591,17 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
 
             {/* Insight 3: Tempo de Resposta */}
             <div className={`p-3 rounded-md ${
-              avgTimeContact <= 2 ? 'bg-status-success/10' :
+ avgTimeContact <= 2 ? 'bg-status-success/10' :
               avgTimeContact <= 4 ? 'bg-status-warning/10' :
               'bg-status-error/10'
             }`}>
               <div className="flex items-center gap-2 mb-1">
                 <Clock className="w-3 h-3 text-wedo-orange" />
-                <span className="text-xs font-semibold text-gray-950 dark:text-gray-50">
+                <span className="text-xs font-semibold text-gray-950">
                   Velocidade
                 </span>
               </div>
-              <p className="text-xs text-gray-800 dark:text-gray-200">
+              <p className="text-xs text-gray-800 dark:text-lia-text-primary">
                 {avgTimeContact <= 2 ?
                   '✅ Resposta rápida! Mantém candidatos engajados.' :
                   avgTimeContact <= 4 ?
@@ -620,10 +620,10 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-xs text-gray-600 dark:text-gray-300 mb-1">
+                <div className="text-xs text-gray-600 dark:text-lia-text-secondary mb-1">
                   Score Médio LIA
                 </div>
-                <div className="text-3xl font-bold text-gray-950 dark:text-gray-50">
+                <div className="text-3xl font-bold text-gray-950">
                   {avgLiaScore.toFixed(1)}
                 </div>
               </div>
@@ -631,9 +631,9 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                 {(avgLiaScore * 10).toFixed(0)}
               </div>
             </div>
-            <div className="mt-3 w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+            <div className="mt-3 w-full h-2 bg-gray-200 dark:bg-lia-bg-elevated rounded-full overflow-hidden">
               <div
-                className="h-full bg-wedo-cyan transition-all duration-500"
+                className="h-full bg-wedo-cyan transition-[width,height] duration-500"
                 style={{width: `${avgLiaScore * 10}%`}}
               />
             </div>
@@ -644,10 +644,10 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-xs text-gray-600 dark:text-gray-300 mb-1">
+                <div className="text-xs text-gray-600 dark:text-lia-text-secondary mb-1">
                   Match Médio de Skills
                 </div>
-                <div className="text-3xl font-bold text-gray-950 dark:text-gray-50">
+                <div className="text-3xl font-bold text-gray-950">
                   {avgSkillsMatch.toFixed(0)}%
                 </div>
               </div>
@@ -655,9 +655,9 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                 {avgSkillsMatch.toFixed(0)}
               </div>
             </div>
-            <div className="mt-3 w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+            <div className="mt-3 w-full h-2 bg-gray-200 dark:bg-lia-bg-elevated rounded-full overflow-hidden">
               <div
-                className="h-full bg-wedo-green transition-all duration-500"
+                className="h-full bg-wedo-green transition-[width,height] duration-500"
                 style={{width: `${avgSkillsMatch}%`}}
               />
             </div>
@@ -717,98 +717,98 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
             <div className="grid grid-cols-4 gap-4 mb-4">
  <div className="p-3 bg-gray-100 rounded-md">
                 <div className="flex items-center justify-between mb-2">
-                  <Timer className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  <Timer className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
                   <Badge className="bg-status-success text-white text-xs">
                     ✓ No Prazo
                   </Badge>
                 </div>
-                <div className="text-2xl font-bold text-gray-950 dark:text-gray-50">
+                <div className="text-2xl font-bold text-gray-950">
                   {avgTimeContact.toFixed(1)}d
                 </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                <div className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-1">
                   Contato Inicial
                 </div>
-                <div className="text-xs text-gray-600 mt-1">
+                <div className="text-xs lia-text-base mt-1">
                   SLA: 2 dias
                 </div>
               </div>
 
-              <div className="p-3 bg-status-success/10 dark:bg-gray-800 rounded-md">
+              <div className="p-3 bg-status-success/10 dark:bg-lia-bg-secondary rounded-md">
                 <div className="flex items-center justify-between mb-2">
                   <Timer className="w-5 h-5 text-status-success" />
                   <Badge className="bg-status-success text-white text-xs">
                     ✓ No Prazo
                   </Badge>
                 </div>
-                <div className="text-2xl font-bold text-gray-950 dark:text-gray-50">
+                <div className="text-2xl font-bold text-gray-950">
                   {avgTimeTriage.toFixed(1)}d
                 </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                <div className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-1">
                   Triagem Completa
                 </div>
-                <div className="text-xs text-gray-600 mt-1">
+                <div className="text-xs lia-text-base mt-1">
                   SLA: 3 dias
                 </div>
               </div>
 
-              <div className="p-3 bg-status-warning/10 dark:bg-gray-800 rounded-md">
+              <div className="p-3 bg-status-warning/10 dark:bg-lia-bg-secondary rounded-md">
                 <div className="flex items-center justify-between mb-2">
                   <Timer className="w-5 h-5 text-status-warning" />
                   <Badge className="bg-status-warning text-white text-xs">
                     ⚠ Atenção
                   </Badge>
                 </div>
-                <div className="text-2xl font-bold text-gray-950 dark:text-gray-50">
+                <div className="text-2xl font-bold text-gray-950">
                   {avgTimeInterview.toFixed(1)}d
                 </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                <div className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-1">
                   Agendamento
                 </div>
-                <div className="text-xs text-gray-600 mt-1">
+                <div className="text-xs lia-text-base mt-1">
                   SLA: 5 dias
                 </div>
               </div>
 
-              <div className="p-3 bg-wedo-purple/10 dark:bg-gray-800 rounded-md">
+              <div className="p-3 bg-wedo-purple/10 dark:bg-lia-bg-secondary rounded-md">
                 <div className="flex items-center justify-between mb-2">
                   <Clock className="w-5 h-5 text-wedo-purple" />
-                  <Badge className="bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900 text-xs">
+                  <Badge className="bg-gray-900 text-white text-xs">
                     Total
                   </Badge>
                 </div>
-                <div className="text-2xl font-bold text-gray-950 dark:text-gray-50">
+                <div className="text-2xl font-bold text-gray-950">
                   {avgTimeTotal.toFixed(1)}d
                 </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                <div className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-1">
                   Tempo Total
                 </div>
-                <div className="text-xs text-gray-600 mt-1">
+                <div className="text-xs lia-text-base mt-1">
                   Contato → Entrevista
                 </div>
               </div>
             </div>
 
             {/* Tempo Médio até Contratação */}
-            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-md">
+            <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-gray-400 rounded-md flex items-center justify-center">
                     <Award className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">
+                    <div className="text-xs text-gray-600 dark:text-lia-text-tertiary mb-1">
                       Tempo Médio até Contratação
                     </div>
-                    <div className="text-3xl font-bold text-gray-950 dark:text-gray-50">
+                    <div className="text-3xl font-bold text-gray-950">
                       {(avgTimeTotal + 7).toFixed(0)} dias
                     </div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-xs text-gray-600 dark:text-gray-300 mb-1">
+                  <div className="text-xs text-gray-600 dark:text-lia-text-secondary mb-1">
                     Meta do Mercado
                   </div>
-                  <div className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
+                  <div className="text-2xl font-semibold text-gray-800 dark:text-lia-text-primary">
                     15 dias
                   </div>
                   <Badge className="mt-2 bg-status-success text-white">
@@ -820,13 +820,13 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
 
               {/* Progress bar comparativa */}
               <div className="mt-4">
-                <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-2">
+                <div className="flex items-center justify-between text-xs text-gray-600 dark:text-lia-text-tertiary mb-2">
                   <span>Seu desempenho</span>
                   <span>Benchmark mercado</span>
                 </div>
-                <div className="relative h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div className="relative h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-full overflow-hidden">
                   <div
-                    className="absolute h-full bg-gray-400 rounded-full transition-all duration-500"
+                    className="absolute h-full bg-gray-400 rounded-full transition-[width,height] duration-500"
                     style={{width: `${((avgTimeTotal + 7) / 15) * 100}%`}}
                   />
                   <div
@@ -839,51 +839,51 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
 
             {/* Breakdown Detalhado */}
             <div className="grid grid-cols-3 gap-3">
-              <div className="p-3 bg-white dark:bg-gray-800 rounded-md">
-                <div className="text-xs text-gray-600 dark:text-gray-300 mb-2">
+              <div className="p-3 bg-white dark:bg-lia-bg-secondary rounded-md">
+                <div className="text-xs text-gray-600 dark:text-lia-text-secondary mb-2">
                   Mais Rápido
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-status-success" />
                   <div>
-                    <div className="text-lg font-bold text-gray-950 dark:text-gray-50">
+                    <div className="text-lg font-bold text-gray-950">
                       {(avgTimeTotal * 0.6).toFixed(1)}d
                     </div>
-                    <div className="text-xs text-gray-600">
+                    <div className="text-xs lia-text-base">
                       Melhor caso
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="p-3 bg-white dark:bg-gray-800 rounded-md">
-                <div className="text-xs text-gray-600 dark:text-gray-300 mb-2">
+              <div className="p-3 bg-white dark:bg-lia-bg-secondary rounded-md">
+                <div className="text-xs text-gray-600 dark:text-lia-text-secondary mb-2">
                   Médio
                 </div>
                 <div className="flex items-center gap-2">
-                  <Target className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                  <Target className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
                   <div>
-                    <div className="text-lg font-bold text-gray-950 dark:text-gray-50">
+                    <div className="text-lg font-bold text-gray-950">
                       {avgTimeTotal.toFixed(1)}d
                     </div>
-                    <div className="text-xs text-gray-600">
+                    <div className="text-xs lia-text-base">
                       Caso típico
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="p-3 bg-white dark:bg-gray-800 rounded-md">
-                <div className="text-xs text-gray-600 dark:text-gray-300 mb-2">
+              <div className="p-3 bg-white dark:bg-lia-bg-secondary rounded-md">
+                <div className="text-xs text-gray-600 dark:text-lia-text-secondary mb-2">
                   Mais Lento
                 </div>
                 <div className="flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-wedo-orange" />
                   <div>
-                    <div className="text-lg font-bold text-gray-950 dark:text-gray-50">
+                    <div className="text-lg font-bold text-gray-950">
                       {(avgTimeTotal * 1.8).toFixed(1)}d
                     </div>
-                    <div className="text-xs text-gray-600">
+                    <div className="text-xs lia-text-base">
                       Pior caso
                     </div>
                   </div>

@@ -92,10 +92,10 @@ export function PipelineStagesCarousel({
       {canScrollLeft && (
         <button
           onClick={() => scroll('left')}
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-30 w-8 h-8 flex items-center justify-center bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-30 w-8 h-8 flex items-center justify-center bg-white dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-[width,height]"
           aria-label="Scroll esquerda"
         >
-          <ChevronLeft className="w-5 h-5 text-gray-700 dark:text-gray-200" />
+          <ChevronLeft className="w-5 h-5 text-gray-700 dark:text-lia-text-primary" />
         </button>
       )}
 
@@ -119,7 +119,7 @@ export function PipelineStagesCarousel({
                 <button
                   onClick={() => onStageClick?.(stage.id)}
                   className={cn(
-                    'relative flex-shrink-0 group transition-all duration-200',
+ 'relative flex-shrink-0 group transition-colors duration-200',
                     'focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2',
                     isSelected ? 'scale-[1.02]' : 'hover:scale-[1.01]'
                   )}
@@ -127,37 +127,37 @@ export function PipelineStagesCarousel({
                 >
                   <div
                     className={cn(
-                      'rounded-md px-3 py-2 min-w-[130px]',
-                      'border-2 transition-all duration-200',
-                      'bg-white dark:bg-gray-800',
+ 'rounded-md px-3 py-2 min-w-[130px]',
+                      'border-2 transition-colors duration-200',
+                      'bg-white dark:bg-lia-bg-secondary',
                       isSelected
-                        ? 'border-gray-900 dark:border-gray-100'
-                        : 'border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600'
+                        ? 'border-gray-900 dark:border-lia-border-subtle'
+                        : 'border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-subtle dark:hover:border-gray-600'
                     )}
                   >
-                    <div className="text-micro font-medium text-gray-500 dark:text-gray-400 mb-0.5 whitespace-nowrap">
+                    <div className="text-micro font-medium text-gray-500 dark:text-lia-text-tertiary mb-0.5 whitespace-nowrap">
                       {displayName}
                     </div>
 
                     <div className="flex items-baseline gap-1">
                       <span
                         className={cn(
-                          'text-xl font-bold leading-none',
+ 'text-xl font-bold leading-none',
                           isSelected
-                            ? 'text-gray-900 dark:text-gray-100'
-                            : 'text-gray-800 dark:text-gray-200'
+                            ? 'text-gray-900 dark:text-lia-text-primary'
+                            : 'text-gray-800 dark:text-lia-text-primary'
                         )}
                       >
                         {stage.count}
                       </span>
-                      <span className="text-micro font-medium text-gray-400 dark:text-gray-500">
+                      <span className="text-micro font-medium text-gray-400">
                         candidatos
                       </span>
                     </div>
 
-                    <div className="mt-1.5 h-1 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
+                    <div className="mt-1.5 h-1 rounded-full bg-gray-100 dark:bg-lia-bg-elevated overflow-hidden">
                       <div
-                        className="h-full rounded-full transition-all duration-300"
+                        className="h-full rounded-full transition-[width,height] duration-300"
                         style={{backgroundColor: stageColor,
                           width: isSelected ? '100%' : '60%'}}
                       />
@@ -166,8 +166,8 @@ export function PipelineStagesCarousel({
 
                   {isSelected && (
                     <div className="absolute -top-1 -right-1">
-                      <div className="w-5 h-5 bg-gray-900 dark:bg-gray-100 rounded-full flex items-center justify-center">
-                        <CheckCircle className="w-3 h-3 text-white dark:text-gray-900" />
+                      <div className="w-5 h-5 bg-gray-900 rounded-full flex items-center justify-center">
+                        <CheckCircle className="w-3 h-3 text-white" />
                       </div>
                     </div>
                   )}
@@ -175,7 +175,7 @@ export function PipelineStagesCarousel({
 
                 {index < stages.length - 1 && (
                   <div className="flex-shrink-0 flex items-center">
-                    <ChevronRight className="w-4 h-4 text-gray-300 dark:text-gray-600" />
+                    <ChevronRight className="w-4 h-4 text-gray-300" />
                   </div>
                 )}
               </React.Fragment>
@@ -191,10 +191,10 @@ export function PipelineStagesCarousel({
       {canScrollRight && (
         <button
           onClick={() => scroll('right')}
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-30 w-8 h-8 flex items-center justify-center bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-30 w-8 h-8 flex items-center justify-center bg-white dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-[width,height]"
           aria-label="Scroll direita"
         >
-          <ChevronRight className="w-5 h-5 text-gray-700 dark:text-gray-200" />
+          <ChevronRight className="w-5 h-5 text-gray-700 dark:text-lia-text-primary" />
         </button>
       )}
     </div>

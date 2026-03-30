@@ -186,12 +186,12 @@ export function UniversityLocationsInput({
       <div className="flex items-center justify-between">
         {value.length > 0 && (
           <>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs lia-text-500">
               {value.length} location{value.length !== 1 ? 's' : ''} selected
             </span>
             <button
               onClick={clearAll}
-              className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 font-medium"
+              className="text-xs lia-text-600 dark:text-lia-text-tertiary hover:lia-text-900 font-medium"
             >
               Clear all
             </button>
@@ -201,7 +201,7 @@ export function UniversityLocationsInput({
 
       <div className="relative">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-400" />
           <Input
             ref={inputRef}
             value={inputValue}
@@ -209,14 +209,14 @@ export function UniversityLocationsInput({
             onKeyDown={handleKeyDown}
             onFocus={() => inputValue.length > 0 && setIsDropdownOpen(true)}
             placeholder={placeholder}
-            className="pl-9 pr-3 border-gray-200 focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+            className="pl-9 pr-3 border-lia-border-subtle focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
           />
         </div>
 
         {isDropdownOpen && hasResults && (
           <div 
             ref={dropdownRef}
-            className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md max-h-64 overflow-y-auto"
+            className="absolute z-50 w-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-md max-h-64 overflow-y-auto"
           >
             {allItems.map((item, index) => {
               if (item.type === 'header') {
@@ -242,7 +242,7 @@ export function UniversityLocationsInput({
                     focusedIndex === currentSelectableIndex ? "bg-gray-100" : "hover:bg-gray-50"
                   )}
                 >
-                  <span className="text-gray-800 dark:text-gray-200">{item.label}</span>
+                  <span className="lia-text-800 dark:text-lia-text-primary">{item.label}</span>
                 </button>
               )
             })}
@@ -255,7 +255,7 @@ export function UniversityLocationsInput({
           {value.map(location => (
             <Badge
               key={location}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:text-gray-200 border border-gray-200"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle"
             >
               <span>{location}</span>
               <button

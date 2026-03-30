@@ -65,7 +65,7 @@ const getAlertIcon = (type: 'warning' | 'info' | 'success') => {
     case 'warning':
       return <AlertTriangle className="w-3.5 h-3.5 text-status-warning" />
     case 'info':
-      return <Info className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+      return <Info className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
     case 'success':
       return <CheckCircle className="w-3.5 h-3.5 text-status-success" />
   }
@@ -76,7 +76,7 @@ const getAlertBgColor = (type: 'warning' | 'info' | 'success') => {
     case 'warning':
       return 'bg-status-warning/10 border-status-warning/30 dark:bg-status-warning/20 dark:border-status-warning/30'
     case 'info':
- return 'bg-gray-50 border-gray-300 dark:bg-gray-800 dark:border-gray-200'
+ return 'bg-gray-50 border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-subtle'
     case 'success':
       return 'bg-status-success/10 border-status-success/30 dark:bg-status-success/20 dark:border-status-success/30'
   }
@@ -97,18 +97,18 @@ export function ProactiveInsightCard({
   const workModelEntries = Object.entries(distributions?.work_model || {}).sort((a, b) => b[1] - a[1])
 
   return (
-    <Card className={cn("w-full bg-white dark:bg-gray-900 border border-gray-100", className)}>
+    <Card className={cn("w-full bg-white dark:bg-lia-bg-primary border border-lia-border-subtle", className)}>
       <CardHeader className="pb-2 pt-3 px-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-              <TrendingUp className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+            <div className="w-7 h-7 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
+              <TrendingUp className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
             </div>
             <div>
-              <h3 className={`${textStyles.title} dark:text-gray-100`}>
+              <h3 className={`${textStyles.title} dark:text-lia-text-primary`}>
                 Análise da Busca
               </h3>
-              <p className={`${textStyles.bodySmall} dark:text-gray-300`}>
+              <p className={`${textStyles.bodySmall} dark:text-lia-text-secondary`}>
                 Insights proativos da LIA
               </p>
             </div>
@@ -120,9 +120,9 @@ export function ProactiveInsightCard({
             onClick={() => setIsExpanded(!isExpanded)}
           >
             {isExpanded ? (
-              <ChevronUp className="w-4 h-4 text-gray-600" />
+              <ChevronUp className="w-4 h-4 lia-text-base" />
             ) : (
-              <ChevronDown className="w-4 h-4 text-gray-600" />
+              <ChevronDown className="w-4 h-4 lia-text-base" />
             )}
           </Button>
         </div>
@@ -130,39 +130,39 @@ export function ProactiveInsightCard({
 
       <CardContent className="px-4 pb-4 pt-0 space-y-3">
         <div className="grid grid-cols-4 gap-2">
-          <div className={`${cardStyles.compact} dark:bg-gray-800 text-center`}>
+          <div className={`${cardStyles.compact} dark:bg-lia-bg-secondary text-center`}>
             <div className="flex items-center justify-center gap-1 mb-0.5">
-              <Users className="w-3 h-3 text-gray-600 dark:text-gray-400" />
-              <span className="text-lg font-bold text-gray-950 dark:text-gray-50">{summary.total_candidates}</span>
+              <Users className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
+              <span className="text-lg font-bold text-gray-950">{summary.total_candidates}</span>
             </div>
-            <span className={`${textStyles.bodySmall} dark:text-gray-300`}>Total</span>
+            <span className={`${textStyles.bodySmall} dark:text-lia-text-secondary`}>Total</span>
           </div>
-          <div className={`${cardStyles.compact} dark:bg-gray-800 text-center`}>
+          <div className={`${cardStyles.compact} dark:bg-lia-bg-secondary text-center`}>
             <div className="flex items-center justify-center gap-1 mb-0.5">
-              <Building className="w-3 h-3 text-gray-600 dark:text-gray-400" />
-              <span className="text-lg font-bold text-gray-950 dark:text-gray-50">{summary.local_count}</span>
+              <Building className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
+              <span className="text-lg font-bold text-gray-950">{summary.local_count}</span>
             </div>
-            <span className={`${textStyles.bodySmall} dark:text-gray-300`}>Base Local</span>
+            <span className={`${textStyles.bodySmall} dark:text-lia-text-secondary`}>Base Local</span>
           </div>
-          <div className={`${cardStyles.compact} dark:bg-gray-800 text-center`}>
+          <div className={`${cardStyles.compact} dark:bg-lia-bg-secondary text-center`}>
             <div className="flex items-center justify-center gap-1 mb-0.5">
-              <Globe className="w-3 h-3 text-gray-600 dark:text-gray-400" />
-              <span className="text-lg font-bold text-gray-950 dark:text-gray-50">{summary.global_count}</span>
+              <Globe className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
+              <span className="text-lg font-bold text-gray-950">{summary.global_count}</span>
             </div>
-            <span className={`${textStyles.bodySmall} dark:text-gray-300`}>Base Global</span>
+            <span className={`${textStyles.bodySmall} dark:text-lia-text-secondary`}>Base Global</span>
           </div>
-          <div className={`${cardStyles.compact} dark:bg-gray-800 text-center`}>
+          <div className={`${cardStyles.compact} dark:bg-lia-bg-secondary text-center`}>
             <div className="flex items-center justify-center gap-1 mb-0.5">
-              <Star className="w-3 h-3 text-gray-600 dark:text-gray-400" />
-              <span className="text-lg font-bold text-gray-950 dark:text-gray-50">{summary.average_lia_score.toFixed(0)}</span>
+              <Star className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
+              <span className="text-lg font-bold text-gray-950">{summary.average_lia_score.toFixed(0)}</span>
             </div>
-            <span className={`${textStyles.bodySmall} dark:text-gray-300`}>Score Médio</span>
+            <span className={`${textStyles.bodySmall} dark:text-lia-text-secondary`}>Score Médio</span>
           </div>
         </div>
 
         {narrative && (
           <div className={`${cardStyles.flat} p-2.5`}>
-            <p className={`${textStyles.body} dark:text-gray-300 leading-relaxed`}>
+            <p className={`${textStyles.body} dark:text-lia-text-secondary leading-relaxed`}>
               {narrative}
             </p>
           </div>
@@ -174,12 +174,12 @@ export function ProactiveInsightCard({
               <div 
                 key={index}
                 className={cn(
-                  "flex items-start gap-2 p-2 rounded-md border text-xs",
+ "flex items-start gap-2 p-2 rounded-md border text-xs",
                   getAlertBgColor(alert.type)
                 )}
               >
                 {getAlertIcon(alert.type)}
-                <span className="text-gray-800 dark:text-gray-200 flex-1">
+                <span className="text-gray-800 dark:text-lia-text-primary flex-1">
                   {alert.message}
                 </span>
               </div>
@@ -192,7 +192,7 @@ export function ProactiveInsightCard({
           <>
             {contact_quality && (
               <div className="space-y-2">
-                <h4 className={`${textStyles.label} uppercase tracking-wider dark:text-gray-300`}>
+                <h4 className={`${textStyles.label} uppercase tracking-wider dark:text-lia-text-secondary`}>
                   Qualidade dos Contatos
                 </h4>
                 <div className="grid grid-cols-3 gap-2">
@@ -200,29 +200,29 @@ export function ProactiveInsightCard({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1">
                         <Phone className="w-3 h-3 text-status-success" />
-                        <span className={`${textStyles.bodySmall} dark:text-gray-400`}>Telefone</span>
+                        <span className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>Telefone</span>
                       </div>
-                      <span className={`${textStyles.label} text-gray-950 dark:text-gray-50`}>{contact_quality.phone_percentage}%</span>
+                      <span className={`${textStyles.label} text-gray-950`}>{contact_quality.phone_percentage}%</span>
                     </div>
                     <Progress value={contact_quality.phone_percentage} className="h-1.5" />
                   </div>
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1">
-                        <Mail className="w-3 h-3 text-gray-600 dark:text-gray-400" />
-                        <span className={`${textStyles.bodySmall} dark:text-gray-400`}>Email</span>
+                        <Mail className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
+                        <span className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>Email</span>
                       </div>
-                      <span className={`${textStyles.label} text-gray-950 dark:text-gray-50`}>{contact_quality.email_percentage}%</span>
+                      <span className={`${textStyles.label} text-gray-950`}>{contact_quality.email_percentage}%</span>
                     </div>
                     <Progress value={contact_quality.email_percentage} className="h-1.5" />
                   </div>
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1">
-                        <Linkedin className="w-3 h-3 text-gray-600" />
-                        <span className={`${textStyles.bodySmall} dark:text-gray-400`}>LinkedIn</span>
+                        <Linkedin className="w-3 h-3 lia-text-base" />
+                        <span className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>LinkedIn</span>
                       </div>
-                      <span className={`${textStyles.label} text-gray-950 dark:text-gray-50`}>
+                      <span className={`${textStyles.label} text-gray-950`}>
                         {contact_quality.with_linkedin}
                       </span>
                     </div>
@@ -237,7 +237,7 @@ export function ProactiveInsightCard({
 
             {seniorityEntries.length > 0 && (
               <div className="space-y-1.5">
-                <h4 className={`${textStyles.label} uppercase tracking-wider dark:text-gray-300`}>
+                <h4 className={`${textStyles.label} uppercase tracking-wider dark:text-lia-text-secondary`}>
                   Senioridade
                 </h4>
                 <div className="flex flex-wrap gap-1">
@@ -245,7 +245,7 @@ export function ProactiveInsightCard({
                     <Badge 
                       key={level} 
                       variant="secondary"
-                      className="text-xs py-0.5 px-1.5 bg-gray-100 dark:bg-gray-800"
+                      className="text-xs py-0.5 px-1.5 bg-gray-100 dark:bg-lia-bg-secondary"
                     >
                       {level}: {count}
                     </Badge>
@@ -256,7 +256,7 @@ export function ProactiveInsightCard({
 
             {locationEntries.length > 0 && (
               <div className="space-y-1.5">
-                <h4 className={`${textStyles.label} uppercase tracking-wider dark:text-gray-300 flex items-center gap-1`}>
+                <h4 className={`${textStyles.label} uppercase tracking-wider dark:text-lia-text-secondary flex items-center gap-1`}>
                   <MapPin className="w-3 h-3" />
                   Localização
                 </h4>
@@ -276,7 +276,7 @@ export function ProactiveInsightCard({
 
             {workModelEntries.length > 0 && (
               <div className="space-y-1.5">
-                <h4 className={`${textStyles.label} uppercase tracking-wider dark:text-gray-300 flex items-center gap-1`}>
+                <h4 className={`${textStyles.label} uppercase tracking-wider dark:text-lia-text-secondary flex items-center gap-1`}>
                   <Briefcase className="w-3 h-3" />
                   Modelo de Trabalho
                 </h4>
@@ -286,9 +286,9 @@ export function ProactiveInsightCard({
                       key={model} 
                       variant="outline"
                       className={cn(
-                        "text-xs py-0.5 px-1.5",
+ "text-xs py-0.5 px-1.5",
                         model.toLowerCase().includes('remoto') && "bg-status-success/10 border-status-success/30 text-status-success",
-                        model.toLowerCase().includes('híbrido') && "bg-gray-50 dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-wedo-cyan-dark",
+                        model.toLowerCase().includes('híbrido') && "bg-gray-50 dark:bg-lia-bg-primary border-lia-border-default dark:border-lia-border-default text-wedo-cyan-dark",
                         model.toLowerCase().includes('presencial') && "bg-wedo-purple/10 border-wedo-purple/30 text-wedo-purple"
                       )}
                     >
@@ -301,7 +301,7 @@ export function ProactiveInsightCard({
 
             {top_skills && top_skills.length > 0 && (
               <div className="space-y-1.5">
-                <h4 className={`${textStyles.label} uppercase tracking-wider dark:text-gray-300 flex items-center gap-1`}>
+                <h4 className={`${textStyles.label} uppercase tracking-wider dark:text-lia-text-secondary flex items-center gap-1`}>
                   <GraduationCap className="w-3 h-3" />
                   Top Skills
                 </h4>
@@ -309,7 +309,7 @@ export function ProactiveInsightCard({
                   {top_skills.slice(0, 8).map((skill) => (
                     <Badge 
                       key={skill.skill} 
-                      className="text-xs py-0.5 px-1.5 bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200"
+                      className="text-xs py-0.5 px-1.5 bg-gray-100 lia-text-strong border-lia-border-subtle hover:bg-gray-200"
                     >
                       {skill.skill} ({skill.count})
                     </Badge>
@@ -320,7 +320,7 @@ export function ProactiveInsightCard({
 
             {top_companies && top_companies.length > 0 && (
               <div className="space-y-1.5">
-                <h4 className={`${textStyles.label} uppercase tracking-wider dark:text-gray-300 flex items-center gap-1`}>
+                <h4 className={`${textStyles.label} uppercase tracking-wider dark:text-lia-text-secondary flex items-center gap-1`}>
                   <Building className="w-3 h-3" />
                   Principais Empresas
                 </h4>
@@ -340,18 +340,18 @@ export function ProactiveInsightCard({
 
             {experience_range && (
               <div className="space-y-1.5">
-                <h4 className={`${textStyles.label} uppercase tracking-wider dark:text-gray-300`}>
+                <h4 className={`${textStyles.label} uppercase tracking-wider dark:text-lia-text-secondary`}>
                   Experiência
                 </h4>
                 <div className={`flex items-center gap-3 ${textStyles.bodySmall}`}>
-                  <span className="dark:text-gray-400">
-                    Mín: <span className="font-medium text-gray-950 dark:text-gray-50">{experience_range.min} anos</span>
+                  <span className="dark:text-lia-text-tertiary">
+                    Mín: <span className="font-medium text-gray-950">{experience_range.min} anos</span>
                   </span>
-                  <span className="dark:text-gray-400">
-                    Máx: <span className="font-medium text-gray-950 dark:text-gray-50">{experience_range.max} anos</span>
+                  <span className="dark:text-lia-text-tertiary">
+                    Máx: <span className="font-medium text-gray-950">{experience_range.max} anos</span>
                   </span>
-                  <span className="dark:text-gray-400">
-                    Média: <span className="font-medium text-gray-950 dark:text-gray-50">{experience_range.average.toFixed(1)} anos</span>
+                  <span className="dark:text-lia-text-tertiary">
+                    Média: <span className="font-medium text-gray-950">{experience_range.average.toFixed(1)} anos</span>
                   </span>
                 </div>
               </div>

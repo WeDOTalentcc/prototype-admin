@@ -211,7 +211,7 @@ export function ExpertiseAreasInput({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {value.length > 0 && (
-            <span className="text-xs text-gray-500">
+            <span className="text-xs lia-text-500">
               {value.length} área{value.length !== 1 ? 's' : ''} selecionada{value.length !== 1 ? 's' : ''}
             </span>
           )}
@@ -219,7 +219,7 @@ export function ExpertiseAreasInput({
         {value.length > 0 && (
           <button
             onClick={clearAll}
-            className="text-xs text-gray-900 dark:text-gray-50 hover:text-gray-700 dark:hover:text-gray-300 font-medium"
+            className="text-xs lia-text-900 dark:lia-text-50 hover:lia-text-700 dark:hover:lia-text-300 font-medium"
           >
             Clear all
           </button>
@@ -228,7 +228,7 @@ export function ExpertiseAreasInput({
 
       <div className="relative">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-400" />
           <Input
             ref={inputRef}
             value={inputValue}
@@ -236,12 +236,12 @@ export function ExpertiseAreasInput({
             onKeyDown={handleKeyDown}
             onFocus={() => inputValue.length > 0 && setIsDropdownOpen(true)}
             placeholder={placeholder}
-            className="pl-9 pr-3 border-gray-200 focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+            className="pl-9 pr-3 border-lia-border-subtle focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
             disabled={isLoadingAI}
           />
           {isLoadingAI && (
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <Loader2 className="w-4 h-4 animate-spin text-gray-600" />
+              <Loader2 className="w-4 h-4 animate-spin lia-text-600" />
             </div>
           )}
         </div>
@@ -249,7 +249,7 @@ export function ExpertiseAreasInput({
         {isDropdownOpen && dropdownItems.length > 0 && (
           <div 
             ref={dropdownRef}
-            className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md max-h-64 overflow-y-auto"
+            className="absolute z-50 w-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-md max-h-64 overflow-y-auto"
           >
             {dropdownItems.map((item, index) => (
               <button
@@ -264,7 +264,7 @@ export function ExpertiseAreasInput({
                 className={cn(
                   "w-full text-left px-3 py-2 text-sm transition-colors",
                   focusedIndex === index ? "bg-gray-100" : "hover:bg-gray-50",
-                  item.type === 'ai' && "border-b border-gray-100"
+                  item.type === 'ai' && "border-b border-lia-border-subtle"
                 )}
               >
                 {item.type === 'ai' ? (
@@ -273,7 +273,7 @@ export function ExpertiseAreasInput({
                     <span>{item.label}</span>
                   </div>
                 ) : (
-                  <span className="text-gray-800 dark:text-gray-200">{item.label}</span>
+                  <span className="lia-text-800 dark:text-lia-text-primary">{item.label}</span>
                 )}
               </button>
             ))}
@@ -287,7 +287,7 @@ export function ExpertiseAreasInput({
             {value.map(expertise => (
               <Badge
                 key={expertise}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:text-gray-200 border border-gray-200"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle"
               >
                 <Brain className="w-3 h-3 text-wedo-cyan" />
                 <span>{expertise}</span>
@@ -307,7 +307,7 @@ export function ExpertiseAreasInput({
             size="sm"
             onClick={findSimilarExpertise}
             disabled={isFindingSimilar || value.length === 0}
-            className="text-xs gap-1.5 border-gray-900 dark:border-gray-50 text-gray-900 dark:text-gray-50 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="text-xs gap-1.5 border-gray-900 dark:lia-border-50 lia-text-900 dark:lia-text-50 hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             {isFindingSimilar ? (
               <Loader2 className="w-3 h-3 animate-spin" />
@@ -319,7 +319,7 @@ export function ExpertiseAreasInput({
         </div>
       )}
 
-      <p className="text-xs text-gray-500">
+      <p className="text-xs lia-text-500">
         Campos de expertise do LinkedIn (complementa skills)
       </p>
     </div>

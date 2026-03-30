@@ -38,31 +38,31 @@ export interface KanbanColumnProps {
 const getColumnStyle = (columnId: string, stageColor?: string): ColumnStyle => {
   const fixedStyles: Record<string, ColumnStyle> = {
     sourcing: {
-      bg: 'bg-white dark:bg-gray-900',
-      border: 'border-gray-200 dark:border-gray-700',
-      dot: 'bg-gray-700 dark:bg-gray-300',
-      header: 'text-gray-800 dark:text-gray-200',
+      bg: 'bg-white dark:bg-lia-bg-primary',
+      border: 'border-lia-border-subtle dark:border-lia-border-subtle',
+      dot: 'bg-gray-700 dark:lia-bg-300',
+      header: 'lia-text-800 dark:text-lia-text-primary',
       accentColor: 'var(--gray-600)'
     },
     hired: {
-      bg: 'bg-white dark:bg-gray-900',
-      border: 'border-gray-200 dark:border-gray-700',
-      dot: 'bg-gray-700 dark:bg-gray-300',
-      header: 'text-gray-800 dark:text-gray-200',
+      bg: 'bg-white dark:bg-lia-bg-primary',
+      border: 'border-lia-border-subtle dark:border-lia-border-subtle',
+      dot: 'bg-gray-700 dark:lia-bg-300',
+      header: 'lia-text-800 dark:text-lia-text-primary',
       accentColor: 'var(--gray-600)'
     },
     rejected: {
-      bg: 'bg-white dark:bg-gray-900',
-      border: 'border-gray-200 dark:border-gray-700',
-      dot: 'bg-gray-300 dark:bg-gray-600',
-      header: 'text-gray-800 dark:text-gray-200',
+      bg: 'bg-white dark:bg-lia-bg-primary',
+      border: 'border-lia-border-subtle dark:border-lia-border-subtle',
+      dot: 'bg-gray-300 dark:lia-bg-600',
+      header: 'lia-text-800 dark:text-lia-text-primary',
       accentColor: 'var(--gray-200)'
     },
     offer_declined: {
-      bg: 'bg-white dark:bg-gray-900',
-      border: 'border-gray-200 dark:border-gray-700',
-      dot: 'bg-gray-300 dark:bg-gray-600',
-      header: 'text-gray-800 dark:text-gray-200',
+      bg: 'bg-white dark:bg-lia-bg-primary',
+      border: 'border-lia-border-subtle dark:border-lia-border-subtle',
+      dot: 'bg-gray-300 dark:lia-bg-600',
+      header: 'lia-text-800 dark:text-lia-text-primary',
       accentColor: 'var(--gray-200)'
     }
   }
@@ -72,10 +72,10 @@ const getColumnStyle = (columnId: string, stageColor?: string): ColumnStyle => {
   }
 
   return {
-    bg: 'bg-white dark:bg-gray-900',
-    border: 'border-gray-200 dark:border-gray-700',
-    dot: 'bg-gray-500 dark:bg-gray-400',
-    header: 'text-gray-800 dark:text-gray-200',
+    bg: 'bg-white dark:bg-lia-bg-primary',
+    border: 'border-lia-border-subtle dark:border-lia-border-subtle',
+    dot: 'bg-gray-500 dark:lia-bg-400',
+    header: 'lia-text-800 dark:text-lia-text-primary',
     accentColor: stageColor || 'var(--gray-400)'
   }
 }
@@ -146,8 +146,8 @@ export function KanbanColumn({
 
   return (
     <div
-      className={`flex flex-col flex-1 bg-white dark:bg-gray-900 rounded-md min-w-[275px] max-w-[368px] border border-gray-200 dark:border-gray-700 transition-all duration-300 ${
-        isDropTarget ? 'ring-2 ring-gray-400 bg-gray-50 dark:bg-gray-800' : ''
+      className={`flex flex-col flex-1 bg-white dark:bg-lia-bg-primary rounded-md min-w-[275px] max-w-[368px] border border-lia-border-subtle dark:border-lia-border-subtle transition-colors duration-300 ${
+        isDropTarget ? 'ring-2 ring-gray-400 bg-gray-50 dark:bg-lia-bg-secondary' : ''
       } h-[calc(100vh-16rem)]`}
       onDragOver={handleDragOver}
       onDragLeave={onDragLeave}
@@ -164,7 +164,7 @@ export function KanbanColumn({
             <h3 className={`font-medium text-xs ${columnStyle.header}`}>
               {stage.displayName}
             </h3>
-            <span className="text-micro text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded-full">
+            <span className="text-micro lia-text-800 dark:text-lia-text-primary bg-gray-100 dark:bg-lia-bg-secondary px-1.5 py-0.5 rounded-full">
               {sortedCandidates.length}
             </span>
           </div>
@@ -172,7 +172,7 @@ export function KanbanColumn({
             <Checkbox
               checked={allSelected}
               onCheckedChange={handleSelectAllChange}
-              className="w-3.5 h-3.5 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900 dark:data-[state=checked]:bg-gray-200 dark:data-[state=checked]:border-gray-200"
+              className="w-3.5 h-3.5 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900 dark:data-[state=checked]:bg-gray-200 dark:data-[state=checked]:border-lia-border-subtle"
               title={`Selecionar todos da etapa ${stage.displayName}`}
             />
           )}

@@ -321,7 +321,7 @@ export function CloseVacancyModal({
           'flex items-center gap-2 h-9 px-4 text-xs font-medium',
           channel === 'email' 
             ? 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200' 
-            : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+            : 'border border-lia-border-default text-gray-700 hover:bg-gray-50'
         )}
       >
         <Mail className="w-3.5 h-3.5" />
@@ -337,7 +337,7 @@ export function CloseVacancyModal({
           'flex items-center gap-2 h-9 px-4 text-xs font-medium',
           channel === 'whatsapp' 
             ? 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200' 
-            : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+            : 'border border-lia-border-default text-gray-700 hover:bg-gray-50'
         )}
       >
         <MessageSquare className="w-3.5 h-3.5" />
@@ -353,7 +353,7 @@ export function CloseVacancyModal({
           'flex items-center gap-2 h-9 px-4 text-xs font-medium',
           channel === 'both' 
             ? 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200' 
-            : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+            : 'border border-lia-border-default text-gray-700 hover:bg-gray-50'
         )}
       >
         <Mail className="w-3.5 h-3.5" />
@@ -457,7 +457,7 @@ export function CloseVacancyModal({
             variant="ghost"
             size="sm"
             onClick={toggleAllCandidates}
-            className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="text-gray-700 dark:text-lia-text-secondary hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
           >
             {selectedCandidateIds.length === otherCandidates.length
               ? 'Desmarcar todos'
@@ -478,7 +478,7 @@ export function CloseVacancyModal({
                   className={cn(
                     'flex items-center gap-3 p-2 rounded-md cursor-pointer transition-colors',
                     selectedCandidateIds.includes(candidate.id)
-                      ? 'bg-gray-50 dark:bg-gray-800 border border-gray-900 dark:border-gray-100'
+                      ? 'bg-gray-50 dark:bg-lia-bg-secondary border border-gray-900 dark:border-lia-border-subtle'
                       : 'hover:bg-gray-50'
                   )}
                   onClick={() => toggleCandidateSelection(candidate.id)}
@@ -510,7 +510,7 @@ export function CloseVacancyModal({
         </ScrollArea>
         
         {selectedCandidateIds.length > 0 && (
-          <p className={cn(textStyles.caption, 'text-gray-600 dark:text-gray-400')}>
+          <p className={cn(textStyles.caption, 'text-gray-600 dark:text-lia-text-tertiary')}>
             {selectedCandidateIds.length} candidato(s) selecionado(s) para receber feedback
           </p>
         )}
@@ -568,11 +568,11 @@ export function CloseVacancyModal({
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg rounded-md dark:bg-gray-800 dark:border-gray-700">
-        <DialogHeader className="border-b border-gray-200 dark:border-gray-700 pb-4">
+      <DialogContent className="max-w-lg rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <DialogHeader className="border-b border-lia-border-subtle dark:border-lia-border-subtle pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-              <PartyPopper className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+            <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-lia-bg-elevated flex items-center justify-center">
+              <PartyPopper className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
             </div>
             <div>
               <DialogTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50">
@@ -616,14 +616,14 @@ export function CloseVacancyModal({
           {currentStep === 1 ? renderStep1() : renderStep2()}
         </div>
         
-        <DialogFooter className="flex gap-2 sm:gap-2 border-t border-gray-200 bg-gray-50 dark:bg-gray-900 dark:border-gray-700 pt-4">
+        <DialogFooter className="flex gap-2 sm:gap-2 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle pt-4">
           {currentStep === 2 && (
             <Button
               type="button"
               variant="outline"
               onClick={handlePreviousStep}
               disabled={isSubmitting}
-              className="flex items-center gap-2 h-9 px-4 text-xs font-medium border border-gray-300 text-gray-700 hover:bg-gray-50"
+              className="flex items-center gap-2 h-9 px-4 text-xs font-medium border border-lia-border-default text-gray-700 hover:bg-gray-50"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               Voltar
@@ -637,7 +637,7 @@ export function CloseVacancyModal({
             variant="outline"
             onClick={onClose}
             disabled={isSubmitting}
-            className="h-9 px-4 text-xs font-medium border border-gray-300 text-gray-700 hover:bg-gray-50"
+            className="h-9 px-4 text-xs font-medium border border-lia-border-default text-gray-700 hover:bg-gray-50"
           >
             Cancelar
           </Button>

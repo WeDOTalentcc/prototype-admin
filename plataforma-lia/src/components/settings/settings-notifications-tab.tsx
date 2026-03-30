@@ -36,12 +36,12 @@ export function SettingsNotificationsTab({ onSettingsChange }: SettingsNotificat
             { key: "whatsapp", label: "WhatsApp", icon: MessageSquare, desc: "Mensagens WhatsApp" },
             { key: "slack", label: "Slack", icon: MessageSquare, desc: "Mensagens Slack" }
           ].map((channel) => (
-            <div key={channel.key} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+            <div key={channel.key} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
               <div className="flex items-center gap-3">
-                <channel.icon className="w-4 h-4 text-gray-800 dark:text-gray-200" />
+                <channel.icon className="w-4 h-4 lia-text-800 dark:text-lia-text-primary" />
                 <div>
-                  <div className="text-sm font-medium text-gray-950 dark:text-gray-50">{channel.label}</div>
-                  <div className="text-xs text-gray-800 dark:text-gray-400">{channel.desc}</div>
+                  <div className="text-sm font-medium lia-text-950 dark:lia-text-50">{channel.label}</div>
+                  <div className="text-xs lia-text-800 dark:text-lia-text-tertiary">{channel.desc}</div>
                 </div>
               </div>
               <input
@@ -68,10 +68,10 @@ export function SettingsNotificationsTab({ onSettingsChange }: SettingsNotificat
             { key: "deadlines", label: "Prazos", desc: "Deadlines de feedback e processos" },
             { key: "liaInsights", label: "Insights da LIA", desc: "Análises e sugestões da IA" }
           ].map((type) => (
-            <div key={type.key} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+            <div key={type.key} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
               <div>
-                <div className="text-sm font-medium text-gray-950 dark:text-gray-50">{type.label}</div>
-                <div className="text-xs text-gray-800 dark:text-gray-400">{type.desc}</div>
+                <div className="text-sm font-medium lia-text-950 dark:lia-text-50">{type.label}</div>
+                <div className="text-xs lia-text-800 dark:text-lia-text-tertiary">{type.desc}</div>
               </div>
               <input
                 type="checkbox"

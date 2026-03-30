@@ -122,10 +122,10 @@ export default function CandidateProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-lia-bg-primary">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-gray-600 dark:text-gray-400 mx-auto mb-3" />
-          <p className="text-sm text-gray-600 dark:text-gray-400">Carregando perfil...</p>
+          <Loader2 className="w-8 h-8 animate-spin lia-text-600 dark:text-lia-text-tertiary mx-auto mb-3" />
+          <p className="text-sm lia-text-600 dark:text-lia-text-tertiary">Carregando perfil...</p>
         </div>
       </div>
     )
@@ -133,7 +133,7 @@ export default function CandidateProfilePage() {
 
   if (error || !candidate) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-lia-bg-primary">
         <div className="text-center">
           <p className="text-sm text-status-error mb-4">{error || "Candidato não encontrado"}</p>
           <Button variant="outline" onClick={() => router.back()}>
@@ -148,7 +148,7 @@ export default function CandidateProfilePage() {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary">
         <div className="max-w-7xl mx-auto py-6 px-4">
           <Button 
             variant="ghost" 
@@ -161,22 +161,22 @@ export default function CandidateProfilePage() {
           </Button>
 
           {/* HEADER */}
-          <Card className="mb-4 border-gray-100">
+          <Card className="mb-4 border-lia-border-subtle">
             <CardContent className="py-5 px-6">
               <div className="flex items-start gap-5">
-                <Avatar className="h-20 w-20 border-2 border-gray-100">
+                <Avatar className="h-20 w-20 border-2 border-lia-border-subtle">
                   {candidate.avatar_url && <AvatarImage src={candidate.avatar_url} alt={candidate.name} />}
-                  <AvatarFallback className="bg-gray-100 text-gray-600 text-xl font-semibold">
+                  <AvatarFallback className="bg-gray-100 lia-text-600 text-xl font-semibold">
                     {getInitials(candidate.name)}
                   </AvatarFallback>
                 </Avatar>
                 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-1.5 flex-wrap">
-                    <h1 className="text-xl font-semibold text-gray-950 dark:text-gray-50">
+                    <h1 className="text-xl font-semibold lia-text-950 dark:lia-text-50">
                       {candidate.name}
                     </h1>
-                    <span className="text-xs font-mono text-gray-400 bg-gray-100 px-2 py-0.5 rounded-md">
+                    <span className="text-xs font-mono lia-text-400 bg-gray-100 px-2 py-0.5 rounded-md">
                       {getShortId(candidate.id)}
                     </span>
                     
@@ -211,7 +211,7 @@ export default function CandidateProfilePage() {
                     
                     {/* Tags: Tech & Potencial */}
                     {candidate.is_tech && (
-                      <Badge variant="outline" className="text-xs bg-gray-100 text-gray-700 border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600">
+                      <Badge variant="outline" className="text-xs bg-gray-100 lia-text-700 border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-default">
                         Tech
                       </Badge>
                     )}
@@ -227,8 +227,8 @@ export default function CandidateProfilePage() {
                       const statusConfig: Record<string, { label: string, bg: string, text: string, border: string }> = {
                         'active': { label: 'Ativo', bg: 'bg-status-success/10', text: 'text-status-success', border: 'border-status-success/30' },
                         'do_not_use': { label: 'Não Utilizar', bg: 'bg-status-error/10', text: 'text-status-error', border: 'border-status-error/30' },
-                        'hired': { label: 'Contratado', bg: 'bg-gray-50 dark:bg-gray-900', text: 'text-gray-900 dark:text-gray-50', border: 'border-gray-300 dark:border-gray-600' },
-                        'inactive': { label: 'Inativo', bg: 'bg-gray-100', text: 'text-gray-600', border: 'border-gray-300' }
+                        'hired': { label: 'Contratado', bg: 'bg-gray-50 dark:bg-lia-bg-primary', text: 'lia-text-900 dark:lia-text-50', border: 'border-lia-border-default dark:border-lia-border-default' },
+                        'inactive': { label: 'Inativo', bg: 'bg-gray-100', text: 'lia-text-600', border: 'border-lia-border-default' }
                       }
                       const config = statusConfig[status] || statusConfig['active']
                       return (
@@ -249,7 +249,7 @@ export default function CandidateProfilePage() {
                       }}
                     >
                       <button 
-                        className="p-1.5 rounded-full hover:bg-gray-100 dark:bg-gray-800 transition-colors"
+                        className="p-1.5 rounded-full hover:bg-gray-100 dark:bg-lia-bg-secondary transition-colors"
                         title="Análise LIA do Perfil"
                       >
                         <Brain className="w-5 h-5 text-wedo-cyan" />
@@ -257,24 +257,24 @@ export default function CandidateProfilePage() {
                     </LiaAnalysisModal>
                   </div>
 
-                  <div className="flex items-center gap-2 text-sm text-gray-800 dark:text-gray-200 mb-1">
+                  <div className="flex items-center gap-2 text-sm lia-text-800 dark:text-lia-text-primary mb-1">
                     {candidate.current_title && (
                       <>
-                        <Briefcase className="w-4 h-4 text-gray-400" />
+                        <Briefcase className="w-4 h-4 lia-text-400" />
                         <span className="font-medium">{candidate.current_title}</span>
                       </>
                     )}
                     {candidate.current_company && (
                       <>
-                        <span className="text-gray-400">•</span>
-                        <Building className="w-4 h-4 text-gray-400" />
+                        <span className="lia-text-400">•</span>
+                        <Building className="w-4 h-4 lia-text-400" />
                         <span>{candidate.current_company}</span>
                       </>
                     )}
                   </div>
 
                   {(candidate.location_city || candidate.location_state) && (
-                    <div className="flex items-center gap-1.5 text-sm text-gray-500 mb-3">
+                    <div className="flex items-center gap-1.5 text-sm lia-text-500 mb-3">
                       <MapPin className="w-4 h-4" />
                       <span>
                         {[candidate.location_city, candidate.location_state, candidate.location_country]
@@ -285,13 +285,13 @@ export default function CandidateProfilePage() {
 
                   <div className="flex items-center gap-4 flex-wrap">
                     {candidate.email && (
-                      <a href={`mailto:${candidate.email}`} className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
+                      <a href={`mailto:${candidate.email}`} className="flex items-center gap-1.5 text-sm lia-text-600 hover:lia-text-900 dark:hover:lia-text-100 transition-colors">
                         <Mail className="w-4 h-4" />
                         {candidate.email}
                       </a>
                     )}
                     {(candidate.phone || candidate.mobile_phone) && (
-                      <a href={`tel:${candidate.mobile_phone || candidate.phone}`} className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
+                      <a href={`tel:${candidate.mobile_phone || candidate.phone}`} className="flex items-center gap-1.5 text-sm lia-text-600 hover:lia-text-900 dark:hover:lia-text-100 transition-colors">
                         <Phone className="w-4 h-4" />
                         {candidate.mobile_phone || candidate.phone}
                       </a>
@@ -390,22 +390,22 @@ export default function CandidateProfilePage() {
                   {/* Work Preferences (Híbrido, CLT, etc) */}
                   <div className="flex flex-wrap gap-1.5 justify-end">
                     {candidate.work_model && (
-                      <Badge variant="outline" className="text-xs bg-gray-50 text-gray-800 dark:text-gray-200 border-gray-200">
+                      <Badge variant="outline" className="text-xs bg-gray-50 lia-text-800 dark:text-lia-text-primary border-lia-border-subtle">
                         {candidate.work_model}
                       </Badge>
                     )}
                     {candidate.work_mode && (
-                      <Badge variant="outline" className="text-xs bg-gray-50 text-gray-800 dark:text-gray-200 border-gray-200">
+                      <Badge variant="outline" className="text-xs bg-gray-50 lia-text-800 dark:text-lia-text-primary border-lia-border-subtle">
                         {candidate.work_mode}
                       </Badge>
                     )}
                     {candidate.contract_type && (
-                      <Badge variant="outline" className="text-xs bg-gray-50 text-gray-800 dark:text-gray-200 border-gray-200">
+                      <Badge variant="outline" className="text-xs bg-gray-50 lia-text-800 dark:text-lia-text-primary border-lia-border-subtle">
                         {candidate.contract_type}
                       </Badge>
                     )}
                     {candidate.is_remote && (
-                      <Badge variant="outline" className="text-xs bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 border-gray-300 dark:border-gray-600">
+                      <Badge variant="outline" className="text-xs bg-gray-50 dark:bg-lia-bg-primary lia-text-900 dark:lia-text-50 border-lia-border-default dark:border-lia-border-default">
                         🌐 Remoto
                       </Badge>
                     )}
@@ -420,15 +420,15 @@ export default function CandidateProfilePage() {
                       </Badge>
                     )}
                     {candidate.availability && (
-                      <Badge variant="outline" className="text-xs bg-gray-50 text-gray-800 dark:text-gray-200 border-gray-200">
+                      <Badge variant="outline" className="text-xs bg-gray-50 lia-text-800 dark:text-lia-text-primary border-lia-border-subtle">
                         {candidate.availability}
                       </Badge>
                     )}
                   </div>
                   
                   {/* Dates Section */}
-                  <div className="text-xs text-gray-500 space-y-0.5">
-                    <p className="font-medium text-gray-800 dark:text-gray-200">Datas</p>
+                  <div className="text-xs lia-text-500 space-y-0.5">
+                    <p className="font-medium lia-text-800 dark:text-lia-text-primary">Datas</p>
                     {candidate.updated_at && (
                       <p>Atualizado: {formatDate(candidate.updated_at)}</p>
                     )}
@@ -449,13 +449,13 @@ export default function CandidateProfilePage() {
           </Card>
 
           {/* ACTION BAR - Ícones coloridos como no CandidatePreview */}
-          <Card className="mb-4 border-gray-100">
+          <Card className="mb-4 border-lia-border-subtle">
             <CardContent className="py-3 px-4">
               <div className="flex items-center gap-2 flex-wrap">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button size="sm" variant="outline" onClick={() => openCommunicationModal('email')} className="gap-1.5">
-                      <Mail className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                      <Mail className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                       Email
                     </Button>
                   </TooltipTrigger>
@@ -491,7 +491,7 @@ export default function CandidateProfilePage() {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button size="sm" variant="outline" onClick={() => setShowAddToVacancyModal(true)} className="gap-1.5">
-                      <UserPlus className="w-4 h-4 text-gray-600" />
+                      <UserPlus className="w-4 h-4 lia-text-600" />
                       Adicionar à Vaga
                     </Button>
                   </TooltipTrigger>
@@ -515,7 +515,7 @@ export default function CandidateProfilePage() {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button size="sm" variant="outline" onClick={() => setShowAddToListModal(true)} className="gap-1.5">
-                      <Plus className="w-4 h-4 text-gray-600" />
+                      <Plus className="w-4 h-4 lia-text-600" />
                       Adicionar à Lista
                     </Button>
                   </TooltipTrigger>
@@ -529,7 +529,7 @@ export default function CandidateProfilePage() {
                       onClick={handleHideCandidate}
                       className={`gap-1.5 ${isHidden ? 'bg-gray-500 hover:bg-gray-600 text-white' : ''}`}
                     >
-                      <EyeOff className={`w-4 h-4 ${isHidden ? 'text-white' : 'text-gray-500'}`} />
+                      <EyeOff className={`w-4 h-4 ${isHidden ? 'text-white' : 'lia-text-500'}`} />
                       {isHidden ? 'Oculto' : 'Ocultar'}
                     </Button>
                   </TooltipTrigger>
@@ -538,7 +538,7 @@ export default function CandidateProfilePage() {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button size="sm" variant="outline" onClick={() => openCommunicationModal('feedback')} className="gap-1.5">
-                      <Send className="w-4 h-4 text-gray-600" />
+                      <Send className="w-4 h-4 lia-text-600" />
                       Feedback
                     </Button>
                   </TooltipTrigger>
@@ -550,7 +550,7 @@ export default function CandidateProfilePage() {
 
           {/* TABS */}
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ActiveTab)} className="space-y-4">
-            <TabsList className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+            <TabsList className="bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
               <TabsTrigger value="profile" className="gap-1.5">
                 <FileText className="w-4 h-4" />
                 Perfil Completo
@@ -593,14 +593,14 @@ export default function CandidateProfilePage() {
 
             {/* TAB: ACTIVITIES */}
             <TabsContent value="activities" className="mt-4">
-              <Card className="border-gray-100">
+              <Card className="border-lia-border-subtle">
                 <CardContent className="p-0">
                   <div className="flex flex-col">
                     {/* Header com filtros e botão de adicionar */}
-                    <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800">
+                    <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary">
                       <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-sm font-medium text-gray-800 flex items-center gap-2">
-                          <Activity className="w-4 h-4 text-gray-800 dark:text-gray-200" />
+                        <h4 className="text-sm font-medium lia-text-800 flex items-center gap-2">
+                          <Activity className="w-4 h-4 lia-text-800 dark:text-lia-text-primary" />
                           Feed de Atividades
                           <Badge className="text-xs px-1.5 py-0">{activities.length}</Badge>
                         </h4>
@@ -608,18 +608,18 @@ export default function CandidateProfilePage() {
                           <select
                             value={periodFilter}
                             onChange={(e) => setPeriodFilter(e.target.value as '7days' | '30days' | '3months' | 'all')}
-                            className="text-xs px-2 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-100/20 dark:text-gray-200"
+                            className="text-xs px-2 py-1.5 bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-default rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-100/20 dark:text-lia-text-primary"
                           >
                             <option value="7days">Últimos 7 dias</option>
                             <option value="30days">Últimos 30 dias</option>
                             <option value="3months">Últimos 3 meses</option>
                             <option value="all">Todo período</option>
                           </select>
-                          <div className="flex items-center bg-white dark:bg-gray-800 rounded-md p-0.5 border border-gray-200 dark:border-gray-600">
+                          <div className="flex items-center bg-white dark:bg-lia-bg-secondary rounded-md p-0.5 border border-lia-border-subtle dark:border-lia-border-default">
                             <button
                               onClick={() => setActivityView('timeline')}
                               className={`p-1.5 rounded-md transition-colors ${
-                                activityView === 'timeline' ? 'bg-gray-200 text-gray-800 dark:text-gray-200' : 'text-gray-600 hover:text-gray-700'
+                                activityView === 'timeline' ? 'bg-gray-200 lia-text-800 dark:text-lia-text-primary' : 'lia-text-600 hover:lia-text-700'
                               }`}
                               title="Visualização Timeline"
                             >
@@ -628,14 +628,14 @@ export default function CandidateProfilePage() {
                             <button
                               onClick={() => setActivityView('list')}
                               className={`p-1.5 rounded-md transition-colors ${
-                                activityView === 'list' ? 'bg-gray-200 text-gray-800 dark:text-gray-200' : 'text-gray-600 hover:text-gray-700'
+                                activityView === 'list' ? 'bg-gray-200 lia-text-800 dark:text-lia-text-primary' : 'lia-text-600 hover:lia-text-700'
                               }`}
                               title="Visualização Lista"
                             >
                               <List className="w-4 h-4" />
                             </button>
                           </div>
-                          <Button size="sm" className="gap-1.5 px-3 py-1.5 text-xs h-8 bg-gray-100 hover:bg-gray-200 text-gray-800 dark:text-gray-200 border border-gray-200">
+                          <Button size="sm" className="gap-1.5 px-3 py-1.5 text-xs h-8 bg-gray-100 hover:bg-gray-200 lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle">
                             <PlusCircle className="w-3.5 h-3.5" />
                             Nova Atividade
                           </Button>
@@ -647,7 +647,7 @@ export default function CandidateProfilePage() {
                         <button
                           onClick={() => setActivityFilter('all')}
                           className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
-                            activityFilter === 'all' ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            activityFilter === 'all' ? 'bg-gray-600 text-white' : 'bg-gray-100 lia-text-600 hover:bg-gray-200'
                           }`}
                         >
                           Todas
@@ -655,7 +655,7 @@ export default function CandidateProfilePage() {
                         <button
                           onClick={() => setActivityFilter('emails')}
                           className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
-                            activityFilter === 'emails' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-gray-800 dark:text-gray-200 hover:bg-gray-200'
+                            activityFilter === 'emails' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 lia-text-800 dark:text-lia-text-primary hover:bg-gray-200'
                           }`}
                         >
                           📧 Emails
@@ -663,7 +663,7 @@ export default function CandidateProfilePage() {
                         <button
                           onClick={() => setActivityFilter('interviews')}
                           className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
-                            activityFilter === 'interviews' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-gray-800 dark:text-gray-200 hover:bg-gray-200'
+                            activityFilter === 'interviews' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 lia-text-800 dark:text-lia-text-primary hover:bg-gray-200'
                           }`}
                         >
                           🎤 Entrevistas
@@ -671,7 +671,7 @@ export default function CandidateProfilePage() {
                         <button
                           onClick={() => setActivityFilter('tests')}
                           className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
-                            activityFilter === 'tests' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-gray-800 dark:text-gray-200 hover:bg-gray-200'
+                            activityFilter === 'tests' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 lia-text-800 dark:text-lia-text-primary hover:bg-gray-200'
                           }`}
                         >
                           📝 Testes
@@ -687,7 +687,7 @@ export default function CandidateProfilePage() {
                         <button
                           onClick={() => setActivityFilter('offers')}
                           className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
-                            activityFilter === 'offers' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-gray-800 dark:text-gray-200 hover:bg-gray-200'
+                            activityFilter === 'offers' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 lia-text-800 dark:text-lia-text-primary hover:bg-gray-200'
                           }`}
                         >
                           💼 Ofertas
@@ -695,7 +695,7 @@ export default function CandidateProfilePage() {
                         <button
                           onClick={() => setActivityFilter('applications')}
                           className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
-                            activityFilter === 'applications' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-gray-800 dark:text-gray-200 hover:bg-gray-200'
+                            activityFilter === 'applications' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 lia-text-800 dark:text-lia-text-primary hover:bg-gray-200'
                           }`}
                         >
                           📋 Inscrições
@@ -713,18 +713,18 @@ export default function CandidateProfilePage() {
 
                     {/* Seção de Adicionar Nota */}
                     {(activityFilter === 'notes' || activityFilter === 'all') && (
-                      <div className="p-4 border-b border-gray-100 bg-status-warning/10/30">
+                      <div className="p-4 border-b border-lia-border-subtle bg-status-warning/10/30">
                         <div className="flex items-start gap-3">
                           <div className="w-8 h-8 rounded-full bg-status-warning/15 flex items-center justify-center flex-shrink-0 mt-1">
                             <FileText className="w-4 h-4 text-status-warning" />
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              <span className="text-xs font-medium text-gray-800 dark:text-gray-200">Categoria:</span>
+                              <span className="text-xs font-medium lia-text-800 dark:text-lia-text-primary">Categoria:</span>
                               <select 
                                 value={newNoteCategory}
                                 onChange={(e) => setNewNoteCategory(e.target.value as 'general' | 'interview' | 'screening' | 'feedback' | 'technical')}
-                                className="text-xs px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-amber-400 dark:text-gray-200"
+                                className="text-xs px-2 py-1 bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-default rounded-md focus:outline-none focus:ring-1 focus:ring-amber-400 dark:text-lia-text-primary"
                               >
                                 <option value="general">📋 Nota Geral</option>
                                 <option value="interview">🎤 Nota de Entrevista</option>
@@ -737,7 +737,7 @@ export default function CandidateProfilePage() {
                               value={newNoteContent}
                               onChange={(e) => setNewNoteContent(e.target.value)}
                               placeholder="Adicione uma nota sobre este candidato..."
-                              className="w-full text-sm px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-md resize-none focus:outline-none focus:ring-1 focus:ring-amber-400 bg-white dark:bg-gray-800 dark:text-gray-200"
+                              className="w-full text-sm px-3 py-2 border border-lia-border-subtle dark:border-lia-border-default rounded-md resize-none focus:outline-none focus:ring-1 focus:ring-amber-400 bg-white dark:bg-lia-bg-secondary dark:text-lia-text-primary"
                               rows={2}
                             />
                           </div>
@@ -777,7 +777,7 @@ export default function CandidateProfilePage() {
                     <div className="flex-1 p-4">
                       {isLoadingActivities ? (
                         <div className="flex items-center justify-center py-12">
-                          <Loader2 className="w-6 h-6 animate-spin text-gray-600 dark:text-gray-400" />
+                          <Loader2 className="w-6 h-6 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
                         </div>
                       ) : (() => {
                         const getCategoryLabel = (cat: string) => {
@@ -840,19 +840,19 @@ export default function CandidateProfilePage() {
                         if (filteredItems.length === 0) {
                           return (
                             <div className="flex flex-col items-center justify-center py-12 px-4">
-                              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+                              <div className="w-16 h-16 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center mb-4">
                                 {activityFilter === 'notes' ? (
                                   <FileText className="w-8 h-8 text-status-warning" />
                                 ) : (
-                                  <Activity className="w-8 h-8 text-gray-600" />
+                                  <Activity className="w-8 h-8 lia-text-600" />
                                 )}
                               </div>
-                              <h3 className="text-sm font-medium text-gray-800 mb-2">
+                              <h3 className="text-sm font-medium lia-text-800 mb-2">
                                 {activityFilter === 'notes' 
                                   ? 'Nenhuma nota registrada ainda'
                                   : 'Nenhuma atividade registrada ainda'}
                               </h3>
-                              <p className="text-xs text-gray-600 text-center max-w-xs">
+                              <p className="text-xs lia-text-600 text-center max-w-xs">
                                 {activityFilter === 'notes'
                                   ? 'Use o formulário acima para adicionar notas sobre este candidato'
                                   : 'As atividades aparecerão aqui conforme o processo avança'}
@@ -866,23 +866,23 @@ export default function CandidateProfilePage() {
                             {filteredItems.map((item: Record<string, unknown>, index: number) => {
                               if (item.itemType === 'note') {
                                 return (
-                                  <div key={item.id || index} className="flex items-start gap-3 p-3 bg-status-warning/10/50 rounded-md border border-status-warning/30 hover:transition-all">
+                                  <div key={item.id || index} className="flex items-start gap-3 p-3 bg-status-warning/10/50 rounded-md border border-status-warning/30 transition-colors">
                                     <div className="w-8 h-8 rounded-full bg-status-warning/15 flex items-center justify-center flex-shrink-0">
                                       <FileText className="w-4 h-4 text-status-warning" />
                                     </div>
                                     <div className="flex-1 min-w-0">
                                       <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                        <span className="text-xs font-medium text-gray-800">Nota Interna</span>
+                                        <span className="text-xs font-medium lia-text-800">Nota Interna</span>
                                         <Badge className="text-micro px-1.5 py-0 bg-status-warning/15 text-status-warning border-status-warning/30">
                                           {getCategoryLabel(item.category)}
                                         </Badge>
-                                        <span className="text-xs text-gray-400">
+                                        <span className="text-xs lia-text-400">
                                           {formatRelativeTime(item.created_at)}
                                         </span>
                                       </div>
-                                      <p className="text-sm text-gray-600">{item.content}</p>
+                                      <p className="text-sm lia-text-600">{item.content}</p>
                                       {item.user_name && (
-                                        <p className="text-xs text-gray-500 mt-1">Por: {item.user_name}</p>
+                                        <p className="text-xs lia-text-500 mt-1">Por: {item.user_name}</p>
                                       )}
                                     </div>
                                   </div>
@@ -890,26 +890,26 @@ export default function CandidateProfilePage() {
                               }
                               
                               return (
-                                <div key={item.id || index} className="flex gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700 hover:transition-all">
-                                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                                    <Activity className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                                <div key={item.id || index} className="flex gap-3 p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle transition-colors">
+                                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 dark:bg-lia-bg-elevated flex items-center justify-center">
+                                    <Activity className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                                   </div>
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center justify-between mb-1">
-                                      <span className="text-sm font-medium text-gray-800">
+                                      <span className="text-sm font-medium lia-text-800">
                                         {item.activity_type || item.type || item.title || 'Atividade'}
                                       </span>
-                                      <span className="text-xs text-gray-500">
+                                      <span className="text-xs lia-text-500">
                                         {formatRelativeTime(item.created_at || item.timestamp)}
                                       </span>
                                     </div>
                                     {(item.description || item.content || item.details) && (
-                                      <p className="text-sm text-gray-600">
+                                      <p className="text-sm lia-text-600">
                                         {item.description || item.content || item.details}
                                       </p>
                                     )}
                                     {item.user_name && (
-                                      <p className="text-xs text-gray-500 mt-1">Por: {item.user_name}</p>
+                                      <p className="text-xs lia-text-500 mt-1">Por: {item.user_name}</p>
                                     )}
                                   </div>
                                 </div>
@@ -926,14 +926,14 @@ export default function CandidateProfilePage() {
 
             {/* TAB: FILES */}
             <TabsContent value="files" className="mt-4">
-              <Card className="border-gray-100">
+              <Card className="border-lia-border-subtle">
                 <CardContent className="p-0">
                   <div className="flex flex-col">
                     {/* Header com botão de adicionar */}
-                    <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800">
+                    <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary">
                       <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-sm font-medium text-gray-800 dark:text-gray-200 flex items-center gap-2">
-                          <FileText className="w-4 h-4 text-gray-800 dark:text-gray-200" />
+                        <h4 className="text-sm font-medium lia-text-800 dark:text-lia-text-primary flex items-center gap-2">
+                          <FileText className="w-4 h-4 lia-text-800 dark:text-lia-text-primary" />
                           Arquivos e Documentos
                           <Badge className="text-xs px-1.5 py-0">{candidateFiles.length}</Badge>
                           {isLoadingFiles && (
@@ -942,7 +942,7 @@ export default function CandidateProfilePage() {
                         </h4>
                         <Button
                           size="sm"
-                          className="gap-1.5 px-3 py-1.5 text-xs h-8 bg-gray-100 hover:bg-gray-200 text-gray-800 dark:text-gray-200 border border-gray-200"
+                          className="gap-1.5 px-3 py-1.5 text-xs h-8 bg-gray-100 hover:bg-gray-200 lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle"
                           onClick={() => {
                             const input = document.createElement('input')
                             input.type = 'file'
@@ -987,8 +987,8 @@ export default function CandidateProfilePage() {
                     <div className="flex-1 p-4 space-y-3">
                       {/* Drag and Drop Area */}
                       <div
-                        className={`border-2 border-dashed rounded-md p-6 text-center transition-all cursor-pointer group ${
-                          isDragging ? 'border-gray-400 bg-gray-100' : 'border-gray-300 hover:border-gray-400'
+                        className={`border-2 border-dashed rounded-md p-6 text-center transition-colors cursor-pointer group ${
+                          isDragging ? 'border-gray-400 bg-gray-100' : 'border-lia-border-default hover:border-gray-400'
                         }`}
                         onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
                         onDragLeave={() => setIsDragging(false)}
@@ -1017,20 +1017,20 @@ export default function CandidateProfilePage() {
                               <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mb-3">
                                 <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-400 border-t-gray-700"></div>
                               </div>
-                              <p className="text-sm text-gray-800 dark:text-gray-200 font-medium mb-2">Enviando... {uploadProgress}%</p>
+                              <p className="text-sm lia-text-800 dark:text-lia-text-primary font-medium mb-2">Enviando... {uploadProgress}%</p>
                               <div className="w-40 h-2 bg-gray-200 rounded-full overflow-hidden">
-                                <div className="h-full bg-gray-600 rounded-full transition-all duration-300" style={{width: `${uploadProgress}%`}} />
+                                <div className="h-full bg-gray-600 rounded-full transition-[width,height] duration-300" style={{width: `${uploadProgress}%`}} />
                               </div>
                             </>
                           ) : (
                             <>
                               <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors ${isDragging ? 'bg-gray-200' : 'bg-gray-100 group-hover:bg-gray-200'}`}>
-                                <Upload className={`w-6 h-6 ${isDragging ? 'text-gray-800 dark:text-gray-200' : 'text-gray-600 group-hover:text-gray-700'}`} />
+                                <Upload className={`w-6 h-6 ${isDragging ? 'lia-text-800 dark:text-lia-text-primary' : 'lia-text-600 group-hover:lia-text-700'}`} />
                               </div>
-                              <p className="text-sm text-gray-800 dark:text-gray-200 mb-1">
+                              <p className="text-sm lia-text-800 dark:text-lia-text-primary mb-1">
                                 {isDragging ? 'Solte os arquivos aqui' : 'Arraste arquivos ou clique para selecionar'}
                               </p>
-                              <p className="text-xs text-gray-500">PDF, DOC, DOCX, JPG, PNG, MP4 • Máx 10MB</p>
+                              <p className="text-xs lia-text-500">PDF, DOC, DOCX, JPG, PNG, MP4 • Máx 10MB</p>
                             </>
                           )}
                         </div>
@@ -1042,21 +1042,21 @@ export default function CandidateProfilePage() {
                         .map((file: Record<string, unknown>) => {
                           const colors = getCategoryColor(file.file_type)
                           return (
-                            <div key={file.id} className="border border-gray-100 dark:border-gray-700 rounded-md hover:transition-all">
+                            <div key={file.id} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors">
                               <div className="p-3">
                                 <div className="flex items-start gap-3">
-                                  <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+                                  <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
                                     {getFileIcon(file.file_type, file.mime_type)}
                                   </div>
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-start justify-between">
                                       <div className="flex-1">
-                                        <h5 className="text-sm font-medium text-gray-800 truncate">{file.file_name}</h5>
+                                        <h5 className="text-sm font-medium lia-text-800 truncate">{file.file_name}</h5>
                                         <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                          <span className="text-xs text-gray-500">
+                                          <span className="text-xs lia-text-500">
                                             {formatFileSize(file.file_size)} • {file.file_name.split('.').pop()?.toUpperCase()}
                                           </span>
-                                          <span className="text-xs text-gray-500">{formatRelativeTime(file.created_at)}</span>
+                                          <span className="text-xs lia-text-500">{formatRelativeTime(file.created_at)}</span>
                                           <Badge className="text-xs px-1.5 py-0 h-4" style={{backgroundColor: colors.bg, color: colors.text}}>
                                             <Tag className="w-2.5 h-2.5 mr-0.5" />
                                             {getCategoryLabel(file.file_type)}
@@ -1081,10 +1081,10 @@ export default function CandidateProfilePage() {
 
                       {/* Empty state */}
                       {candidateFiles.length === 0 && !isLoadingFiles && (
-                        <div className="text-center py-8 text-gray-500">
-                          <FileText className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+                        <div className="text-center py-8 lia-text-500">
+                          <FileText className="w-10 h-10 mx-auto mb-3 lia-text-300" />
                           <p className="text-sm">Nenhum arquivo enviado</p>
-                          <p className="text-xs text-gray-400 mt-1">Arraste arquivos ou clique acima para enviar</p>
+                          <p className="text-xs lia-text-400 mt-1">Arraste arquivos ou clique acima para enviar</p>
                         </div>
                       )}
                     </div>
@@ -1095,22 +1095,22 @@ export default function CandidateProfilePage() {
 
             {/* TAB: OPINIONS & ANALYSES */}
             <TabsContent value="opinions" className="mt-4">
-              <Card className="border-gray-100">
+              <Card className="border-lia-border-subtle">
                 <CardContent className="p-4 space-y-4">
                   {/* SubTabs */}
-                  <div className="flex items-center gap-4 border-b border-gray-100 pb-3">
+                  <div className="flex items-center gap-4 border-b border-lia-border-subtle pb-3">
                     <button
                       onClick={() => setOpinionsSubTab('pareceres')}
                       className={`flex items-center gap-2 pb-2 text-sm font-medium transition-colors ${
                         opinionsSubTab === 'pareceres' 
-                          ? 'text-gray-600 dark:text-gray-400 border-b-2 border-gray-900 dark:border-gray-50' 
-                          : 'text-gray-500 hover:text-gray-700'
+                          ? 'lia-text-600 dark:text-lia-text-tertiary border-b-2 border-gray-900 dark:lia-border-50' 
+                          : 'lia-text-500 hover:lia-text-700'
                       }`}
                     >
                       <Brain className="w-4 h-4 text-wedo-cyan" />
                       Pareceres da LIA
                       {opinionsHistory.length > 0 && (
-                        <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-900" style={{color: 'white'}}>
+                        <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-900 text-white">
                           {opinionsHistory.length}
                         </Badge>
                       )}
@@ -1120,7 +1120,7 @@ export default function CandidateProfilePage() {
                       className={`flex items-center gap-2 pb-2 text-sm font-medium transition-colors ${
                         opinionsSubTab === 'analises' 
                           ? 'text-wedo-purple border-b-2 border-wedo-purple/30' 
-                          : 'text-gray-500 hover:text-gray-700'
+                          : 'lia-text-500 hover:lia-text-700'
                       }`}
                     >
                       <Brain className="w-4 h-4 text-wedo-cyan" />
@@ -1140,17 +1140,17 @@ export default function CandidateProfilePage() {
                   {isLoadingOpinions && (
                     <div className="space-y-3">
                       {[1, 2].map((i) => (
-                        <div key={i} className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-md p-4 animate-pulse">
+                        <div key={i} className="bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4 animate-pulse">
                           <div className="flex items-center gap-3 mb-3">
-                            <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                            <div className="w-8 h-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-full"></div>
                             <div className="flex-1">
-                              <div className="w-32 h-4 bg-gray-200 dark:bg-gray-700 rounded-md mb-1"></div>
-                              <div className="w-24 h-3 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                              <div className="w-32 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md mb-1"></div>
+                              <div className="w-24 h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-md"></div>
                             </div>
                           </div>
                           <div className="space-y-2">
-                            <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
-                            <div className="w-3/4 h-3 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                            <div className="w-full h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-md"></div>
+                            <div className="w-3/4 h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-md"></div>
                           </div>
                         </div>
                       ))}
@@ -1159,12 +1159,12 @@ export default function CandidateProfilePage() {
                   
                   {/* Empty State */}
                   {!isLoadingOpinions && opinionsHistory.length === 0 && (
-                    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-md p-8 text-center">
-                      <div className="w-14 h-14 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mx-auto mb-4">
-                        <FileText className="w-7 h-7 text-gray-400" />
+                    <div className="bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-8 text-center">
+                      <div className="w-14 h-14 rounded-full bg-gray-100 dark:bg-lia-bg-elevated flex items-center justify-center mx-auto mb-4">
+                        <FileText className="w-7 h-7 lia-text-400" />
                       </div>
-                      <p className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">Nenhum parecer disponível</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-1">Nenhum parecer disponível</p>
+                      <p className="text-xs lia-text-500">
                         Os pareceres serão gerados automaticamente após triagens ou análises da LIA.
                       </p>
                     </div>
@@ -1179,7 +1179,7 @@ export default function CandidateProfilePage() {
                         const displayScore = isWsi ? opinion.wsi_score : opinion.score
                         
                         const getScoreColor = (score: number | null) => {
-                          if (score === null || score === undefined) return 'text-gray-600'
+                          if (score === null || score === undefined) return 'lia-text-600'
                           if (score >= 80) return 'text-status-success'
                           if (score >= 60) return 'text-status-warning'
                           return 'text-status-error'
@@ -1196,29 +1196,29 @@ export default function CandidateProfilePage() {
                         return (
                           <div key={opinion.id} className="relative">
                             {!opinion.is_current && (
-                              <Badge className="absolute top-2 right-2 text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-500 z-10">
+                              <Badge className="absolute top-2 right-2 text-micro px-1.5 py-0 h-4 bg-gray-100 lia-text-500 z-10">
                                 v{opinion.version} - Histórico
                               </Badge>
                             )}
-                            <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-md overflow-hidden">
+                            <div className="bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md overflow-hidden">
                               <button
                                 onClick={() => setExpandedOpinionId(isExpanded ? null : opinion.id)}
                                 className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
                               >
                                 <div className="flex items-center gap-3">
-                                  <div className={`w-9 h-9 rounded-full flex items-center justify-center ${isWsi ? 'bg-wedo-purple/15' : 'bg-gray-100 dark:bg-gray-800'}`}>
+                                  <div className={`w-9 h-9 rounded-full flex items-center justify-center ${isWsi ? 'bg-wedo-purple/15' : 'bg-gray-100 dark:bg-lia-bg-secondary'}`}>
                                     {isWsi ? <Target className="w-4 h-4 text-wedo-purple" /> : <Brain className="w-4 h-4 text-wedo-cyan" />}
                                   </div>
                                   <div className="text-left">
                                     <div className="flex items-center gap-2 flex-wrap">
-                                      <span className="text-sm font-medium text-gray-800">{isWsi ? 'Parecer WSI' : 'Parecer Geral'}</span>
+                                      <span className="text-sm font-medium lia-text-800">{isWsi ? 'Parecer WSI' : 'Parecer Geral'}</span>
                                       {opinion.job_vacancy_id && opinion.job_vacancy_title ? (
-                                        <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 border-gray-300 dark:border-gray-600 flex items-center gap-1">
+                                        <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-50 dark:bg-lia-bg-primary lia-text-900 dark:lia-text-50 border-lia-border-default dark:border-lia-border-default flex items-center gap-1">
                                           <Briefcase className="w-2.5 h-2.5" />
                                           #{String(opinion.job_vacancy_id).slice(0, 6)} - {opinion.job_vacancy_title}
                                         </Badge>
                                       ) : opinion.job_vacancy_title ? (
-                                        <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 border-gray-300 dark:border-gray-600 flex items-center gap-1">
+                                        <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-50 dark:bg-lia-bg-primary lia-text-900 dark:lia-text-50 border-lia-border-default dark:border-lia-border-default flex items-center gap-1">
                                           <Briefcase className="w-2.5 h-2.5" />
                                           {opinion.job_vacancy_title}
                                         </Badge>
@@ -1230,7 +1230,7 @@ export default function CandidateProfilePage() {
                                           {isWsi ? `WSI: ${displayScore.toFixed(1)}/5` : `Score: ${Math.round(displayScore)}/100`}
                                         </span>
                                       )}
-                                      {opinion.archetype && <><span className="text-gray-300">•</span><span className="text-xs text-gray-500">{opinion.archetype}</span></>}
+                                      {opinion.archetype && <><span className="lia-text-300">•</span><span className="text-xs lia-text-500">{opinion.archetype}</span></>}
                                       {getRecommendationBadge(opinion.recommendation)}
                                     </div>
                                   </div>
@@ -1251,36 +1251,36 @@ export default function CandidateProfilePage() {
                                         }}
                                         className="p-1.5 rounded-md hover:bg-gray-100 transition-colors"
                                       >
-                                        <Copy className="w-4 h-4 text-gray-400" />
+                                        <Copy className="w-4 h-4 lia-text-400" />
                                       </button>
                                     </TooltipTrigger>
                                     <TooltipContent>Copiar Parecer</TooltipContent>
                                   </Tooltip>
-                                  {opinion.created_at && <span className="text-micro text-gray-400">{formatDate(opinion.created_at)}</span>}
-                                  {isExpanded ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+                                  {opinion.created_at && <span className="text-micro lia-text-400">{formatDate(opinion.created_at)}</span>}
+                                  {isExpanded ? <ChevronUp className="w-4 h-4 lia-text-400" /> : <ChevronDown className="w-4 h-4 lia-text-400" />}
                                 </div>
                               </button>
                               
                               {isExpanded && (
-                                <div className="px-4 pb-4 pt-0 border-t border-gray-100 space-y-4">
+                                <div className="px-4 pb-4 pt-0 border-t border-lia-border-subtle space-y-4">
                                   {opinion.summary && (
                                     <div className="pt-4">
-                                      <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">{opinion.summary}</p>
+                                      <p className="text-sm lia-text-800 dark:text-lia-text-primary leading-relaxed">{opinion.summary}</p>
                                     </div>
                                   )}
                                   
                                   {opinion.score_breakdown && Object.keys(opinion.score_breakdown).length > 0 && (
                                     <div>
-                                      <h5 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
+                                      <h5 className="text-xs font-medium lia-text-800 dark:text-lia-text-primary mb-2 flex items-center gap-1">
                                         <BarChart3 className="w-3.5 h-3.5" />
                                         Score Breakdown
                                       </h5>
                                       <div className="grid grid-cols-2 gap-2">
                                         {Object.entries(opinion.score_breakdown).map(([key, value]: [string, unknown]) => (
                                           value !== null && value !== undefined && (
-                                            <div key={key} className="flex items-center justify-between text-xs bg-gray-50 dark:bg-gray-700 rounded-md px-3 py-2">
-                                              <span className="text-gray-600 capitalize">{key.replace(/_/g, ' ')}</span>
-                                              <span className="font-medium text-gray-800">{typeof value === 'number' ? `${Math.round(value)}%` : String(value)}</span>
+                                            <div key={key} className="flex items-center justify-between text-xs bg-gray-50 dark:bg-lia-bg-elevated rounded-md px-3 py-2">
+                                              <span className="lia-text-600 capitalize">{key.replace(/_/g, ' ')}</span>
+                                              <span className="font-medium lia-text-800">{typeof value === 'number' ? `${Math.round(value)}%` : String(value)}</span>
                                             </div>
                                           )
                                         ))}
@@ -1296,7 +1296,7 @@ export default function CandidateProfilePage() {
                                       </h5>
                                       <ul className="space-y-1">
                                         {opinion.strengths.map((s: string, i: number) => (
-                                          <li key={i} className="text-xs text-gray-600 flex items-start gap-1.5">
+                                          <li key={i} className="text-xs lia-text-600 flex items-start gap-1.5">
                                             <span className="text-status-success mt-0.5">•</span>{s}
                                           </li>
                                         ))}
@@ -1312,7 +1312,7 @@ export default function CandidateProfilePage() {
                                       </h5>
                                       <ul className="space-y-1">
                                         {opinion.gaps.map((g: string, i: number) => (
-                                          <li key={i} className="text-xs text-gray-600 flex items-start gap-1.5">
+                                          <li key={i} className="text-xs lia-text-600 flex items-start gap-1.5">
                                             <span className="text-status-error mt-0.5">•</span>{g}
                                           </li>
                                         ))}
@@ -1322,11 +1322,11 @@ export default function CandidateProfilePage() {
                                   
                                   {opinion.next_steps && (
                                     <div>
-                                      <h5 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
+                                      <h5 className="text-xs font-medium lia-text-800 dark:text-lia-text-primary mb-2 flex items-center gap-1">
                                         <TrendingUp className="w-3.5 h-3.5" />
                                         Próximos Passos
                                       </h5>
-                                      <p className="text-xs text-gray-600">{opinion.next_steps}</p>
+                                      <p className="text-xs lia-text-600">{opinion.next_steps}</p>
                                     </div>
                                   )}
                                 </div>
@@ -1347,17 +1347,17 @@ export default function CandidateProfilePage() {
                       {isLoadingAnalyses && (
                         <div className="space-y-3">
                           {[1, 2].map((i) => (
-                            <div key={i} className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-md p-4 animate-pulse">
+                            <div key={i} className="bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4 animate-pulse">
                               <div className="flex items-center gap-3 mb-3">
-                                <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                                <div className="w-8 h-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-full"></div>
                                 <div className="flex-1">
-                                  <div className="w-32 h-4 bg-gray-200 dark:bg-gray-700 rounded-md mb-1"></div>
-                                  <div className="w-24 h-3 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                                  <div className="w-32 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md mb-1"></div>
+                                  <div className="w-24 h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-md"></div>
                                 </div>
                               </div>
                               <div className="space-y-2">
-                                <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
-                                <div className="w-3/4 h-3 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                                <div className="w-full h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-md"></div>
+                                <div className="w-3/4 h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-md"></div>
                               </div>
                             </div>
                           ))}
@@ -1366,12 +1366,12 @@ export default function CandidateProfilePage() {
 
                       {/* Empty State */}
                       {!isLoadingAnalyses && (!savedAnalyses?.analyses || savedAnalyses.analyses.length === 0) && (
-                        <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-md p-8 text-center">
+                        <div className="bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-8 text-center">
                           <div className="w-14 h-14 rounded-full bg-wedo-purple/10 flex items-center justify-center mx-auto mb-4">
                             <Brain className="w-7 h-7 text-wedo-purple" />
                           </div>
-                          <p className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">Nenhuma análise salva</p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-1">Nenhuma análise salva</p>
+                          <p className="text-xs lia-text-500">
                             Use o ícone 🧠 no perfil do candidato para gerar análises.
                           </p>
                         </div>
@@ -1389,7 +1389,7 @@ export default function CandidateProfilePage() {
                             }
                             
                             return (
-                              <div key={analysis.id} className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-md overflow-hidden">
+                              <div key={analysis.id} className="bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md overflow-hidden">
                                 <button
                                   onClick={() => setExpandedAnalysisId(isExpanded ? null : analysis.id)}
                                   className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
@@ -1400,14 +1400,14 @@ export default function CandidateProfilePage() {
                                     </div>
                                     <div className="text-left">
                                       <div className="flex items-center gap-2">
-                                        <span className="text-sm font-medium text-gray-800">
+                                        <span className="text-sm font-medium lia-text-800">
                                           {analysisLabels[analysis.analysis_type] || analysis.analysis_type}
                                         </span>
                                         <Badge className="text-micro px-1.5 py-0 h-4 bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30">
                                           Análise LIA
                                         </Badge>
                                       </div>
-                                      <span className="text-micro text-gray-400 mt-0.5">
+                                      <span className="text-micro lia-text-400 mt-0.5">
                                         {analysis.created_at ? new Date(analysis.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Data não disponível'}
                                       </span>
                                     </div>
@@ -1422,18 +1422,18 @@ export default function CandidateProfilePage() {
                                           }}
                                           className="p-1.5 rounded-md hover:bg-gray-100 transition-colors"
                                         >
-                                          <Copy className="w-4 h-4 text-gray-400" />
+                                          <Copy className="w-4 h-4 lia-text-400" />
                                         </button>
                                       </TooltipTrigger>
                                       <TooltipContent>Copiar Análise</TooltipContent>
                                     </Tooltip>
-                                    {isExpanded ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+                                    {isExpanded ? <ChevronUp className="w-4 h-4 lia-text-400" /> : <ChevronDown className="w-4 h-4 lia-text-400" />}
                                   </div>
                                 </button>
                                 
                                 {isExpanded && (
-                                  <div className="px-4 pb-4 border-t border-gray-100 pt-4">
-                                    <div className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
+                                  <div className="px-4 pb-4 border-t border-lia-border-subtle pt-4">
+                                    <div className="text-sm lia-text-800 dark:text-lia-text-primary leading-relaxed whitespace-pre-wrap">
                                       {cleanMarkdown(analysis.content)}
                                     </div>
                                   </div>

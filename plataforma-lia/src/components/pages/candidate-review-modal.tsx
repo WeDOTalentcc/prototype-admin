@@ -221,7 +221,7 @@ const EditCriteriaPopup: React.FC<{
     <div className="fixed inset-0 z-overlay flex items-center justify-center">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div 
-        className="relative bg-white dark:bg-gray-900 rounded-md w-full max-w-lg p-6 z-10"
+        className="relative bg-white dark:bg-lia-bg-primary rounded-md w-full max-w-lg p-6 z-10"
        
       >
         <div className="flex items-center justify-between mb-4">
@@ -244,8 +244,8 @@ const EditCriteriaPopup: React.FC<{
               onDragStart={() => handleDragStart(index)}
               onDragOver={(e) => handleDragOver(e, index)}
               onDragEnd={handleDragEnd}
-              className={`flex items-center gap-3 p-3 bg-gray-50 rounded-md border transition-all ${
-                draggedIndex === index ? 'border-gray-900 dark:border-gray-50 bg-gray-50 dark:bg-gray-800/50' : 'border-gray-200'
+              className={`flex items-center gap-3 p-3 bg-gray-50 rounded-md border transition-colors ${
+                draggedIndex === index ? 'border-gray-900 dark:border-gray-50 bg-gray-50 dark:bg-lia-bg-secondary/50' : 'border-lia-border-subtle'
               }`}
             >
               <span className="text-sm font-medium text-gray-600 w-6">{index + 1}</span>
@@ -258,7 +258,7 @@ const EditCriteriaPopup: React.FC<{
                   newCriteria[index].text = e.target.value
                   setLocalCriteria(newCriteria)
                 }}
-                className="flex-1 bg-transparent border-none outline-none text-sm text-gray-800 dark:text-gray-200"
+                className="flex-1 bg-transparent border-none outline-none text-sm text-gray-800 dark:text-lia-text-primary"
               />
               <button
                 onClick={() => handleRemove(criterion.id)}
@@ -270,11 +270,11 @@ const EditCriteriaPopup: React.FC<{
           ))}
         </div>
 
-        <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+        <div className="flex items-center justify-between pt-4 border-t border-lia-border-subtle">
           <div className="flex items-center gap-4 relative">
             <button 
               onClick={() => setShowPresets(!showPresets)}
-              className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:underline hover:text-gray-900 dark:hover:text-gray-50"
+              className="text-sm font-medium text-gray-600 dark:text-lia-text-tertiary hover:underline hover:text-gray-900 dark:hover:text-gray-50"
             >
               Select Preset
             </button>
@@ -287,13 +287,13 @@ const EditCriteriaPopup: React.FC<{
             </button>
 
             {showPresets && (
-              <div className="absolute left-0 bottom-full mb-2 bg-white rounded-md border border-gray-200 py-2 min-w-sidebar-content z-20">
+              <div className="absolute left-0 bottom-full mb-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle py-2 min-w-sidebar-content z-20">
                 <p className="px-3 py-1 text-xs text-gray-600 uppercase tracking-wide">Select a preset</p>
                 {allPresets.map((preset) => (
                   <button
                     key={preset.id}
                     onClick={() => handleSelectPreset(preset)}
-                    className="w-full px-3 py-2 text-left text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-50 flex items-center justify-between"
+                    className="w-full px-3 py-2 text-left text-sm text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 flex items-center justify-between"
                   >
                     <span>{preset.name}</span>
                     <span className="text-xs text-gray-600">{preset.criteria.length} criteria</span>
@@ -303,14 +303,14 @@ const EditCriteriaPopup: React.FC<{
             )}
 
             {showSavePreset && (
-              <div className="absolute left-0 bottom-full mb-2 bg-white rounded-md border border-gray-200 p-3 min-w-[250px] z-20">
-                <p className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-2">Save as preset</p>
+              <div className="absolute left-0 bottom-full mb-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle p-3 min-w-[250px] z-20">
+                <p className="text-xs font-medium text-gray-800 dark:text-lia-text-primary mb-2">Save as preset</p>
                 <input
                   type="text"
                   value={presetName}
                   onChange={(e) => setPresetName(e.target.value)}
                   placeholder="Preset name..."
-                  className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 mb-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-50"
+                  className="w-full px-3 py-2 text-sm border border-lia-border-subtle dark:border-lia-border-subtle rounded-md focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 mb-2 bg-white dark:bg-lia-bg-secondary text-gray-900 dark:text-gray-50"
                 />
                 <div className="flex gap-2">
                   <Button
@@ -414,11 +414,11 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
         <div className="absolute inset-0 bg-black/50" onClick={onClose} />
         
         <div 
-          className="relative flex-1 bg-white dark:bg-gray-900 m-4 rounded-md overflow-hidden flex flex-col"
+          className="relative flex-1 bg-white dark:bg-lia-bg-primary m-4 rounded-md overflow-hidden flex flex-col"
          
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary">
             <div className="flex items-center gap-3">
               <button
                 onClick={onClose}
@@ -438,9 +438,9 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
           {/* Main Content - 3 Column Layout */}
           <div className="flex-1 flex overflow-hidden">
             {/* LEFT COLUMN - Candidate Profile */}
-            <div className="w-[420px] border-r border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden">
+            <div className="w-[420px] border-r border-lia-border-subtle dark:border-lia-border-subtle flex flex-col overflow-hidden">
               {/* Candidate Header */}
-              <div className="p-6 border-b border-gray-100">
+              <div className="p-6 border-b border-lia-border-subtle">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <h2 className="text-xl font-semibold text-gray-950 dark:text-gray-50">
@@ -475,7 +475,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                   {currentCandidate.location}
                 </div>
 
-                <div className="flex items-center gap-2 text-sm text-gray-800 dark:text-gray-200 mb-2">
+                <div className="flex items-center gap-2 text-sm text-gray-800 dark:text-lia-text-primary mb-2">
                   {currentCandidate.companyLogo ? (
                     <img src={currentCandidate.companyLogo} alt="" className="w-5 h-5 rounded-md" />
                   ) : (
@@ -493,7 +493,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
               </div>
 
               {/* Profile Tabs */}
-              <div className="border-b border-gray-100">
+              <div className="border-b border-lia-border-subtle">
                 <div className="flex px-6">
                   {['Experience', 'Education', 'Skill Map'].map((tab) => (
                     <button
@@ -527,7 +527,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                         {currentCandidate.highlights.slice(0, 3).map((highlight, idx) => (
                           <div
                             key={idx}
-                            className="p-3 bg-gray-50 rounded-md border border-gray-100"
+                            className="p-3 bg-gray-50 rounded-md border border-lia-border-subtle"
                           >
                             <div className="flex items-center gap-2 mb-1">
                               <span className="text-lg">{highlight.icon}</span>
@@ -542,7 +542,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                     </div>
 
                     {/* Experience Stats */}
-                    <div className="grid grid-cols-3 gap-4 py-4 border-t border-gray-100">
+                    <div className="grid grid-cols-3 gap-4 py-4 border-t border-lia-border-subtle">
                       <div>
                         <p className="text-xs text-gray-600 uppercase tracking-wide mb-1">Average Tenure</p>
                         <p className="text-sm font-semibold text-gray-950 dark:text-gray-50">{currentCandidate.experienceStats.averageTenure}</p>
@@ -560,7 +560,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                     {/* Experiences */}
                     <div className="space-y-4">
                       {currentCandidate.experiences.map((exp) => (
-                        <div key={exp.id} className="relative pl-6 pb-4 border-l-2 border-gray-200 last:border-l-transparent">
+                        <div key={exp.id} className="relative pl-6 pb-4 border-l-2 border-lia-border-subtle last:border-l-transparent">
                           <div className="absolute left-[-5px] top-0 w-2 h-2 rounded-full bg-gray-400" />
                           
                           <div className="flex items-start gap-3">
@@ -577,7 +577,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                                 <span className="text-xs text-gray-600">{exp.duration}</span>
                               </div>
                               <div className="flex items-center gap-2 mt-1">
-                                <p className="text-sm text-gray-800 dark:text-gray-200">{exp.title}</p>
+                                <p className="text-sm text-gray-800 dark:text-lia-text-primary">{exp.title}</p>
                                 {exp.isPromotion && (
                                   <Badge className="text-xs px-1.5 py-0.5 bg-status-success/10 text-status-success border-status-success/30">
                                     Promotion
@@ -601,10 +601,10 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                     </div>
 
                     {currentCandidate.summary && (
-                      <div className="pt-4 border-t border-gray-100">
+                      <div className="pt-4 border-t border-lia-border-subtle">
                         <p className="text-sm text-gray-600 leading-relaxed">
                           {currentCandidate.summary}
-                          <button className="text-gray-600 dark:text-gray-400 hover:underline ml-1">Read More</button>
+                          <button className="text-gray-600 dark:text-lia-text-tertiary hover:underline ml-1">Read More</button>
                         </p>
                       </div>
                     )}
@@ -640,7 +640,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                       </div>
                     </div>
                     {currentCandidate.languages && currentCandidate.languages.length > 0 && (
-                      <div className="pt-4 border-t border-gray-100">
+                      <div className="pt-4 border-t border-lia-border-subtle">
                         <h4 className="text-sm font-semibold text-gray-950 dark:text-gray-50 mb-2">Languages</h4>
                         <div className="flex flex-wrap gap-2">
                           {currentCandidate.languages.map((lang, idx) => (
@@ -657,15 +657,15 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
             </div>
 
             {/* CENTER COLUMN - Why We Matched */}
-            <div className="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-gray-800">
-              <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+            <div className="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-lia-bg-secondary">
+              <div className="p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-gray-950 dark:text-gray-50">
                     Why we matched this profile
                   </h3>
                   <button
                     onClick={() => setShowEditCriteria(true)}
-                    className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 transition-colors"
+                    className="text-sm font-medium text-gray-600 dark:text-lia-text-tertiary hover:text-gray-900 transition-colors"
                   >
                     Edit Criteria
                   </button>
@@ -674,7 +674,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
 
               <div className="flex-1 overflow-y-auto p-6 space-y-4">
                 {currentCandidate.matchReasons.map((reason) => (
-                  <Card key={reason.id} className="bg-white border-gray-200">
+                  <Card key={reason.id} className="bg-lia-bg-primary border-lia-border-subtle">
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
                         <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
@@ -719,9 +719,9 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
             </div>
 
             {/* RIGHT COLUMN - Navigation & Actions */}
-            <div className="w-[220px] border-l border-gray-200 dark:border-gray-700 flex flex-col bg-white dark:bg-gray-900">
+            <div className="w-[220px] border-l border-lia-border-subtle dark:border-lia-border-subtle flex flex-col bg-white dark:bg-lia-bg-primary">
               {/* Profile Navigation */}
-              <div className="p-4 border-b border-gray-100 dark:border-gray-700">
+              <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
                 <div className="flex items-center justify-between">
                   <button
                     onClick={() => onIndexChange(Math.max(0, currentIndex - 1))}
@@ -738,7 +738,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                     disabled={currentIndex === candidates.length - 1}
                     className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                    <ChevronRight className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
                   </button>
                 </div>
               </div>
@@ -752,7 +752,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                       onIndexChange(currentIndex + 1)
                     }
                   }}
-                  className="w-full justify-center text-sm font-semibold bg-white text-status-success"
+                  className="w-full justify-center text-sm font-semibold bg-lia-bg-primary text-status-success"
                   style={{border: '2px solid var(--status-success)'}}
                 >
                   Approve
@@ -766,7 +766,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                       onIndexChange(currentIndex + 1)
                     }
                   }}
-                  className="w-full justify-center text-sm font-semibold bg-white text-status-error"
+                  className="w-full justify-center text-sm font-semibold bg-lia-bg-primary text-status-error"
                   style={{border: '2px solid var(--status-error)'}}
                 >
                   Reject
@@ -779,11 +779,11 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
               </div>
 
               {/* Tips Section */}
-              <div className="mt-auto p-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700">
+              <div className="mt-auto p-4 bg-gray-50 dark:bg-lia-bg-secondary border-t border-lia-border-subtle dark:border-lia-border-subtle">
                 <p className="text-xs text-gray-600 leading-relaxed">
  You can <button className="hover:underline">pin criteria</button> if it is a mandatory requirement or <button className="text-gray-600 hover:underline">re-order</button> by importance using{' '}
                   <button 
-                    className="text-gray-600 dark:text-gray-400 hover:underline font-medium"
+                    className="text-gray-600 dark:text-lia-text-tertiary hover:underline font-medium"
                     onClick={() => setShowEditCriteria(true)}
                   >
                     Edit Criteria

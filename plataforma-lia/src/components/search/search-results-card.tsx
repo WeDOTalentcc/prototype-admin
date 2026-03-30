@@ -146,31 +146,31 @@ export function SearchResultsCard({
   }
 
   const getScoreColor = (score?: number) => {
-    if (!score) return "text-gray-600"
+    if (!score) return "lia-text-600"
     if (score >= 80) return "text-status-success"
     if (score >= 60) return "text-status-warning"
     return "text-wedo-orange"
   }
 
   return (
-    <Card className="w-full border border-gray-200">
+    <Card className="w-full border border-lia-border-subtle">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Search className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-            <CardTitle className="text-lg font-semibold text-gray-800">
+            <Search className="h-5 w-5 lia-text-600 dark:text-lia-text-tertiary" />
+            <CardTitle className="text-lg font-semibold lia-text-800">
               Resultados da busca
             </CardTitle>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-800 dark:text-gray-200">
+          <div className="flex items-center gap-2 text-sm lia-text-800 dark:text-lia-text-primary">
             {localCount > 0 && (
-              <Badge variant="outline" className="border-gray-300 bg-gray-50">
+              <Badge variant="outline" className="border-lia-border-default bg-gray-50">
                 <Database className="h-3 w-3 mr-1" />
                 {localCount} local
               </Badge>
             )}
             {pearchCount > 0 && (
-              <Badge variant="outline" className="border-gray-300 bg-gray-50 text-gray-800 dark:text-gray-200">
+              <Badge variant="outline" className="border-lia-border-default bg-gray-50 lia-text-800 dark:text-lia-text-primary">
                 <Globe className="h-3 w-3 mr-1" />
                 {pearchCount} Pearch
               </Badge>
@@ -178,7 +178,7 @@ export function SearchResultsCard({
           </div>
         </div>
         <div className="flex items-center justify-between mt-1">
-          <p className="text-sm text-gray-800 dark:text-gray-200">
+          <p className="text-sm lia-text-800 dark:text-lia-text-primary">
             "{query}" - {totalCount} candidatos encontrados
             {searchTimeSeconds && ` em ${searchTimeSeconds.toFixed(2)}s`}
           </p>
@@ -189,7 +189,7 @@ export function SearchResultsCard({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 text-xs gap-1.5 text-gray-800 dark:text-gray-200 hover:text-gray-800 hover:bg-gray-100"
+                    className="h-7 text-xs gap-1.5 lia-text-800 dark:text-lia-text-primary hover:lia-text-800 hover:bg-gray-100"
                     onClick={() => onSaveAsArchetype(query)}
                   >
                     <Target className="h-3.5 w-3.5" />
@@ -210,8 +210,8 @@ export function SearchResultsCard({
 
       <CardContent className="pt-0">
         {selectedIds.size > 0 && (
-          <div className="flex items-center gap-2 mb-3 p-2 bg-gray-50 rounded-md border border-gray-200">
-            <span className="text-sm text-gray-600">
+          <div className="flex items-center gap-2 mb-3 p-2 bg-gray-50 rounded-md border border-lia-border-subtle">
+            <span className="text-sm lia-text-600">
               {selectedIds.size} selecionado(s)
             </span>
             <div className="flex-1" />
@@ -219,7 +219,7 @@ export function SearchResultsCard({
               <Button 
                 size="sm" 
                 variant="outline"
-                className="border-gray-200 text-gray-800 dark:text-gray-200 hover:bg-gray-100"
+                className="border-lia-border-subtle lia-text-800 dark:text-lia-text-primary hover:bg-gray-100"
                 onClick={() => onAddToJob(Array.from(selectedIds))}
               >
                 <UserPlus className="h-4 w-4 mr-1" />
@@ -230,7 +230,7 @@ export function SearchResultsCard({
               <Button 
                 size="sm" 
                 variant="outline"
-                className="border-gray-300"
+                className="border-lia-border-default"
                 onClick={() => onCompare(Array.from(selectedIds))}
               >
                 <Users className="h-4 w-4 mr-1" />
@@ -246,8 +246,8 @@ export function SearchResultsCard({
               <div 
                 className={`flex items-center gap-3 p-3 rounded-md border transition-colors cursor-pointer
                   ${selectedIds.has(candidate.id) 
-                    ? "bg-gray-50 border-gray-300" 
-                    : "bg-white border-gray-100 hover:bg-gray-50"
+                    ? "bg-gray-50 border-lia-border-default" 
+                    : "bg-lia-bg-primary border-lia-border-subtle hover:bg-gray-50"
                   }`}
                 onClick={() => onSelectCandidate?.(candidate)}
               >
@@ -262,14 +262,14 @@ export function SearchResultsCard({
                   {candidate.picture_url ? (
                     <AvatarImage src={candidate.picture_url} alt={candidate.name} />
                   ) : null}
-                  <AvatarFallback className="bg-gray-100 text-gray-600 text-sm">
+                  <AvatarFallback className="bg-gray-100 lia-text-600 text-sm">
                     {getInitials(candidate.name)}
                   </AvatarFallback>
                 </Avatar>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-gray-800 truncate">
+                    <span className="font-medium lia-text-800 truncate">
                       {candidate.name}
                     </span>
                     {candidate.is_open_to_work && (
@@ -286,8 +286,8 @@ export function SearchResultsCard({
                           variant="outline" 
                           className={`text-xs ${
                             candidate.source === "local" 
-                              ? "border-gray-300 bg-gray-50 text-gray-600" 
-                              : "border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50"
+                              ? "border-lia-border-default bg-gray-50 lia-text-600" 
+                              : "border-lia-border-default dark:border-lia-border-default bg-gray-100 dark:bg-lia-bg-secondary lia-text-900 dark:lia-text-50"
                           }`}
                         >
                           {candidate.source === "local" ? (
@@ -327,7 +327,7 @@ export function SearchResultsCard({
                     )}
                   </div>
 
-                  <div className="flex items-center gap-3 text-sm text-gray-800 dark:text-gray-200 mt-0.5">
+                  <div className="flex items-center gap-3 text-sm lia-text-800 dark:text-lia-text-primary mt-0.5">
                     {candidate.current_title && (
                       <span className="flex items-center gap-1 truncate">
                         <Briefcase className="h-3 w-3" />
@@ -349,7 +349,7 @@ export function SearchResultsCard({
                         <Badge 
                           key={idx} 
                           variant="secondary" 
-                          className="text-xs bg-gray-100 text-gray-600 font-normal"
+                          className="text-xs bg-gray-100 lia-text-600 font-normal"
                         >
                           {skill}
                         </Badge>
@@ -357,7 +357,7 @@ export function SearchResultsCard({
                       {candidate.skills.length > 4 && (
                         <Badge 
                           variant="secondary" 
-                          className="text-xs bg-gray-100 text-gray-800 dark:text-gray-200 font-normal"
+                          className="text-xs bg-gray-100 lia-text-800 dark:text-lia-text-primary font-normal"
                         >
                           +{candidate.skills.length - 4}
                         </Badge>
@@ -371,7 +371,7 @@ export function SearchResultsCard({
                     {candidate.has_email && (
                       <Tooltip>
                         <TooltipTrigger>
-                          <Mail className="h-4 w-4 text-gray-600" />
+                          <Mail className="h-4 w-4 lia-text-600" />
                         </TooltipTrigger>
                         <TooltipContent>Email disponível</TooltipContent>
                       </Tooltip>
@@ -379,7 +379,7 @@ export function SearchResultsCard({
                     {candidate.has_phone && (
                       <Tooltip>
                         <TooltipTrigger>
-                          <Phone className="h-4 w-4 text-gray-600" />
+                          <Phone className="h-4 w-4 lia-text-600" />
                         </TooltipTrigger>
                         <TooltipContent>Telefone disponível</TooltipContent>
                       </Tooltip>
@@ -392,7 +392,7 @@ export function SearchResultsCard({
                             target="_blank" 
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="text-gray-600 hover:text-gray-700"
+                            className="lia-text-600 hover:lia-text-700"
                           >
                             <Linkedin className="h-4 w-4" />
                           </a>
@@ -408,7 +408,7 @@ export function SearchResultsCard({
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-7 px-2 text-xs border-gray-900 dark:border-gray-50 text-gray-900 dark:text-gray-50 hover:bg-gray-100 dark:hover:bg-gray-800"
+                          className="h-7 px-2 text-xs border-gray-900 dark:lia-border-50 lia-text-900 dark:lia-text-50 hover:bg-gray-100 dark:hover:bg-gray-800"
                           onClick={(e) => {
                             e.stopPropagation()
                             onSaveToBase(candidate.id)
@@ -431,7 +431,7 @@ export function SearchResultsCard({
                     </div>
                   )}
 
-                  <ChevronRight className="h-5 w-5 text-gray-300" />
+                  <ChevronRight className="h-5 w-5 lia-text-300" />
                 </div>
               </div>
             </TooltipProvider>
@@ -439,7 +439,7 @@ export function SearchResultsCard({
         </div>
 
         {totalPages > 1 && (
-          <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+          <div className="flex items-center justify-between mt-4 pt-3 border-t border-lia-border-subtle">
             <Button
               variant="ghost"
               size="sm"
@@ -449,7 +449,7 @@ export function SearchResultsCard({
               <ChevronLeft className="h-4 w-4 mr-1" />
               Anterior
             </Button>
-            <span className="text-sm text-gray-800 dark:text-gray-200">
+            <span className="text-sm lia-text-800 dark:text-lia-text-primary">
               Página {currentPage + 1} de {totalPages}
             </span>
             <Button
@@ -465,17 +465,17 @@ export function SearchResultsCard({
         )}
 
         {canLoadMore && (
-          <div className="mt-3 pt-3 border-t border-gray-100">
+          <div className="mt-3 pt-3 border-t border-lia-border-subtle">
             <Button 
               variant="outline" 
-              className="w-full border-gray-200 text-gray-800 dark:text-gray-200 hover:bg-gray-100"
+              className="w-full border-lia-border-subtle lia-text-800 dark:text-lia-text-primary hover:bg-gray-100"
               onClick={onLoadMore}
             >
               <Globe className="h-4 w-4 mr-2" />
               Buscar mais candidatos na Base Global
             </Button>
             {creditsRemaining !== undefined && (
-              <p className="text-xs text-center text-gray-800 dark:text-gray-200 mt-1">
+              <p className="text-xs text-center lia-text-800 dark:text-lia-text-primary mt-1">
                 {creditsRemaining} créditos restantes
               </p>
             )}
@@ -484,7 +484,7 @@ export function SearchResultsCard({
 
         {selectedIds.size > 0 && (
           <div className="mt-3 p-2 bg-gray-50 rounded-md text-center">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm lia-text-600">
               Dica: Diga "adicione os selecionados à vaga X" ou "compare os candidatos selecionados"
             </p>
           </div>

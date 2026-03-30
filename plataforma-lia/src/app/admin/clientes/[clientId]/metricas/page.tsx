@@ -184,14 +184,14 @@ export default function ClientMetricasPage({
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <BarChart3 className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+            <BarChart3 className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />
             <h2 
-              className="text-lg font-semibold text-gray-800 dark:text-gray-100"
+              className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary"
             >
               Métricas
             </h2>
           </div>
-          <p className="text-sm text-gray-400 dark:text-gray-500">
+          <p className="text-sm lia-text-400 dark:lia-text-500">
             Indicadores de performance e analytics
           </p>
         </div>
@@ -245,10 +245,10 @@ export default function ClientMetricasPage({
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="text-xs text-gray-400 dark:text-gray-500">
+                        <p className="text-xs lia-text-400 dark:lia-text-500">
                           MRR (Receita Mensal)
                         </p>
-                        <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
+                        <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
                           R$ {saasMetrics.revenue.mrr.toLocaleString('pt-BR')}
                         </p>
                         <div className="flex items-center gap-1 text-xs text-status-success">
@@ -263,22 +263,22 @@ export default function ClientMetricasPage({
                   </CardContent>
                 </Card>
 
-                <Card className="border-l-4 border-l-gray-400 dark:border-l-gray-500">
+                <Card className="border-l-4 border-l-gray-400 dark:lia-border-l-500">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="text-xs text-gray-400 dark:text-gray-500">
+                        <p className="text-xs lia-text-400 dark:lia-text-500">
                           ARR (Receita Anual)
                         </p>
-                        <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
+                        <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
                           R$ {saasMetrics.revenue.arr.toLocaleString('pt-BR')}
                         </p>
-                        <p className="text-xs text-gray-400 dark:text-gray-500">
+                        <p className="text-xs lia-text-400 dark:lia-text-500">
                           Plano: {saasMetrics.revenue.planName}
                         </p>
                       </div>
-                      <div className="w-10 h-10 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                        <PieChart className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                      <div className="w-10 h-10 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
+                        <PieChart className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                       </div>
                     </div>
                   </CardContent>
@@ -288,13 +288,13 @@ export default function ClientMetricasPage({
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="text-xs text-gray-400 dark:text-gray-500">
+                        <p className="text-xs lia-text-400 dark:lia-text-500">
                           LTV Estimado
                         </p>
-                        <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
+                        <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
                           R$ {saasMetrics.revenue.ltv.toLocaleString('pt-BR')}
                         </p>
-                        <p className="text-xs text-gray-400 dark:text-gray-500">
+                        <p className="text-xs lia-text-400 dark:lia-text-500">
                           {saasMetrics.revenue.ltvMonths} meses projetados
                         </p>
                       </div>
@@ -309,13 +309,13 @@ export default function ClientMetricasPage({
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="text-xs text-gray-400 dark:text-gray-500">
+                        <p className="text-xs lia-text-400 dark:lia-text-500">
                           CAC (Custo Aquisição)
                         </p>
-                        <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
+                        <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
                           R$ {saasMetrics.acquisition.cac.toLocaleString('pt-BR')}
                         </p>
-                        <p className="text-xs text-gray-400 dark:text-gray-500">
+                        <p className="text-xs lia-text-400 dark:lia-text-500">
                           Payback: {saasMetrics.acquisition.paybackMonths} meses
                         </p>
                       </div>
@@ -330,16 +330,16 @@ export default function ClientMetricasPage({
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <Card className="lg:col-span-2">
                   <CardHeader>
-                    <CardTitle className="text-base flex items-center gap-2 text-gray-800 dark:text-gray-100">
-                      <Zap className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                    <CardTitle className="text-base flex items-center gap-2 lia-text-800 dark:text-lia-text-primary">
+                      <Zap className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                       Uso vs Contrato
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="text-gray-500 dark:text-gray-400">Créditos IA</span>
-                        <span className="text-gray-800 dark:text-gray-100">
+                        <span className="lia-text-500 dark:text-lia-text-tertiary">Créditos IA</span>
+                        <span className="lia-text-800 dark:text-lia-text-primary">
                           {saasMetrics.usage.aiCreditsUsed.toLocaleString()} / {saasMetrics.usage.aiCreditsLimit.toLocaleString()}
                         </span>
                       </div>
@@ -347,8 +347,8 @@ export default function ClientMetricasPage({
                     </div>
                     <div>
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="text-gray-500 dark:text-gray-400">Usuários Ativos</span>
-                        <span className="text-gray-800 dark:text-gray-100">
+                        <span className="lia-text-500 dark:text-lia-text-tertiary">Usuários Ativos</span>
+                        <span className="lia-text-800 dark:text-lia-text-primary">
                           {saasMetrics.usage.usersActive} / {saasMetrics.usage.usersLimit}
                         </span>
                       </div>
@@ -356,8 +356,8 @@ export default function ClientMetricasPage({
                     </div>
                     <div>
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="text-gray-500 dark:text-gray-400">Vagas Ativas</span>
-                        <span className="text-gray-800 dark:text-gray-100">
+                        <span className="lia-text-500 dark:text-lia-text-tertiary">Vagas Ativas</span>
+                        <span className="lia-text-800 dark:text-lia-text-primary">
                           {saasMetrics.usage.jobsActive} / {saasMetrics.usage.jobsLimit}
                         </span>
                       </div>
@@ -365,8 +365,8 @@ export default function ClientMetricasPage({
                     </div>
                     <div>
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="text-gray-500 dark:text-gray-400">Storage</span>
-                        <span className="text-gray-800 dark:text-gray-100">
+                        <span className="lia-text-500 dark:text-lia-text-tertiary">Storage</span>
+                        <span className="lia-text-800 dark:text-lia-text-primary">
                           {(saasMetrics.usage.storageUsedMB / 1024).toFixed(1)} GB / {(saasMetrics.usage.storageLimitMB / 1024).toFixed(1)} GB
                         </span>
                       </div>
@@ -377,7 +377,7 @@ export default function ClientMetricasPage({
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base flex items-center gap-2 text-gray-800 dark:text-gray-100">
+                    <CardTitle className="text-base flex items-center gap-2 lia-text-800 dark:text-lia-text-primary">
                       {saasMetrics.health.churnRisk === 'low' ? (
                         <CheckCircle className="w-4 h-4 text-status-success" />
                       ) : (
@@ -388,12 +388,12 @@ export default function ClientMetricasPage({
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="text-center">
-                      <p className="text-4xl font-bold text-gray-900 dark:text-gray-50">{saasMetrics.health.healthScore}</p>
-                      <p className="text-xs text-gray-400 dark:text-gray-500">Health Score</p>
+                      <p className="text-4xl font-bold lia-text-900 dark:lia-text-50">{saasMetrics.health.healthScore}</p>
+                      <p className="text-xs lia-text-400 dark:lia-text-500">Health Score</p>
                     </div>
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-400 dark:text-gray-500">Risco de Churn</span>
+                        <span className="lia-text-400 dark:lia-text-500">Risco de Churn</span>
                         <Badge className={
                           saasMetrics.health.churnRisk === 'low' ? 'bg-status-success/15 text-status-success' :
                           saasMetrics.health.churnRisk === 'medium' ? 'bg-status-warning/15 text-status-warning' :
@@ -404,20 +404,20 @@ export default function ClientMetricasPage({
                         </Badge>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-400 dark:text-gray-500">Último Login</span>
-                        <span className="text-gray-800 dark:text-gray-100">
+                        <span className="lia-text-400 dark:lia-text-500">Último Login</span>
+                        <span className="lia-text-800 dark:text-lia-text-primary">
                           {saasMetrics.health.lastLoginDays === 0 ? 'Hoje' : 
                            saasMetrics.health.lastLoginDays === 1 ? 'Ontem' : 
                            `${saasMetrics.health.lastLoginDays} dias`}
                         </span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-400 dark:text-gray-500">NPS Score</span>
-                        <span className="text-gray-800 dark:text-gray-100">{saasMetrics.health.npsScore}/10</span>
+                        <span className="lia-text-400 dark:lia-text-500">NPS Score</span>
+                        <span className="lia-text-800 dark:text-lia-text-primary">{saasMetrics.health.npsScore}/10</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-400 dark:text-gray-500">Tickets Suporte</span>
-                        <span className="text-gray-800 dark:text-gray-100">{saasMetrics.health.supportTickets} abertos</span>
+                        <span className="lia-text-400 dark:lia-text-500">Tickets Suporte</span>
+                        <span className="lia-text-800 dark:text-lia-text-primary">{saasMetrics.health.supportTickets} abertos</span>
                       </div>
                     </div>
                   </CardContent>
@@ -426,8 +426,8 @@ export default function ClientMetricasPage({
 
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2 text-gray-800 dark:text-gray-100">
-                    <Receipt className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                  <CardTitle className="text-base flex items-center gap-2 lia-text-800 dark:text-lia-text-primary">
+                    <Receipt className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                     Histórico de Pagamentos
                   </CardTitle>
                 </CardHeader>
@@ -436,22 +436,22 @@ export default function ClientMetricasPage({
                     <table className="w-full">
                       <thead>
                         <tr className="border-b">
-                          <th className="text-left py-2 text-xs font-medium text-gray-400 dark:text-gray-500">Data</th>
-                          <th className="text-left py-2 text-xs font-medium text-gray-400 dark:text-gray-500">Valor</th>
-                          <th className="text-left py-2 text-xs font-medium text-gray-400 dark:text-gray-500">Método</th>
-                          <th className="text-left py-2 text-xs font-medium text-gray-400 dark:text-gray-500">Status</th>
+                          <th className="text-left py-2 text-xs font-medium lia-text-400 dark:lia-text-500">Data</th>
+                          <th className="text-left py-2 text-xs font-medium lia-text-400 dark:lia-text-500">Valor</th>
+                          <th className="text-left py-2 text-xs font-medium lia-text-400 dark:lia-text-500">Método</th>
+                          <th className="text-left py-2 text-xs font-medium lia-text-400 dark:lia-text-500">Status</th>
                         </tr>
                       </thead>
                       <tbody>
                         {saasMetrics.payments.map((payment) => (
-                          <tr key={payment.id} className="border-b border-gray-100 dark:border-gray-800">
-                            <td className="py-3 text-sm text-gray-800 dark:text-gray-100">
+                          <tr key={payment.id} className="border-b border-lia-border-subtle dark:lia-border-800">
+                            <td className="py-3 text-sm lia-text-800 dark:text-lia-text-primary">
                               {new Date(payment.date).toLocaleDateString('pt-BR')}
                             </td>
-                            <td className="py-3 text-sm font-medium text-gray-800 dark:text-gray-100">
+                            <td className="py-3 text-sm font-medium lia-text-800 dark:text-lia-text-primary">
                               R$ {payment.amount.toLocaleString('pt-BR')}
                             </td>
-                            <td className="py-3 text-sm text-gray-500 dark:text-gray-400">
+                            <td className="py-3 text-sm lia-text-500 dark:text-lia-text-tertiary">
                               {payment.method}
                             </td>
                             <td className="py-3">
@@ -459,7 +459,7 @@ export default function ClientMetricasPage({
                                 payment.status === 'paid' ? 'bg-status-success/15 text-status-success' :
                                 payment.status === 'pending' ? 'bg-status-warning/15 text-status-warning' :
                                 payment.status === 'overdue' ? 'bg-status-error/15 text-status-error' :
-                                'bg-gray-100 text-gray-800 dark:text-gray-200'
+                                'bg-gray-100 lia-text-800 dark:text-lia-text-primary'
                               }>
                                 {payment.status === 'paid' ? 'Pago' :
                                  payment.status === 'pending' ? 'Pendente' :
@@ -477,24 +477,24 @@ export default function ClientMetricasPage({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Card>
                   <CardContent className="p-4 text-center">
-                    <p className="text-xs text-gray-400 dark:text-gray-500">Contrato Início</p>
-                    <p className="text-lg font-semibold mt-1 text-gray-800 dark:text-gray-100">
+                    <p className="text-xs lia-text-400 dark:lia-text-500">Contrato Início</p>
+                    <p className="text-lg font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
                       {new Date(saasMetrics.revenue.contractStart).toLocaleDateString('pt-BR')}
                     </p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="p-4 text-center">
-                    <p className="text-xs text-gray-400 dark:text-gray-500">Contrato Fim</p>
-                    <p className="text-lg font-semibold mt-1 text-gray-800 dark:text-gray-100">
+                    <p className="text-xs lia-text-400 dark:lia-text-500">Contrato Fim</p>
+                    <p className="text-lg font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
                       {new Date(saasMetrics.revenue.contractEnd).toLocaleDateString('pt-BR')}
                     </p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="p-4 text-center">
-                    <p className="text-xs text-gray-400 dark:text-gray-500">Origem</p>
-                    <p className="text-lg font-semibold mt-1 text-gray-800 dark:text-gray-100">
+                    <p className="text-xs lia-text-400 dark:lia-text-500">Origem</p>
+                    <p className="text-lg font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
                       {saasMetrics.acquisition.referralSource}
                     </p>
                   </CardContent>
@@ -510,10 +510,10 @@ export default function ClientMetricasPage({
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-xs text-gray-400 dark:text-gray-500">
+                    <p className="text-xs lia-text-400 dark:lia-text-500">
                       Vagas Ativas
                     </p>
-                    <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
+                    <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
                       {metrics.trends.vacancies.value}
                     </p>
                     <TrendIndicator change={metrics.trends.vacancies.change} trend={metrics.trends.vacancies.trend} />
@@ -529,16 +529,16 @@ export default function ClientMetricasPage({
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-xs text-gray-400 dark:text-gray-500">
+                    <p className="text-xs lia-text-400 dark:lia-text-500">
                       Candidatos no Pipeline
                     </p>
-                    <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
+                    <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
                       {metrics.trends.candidates.value}
                     </p>
                     <TrendIndicator change={metrics.trends.candidates.change} trend={metrics.trends.candidates.trend} />
                   </div>
-                  <div className="w-10 h-10 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                    <Users className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  <div className="w-10 h-10 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
+                    <Users className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                   </div>
                 </div>
               </CardContent>
@@ -548,10 +548,10 @@ export default function ClientMetricasPage({
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-xs text-gray-400 dark:text-gray-500">
+                    <p className="text-xs lia-text-400 dark:lia-text-500">
                       Tempo Médio de Contratação
                     </p>
-                    <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
+                    <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
                       {metrics.trends.timeToHire.value}
                       <span className="text-sm font-normal ml-1">dias</span>
                     </p>
@@ -568,10 +568,10 @@ export default function ClientMetricasPage({
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-xs text-gray-400 dark:text-gray-500">
+                    <p className="text-xs lia-text-400 dark:lia-text-500">
                       Taxa de Conversão
                     </p>
-                    <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
+                    <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
                       {metrics.trends.conversion.value}%
                     </p>
                     <TrendIndicator change={metrics.trends.conversion.change} trend={metrics.trends.conversion.trend} />
@@ -586,7 +586,7 @@ export default function ClientMetricasPage({
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base text-gray-800 dark:text-gray-100">
+              <CardTitle className="text-base lia-text-800 dark:text-lia-text-primary">
                 Funil de Recrutamento
               </CardTitle>
             </CardHeader>
@@ -597,7 +597,7 @@ export default function ClientMetricasPage({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span 
-                          className="text-sm font-medium text-gray-800 dark:text-gray-100"
+                          className="text-sm font-medium lia-text-800 dark:text-lia-text-primary"
                         >
                           {stage.stage}
                         </span>
@@ -606,7 +606,7 @@ export default function ClientMetricasPage({
                         </Badge>
                       </div>
                       <span 
-                        className="text-sm text-gray-400 dark:text-gray-500"
+                        className="text-sm lia-text-400 dark:lia-text-500"
                       >
                         {stage.percentage}%
                       </span>
@@ -621,16 +621,16 @@ export default function ClientMetricasPage({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base text-gray-800 dark:text-gray-100">
+                <CardTitle className="text-base lia-text-800 dark:text-lia-text-primary">
                   Triagens Completadas
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-center py-8">
-                  <p className="text-4xl font-semibold text-gray-900 dark:text-gray-50">
+                  <p className="text-4xl font-semibold lia-text-900 dark:lia-text-50">
                     {metrics.overview.screeningsCompleted}
                   </p>
-                  <p className="text-sm mt-2 text-gray-400 dark:text-gray-500">
+                  <p className="text-sm mt-2 lia-text-400 dark:lia-text-500">
                     nos últimos 30 dias
                   </p>
                 </div>
@@ -639,7 +639,7 @@ export default function ClientMetricasPage({
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-base text-gray-800 dark:text-gray-100">
+                <CardTitle className="text-base lia-text-800 dark:text-lia-text-primary">
                   Entrevistas Agendadas
                 </CardTitle>
               </CardHeader>
@@ -648,7 +648,7 @@ export default function ClientMetricasPage({
                   <p className="text-4xl font-semibold text-wedo-purple">
                     {metrics.overview.interviewsScheduled}
                   </p>
-                  <p className="text-sm mt-2 text-gray-400 dark:text-gray-500">
+                  <p className="text-sm mt-2 lia-text-400 dark:lia-text-500">
                     nos últimos 30 dias
                   </p>
                 </div>

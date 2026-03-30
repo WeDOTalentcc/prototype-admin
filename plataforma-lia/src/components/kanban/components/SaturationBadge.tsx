@@ -174,18 +174,18 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
         {badgeElement}
       </PopoverTrigger>
       <PopoverContent
-        className="w-panel-sm rounded-md p-0 shadow-none border border-gray-200"
+        className="w-panel-sm rounded-md p-0 shadow-none border border-lia-border-subtle"
         align="start"
         sideOffset={8}
       >
         <div className="p-3 space-y-3 text-xs font-['Open_Sans']">
-          <div className="font-medium text-gray-900">
+          <div className="font-medium lia-text-900">
             {isSaturated ? "Pipeline Saturado" : "Quase Saturado"}
           </div>
 
           <div className="space-y-2">
             <div className="space-y-1">
-              <div className="flex items-center justify-between text-gray-700">
+              <div className="flex items-center justify-between lia-text-700">
                 <span className="flex items-center gap-1">
                   <Globe className="w-3 h-3 text-wedo-cyan-dark" />
                   Orgânico (Web + WhatsApp)
@@ -196,16 +196,16 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
               </div>
               <div className="w-full bg-gray-100 rounded-full h-1.5">
                 <div
-                  className={`h-1.5 rounded-full transition-all ${data.organic.is_saturated ? 'bg-status-error' : organicPercent >= 90 ? 'bg-status-warning' : 'bg-wedo-cyan'}`}
+                  className={`h-1.5 rounded-full transition-[width,height] ${data.organic.is_saturated ? 'bg-status-error' : organicPercent >= 90 ? 'bg-status-warning' : 'bg-wedo-cyan'}`}
                   style={{width: `${organicPercent}%`}}
                 />
               </div>
             </div>
 
             <div className="space-y-1">
-              <div className="flex items-center justify-between text-gray-700">
+              <div className="flex items-center justify-between lia-text-700">
                 <span className="flex items-center gap-1">
-                  <Search className="w-3 h-3 text-gray-500" />
+                  <Search className="w-3 h-3 lia-text-500" />
                   Busca Ativa (Sourcing + ATS)
                 </span>
                 <span className={data.sourcing.is_saturated ? 'text-status-error font-semibold' : ''}>
@@ -214,42 +214,42 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
               </div>
               <div className="w-full bg-gray-100 rounded-full h-1.5">
                 <div
-                  className={`h-1.5 rounded-full transition-all ${data.sourcing.is_saturated ? 'bg-status-error' : sourcingPercent >= 90 ? 'bg-status-warning' : 'bg-gray-500'}`}
+                  className={`h-1.5 rounded-full transition-[width,height] ${data.sourcing.is_saturated ? 'bg-status-error' : sourcingPercent >= 90 ? 'bg-status-warning' : 'bg-gray-500'}`}
                   style={{width: `${sourcingPercent}%`}}
                 />
               </div>
             </div>
           </div>
 
-          <div className="space-y-1 text-gray-600">
+          <div className="space-y-1 lia-text-600">
             <div className="flex items-center gap-1.5">
-              <Users className="w-3 h-3 text-gray-400" />
+              <Users className="w-3 h-3 lia-text-400" />
               <span>{data.queued_count} candidatos aguardando triagem</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <Clock className="w-3 h-3 text-gray-400" />
+              <Clock className="w-3 h-3 lia-text-400" />
               <span>{formatLastScreened(data.last_screened_at)}</span>
             </div>
           </div>
 
-          <div className="flex items-start gap-1.5 text-gray-500">
+          <div className="flex items-start gap-1.5 lia-text-500">
             <Lightbulb className="w-3 h-3 mt-0.5 text-status-warning shrink-0" />
             <span>{getRecommendationText(data.recommendation)}</span>
           </div>
         </div>
 
-        <div className="border-t border-gray-200 p-3 space-y-2">
+        <div className="border-t border-lia-border-subtle p-3 space-y-2">
           <button
             onClick={() => handleUnlock("increase_threshold")}
             disabled={actionLoading}
-            className="w-full px-3 py-1.5 rounded-md text-xs font-medium font-['Open_Sans'] text-gray-700 bg-gray-50 border border-gray-200 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-3 py-1.5 rounded-md text-xs font-medium font-['Open_Sans'] lia-text-700 bg-gray-50 border border-lia-border-subtle hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Aumentar limite (+{data.unlock_increment})
           </button>
           <button
             onClick={() => handleUnlock("disable_temporarily")}
             disabled={actionLoading}
-            className="w-full px-3 py-1.5 rounded-md text-xs font-medium font-['Open_Sans'] text-gray-700 bg-gray-50 border border-gray-200 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-3 py-1.5 rounded-md text-xs font-medium font-['Open_Sans'] lia-text-700 bg-gray-50 border border-lia-border-subtle hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Desbloquear por {data.unlock_hours}h
           </button>

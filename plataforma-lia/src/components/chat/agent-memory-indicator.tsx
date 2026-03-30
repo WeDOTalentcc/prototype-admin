@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import { Brain, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { useAgentMemory } from "@/hooks/useAgentMemory";
 import { cn } from "@/lib/utils";
@@ -94,14 +93,15 @@ export function AgentMemoryIndicator({
         tabIndex={0}
         onClick={handleExpand}
         onKeyDown={(e) => e.key === "Enter" && handleExpand()}
-        className="flex items-center gap-2.5 px-2.5 py-[5px] rounded-md border border-gray-200 bg-gray-50 cursor-pointer text-xs text-gray-500 select-none transition-colors"
+        // [OPT-023] py-[5px] px arbitrário — sem canônico Tailwind
+        className="flex items-center gap-2.5 px-2.5 py-[5px] rounded-md border border-lia-border-subtle bg-gray-50 cursor-pointer text-xs lia-text-500 select-none transition-colors"
       >
         <Brain
           className="text-wedo-cyan flex-shrink-0 w-3.5 h-3.5"
         />
 
         <span
-          className="text-gray-800 font-medium whitespace-nowrap"
+          className="lia-text-800 font-medium whitespace-nowrap"
         >
           {stageName}
         </span>
@@ -123,14 +123,14 @@ export function AgentMemoryIndicator({
         </div>
 
         <span
-          className="text-gray-400 border-l border-l-gray-200 text-xs pl-2"
+          className="lia-text-400 border-l border-l-gray-200 text-xs pl-2"
         >
           {memory.fields_count} campos
         </span>
 
         {relTime && (
           <span
-            className="text-gray-400 border-l border-l-gray-200 text-xs pl-2"
+            className="lia-text-400 border-l border-l-gray-200 text-xs pl-2"
           >
             {relTime}
           </span>
@@ -143,17 +143,12 @@ export function AgentMemoryIndicator({
         )}
       </div>
 
-      <AnimatePresence>
-        {expanded && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden"
+      {expanded && (
+          <div
+            className="overflow-hidden animate-in fade-in slide-in-from-top-1 duration-200"
           >
             <div
-              className="mt-1 px-3.5 py-3 rounded-md border border-gray-200 bg-gray-50 max-h-[280px] overflow-y-auto text-xs text-gray-800"
+              className="mt-1 px-3.5 py-3 rounded-md border border-lia-border-subtle bg-gray-50 max-h-[280px] overflow-y-auto text-xs lia-text-800"
             >
               <div
                 className="font-semibold text-[13px] mb-2"
@@ -237,7 +232,7 @@ export function AgentMemoryIndicator({
 
               {!fullMemory && (
                 <div
-                  className="text-gray-400 text-xs italic"
+                  className="lia-text-400 text-xs italic"
                 >
                   Carregando detalhes...
                 </div>
@@ -252,15 +247,14 @@ export function AgentMemoryIndicator({
                   e.stopPropagation();
                   handleReset();
                 }}
-                className={cn("border flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs cursor-pointer transition-all", confirmReset ? "bg-gray-100 text-gray-600 border-wedo-cyan" : "bg-transparent text-gray-400 border-gray-200")}
+                className={cn("border flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs cursor-pointer transition-colors", confirmReset ? "bg-gray-100 lia-text-600 border-wedo-cyan" : "bg-transparent lia-text-400 border-lia-border-subtle")}
               >
                 <Trash2 className="w-3 h-3" />
                 {confirmReset ? "Confirmar limpeza?" : "Limpar memória"}
               </button>
             </div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
     </div>
   );
 }

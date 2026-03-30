@@ -18,9 +18,9 @@ export function ConsumptionChart({
   const maxTokens = Math.max(...data.map(d => d.tokens), 1)
 
   return (
-    <Card className="border-gray-200 dark:border-gray-700">
+    <Card className="border-lia-border-subtle dark:border-lia-border-subtle">
       <CardHeader>
-        <CardTitle className="text-base font-semibold text-gray-800 dark:text-gray-100">
+        <CardTitle className="text-base font-semibold text-gray-800 dark:text-lia-text-primary">
           {title}
         </CardTitle>
       </CardHeader>
@@ -29,7 +29,7 @@ export function ConsumptionChart({
           {data.map((day) => (
             <div
               key={day.date}
-              className="flex-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-800 dark:hover:bg-gray-200/40 transition-colors rounded-t cursor-pointer group relative"
+              className="flex-1 bg-gray-200 dark:bg-lia-bg-elevated hover:bg-gray-800 dark:hover:bg-gray-200/40 transition-colors rounded-t cursor-pointer group relative"
               style={{height: `${(day.tokens / maxTokens) * 100}%`, minHeight: '2px'}}
             >
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
@@ -39,7 +39,7 @@ export function ConsumptionChart({
             </div>
           ))}
         </div>
-        <div className="flex justify-between mt-2 text-xs text-gray-400 dark:text-gray-500">
+        <div className="flex justify-between mt-2 text-xs text-gray-400">
           <span>30 dias atrás</span>
           <span>Hoje</span>
         </div>

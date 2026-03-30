@@ -21,19 +21,19 @@ export const ThinkingIndicator = ({ message }: { message?: string }) => {
 
   return (
     <div
-      className="flex items-center gap-3 p-3 bg-gray-100 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 mb-3 animate-fade-in-up"
+      className="flex items-center gap-3 p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle mb-3 animate-fade-in-up"
     >
-      <div className="flex items-center justify-center w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full">
+      <div className="flex items-center justify-center w-8 h-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-full">
         <Brain className="w-4 h-4 text-wedo-cyan animate-pulse" />
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-950 dark:text-gray-50">
+          <span className="text-sm font-medium text-gray-950">
             Pensando{dots}
           </span>
         </div>
         {message && (
-          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-1">
             {message}
           </p>
         )}
@@ -57,7 +57,7 @@ export const ProgressSteps = ({ steps, currentStep }: {
 }) => {
   return (
     <div
-      className="bg-gray-100 dark:bg-gray-800 rounded-md p-4 mb-3 border border-gray-200 dark:border-gray-700 animate-fade-in-up"
+      className="bg-gray-100 dark:bg-lia-bg-secondary rounded-md p-4 mb-3 border border-lia-border-subtle dark:border-lia-border-subtle animate-fade-in-up"
     >
       <div className="space-y-3">
         {steps.map((step, index) => {
@@ -71,15 +71,15 @@ export const ProgressSteps = ({ steps, currentStep }: {
             <div
               key={step.id}
               className={`flex items-center gap-3 p-2 rounded-md transition-colors ${
-                isActive ? 'bg-gray-200 dark:bg-gray-700' : ''
+ isActive ? 'bg-gray-200 dark:bg-lia-bg-elevated' : ''
               }`}
               style={{animation: `fadeInRight 0.3s ease-out ${index * 0.1}s backwards`}}
             >
               <div className={`flex items-center justify-center w-6 h-6 rounded-full transition-colors ${
-                isCompleted ? 'bg-gray-700 text-white dark:bg-gray-300 dark:text-gray-950' :
-                isProcessing ? 'bg-gray-600 text-white dark:bg-gray-400 dark:text-gray-950' :
-                isError ? 'bg-gray-500 text-white dark:bg-gray-500 dark:text-white' :
-                'bg-gray-300 text-gray-600 dark:bg-gray-600 dark:text-gray-300'
+ isCompleted ? 'bg-gray-700 text-white' :
+                isProcessing ? 'bg-gray-600 text-white' :
+                isError ? 'bg-gray-500 text-white dark:text-white' :
+                'bg-gray-300 text-gray-600 dark:text-lia-text-secondary'
               }`}>
                 {isCompleted ? (
                   <CheckCircle className="w-4 h-4" />
@@ -93,21 +93,21 @@ export const ProgressSteps = ({ steps, currentStep }: {
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <span className={`text-sm font-medium ${
-                    isCompleted ? 'text-gray-950 dark:text-gray-50' :
-                    isProcessing ? 'text-gray-950 dark:text-gray-50' :
-                    isError ? 'text-gray-800 dark:text-gray-200' :
-                    'text-gray-600 dark:text-gray-400'
+ isCompleted ? 'text-gray-950' :
+                    isProcessing ? 'text-gray-950' :
+                    isError ? 'text-gray-800 dark:text-lia-text-primary' :
+                    'text-gray-600 dark:text-lia-text-tertiary'
                   }`}>
                     {step.label}
                   </span>
                   {isProcessing && (
-                    <Badge variant="outline" className="text-xs bg-gray-200 text-gray-800 border-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600">
+                    <Badge variant="outline" className="text-xs bg-gray-200 text-gray-800 border-lia-border-default dark:bg-lia-bg-elevated dark:text-lia-text-primary dark:border-lia-border-default">
                       Em andamento
                     </Badge>
                   )}
                 </div>
                 {step.details && (
-                  <p className="text-xs text-gray-800 dark:text-gray-200 mt-1">
+                  <p className="text-xs text-gray-800 dark:text-lia-text-primary mt-1">
                     {step.details}
                   </p>
                 )}
@@ -132,31 +132,31 @@ export const CommandExecution = ({
 }) => {
   return (
     <div
-      className="bg-gray-100 dark:bg-gray-800 rounded-md p-3 mb-3 font-mono text-sm border border-gray-200 dark:border-gray-700 animate-scale-in-delayed"
+      className="bg-gray-100 dark:bg-lia-bg-secondary rounded-md p-3 mb-3 font-mono text-sm border border-lia-border-subtle dark:border-lia-border-subtle animate-scale-in-delayed"
     >
       <div className="flex items-center gap-2 mb-2">
         <div className={`w-2 h-2 rounded-full ${
-          status === "executing" ? 'bg-gray-500 dark:bg-gray-400 animate-pulse' :
-          status === "completed" ? 'bg-gray-700 dark:bg-gray-300' :
-          'bg-gray-600 dark:bg-gray-400'
+ status === "executing" ? 'bg-gray-500 animate-pulse' :
+          status === "completed" ? 'bg-gray-700' :
+          'bg-gray-600'
         }`} />
-        <span className="text-gray-800 dark:text-gray-200 text-xs">Executando comando:</span>
+        <span className="text-gray-800 dark:text-lia-text-primary text-xs">Executando comando:</span>
       </div>
 
-      <div className="text-gray-950 dark:text-gray-50 mb-2">
+      <div className="text-gray-950 mb-2">
         $ {command}
       </div>
 
       {output && (
-        <div className="text-gray-600 dark:text-gray-400 text-xs">
+        <div className="text-gray-600 dark:text-lia-text-tertiary text-xs">
           {output}
         </div>
       )}
 
       {status === "executing" && (
         <div className="flex items-center gap-2 mt-2">
-          <Loader2 className="w-3 h-3 animate-spin text-gray-600 dark:text-gray-400" />
-          <span className="text-xs text-gray-800 dark:text-gray-200">Processando...</span>
+          <Loader2 className="w-3 h-3 animate-spin text-gray-600 dark:text-lia-text-tertiary" />
+          <span className="text-xs text-gray-800 dark:text-lia-text-primary">Processando...</span>
         </div>
       )}
     </div>
@@ -175,23 +175,23 @@ export const FileCreationIndicator = ({
 }) => {
   return (
     <div
-      className="flex items-center gap-3 p-3 bg-gray-100 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 mb-3 animate-fade-in-up"
+      className="flex items-center gap-3 p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle mb-3 animate-fade-in-up"
     >
-      <div className="flex items-center justify-center w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full">
+      <div className="flex items-center justify-center w-8 h-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-full">
         {status === "creating" ? (
-          <Loader2 className="w-4 h-4 text-gray-600 dark:text-gray-400 animate-spin" />
+          <Loader2 className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary animate-spin" />
         ) : (
-          <CheckCircle className="w-4 h-4 text-gray-800 dark:text-gray-200" />
+          <CheckCircle className="w-4 h-4 text-gray-800 dark:text-lia-text-primary" />
         )}
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-2">
-          <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-          <span className="text-sm font-medium text-gray-950 dark:text-gray-50">
+          <FileText className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+          <span className="text-sm font-medium text-gray-950">
             {status === "creating" ? "Criando" : "Criado"}: {fileName}
           </span>
         </div>
-        <p className="text-xs text-gray-600 dark:text-gray-400">
+        <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
           Tipo: {fileType}
         </p>
       </div>
@@ -230,18 +230,18 @@ export const CompletionMessage = ({
       className="space-y-3 animate-fade-in-up"
     >
       {/* Completion Message */}
-      <div className="flex items-start gap-3 p-4 bg-gray-100 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700">
-        <CheckCircle className="w-5 h-5 text-gray-800 dark:text-gray-200 mt-0.5" />
+      <div className="flex items-start gap-3 p-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+        <CheckCircle className="w-5 h-5 text-gray-800 dark:text-lia-text-primary mt-0.5" />
         <div className="flex-1">
-          <p className="text-sm font-medium text-gray-950 dark:text-gray-50">
+          <p className="text-sm font-medium text-gray-950">
             ✅ {message}
           </p>
         </div>
       </div>
 
       {/* Rating System */}
-      <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700">
-        <p className="text-sm font-medium text-gray-950 dark:text-gray-50 mb-3">
+      <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+        <p className="text-sm font-medium text-gray-950 mb-3">
           Como você avalia este resultado?
         </p>
         <div className="flex items-center gap-2 mb-4">
@@ -250,14 +250,14 @@ export const CompletionMessage = ({
               key={star}
               onClick={() => handleRating(star)}
               className={`p-1 rounded-md transition-colors ${
-                star <= rating ? 'text-gray-800 dark:text-gray-200' : 'text-gray-600 hover:text-gray-800 dark:hover:text-gray-200'
+ star <= rating ? 'text-gray-800 dark:text-lia-text-primary' : 'text-gray-600 hover:text-gray-800 dark:hover:text-gray-200'
               }`}
             >
               <Star className={`w-5 h-5 ${star <= rating ? 'fill-current' : ''}`} />
             </button>
           ))}
           {hasRated && (
-            <span className="text-sm text-gray-600 dark:text-gray-400 ml-2">
+            <span className="text-sm text-gray-600 dark:text-lia-text-tertiary ml-2">
               Obrigada pelo feedback!
             </span>
           )}
@@ -265,7 +265,7 @@ export const CompletionMessage = ({
 
         {/* Follow-up Actions */}
         <div>
-          <p className="text-sm font-medium text-gray-950 dark:text-gray-50 mb-3">
+          <p className="text-sm font-medium text-gray-950 mb-3">
             Próximos passos sugeridos:
           </p>
           <div className="space-y-2">
@@ -277,11 +277,11 @@ export const CompletionMessage = ({
                   onClick={() => onFollowUp?.(action.id)}
                   className="w-full flex items-center gap-3 p-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors group"
                 >
-                  <Icon className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300" />
-                  <span className="text-sm text-gray-800 dark:text-gray-200 group-hover:text-gray-950 dark:group-hover:text-gray-50">
+                  <Icon className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary group-hover:text-gray-700 dark:group-hover:text-gray-300" />
+                  <span className="text-sm text-gray-800 dark:text-lia-text-primary group-hover:text-gray-950 dark:group-hover:text-gray-50">
                     {action.label}
                   </span>
-                  <ArrowRight className="w-3 h-3 text-gray-600 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 ml-auto" />
+                  <ArrowRight className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary group-hover:text-gray-700 dark:group-hover:text-gray-300 ml-auto" />
                 </button>
               )
             })}
@@ -308,10 +308,10 @@ export const ProgressiveDisclosure = ({
     <div className="mb-4">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center gap-2 w-full p-3 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+        className="flex items-center gap-2 w-full p-3 bg-gray-100 dark:bg-lia-bg-elevated rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
       >
         <ChevronRight className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
-        <span className="text-sm font-medium text-gray-950 dark:text-gray-50">
+        <span className="text-sm font-medium text-gray-950">
           {title}
         </span>
       </button>
@@ -320,7 +320,7 @@ export const ProgressiveDisclosure = ({
         <div
           className="overflow-hidden animate-slide-in-up"
         >
-          <div className="p-4 border-l-2 border-gray-300 dark:border-gray-600 ml-6 mt-2">
+          <div className="p-4 border-l-2 border-lia-border-default dark:border-lia-border-default ml-6 mt-2">
             {children}
           </div>
         </div>

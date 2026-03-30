@@ -97,10 +97,10 @@ function MiniSalaryBar({
   return (
     <div className="space-y-2">
       <div className="relative h-6">
-        <div className="absolute inset-x-0 top-2.5 h-1 bg-gray-200 dark:bg-gray-700 rounded-full" />
+        <div className="absolute inset-x-0 top-2.5 h-1 bg-gray-200 dark:bg-lia-bg-elevated rounded-full" />
         
         <div 
-          className="absolute top-2.5 h-1 bg-gray-400 dark:bg-gray-500 rounded-full"
+          className="absolute top-2.5 h-1 bg-gray-400 rounded-full"
           style={{left: `${getPosition(market.min)}%`,
             width: `${getPosition(market.max) - getPosition(market.min)}%`}}
         />
@@ -112,10 +112,10 @@ function MiniSalaryBar({
         />
 
         <div 
-          className="absolute top-0 w-0.5 h-6 bg-gray-900 dark:bg-gray-50"
+          className="absolute top-0 w-0.5 h-6 bg-gray-900"
           style={{left: `${percentile}%`}}
         >
-          <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-micro font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">
+          <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-micro font-medium text-gray-600 dark:text-lia-text-tertiary whitespace-nowrap">
             P{percentile}
           </div>
         </div>
@@ -163,15 +163,15 @@ export function CompensationChatMessage({
   if (isLoading) {
     return (
       <div className="flex items-start gap-3 max-w-[85%]">
-        <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-gray-300 dark:border-gray-600">
+        <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-lia-border-default dark:border-lia-border-default">
           <AvatarImage src="/images/lia-avatar.png" alt="LIA" />
           <AvatarFallback className="bg-gradient-to-br from-gray-100 dark:from-gray-800 to-wedo-cyan-dark text-white text-xs font-medium">
             LIA
           </AvatarFallback>
         </Avatar>
-        <div className="rounded-2xl rounded-tl-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4">
+        <div className="rounded-xl rounded-tl-sm bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle p-4">
           <div className="flex items-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin text-gray-600 dark:text-gray-400" />
+            <Loader2 className="h-4 w-4 animate-spin text-gray-600 dark:text-lia-text-tertiary" />
             <span className="text-sm text-muted-foreground">Analisando remuneração...</span>
           </div>
         </div>
@@ -186,7 +186,7 @@ export function CompensationChatMessage({
 
   return (
     <div className="flex items-start gap-3 max-w-[90%]">
-      <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-gray-300 dark:border-gray-600">
+      <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-lia-border-default dark:border-lia-border-default">
         <AvatarImage src="/images/lia-avatar.png" alt="LIA" />
         <AvatarFallback className="bg-gradient-to-br from-gray-100 dark:from-gray-800 to-wedo-cyan-dark text-white text-xs font-medium">
           LIA
@@ -194,9 +194,9 @@ export function CompensationChatMessage({
       </Avatar>
 
       <div className="flex-1 space-y-3">
-        <div className="rounded-2xl rounded-tl-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 space-y-4">
+        <div className="rounded-xl rounded-tl-sm bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle p-4 space-y-4">
           <div className={cn(
-            "flex items-center gap-2 p-2 rounded-md border",
+ "flex items-center gap-2 p-2 rounded-md border",
             statusConfig.bgClassName,
             statusConfig.borderClassName
           )}>
@@ -224,9 +224,9 @@ export function CompensationChatMessage({
                   {formatCurrency(analysis.salary.proposed.min)} - {formatCurrency(analysis.salary.proposed.max)}
                 </p>
               </div>
-              <div className="p-2.5 rounded-md bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+              <div className="p-2.5 rounded-md bg-gray-50 dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle">
                 <p className="text-micro text-muted-foreground mb-0.5">Mercado</p>
-                <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                <p className="text-xs font-semibold text-gray-700 dark:text-lia-text-secondary">
                   {formatCurrency(analysis.salary.market.min)} - {formatCurrency(analysis.salary.market.max)}
                 </p>
               </div>
@@ -243,7 +243,7 @@ export function CompensationChatMessage({
               <Badge 
                 variant="outline" 
                 className={cn(
-                  "text-micro h-5",
+ "text-micro h-5",
                   analysis.salary.percentileVsMarket >= 50 
                     ? "border-status-success/30 bg-status-success/10 text-status-success dark:border-status-success/30 dark:bg-status-success/30 dark:text-status-success"
                     : "border-status-warning/30 bg-status-warning/10 text-status-warning dark:border-status-warning/30 dark:bg-status-warning/30 dark:text-status-warning"
@@ -280,7 +280,7 @@ export function CompensationChatMessage({
             ) : (
               <Button 
                 size="sm" 
-                className="h-8 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                className="h-8 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
                 onClick={onConfirm}
               >
                 <Check className="h-3.5 w-3.5 mr-1.5" />
@@ -310,7 +310,7 @@ export function CompensationChatMessage({
               />
               <Button 
                 size="sm" 
-                className="h-9 px-3 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                className="h-9 px-3 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
                 onClick={handleSubmitSuggestion}
                 disabled={!salaryInput.trim()}
               >

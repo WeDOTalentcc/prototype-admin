@@ -35,12 +35,12 @@ export const BENEFIT_CATEGORIES: {
 }[] = [
   { id: "health", name: "Saúde & Bem-estar", icon: Stethoscope, color: "text-status-error", bgColor: "bg-status-error/10 dark:bg-status-error/20" },
   { id: "food", name: "Alimentação", icon: Utensils, color: "text-wedo-orange", bgColor: "bg-wedo-orange/10 dark:bg-wedo-orange/10/20" },
-  { id: "transport", name: "Transporte", icon: Car, color: "text-gray-600 dark:text-gray-400", bgColor: "bg-gray-100 dark:bg-gray-800" },
+  { id: "transport", name: "Transporte", icon: Car, color: "text-gray-600 dark:text-lia-text-tertiary", bgColor: "bg-gray-100 dark:bg-lia-bg-secondary" },
   { id: "education", name: "Educação & Desenvolvimento", icon: GraduationCap, color: "text-wedo-purple", bgColor: "bg-wedo-purple/10 dark:bg-wedo-purple/20" },
   { id: "financial", name: "Financeiro", icon: Wallet, color: "text-status-success", bgColor: "bg-status-success/10 dark:bg-status-success/20" },
- { id: "quality_life", name: "Qualidade de Vida", icon: Home, color: "text-gray-700 dark:text-gray-300", bgColor: "bg-gray-50 dark:bg-gray-800" },
+ { id: "quality_life", name: "Qualidade de Vida", icon: Home, color: "text-gray-700 dark:text-lia-text-secondary", bgColor: "bg-gray-50 dark:bg-lia-bg-secondary" },
   { id: "family", name: "Família", icon: Baby, color: "text-wedo-magenta", bgColor: "bg-wedo-magenta/10 dark:bg-wedo-magenta/20" },
-  { id: "security", name: "Segurança", icon: Shield, color: "text-gray-800 dark:text-gray-200", bgColor: "bg-gray-50 dark:bg-gray-800/50" },
+  { id: "security", name: "Segurança", icon: Shield, color: "text-gray-800 dark:text-lia-text-primary", bgColor: "bg-gray-50 dark:bg-lia-bg-secondary/50" },
 ]
 
 interface BenefitBadgeListProps {
@@ -125,10 +125,10 @@ export function BenefitBadgeList({
                   type="button"
                   onClick={() => onBenefitClick?.(benefit)}
                   className={`
-                    inline-flex items-center rounded-full border border-gray-200/60 dark:border-gray-700/60
-                    bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm
-                    font-medium transition-all duration-200
-                    hover:hover:border-gray-300 dark:hover:border-gray-600
+ inline-flex items-center rounded-full border border-lia-border-subtle/60 dark:border-lia-border-subtle/60
+                    bg-white/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm
+                    font-medium transition-colors duration-200
+                    hover:hover:border-lia-border-default dark:hover:border-gray-600
                     focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-300
                     ${sizeClasses[size]}
                   `}
@@ -139,7 +139,7 @@ export function BenefitBadgeList({
                       <CategoryIcon className={iconSizes[size]} />
                     </span>
                   )}
-                  <span className="text-gray-800 dark:text-gray-200 truncate max-w-[100px]">
+                  <span className="text-gray-800 dark:text-lia-text-primary truncate max-w-[100px]">
                     {benefit.name}
                   </span>
                   {benefit.is_highlighted && (
@@ -149,7 +149,7 @@ export function BenefitBadgeList({
               </TooltipTrigger>
               <TooltipContent 
                 side="top" 
-                className="max-w-[280px] p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+                className="max-w-[280px] p-3 bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle"
               >
                 <div className="space-y-2">
                   <div className="flex items-start justify-between gap-2">
@@ -158,10 +158,10 @@ export function BenefitBadgeList({
                         <CategoryIcon className={`w-4 h-4 ${category.color}`} />
                       </div>
                       <div>
-                        <p className="font-semibold text-gray-950 dark:text-gray-50 text-sm">
+                        <p className="font-semibold text-gray-950 text-sm">
                           {benefit.name}
                         </p>
-                        <p className="text-xs text-gray-800 dark:text-gray-200">{category.name}</p>
+                        <p className="text-xs text-gray-800 dark:text-lia-text-primary">{category.name}</p>
                       </div>
                     </div>
                     {benefit.is_highlighted && (
@@ -170,14 +170,14 @@ export function BenefitBadgeList({
                   </div>
                   
                   {benefit.description && (
-                    <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">
+                    <p className="text-xs text-gray-800 dark:text-lia-text-primary leading-relaxed">
                       {benefit.description}
                     </p>
                   )}
                   
-                  <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-gray-100 dark:border-gray-700">
+                  <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                     {valueDisplay && (
-                      <span className="inline-flex items-center gap-1 text-xs text-gray-800 dark:text-gray-200">
+                      <span className="inline-flex items-center gap-1 text-xs text-gray-800 dark:text-lia-text-primary">
                         {benefit.value_type === "monetary" && <DollarSign className="w-3 h-3" />}
                         {benefit.value_type === "percentage" && <Percent className="w-3 h-3" />}
                         {valueDisplay}
@@ -185,7 +185,7 @@ export function BenefitBadgeList({
                     )}
                     
                     {benefit.waiting_period_days > 0 && (
-                      <span className="inline-flex items-center gap-1 text-xs text-gray-800 dark:text-gray-200">
+                      <span className="inline-flex items-center gap-1 text-xs text-gray-800 dark:text-lia-text-primary">
                         <Clock className="w-3 h-3" />
                         {getWaitingPeriodLabel(benefit.waiting_period_days)}
                       </span>
@@ -214,11 +214,11 @@ export function BenefitBadgeList({
             type="button"
             onClick={() => setShowSheet(true)}
             className={`
-              inline-flex items-center rounded-full
-              border border-dashed border-gray-300 dark:border-gray-600
-              bg-gray-50/80 dark:bg-gray-800/80
-              text-gray-600 dark:text-gray-400
-              font-medium transition-all duration-200
+ inline-flex items-center rounded-full
+              border border-dashed border-lia-border-default dark:border-lia-border-default
+              bg-gray-50/80 dark:bg-lia-bg-secondary/80
+              text-gray-600 dark:text-lia-text-tertiary
+              font-medium transition-colors duration-200
               hover:bg-gray-100 dark:hover:bg-gray-700
               hover:border-gray-400 dark:hover:border-gray-500
               focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-300

@@ -193,7 +193,7 @@ const nodeTypes = [
     type: 'condition',
     title: 'Condições',
     icon: GitBranch,
-    color: 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400',
+    color: 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default text-gray-600 dark:text-lia-text-tertiary',
     items: [
       { id: 'department_check', name: 'Verificar Departamento', description: 'Condição baseada no departamento' },
       { id: 'score_check', name: 'Verificar Score', description: 'Condição baseada no score LIA' },
@@ -246,8 +246,8 @@ export function WorkflowAutomationPage() {
                 <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">{workflows.filter(w => w.status === 'active').length}</p>
                 <p className="text-xs text-status-success">+2 esta semana</p>
               </div>
-              <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center">
-                <Workflow className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+              <div className="w-12 h-12 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+                <Workflow className="w-6 h-6 text-gray-600 dark:text-lia-text-tertiary" />
               </div>
             </div>
           </CardContent>
@@ -316,7 +316,7 @@ export function WorkflowAutomationPage() {
         <CardContent>
           <div className="space-y-4">
             {workflows.map(workflow => (
-              <div key={workflow.id} className="p-4 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">
+              <div key={workflow.id} className="p-4 border border-lia-border-subtle rounded-md hover:bg-gray-50 transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className={`w-12 h-12 rounded-md flex items-center justify-center ${
@@ -440,7 +440,7 @@ export function WorkflowAutomationPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <p className="text-sm text-gray-800 dark:text-gray-200">{template.description}</p>
+                <p className="text-sm text-gray-800 dark:text-lia-text-primary">{template.description}</p>
 
                 <div className="flex flex-wrap gap-1">
                   <Badge variant="outline" className="text-xs">
@@ -521,7 +521,7 @@ export function WorkflowAutomationPage() {
 
         {/* Canvas */}
         <div className="lg:col-span-3">
-          <div className="w-full h-full border-2 border-dashed border-gray-300 rounded-md bg-gray-50 flex items-center justify-center">
+          <div className="w-full h-full border-2 border-dashed border-lia-border-default rounded-md bg-gray-50 flex items-center justify-center">
             <div className="text-center">
               <Workflow className="w-12 h-12 text-gray-600 mx-auto mb-4" />
               <p className="text-gray-600">Arraste componentes aqui para começar</p>
@@ -540,7 +540,7 @@ export function WorkflowAutomationPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-sm font-semibold font-sans text-gray-950 dark:text-gray-50 mb-1 flex items-center gap-1.5">
-                <Workflow className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+                <Workflow className="w-6 h-6 text-gray-600 dark:text-lia-text-tertiary" />
                 Automação Avançada de Workflows
               </h1>
               <p className="text-gray-600">
@@ -572,7 +572,7 @@ export function WorkflowAutomationPage() {
                 onClick={() => setSelectedView(tab.id as any)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   selectedView === tab.id
-                    ? 'bg-white text-gray-950 dark:text-gray-50'
+                    ? 'bg-lia-bg-primary text-gray-950 dark:text-gray-50'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
@@ -619,7 +619,7 @@ interface WorkflowBuilderModalProps {
 function WorkflowBuilderModal({ workflow, onClose }: WorkflowBuilderModalProps) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-md w-full max-w-6xl h-[90vh] flex flex-col">
+      <div className="bg-lia-bg-primary rounded-md w-full max-w-6xl h-[90vh] flex flex-col">
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-xl font-semibold text-gray-950 dark:text-gray-50">
             {workflow ? `Editar: ${workflow.name}` : 'Novo Workflow'}

@@ -94,7 +94,7 @@ export function parseChatMarkdown(text: string): string {
         }
         result.push(`<div class="${sizes[level]} text-gray-900 dark:text-gray-50 mt-2 mb-1">${headerMatch[2]}</div>`)
       } else if (line.trim() === "---" || line.trim() === "___") {
-        result.push('<hr class="my-2 border-gray-200 dark:border-gray-700"/>')
+        result.push('<hr class="my-2 border-lia-border-subtle dark:border-gray-700"/>')
       } else if (line.trim() === "") {
         result.push("<br/>")
       } else {

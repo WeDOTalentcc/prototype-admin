@@ -106,12 +106,12 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
       />
       
       <div 
-        className="relative w-full max-w-4xl max-h-[85vh] rounded-md overflow-hidden border border-gray-200 flex flex-col bg-white dark:bg-gray-800 dark:border-gray-700"
+        className="relative w-full max-w-4xl max-h-[85vh] rounded-md overflow-hidden border border-lia-border-subtle flex flex-col bg-white dark:bg-lia-bg-secondary dark:border-lia-border-subtle"
        
       >
         <div className="flex flex-col overflow-hidden flex-1">
           <div 
-            className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700"
+            className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle dark:border-lia-border-subtle"
           >
             <div>
               <h2 className={textStyles.title}>
@@ -129,16 +129,16 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="gap-1.5 border-gray-500 text-gray-700 dark:text-gray-300"
+                        className="gap-1.5 border-gray-500 lia-text-700 dark:text-lia-text-secondary"
                       >
                         <Save className="w-4 h-4" />
                         Salvar
                         <ChevronDown className="w-3 h-3" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent align="end" className="w-72 p-2 bg-white border border-gray-200 dark:border-gray-700">
+                    <PopoverContent align="end" className="w-72 p-2 bg-lia-bg-elevated border border-lia-border-subtle dark:border-lia-border-subtle">
                       <div className="space-y-1">
-                        <p className="text-xs font-medium px-2 py-1.5 text-gray-600">
+                        <p className="text-xs font-medium px-2 py-1.5 lia-text-600">
                           Salvar busca em:
                         </p>
                         {saveDestinations.map((dest) => (
@@ -159,24 +159,24 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                             <dest.icon 
                               className={cn(
                                 "w-4 h-4 flex-shrink-0",
-                                saveDestination === dest.key ? "text-gray-800 dark:text-gray-200" : "text-gray-500"
+                                saveDestination === dest.key ? "lia-text-800 dark:text-lia-text-primary" : "lia-text-500"
                               )}
                             />
                             <div className="flex-1 min-w-0">
                               <div 
                                 className={cn(
                                   "text-xs font-medium",
-                                  saveDestination === dest.key ? "text-gray-800" : "text-gray-800"
+                                  saveDestination === dest.key ? "lia-text-800" : "lia-text-800"
                                 )}
                               >
                                 {dest.label}
                               </div>
-                              <div className="text-xs text-gray-600">
+                              <div className="text-xs lia-text-600">
                                 {dest.description}
                               </div>
                             </div>
                             {saveDestination === dest.key && (
-                              <Check className="w-4 h-4 flex-shrink-0 text-gray-700 dark:text-gray-300" />
+                              <Check className="w-4 h-4 flex-shrink-0 lia-text-700 dark:text-lia-text-secondary" />
                             )}
                           </button>
                         ))}
@@ -186,7 +186,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                 )}
                 <button
                   onClick={onClose}
-                  className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                  className="p-1.5 rounded-md hover:bg-gray-100 lia-text-400 hover:lia-text-600 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -197,7 +197,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
           {/* Main Content Area with Sidebar and Scrollable Content */}
           <div className="flex flex-1 overflow-hidden">
             {/* Left Sidebar Menu */}
-            <div className="w-sidebar-content flex-shrink-0 border-r border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 overflow-y-auto">
+            <div className="w-sidebar-content flex-shrink-0 border-r border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50/50 dark:bg-lia-bg-secondary/50 overflow-y-auto">
               <nav className="py-3">
                 {sidebarCategories.map((category) => {
                   const Icon = category.icon
@@ -207,13 +207,13 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                       key={category.key}
                       onClick={() => scrollToSection(category.key)}
                       className={cn(
-                        "w-full flex items-center gap-2.5 px-4 py-2.5 text-left text-xs transition-all",
+                        "w-full flex items-center gap-2.5 px-4 py-2.5 text-left text-xs transition-colors",
                         isActive
- ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-r-2 border-gray-900 dark:border-gray-700 font-medium"
-                          : "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
+ ? "bg-gray-100 dark:bg-lia-bg-elevated lia-text-900 dark:text-lia-text-primary border-r-2 border-gray-900 dark:border-lia-border-subtle font-medium"
+                          : "lia-text-600 hover:bg-gray-100 hover:lia-text-800"
                       )}
                     >
-                      <Icon className={cn("w-4 h-4", isActive ? "text-gray-900 dark:text-gray-100" : "text-gray-400")} />
+                      <Icon className={cn("w-4 h-4", isActive ? "lia-text-900 dark:text-lia-text-primary" : "lia-text-400")} />
                       <span className="truncate">{category.label}</span>
                     </button>
                   )
@@ -234,39 +234,39 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                 >
                   <label 
                     className={cn(
-                      "relative flex flex-col p-4 rounded-md border-2 cursor-pointer transition-all bg-white",
+                      "relative flex flex-col p-4 rounded-md border-2 cursor-pointer transition-colors bg-lia-bg-primary",
                       searchSource === "local" 
-                        ? "border-gray-300 bg-gray-50" 
-                        : "border-gray-200 hover:border-gray-300"
+                        ? "border-lia-border-default bg-gray-50" 
+                        : "border-lia-border-subtle hover:border-lia-border-default"
                     )}
                   >
                     <div className="flex items-center gap-2 mb-2">
                       <RadioGroupItem value="local" id="local" className="sr-only" />
-                      <Home className={cn("w-4 h-4", searchSource === "local" ? "text-gray-800 dark:text-gray-200" : "text-gray-500")} />
+                      <Home className={cn("w-4 h-4", searchSource === "local" ? "lia-text-800 dark:text-lia-text-primary" : "lia-text-500")} />
                       <span 
-                        className={cn("font-medium text-xs", searchSource === "local" ? "text-gray-800" : "text-gray-800")}
+                        className={cn("font-medium text-xs", searchSource === "local" ? "lia-text-800" : "lia-text-800")}
                       >
                         Base Local
                       </span>
                     </div>
-                    <p className="text-xs text-gray-600">
+                    <p className="text-xs lia-text-600">
                       Candidatos já cadastrados na sua base
                     </p>
                     {searchSource === "local" && (
                       <div 
-                        className="absolute -top-px -right-px w-5 h-5 rounded-tr-lg rounded-bl-lg flex items-center justify-center bg-gray-900 dark:bg-gray-100"
+                        className="absolute -top-px -right-px w-5 h-5 rounded-tr-lg rounded-bl-lg flex items-center justify-center bg-gray-900 dark:lia-bg-100"
                       >
-                        <Check className="w-3 h-3 text-white dark:text-gray-900" />
+                        <Check className="w-3 h-3 text-white dark:lia-text-900" />
                       </div>
                     )}
                   </label>
 
                   <label 
                     className={cn(
-                      "relative flex flex-col p-4 pt-8 rounded-md border-2 cursor-pointer transition-all bg-white",
+                      "relative flex flex-col p-4 pt-8 rounded-md border-2 cursor-pointer transition-colors bg-lia-bg-primary",
                       searchSource === "hybrid" 
-                        ? "border-gray-300 bg-gray-50" 
-                        : "border-gray-200 hover:border-gray-300"
+                        ? "border-lia-border-default bg-gray-50" 
+                        : "border-lia-border-subtle hover:border-lia-border-default"
                     )}
                   >
                     <Badge
@@ -277,31 +277,31 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                     </Badge>
                     <div className="flex items-center gap-2 mb-2">
                       <RadioGroupItem value="hybrid" id="hybrid" className="sr-only" />
-                      <RefreshCw className={cn("w-4 h-4", searchSource === "hybrid" ? "text-gray-800 dark:text-gray-200" : "text-gray-500")} />
+                      <RefreshCw className={cn("w-4 h-4", searchSource === "hybrid" ? "lia-text-800 dark:text-lia-text-primary" : "lia-text-500")} />
                       <span 
-                        className={cn("font-medium text-xs", searchSource === "hybrid" ? "text-gray-800" : "text-gray-800")}
+                        className={cn("font-medium text-xs", searchSource === "hybrid" ? "lia-text-800" : "lia-text-800")}
                       >
                         Busca Híbrida
                       </span>
                     </div>
-                    <p className="text-xs text-gray-600">
+                    <p className="text-xs lia-text-600">
                       Primeiro local, depois expande para global
                     </p>
                     {searchSource === "hybrid" && (
                       <div 
-                        className="absolute -top-px -right-px w-5 h-5 rounded-tr-lg rounded-bl-lg flex items-center justify-center bg-gray-900 dark:bg-gray-100"
+                        className="absolute -top-px -right-px w-5 h-5 rounded-tr-lg rounded-bl-lg flex items-center justify-center bg-gray-900 dark:lia-bg-100"
                       >
-                        <Check className="w-3 h-3 text-white dark:text-gray-900" />
+                        <Check className="w-3 h-3 text-white dark:lia-text-900" />
                       </div>
                     )}
                   </label>
 
                   <label 
                     className={cn(
-                      "relative flex flex-col p-4 pt-8 rounded-md border-2 cursor-pointer transition-all bg-white",
+                      "relative flex flex-col p-4 pt-8 rounded-md border-2 cursor-pointer transition-colors bg-lia-bg-primary",
                       searchSource === "global" 
-                        ? "border-gray-300 bg-gray-50" 
-                        : "border-gray-200 hover:border-gray-300"
+                        ? "border-lia-border-default bg-gray-50" 
+                        : "border-lia-border-subtle hover:border-lia-border-default"
                     )}
                   >
                     <Badge
@@ -312,28 +312,28 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                     </Badge>
                     <div className="flex items-center gap-2 mb-2">
                       <RadioGroupItem value="global" id="global" className="sr-only" />
-                      <Globe className={cn("w-4 h-4", searchSource === "global" ? "text-gray-800 dark:text-gray-200" : "text-gray-500")} />
+                      <Globe className={cn("w-4 h-4", searchSource === "global" ? "lia-text-800 dark:text-lia-text-primary" : "lia-text-500")} />
                       <span 
-                        className={cn("font-medium text-xs", searchSource === "global" ? "text-gray-800" : "text-gray-800")}
+                        className={cn("font-medium text-xs", searchSource === "global" ? "lia-text-800" : "lia-text-800")}
                       >
                         Busca Global
                       </span>
                     </div>
-                    <p className="text-xs text-gray-600">
+                    <p className="text-xs lia-text-600">
                       Acesso a +800M de perfis profissionais
                     </p>
                     {searchSource === "global" && (
                       <div 
-                        className="absolute -top-px -right-px w-5 h-5 rounded-tr-lg rounded-bl-lg flex items-center justify-center bg-gray-900 dark:bg-gray-100"
+                        className="absolute -top-px -right-px w-5 h-5 rounded-tr-lg rounded-bl-lg flex items-center justify-center bg-gray-900 dark:lia-bg-100"
                       >
-                        <Check className="w-3 h-3 text-white dark:text-gray-900" />
+                        <Check className="w-3 h-3 text-white dark:lia-text-900" />
                       </div>
                     )}
                   </label>
                 </RadioGroup>
 
                 {(searchSource === "local" || searchSource === "hybrid") && (
-                  <div className="mt-4 flex items-center justify-between p-3 rounded-md border border-gray-200 dark:border-gray-700 bg-white">
+                  <div className="mt-4 flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary">
                     <div className="flex items-center gap-2">
                       <Eye className="w-4 h-4 text-status-warning" />
                       <div>
@@ -354,29 +354,29 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                 )}
               </div>
               {/* Section: Opções de Busca */}
-              <div ref={(el) => { sectionRefs.current.ppiOptions = el }} className="border-t border-gray-200 dark:border-gray-700 pt-6">
+              <div ref={(el) => { sectionRefs.current.ppiOptions = el }} className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-6">
                 <SectionHeader icon={Zap} title="Opções de Busca" description="Controle de qualidade e custo" />
               <div className="space-y-6">
                 {(searchSource === "global" || searchSource === "hybrid") && (
                 <div 
-                  className="p-4 rounded-md border bg-gray-50 border-gray-200"
+                  className="p-4 rounded-md border bg-gray-50 border-lia-border-subtle"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <Zap className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                      <Zap className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
                       <span className="font-medium text-xs">Custo Estimado</span>
                     </div>
-                    <Badge variant="outline" className="text-xs px-1.5 py-0.5 border-gray-500 text-gray-700 dark:text-gray-300">
+                    <Badge variant="outline" className="text-xs px-1.5 py-0.5 border-gray-500 lia-text-700 dark:text-lia-text-secondary">
                       Tempo Real
                     </Badge>
                   </div>
                   
                   <div className="flex items-end justify-between">
                     <div>
-                      <div className="text-base font-bold text-gray-900 dark:text-gray-100">
+                      <div className="text-base font-bold lia-text-900 dark:text-lia-text-primary">
                         {creditEstimate.cost_per_candidate}
                       </div>
-                      <div className="text-xs text-gray-600">
+                      <div className="text-xs lia-text-600">
                         créditos por candidato
                       </div>
                     </div>
@@ -384,7 +384,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                       <div className={textStyles.title}>
                         {creditEstimate.total_estimated}
                       </div>
-                      <div className="text-xs text-gray-600">
+                      <div className="text-xs lia-text-600">
                         total ({creditEstimate.limit} candidatos)
                       </div>
                     </div>
@@ -392,24 +392,24 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
 
                   <div className="mt-3 pt-3 border-t border-wedo-cyan/20 space-y-1.5">
                     <div className="flex justify-between text-xs">
-                      <span className="text-gray-600">
+                      <span className="lia-text-600">
                         Base ({creditEstimate.pearch_type === "fast" ? "Rápida" : "Profissional"})
                       </span>
                       <span className="font-medium">{creditEstimate.base_cost}</span>
                     </div>
                     <div className="flex justify-between text-xs">
-                      <span className="text-gray-600">Insights + Scoring</span>
+                      <span className="lia-text-600">Insights + Scoring</span>
                       <span className="font-medium">+{creditEstimate.insights_cost}</span>
                     </div>
                     {creditEstimate.freshness_cost > 0 && (
                       <div className="flex justify-between text-xs">
-                        <span className="text-gray-600">Dados Atualizados</span>
+                        <span className="lia-text-600">Dados Atualizados</span>
                         <span className="font-medium">+{creditEstimate.freshness_cost}</span>
                       </div>
                     )}
                     {creditEstimate.email_cost > 0 && (
                       <div className="flex justify-between text-xs">
-                        <span className="text-gray-600">Opções de Email</span>
+                        <span className="lia-text-600">Opções de Email</span>
                         <span className="font-medium">+{creditEstimate.email_cost}</span>
                       </div>
                     )}
@@ -424,11 +424,11 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                     )}
                     
                     <div className="flex justify-between text-xs pt-1.5 border-t border-wedo-cyan/15">
-                      <span className="flex items-center gap-1 font-medium text-gray-800">
+                      <span className="flex items-center gap-1 font-medium lia-text-800">
                         <TrendingUp className="w-3 h-3" />
                         Total por Candidato
                       </span>
-                      <span className="font-bold text-gray-900 dark:text-gray-100">
+                      <span className="font-bold lia-text-900 dark:text-lia-text-primary">
                         {creditEstimate.cost_per_candidate}
                       </span>
                     </div>
@@ -450,12 +450,12 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                 <div className="space-y-3">
                   <Label className="text-xs font-medium block">Informações de Contato</Label>
 
-                  <div className="flex items-center justify-between p-2.5 rounded-md border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between p-2.5 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
                     <div className="flex items-center gap-2">
-                      <Mail className="w-3.5 h-3.5 text-gray-500" />
+                      <Mail className="w-3.5 h-3.5 lia-text-500" />
                       <div>
                         <div className="text-xs font-medium">Apenas com Email</div>
-                        <div className="text-xs text-gray-600">
+                        <div className="text-xs lia-text-600">
                           Filtrar candidatos com email
                         </div>
                       </div>
@@ -466,12 +466,12 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                     />
                   </div>
 
-                  <div className="flex items-center justify-between p-2.5 rounded-md border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between p-2.5 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
                     <div className="flex items-center gap-2">
-                      <Mail className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                      <Mail className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
                       <div>
                         <div className="text-xs font-medium">Mostrar Emails</div>
-                        <div className="text-xs text-gray-600">
+                        <div className="text-xs lia-text-600">
                           Exibir emails nos resultados
                         </div>
                       </div>
@@ -482,12 +482,12 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                     />
                   </div>
 
-                  <div className="flex items-center justify-between p-3 rounded-md border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
                     <div className="flex items-center gap-3">
-                      <Phone className="w-4 h-4 text-gray-500" />
+                      <Phone className="w-4 h-4 lia-text-500" />
                       <div>
                         <div className="text-xs font-medium">Apenas com Telefone</div>
-                        <div className="text-xs text-gray-600">
+                        <div className="text-xs lia-text-600">
                           Filtrar candidatos com telefone
                         </div>
                       </div>
@@ -498,12 +498,12 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                     />
                   </div>
 
-                  <div className="flex items-center justify-between p-3 rounded-md border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
                     <div className="flex items-center gap-3">
-                      <Phone className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                      <Phone className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                       <div>
                         <div className="text-xs font-medium">Mostrar Telefones</div>
-                        <div className="text-xs text-gray-600">
+                        <div className="text-xs lia-text-600">
                           Exibir telefones nos resultados
                         </div>
                       </div>
@@ -514,13 +514,13 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                     />
                   </div>
 
-                  <div className="flex items-center justify-between p-3 rounded-md border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
                     <div className="flex items-center gap-3">
-                      <Mail className="w-4 h-4 text-gray-500" />
-                      <Phone className="w-4 h-4 -ml-2 text-gray-500" />
+                      <Mail className="w-4 h-4 lia-text-500" />
+                      <Phone className="w-4 h-4 -ml-2 lia-text-500" />
                       <div>
                         <div className="text-xs font-medium">Email OU Telefone</div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs lia-text-500">
                           Pelo menos um contato
                         </div>
                       </div>
@@ -535,7 +535,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
             </div>
 
               {/* Section: Geral */}
-              <div ref={(el) => { sectionRefs.current.general = el }} className="border-t border-gray-200 dark:border-gray-700 pt-6">
+              <div ref={(el) => { sectionRefs.current.general = el }} className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-6">
                 <SectionHeader icon={Settings} title="Geral" description="Experiência e perfis" />
               <div className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
@@ -547,7 +547,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                       value={filters.general?.minExperience || ""}
                       onChange={(e) => updateFilter("general", "minExperience", e.target.value ? parseInt(e.target.value) : undefined)}
                       placeholder="Ex: 3 anos"
-                      className="border border-gray-200 focus:ring-1 focus:ring-gray-400"
+                      className="border border-lia-border-subtle focus:ring-1 focus:ring-gray-400"
                     />
                   </div>
                   <div>
@@ -558,14 +558,14 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                       value={filters.general?.maxExperience || ""}
                       onChange={(e) => updateFilter("general", "maxExperience", e.target.value ? parseInt(e.target.value) : undefined)}
                       placeholder="Ex: 10 anos"
-                      className="border border-gray-200 focus:ring-1 focus:ring-gray-400"
+                      className="border border-lia-border-subtle focus:ring-1 focus:ring-gray-400"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-4 p-4 rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50/50">
+                <div className="space-y-4 p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50/50">
                   <div className="flex items-center gap-2 mb-3">
-                    <Eye className="w-4 h-4 text-gray-600" />
+                    <Eye className="w-4 h-4 lia-text-600" />
                     <span className={textStyles.subtitle}>
                       Ocultar Perfis Visualizados ou Shortlistados
                     </span>
@@ -573,18 +573,18 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                       <PopoverTrigger asChild>
                         <button 
                           type="button"
-                          className="text-gray-400 hover:text-gray-600 transition-colors"
+                          className="lia-text-400 hover:lia-text-600 transition-colors"
                         >
                           <HelpCircle className="w-4 h-4" />
                         </button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-80 p-3 bg-white border border-gray-200" side="top">
+                      <PopoverContent className="w-80 p-3 bg-lia-bg-elevated border border-lia-border-subtle" side="top">
                         <div className="space-y-2">
-                          <h4 className="font-semibold text-sm text-gray-800">O que significa "Shortlistado"?</h4>
-                          <p className="text-xs text-gray-600 leading-relaxed">
+                          <h4 className="font-semibold text-sm lia-text-800">O que significa "Shortlistado"?</h4>
+                          <p className="text-xs lia-text-600 leading-relaxed">
                             Candidatos <strong>shortlistados</strong> são aqueles que já foram incluídos em vagas e passaram por algum processo de entrevista, seja por você, outros recrutadores ou gestores da organização.
                           </p>
-                          <p className="text-xs text-gray-500 leading-relaxed">
+                          <p className="text-xs lia-text-500 leading-relaxed">
                             Isso inclui entrevistas técnicas, comportamentais, com gestores, ou qualquer outra etapa de seleção registrada no sistema.
                           </p>
                         </div>
@@ -594,7 +594,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-xs mb-1.5 block text-gray-600">Escopo</Label>
+                      <Label className="text-xs mb-1.5 block lia-text-600">Escopo</Label>
                       <Select
                         value={filters.general?.hideViewedScope || "dont_hide"}
                         onValueChange={(value) => {
@@ -602,10 +602,10 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                           updateFilter("general", "hideViewedProfiles", value !== "dont_hide")
                         }}
                       >
-                        <SelectTrigger className="border border-gray-200 focus:ring-1 focus:ring-gray-400 bg-white text-xs">
+                        <SelectTrigger className="border border-lia-border-subtle focus:ring-1 focus:ring-gray-400 bg-lia-bg-secondary text-xs">
                           <SelectValue placeholder="Selecione o escopo" />
                         </SelectTrigger>
-                        <SelectContent className="bg-white">
+                        <SelectContent className="bg-lia-bg-secondary">
                           {hideViewedScopeOptions.map(option => (
                             <SelectItem 
                               key={option.value} 
@@ -615,7 +615,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                               <div>
                                 <div className="font-medium">{option.label}</div>
                                 {option.description && (
-                                  <div className="text-xs text-gray-500">{option.description}</div>
+                                  <div className="text-xs lia-text-500">{option.description}</div>
                                 )}
                               </div>
                             </SelectItem>
@@ -625,7 +625,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                     </div>
 
                     <div>
-                      <Label className="text-xs mb-1.5 block text-gray-600">Período</Label>
+                      <Label className="text-xs mb-1.5 block lia-text-600">Período</Label>
                       <Select
                         value={filters.general?.hideViewedPeriod || "all_time"}
                         onValueChange={(value) => updateFilter("general", "hideViewedPeriod", value as HideViewedPeriod)}
@@ -633,13 +633,13 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                       >
                         <SelectTrigger 
                           className={cn(
-                            "border border-gray-200 focus:ring-1 focus:ring-gray-400 bg-white text-xs",
+                            "border border-lia-border-subtle focus:ring-1 focus:ring-gray-400 bg-lia-bg-primary text-xs",
                             filters.general?.hideViewedScope === "dont_hide" && "opacity-50 cursor-not-allowed"
                           )}
                         >
                           <SelectValue placeholder="Selecione o período" />
                         </SelectTrigger>
-                        <SelectContent className="bg-white">
+                        <SelectContent className="bg-lia-bg-secondary">
                           {hideViewedPeriodOptions.map(option => (
                             <SelectItem key={option.value} value={option.value}>
                               {option.label}
@@ -650,7 +650,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                     </div>
                   </div>
 
-                  <p className="text-xs text-gray-500 flex items-center gap-1.5">
+                  <p className="text-xs lia-text-500 flex items-center gap-1.5">
                     <AlertCircle className="w-3 h-3" />
                     Remove dos resultados candidatos visualizados ou entrevistados no período selecionado
                   </p>
@@ -659,7 +659,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
             </div>
 
               {/* Section: Perfil Profissional */}
-              <div ref={(el) => { sectionRefs.current.profile = el }} className="border-t border-gray-200 dark:border-gray-700 pt-6">
+              <div ref={(el) => { sectionRefs.current.profile = el }} className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-6">
                 <SectionHeader icon={UserCheck} title="Perfil Profissional" description="Indicadores de perfil" />
               <div className="space-y-3">
                 {isLocalSearch && (
@@ -674,14 +674,14 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div className={cn(
-                        "flex items-center justify-between p-3 rounded-md border border-gray-200 dark:border-gray-700",
+                        "flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle",
                         isLocalSearch && "opacity-50 cursor-not-allowed bg-gray-50"
                       )}>
                         <div className="flex items-center gap-3">
-                          <Briefcase className={cn("w-4 h-4", isLocalSearch ? "text-gray-400" : "text-status-success")} />
+                          <Briefcase className={cn("w-4 h-4", isLocalSearch ? "lia-text-400" : "text-status-success")} />
                           <div>
-                            <div className={cn("text-xs font-medium", isLocalSearch && "text-gray-400")}>Aberto a Oportunidades</div>
-                            <div className="text-xs text-gray-500">
+                            <div className={cn("text-xs font-medium", isLocalSearch && "lia-text-400")}>Aberto a Oportunidades</div>
+                            <div className="text-xs lia-text-500">
                               Candidatos sinalizando interesse em novas propostas
                             </div>
                           </div>
@@ -705,14 +705,14 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div className={cn(
-                        "flex items-center justify-between p-3 rounded-md border border-gray-200 dark:border-gray-700",
+                        "flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle",
                         isLocalSearch && "opacity-50 cursor-not-allowed bg-gray-50"
                       )}>
                         <div className="flex items-center gap-3">
-                          <Crown className={cn("w-4 h-4", isLocalSearch ? "text-gray-400" : "text-status-warning")} />
+                          <Crown className={cn("w-4 h-4", isLocalSearch ? "lia-text-400" : "text-status-warning")} />
                           <div>
-                            <div className={cn("text-xs font-medium", isLocalSearch && "text-gray-400")}>Decisor / Líder</div>
-                            <div className="text-xs text-gray-500">
+                            <div className={cn("text-xs font-medium", isLocalSearch && "lia-text-400")}>Decisor / Líder</div>
+                            <div className="text-xs lia-text-500">
                               Profissionais em posições de liderança
                             </div>
                           </div>
@@ -736,14 +736,14 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div className={cn(
-                        "flex items-center justify-between p-3 rounded-md border border-gray-200 dark:border-gray-700",
+                        "flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle",
                         isLocalSearch && "opacity-50 cursor-not-allowed bg-gray-50"
                       )}>
                         <div className="flex items-center gap-3">
-                          <GraduationCap className={cn("w-4 h-4", isLocalSearch ? "text-gray-400" : "text-gray-600 dark:text-gray-400")} />
+                          <GraduationCap className={cn("w-4 h-4", isLocalSearch ? "lia-text-400" : "lia-text-600 dark:text-lia-text-tertiary")} />
                           <div>
-                            <div className={cn("text-xs font-medium", isLocalSearch && "text-gray-400")}>Top Universidades</div>
-                            <div className="text-xs text-gray-500">
+                            <div className={cn("text-xs font-medium", isLocalSearch && "lia-text-400")}>Top Universidades</div>
+                            <div className="text-xs lia-text-500">
                               Formados em universidades de elite
                             </div>
                           </div>
@@ -767,14 +767,14 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div className={cn(
-                        "flex items-center justify-between p-3 rounded-md border border-gray-200 dark:border-gray-700",
+                        "flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle",
                         isLocalSearch && "opacity-50 cursor-not-allowed bg-gray-50"
                       )}>
                         <div className="flex items-center gap-3">
-                          <Rocket className={cn("w-4 h-4", isLocalSearch ? "text-gray-400" : "text-wedo-purple")} />
+                          <Rocket className={cn("w-4 h-4", isLocalSearch ? "lia-text-400" : "text-wedo-purple")} />
                           <div>
-                            <div className={cn("text-xs font-medium", isLocalSearch && "text-gray-400")}>Experiência em Startup</div>
-                            <div className="text-xs text-gray-500">
+                            <div className={cn("text-xs font-medium", isLocalSearch && "lia-text-400")}>Experiência em Startup</div>
+                            <div className="text-xs lia-text-500">
                               Trabalhou em startups (cultura ágil)
                             </div>
                           </div>
@@ -797,7 +797,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
             </div>
 
               {/* Section: Cargo */}
-              <div ref={(el) => { sectionRefs.current.job = el }} className="border-t border-gray-200 dark:border-gray-700 pt-6">
+              <div ref={(el) => { sectionRefs.current.job = el }} className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-6">
                 <SectionHeader icon={Briefcase} title="Cargo" description="Títulos e níveis" />
               <JobFiltersSection 
                 filters={filters}
@@ -808,7 +808,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
             </div>
 
               {/* Section: Empresa */}
-              <div ref={(el) => { sectionRefs.current.company = el }} className="border-t border-gray-200 dark:border-gray-700 pt-6">
+              <div ref={(el) => { sectionRefs.current.company = el }} className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-6">
                 <SectionHeader icon={Building2} title="Empresa" description="Empresas e setores" />
               <div className="space-y-6">
                 <div>
@@ -830,7 +830,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                     onFundingStagesChange={(fundingStages) => updateFilter("company", "fundingStages", fundingStages)}
                     placeholder="Digite empresa e pressione Enter (ex: Google, Microsoft, Nubank)"
                   />
-                  <p className="text-xs mt-2 text-gray-500">
+                  <p className="text-xs mt-2 lia-text-500">
                     Dica: Use "Ask AI" para buscar empresas similares ou por descrição (ex: "fintechs em São Paulo")
                   </p>
                 </div>
@@ -896,7 +896,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div className={cn(isLocalSearch && "opacity-50 cursor-not-allowed")}>
-                          <Label className={cn("text-xs mb-1.5 block font-medium", isLocalSearch && "text-gray-400")}>
+                          <Label className={cn("text-xs mb-1.5 block font-medium", isLocalSearch && "lia-text-400")}>
                             Sede da Empresa
                             {isLocalSearch && <span className="ml-1 text-status-warning">(apenas busca global)</span>}
                           </Label>
@@ -931,7 +931,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div className={cn(isLocalSearch && "opacity-50 cursor-not-allowed")}>
-                          <Label className={cn("text-xs mb-1.5 block font-medium", isLocalSearch && "text-gray-400")}>
+                          <Label className={cn("text-xs mb-1.5 block font-medium", isLocalSearch && "lia-text-400")}>
                             Porte da Empresa
                             {isLocalSearch && <span className="ml-1 text-status-warning">(apenas busca global)</span>}
                           </Label>
@@ -951,12 +951,12 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                                     }
                                   }}
                                   className={cn(
-                                    "px-3 py-1.5 rounded-full text-xs border transition-all",
+                                    "px-3 py-1.5 rounded-full text-xs border transition-[width,height]",
                                     isLocalSearch
-                                      ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
+                                      ? "border-lia-border-subtle bg-gray-100 lia-text-400 cursor-not-allowed"
                                       : isSelected 
-                                        ? "border-gray-500 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100" 
-                                        : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+                                        ? "border-gray-500 bg-gray-100 dark:bg-lia-bg-elevated lia-text-900 dark:text-lia-text-primary" 
+                                        : "border-lia-border-subtle bg-lia-bg-primary lia-text-600 hover:border-lia-border-default"
                                   )}
                                 >
                                   {size.label}
@@ -980,7 +980,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div className={cn(isLocalSearch && "opacity-50 cursor-not-allowed")}>
-                          <Label className={cn("text-xs mb-1.5 block font-medium", isLocalSearch && "text-gray-400")}>
+                          <Label className={cn("text-xs mb-1.5 block font-medium", isLocalSearch && "lia-text-400")}>
                             Empresa Fundada Após
                             {isLocalSearch && <span className="ml-1 text-status-warning">(apenas busca global)</span>}
                           </Label>
@@ -998,17 +998,17 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                               }}
                               placeholder="Ano de Fundação"
                               className={cn(
-                                "border-gray-200 focus:ring-1 focus:ring-gray-400 focus:border-gray-500 pr-10",
+                                "border-lia-border-subtle focus:ring-1 focus:ring-gray-400 focus:border-gray-500 pr-10",
                                 isLocalSearch && "bg-gray-100 cursor-not-allowed"
                               )}
                             />
-                            <div className={cn("absolute right-3 top-1/2 transform -translate-y-1/2", isLocalSearch ? "text-gray-300" : "text-gray-400")}>
+                            <div className={cn("absolute right-3 top-1/2 transform -translate-y-1/2", isLocalSearch ? "lia-text-300" : "lia-text-400")}>
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                               </svg>
                             </div>
                           </div>
-                          <p className={cn("text-xs mt-1", isLocalSearch ? "text-gray-400" : "text-gray-500")}>
+                          <p className={cn("text-xs mt-1", isLocalSearch ? "lia-text-400" : "lia-text-500")}>
                             Filtrar empresas fundadas após este ano
                           </p>
                         </div>
@@ -1025,7 +1025,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div className={cn(isLocalSearch && "opacity-50 cursor-not-allowed")}>
-                          <Label className={cn("text-xs mb-1.5 block font-medium", isLocalSearch && "text-gray-400")}>
+                          <Label className={cn("text-xs mb-1.5 block font-medium", isLocalSearch && "lia-text-400")}>
                             Estágio de Funding
                             {isLocalSearch && <span className="ml-1 text-status-warning">(apenas busca global)</span>}
                           </Label>
@@ -1057,7 +1057,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
             </div>
 
               {/* Section: Habilidades */}
-              <div ref={(el) => { sectionRefs.current.skills = el }} className="border-t border-gray-200 dark:border-gray-700 pt-6">
+              <div ref={(el) => { sectionRefs.current.skills = el }} className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-6">
                 <SectionHeader icon={Code} title="Habilidades" description="Skills técnicas" />
               <div className="space-y-6">
                 <div>
@@ -1073,7 +1073,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                     }))}
                     placeholder="Digite skill e pressione Enter (ex: Python, React, AWS, SQL)"
                   />
-                  <p className="text-xs mt-2 text-gray-500">
+                  <p className="text-xs mt-2 lia-text-500">
                     Dica: Use o ícone de pin para marcar skills obrigatórias. O botão "Find Similar" sugere skills relacionadas via IA.
                   </p>
                 </div>
@@ -1096,7 +1096,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
             </div>
 
               {/* Section: Formação */}
-              <div ref={(el) => { sectionRefs.current.education = el }} className="border-t border-gray-200 dark:border-gray-700 pt-6">
+              <div ref={(el) => { sectionRefs.current.education = el }} className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-6">
                 <SectionHeader icon={GraduationCap} title="Formação" description="Universidades e cursos" />
               <div className="space-y-6">
                 <div>
@@ -1113,7 +1113,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                     placeholder="Digite universidade e pressione Enter"
                     showPresets={true}
                   />
-                  <p className="text-xs mt-2 text-gray-500">
+                  <p className="text-xs mt-2 lia-text-500">
                     Dica: Use "Ask AI" para buscar universidades similares ou por descrição
                   </p>
                 </div>
@@ -1222,7 +1222,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
             </div>
 
               {/* Section: Idiomas */}
-              <div ref={(el) => { sectionRefs.current.languages = el }} className="border-t border-gray-200 dark:border-gray-700 pt-6">
+              <div ref={(el) => { sectionRefs.current.languages = el }} className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-6">
                 <SectionHeader icon={Globe} title="Idiomas" description="Línguas e proficiência" />
               <div className="space-y-4">
                 <div>
@@ -1232,7 +1232,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                       value={filters.languages?.proficiencyLevel || "any"}
                       onValueChange={(value) => updateFilter("languages", "proficiencyLevel", value)}
                     >
-                      <SelectTrigger className="w-auto h-7 px-2 py-1 text-xs border border-gray-200 focus:ring-1 focus:ring-gray-400 gap-1">
+                      <SelectTrigger className="w-auto h-7 px-2 py-1 text-xs border border-lia-border-subtle focus:ring-1 focus:ring-gray-400 gap-1">
                         <SelectValue placeholder="Qualquer Nível" />
                       </SelectTrigger>
                       <SelectContent>
@@ -1260,9 +1260,9 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
 
           {/* Active Filters Chips */}
           {getActiveFiltersCount() > 0 && (
-            <div className="px-6 py-2 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
+            <div className="px-6 py-2 border-t border-lia-border-subtle dark:lia-border-800 bg-gray-50/50 dark:bg-lia-bg-primary/50">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-micro text-gray-500 font-medium">Filtros ativos:</span>
+                <span className="text-micro lia-text-500 font-medium">Filtros ativos:</span>
                 {filters.general?.minExperience && (
                   <Badge variant="outline" className="text-micro py-0 h-5 gap-1">
                     Exp. mín: {filters.general.minExperience}a
@@ -1310,21 +1310,21 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
           )}
 
           <div 
-            className="flex items-center justify-between px-6 py-3 border-t border-gray-200 bg-gray-50 dark:bg-gray-900 dark:border-gray-700"
+            className="flex items-center justify-between px-6 py-3 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle"
           >
             <div className="flex items-center gap-3">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={resetFilters}
-                className="text-xs text-gray-500"
+                className="text-xs lia-text-500"
               >
                 <RotateCcw className="w-3 h-3 mr-1" />
                 Limpar filtros
               </Button>
               {onSave && (
                 <div 
-                  className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                  className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs bg-gray-100 dark:bg-lia-bg-elevated lia-text-700 dark:text-lia-text-secondary"
                 >
                   {(() => {
                     const dest = saveDestinations.find(d => d.key === saveDestination)
@@ -1353,7 +1353,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
               <Button
                 size="sm"
                 onClick={handleApply}
-                className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
+                className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-100 dark:lia-text-900 dark:hover:bg-gray-200"
               >
                 Aplicar Filtros
               </Button>

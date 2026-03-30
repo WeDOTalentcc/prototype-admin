@@ -242,7 +242,7 @@ export function NewCandidateUnifiedModal({
     const ext = filename.split('.').pop()?.toLowerCase()
     if (ext === 'pdf') return <FileText className="w-4 h-4 text-status-error" />
     if (['doc', 'docx'].includes(ext || '')) return <FileText className="w-4 h-4 text-wedo-cyan-dark" />
-    return <File className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+    return <File className="w-4 h-4 text-gray-500 dark:text-lia-text-tertiary" />
   }
 
   const formatFileSize = (bytes: number) => {
@@ -686,13 +686,13 @@ export function NewCandidateUnifiedModal({
 
   const renderInputStep = () => (
     <div className="space-y-4">
-      <div className="flex border-b border-gray-200 dark:border-gray-700">
+      <div className="flex border-b border-lia-border-subtle dark:border-lia-border-subtle">
         <button
           onClick={() => { setActiveTab('cv'); setError(null) }}
           className={cn(
             "flex-1 py-2.5 text-xs font-medium transition-colors relative",
             activeTab === 'cv'
-              ? "text-gray-900 dark:text-gray-100"
+              ? "text-gray-900 dark:text-lia-text-primary"
               : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
           )}
         >
@@ -709,7 +709,7 @@ export function NewCandidateUnifiedModal({
           className={cn(
             "flex-1 py-2.5 text-xs font-medium transition-colors relative",
             activeTab === 'linkedin'
-              ? "text-gray-900 dark:text-gray-100"
+              ? "text-gray-900 dark:text-lia-text-primary"
               : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
           )}
         >
@@ -726,7 +726,7 @@ export function NewCandidateUnifiedModal({
           className={cn(
             "flex-1 py-2.5 text-xs font-medium transition-colors relative",
             activeTab === 'manual'
-              ? "text-gray-900 dark:text-gray-100"
+              ? "text-gray-900 dark:text-lia-text-primary"
               : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
           )}
         >
@@ -759,31 +759,31 @@ export function NewCandidateUnifiedModal({
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
               className={cn(
-                "border-2 border-dashed rounded-md p-6 text-center cursor-pointer transition-all",
+                "border-2 border-dashed rounded-md p-6 text-center cursor-pointer transition-colors",
                 isDragging
-                  ? "border-gray-900 bg-gray-100 dark:border-gray-100 dark:bg-gray-800"
-                  : "border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  ? "border-gray-900 bg-gray-100 dark:border-lia-border-subtle dark:bg-lia-bg-secondary"
+                  : "border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800"
               )}
             >
-              <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-3">
-                <Upload className={cn("w-5 h-5", isDragging ? "text-gray-900 dark:text-gray-100" : "text-gray-500")} />
+              <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center mx-auto mb-3">
+                <Upload className={cn("w-5 h-5", isDragging ? "text-gray-900 dark:text-lia-text-primary" : "text-gray-500")} />
               </div>
-              <p className="text-xs font-medium text-gray-800 dark:text-gray-200">
+              <p className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">
                 {isDragging ? "Solte o arquivo aqui" : "Arraste ou clique para selecionar"}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs text-gray-500 dark:text-lia-text-tertiary mt-1">
                 PDF, DOCX, DOC ou TXT (máx. 5MB)
               </p>
             </div>
           ) : (
-            <div className="border border-gray-200 dark:border-gray-700 rounded-md p-3">
+            <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3">
               <div className="flex items-center gap-2">
                 {getFileIcon(selectedFile.name)}
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-gray-800 dark:text-gray-200 truncate">
+                  <p className="text-xs font-medium text-gray-800 dark:text-lia-text-primary truncate">
                     {selectedFile.name}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
                     {formatFileSize(selectedFile.size)}
                   </p>
                 </div>
@@ -804,10 +804,10 @@ export function NewCandidateUnifiedModal({
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-gray-200 dark:border-gray-700" />
+              <span className="w-full border-t border-lia-border-subtle dark:border-lia-border-subtle" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white dark:bg-gray-900 px-2 text-gray-500 dark:text-gray-400">ou cole o texto</span>
+              <span className="bg-white dark:bg-lia-bg-primary px-2 text-gray-500 dark:text-lia-text-tertiary">ou cole o texto</span>
             </div>
           </div>
 
@@ -854,7 +854,7 @@ export function NewCandidateUnifiedModal({
             <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
               <Linkedin className="w-6 h-6 text-gray-600" />
             </div>
-            <p className="text-xs text-gray-600 dark:text-gray-400">
+            <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
               Cole a URL do perfil do LinkedIn do candidato
             </p>
           </div>
@@ -868,14 +868,14 @@ export function NewCandidateUnifiedModal({
               onChange={(e) => setLinkedinUrl(e.target.value)}
               className="h-9 text-xs font-sans"
             />
-            <p className="text-xs text-gray-500 dark:text-gray-400 font-sans">
+            <p className="text-xs text-gray-500 dark:text-lia-text-tertiary font-sans">
               Ex: linkedin.com/in/joao-silva
             </p>
           </div>
 
-          <div className="flex items-center gap-2 p-2.5 bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-600 rounded-md">
+          <div className="flex items-center gap-2 p-2.5 bg-gray-50 dark:bg-lia-bg-secondary/50 border border-lia-border-default dark:border-lia-border-default rounded-md">
             <Brain className="w-4 h-4 text-wedo-cyan" />
-            <p className="text-xs text-gray-600 dark:text-gray-400 font-sans">
+            <p className="text-xs text-gray-600 dark:text-lia-text-tertiary font-sans">
               A LIA irá buscar os dados do candidato
             </p>
           </div>
@@ -959,14 +959,14 @@ export function NewCandidateUnifiedModal({
                 />
               </div>
               {manualData.linkedinUrl.includes('linkedin.com/in/') && (
-                <p className="text-micro text-gray-600 dark:text-gray-400 flex items-center gap-1 font-sans">
+                <p className="text-micro text-gray-600 dark:text-lia-text-tertiary flex items-center gap-1 font-sans">
                   <Brain className="w-3 h-3 text-wedo-cyan" />
                   A LIA irá buscar os dados do candidato
                 </p>
               )}
             </div>
 
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
               * Informe pelo menos um contato (email ou telefone)
             </p>
           </div>
@@ -1009,7 +1009,7 @@ export function NewCandidateUnifiedModal({
         <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50">
           Candidato já existe
         </h3>
-        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+        <p className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-1">
           {duplicateResult?.message}
         </p>
       </div>
@@ -1026,7 +1026,7 @@ export function NewCandidateUnifiedModal({
                   {duplicateResult.candidate.name}
                 </p>
                 {duplicateResult.candidate.current_title && (
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                  <p className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-0.5">
                     {duplicateResult.candidate.current_title}
                   </p>
                 )}
@@ -1098,17 +1098,17 @@ export function NewCandidateUnifiedModal({
 
   const renderProcessing = () => (
     <div className="py-8 text-center">
-      <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
+      <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center mx-auto mb-4">
         {isEnriching ? (
           <Brain className="w-6 h-6 text-wedo-cyan animate-pulse" />
         ) : (
-          <Loader2 className="w-6 h-6 text-gray-600 dark:text-gray-400 animate-spin" />
+          <Loader2 className="w-6 h-6 text-gray-600 dark:text-lia-text-tertiary animate-spin" />
         )}
       </div>
       <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50 mb-2">
         {isEnriching ? 'Enriquecendo perfil...' : 'Processando...'}
       </h3>
-      <p className="text-xs text-gray-600 dark:text-gray-400">
+      <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
         {isEnriching 
           ? 'Buscando dados adicionais via LinkedIn...'
           : activeTab === 'cv' 
@@ -1130,7 +1130,7 @@ export function NewCandidateUnifiedModal({
       <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50 mb-2">
         Candidato cadastrado!
       </h3>
-      <p className="text-xs text-gray-600 dark:text-gray-400">
+      <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
         Abrindo perfil completo...
       </p>
     </div>
@@ -1138,7 +1138,7 @@ export function NewCandidateUnifiedModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
+      <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden bg-white dark:bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle">
         <DialogHeader className="p-4 pb-0">
           <DialogTitle className="text-base font-semibold text-gray-950 dark:text-gray-50 font-sans">
             Novo Candidato

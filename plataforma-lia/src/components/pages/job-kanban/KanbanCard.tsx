@@ -44,7 +44,7 @@ export const KanbanCard = React.memo(function KanbanCard({
 
   return (
     <Card
-      className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 cursor-pointer transition-all hover:group rounded-md"
+      className="bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default dark:hover:border-gray-600 cursor-pointer transition-colors hover:group rounded-md"
       onClick={onClick}
       data-testid="candidate-card"
       data-candidate-id={candidate.id}
@@ -63,7 +63,7 @@ export const KanbanCard = React.memo(function KanbanCard({
           
           <Avatar className="h-8 w-8 flex-shrink-0">
             <AvatarImage src={candidate.avatar_url} alt={candidate.name} />
-            <AvatarFallback className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs">
+            <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-elevated text-gray-700 dark:text-lia-text-secondary text-xs">
               {getInitials(candidate.name)}
             </AvatarFallback>
           </Avatar>
@@ -81,7 +81,7 @@ export const KanbanCard = React.memo(function KanbanCard({
             </div>
             
             {candidate.current_title && (
-              <p className="text-xs text-gray-600 dark:text-gray-400 truncate mt-0.5">
+              <p className="text-xs text-gray-600 dark:text-lia-text-tertiary truncate mt-0.5">
                 {candidate.current_title}
               </p>
             )}
@@ -97,7 +97,7 @@ export const KanbanCard = React.memo(function KanbanCard({
         {candidate.substatus && (
           <Badge 
             variant="outline" 
-            className="mt-2 text-xs border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400"
+            className="mt-2 text-xs border-lia-border-default dark:border-lia-border-default text-gray-600 dark:text-lia-text-tertiary"
           >
             {candidate.substatus}
           </Badge>
@@ -109,7 +109,7 @@ export const KanbanCard = React.memo(function KanbanCard({
               <Badge 
                 key={skill} 
                 variant="outline" 
-                className="text-micro border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 py-0"
+                className="text-micro border-lia-border-default dark:border-lia-border-default text-gray-600 dark:text-lia-text-tertiary py-0"
               >
                 {skill}
               </Badge>
@@ -117,7 +117,7 @@ export const KanbanCard = React.memo(function KanbanCard({
             {candidate.skills.length > 3 && (
               <Badge 
                 variant="outline" 
-                className="text-micro border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-500 py-0"
+                className="text-micro border-lia-border-default dark:border-lia-border-default text-gray-500 dark:text-gray-500 py-0"
               >
                 +{candidate.skills.length - 3}
               </Badge>
@@ -125,7 +125,7 @@ export const KanbanCard = React.memo(function KanbanCard({
           </div>
         )}
         
-        <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between mt-2 pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
           <TooltipProvider delayDuration={200}>
             <div className="flex items-center gap-2">
               {candidate.tags?.includes("favorite") && (

@@ -97,7 +97,7 @@ function CollapsibleSection({
           {onEdit && (
             <button 
               onClick={(e) => { e.stopPropagation(); onEdit() }}
-              className="p-1 text-neutral-500 hover:text-gray-300 transition-colors"
+              className="p-1 text-neutral-500 hover:lia-text-muted transition-colors"
             >
               <Edit2 className="w-3 h-3" />
             </button>
@@ -157,11 +157,11 @@ export function FastTrackReviewPanel({
   
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 p-3 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md">
-        <Zap className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+      <div className="flex items-center gap-2 p-3 bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md">
+        <Zap className="w-4 h-4 text-gray-700 dark:text-lia-text-secondary" />
         <div>
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Vaga criada com Fast Track</span>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+          <span className="text-sm font-medium text-gray-700 dark:text-lia-text-secondary">Vaga criada com Fast Track</span>
+          <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
             Baseada em: {jobData.sourceJobTitle}
           </p>
         </div>
@@ -322,14 +322,14 @@ export function FastTrackReviewPanel({
                 key={skill.id} 
                 variant="outline" 
                 className={cn(
-                  "text-xs",
+ "text-xs",
                   skill.required 
-                    ? "bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300" 
+                    ? "bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default text-gray-700 dark:text-lia-text-secondary" 
                     : "bg-neutral-800 border-neutral-700 text-neutral-300"
                 )}
               >
                 {skill.name}
-                {skill.required && <span className="ml-1 text-gray-700 dark:text-gray-300">*</span>}
+                {skill.required && <span className="ml-1 text-gray-700 dark:text-lia-text-secondary">*</span>}
               </Badge>
             ))}
           </div>
@@ -353,8 +353,8 @@ export function FastTrackReviewPanel({
                     <div
                       key={i}
                       className={cn(
-                        "w-2 h-2 rounded-full",
-                        i < comp.weight ? "bg-gray-400 dark:bg-gray-500" : "bg-neutral-700"
+ "w-2 h-2 rounded-full",
+                        i < comp.weight ? "bg-gray-400" : "bg-neutral-700"
                       )}
                     />
                   ))}
@@ -425,9 +425,9 @@ export function FastTrackReviewPanel({
         onClick={onPublish}
         disabled={!canPublish || isPublishing}
         className={cn(
-          "w-full",
+ "w-full",
           canPublish 
-            ? "bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200" 
+            ? "bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200" 
             : "bg-neutral-700 text-neutral-500 cursor-not-allowed"
         )}
       >

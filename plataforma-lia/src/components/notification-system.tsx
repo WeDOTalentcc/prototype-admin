@@ -97,7 +97,7 @@ const NotificationItem = React.memo(({
       case "success": return <CheckCircle className="w-4 h-4 text-status-success" />
       case "warning": return <AlertCircle className="w-4 h-4 text-status-warning" />
       case "error": return <AlertCircle className="w-4 h-4 text-status-error" />
-      default: return <Info className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+      default: return <Info className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
     }
   }, [notification.type])
 
@@ -116,9 +116,9 @@ const NotificationItem = React.memo(({
 
   return (
     <div
-      className={`relative p-2.5 rounded-md cursor-pointer transition-all duration-200 hover:bg-white dark:hover:bg-gray-800 ${
-        !notification.read 
-          ? "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700" 
+      className={`relative p-2.5 rounded-md cursor-pointer transition-colors duration-200 hover:bg-lia-bg-primary dark:hover:bg-gray-800 ${
+ !notification.read 
+          ? "bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle" 
           : "bg-transparent border border-transparent"
       }`}
       onClick={handleClick}
@@ -127,12 +127,12 @@ const NotificationItem = React.memo(({
       <div className="flex items-start gap-2.5">
         <div className="flex-shrink-0 mt-0.5">
           <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
-            !notification.read 
+ !notification.read 
               ? notification.type === 'success' ? 'bg-status-success/15 dark:bg-status-success/30' 
                 : notification.type === 'warning' ? 'bg-status-warning/15 dark:bg-status-warning/30'
                 : notification.type === 'error' ? 'bg-status-error/15 dark:bg-status-error/30'
                 : 'bg-wedo-cyan/15'
-              : 'bg-gray-100 dark:bg-gray-800'
+              : 'bg-gray-100 dark:bg-lia-bg-secondary'
           }`}>
             {getIcon}
           </div>
@@ -140,33 +140,33 @@ const NotificationItem = React.memo(({
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <h4 className={`text-xs font-medium leading-tight ${
- !notification.read ? "text-gray-950" : "text-gray-600 dark:text-gray-400"
-            }`}>
+ !notification.read ? "text-gray-950" : "text-gray-600 dark:text-lia-text-tertiary"
+ }`}>
               {notification.title}
             </h4>
             <Button
               variant="ghost"
               size="sm"
               onClick={handleRemove}
-              className="h-5 w-5 p-0 text-gray-600 hover:text-gray-600 dark:hover:text-gray-200 opacity-0 group-hover:opacity-100 transition-opacity -mt-0.5 -mr-1"
+              className="h-5 w-5 p-0 lia-text-base hover:lia-text-base dark:hover:lia-text-muted opacity-0 group-hover:opacity-100 transition-opacity -mt-0.5 -mr-1"
             >
               <X className="w-3 h-3" />
             </Button>
           </div>
           <p className={`text-xs mt-0.5 leading-relaxed ${
- !notification.read ? "text-gray-600" : "text-gray-800 dark:text-gray-200"
-          }`}>
+ !notification.read ? "text-gray-600" : "text-gray-800 dark:text-lia-text-primary"
+ }`}>
             {notification.message}
           </p>
           <div className="flex items-center justify-between mt-1.5">
-            <span className="text-xs text-gray-600 dark:text-gray-500 flex items-center gap-1">
+            <span className="text-xs text-gray-600 flex items-center gap-1">
               <Clock className="w-2.5 h-2.5" />
               {timeAgo}
             </span>
             {!notification.read && (
               <button
                 onClick={handleMarkAsRead}
-                className="text-xs font-medium hover:underline text-gray-700"
+                className="text-xs font-medium hover:underline lia-text-base"
               >
                 Marcar lida
               </button>
@@ -308,7 +308,7 @@ export function NotificationSystem({
         variant="ghost"
         size="sm"
         onClick={toggleOpen}
-        className="h-7 w-7 p-0 relative text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+        className="h-7 w-7 p-0 relative text-gray-800 dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800"
       >
         <Bell className="w-3.5 h-3.5" />
         {unreadCount > 0 && (
@@ -321,28 +321,28 @@ export function NotificationSystem({
       </Button>
 
       {isOpen && (
-        <Card className="absolute right-0 top-9 w-[340px] max-h-[420px] overflow-hidden z-50 border border-gray-200 dark:border-gray-700 rounded-md">
+        <Card className="absolute right-0 top-9 w-[340px] max-h-[420px] overflow-hidden z-50 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
           <CardContent className="p-0">
-            <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+            <div className="px-4 py-3 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50">
+                <h3 className="text-sm font-semibold text-gray-950">
                   Notificações
                   {unreadCount > 0 && (
-                    <span className="ml-2 text-xs font-medium px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                    <span className="ml-2 text-xs font-medium px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary">
                       {unreadCount} nova{unreadCount > 1 ? 's' : ''}
                     </span>
                   )}
                 </h3>
                 <div className="flex items-center gap-1">
                   {isLoading && (
-                    <Loader2 className="w-3 h-3 animate-spin text-gray-600" />
+                    <Loader2 className="w-3 h-3 animate-spin lia-text-base" />
                   )}
                   {unreadCount > 0 && (
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={markAllAsRead}
-                      className="text-xs h-6 px-2 text-gray-800 dark:text-gray-200 hover:text-gray-800 dark:hover:text-gray-200"
+                      className="text-xs h-6 px-2 text-gray-800 dark:text-lia-text-primary hover:text-gray-800 dark:hover:text-gray-200"
                      
                     >
                       Marcar lidas
@@ -352,7 +352,7 @@ export function NotificationSystem({
                     variant="ghost"
                     size="sm"
                     onClick={toggleOpen}
-                    className="h-6 w-6 p-0 text-gray-600 hover:text-gray-600 dark:hover:text-gray-200"
+                    className="h-6 w-6 p-0 lia-text-base hover:lia-text-base dark:hover:lia-text-muted"
                   >
                     <X className="w-3.5 h-3.5" />
                   </Button>
@@ -360,7 +360,7 @@ export function NotificationSystem({
               </div>
             </div>
 
-            <div className="max-h-[340px] overflow-y-auto bg-gray-50 dark:bg-gray-900/50">
+            <div className="max-h-[340px] overflow-y-auto bg-gray-50 dark:bg-lia-bg-primary/50">
               {error ? (
                 <div className="py-10 px-4 text-center">
                   <AlertCircle className="w-8 h-8 mx-auto mb-2 text-status-error" />
@@ -388,8 +388,8 @@ export function NotificationSystem({
                 </div>
               ) : (
                 <div className="py-10 px-4 text-center">
-                  <Bell className="w-8 h-8 mx-auto mb-2 text-gray-300 dark:text-gray-600" />
-                  <p className="text-sm text-gray-800 dark:text-gray-200">
+                  <Bell className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                  <p className="text-sm text-gray-800 dark:text-lia-text-primary">
                     {isLoading ? "Carregando..." : "Nenhuma notificação"}
                   </p>
                 </div>

@@ -233,11 +233,11 @@ export function FavoritesTab({
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-4">
           <div>
-            <h2 className="text-lg font-semibold text-gray-950 dark:text-gray-50 font-['Open_Sans',sans-serif] flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-gray-950 font-['Open_Sans',sans-serif] flex items-center gap-2">
               <Star className="w-5 h-5 text-wedo-orange" />
               Candidatos Favoritos
             </h2>
-            <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5">
+            <p className="text-xs text-gray-600 dark:text-lia-text-secondary mt-0.5">
               {pinnedCount} {pinnedCount === 1 ? 'fixado' : 'fixados'} • {starredCount} {starredCount === 1 ? 'salvo' : 'salvos'}
             </p>
           </div>
@@ -245,10 +245,10 @@ export function FavoritesTab({
           {filteredCandidates.length > 0 && (
             <Popover>
               <PopoverTrigger asChild>
-                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 hover:transition-all group">
-                  <TrendingUp className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Insights</span>
-                  <Badge className="h-4 px-1.5 text-xs bg-gray-700 text-white dark:bg-gray-600">
+                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-lia-bg-secondary transition-colors group">
+                  <TrendingUp className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+                  <span className="text-xs font-medium text-gray-700 dark:text-lia-text-secondary">Insights</span>
+                  <Badge className="h-4 px-1.5 text-xs bg-gray-700 text-white">
                     {filteredCandidates.length}
                   </Badge>
                 </button>
@@ -258,39 +258,39 @@ export function FavoritesTab({
                 align="start"
                 sideOffset={8}
               >
-                <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-md">
+                <div className="bg-gray-100 dark:bg-lia-bg-secondary p-4 rounded-md">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-7 h-7 rounded-md bg-gray-700 dark:bg-gray-600 flex items-center justify-center">
+                    <div className="w-7 h-7 rounded-md bg-gray-700 flex items-center justify-center">
                       <BarChart3 className="w-4 h-4 text-white" />
                     </div>
-                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    <span className="text-sm font-semibold text-gray-700 dark:text-lia-text-secondary">
                       Insights dos Favoritos
                     </span>
                   </div>
 
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between p-2 bg-white/60 dark:bg-gray-700/60 rounded-md">
-                      <span className="text-xs text-gray-800 dark:text-gray-200">Score médio</span>
-                      <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                    <div className="flex items-center justify-between p-2 bg-white/60 dark:bg-lia-bg-elevated/60 rounded-md">
+                      <span className="text-xs text-gray-800 dark:text-lia-text-primary">Score médio</span>
+                      <span className="text-sm font-bold text-gray-700 dark:text-lia-text-secondary">
                         {filteredCandidates.length > 0 
                           ? Math.round(filteredCandidates.reduce((acc, c) => acc + (c.liaAnalysis?.score || c.lia_score || c.score || 0), 0) / filteredCandidates.length)
                           : 0}%
                       </span>
                     </div>
 
-                    <div className="p-2 bg-white/60 dark:bg-gray-700/60 rounded-md">
-                      <span className="text-xs text-gray-800 dark:text-gray-200 block mb-1.5">Top skills</span>
+                    <div className="p-2 bg-white/60 dark:bg-lia-bg-elevated/60 rounded-md">
+                      <span className="text-xs text-gray-800 dark:text-lia-text-primary block mb-1.5">Top skills</span>
                       <div className="flex flex-wrap gap-1">
                         {Array.from(new Set(filteredCandidates.flatMap(c => ((c.skills || c.technical_skills || []) as string[]).slice(0, 2)))).slice(0, 4).map((skill, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-xs bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                          <Badge key={idx} variant="secondary" className="text-xs bg-gray-200 text-gray-700 dark:bg-lia-bg-elevated dark:text-lia-text-secondary">
                             {skill}
                           </Badge>
                         ))}
                       </div>
                     </div>
 
-                    <div className="p-2 bg-white/60 dark:bg-gray-700/60 rounded-md">
-                      <span className="text-xs text-gray-800 dark:text-gray-200 block mb-1.5">Localizações</span>
+                    <div className="p-2 bg-white/60 dark:bg-lia-bg-elevated/60 rounded-md">
+                      <span className="text-xs text-gray-800 dark:text-lia-text-primary block mb-1.5">Localizações</span>
                       <div className="flex flex-wrap gap-1">
                         {Array.from(new Set(filteredCandidates.map(c => ((c.location || '') as string).split(',')[0]).filter(Boolean))).slice(0, 3).map((loc, idx) => (
                           <Badge key={idx} variant="secondary" className="text-xs bg-status-success/15 text-status-success dark:bg-status-success/10 dark:text-status-success">
@@ -309,7 +309,7 @@ export function FavoritesTab({
 
         <div className="flex items-center gap-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 dark:text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
             <Input
               placeholder="Buscar nos favoritos..."
               value={searchTerm}
@@ -318,7 +318,7 @@ export function FavoritesTab({
             />
           </div>
 
-          <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-md p-1">
+          <div className="flex items-center gap-1 bg-gray-100 dark:bg-lia-bg-secondary rounded-md p-1">
             <Button
               variant={filterType === 'all' ? 'default' : 'ghost'}
               size="sm"
@@ -366,8 +366,8 @@ export function FavoritesTab({
             }}
             emptyMessage="Nenhum candidato favorito encontrado"
           />
-          <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 rounded-b-lg -mt-4">
-            <p className="text-sm text-gray-800 dark:text-gray-200">
+          <div className="px-4 py-3 bg-gray-50 dark:bg-lia-bg-secondary border-t border-lia-border-subtle dark:border-lia-border-subtle rounded-b-lg -mt-4">
+            <p className="text-sm text-gray-800 dark:text-lia-text-primary">
               {filteredCandidates.length} candidato{filteredCandidates.length !== 1 ? 's' : ''} 
               {filterType !== 'all' && ` (${filterType === 'pinned' ? 'fixados' : 'salvos'})`}
             </p>
@@ -384,23 +384,23 @@ export function FavoritesTab({
               ? 'Use o ícone de estrela para salvar candidatos de interesse.'
               : 'Salve ou fixe candidatos nos resultados de busca para acompanhá-los aqui.'
           }
-          className="border border-gray-100 dark:border-gray-800 rounded-md bg-gray-50 dark:bg-gray-900/50"
+          className="border border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary/50"
         />
       )}
 
       {showNoteModal && selectedCandidateForNote && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-[1px] flex items-center justify-center z-50" onClick={() => setShowNoteModal(false)}>
           <div 
-            className="bg-white dark:bg-gray-900 rounded-md border border-gray-100 w-full max-w-md mx-4 overflow-hidden"
+            className="bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle w-full max-w-md mx-4 overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-4 border-b border-gray-100 dark:border-gray-700">
+            <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-wedo-orange/15 flex items-center justify-center">
                     <Star className="w-4 h-4 text-wedo-orange" />
                   </div>
-                  <h3 className="text-base-ui font-semibold text-gray-800 dark:text-gray-100 font-['Open_Sans']">
+                  <h3 className="text-base-ui font-semibold text-gray-800 dark:text-lia-text-primary font-['Open_Sans']">
                     Adicionar aos Favoritos
                   </h3>
                 </div>
@@ -416,50 +416,50 @@ export function FavoritesTab({
             </div>
 
             <div className="p-4">
-              <div className="flex items-center gap-3 mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+              <div className="flex items-center gap-3 mb-4 p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                 <Avatar className="w-10 h-10">
                   <AvatarImage src={selectedCandidateForNote.avatar || selectedCandidateForNote.avatar_url} />
-                  <AvatarFallback className="text-sm font-medium bg-gray-200 text-gray-700">
+                  <AvatarFallback className="text-sm font-medium bg-gray-200 lia-text-base">
                     {selectedCandidateForNote.name?.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium text-gray-800 dark:text-gray-100 text-xs">
+                  <p className="font-medium text-gray-800 dark:text-lia-text-primary text-xs">
                     {selectedCandidateForNote.name}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
                     {selectedCandidateForNote.position}
                   </p>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
+                <label className="text-xs font-medium text-gray-600 dark:text-lia-text-secondary">
                   Por que você está salvando este candidato? (opcional)
                 </label>
                 <Textarea
                   placeholder="Ex: Python sênior com inglês fluente, ótimo fit para vaga de backend..."
                   value={noteText}
                   onChange={(e) => setNoteText(e.target.value)}
-                  className="h-24 resize-none text-xs border-gray-200 focus:ring-1 focus:ring-gray-400"
+                  className="h-24 resize-none text-xs border-lia-border-subtle focus:ring-1 focus:ring-gray-400"
                 />
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
                   Esta nota ajuda você a lembrar por que salvou este candidato.
                 </p>
               </div>
             </div>
 
-            <div className="p-4 border-t border-gray-100 dark:border-gray-700 flex justify-end gap-2">
+            <div className="p-4 border-t border-lia-border-subtle dark:border-lia-border-subtle flex justify-end gap-2">
               <Button
                 variant="outline"
                 onClick={() => setShowNoteModal(false)}
-                className="border-gray-200 text-xs"
+                className="border-lia-border-subtle text-xs"
               >
                 Cancelar
               </Button>
               <Button
                 onClick={handleSaveFavorite}
-                className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 text-xs"
+                className="bg-gray-900 hover:bg-gray-800 text-white text-xs"
               >
                 <Star className="w-4 h-4 mr-2" />
                 Salvar Favorito
@@ -472,16 +472,16 @@ export function FavoritesTab({
       {viewingNote && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-[1px] flex items-center justify-center z-50" onClick={() => setViewingNote(null)}>
           <div 
-            className="bg-white dark:bg-gray-900 rounded-md border border-gray-100 w-full max-w-md mx-4 overflow-hidden"
+            className="bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle w-full max-w-md mx-4 overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-4 border-b border-gray-100 dark:border-gray-700">
+            <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-status-warning/15 flex items-center justify-center">
                     <StickyNote className="w-4 h-4 text-status-warning" />
                   </div>
-                  <h3 className="text-base-ui font-semibold text-gray-800 dark:text-gray-100 font-['Open_Sans']">
+                  <h3 className="text-base-ui font-semibold text-gray-800 dark:text-lia-text-primary font-['Open_Sans']">
                     Nota do Candidato
                   </h3>
                 </div>
@@ -497,48 +497,48 @@ export function FavoritesTab({
             </div>
 
             <div className="p-4">
-              <div className="flex items-center gap-3 mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+              <div className="flex items-center gap-3 mb-4 p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                 <Avatar className="w-10 h-10">
                   <AvatarImage src={viewingNote.candidate.avatar || viewingNote.candidate.avatar_url} />
-                  <AvatarFallback className="text-sm font-medium bg-gray-200 text-gray-700">
+                  <AvatarFallback className="text-sm font-medium bg-gray-200 lia-text-base">
                     {viewingNote.candidate.name?.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium text-gray-800 dark:text-gray-100 text-xs">
+                  <p className="font-medium text-gray-800 dark:text-lia-text-primary text-xs">
                     {viewingNote.candidate.name}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
                     {viewingNote.candidate.position}
                   </p>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
+                <label className="text-xs font-medium text-gray-600 dark:text-lia-text-secondary">
                   Sua nota sobre este candidato
                 </label>
                 <Textarea
                   value={viewingNote.note}
                   onChange={(e) => setViewingNote({ ...viewingNote, note: e.target.value })}
-                  className="h-24 resize-none text-xs border-gray-200 focus:ring-1 focus:ring-gray-400"
+                  className="h-24 resize-none text-xs border-lia-border-subtle focus:ring-1 focus:ring-gray-400"
                   placeholder="Adicione uma nota..."
                 />
               </div>
             </div>
 
-            <div className="p-4 border-t border-gray-100 dark:border-gray-700 flex justify-end gap-2">
+            <div className="p-4 border-t border-lia-border-subtle dark:border-lia-border-subtle flex justify-end gap-2">
               <Button
                 variant="outline"
                 onClick={() => setViewingNote(null)}
-                className="border-gray-200 text-xs"
+                className="border-lia-border-subtle text-xs"
               >
                 Fechar
               </Button>
               {onUpdateFavoriteNote && (
                 <Button
                   onClick={handleUpdateNote}
-                  className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 text-xs"
+                  className="bg-gray-900 hover:bg-gray-800 text-white text-xs"
                 >
                   <StickyNote className="w-4 h-4 mr-2" />
                   Salvar Alterações

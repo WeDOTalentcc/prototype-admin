@@ -34,21 +34,21 @@ export function PromptContextViewer({
         <div className="bg-wedo-green-light/5 rounded-md p-3 border border-wedo-green-light/20">
           <div className="flex items-center gap-2 mb-2">
             <LIAIcon size="sm" />
-            <span className="text-base-ui font-semibold text-gray-800">
+            <span className="text-base-ui font-semibold lia-text-strong">
               Análise LIA para candidato específico
             </span>
           </div>
-          <div className="flex items-center gap-3 bg-white rounded-md px-3 py-2 border border-gray-100">
+          <div className="flex items-center gap-3 bg-lia-bg-primary rounded-md px-3 py-2 border border-lia-border-subtle">
             <Avatar className="w-8 h-8">
               <AvatarFallback className="bg-wedo-green-light/10 text-wedo-green-light text-sm">
                 {candidateContext.name?.split(' ').map((n: string) => n[0]).join('') || 'C'}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <div className="font-medium text-gray-800 text-base-ui">
+              <div className="font-medium lia-text-strong text-base-ui">
                 {candidateContext.name}
               </div>
-              <div className="text-xs text-gray-800 dark:text-gray-200">
+              <div className="text-xs text-gray-800 dark:text-lia-text-primary">
                 {candidateContext.position} • Score: {candidateContext.liaAnalysis?.score || candidateContext.score}%
               </div>
             </div>
@@ -60,28 +60,28 @@ export function PromptContextViewer({
       )}
 
       {!candidateContext && selectedCandidates.length > 0 && (
-        <div className="bg-gray-50 rounded-md p-3 border border-gray-100">
+        <div className="bg-gray-50 rounded-md p-3 border border-lia-border-subtle">
           <div className="flex items-center gap-2 mb-2">
-            <Users className="w-4 h-4 text-gray-600" />
-            <span className="text-base-ui font-semibold text-gray-800">
+            <Users className="w-4 h-4 lia-text-base" />
+            <span className="text-base-ui font-semibold lia-text-strong">
               {selectedCandidates.length} candidato{selectedCandidates.length > 1 ? 's' : ''} selecionado{selectedCandidates.length > 1 ? 's' : ''}
             </span>
           </div>
           <div className="flex flex-wrap gap-2">
             {selectedCandidates.slice(0, 3).map((candidate, index) => (
-              <div key={index} className="flex items-center gap-1 bg-white rounded-md px-2 py-1 border border-gray-100">
+              <div key={index} className="flex items-center gap-1 bg-lia-bg-primary rounded-md px-2 py-1 border border-lia-border-subtle">
                 <Avatar className="w-4 h-4">
-                  <AvatarFallback className="bg-gray-200 text-gray-700 text-xs">
+                  <AvatarFallback className="bg-gray-200 lia-text-base text-xs">
                     {candidate.name?.charAt(0) || 'C'}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-xs text-gray-800 dark:text-gray-200">
+                <span className="text-xs text-gray-800 dark:text-lia-text-primary">
                   {candidate.name || `Candidato ${index + 1}`}
                 </span>
               </div>
             ))}
             {selectedCandidates.length > 3 && (
-              <div className="px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-800 dark:text-gray-200">
+              <div className="px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-800 dark:text-lia-text-primary">
                 +{selectedCandidates.length - 3} mais
               </div>
             )}

@@ -111,19 +111,19 @@ export function AnaliseCompetenciasPlaceholder() {
     <div className="space-y-3">
       {/* Header */}
       <div>
-        <h1 className={`${textStyles.title} dark:text-gray-100 flex items-center gap-2`}>
+        <h1 className={`${textStyles.title} dark:text-lia-text-primary flex items-center gap-2`}>
           <Award className="w-3.5 h-3.5 text-wedo-green" />
           Análise de Competências
         </h1>
-        <p className={`${textStyles.bodySmall} dark:text-gray-400 mt-1`}>
+        <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary mt-1`}>
           Skills gap, competências emergentes e matriz de desenvolvimento de talentos
         </p>
       </div>
 
       {/* Skills Gap vs Demanda */}
-      <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-gray-700`}>
+      <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-lia-border-subtle`}>
         <CardHeader className="px-4 py-3">
-          <CardTitle className={`${textStyles.title} dark:text-gray-100 flex items-center gap-2`}>
+          <CardTitle className={`${textStyles.title} dark:text-lia-text-primary flex items-center gap-2`}>
             <TrendingUp className="w-3.5 h-3.5 text-wedo-green" />
             Gap de Competências: Demanda vs Disponibilidade
           </CardTitle>
@@ -134,11 +134,11 @@ export function AnaliseCompetenciasPlaceholder() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50">Machine Learning / AI</p>
-                <p className={`${textStyles.description} dark:text-gray-400`}>Demanda: 156 vagas • Disponível: 42 candidatos</p>
+                <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>Demanda: 156 vagas • Disponível: 42 candidatos</p>
               </div>
               <Badge className="bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error font-inter font-bold">Gap 73%</Badge>
             </div>
-            <div className="flex w-full h-3 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
+            <div className="flex w-full h-3 rounded-full overflow-hidden bg-gray-200 dark:bg-lia-bg-elevated">
               <div className="bg-wedo-green-bright w-[27%]" title="Disponível"></div>
               <div className="bg-wedo-magenta w-[73%]" title="Gap"></div>
             </div>
@@ -149,11 +149,11 @@ export function AnaliseCompetenciasPlaceholder() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50">DevOps / Cloud (AWS/Azure/GCP)</p>
-                <p className={`${textStyles.description} dark:text-gray-400`}>Demanda: 194 vagas • Disponível: 87 candidatos</p>
+                <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>Demanda: 194 vagas • Disponível: 87 candidatos</p>
               </div>
               <Badge className="bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/30 dark:text-wedo-orange font-inter font-bold">Gap 55%</Badge>
             </div>
-            <div className="flex w-full h-3 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
+            <div className="flex w-full h-3 rounded-full overflow-hidden bg-gray-200 dark:bg-lia-bg-elevated">
               <div className="bg-wedo-green-bright w-[45%]" title="Disponível"></div>
               <div className="bg-wedo-orange w-[55%]" title="Gap"></div>
             </div>
@@ -164,11 +164,11 @@ export function AnaliseCompetenciasPlaceholder() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50">React.js / Frontend Moderno</p>
-                <p className={`${textStyles.description} dark:text-gray-400`}>Demanda: 287 vagas • Disponível: 198 candidatos</p>
+                <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>Demanda: 287 vagas • Disponível: 198 candidatos</p>
               </div>
               <Badge className="bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning font-inter font-bold">Gap 31%</Badge>
             </div>
-            <div className="flex w-full h-3 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
+            <div className="flex w-full h-3 rounded-full overflow-hidden bg-gray-200 dark:bg-lia-bg-elevated">
               <div className="bg-wedo-green-bright w-[69%]" title="Disponível"></div>
               <div className="bg-wedo-orange w-[31%]" title="Gap"></div>
             </div>
@@ -179,26 +179,26 @@ export function AnaliseCompetenciasPlaceholder() {
       {/* Competências Emergentes & Treinamentos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
         {/* Competências Emergentes */}
-        <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-gray-700`}>
+        <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-lia-border-subtle`}>
           <CardHeader className="pb-3">
-            <CardTitle className={`${textStyles.subtitle} dark:text-gray-100 flex items-center gap-2`}>
-              <Activity className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+            <CardTitle className={`${textStyles.subtitle} dark:text-lia-text-primary flex items-center gap-2`}>
+              <Activity className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
               Competências Emergentes (Crescimento &gt;50%)
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
- <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-300 dark:border-gray-200">
+ <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-subtle">
               <div>
                 <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50 text-sm">Prompt Engineering</p>
-                <p className={`${textStyles.description} dark:text-gray-400`}>23 vagas este mês</p>
+                <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>23 vagas este mês</p>
               </div>
- <Badge className="bg-gray-100 text-gray-900 dark:text-gray-300 font-inter font-bold">+340%</Badge>
+ <Badge className="bg-gray-100 text-gray-900 dark:text-lia-text-secondary font-inter font-bold">+340%</Badge>
             </div>
 
             <div className="flex items-center justify-between p-3 bg-wedo-purple/10 dark:bg-wedo-purple/20 rounded-md border border-wedo-purple/30 dark:border-wedo-purple/30">
               <div>
                 <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50 text-sm">LLM Fine-tuning</p>
-                <p className={`${textStyles.description} dark:text-gray-400`}>18 vagas este mês</p>
+                <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>18 vagas este mês</p>
               </div>
               <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple font-inter font-bold">+280%</Badge>
             </div>
@@ -206,7 +206,7 @@ export function AnaliseCompetenciasPlaceholder() {
             <div className="flex items-center justify-between p-3 bg-status-success/10 dark:bg-status-success/20 rounded-md border border-status-success/30 dark:border-status-success/30">
               <div>
                 <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50 text-sm">Kubernetes / K8s</p>
-                <p className={`${textStyles.description} dark:text-gray-400`}>64 vagas este mês</p>
+                <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>64 vagas este mês</p>
               </div>
               <Badge className="bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success font-inter font-bold">+120%</Badge>
             </div>
@@ -214,9 +214,9 @@ export function AnaliseCompetenciasPlaceholder() {
         </Card>
 
         {/* Treinamentos Recomendados */}
-        <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-gray-700`}>
+        <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-lia-border-subtle`}>
           <CardHeader className="pb-3">
-            <CardTitle className={`${textStyles.subtitle} dark:text-gray-100 flex items-center gap-2`}>
+            <CardTitle className={`${textStyles.subtitle} dark:text-lia-text-primary flex items-center gap-2`}>
               <Award className="w-3.5 h-3.5 text-wedo-green" />
               Treinamentos Recomendados
             </CardTitle>
@@ -227,7 +227,7 @@ export function AnaliseCompetenciasPlaceholder() {
                 <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50 text-sm">Machine Learning Bootcamp</p>
                 <Badge className={`${badgeStyles.error} dark:bg-status-error/30 dark:text-status-error`}>CRÍTICO</Badge>
               </div>
-              <p className={`${textStyles.bodySmall} dark:text-gray-400`}>
+              <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>
                 Gap de 73% • ROI estimado: R$ 280k economia em headhunting
               </p>
             </div>
@@ -237,7 +237,7 @@ export function AnaliseCompetenciasPlaceholder() {
                 <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50 text-sm">DevOps & Cloud Certification</p>
                 <Badge className="bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/30 dark:text-wedo-orange text-xs font-inter">ALTO</Badge>
               </div>
-              <p className={`${textStyles.bodySmall} dark:text-gray-400`}>
+              <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>
                 Gap de 55% • Parceria com AWS Training disponível
               </p>
             </div>
@@ -246,9 +246,9 @@ export function AnaliseCompetenciasPlaceholder() {
       </div>
 
       {/* Insights da LIA */}
-      <Card className={`${cardStyles.default} dark:bg-gray-900 dark:border-gray-800`}>
+      <Card className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-gray-800`}>
         <CardHeader className="px-4 py-3">
-          <CardTitle className={`${textStyles.title} dark:text-gray-100 flex items-center gap-2`}>
+          <CardTitle className={`${textStyles.title} dark:text-lia-text-primary flex items-center gap-2`}>
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
             Insights Estratégicos de Competências
           </CardTitle>
@@ -256,19 +256,19 @@ export function AnaliseCompetenciasPlaceholder() {
         <CardContent className="space-y-3">
           <div className="flex items-start gap-3">
             <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-wedo-magenta" />
-            <p className="text-sm font-open-sans text-gray-800 dark:text-gray-200">
+            <p className="text-sm font-open-sans text-gray-800 dark:text-lia-text-primary">
               <strong>Gap crítico em ML/AI:</strong> 73% de gap pode inviabilizar expansão planejada. Investimento em bootcamp interno economizaria R$ 280k vs. headhunting.
             </p>
           </div>
           <div className="flex items-start gap-3">
             <TrendingUp className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-700" />
-            <p className="text-sm font-open-sans text-gray-800 dark:text-gray-200">
+            <p className="text-sm font-open-sans text-gray-800 dark:text-lia-text-primary">
               <strong>Prompt Engineering explodiu 340%:</strong> Competência emergente crítica. Considere treinamento interno urgente para engenheiros existentes.
             </p>
           </div>
           <div className="flex items-start gap-3">
             <CheckCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-wedo-green-bright" />
-            <p className="text-sm font-open-sans text-gray-800 dark:text-gray-200">
+            <p className="text-sm font-open-sans text-gray-800 dark:text-lia-text-primary">
               <strong>React.js com gap controlado:</strong> 31% de gap está gerenciável. Pipeline atual atende demanda projetada para próximos 3 meses.
             </p>
           </div>

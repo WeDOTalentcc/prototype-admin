@@ -39,9 +39,9 @@ export function AddCompetencyModal({
 
   return (
     <div className="fixed inset-0 z-overlay flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-xl w-[440px] p-6">
+      <div className="bg-lia-bg-primary rounded-xl w-[440px] p-6">
         <h3
-          className="text-lg font-semibold text-gray-800 mb-4"
+          className="text-lg font-semibold lia-text-strong mb-4"
          
         >
           Adicionar Competência Comportamental
@@ -49,7 +49,7 @@ export function AddCompetencyModal({
 
         {companySuggestions.length > 0 && (
           <div className="mb-4">
-            <label className="text-xs font-medium text-gray-500 mb-2 block">Sugestões da Empresa</label>
+            <label className="text-xs font-medium lia-text-secondary mb-2 block">Sugestões da Empresa</label>
             <div className="flex flex-wrap gap-2">
               {companySuggestions.map((comp, idx) => (
                 <button
@@ -57,10 +57,10 @@ export function AddCompetencyModal({
                   type="button"
                   onClick={() => onCompetencyNameChange(comp.competency)}
                   className={cn(
-                    "px-3 py-1.5 text-xs rounded-md border transition-all",
+ "px-3 py-1.5 text-xs rounded-md border transition-colors",
                     competencyName === comp.competency
-                      ? "bg-gray-100 dark:bg-gray-800 border-gray-900 dark:border-gray-50 text-gray-600 dark:text-gray-400"
-                      : "bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-900 dark:hover:border-gray-50 hover:text-gray-900 dark:hover:text-gray-50"
+                      ? "bg-gray-100 dark:bg-lia-bg-secondary border-gray-900 text-gray-600 dark:text-lia-text-tertiary"
+                      : "bg-gray-50 border-lia-border-subtle lia-text-secondary hover:border-gray-900 dark:hover:border-gray-50 hover:lia-text-strong dark:hover:lia-text-subtle"
                   )}
                 >
                   {comp.competency}
@@ -79,7 +79,7 @@ export function AddCompetencyModal({
             value={competencyName}
             onChange={(e) => onCompetencyNameChange(e.target.value)}
             placeholder="Nome da competência (ex: Liderança)"
-            className="w-full px-4 py-3 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400"
+            className="w-full px-4 py-3 border border-lia-border-subtle rounded-md text-sm focus:outline-none focus:border-gray-400"
            
             autoFocus
           />
@@ -87,7 +87,7 @@ export function AddCompetencyModal({
             value={competencyJustification}
             onChange={(e) => onCompetencyJustificationChange(e.target.value)}
             placeholder="Justificativa (ex: Necessário para gestão de equipe)"
-            className="w-full px-4 py-3 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400 resize-none"
+            className="w-full px-4 py-3 border border-lia-border-subtle rounded-md text-sm focus:outline-none focus:border-gray-400 resize-none"
            
             rows={3}
           />
@@ -97,7 +97,7 @@ export function AddCompetencyModal({
           <Button
             variant="outline"
             onClick={onCancel}
-            className="flex-1 h-10 rounded-md border-gray-200"
+            className="flex-1 h-10 rounded-md border-lia-border-subtle"
           >
             Cancelar
           </Button>

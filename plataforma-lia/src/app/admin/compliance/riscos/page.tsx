@@ -128,16 +128,16 @@ export default function RiscosPage() {
           <div 
             className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
           >
-            <AlertTriangle className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <AlertTriangle className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
           </div>
           <div>
             <h1 
-              className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+              className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary"
               
             >
               Gestão de Riscos
             </h1>
-            <p className="text-sm text-gray-400 dark:text-gray-500" >
+            <p className="text-sm lia-text-400 dark:lia-text-500" >
               Dashboard de riscos, continuidade e seguro cibernético
             </p>
           </div>
@@ -148,10 +148,10 @@ export default function RiscosPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-gray-400 dark:text-gray-500" >
+                  <p className="text-sm lia-text-400 dark:lia-text-500" >
                     Total de Riscos
                   </p>
-                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
+                  <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary" >
                     {riskStats.total}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -160,7 +160,7 @@ export default function RiscosPage() {
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
-                  <FileWarning className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  <FileWarning className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                 </div>
               </div>
             </CardContent>
@@ -170,10 +170,10 @@ export default function RiscosPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-gray-400 dark:text-gray-500" >
+                  <p className="text-sm lia-text-400 dark:lia-text-500" >
                     Riscos Críticos
                   </p>
-                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
+                  <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary" >
                     {riskStats.critical}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -193,10 +193,10 @@ export default function RiscosPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-gray-400 dark:text-gray-500" >
+                  <p className="text-sm lia-text-400 dark:lia-text-500" >
                     Riscos em Tratamento
                   </p>
-                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
+                  <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary" >
                     {risks.filter(r => r.status === 'mitigating').length}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -217,10 +217,10 @@ export default function RiscosPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-gray-400 dark:text-gray-500" >
+                  <p className="text-sm lia-text-400 dark:lia-text-500" >
                     Taxa de Mitigação
                   </p>
-                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
+                  <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary" >
                     {Math.round((riskStats.mitigated / riskStats.total) * 100)}%
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -242,8 +242,8 @@ export default function RiscosPage() {
           <Card className="lg:col-span-1" >
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
+                <BarChart3 className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
                   Riscos por Categoria
                 </CardTitle>
               </div>
@@ -253,16 +253,16 @@ export default function RiscosPage() {
                 {risksByCategory.filter(c => c.count > 0).map((category) => (
                   <div key={category.category}>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm text-gray-500 dark:text-gray-400" >
+                      <span className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
                         {category.category}
                       </span>
-                      <span className="text-sm font-medium text-gray-800 dark:text-gray-100" >
+                      <span className="text-sm font-medium lia-text-800 dark:text-lia-text-primary" >
                         {category.count}
                       </span>
                     </div>
-                    <div className="h-2 rounded-full overflow-hidden bg-gray-50 dark:bg-gray-900" >
+                    <div className="h-2 rounded-full overflow-hidden bg-gray-50 dark:bg-lia-bg-primary" >
                       <div 
-                        className="h-full rounded-full transition-all"
+                        className="h-full rounded-full transition-[width,height]"
                         style={{width: `${(category.count / totalRisks) * 100}%`,
                           backgroundColor: category.color}}
                       />
@@ -270,9 +270,9 @@ export default function RiscosPage() {
                   </div>
                 ))}
               </div>
-              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700" >
+              <div className="mt-4 pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle" >
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-800 dark:text-gray-100" >
+                  <span className="text-sm font-medium lia-text-800 dark:text-lia-text-primary" >
                     Cobertura de Seguro
                   </span>
                   <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15">
@@ -286,8 +286,8 @@ export default function RiscosPage() {
           <Card className="lg:col-span-2" >
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
+                <BarChart3 className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
                   Matriz de Riscos (Probabilidade x Impacto)
                 </CardTitle>
               </div>
@@ -297,18 +297,18 @@ export default function RiscosPage() {
                 <table className="w-full text-xs">
                   <thead>
                     <tr>
-                      <th className="w-24 text-left p-1 text-gray-400 dark:text-gray-500" >Prob/Impacto</th>
-                      <th className="text-center p-1 text-gray-400 dark:text-gray-500" >Mín</th>
-                      <th className="text-center p-1 text-gray-400 dark:text-gray-500" >Baixo</th>
-                      <th className="text-center p-1 text-gray-400 dark:text-gray-500" >Médio</th>
-                      <th className="text-center p-1 text-gray-400 dark:text-gray-500" >Alto</th>
-                      <th className="text-center p-1 text-gray-400 dark:text-gray-500" >Crítico</th>
+                      <th className="w-24 text-left p-1 lia-text-400 dark:lia-text-500" >Prob/Impacto</th>
+                      <th className="text-center p-1 lia-text-400 dark:lia-text-500" >Mín</th>
+                      <th className="text-center p-1 lia-text-400 dark:lia-text-500" >Baixo</th>
+                      <th className="text-center p-1 lia-text-400 dark:lia-text-500" >Médio</th>
+                      <th className="text-center p-1 lia-text-400 dark:lia-text-500" >Alto</th>
+                      <th className="text-center p-1 lia-text-400 dark:lia-text-500" >Crítico</th>
                     </tr>
                   </thead>
                   <tbody>
                     {riskMatrix.map((row, rowIndex) => (
                       <tr key={rowIndex}>
-                        <td className="p-1 font-medium text-gray-500 dark:text-gray-400" >{row.probability}</td>
+                        <td className="p-1 font-medium lia-text-500 dark:text-lia-text-tertiary" >{row.probability}</td>
                         {row.impacts.map((value, colIndex) => {
                           const cellColor = getMatrixCellColor(value)
                           return (
@@ -327,7 +327,7 @@ export default function RiscosPage() {
                   </tbody>
                 </table>
               </div>
-              <div className="flex items-center justify-center gap-4 mt-4 text-xs text-gray-400 dark:text-gray-500" >
+              <div className="flex items-center justify-center gap-4 mt-4 text-xs lia-text-400 dark:lia-text-500" >
                 <div className="flex items-center gap-1">
                   <div className="w-3 h-3 rounded-md bg-status-success" />
                   <span>Baixo (1-4)</span>
@@ -354,13 +354,13 @@ export default function RiscosPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 text-status-error" />
-                <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
+                <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
                   Top 5 Riscos Prioritários
                 </CardTitle>
               </div>
               <Link 
                 href="/admin/compliance/riscos/registro"
-                className="text-sm flex items-center gap-1 hover:underline text-gray-700"
+                className="text-sm flex items-center gap-1 hover:underline lia-text-700"
               >
                 Ver todos
                 <ArrowRight className="w-3 h-3" />
@@ -384,18 +384,18 @@ export default function RiscosPage() {
                       </Badge>
                       <span className="text-lg font-bold" style={{color: scoreConfig.text}}>{risk.score}</span>
                     </div>
-                    <p className="text-sm font-medium mb-2 text-gray-800 dark:text-gray-100" >
+                    <p className="text-sm font-medium mb-2 lia-text-800 dark:text-lia-text-primary" >
                       {risk.name}
                     </p>
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge variant="secondary" className="text-micro">
                         {risk.category}
                       </Badge>
-                      <span className="text-xs text-gray-400 dark:text-gray-500" >
+                      <span className="text-xs lia-text-400 dark:lia-text-500" >
                         {getStatusLabel(risk.status)}
                       </span>
                     </div>
-                    <div className="mt-2 text-xs text-gray-400 dark:text-gray-500" >
+                    <div className="mt-2 text-xs lia-text-400 dark:lia-text-500" >
                       Owner: {risk.owner}
                     </div>
                   </div>
@@ -411,7 +411,7 @@ export default function RiscosPage() {
             return (
               <Link key={page.href} href={page.href}>
                 <Card 
-                  className="cursor-pointer transition-all hover:h-full"
+                  className="cursor-pointer transition-colors hover:h-full"
                   
                 >
                   <CardContent className="p-4">
@@ -419,13 +419,13 @@ export default function RiscosPage() {
                       <div 
                         className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
                       >
-                        <Icon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                        <Icon className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm truncate text-gray-800 dark:text-gray-100" >
+                        <p className="font-medium text-sm truncate lia-text-800 dark:text-lia-text-primary" >
                           {page.name}
                         </p>
-                        <p className="text-xs truncate text-gray-400 dark:text-gray-500" >
+                        <p className="text-xs truncate lia-text-400 dark:lia-text-500" >
                           {page.description}
                         </p>
                       </div>

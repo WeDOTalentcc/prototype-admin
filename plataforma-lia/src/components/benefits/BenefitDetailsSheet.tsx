@@ -38,12 +38,12 @@ const BENEFIT_CATEGORIES: {
 }[] = [
   { id: "health", name: "Saúde & Bem-estar", icon: Stethoscope, color: "text-status-error", bgColor: "bg-status-error/10 dark:bg-status-error/20" },
   { id: "food", name: "Alimentação", icon: Utensils, color: "text-wedo-orange", bgColor: "bg-wedo-orange/10 dark:bg-wedo-orange/10/20" },
-  { id: "transport", name: "Transporte", icon: Car, color: "text-gray-600 dark:text-gray-400", bgColor: "bg-gray-100 dark:bg-gray-800" },
+  { id: "transport", name: "Transporte", icon: Car, color: "text-gray-600 dark:text-lia-text-tertiary", bgColor: "bg-gray-100 dark:bg-lia-bg-secondary" },
   { id: "education", name: "Educação & Desenvolvimento", icon: GraduationCap, color: "text-wedo-purple", bgColor: "bg-wedo-purple/10 dark:bg-wedo-purple/20" },
   { id: "financial", name: "Financeiro", icon: Wallet, color: "text-status-success", bgColor: "bg-status-success/10 dark:bg-status-success/20" },
- { id: "quality_life", name: "Qualidade de Vida", icon: Home, color: "text-gray-700 dark:text-gray-300", bgColor: "bg-gray-50 dark:bg-gray-800" },
+ { id: "quality_life", name: "Qualidade de Vida", icon: Home, color: "text-gray-700 dark:text-lia-text-secondary", bgColor: "bg-gray-50 dark:bg-lia-bg-secondary" },
   { id: "family", name: "Família", icon: Baby, color: "text-wedo-magenta", bgColor: "bg-wedo-magenta/10 dark:bg-wedo-magenta/20" },
-  { id: "security", name: "Segurança", icon: Shield, color: "text-gray-800 dark:text-gray-200", bgColor: "bg-gray-50 dark:bg-gray-800/50" },
+  { id: "security", name: "Segurança", icon: Shield, color: "text-gray-800 dark:text-lia-text-primary", bgColor: "bg-gray-50 dark:bg-lia-bg-secondary/50" },
 ]
 
 const SENIORITY_LEVELS: { id: string; name: string }[] = [
@@ -128,21 +128,21 @@ export function BenefitDetailsSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col">
-        <SheetHeader className="px-6 pt-6 pb-4 border-b border-gray-100 dark:border-gray-800">
+        <SheetHeader className="px-6 pt-6 pb-4 border-b border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <div 
               className="p-2.5 rounded-md bg-gray-200/30"
             >
-              <Gift className="w-5 h-5 text-gray-700" />
+              <Gift className="w-5 h-5 lia-text-base" />
             </div>
             <div>
               <SheetTitle 
-                className="text-lg font-semibold text-gray-950 dark:text-gray-50"
+                className="text-lg font-semibold text-gray-950"
               >
                 {title}
               </SheetTitle>
               <SheetDescription 
-                className="text-sm text-gray-800 dark:text-gray-200"
+                className="text-sm text-gray-800 dark:text-lia-text-primary"
                
               >
                 {totalBenefits} benefícios disponíveis
@@ -158,7 +158,7 @@ export function BenefitDetailsSheet({
                 <div className="flex items-center gap-2">
                   <Star className="w-4 h-4 text-status-warning fill-yellow-500" />
                   <h3 
-                    className="text-sm font-semibold text-gray-950 dark:text-gray-50"
+                    className="text-sm font-semibold text-gray-950"
                   >
                     Destaques
                   </h3>
@@ -182,11 +182,11 @@ export function BenefitDetailsSheet({
                       <CategoryIcon className={`w-4 h-4 ${category.color}`} />
                     </div>
                     <h3 
-                      className="text-sm font-semibold text-gray-950 dark:text-gray-50"
+                      className="text-sm font-semibold text-gray-950"
                     >
                       {category.name}
                     </h3>
-                    <span className="text-xs text-gray-800 dark:text-gray-200">
+                    <span className="text-xs text-gray-800 dark:text-lia-text-primary">
                       ({categoryBenefits.length})
                     </span>
                   </div>
@@ -201,9 +201,9 @@ export function BenefitDetailsSheet({
 
             {groupedBenefits.size === 0 && (
               <div className="flex flex-col items-center justify-center py-12 text-center">
-                <Gift className="w-12 h-12 text-gray-300 mb-3" />
+                <Gift className="w-12 h-12 lia-text-muted mb-3" />
                 <p 
-                  className="text-sm text-gray-800 dark:text-gray-200"
+                  className="text-sm text-gray-800 dark:text-lia-text-primary"
                  
                 >
                   Nenhum benefício disponível
@@ -229,19 +229,19 @@ function BenefitCard({ benefit, isHighlighted = false }: BenefitCardProps) {
   return (
     <div 
       className={`
-        p-3 rounded-md border transition-all duration-200
+ p-3 rounded-md border transition-colors duration-200
         ${isHighlighted 
           ? 'border-status-warning/30 dark:border-status-warning/30/50 bg-status-warning/10/50' 
-          : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900/50'
+          : 'border-lia-border-subtle bg-white dark:bg-lia-bg-primary/50'
         }
-        hover:hover:border-gray-200 dark:hover:border-gray-700
+        hover:hover:border-lia-border-subtle dark:hover:border-gray-700
       `}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <h4 
-              className="font-medium text-gray-950 dark:text-gray-50 text-sm truncate"
+              className="font-medium text-gray-950 text-sm truncate"
              
             >
               {benefit.name}
@@ -253,28 +253,28 @@ function BenefitCard({ benefit, isHighlighted = false }: BenefitCardProps) {
           
           {benefit.description && (
             <p 
-              className="text-xs text-gray-800 dark:text-gray-200 line-clamp-2 mb-2"
+              className="text-xs text-gray-800 dark:text-lia-text-primary line-clamp-2 mb-2"
              
             >
               {benefit.description}
             </p>
           )}
 
-          <div className="flex flex-wrap items-center gap-2 text-xs text-gray-800 dark:text-gray-200">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-gray-800 dark:text-lia-text-primary">
             {valueDisplay && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gray-50 dark:bg-gray-800">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gray-50 dark:bg-lia-bg-secondary">
                 {benefit.value_type === "monetary" && <DollarSign className="w-3 h-3" />}
                 {benefit.value_type === "percentage" && <Percent className="w-3 h-3" />}
                 {valueDisplay}
               </span>
             )}
             
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gray-50 dark:bg-gray-800">
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gray-50 dark:bg-lia-bg-secondary">
               <Clock className="w-3 h-3" />
               {getWaitingPeriodLabel(benefit.waiting_period_days)}
             </span>
             
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gray-50 dark:bg-gray-800">
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gray-50 dark:bg-lia-bg-secondary">
               <Users className="w-3 h-3" />
               {getSeniorityLabel(benefit.seniority_levels)}
             </span>

@@ -1,3 +1,4 @@
+// TODO: Sprint 4 Dark Mode — File exceeds 400 lines. Needs manual dark: class review.
 "use client"
 
 import { Brain, BookOpen, Users, Code, FileText, Clock, ChevronLeft, HelpCircle, Lightbulb, Target, CheckCircle, Fingerprint, AlertTriangle, MessageSquare, TrendingUp, Shield } from "lucide-react"
@@ -46,11 +47,11 @@ export default function AjudaPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary">
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="mb-8">
           <Link href="/">
-            <Button variant="ghost" className="mb-4 text-gray-600 hover:text-gray-800">
+            <Button variant="ghost" className="mb-4 lia-text-600 hover:lia-text-800">
               <ChevronLeft className="w-4 h-4 mr-1" />
               Voltar
             </Button>
@@ -61,21 +62,21 @@ export default function AjudaPage() {
               <Brain className="w-8 h-8 text-wedo-cyan" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Central de Ajuda</h1>
-              <p className="text-gray-600 dark:text-gray-400">Entenda como a LIA analisa candidatos</p>
+              <h1 className="text-3xl font-bold lia-text-800 dark:text-lia-text-primary">Central de Ajuda</h1>
+              <p className="lia-text-600 dark:text-lia-text-tertiary">Entenda como a LIA analisa candidatos</p>
             </div>
           </div>
         </div>
 
         <div className="space-y-6">
-          <Card className="border-gray-100">
+          <Card className="border-lia-border-subtle">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <Lightbulb className="w-5 h-5 text-gray-700" />
-                <CardTitle className="text-lg font-semibold text-gray-800">Como a LIA Analisa Candidatos</CardTitle>
+                <Lightbulb className="w-5 h-5 lia-text-700" />
+                <CardTitle className="text-lg font-semibold lia-text-800">Como a LIA Analisa Candidatos</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="text-gray-600 space-y-3">
+            <CardContent className="lia-text-600 space-y-3">
               <p>
                 A LIA utiliza inteligência artificial avançada para <strong>extrair e inferir informações</strong> a partir de currículos e perfis profissionais. O processo combina técnicas de processamento de linguagem natural (NLP) com análise semântica para compreender o contexto e significado das informações.
               </p>
@@ -85,52 +86,52 @@ export default function AjudaPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-gray-100">
+          <Card className="border-lia-border-subtle">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <Target className="w-5 h-5 text-gray-700" />
-                <CardTitle className="text-lg font-semibold text-gray-800">Classificação de Senioridade</CardTitle>
+                <Target className="w-5 h-5 lia-text-700" />
+                <CardTitle className="text-lg font-semibold lia-text-800">Classificação de Senioridade</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600 mb-4">
+              <p className="lia-text-600 mb-4">
                 A senioridade é determinada com base na combinação de anos de experiência e títulos dos cargos ocupados:
               </p>
               <div className="space-y-3">
                 {seniorityLevels.map((item) => (
-                  <div key={item.level} className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-gray-800">
+                  <div key={item.level} className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-lia-bg-secondary">
                     <Badge 
                       className="mt-0.5 text-white font-medium px-3 py-1"
                       style={{backgroundColor: item.color}}
                     >
                       {item.level}
                     </Badge>
-                    <span className="text-gray-600 dark:text-gray-400">{item.description}</span>
+                    <span className="lia-text-600 dark:text-lia-text-tertiary">{item.description}</span>
                   </div>
                 ))}
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-gray-100">
+          <Card className="border-lia-border-subtle">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <Code className="w-5 h-5 text-gray-700" />
-                <CardTitle className="text-lg font-semibold text-gray-800">Classificação de Skills</CardTitle>
+                <Code className="w-5 h-5 lia-text-700" />
+                <CardTitle className="text-lg font-semibold lia-text-800">Classificação de Skills</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
-                  <Code className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                <h4 className="font-semibold lia-text-800 mb-2 flex items-center gap-2">
+                  <Code className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                   Technical Skills (Habilidades Técnicas)
                 </h4>
-                <p className="text-gray-600 mb-2">
+                <p className="lia-text-600 mb-2">
                   Incluem linguagens de programação, frameworks, ferramentas, bancos de dados e metodologias técnicas. Exemplos:
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {["Python", "JavaScript", "React", "Node.js", "PostgreSQL", "Docker", "AWS", "Git"].map((skill) => (
-                    <Badge key={skill} variant="outline" className="text-xs border-gray-900 dark:border-gray-50 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                    <Badge key={skill} variant="outline" className="text-xs border-gray-900 dark:lia-border-50 bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary">
                       {skill}
                     </Badge>
                   ))}
@@ -138,11 +139,11 @@ export default function AjudaPage() {
               </div>
 
               <div className="border-t pt-4">
-                <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                <h4 className="font-semibold lia-text-800 mb-2 flex items-center gap-2">
                   <Users className="w-4 h-4" style={{color: '#E57373'}} />
                   Soft Skills (Competências Comportamentais)
                 </h4>
-                <p className="text-gray-600 mb-2">
+                <p className="lia-text-600 mb-2">
                   Habilidades interpessoais e comportamentais identificadas pela LIA:
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -160,20 +161,20 @@ export default function AjudaPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-gray-100">
+          <Card className="border-lia-border-subtle">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <FileText className="w-5 h-5 text-gray-700" />
-                <CardTitle className="text-lg font-semibold text-gray-800">Campos Extraídos vs Inferidos</CardTitle>
+                <FileText className="w-5 h-5 lia-text-700" />
+                <CardTitle className="text-lg font-semibold lia-text-800">Campos Extraídos vs Inferidos</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                <h4 className="font-semibold lia-text-800 mb-2 flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-status-success" />
                   Extraídos Diretamente do Currículo
                 </h4>
-                <p className="text-gray-600 mb-2">
+                <p className="lia-text-600 mb-2">
                   Informações encontradas explicitamente no documento:
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -186,11 +187,11 @@ export default function AjudaPage() {
               </div>
 
               <div className="border-t pt-4">
-                <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                <h4 className="font-semibold lia-text-800 mb-2 flex items-center gap-2">
                   <Brain className="w-4 h-4 text-wedo-cyan" />
                   Inferidos pela IA
                 </h4>
-                <p className="text-gray-600 mb-2">
+                <p className="lia-text-600 mb-2">
                   Informações calculadas ou deduzidas pela análise inteligente:
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -209,14 +210,14 @@ export default function AjudaPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-gray-100">
+          <Card className="border-lia-border-subtle">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <Clock className="w-5 h-5 text-gray-700" />
-                <CardTitle className="text-lg font-semibold text-gray-800">Cálculo de Anos de Experiência</CardTitle>
+                <Clock className="w-5 h-5 lia-text-700" />
+                <CardTitle className="text-lg font-semibold lia-text-800">Cálculo de Anos de Experiência</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="text-gray-600 space-y-3">
+            <CardContent className="lia-text-600 space-y-3">
               <p>
                 O cálculo de anos de experiência é realizado a partir das <strong>datas reais de início e término</strong> de cada experiência profissional registrada no currículo.
               </p>
@@ -229,11 +230,11 @@ export default function AjudaPage() {
                 </p>
               </div>
               <div className="mt-4">
-                <h4 className="font-semibold text-gray-800 mb-2">Exemplo de cálculo:</h4>
-                <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-md text-sm">
+                <h4 className="font-semibold lia-text-800 mb-2">Exemplo de cálculo:</h4>
+                <div className="bg-gray-100 dark:bg-lia-bg-secondary p-3 rounded-md text-sm">
                   <p className="mb-1">Experiência 1: Jan/2018 - Dez/2020 (3 anos)</p>
                   <p className="mb-1">Experiência 2: Jun/2020 - Atual (4.5 anos)</p>
-                  <p className="font-semibold mt-2 text-gray-700">
+                  <p className="font-semibold mt-2 lia-text-700">
                     Total calculado: 6.5 anos (não 7.5, pois 6 meses são sobrepostos)
                   </p>
                 </div>
@@ -241,32 +242,32 @@ export default function AjudaPage() {
             </CardContent>
           </Card>
 
-          <div className="border-t border-gray-200 dark:border-gray-700 my-8 pt-8">
+          <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle my-8 pt-8">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2 rounded-md bg-wedo-cyan/15">
-                <Fingerprint className="w-6 h-6 text-gray-700" />
+                <Fingerprint className="w-6 h-6 lia-text-700" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">Análise de Perfil de Personalidade</h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Inferência probabilística baseada no modelo Big Five (OCEAN)</p>
+                <h2 className="text-xl font-bold lia-text-800 dark:text-lia-text-primary">Análise de Perfil de Personalidade</h2>
+                <p className="text-sm lia-text-600 dark:text-lia-text-tertiary">Inferência probabilística baseada no modelo Big Five (OCEAN)</p>
               </div>
             </div>
           </div>
 
-          <Card className="border-gray-100">
+          <Card className="border-lia-border-subtle">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <Brain className="w-5 h-5 text-wedo-cyan" />
-                <CardTitle className="text-lg font-semibold text-gray-800">O Modelo Big Five (OCEAN)</CardTitle>
+                <CardTitle className="text-lg font-semibold lia-text-800">O Modelo Big Five (OCEAN)</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="text-gray-600 space-y-4">
+            <CardContent className="lia-text-600 space-y-4">
               <p>
                 O <strong>Big Five</strong> é o modelo científico mais validado para avaliação de personalidade, utilizado em mais de 3.000 estudos acadêmicos. A LIA utiliza este framework para inferir tendências comportamentais dos candidatos através de análise probabilística.
               </p>
               <div className="space-y-3">
                 {bigFiveDimensions.map((dim) => (
-                  <div key={dim.trait} className="p-3 rounded-md bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
+                  <div key={dim.trait} className="p-3 rounded-md bg-gray-50 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
                     <div className="flex items-start gap-3">
                       <Badge 
                         className="mt-0.5 text-white font-bold px-2.5 py-1 text-sm bg-gray-900"
@@ -274,9 +275,9 @@ export default function AjudaPage() {
                         {dim.trait}
                       </Badge>
                       <div className="flex-1">
-                        <h4 className="font-semibold text-gray-800 dark:text-gray-200">{dim.name}</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{dim.description}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-500">
+                        <h4 className="font-semibold lia-text-800 dark:text-lia-text-primary">{dim.name}</h4>
+                        <p className="text-sm lia-text-600 dark:text-lia-text-tertiary mb-1">{dim.description}</p>
+                        <p className="text-xs lia-text-500 dark:lia-text-500">
                           <span className="font-medium">Indicadores:</span> {dim.indicators}
                         </p>
                       </div>
@@ -287,54 +288,54 @@ export default function AjudaPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-gray-100">
+          <Card className="border-lia-border-subtle">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-gray-700" />
-                <CardTitle className="text-lg font-semibold text-gray-800">Como a LIA Infere a Personalidade</CardTitle>
+                <TrendingUp className="w-5 h-5 lia-text-700" />
+                <CardTitle className="text-lg font-semibold lia-text-800">Como a LIA Infere a Personalidade</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-gray-600">
+              <p className="lia-text-600">
                 A análise é baseada em múltiplas fontes de dados, combinando sinais comportamentais para gerar uma estimativa probabilística do perfil:
               </p>
               
               <div className="grid gap-3">
-                <div className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-gray-800">
-                  <FileText className="w-5 h-5 mt-0.5 flex-shrink-0 text-gray-700" />
+                <div className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-lia-bg-secondary">
+                  <FileText className="w-5 h-5 mt-0.5 flex-shrink-0 lia-text-700" />
                   <div>
-                    <h4 className="font-semibold text-gray-800 dark:text-gray-200">Texto e Estrutura do CV</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <h4 className="font-semibold lia-text-800 dark:text-lia-text-primary">Texto e Estrutura do CV</h4>
+                    <p className="text-sm lia-text-600 dark:text-lia-text-tertiary">
                       Análise do vocabulário utilizado, tom de comunicação, forma de apresentar conquistas e nível de detalhamento das descrições.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-gray-800">
-                  <Target className="w-5 h-5 mt-0.5 flex-shrink-0 text-gray-700" />
+                <div className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-lia-bg-secondary">
+                  <Target className="w-5 h-5 mt-0.5 flex-shrink-0 lia-text-700" />
                   <div>
-                    <h4 className="font-semibold text-gray-800 dark:text-gray-200">Padrões de Progressão de Carreira</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <h4 className="font-semibold lia-text-800 dark:text-lia-text-primary">Padrões de Progressão de Carreira</h4>
+                    <p className="text-sm lia-text-600 dark:text-lia-text-tertiary">
                       Velocidade de crescimento, mudanças laterais vs. verticais, estabilidade em posições e transições entre áreas.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-gray-800">
-                  <Users className="w-5 h-5 mt-0.5 flex-shrink-0 text-gray-700" />
+                <div className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-lia-bg-secondary">
+                  <Users className="w-5 h-5 mt-0.5 flex-shrink-0 lia-text-700" />
                   <div>
-                    <h4 className="font-semibold text-gray-800 dark:text-gray-200">Escolhas de Empresas e Cargos</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <h4 className="font-semibold lia-text-800 dark:text-lia-text-primary">Escolhas de Empresas e Cargos</h4>
+                    <p className="text-sm lia-text-600 dark:text-lia-text-tertiary">
                       Tipos de empresas (startup vs. corporação), setores escolhidos, natureza dos cargos (individual contributor vs. gestão).
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-gray-800">
-                  <MessageSquare className="w-5 h-5 mt-0.5 flex-shrink-0 text-gray-700" />
+                <div className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-lia-bg-secondary">
+                  <MessageSquare className="w-5 h-5 mt-0.5 flex-shrink-0 lia-text-700" />
                   <div>
-                    <h4 className="font-semibold text-gray-800 dark:text-gray-200">Estilo de Comunicação</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <h4 className="font-semibold lia-text-800 dark:text-lia-text-primary">Estilo de Comunicação</h4>
+                    <p className="text-sm lia-text-600 dark:text-lia-text-tertiary">
                       Assertividade na escrita, uso de primeira pessoa vs. coletivo, foco em resultados quantitativos vs. qualitativos.
                     </p>
                   </div>
@@ -343,15 +344,15 @@ export default function AjudaPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-gray-100">
+          <Card className="border-lia-border-subtle">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <Brain className="w-5 h-5 text-wedo-cyan" />
-                <CardTitle className="text-lg font-semibold text-gray-800">Os 8 Arquétipos Profissionais</CardTitle>
+                <CardTitle className="text-lg font-semibold lia-text-800">Os 8 Arquétipos Profissionais</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-gray-600">
+              <p className="lia-text-600">
                 Com base nas combinações das 5 dimensões, a LIA identifica 8 arquétipos profissionais que ajudam a prever o fit para diferentes tipos de posições:
               </p>
               
@@ -359,7 +360,7 @@ export default function AjudaPage() {
                 {archetypes.map((archetype) => (
                   <div 
                     key={archetype.name} 
-                    className="p-3 rounded-md border border-gray-100 dark:border-gray-700"
+                    className="p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle"
                     style={{backgroundColor: `${archetype.color}10`}}
                   >
                     <div className="flex items-start gap-2 mb-2">
@@ -370,9 +371,9 @@ export default function AjudaPage() {
                         {archetype.profile}
                       </Badge>
                     </div>
-                    <h4 className="font-semibold text-gray-800 dark:text-gray-200 text-sm">{archetype.name}</h4>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">{archetype.description}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-500">
+                    <h4 className="font-semibold lia-text-800 dark:text-lia-text-primary text-sm">{archetype.name}</h4>
+                    <p className="text-xs lia-text-600 dark:text-lia-text-tertiary mb-1">{archetype.description}</p>
+                    <p className="text-xs lia-text-500 dark:lia-text-500">
                       <span className="font-medium">Ideal para:</span> {archetype.roles}
                     </p>
                   </div>
@@ -381,11 +382,11 @@ export default function AjudaPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-gray-100 border-status-warning/30 dark:border-status-warning/30">
+          <Card className="border-lia-border-subtle border-status-warning/30 dark:border-status-warning/30">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-status-warning" />
-                <CardTitle className="text-lg font-semibold text-gray-800">Limitações Importantes</CardTitle>
+                <CardTitle className="text-lg font-semibold lia-text-800">Limitações Importantes</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -395,36 +396,36 @@ export default function AjudaPage() {
                 </p>
               </div>
               
-              <div className="space-y-2 text-gray-600 text-sm">
+              <div className="space-y-2 lia-text-600 text-sm">
                 <p className="flex items-start gap-2">
-                  <Shield className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-400" />
+                  <Shield className="w-4 h-4 mt-0.5 flex-shrink-0 lia-text-400" />
                   <span>Os scores devem ser usados como <strong>indicadores complementares</strong>, não como critérios eliminatórios únicos.</span>
                 </p>
                 <p className="flex items-start gap-2">
-                  <Shield className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-400" />
+                  <Shield className="w-4 h-4 mt-0.5 flex-shrink-0 lia-text-400" />
                   <span>A personalidade é <strong>contextual e dinâmica</strong> — pessoas podem se comportar diferentemente em diferentes ambientes.</span>
                 </p>
                 <p className="flex items-start gap-2">
-                  <Shield className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-400" />
+                  <Shield className="w-4 h-4 mt-0.5 flex-shrink-0 lia-text-400" />
                   <span>CVs refletem <strong>auto-apresentação</strong>, que pode diferir do comportamento real no trabalho.</span>
                 </p>
                 <p className="flex items-start gap-2">
-                  <Shield className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-400" />
+                  <Shield className="w-4 h-4 mt-0.5 flex-shrink-0 lia-text-400" />
                   <span>Recomendamos sempre <strong>validar inferências</strong> com entrevistas estruturadas e referências.</span>
                 </p>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-gray-100">
+          <Card className="border-lia-border-subtle">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-status-success" />
-                <CardTitle className="text-lg font-semibold text-gray-800">Como Melhorar a Precisão com WSI</CardTitle>
+                <CardTitle className="text-lg font-semibold lia-text-800">Como Melhorar a Precisão com WSI</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-gray-600">
+              <p className="lia-text-600">
                 O <strong>WSI (Work Sample Interview)</strong> é nossa metodologia de triagem que aumenta significativamente a precisão das inferências de personalidade:
               </p>
               
@@ -443,7 +444,7 @@ export default function AjudaPage() {
                 </div>
               </div>
 
-              <div className="text-gray-600 text-sm space-y-2">
+              <div className="lia-text-600 text-sm space-y-2">
                 <p>
                   O WSI combina a <strong>Taxonomia de Bloom</strong> (níveis cognitivos) com o <strong>Modelo Dreyfus</strong> (proficiência) para avaliar como o candidato pensa e resolve problemas reais.
                 </p>
@@ -455,7 +456,7 @@ export default function AjudaPage() {
           </Card>
         </div>
 
-        <div className="mt-8 text-center text-gray-500 text-sm">
+        <div className="mt-8 text-center lia-text-500 text-sm">
           <p>Precisa de mais ajuda? Entre em contato com nossa equipe de suporte.</p>
         </div>
       </div>

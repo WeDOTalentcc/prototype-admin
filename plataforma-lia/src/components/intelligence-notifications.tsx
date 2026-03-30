@@ -138,9 +138,9 @@ export function IntelligenceNotifications({
       case 'medium':
         return 'bg-status-warning/15 text-status-warning border-status-warning/30'
       case 'low':
-        return 'bg-wedo-cyan/15 text-wedo-cyan-dark border-gray-300 dark:border-gray-600'
+        return 'bg-wedo-cyan/15 text-wedo-cyan-dark border-lia-border-default dark:border-lia-border-default'
       default:
-        return 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200'
+        return 'bg-gray-100 text-gray-800 dark:text-lia-text-primary border-lia-border-subtle'
     }
   }
 
@@ -232,10 +232,10 @@ export function IntelligenceNotifications({
       </Button>
 
       {isOpen && (
-        <div className="absolute right-0 top-12 w-96 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md z-50 max-h-96 overflow-hidden">
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="absolute right-0 top-12 w-96 bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md z-50 max-h-96 overflow-hidden">
+          <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
             <div className="flex items-center justify-between">
-              <h3 className="font-medium text-gray-950 dark:text-gray-50">
+              <h3 className="font-medium text-gray-950">
                 🧠 Inteligência Competitiva
               </h3>
               <div className="flex items-center gap-2">
@@ -280,8 +280,8 @@ export function IntelligenceNotifications({
           <div className="max-h-80 overflow-y-auto">
             {isLoading && notifications.length === 0 ? (
               <div className="p-6 text-center">
-                <Loader2 className="w-8 h-8 text-gray-600 mx-auto mb-2 animate-spin" />
-                <p className="text-sm text-gray-800 dark:text-gray-200">Carregando notificações...</p>
+                <Loader2 className="w-8 h-8 lia-text-base mx-auto mb-2 animate-spin" />
+                <p className="text-sm text-gray-800 dark:text-lia-text-primary">Carregando notificações...</p>
               </div>
             ) : error ? (
               <div className="p-6 text-center">
@@ -299,15 +299,15 @@ export function IntelligenceNotifications({
               </div>
             ) : notifications.length === 0 ? (
               <div className="p-6 text-center">
-                <Bell className="w-8 h-8 text-gray-600 mx-auto mb-2" />
-                <p className="text-sm text-gray-800 dark:text-gray-200">Nenhuma notificação</p>
+                <Bell className="w-8 h-8 lia-text-base mx-auto mb-2" />
+                <p className="text-sm text-gray-800 dark:text-lia-text-primary">Nenhuma notificação</p>
               </div>
             ) : (
               notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`p-4 border-b border-gray-100 dark:border-gray-800 transition-colors ${
-                    !notification.read ? 'bg-wedo-cyan/10 dark:bg-wedo-cyan/15' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                  className={`p-4 border-b border-lia-border-subtle transition-colors ${
+ !notification.read ? 'bg-wedo-cyan/10 dark:bg-wedo-cyan/15' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 >
                   <div className="flex items-start gap-3">
@@ -317,7 +317,7 @@ export function IntelligenceNotifications({
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm font-medium text-gray-950 dark:text-gray-50">
+                        <span className="text-sm font-medium text-gray-950">
                           {notification.title}
                         </span>
                         <Badge className={`text-xs ${getPriorityColor(notification.priority)}`}>
@@ -325,12 +325,12 @@ export function IntelligenceNotifications({
                         </Badge>
                       </div>
 
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                      <p className="text-sm text-gray-600 dark:text-lia-text-tertiary mb-2">
                         {notification.message}
                       </p>
 
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-800 dark:text-gray-200">
+                        <span className="text-xs text-gray-800 dark:text-lia-text-primary">
                           {formatTimestamp(notification.timestamp)}
                         </span>
 
@@ -369,10 +369,10 @@ export function IntelligenceNotifications({
             )}
           </div>
 
-          <div className="p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+          <div className="p-3 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary">
             <div className="flex items-center justify-between">
               {lastFetch && (
-                <span className="text-xs text-gray-600">
+                <span className="text-xs lia-text-base">
                   Atualizado: {formatTimestamp(lastFetch)}
                 </span>
               )}

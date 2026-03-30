@@ -73,7 +73,7 @@ const ACTION_CONFIG: Record<BulkActionType, { title: string; description: string
   move_stage: {
     title: 'Mover Candidatos de Etapa',
     description: 'Selecione a etapa de destino para os candidatos selecionados.',
-    icon: <ArrowRight className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+    icon: <ArrowRight className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
   },
   reject: {
     title: 'Reprovar Candidatos',
@@ -83,22 +83,22 @@ const ACTION_CONFIG: Record<BulkActionType, { title: string; description: string
   request_data: {
     title: 'Solicitar Dados',
     description: 'Envie uma solicitação de dados para os candidatos selecionados.',
-    icon: <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+    icon: <FileText className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
   },
   send_message: {
     title: 'Enviar Mensagem',
     description: 'Envie uma mensagem para os candidatos selecionados.',
-    icon: <Mail className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+    icon: <Mail className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
   },
   export: {
     title: 'Exportar Candidatos',
     description: 'Exporte os dados dos candidatos selecionados.',
-    icon: <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+    icon: <FileText className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
   },
   add_to_list: {
     title: 'Adicionar à Lista',
     description: 'Adicione os candidatos selecionados a uma lista.',
-    icon: <Users className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+    icon: <Users className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
   },
 }
 
@@ -232,13 +232,13 @@ export function BulkActionModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto rounded-md dark:bg-gray-800 dark:border-gray-700">
-        <DialogHeader className="border-b border-gray-200 dark:border-gray-700 pb-3">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <DialogHeader className="border-b border-lia-border-subtle dark:border-lia-border-subtle pb-3">
           <DialogTitle className="flex items-center gap-2 text-sm font-semibold text-gray-950 dark:text-gray-50">
             {config.icon}
             {config.title}
           </DialogTitle>
-          <DialogDescription className="text-xs text-gray-600 dark:text-gray-400">
+          <DialogDescription className="text-xs text-gray-600 dark:text-lia-text-tertiary">
             {config.description}
             {jobTitle && <span className="text-gray-600"> · {jobTitle}</span>}
           </DialogDescription>
@@ -251,7 +251,7 @@ export function BulkActionModal({
                 <Users className="w-3 h-3 text-gray-600" />
                 Candidatos Selecionados
               </Label>
-              <Badge variant="secondary" className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+              <Badge variant="secondary" className="bg-gray-100 dark:bg-lia-bg-elevated text-gray-700 dark:text-lia-text-secondary">
                 {candidates.length}
               </Badge>
             </div>
@@ -269,12 +269,12 @@ export function BulkActionModal({
                         "flex items-center gap-2 p-2 rounded-md",
                         result?.success && "bg-status-success/10 dark:bg-status-success/10",
                         result?.success === false && "bg-status-error/10 dark:bg-status-error/10",
-                        !result && "bg-gray-50 dark:bg-gray-800/50"
+                        !result && "bg-gray-50 dark:bg-lia-bg-secondary/50"
                       )}
                     >
                       <Avatar className="w-7 h-7">
                         <AvatarImage src={avatarUrl} />
-                        <AvatarFallback className="text-micro bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
+                        <AvatarFallback className="text-micro bg-gray-100 dark:bg-lia-bg-elevated text-gray-600 dark:text-lia-text-tertiary">
                           {candidate.name?.slice(0, 2).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
@@ -367,7 +367,7 @@ export function BulkActionModal({
           )}
 
           {(isExecuting || isComplete) && (
-            <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-md">
+            <div className="space-y-3 p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-medium">Progresso</span>
                 <span className="text-gray-600">
@@ -394,10 +394,10 @@ export function BulkActionModal({
           )}
         </div>
 
-        <DialogFooter className="border-t border-gray-200 bg-gray-50 dark:bg-gray-900 dark:border-gray-700 pt-3">
+        <DialogFooter className="border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle pt-3">
           {!isComplete ? (
             <>
-              <Button variant="outline" onClick={handleClose} disabled={isExecuting} className="h-9 px-4 text-xs font-medium bg-white border border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200">
+              <Button variant="outline" onClick={handleClose} disabled={isExecuting} className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 text-gray-700 dark:text-lia-text-primary">
                 Cancelar
               </Button>
               <Button

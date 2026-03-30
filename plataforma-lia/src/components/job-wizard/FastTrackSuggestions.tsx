@@ -47,8 +47,8 @@ export function FastTrackSuggestions({
   
   if (isLoading) {
     return (
-      <div className="p-4 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-800">
-        <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+      <div className="p-4 border border-lia-border-default dark:border-lia-border-default rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
+        <div className="flex items-center gap-2 text-gray-700 dark:text-lia-text-secondary">
           <Loader2 className="w-4 h-4 animate-spin" />
           <span className="text-sm">Buscando vagas similares...</span>
         </div>
@@ -82,7 +82,7 @@ export function FastTrackSuggestions({
   
   const getMatchBadgeColor = (score: number) => {
     if (score >= 0.9) return 'bg-status-success/20 text-status-success border-status-success/30/30'
-    if (score >= 0.8) return 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
+    if (score >= 0.8) return 'bg-gray-200 dark:bg-lia-bg-elevated text-gray-700 dark:text-lia-text-secondary border-lia-border-default dark:border-lia-border-default'
     return 'bg-status-warning/20 text-status-warning border-status-warning/30/30'
   }
   
@@ -90,10 +90,10 @@ export function FastTrackSuggestions({
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Zap className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+          <Zap className="w-4 h-4 text-gray-700 dark:text-lia-text-secondary" />
           <span className="text-sm font-medium text-white">Fast Track Disponível</span>
         </div>
-        <Badge variant="outline" className="text-xs border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
+        <Badge variant="outline" className="text-xs border-lia-border-default dark:border-lia-border-default text-gray-700 dark:text-lia-text-secondary">
           {suggestions.length} {suggestions.length === 1 ? 'vaga' : 'vagas'}
         </Badge>
       </div>
@@ -108,9 +108,9 @@ export function FastTrackSuggestions({
             <div 
               key={job.job_id}
               className={cn(
-                "border rounded-md transition-all duration-200",
+ "border rounded-md transition-colors duration-200",
                 isSelected 
-                  ? "border-gray-900 dark:border-gray-50 bg-gray-100 dark:bg-gray-800" 
+                  ? "border-gray-900 bg-gray-100 dark:bg-lia-bg-secondary" 
                   : "border-neutral-700 bg-neutral-800/50 hover:border-neutral-600"
               )}
             >

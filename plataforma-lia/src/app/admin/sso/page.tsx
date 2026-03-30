@@ -87,11 +87,11 @@ export default function SSOAdminPage() {
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-950 dark:text-gray-50">Configurações SSO / SCIM</h1>
-          <p className="text-gray-500 mt-1">Gerenciamento de autenticação empresarial e sincronização de diretório</p>
+          <h1 className="text-2xl font-semibold lia-text-950 dark:lia-text-50">Configurações SSO / SCIM</h1>
+          <p className="lia-text-500 mt-1">Gerenciamento de autenticação empresarial e sincronização de diretório</p>
         </div>
         <div className="flex items-center gap-3">
-          <Badge variant="outline" className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600">
+          <Badge variant="outline" className="bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default">
             <Shield className="h-3 w-3 mr-1" />
             WorkOS
           </Badge>
@@ -100,7 +100,7 @@ export default function SSOAdminPage() {
               variant="outline" 
               className={isFromWorkOS 
                 ? "bg-status-success/10 text-status-success border-status-success/30" 
-                : "bg-gray-50 text-gray-600 border-gray-200"
+                : "bg-gray-50 lia-text-600 border-lia-border-subtle"
               }
             >
               {isFromWorkOS ? (
@@ -118,7 +118,7 @@ export default function SSOAdminPage() {
           )}
           <Button 
             onClick={() => window.open(workosLinks.dashboard, '_blank')}
-            className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+            className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
           >
             <ExternalLink className="h-4 w-4 mr-2" />
             Abrir WorkOS Dashboard
@@ -137,13 +137,13 @@ export default function SSOAdminPage() {
               {status?.sso_enabled ? (
                 <CheckCircle2 className="h-5 w-5 text-status-success" />
               ) : (
-                <AlertCircle className="h-5 w-5 text-gray-400" />
+                <AlertCircle className="h-5 w-5 lia-text-400" />
               )}
               <span className="text-lg font-medium">
                 {status?.sso_enabled ? 'Ativo' : 'Inativo'}
               </span>
             </div>
-            <p className="text-sm text-gray-500 mt-1">{status?.sso_users_count || 0} usuários SSO</p>
+            <p className="text-sm lia-text-500 mt-1">{status?.sso_users_count || 0} usuários SSO</p>
           </CardContent>
         </Card>
 
@@ -156,13 +156,13 @@ export default function SSOAdminPage() {
               {status?.scim_enabled ? (
                 <CheckCircle2 className="h-5 w-5 text-status-success" />
               ) : (
-                <AlertCircle className="h-5 w-5 text-gray-400" />
+                <AlertCircle className="h-5 w-5 lia-text-400" />
               )}
               <span className="text-lg font-medium">
                 {status?.scim_enabled ? 'Ativo' : 'Inativo'}
               </span>
             </div>
-            <p className="text-sm text-gray-500 mt-1">{status?.scim_users_count || 0} usuários gerenciados</p>
+            <p className="text-sm lia-text-500 mt-1">{status?.scim_users_count || 0} usuários gerenciados</p>
           </CardContent>
         </Card>
 
@@ -172,10 +172,10 @@ export default function SSOAdminPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+              <Users className="h-5 w-5 lia-text-600 dark:text-lia-text-tertiary" />
               <span className="text-lg font-medium">{status?.groups_count || 0}</span>
             </div>
-            <p className="text-sm text-gray-500 mt-1">grupos do diretório</p>
+            <p className="text-sm lia-text-500 mt-1">grupos do diretório</p>
           </CardContent>
         </Card>
 
@@ -185,10 +185,10 @@ export default function SSOAdminPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+              <Clock className="h-5 w-5 lia-text-600 dark:text-lia-text-tertiary" />
               <span className="text-lg font-medium">{status?.recent_events_count || 0}</span>
             </div>
-            <p className="text-sm text-gray-500 mt-1">eventos de auditoria</p>
+            <p className="text-sm lia-text-500 mt-1">eventos de auditoria</p>
           </CardContent>
         </Card>
       </div>
@@ -211,13 +211,13 @@ export default function SSOAdminPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 border rounded-md">
                   <h3 className="font-medium mb-2">Single Sign-On (SSO)</h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm lia-text-500">
                     Permite que usuários façam login usando credenciais corporativas (Azure AD, Okta, Google Workspace).
                   </p>
                 </div>
                 <div className="p-4 border rounded-md">
                   <h3 className="font-medium mb-2">Directory Sync (SCIM)</h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm lia-text-500">
                     Sincroniza automaticamente usuários e grupos do diretório corporativo.
                   </p>
                 </div>
@@ -237,7 +237,7 @@ export default function SSOAdminPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                <Users className="h-5 w-5 lia-text-600 dark:text-lia-text-tertiary" />
                 Usuários SSO/SCIM
               </CardTitle>
               <CardDescription>
@@ -247,8 +247,8 @@ export default function SSOAdminPage() {
             <CardContent>
               <div className="flex items-center justify-between p-4 bg-gray-50 rounded-md">
                 <div>
-                  <p className="text-2xl font-semibold text-gray-950 dark:text-gray-50">{totalUsers}</p>
-                  <p className="text-sm text-gray-500">usuários totais ({status?.sso_users_count || 0} SSO, {status?.scim_users_count || 0} SCIM)</p>
+                  <p className="text-2xl font-semibold lia-text-950 dark:lia-text-50">{totalUsers}</p>
+                  <p className="text-sm lia-text-500">usuários totais ({status?.sso_users_count || 0} SSO, {status?.scim_users_count || 0} SCIM)</p>
                 </div>
                 <Button 
                   variant="outline"
@@ -295,7 +295,7 @@ export default function SSOAdminPage() {
                     {groups.map((group) => (
                       <TableRow key={group.id}>
                         <TableCell className="font-medium">{group.name}</TableCell>
-                        <TableCell className="text-gray-500 text-sm">{group.workos_id}</TableCell>
+                        <TableCell className="lia-text-500 text-sm">{group.workos_id}</TableCell>
                         <TableCell>
                           <Select
                             value={group.mapped_role || ''}
@@ -316,7 +316,7 @@ export default function SSOAdminPage() {
                   </TableBody>
                 </Table>
               ) : (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 lia-text-500">
                   <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
                   <p>Nenhum grupo sincronizado</p>
                   <p className="text-sm">Configure SCIM no WorkOS para sincronizar grupos.</p>
@@ -332,10 +332,10 @@ export default function SSOAdminPage() {
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Clock className="h-5 w-5 text-gray-400" />
+              <Clock className="h-5 w-5 lia-text-400" />
               <div>
-                <p className="font-medium text-gray-800 dark:text-gray-200">Logs de Auditoria SSO/SCIM</p>
-                <p className="text-sm text-gray-500">
+                <p className="font-medium lia-text-800 dark:text-lia-text-primary">Logs de Auditoria SSO/SCIM</p>
+                <p className="text-sm lia-text-500">
                   Visualize eventos de autenticação e sincronização no painel do WorkOS.
                 </p>
               </div>

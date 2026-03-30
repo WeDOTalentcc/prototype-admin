@@ -57,7 +57,7 @@ export function CompensationSummaryCard({
             <div
               className="h-10 w-10 rounded-full flex items-center justify-center bg-lia-bg-tertiary"
             >
-              <Wallet className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+              <Wallet className="h-5 w-5 text-gray-700 dark:text-lia-text-secondary" />
             </div>
             <div>
               <div className="text-sm font-medium text-lia-text-primary">
@@ -85,7 +85,7 @@ export function CompensationSummaryCard({
             className="p-3 rounded-md border bg-lia-bg-primary border-lia-border-subtle"
           >
             <div className="flex items-center gap-2 text-sm mb-1 text-lia-text-tertiary">
-              <DollarSign className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+              <DollarSign className="h-4 w-4 text-gray-700 dark:text-lia-text-secondary" />
               Salário Base (CLT)
             </div>
             <div className="text-lg font-semibold text-lia-text-primary">

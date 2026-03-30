@@ -19,14 +19,14 @@ export function ReactThinkingStream({ steps, isThinking }: ReactThinkingStreamPr
   if (!isThinking && steps.length === 0) return null;
 
   return (
-    <div className="bg-gray-50 border border-gray-200 rounded-md text-xs text-gray-500 my-2">
+    <div className="bg-gray-50 border border-lia-border-subtle rounded-md text-xs lia-text-secondary my-2">
       <button
         className="flex items-center gap-2 w-full px-3 py-2 hover:bg-gray-100 transition-colors rounded-md"
         onClick={() => setExpanded(!expanded)}
         aria-expanded={expanded}
       >
         {isThinking ? (
-          <Loader2 className="h-3 w-3 animate-spin text-gray-400" />
+          <Loader2 className="h-3 w-3 animate-spin lia-text-secondary" />
         ) : (
           <span className="h-3 w-3 rounded-full bg-status-success inline-block" />
         )}
@@ -42,7 +42,7 @@ export function ReactThinkingStream({ steps, isThinking }: ReactThinkingStreamPr
         <ul className="px-3 pb-2 space-y-1">
           {steps.map((step, i) => (
             <li key={i} className="flex items-start gap-2">
-              <span className="text-gray-300 select-none">{i + 1}.</span>
+              <span className="lia-text-muted select-none">{i + 1}.</span>
               <span>{step}</span>
             </li>
           ))}

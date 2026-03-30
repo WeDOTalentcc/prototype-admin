@@ -1,14 +1,25 @@
 import { WorkOS } from '@workos-inc/node'
 
-if (!process.env.WORKOS_API_KEY) {
-  throw new Error('WORKOS_API_KEY environment variable is required')
+// Lazy initialization — env vars checked at runtime only (not at build time)
+// This allows `next build` to complete without WORKOS_API_KEY in the build environment.
+let _workos: WorkOS | null = null
+
+export function getWorkOS(): WorkOS {
+  if (!process.env.WORKOS_API_KEY) {
+    throw new Error('WORKOS_API_KEY environment variable is required')
+  }
+  if (!_workos) {
+    _workos = new WorkOS(process.env.WORKOS_API_KEY)
+  }
+  return _workos
 }
 
-if (!process.env.WORKOS_CLIENT_ID) {
-  throw new Error('WORKOS_CLIENT_ID environment variable is required')
-}
-
-export const workos = new WorkOS(process.env.WORKOS_API_KEY)
+// Legacy export for backwards compatibility — resolves lazily
+export const workos = new Proxy({} as WorkOS, {
+  get(_target, prop) {
+    return (getWorkOS() as any)[prop]
+  }
+})
 
 export const WORKOS_CONFIG = {
   clientId: process.env.WORKOS_CLIENT_ID!,

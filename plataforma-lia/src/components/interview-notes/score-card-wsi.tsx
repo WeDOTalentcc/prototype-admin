@@ -120,7 +120,7 @@ function getDecisionBadgeStyles(decision: WSIScore["decision"]): string {
     case "rejected":
       return "bg-status-error/15 text-status-error border-status-error/30"
     default:
-      return "bg-gray-100 text-gray-800 border-gray-200"
+      return "bg-gray-100 lia-text-strong border-lia-border-subtle"
   }
 }
 
@@ -147,17 +147,17 @@ function BlockSection({
   const progressValue = (score / 5) * 100
 
   return (
-    <div className="border border-gray-200 rounded-md p-4 space-y-3">
+    <div className="border border-lia-border-subtle rounded-md p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+          <span className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
             {blockLabels[block.type]}
           </span>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs lia-text-secondary">
             (Peso: {blockWeightLabels[block.type]})
           </span>
         </div>
-        <span className="text-sm font-semibold text-gray-950 dark:text-gray-50">
+        <span className="text-sm font-semibold text-gray-950">
           {score.toFixed(2)} / 5.00
         </span>
       </div>
@@ -169,23 +169,23 @@ function BlockSection({
           <div
             key={question.id}
             className={cn(
-              "flex items-center justify-between py-1.5 px-2 rounded-md text-xs",
-              question.skipped ? "bg-gray-50 text-gray-400" : "bg-gray-50"
+ "flex items-center justify-between py-1.5 px-2 rounded-md text-xs",
+              question.skipped ? "bg-gray-50 lia-text-secondary" : "bg-gray-50"
             )}
           >
-            <span className="flex-1 truncate text-gray-600">
+            <span className="flex-1 truncate lia-text-base">
               {question.skillName || question.text}
             </span>
             <span
               className={cn(
-                "font-medium ml-2",
+ "font-medium ml-2",
                 question.skipped
-                  ? "text-gray-400"
+                  ? "lia-text-secondary"
                   : question.starRating && question.starRating >= 4
                     ? "text-status-success"
                     : question.starRating && question.starRating >= 3
                       ? "text-status-warning"
-                      : "text-gray-600"
+                      : "lia-text-base"
               )}
             >
               {question.skipped
@@ -198,9 +198,9 @@ function BlockSection({
         ))}
       </div>
 
-      <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-        <span className="text-xs text-gray-500">Subtotal do Bloco</span>
-        <span className="text-sm font-semibold text-gray-700">
+      <div className="flex items-center justify-between pt-2 border-t border-lia-border-subtle">
+        <span className="text-xs lia-text-secondary">Subtotal do Bloco</span>
+        <span className="text-sm font-semibold lia-text-base">
           {score.toFixed(2)}
         </span>
       </div>
@@ -244,30 +244,30 @@ export function ScoreCardWSI({
   }
 
   return (
-    <Card className="w-full border-gray-200">
-      <CardHeader className="pb-4 border-b border-gray-200">
+    <Card className="w-full border-lia-border-subtle">
+      <CardHeader className="pb-4 border-b border-lia-border-subtle">
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           <div className="space-y-2">
-            <h2 className="text-lg font-semibold text-gray-950 dark:text-gray-50">
+            <h2 className="text-lg font-semibold text-gray-950">
               Score Card WSI
             </h2>
-            <div className="flex flex-wrap items-center gap-4 text-xs text-gray-600">
+            <div className="flex flex-wrap items-center gap-4 text-xs lia-text-base">
               <div className="flex items-center gap-1.5">
-                <User className="h-3.5 w-3.5 text-gray-400" />
-                <span className="font-medium text-gray-800 dark:text-gray-200">
+                <User className="h-3.5 w-3.5 lia-text-secondary" />
+                <span className="font-medium text-gray-800 dark:text-lia-text-primary">
                   {candidateName}
                 </span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Briefcase className="h-3.5 w-3.5 text-gray-400" />
+                <Briefcase className="h-3.5 w-3.5 lia-text-secondary" />
                 <span>{jobTitle}</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <User className="h-3.5 w-3.5 text-gray-400" />
+                <User className="h-3.5 w-3.5 lia-text-secondary" />
                 <span>Entrevistador: {interviewerName}</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Calendar className="h-3.5 w-3.5 text-gray-400" />
+                <Calendar className="h-3.5 w-3.5 lia-text-secondary" />
                 <span>{formatDate(interviewDate)}</span>
               </div>
             </div>
@@ -275,7 +275,7 @@ export function ScoreCardWSI({
 
           <div
             className={cn(
-              "flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-medium",
+ "flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-medium",
               getDecisionBadgeStyles(wsiScore.decision)
             )}
           >
@@ -296,28 +296,28 @@ export function ScoreCardWSI({
           ))}
         </div>
 
-        <div className="border border-gray-200 rounded-md p-4 bg-gray-50">
+        <div className="border border-lia-border-subtle rounded-md p-4 bg-gray-50">
           <div className="flex items-center gap-2 mb-4">
-            <Calculator className="h-4 w-4 text-gray-700" />
-            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+            <Calculator className="h-4 w-4 lia-text-base" />
+            <h3 className="text-sm font-semibold text-gray-800 dark:text-lia-text-primary">
               Cálculo do WSI Final
             </h3>
           </div>
 
           <div className="space-y-3">
-            <div className="text-xs text-gray-600 font-mono bg-white p-3 rounded-md border border-gray-200">
+            <div className="text-xs lia-text-base font-mono bg-lia-bg-primary p-3 rounded-md border border-lia-border-subtle">
               WSI = (Téc × 50%) + (Comp × 20%) + (Gap × 15%) + (Ctx × 15%)
             </div>
 
-            <div className="text-xs text-gray-600 font-mono bg-white p-3 rounded-md border border-gray-200">
+            <div className="text-xs lia-text-base font-mono bg-lia-bg-primary p-3 rounded-md border border-lia-border-subtle">
               WSI = ({wsiScore.technicalScore.toFixed(2)} × 0.50) + (
               {wsiScore.behavioralScore.toFixed(2)} × 0.20) + (
               {wsiScore.gapAnalysisScore.toFixed(2)} × 0.15) + (
               {wsiScore.contextualScore.toFixed(2)} × 0.15)
             </div>
 
-            <div className="flex items-center justify-between pt-3 border-t border-gray-200">
-              <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+            <div className="flex items-center justify-between pt-3 border-t border-lia-border-subtle">
+              <span className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
                 WSI Final
               </span>
               <div className="flex items-center gap-3">
@@ -326,36 +326,36 @@ export function ScoreCardWSI({
                   className="w-32 h-3"
                 />
                 <span
-                  className="text-xl font-bold text-gray-700"
+                  className="text-xl font-bold lia-text-base"
                 >
                   {wsiScore.totalWSI.toFixed(2)}
                 </span>
-                <span className="text-sm text-gray-500">/ 5.00</span>
+                <span className="text-sm lia-text-secondary">/ 5.00</span>
               </div>
             </div>
 
-            <div className="flex items-center justify-between text-xs text-gray-500 pt-2">
+            <div className="flex items-center justify-between text-xs lia-text-secondary pt-2">
               <span>Limiares: Aprovado ≥ 4.2 | Revisão: 3.8 - 4.2 | Reprovado &lt; 3.8</span>
             </div>
           </div>
         </div>
 
         {liaParecer && (
-          <div className="border border-gray-200 rounded-md p-4">
+          <div className="border border-lia-border-subtle rounded-md p-4">
             <div className="flex items-center gap-2 mb-3">
               <Bot className="h-4 w-4 text-wedo-cyan" />
-              <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+              <h3 className="text-sm font-semibold text-gray-800 dark:text-lia-text-primary">
                 Parecer LIA
               </h3>
             </div>
-            <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">
+            <p className="text-sm text-gray-800 dark:text-lia-text-primary whitespace-pre-wrap leading-relaxed">
               {liaParecer}
             </p>
           </div>
         )}
       </CardContent>
 
-      <CardFooter className="pt-4 border-t border-gray-200 flex flex-wrap gap-3">
+      <CardFooter className="pt-4 border-t border-lia-border-subtle flex flex-wrap gap-3">
         {onCalculateWSI && (
           <Button
             onClick={onCalculateWSI}

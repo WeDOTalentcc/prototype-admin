@@ -75,7 +75,7 @@ function formatDate(dateString?: string): string {
 }
 
 function getDaysRemainingColor(days?: number): string {
-  if (days === undefined) return "text-gray-500"
+  if (days === undefined) return "lia-text-500"
   if (days <= 3) return "text-status-error"
   if (days <= 7) return "text-wedo-orange"
   return "text-status-success"
@@ -84,9 +84,9 @@ function getDaysRemainingColor(days?: number): string {
 function getPlanBadgeColor(plan: string): string {
   const planLower = plan.toLowerCase()
   if (planLower.includes("enterprise")) return "bg-wedo-purple/15 text-wedo-purple"
-  if (planLower.includes("professional") || planLower.includes("pro")) return "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50"
-  if (planLower.includes("starter") || planLower.includes("basic")) return "bg-gray-100 text-gray-800 dark:text-gray-200"
-  return "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50"
+  if (planLower.includes("professional") || planLower.includes("pro")) return "bg-gray-100 dark:bg-lia-bg-secondary lia-text-900 dark:lia-text-50"
+  if (planLower.includes("starter") || planLower.includes("basic")) return "bg-gray-100 lia-text-800 dark:text-lia-text-primary"
+  return "bg-gray-100 dark:bg-lia-bg-secondary lia-text-900 dark:lia-text-50"
 }
 
 export default function AdminDashboard() {
@@ -197,12 +197,12 @@ export default function AdminDashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <h1
-            className="text-3xl font-semibold mb-2 text-gray-800 dark:text-gray-100"
+            className="text-3xl font-semibold mb-2 lia-text-800 dark:text-lia-text-primary"
             
           >
             Dashboard Administrativo
           </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400" >
+          <p className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
             Visão geral da plataforma WedoTalent • {isLoading ? 'Carregando...' : 'Atualizado em tempo real'}
           </p>
         </div>
@@ -226,11 +226,11 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <Card className="p-6 bg-white dark:bg-gray-950" >
+        <Card className="p-6 bg-white dark:lia-bg-950" >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <UserPlus className="w-5 h-5 text-green-600" />
-              <h3 className="font-semibold text-gray-950 dark:text-gray-50">Novos Clientes</h3>
+              <h3 className="font-semibold lia-text-950 dark:lia-text-50">Novos Clientes</h3>
             </div>
             <span className="text-sm px-2 py-0.5 rounded-full bg-status-success/15 text-status-success">
               {newClients.length} no período
@@ -239,10 +239,10 @@ export default function AdminDashboard() {
           
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+              <Loader2 className="w-6 h-6 animate-spin lia-text-400" />
             </div>
           ) : newClients.length === 0 ? (
-            <p className="text-sm text-gray-500 text-center py-8">
+            <p className="text-sm lia-text-500 text-center py-8">
               Nenhum novo cliente no período
             </p>
           ) : (
@@ -251,13 +251,13 @@ export default function AdminDashboard() {
                 <Link 
                   key={client.id}
                   href={`/admin/clientes/${client.id}`}
-                  className="flex items-center justify-between p-3 rounded-md border border-gray-100 hover:border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:bg-gray-800/50 transition-colors group"
+                  className="flex items-center justify-between p-3 rounded-md border border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors group"
                 >
                   <div>
-                    <p className="font-medium text-gray-950 dark:text-gray-50 group-hover:text-gray-900 dark:group-hover:text-gray-50 transition-colors">
+                    <p className="font-medium lia-text-950 dark:lia-text-50 group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors">
                       {client.name}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs lia-text-500">
                       Criado em {formatDate(client.createdAt)}
                     </p>
                   </div>
@@ -265,7 +265,7 @@ export default function AdminDashboard() {
                     <span className={`text-xs px-2 py-0.5 rounded-full ${getPlanBadgeColor(client.plan)}`}>
                       {client.plan}
                     </span>
-                    <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-50 transition-colors" />
+                    <ExternalLink className="w-4 h-4 lia-text-400 group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors" />
                   </div>
                 </Link>
               ))}
@@ -273,11 +273,11 @@ export default function AdminDashboard() {
           )}
         </Card>
 
-        <Card className="p-6 bg-white dark:bg-gray-950" >
+        <Card className="p-6 bg-white dark:lia-bg-950" >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Clock className="w-5 h-5 text-status-warning" />
-              <h3 className="font-semibold text-gray-950 dark:text-gray-50">Clientes em Trial</h3>
+              <h3 className="font-semibold lia-text-950 dark:lia-text-50">Clientes em Trial</h3>
             </div>
             <span className="text-sm px-2 py-0.5 rounded-full bg-wedo-orange/15 text-wedo-orange">
               {trialClients.length} ativos
@@ -286,10 +286,10 @@ export default function AdminDashboard() {
           
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+              <Loader2 className="w-6 h-6 animate-spin lia-text-400" />
             </div>
           ) : trialClients.length === 0 ? (
-            <p className="text-sm text-gray-500 text-center py-8">
+            <p className="text-sm lia-text-500 text-center py-8">
               Nenhum cliente em trial
             </p>
           ) : (
@@ -298,13 +298,13 @@ export default function AdminDashboard() {
                 <Link 
                   key={client.id}
                   href={`/admin/clientes/${client.id}`}
-                  className="flex items-center justify-between p-3 rounded-md border border-gray-100 hover:border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:bg-gray-800/50 transition-colors group"
+                  className="flex items-center justify-between p-3 rounded-md border border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors group"
                 >
                   <div>
-                    <p className="font-medium text-gray-950 dark:text-gray-50 group-hover:text-gray-900 dark:group-hover:text-gray-50 transition-colors">
+                    <p className="font-medium lia-text-950 dark:lia-text-50 group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors">
                       {client.name}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs lia-text-500">
                       Expira em {formatDate(client.trialEndDate)}
                     </p>
                   </div>
@@ -312,7 +312,7 @@ export default function AdminDashboard() {
                     <span className={`text-sm font-semibold ${getDaysRemainingColor(client.daysRemaining)}`}>
                       {client.daysRemaining} dias
                     </span>
-                    <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-50 transition-colors" />
+                    <ExternalLink className="w-4 h-4 lia-text-400 group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors" />
                   </div>
                 </Link>
               ))}
@@ -320,11 +320,11 @@ export default function AdminDashboard() {
           )}
         </Card>
 
-        <Card className="p-6 bg-white dark:bg-gray-950" >
+        <Card className="p-6 bg-white dark:lia-bg-950" >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <UserMinus className="w-5 h-5 text-red-600" />
-              <h3 className="font-semibold text-gray-950 dark:text-gray-50">Churned</h3>
+              <h3 className="font-semibold lia-text-950 dark:lia-text-50">Churned</h3>
             </div>
             <span className="text-sm px-2 py-0.5 rounded-full bg-status-error/15 text-status-error">
               {churnedClients.length} no período
@@ -333,12 +333,12 @@ export default function AdminDashboard() {
           
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+              <Loader2 className="w-6 h-6 animate-spin lia-text-400" />
             </div>
           ) : churnedClients.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <CheckCircle className="w-8 h-8 text-status-success mb-2" />
-              <p className="text-sm text-gray-500">
+              <p className="text-sm lia-text-500">
                 Nenhum churn no período
               </p>
             </div>
@@ -347,17 +347,17 @@ export default function AdminDashboard() {
               {churnedClients.slice(0, 5).map((client) => (
                 <div 
                   key={client.id}
-                  className="p-3 rounded-md border border-gray-100 bg-status-error/10/30"
+                  className="p-3 rounded-md border border-lia-border-subtle bg-status-error/10/30"
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <p className="font-medium text-gray-950 dark:text-gray-50">
+                    <p className="font-medium lia-text-950 dark:lia-text-50">
                       {client.name}
                     </p>
                     <span className={`text-xs px-2 py-0.5 rounded-full ${getPlanBadgeColor(client.plan)}`}>
                       {client.plan}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs lia-text-500">
                     Churned em {formatDate(client.churnedAt)}
                   </p>
                   {client.reason && (

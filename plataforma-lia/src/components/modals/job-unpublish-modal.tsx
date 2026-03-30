@@ -409,7 +409,7 @@ export function JobUnpublishModal({
     ]
 
     return (
-      <div className="flex items-center justify-center gap-1 mb-4 pb-3 border-b border-gray-200">
+      <div className="flex items-center justify-center gap-1 mb-4 pb-3 border-b border-lia-border-subtle">
         {steps.map((step, index) => (
           <React.Fragment key={step.id}>
             <div className="flex items-center gap-1.5">
@@ -449,9 +449,9 @@ export function JobUnpublishModal({
         <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
           Vagas Selecionadas
         </h4>
-        <div className="max-h-[100px] overflow-y-auto space-y-1 bg-gray-50 rounded-md p-2 border border-gray-200">
+        <div className="max-h-[100px] overflow-y-auto space-y-1 bg-gray-50 rounded-md p-2 border border-lia-border-subtle">
           {jobs.map((job) => (
-            <div key={job.id} className="flex items-center justify-between py-1.5 px-2 bg-white rounded-md border border-gray-200">
+            <div key={job.id} className="flex items-center justify-between py-1.5 px-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
               <div className="flex items-center gap-2 min-w-0 flex-1">
                 <Briefcase className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
                 <div className="flex items-center gap-1.5 min-w-0 flex-1">
@@ -464,7 +464,7 @@ export function JobUnpublishModal({
         </div>
       </div>
 
-      <div className="space-y-3 bg-gray-50 rounded-md p-3 border border-gray-200">
+      <div className="space-y-3 bg-gray-50 rounded-md p-3 border border-lia-border-subtle">
         <div className="flex items-center gap-2 text-gray-800 mb-2">
           <AlertTriangle className="w-3.5 h-3.5 text-gray-600" />
           <span className="text-xs font-semibold text-gray-950">Opções ao despublicar</span>
@@ -488,7 +488,7 @@ export function JobUnpublishModal({
           </div>
 
           {freezeJob && (
-            <div className="ml-6 space-y-3 pt-2 pl-3 border-l-2 border-gray-300">
+            <div className="ml-6 space-y-3 pt-2 pl-3 border-l-2 border-lia-border-default">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label className="text-micro text-gray-600 mb-1 block">Data início congelamento</Label>
@@ -496,7 +496,7 @@ export function JobUnpublishModal({
                     type="date"
                     value={freezeStartDate}
                     onChange={(e) => setFreezeStartDate(e.target.value)}
-                    className="h-8 text-xs border-gray-200"
+                    className="h-8 text-xs border-lia-border-subtle"
                   />
                 </div>
                 <div>
@@ -509,7 +509,7 @@ export function JobUnpublishModal({
                     value={unfreezeDate}
                     onChange={(e) => setUnfreezeDate(e.target.value)}
                     min={freezeStartDate || new Date().toISOString().split('T')[0]}
-                    className="h-8 text-xs border-gray-200"
+                    className="h-8 text-xs border-lia-border-subtle"
                   />
                 </div>
               </div>
@@ -517,7 +517,7 @@ export function JobUnpublishModal({
               <div>
                 <Label className="text-micro text-gray-600 mb-1 block">Motivo do congelamento</Label>
                 <Select value={freezeReason} onValueChange={setFreezeReason}>
-                  <SelectTrigger className="h-8 text-xs border-gray-200">
+                  <SelectTrigger className="h-8 text-xs border-lia-border-subtle">
                     <SelectValue placeholder="Selecione um motivo..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -533,7 +533,7 @@ export function JobUnpublishModal({
           )}
         </div>
 
-        <div className="border-t border-gray-200 pt-3">
+        <div className="border-t border-lia-border-subtle pt-3">
           <div className="flex items-start gap-2">
             <Checkbox
               id="notifyApplicants"
@@ -604,7 +604,7 @@ export function JobUnpublishModal({
               "h-7 px-2.5 text-micro",
               (notificationChannel === 'email' || notificationChannel === 'both') 
                 ? "bg-gray-800 text-white" 
-                : "border-gray-200 text-gray-600"
+                : "border-lia-border-subtle text-gray-600"
             )}
           >
             <Mail className="w-3 h-3 mr-1" />
@@ -619,7 +619,7 @@ export function JobUnpublishModal({
               "h-7 px-2.5 text-micro",
               (notificationChannel === 'whatsapp' || notificationChannel === 'both') 
                 ? "bg-status-success text-white hover:bg-status-success" 
-                : "border-gray-200 text-gray-600"
+                : "border-lia-border-subtle text-gray-600"
             )}
           >
             <MessageSquare className="w-3 h-3 mr-1" />
@@ -631,7 +631,7 @@ export function JobUnpublishModal({
       <div>
         <Label className="text-micro text-gray-600 mb-1 block">Template de mensagem</Label>
         <Select value={selectedTemplateId} onValueChange={handleTemplateChange}>
-          <SelectTrigger className="h-8 text-xs border-gray-200">
+          <SelectTrigger className="h-8 text-xs border-lia-border-subtle">
             <SelectValue placeholder="Selecione um template..." />
           </SelectTrigger>
           <SelectContent>
@@ -651,7 +651,7 @@ export function JobUnpublishModal({
             value={notificationSubject}
             onChange={(e) => setNotificationSubject(e.target.value)}
             placeholder="Assunto do email..."
-            className="h-8 text-xs border-gray-200"
+            className="h-8 text-xs border-lia-border-subtle"
           />
         </div>
       )}
@@ -662,7 +662,7 @@ export function JobUnpublishModal({
           value={notificationMessage}
           onChange={(e) => setNotificationMessage(e.target.value)}
           placeholder="Conteúdo da mensagem..."
-          className="min-h-[100px] text-xs border-gray-200 resize-none"
+          className="min-h-[100px] text-xs border-lia-border-subtle resize-none"
         />
         <p className="text-micro text-gray-500 mt-1">
           Variáveis disponíveis: {'{{candidato_nome}}'}, {'{{vaga}}'}, {'{{empresa_nome}}'}
@@ -691,7 +691,7 @@ export function JobUnpublishModal({
             </button>
           </div>
         </div>
-        <ScrollArea className="h-[120px] border border-gray-200 rounded-md p-2">
+        <ScrollArea className="h-[120px] border border-lia-border-subtle rounded-md p-2">
           {loadingCandidates ? (
             <div className="flex items-center justify-center h-full py-8">
               <Loader2 className="w-5 h-5 animate-spin text-gray-600" />
@@ -711,7 +711,7 @@ export function JobUnpublishModal({
                     "flex items-center gap-2 p-1.5 rounded-md cursor-pointer transition-colors",
                     selectedCandidateIds.has(candidate.id)
                       ? "bg-gray-100 border border-gray-900"
-                      : "bg-white border border-gray-200 hover:border-gray-300"
+                      : "bg-lia-bg-primary border border-lia-border-subtle hover:border-lia-border-default"
                   )}
                   onClick={() => toggleCandidateSelection(candidate.id)}
                 >
@@ -771,7 +771,7 @@ export function JobUnpublishModal({
         </div>
       </div>
 
-      <div className="flex items-start gap-2 p-3 bg-gray-50 rounded-md border border-gray-200">
+      <div className="flex items-start gap-2 p-3 bg-gray-50 rounded-md border border-lia-border-subtle">
         <Checkbox
           id="acknowledgeWarning"
           checked={acknowledgedWarning}
@@ -794,7 +794,7 @@ export function JobUnpublishModal({
       <p className="text-xs text-gray-600 mb-4">
         A vaga foi despublicada e congelada com sucesso.
       </p>
-      <div className="bg-gray-50 rounded-md p-3 border border-gray-200 text-left space-y-2">
+      <div className="bg-gray-50 rounded-md p-3 border border-lia-border-subtle text-left space-y-2">
         <div className="flex items-center gap-2 text-xs text-gray-700">
           <Check className="w-3.5 h-3.5 text-status-success" />
           <span>Vaga despublicada dos job boards</span>
@@ -828,7 +828,7 @@ export function JobUnpublishModal({
               variant="outline"
               onClick={handleClose}
               disabled={isSubmitting}
-              className="h-9 px-4 text-xs font-medium border-gray-200 text-gray-700 hover:bg-gray-50"
+              className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-gray-700 hover:bg-gray-50"
             >
               Cancelar
             </Button>
@@ -856,7 +856,7 @@ export function JobUnpublishModal({
               variant="outline"
               onClick={() => setCurrentStep('options')}
               disabled={isSubmitting}
-              className="h-9 px-4 text-xs font-medium border-gray-200 text-gray-700 hover:bg-gray-50"
+              className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-gray-700 hover:bg-gray-50"
             >
               Voltar
             </Button>
@@ -884,7 +884,7 @@ export function JobUnpublishModal({
               variant="outline"
               onClick={() => setCurrentStep('communication')}
               disabled={isSubmitting}
-              className="h-9 px-4 text-xs font-medium border-gray-200 text-gray-700 hover:bg-gray-50"
+              className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-gray-700 hover:bg-gray-50"
             >
               Voltar
             </Button>
@@ -918,8 +918,8 @@ export function JobUnpublishModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="max-w-lg bg-white border border-gray-200">
-        <DialogHeader className="pb-3 border-b border-gray-200">
+      <DialogContent className="max-w-lg bg-lia-bg-primary border border-lia-border-subtle">
+        <DialogHeader className="pb-3 border-b border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-md bg-gray-100 flex items-center justify-center">
               {currentStep === 'complete' ? (
@@ -948,7 +948,7 @@ export function JobUnpublishModal({
           {currentStep === 'complete' && renderCompleteStep()}
         </div>
 
-        <DialogFooter className="border-t border-gray-200 pt-3 gap-2">
+        <DialogFooter className="border-t border-lia-border-subtle pt-3 gap-2">
           {getFooterButtons()}
         </DialogFooter>
       </DialogContent>

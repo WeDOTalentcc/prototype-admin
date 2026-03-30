@@ -1,6 +1,5 @@
 "use client"
 
-import { motion } from "framer-motion"
 
 type CloudVariant = "A" | "B" | "C" | "D"
 type DepthLayer = "back" | "mid" | "front"
@@ -111,52 +110,66 @@ function FloatingCloud({
 }: FloatingCloudProps) {
   const { width, height } = SIZE_CONFIG[layer]
   const { opacity, blur, scale } = LAYER_CONFIG[layer]
-  const viewportWidth = typeof window !== "undefined" ? window.innerWidth : 2560
-  const travelDistance = viewportWidth + width
   const gradId = `cg-${variant}-${layer}-${delay}`
 
-  const xStart = direction === "right" ? -width : travelDistance
-  const xEnd   = direction === "right" ? travelDistance : -width
+  // OPT-027: CSS animation replacing framer-motion infinite translate
+  // Uses a unique keyframe name per direction injected via <style>
+  const animName = `cloud-drift-${direction === "right" ? "r" : "l"}`
+  const floatAnimName = `cloud-float-${Math.round(duration * 0.35)}`
 
-  const verticalKeyframes = floatVertical
-    ? { y: [0, -10, 4, -6, 0] }
-    : { y: 0 }
-
-  const verticalTransition = floatVertical
-    ? {
-        y: {
-          duration: duration * 0.35,
-          ease: "easeInOut",
-          repeat: Infinity,
-          repeatType: "mirror" as const,
-        },
-      }
-    : {}
+  const animStyle: React.CSSProperties = {
+    width,
+    height,
+    opacity,
+    transform: `scale(${scale})`,
+    filter: blur,
+    animationName: floatVertical ? `${animName}, ${floatAnimName}` : animName,
+    animationDuration: floatVertical
+      ? `${duration}s, ${Math.round(duration * 0.35)}s`
+      : `${duration}s`,
+    animationTimingFunction: floatVertical ? "linear, ease-in-out" : "linear",
+    animationDelay: floatVertical ? `${delay}s, ${delay}s` : `${delay}s`,
+    animationIterationCount: "infinite",
+    animationDirection: floatVertical ? "normal, alternate" : "normal",
+    ...style,
+  }
 
   return (
-    <motion.div
+    <div
       className="absolute pointer-events-none"
-      style={{width,
-        height,
-        opacity,
-        scale,
-        filter: blur,
-        ...style}}
-      initial={{ x: xStart }}
-      animate={{ x: xEnd, ...verticalKeyframes }}
-      transition={{
-        x: { duration, ease: "linear", repeat: Infinity, delay },
-        ...verticalTransition,
-      }}
+      style={animStyle}
     >
       <CloudSVG variant={variant} gradId={gradId} />
-    </motion.div>
+    </div>
   )
 }
 
 export default function CloudsBackground() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+      {/* OPT-027: CSS keyframes replacing framer-motion infinite x/y animations */}
+      <style>{`
+        @keyframes cloud-drift-r {
+          from { transform: translateX(-480px) scaleX(1); }
+          to   { transform: translateX(calc(100vw + 480px)) scaleX(1); }
+        }
+        @keyframes cloud-drift-l {
+          from { transform: translateX(calc(100vw + 480px)) scaleX(1); }
+          to   { transform: translateX(-480px) scaleX(1); }
+        }
+        @keyframes cloud-float-10 {
+          from { transform: translateY(0px); }
+          to   { transform: translateY(-10px); }
+        }
+        @keyframes cloud-float-14 {
+          from { transform: translateY(0px); }
+          to   { transform: translateY(-10px); }
+        }
+        @keyframes cloud-float-15 {
+          from { transform: translateY(0px); }
+          to   { transform: translateY(-10px); }
+        }
+      `}</style>
       <div
         className="absolute inset-0"
         style={{background:

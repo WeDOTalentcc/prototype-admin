@@ -18,33 +18,33 @@ export function CompanyDefaultQuestions({
   const activeCount = questions.filter(q => !disabledIds.has(q.id)).length
 
   return (
-    <div className="border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 overflow-hidden">
+    <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-primary overflow-hidden">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
       >
         <div className="flex items-center gap-2">
-          <Shield className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-          <span className="font-['Open_Sans',sans-serif] text-xs uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400">
+          <Shield className="w-4 h-4 text-gray-500 dark:text-lia-text-tertiary" />
+          <span className="font-['Open_Sans',sans-serif] text-xs uppercase tracking-wider font-semibold text-gray-500 dark:text-lia-text-tertiary">
             Padrão da Empresa
           </span>
           {questions.length > 0 && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-gray-700 dark:bg-lia-bg-secondary dark:text-lia-text-secondary">
               {activeCount}/{questions.length} ativas
             </span>
           )}
         </div>
         {isExpanded ? (
-          <ChevronUp className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+          <ChevronUp className="w-4 h-4 text-gray-400" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+          <ChevronDown className="w-4 h-4 text-gray-400" />
         )}
       </button>
 
       {isExpanded && (
         <div className="px-4 pb-4 space-y-2">
           {questions.length === 0 ? (
-            <p className="text-xs font-['Open_Sans',sans-serif] text-gray-400 dark:text-gray-500 text-center py-4 italic">
+            <p className="text-xs font-['Open_Sans',sans-serif] text-gray-400 text-center py-4 italic">
               Nenhuma pergunta padrão configurada. Acesse <strong>Configurações → Perguntas Padrão</strong>.
             </p>
           ) : (
@@ -54,9 +54,9 @@ export function CompanyDefaultQuestions({
                 <div
                   key={q.id}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                    enabled
-                      ? 'bg-white dark:bg-gray-900'
-                      : 'bg-gray-50 dark:bg-gray-800/50 opacity-50'
+ enabled
+                      ? 'bg-white dark:bg-lia-bg-primary'
+                      : 'bg-gray-50 dark:bg-lia-bg-secondary/50 opacity-50'
                   }`}
                 >
                   <input
@@ -64,9 +64,9 @@ export function CompanyDefaultQuestions({
                     checked={enabled}
                     disabled={!isEditing}
                     onChange={e => onToggle(q.id, e.target.checked)}
-                    className="w-3.5 h-3.5 rounded-md border-gray-300 accent-gray-900 cursor-pointer disabled:cursor-default"
+                    className="w-3.5 h-3.5 rounded-md border-lia-border-default accent-gray-900 cursor-pointer disabled:cursor-default"
                   />
-                  <span className="font-['Open_Sans',sans-serif] text-xs text-gray-700 dark:text-gray-300 flex-1">
+                  <span className="font-['Open_Sans',sans-serif] text-xs text-gray-700 dark:text-lia-text-secondary flex-1">
                     {q.question}
                   </span>
                   {q.is_eliminatory && (

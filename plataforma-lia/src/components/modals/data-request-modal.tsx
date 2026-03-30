@@ -142,13 +142,13 @@ export function DataRequestModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto rounded-md dark:bg-gray-900 dark:border-gray-700">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto rounded-md dark:bg-lia-bg-primary dark:border-lia-border-subtle">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-sm font-semibold text-gray-950 dark:text-gray-50">
-            <Send className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+            <Send className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
             Solicitar Dados
           </DialogTitle>
-          <DialogDescription className="text-xs text-gray-600 dark:text-gray-400">
+          <DialogDescription className="text-xs text-gray-600 dark:text-lia-text-tertiary">
             {isSingleCandidate 
               ? `Solicitar informações de ${candidates[0]?.name}`
               : `Solicitar informações de ${candidates.length} candidatos`
@@ -159,7 +159,7 @@ export function DataRequestModal({
 
         <div className="space-y-5 py-4">
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-gray-800 dark:text-gray-200">Template</Label>
+            <Label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Template</Label>
             <Select value={selectedTemplate} onValueChange={handleTemplateChange}>
               <SelectTrigger className="w-full h-9">
                 <SelectValue placeholder="Selecione um template" />
@@ -179,17 +179,17 @@ export function DataRequestModal({
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-medium text-gray-800 dark:text-gray-200">Campos a Solicitar</Label>
-              <span className="text-xs text-gray-600 dark:text-gray-400">{selectedFields.size} selecionados</span>
+              <Label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Campos a Solicitar</Label>
+              <span className="text-xs text-gray-600 dark:text-lia-text-tertiary">{selectedFields.size} selecionados</span>
             </div>
-            <div className="border border-gray-200 dark:border-gray-700 rounded-md p-2 space-y-1 max-h-[200px] overflow-y-auto">
+            <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-2 space-y-1 max-h-[200px] overflow-y-auto">
               {displayedFields.map((field) => (
                 <label
                   key={field.id}
                   className={cn(
                     "flex items-center gap-2 p-2 rounded-md cursor-pointer transition-colors",
                     selectedFields.has(field.id) 
-                      ? "bg-gray-100 dark:bg-gray-800 border border-gray-900 dark:border-gray-300" 
+                      ? "bg-gray-100 dark:bg-lia-bg-secondary border border-gray-900 dark:border-lia-border-default" 
                       : "hover:bg-gray-50 dark:hover:bg-gray-800"
                   )}
                 >
@@ -199,7 +199,7 @@ export function DataRequestModal({
                   />
                   <div className="flex items-center gap-2 flex-1">
                     {getFieldIcon(field.type)}
-                    <span className="text-xs text-gray-800 dark:text-gray-200">{field.displayName}</span>
+                    <span className="text-xs text-gray-800 dark:text-lia-text-primary">{field.displayName}</span>
                   </div>
                   {field.type === 'file' && (
                     <span className="text-micro bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">
@@ -233,7 +233,7 @@ export function DataRequestModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-xs font-medium text-gray-800 dark:text-gray-200">Canal de Envio</Label>
+              <Label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Canal de Envio</Label>
               <Select value={channel} onValueChange={(v: 'email' | 'whatsapp' | 'both') => setChannel(v)}>
                 <SelectTrigger className="h-9">
                   <SelectValue />
@@ -263,7 +263,7 @@ export function DataRequestModal({
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-medium text-gray-800 dark:text-gray-200 flex items-center gap-1">
+              <Label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary flex items-center gap-1">
                 <Clock className="w-3 h-3" />
                 Expira em
               </Label>
@@ -284,16 +284,16 @@ export function DataRequestModal({
 
           {!isSingleCandidate && (
             <div className="space-y-2">
-              <Label className="text-xs font-medium text-gray-800 dark:text-gray-200 flex items-center gap-1">
+              <Label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary flex items-center gap-1">
                 <User className="w-3 h-3" />
                 Candidatos ({candidates.length})
               </Label>
-              <div className="border border-gray-200 dark:border-gray-700 rounded-md p-2 max-h-[100px] overflow-y-auto">
+              <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-2 max-h-[100px] overflow-y-auto">
                 <div className="flex flex-wrap gap-1.5">
                   {candidates.slice(0, 10).map((candidate) => (
                     <span
                       key={candidate.id}
-                      className="text-micro bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full text-gray-700 dark:text-gray-300"
+                      className="text-micro bg-gray-100 dark:bg-lia-bg-elevated px-2 py-1 rounded-full text-gray-700 dark:text-lia-text-secondary"
                     >
                       {candidate.name.split(' ')[0]}
                     </span>
@@ -309,8 +309,8 @@ export function DataRequestModal({
           )}
         </div>
 
-        <DialogFooter className="gap-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4 -mx-6 -mb-6 rounded-b-xl">
-          <Button variant="outline" onClick={onClose} disabled={isSubmitting} className="h-9 px-4 text-xs font-medium bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 dark:text-gray-200">
+        <DialogFooter className="gap-2 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary p-4 -mx-6 -mb-6 rounded-b-xl">
+          <Button variant="outline" onClick={onClose} disabled={isSubmitting} className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default text-gray-700 hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 dark:text-lia-text-primary">
             Cancelar
           </Button>
           <Button

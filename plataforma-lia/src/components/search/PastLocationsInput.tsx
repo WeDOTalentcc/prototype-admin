@@ -250,11 +250,11 @@ export function PastLocationsInput({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-gray-600">Past Locations</span>
+        <span className="text-xs font-semibold lia-text-600">Past Locations</span>
         {value.length > 0 && (
           <button
             onClick={clearAll}
-            className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 font-medium"
+            className="text-xs lia-text-600 dark:text-lia-text-tertiary hover:lia-text-900 font-medium"
           >
             Clear all
           </button>
@@ -263,7 +263,7 @@ export function PastLocationsInput({
 
       <div className="relative">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-400" />
           <Input
             ref={inputRef}
             value={inputValue}
@@ -271,21 +271,21 @@ export function PastLocationsInput({
             onKeyDown={handleKeyDown}
             onFocus={() => inputValue.length > 0 && setIsDropdownOpen(true)}
             placeholder={placeholder}
-            className="pl-9 pr-3 border-gray-200 focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+            className="pl-9 pr-3 border-lia-border-subtle focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
           />
         </div>
 
         {isDropdownOpen && hasResults && (
           <div 
             ref={dropdownRef}
-            className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md max-h-80 overflow-y-auto"
+            className="absolute z-50 w-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-md max-h-80 overflow-y-auto"
           >
             {allItems.map((item, index) => {
               if (item.type === 'header') {
                 return (
                   <div 
                     key={`header-${item.label}`}
-                    className="px-3 py-1.5 text-xs font-semibold text-gray-600 bg-gray-50 border-t border-gray-100 first:border-t-0"
+                    className="px-3 py-1.5 text-xs font-semibold lia-text-600 bg-gray-50 border-t border-lia-border-subtle first:border-t-0"
                   >
                     {item.label}
                   </div>
@@ -304,7 +304,7 @@ export function PastLocationsInput({
                     focusedIndex === currentSelectableIndex ? "bg-gray-100" : "hover:bg-gray-50"
                   )}
                 >
-                  <span className="text-gray-800 dark:text-gray-200">{item.label}</span>
+                  <span className="lia-text-800 dark:text-lia-text-primary">{item.label}</span>
                 </button>
               )
             })}
@@ -317,9 +317,9 @@ export function PastLocationsInput({
           {value.map(location => (
             <Badge
               key={location.value}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:text-gray-200 border border-gray-200"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle"
             >
-              <span className="text-micro font-semibold text-gray-500 uppercase">
+              <span className="text-micro font-semibold lia-text-500 uppercase">
                 {getTypeLabel(location.type)}
               </span>
               <span>{location.value.split(',')[0]}</span>

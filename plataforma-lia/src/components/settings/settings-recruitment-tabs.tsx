@@ -89,15 +89,15 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
         <CardContent>
           <div className="space-y-4">
             {templates.map((template) => (
-              <div key={template.id} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-md">
+              <div key={template.id} className="flex items-center justify-between p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-wedo-cyan/15 dark:bg-wedo-cyan/20 rounded-md flex items-center justify-center">
-                    <Mail className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                    <Mail className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-950 dark:text-gray-50">{template.name}</h4>
-                    <p className="text-sm text-gray-800 dark:text-gray-200">{template.subject}</p>
-                    <div className="flex items-center gap-3 mt-1 text-xs text-gray-800">
+                    <h4 className="font-medium lia-text-950 dark:lia-text-50">{template.name}</h4>
+                    <p className="text-sm lia-text-800 dark:text-lia-text-primary">{template.subject}</p>
+                    <div className="flex items-center gap-3 mt-1 text-xs lia-text-800">
                       <span>Trigger: {template.trigger}</span>
                       <span>•</span>
                       <span>Modificado em {new Date(template.lastModified).toLocaleDateString('pt-BR')}</span>
@@ -130,38 +130,38 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2 block">
+              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2 block">
                 Nome do Remetente
               </label>
               <input
                 type="text"
                 defaultValue="Equipe de Recrutamento - Sodexo"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-sm"
+                className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary text-sm"
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2 block">
+              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2 block">
                 Email de Resposta
               </label>
               <input
                 type="email"
                 defaultValue="recrutamento@sodexo.com.br"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-sm"
+                className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary text-sm"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2 block">
+            <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2 block">
               Assinatura Padrão
             </label>
             <textarea
               rows={4}
               defaultValue="Atenciosamente,&#10;Equipe de Recrutamento&#10;Sodexo Brasil&#10;www.sodexo.com.br"
               onChange={() => onSettingsChange(true)}
-              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-sm"
+              className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary text-sm"
             />
           </div>
         </CardContent>
@@ -187,23 +187,23 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
             { key: "candidateReply", label: "Resposta do candidato", desc: "Quando candidato responde emails" },
             { key: "processDeadline", label: "Prazo do processo", desc: "Alertar sobre prazos de processos seletivos" }
           ].map((notification) => (
-            <div key={notification.key} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+            <div key={notification.key} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
               <div>
-                <div className="text-sm font-medium text-gray-950 dark:text-gray-50">{notification.label}</div>
-                <div className="text-xs text-gray-800 dark:text-gray-400">{notification.desc}</div>
+                <div className="text-sm font-medium lia-text-950 dark:lia-text-50">{notification.label}</div>
+                <div className="text-xs lia-text-800 dark:text-lia-text-tertiary">{notification.desc}</div>
               </div>
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
-                  <input type="checkbox" defaultChecked className="text-gray-600 dark:text-gray-400" onChange={() => onSettingsChange(true)} />
-                  <span className="text-xs text-gray-800">Email</span>
+                  <input type="checkbox" defaultChecked className="lia-text-600 dark:text-lia-text-tertiary" onChange={() => onSettingsChange(true)} />
+                  <span className="text-xs lia-text-800">Email</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <input type="checkbox" className="text-gray-600 dark:text-gray-400" onChange={() => onSettingsChange(true)} />
-                  <span className="text-xs text-gray-800">Push</span>
+                  <input type="checkbox" className="lia-text-600 dark:text-lia-text-tertiary" onChange={() => onSettingsChange(true)} />
+                  <span className="text-xs lia-text-800">Push</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <input type="checkbox" className="text-gray-600 dark:text-gray-400" onChange={() => onSettingsChange(true)} />
-                  <span className="text-xs text-gray-800">WhatsApp</span>
+                  <input type="checkbox" className="lia-text-600 dark:text-lia-text-tertiary" onChange={() => onSettingsChange(true)} />
+                  <span className="text-xs lia-text-800">WhatsApp</span>
                 </div>
               </div>
             </div>
@@ -235,18 +235,18 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2 block">
+              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2 block">
                 Mensagem de Boas-vindas
               </label>
               <textarea
                 rows={3}
                 defaultValue="Olá! 👋 Obrigado pelo interesse em nossa vaga. Em breve entraremos em contato."
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-sm"
+                className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary text-sm"
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2 block">
+              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2 block">
                 Horário de Atendimento
               </label>
               <div className="space-y-2">
@@ -267,19 +267,19 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
           </div>
 
           <div>
-            <h4 className="font-medium text-gray-950 dark:text-gray-50 mb-3">Templates de Mensagem</h4>
+            <h4 className="font-medium lia-text-950 dark:lia-text-50 mb-3">Templates de Mensagem</h4>
             <div className="space-y-2">
               {[
                 { name: "Convite para entrevista", message: "Parabéns! Você foi selecionado(a) para a próxima etapa do processo seletivo para a vaga de {vaga}. 🎉" },
                 { name: "Lembrete de entrevista", message: "Olá! Lembrando que sua entrevista está agendada para amanhã às {horario}. 📅" },
                 { name: "Solicitação de documentos", message: "Para prosseguir com seu processo, precisamos que envie os seguintes documentos: {documentos}" }
               ].map((template, index) => (
-                <div key={index} className="p-3 border border-gray-200 dark:border-gray-700 rounded-md">
+                <div key={index} className="p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-medium text-sm">{template.name}</span>
                     <Button variant="outline" size="sm">Editar</Button>
                   </div>
-                  <p className="text-xs text-gray-800 dark:text-gray-400">{template.message}</p>
+                  <p className="text-xs lia-text-800 dark:text-lia-text-tertiary">{template.message}</p>
                 </div>
               ))}
             </div>
@@ -300,9 +300,9 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <Phone className="w-12 h-12 text-gray-800 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-950 dark:text-gray-50 mb-2">SMS em Desenvolvimento</h3>
-            <p className="text-gray-800 dark:text-gray-200 mb-4">
+            <Phone className="w-12 h-12 lia-text-800 mx-auto mb-4" />
+            <h3 className="text-lg font-medium lia-text-950 dark:lia-text-50 mb-2">SMS em Desenvolvimento</h3>
+            <p className="lia-text-800 dark:text-lia-text-primary mb-4">
               Funcionalidade de SMS será disponibilizada em breve
             </p>
             <Button variant="outline">
@@ -351,19 +351,19 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
                 trigger: "30 dias de inatividade"
               }
             ].map((automation, index) => (
-              <div key={index} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-md">
+              <div key={index} className="flex items-center justify-between p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-md flex items-center justify-center ${
-                    automation.status === 'ativo' ? 'bg-status-success/15 dark:bg-status-success/20' : 'bg-gray-100 dark:bg-gray-800'
+                    automation.status === 'ativo' ? 'bg-status-success/15 dark:bg-status-success/20' : 'bg-gray-100 dark:bg-lia-bg-secondary'
                   }`}>
                     <Zap className={`w-5 h-5 ${
-                      automation.status === 'ativo' ? 'text-status-success' : 'text-gray-800'
+                      automation.status === 'ativo' ? 'text-status-success' : 'lia-text-800'
                     }`} />
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-950 dark:text-gray-50">{automation.name}</h4>
-                    <p className="text-sm text-gray-800 dark:text-gray-200">{automation.description}</p>
-                    <p className="text-xs text-gray-800">Trigger: {automation.trigger}</p>
+                    <h4 className="font-medium lia-text-950 dark:lia-text-50">{automation.name}</h4>
+                    <p className="text-sm lia-text-800 dark:text-lia-text-primary">{automation.description}</p>
+                    <p className="text-xs lia-text-800">Trigger: {automation.trigger}</p>
                   </div>
                 </div>
 
@@ -400,8 +400,8 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
                 onClick={() => setActiveSubTab(tab.id as any)}
                 className={`flex items-center gap-2 px-4 py-3 rounded-md text-sm font-medium whitespace-nowrap transition-colors font-crimson ${
                   activeSubTab === tab.id
- ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-300'
-                    : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200'
+ ? 'bg-gray-50 dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-secondary'
+                    : 'hover:bg-gray-50 dark:hover:bg-gray-800 lia-text-800 dark:text-lia-text-primary'
                 }`}
               >
                 <tab.icon className="w-4 h-4" />
@@ -443,9 +443,9 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'system': return <Lock className="w-3.5 h-3.5 text-gray-400" />
-      case 'default': return <Target className="w-3.5 h-3.5 text-gray-400" />
-      case 'custom': return <Settings className="w-3.5 h-3.5 text-gray-400" />
+      case 'system': return <Lock className="w-3.5 h-3.5 lia-text-400" />
+      case 'default': return <Target className="w-3.5 h-3.5 lia-text-400" />
+      case 'custom': return <Settings className="w-3.5 h-3.5 lia-text-400" />
       default: return null
     }
   }
@@ -525,7 +525,7 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-xl font-medium font-inter">Recrutamento</CardTitle>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Pipeline e elegibilidade</p>
+              <p className="text-sm lia-text-500 dark:text-lia-text-tertiary mt-1">Pipeline e elegibilidade</p>
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="text-status-success border-status-success/30 bg-status-success/10 dark:bg-status-success gap-1.5">
@@ -535,7 +535,7 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
             </div>
           </div>
 
-          <div className="flex items-center gap-1 mt-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-1 mt-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
             {subTabs.map(tab => (
               <button
                 key={tab.id}
@@ -543,8 +543,8 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
                 className={cn(
                   "flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px",
                   activeSubTab === tab.id
-                    ? "border-gray-900 dark:border-gray-50 text-gray-900 dark:text-gray-50"
-                    : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                    ? "border-gray-900 dark:lia-border-50 lia-text-900 dark:lia-text-50"
+                    : "border-transparent lia-text-500 dark:text-lia-text-tertiary hover:lia-text-700 dark:hover:lia-text-300"
                 )}
               >
                 <tab.icon className="w-4 h-4" />
@@ -576,10 +576,10 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
               </div>
 
               <div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-50 mb-1">Jornada de Recrutamento</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Visualize as etapas do processo seletivo configuradas.</p>
+                <h3 className="text-lg font-medium lia-text-900 dark:lia-text-50 mb-1">Jornada de Recrutamento</h3>
+                <p className="text-sm lia-text-500 dark:text-lia-text-tertiary mb-4">Visualize as etapas do processo seletivo configuradas.</p>
 
-                <div className="flex items-center gap-6 text-xs text-gray-500 dark:text-gray-400 mb-6 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                <div className="flex items-center gap-6 text-xs lia-text-500 dark:text-lia-text-tertiary mb-6 p-3 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-lg">
                   <div className="flex items-center gap-1.5">
                     <Lock className="w-3.5 h-3.5" />
                     <span><strong>Sistema:</strong> Etapas fixas (Funil, Triagem, Entrevista RH, Contratado, Reprovado)</span>
@@ -599,21 +599,21 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
                     <div
                       key={stage.name}
                       className={cn(
-                        "flex items-center gap-4 p-4 border rounded-md transition-all",
+                        "flex items-center gap-4 p-4 border rounded-md transition-colors",
                         stage.isActive
-                          ? "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
-                          : "border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 opacity-60"
+                          ? "border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary"
+                          : "border-lia-border-subtle dark:lia-border-800 bg-gray-50 dark:bg-lia-bg-primary/50 opacity-60"
                       )}
                     >
                       <div className="flex items-center gap-3 min-w-10">
-                        <span className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center text-sm font-medium text-gray-600 dark:text-gray-300">
+                        <span className="w-8 h-8 bg-gray-100 dark:bg-lia-bg-secondary rounded-lg flex items-center justify-center text-sm font-medium lia-text-600 dark:text-lia-text-secondary">
                           {stage.order}
                         </span>
                       </div>
 
                       <div className="flex items-center gap-2 flex-1">
                         {getCategoryIcon(stage.stageCategory)}
-                        <span className="font-medium text-gray-900 dark:text-gray-50">{stage.displayName}</span>
+                        <span className="font-medium lia-text-900 dark:lia-text-50">{stage.displayName}</span>
                       </div>
 
                       <div className="flex items-center gap-2">
@@ -641,7 +641,7 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
                         )}
 
                         {stage.stageCategory === 'system' ? (
-                          <span className="text-xs text-gray-400 flex items-center gap-1">
+                          <span className="text-xs lia-text-400 flex items-center gap-1">
                             <Lock className="w-3 h-3" />
                           </span>
                         ) : (
@@ -650,7 +650,7 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
                             className={cn(
                               "flex items-center gap-1 text-xs px-2 py-1 rounded-md transition-colors",
                               stage.isActive
-                                ? "text-gray-400 hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error"
+                                ? "lia-text-400 hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error"
                                 : "text-status-success hover:bg-status-success/10 dark:hover:bg-status-success"
                             )}
                           >
@@ -698,21 +698,21 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
           )}
 
           {activeSubTab === "eligibility" && (
-            <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+            <div className="text-center py-12 lia-text-500 dark:text-lia-text-tertiary">
               <FileText className="w-12 h-12 mx-auto mb-3 opacity-30" />
               <p className="text-sm">Configurações de Perguntas de Elegibilidade</p>
             </div>
           )}
 
           {activeSubTab === "data-request" && (
-            <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+            <div className="text-center py-12 lia-text-500 dark:text-lia-text-tertiary">
               <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-30" />
               <p className="text-sm">Configurações de Solicitação de Dados</p>
             </div>
           )}
 
           {activeSubTab === "lia-instructions" && (
-            <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+            <div className="text-center py-12 lia-text-500 dark:text-lia-text-tertiary">
               <Brain className="w-12 h-12 mx-auto mb-3 opacity-30 text-wedo-cyan" />
               <p className="text-sm">Instruções para a LIA</p>
             </div>
@@ -742,9 +742,9 @@ export function AssessmentTab({ onSettingsChange }: { onSettingsChange: (changed
               { categoria: 'Fit Cultural', peso: 20, criterios: ['Alinhamento com valores', 'Adaptabilidade'] },
               { categoria: 'Potencial de Crescimento', peso: 10, criterios: ['Aprendizado contínuo', 'Ambição'] }
             ].map((item, index) => (
-              <div key={index} className="p-4 border border-gray-200 dark:border-gray-700 rounded-md">
+              <div key={index} className="p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-medium text-gray-950 dark:text-gray-50">
+                  <h4 className="text-sm font-medium lia-text-950 dark:lia-text-50">
                     {item.categoria}
                   </h4>
                   <div className="flex items-center gap-2">
@@ -752,14 +752,14 @@ export function AssessmentTab({ onSettingsChange }: { onSettingsChange: (changed
                       type="number"
                       value={item.peso}
                       onChange={() => onSettingsChange(true)}
-                      className="w-16 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-center"
+                      className="w-16 px-2 py-1 border border-lia-border-default dark:border-lia-border-default rounded-md text-sm text-center"
                     />
-                    <span className="text-sm text-gray-800">%</span>
+                    <span className="text-sm lia-text-800">%</span>
                   </div>
                 </div>
                 <div className="space-y-1">
                   {item.criterios.map((criterio, idx) => (
-                    <div key={idx} className="text-sm text-gray-800 dark:text-gray-200">
+                    <div key={idx} className="text-sm lia-text-800 dark:text-lia-text-primary">
                       • {criterio}
                     </div>
                   ))}
@@ -831,11 +831,11 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-800">Workflows Ativos</p>
+                <p className="text-sm font-medium lia-text-800">Workflows Ativos</p>
                 <p className="text-2xl font-bold text-status-success">
                   {workflows.filter(w => w.status === 'active').length}
                 </p>
-                <p className="text-xs text-gray-800">de {workflows.length} total</p>
+                <p className="text-xs lia-text-800">de {workflows.length} total</p>
               </div>
               <div className="w-10 h-10 bg-status-success/15 rounded-md flex items-center justify-center">
                 <Workflow className="w-5 h-5 text-status-success" />
@@ -848,12 +848,12 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-800">Execuções Hoje</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">47</p>
+                <p className="text-sm font-medium lia-text-800">Execuções Hoje</p>
+                <p className="text-2xl font-bold lia-text-900 dark:lia-text-50">47</p>
                 <p className="text-xs text-status-success">+12% vs ontem</p>
               </div>
               <div className="w-10 h-10 bg-wedo-cyan/15 rounded-md flex items-center justify-center">
-                <Zap className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                <Zap className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
               </div>
             </div>
           </CardContent>
@@ -863,9 +863,9 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-800">Taxa de Sucesso</p>
+                <p className="text-sm font-medium lia-text-800">Taxa de Sucesso</p>
                 <p className="text-2xl font-bold text-wedo-orange">97.3%</p>
-                <p className="text-xs text-gray-800">últimos 7 dias</p>
+                <p className="text-xs lia-text-800">últimos 7 dias</p>
               </div>
               <div className="w-10 h-10 bg-wedo-orange/15 rounded-md flex items-center justify-center">
                 <Target className="w-5 h-5 text-wedo-orange" />
@@ -878,9 +878,9 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-800">Templates</p>
+                <p className="text-sm font-medium lia-text-800">Templates</p>
                 <p className="text-2xl font-bold text-wedo-purple">12</p>
-                <p className="text-xs text-gray-800">pré-configurados</p>
+                <p className="text-xs lia-text-800">pré-configurados</p>
               </div>
               <div className="w-10 h-10 bg-wedo-purple/15 rounded-md flex items-center justify-center">
                 <FileText className="w-5 h-5 text-wedo-purple" />
@@ -904,19 +904,19 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
         <CardContent>
           <div className="space-y-4">
             {workflows.map((workflow) => (
-              <div key={workflow.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-md hover:transition-shadow">
+              <div key={workflow.id} className="flex items-center justify-between p-4 border border-lia-border-subtle rounded-md hover:transition-shadow">
                 <div className="flex items-center gap-4">
                   <div className={`w-10 h-10 rounded-md flex items-center justify-center ${
                     workflow.status === 'active' ? 'bg-status-success/15' : 'bg-gray-100'
                   }`}>
                     <Workflow className={`w-5 h-5 ${
-                      workflow.status === 'active' ? 'text-status-success' : 'text-gray-800'
+                      workflow.status === 'active' ? 'text-status-success' : 'lia-text-800'
                     }`} />
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-950">{workflow.name}</h4>
-                    <p className="text-sm text-gray-800">{workflow.description}</p>
-                    <div className="flex items-center gap-3 mt-1 text-xs text-gray-800">
+                    <h4 className="font-medium lia-text-950">{workflow.name}</h4>
+                    <p className="text-sm lia-text-800">{workflow.description}</p>
+                    <div className="flex items-center gap-3 mt-1 text-xs lia-text-800">
                       <span>Trigger: {workflow.trigger}</span>
                       <span>•</span>
                       <span>{workflow.actions} ações</span>
@@ -954,10 +954,10 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Button variant="outline" className="h-auto p-4 justify-start gap-3">
-              <Plus className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <Plus className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
               <div className="text-left">
                 <div className="font-medium">Criar Workflow</div>
-                <div className="text-sm text-gray-800">Do zero ou usando template</div>
+                <div className="text-sm lia-text-800">Do zero ou usando template</div>
               </div>
             </Button>
 
@@ -965,7 +965,7 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
               <Download className="w-5 h-5 text-status-success" />
               <div className="text-left">
                 <div className="font-medium">Importar Template</div>
-                <div className="text-sm text-gray-800">Da biblioteca de templates</div>
+                <div className="text-sm lia-text-800">Da biblioteca de templates</div>
               </div>
             </Button>
 
@@ -973,7 +973,7 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
               <BarChart3 className="w-5 h-5 text-wedo-purple" />
               <div className="text-left">
                 <div className="font-medium">Ver Analytics</div>
-                <div className="text-sm text-gray-800">Performance detalhada</div>
+                <div className="text-sm lia-text-800">Performance detalhada</div>
               </div>
             </Button>
           </div>
@@ -984,25 +984,25 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
 
   const renderBuilder = () => (
     <div className="text-center py-12">
-      <Workflow className="w-12 h-12 text-gray-800 mx-auto mb-4" />
-      <h3 className="text-lg font-medium text-gray-950 mb-2">Workflow Builder Visual</h3>
-      <p className="text-gray-800">Interface de arrastar e soltar para criar workflows</p>
+      <Workflow className="w-12 h-12 lia-text-800 mx-auto mb-4" />
+      <h3 className="text-lg font-medium lia-text-950 mb-2">Workflow Builder Visual</h3>
+      <p className="lia-text-800">Interface de arrastar e soltar para criar workflows</p>
     </div>
   )
 
   const renderTemplates = () => (
     <div className="text-center py-12">
-      <FileText className="w-12 h-12 text-gray-800 mx-auto mb-4" />
-      <h3 className="text-lg font-medium text-gray-950 mb-2">Biblioteca de Templates</h3>
-      <p className="text-gray-800">Templates pré-configurados para casos comuns</p>
+      <FileText className="w-12 h-12 lia-text-800 mx-auto mb-4" />
+      <h3 className="text-lg font-medium lia-text-950 mb-2">Biblioteca de Templates</h3>
+      <p className="lia-text-800">Templates pré-configurados para casos comuns</p>
     </div>
   )
 
   const renderLogs = () => (
     <div className="text-center py-12">
-      <Activity className="w-12 h-12 text-gray-800 mx-auto mb-4" />
-      <h3 className="text-lg font-medium text-gray-950 mb-2">Logs de Execução</h3>
-      <p className="text-gray-800">Histórico detalhado de todas as execuções</p>
+      <Activity className="w-12 h-12 lia-text-800 mx-auto mb-4" />
+      <h3 className="text-lg font-medium lia-text-950 mb-2">Logs de Execução</h3>
+      <p className="lia-text-800">Histórico detalhado de todas as execuções</p>
     </div>
   )
 
@@ -1011,11 +1011,11 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-gray-950 flex items-center gap-2">
-            <Workflow className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+          <h2 className="text-xl font-semibold lia-text-950 flex items-center gap-2">
+            <Workflow className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
             Automação Workflows Enterprise
           </h2>
-          <p className="text-sm text-gray-800">
+          <p className="text-sm lia-text-800">
             Builder visual para automações inteligentes de recrutamento
           </p>
         </div>
@@ -1044,8 +1044,8 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
             onClick={() => setSelectedView(tab.id as any)}
             className={`flex items-center gap-2 px-3 py-3 rounded-md text-sm font-medium transition-colors font-crimson ${
               selectedView === tab.id
-                ? 'bg-white text-gray-950'
-                : 'text-gray-800 hover:text-gray-950'
+                ? 'bg-lia-bg-primary lia-text-950'
+                : 'lia-text-800 hover:lia-text-950'
             }`}
           >
             <tab.icon className="w-4 h-4" />
@@ -1077,12 +1077,12 @@ export function NPSTab({ onSettingsChange }: { onSettingsChange: (changed: boole
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-3 block">
+              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
                 Escala de NPS
               </label>
               <select
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-sm"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary text-sm"
               >
                 <option>0-10 (Padrão NPS)</option>
                 <option>1-5 (Simplificado)</option>
@@ -1090,12 +1090,12 @@ export function NPSTab({ onSettingsChange }: { onSettingsChange: (changed: boole
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-3 block">
+              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
                 Frequência de Envio
               </label>
               <select
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-sm"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary text-sm"
               >
                 <option>Após cada processo seletivo</option>
                 <option>Semanal</option>
@@ -1106,14 +1106,14 @@ export function NPSTab({ onSettingsChange }: { onSettingsChange: (changed: boole
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-3 block">
+            <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
               Pergunta Principal
             </label>
             <textarea
               rows={3}
               defaultValue="De 0 a 10, o quanto você recomendaria nossa empresa como um lugar para trabalhar?"
               onChange={() => onSettingsChange(true)}
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-sm"
+              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary text-sm"
             />
           </div>
         </CardContent>

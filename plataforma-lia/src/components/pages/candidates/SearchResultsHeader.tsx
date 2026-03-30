@@ -181,7 +181,7 @@ export function SearchResultsHeader({
               onClick={onBack}
               className="flex items-center justify-center hover:opacity-70 transition-opacity flex-shrink-0"
             >
-              <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" strokeWidth={2.5} />
+              <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" strokeWidth={2.5} />
             </button>
           </TooltipTrigger>
           <TooltipContent side="left" className="!animate-none" style={{animation: 'none', transitionDuration: '0ms'}}>
@@ -195,7 +195,7 @@ export function SearchResultsHeader({
         {/* Ícone de Search + Frase completa com pills inline */}
         <div className="flex items-center gap-2 min-w-0 flex-1">
           {/* Ícone de Search para identificar prompt de busca */}
-          <Search className="w-4 h-4 text-gray-600 dark:text-gray-400 flex-shrink-0" />
+          <Search className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary flex-shrink-0" />
 
           {/* Frase completa com pills coloridos nas palavras-chave */}
           <div className="flex items-center flex-wrap text-sm text-gray-800 font-sans leading-loose">
@@ -207,9 +207,9 @@ export function SearchResultsHeader({
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => onOpenEditQueryModal(lastSearchQuery || '')}
-                    className="inline-flex items-center justify-center w-6 h-6 rounded-full hover:bg-gray-200 transition-all ml-1"
+                    className="inline-flex items-center justify-center w-6 h-6 rounded-full hover:bg-gray-200 transition-[width,height] ml-1"
                   >
-                    <Edit className="w-3 h-3 text-gray-600 dark:text-gray-400" />
+                    <Edit className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="!animate-none" style={{animation: 'none', transitionDuration: '0ms'}}>
@@ -220,7 +220,7 @@ export function SearchResultsHeader({
 
             <button
               onClick={onOpenAdvancedSearch}
-              className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 font-bold inline-flex items-center gap-1 transition-colors ml-2 font-sans"
+              className="text-xs text-gray-600 dark:text-lia-text-tertiary hover:text-gray-900 dark:hover:text-gray-100 font-bold inline-flex items-center gap-1 transition-colors ml-2 font-sans"
             >
               Editar Filtros
               <ChevronRight className="w-3 h-3" />

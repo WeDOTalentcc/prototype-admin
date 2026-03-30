@@ -353,7 +353,7 @@ export function StatusBadge({
   return (
     <div
       className={cn(
-        'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full',
+ 'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full',
         'bg-[var(--badge-bg)] dark:bg-[var(--badge-bg-dark)]',
         'border border-[var(--badge-border)] dark:border-[var(--badge-border-dark)]',
         shouldPulse && 'motion-safe:animate-pulse',
@@ -368,6 +368,7 @@ export function StatusBadge({
     >
       <Icon 
         className="w-2 h-2 flex-shrink-0 text-[var(--badge-icon)] dark:text-[var(--badge-icon-dark)]" 
+        aria-hidden="true"
       />
       <span 
         className="text-micro text-[var(--badge-text)] dark:text-[var(--badge-text-dark)]"
@@ -458,16 +459,16 @@ export function SourceBadge({ source, isApplication, className }: SourceBadgePro
   return (
     <div
       className={cn(
-        'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full',
-        'bg-gray-50 dark:bg-gray-700',
-        'border border-gray-200 dark:border-gray-600',
+ 'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full',
+        'bg-gray-50 dark:bg-lia-bg-elevated',
+        'border border-lia-border-subtle dark:border-lia-border-default',
         className
       )}
 
       title={isApplication ? `Inscrito via ${sourceLabels[source.toLowerCase()] || source}` : `Origem: ${sourceLabels[source.toLowerCase()] || source}`}
     >
-      <Icon className="w-2 h-2 flex-shrink-0 text-gray-500 dark:text-gray-400" />
-      <span className="text-micro text-gray-600 dark:text-gray-300 font-medium">
+      <Icon className="w-2 h-2 flex-shrink-0 text-gray-500 dark:text-lia-text-tertiary" />
+      <span className="text-micro text-gray-600 dark:text-lia-text-secondary font-medium">
         {label}
       </span>
     </div>
@@ -487,14 +488,14 @@ export function WarningBadge({ days, message, className }: WarningBadgeProps) {
   return (
     <div
       className={cn(
-        'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full',
-        'bg-gray-100 dark:bg-gray-600',
-        'border border-gray-300 dark:border-gray-500',
+ 'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full',
+        'bg-gray-100',
+        'border border-lia-border-default dark:border-lia-border-medium',
         className
       )}
     >
-      <AlertCircle className="w-2 h-2 flex-shrink-0 text-gray-500 dark:text-gray-300" />
-      <span className="text-micro text-gray-600 dark:text-gray-200 font-semibold">
+      <AlertCircle className="w-2 h-2 flex-shrink-0 text-gray-500 dark:text-lia-text-secondary" />
+      <span className="text-micro text-gray-600 dark:text-lia-text-primary font-semibold">
         {displayText}
       </span>
     </div>
@@ -548,7 +549,7 @@ export interface OriginBadgeProps {
 const originConfig: Record<string, { label: string; bg: string; border: string; text: string; icon: React.ElementType }> = {
   web: { label: 'Web', bg: 'bg-wedo-cyan/10 dark:bg-wedo-cyan/15', border: 'border-wedo-cyan/30', text: 'text-wedo-cyan-dark dark:text-wedo-cyan', icon: Globe },
   whatsapp: { label: 'WhatsApp', bg: 'bg-wedo-green/15 dark:bg-wedo-green/20', border: 'border-wedo-green/30', text: 'text-wedo-green', icon: MessageCircle },
-  sourcing: { label: 'Busca', bg: 'bg-gray-50 dark:bg-gray-700', border: 'border-gray-200 dark:border-gray-600', text: 'text-gray-700 dark:text-gray-300', icon: Search },
+  sourcing: { label: 'Busca', bg: 'bg-gray-50 dark:bg-lia-bg-elevated', border: 'border-lia-border-subtle dark:border-lia-border-default', text: 'text-gray-700 dark:text-lia-text-secondary', icon: Search },
   ats: { label: 'ATS', bg: 'bg-wedo-purple/15 dark:bg-wedo-purple/20', border: 'border-wedo-purple/30', text: 'text-wedo-purple', icon: Briefcase },
 }
 
@@ -559,7 +560,7 @@ export function OriginBadge({ origin, className }: OriginBadgeProps) {
   return (
     <div
       className={cn(
-        'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full',
+ 'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full',
         config.bg,
         `border ${config.border}`,
         className
@@ -583,7 +584,7 @@ export function AwaitingBadge({ className }: AwaitingBadgeProps) {
   return (
     <div
       className={cn(
-        'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full',
+ 'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full',
         'bg-status-warning/10 dark:bg-status-warning/15',
         'border border-status-warning/30',
         className

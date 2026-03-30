@@ -129,15 +129,15 @@ export function ReportScheduler({ isOpen, onClose }: ReportSchedulerProps) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-md w-full max-w-6xl h-[90vh] flex flex-col">
+      <div className="bg-lia-bg-primary rounded-md w-full max-w-6xl h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <div>
-            <h2 className="text-xl font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-2">
+            <h2 className="text-xl font-semibold text-gray-950 flex items-center gap-2">
               <Timer className="w-5 h-5" />
               Agendamento de Relatórios
             </h2>
-            <p className="text-sm text-gray-600">Configure envios automáticos de relatórios</p>
+            <p className="text-sm lia-text-base">Configure envios automáticos de relatórios</p>
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -160,8 +160,8 @@ export function ReportScheduler({ isOpen, onClose }: ReportSchedulerProps) {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
               <Card>
                 <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-gray-900 dark:text-gray-50">{scheduledReports.length}</div>
-                  <div className="text-sm text-gray-600">Total de Agendamentos</div>
+                  <div className="text-2xl font-bold text-gray-900">{scheduledReports.length}</div>
+                  <div className="text-sm lia-text-base">Total de Agendamentos</div>
                 </CardContent>
               </Card>
               <Card>
@@ -169,7 +169,7 @@ export function ReportScheduler({ isOpen, onClose }: ReportSchedulerProps) {
                   <div className="text-2xl font-bold text-status-success">
                     {scheduledReports.filter(r => r.isActive).length}
                   </div>
-                  <div className="text-sm text-gray-600">Ativos</div>
+                  <div className="text-sm lia-text-base">Ativos</div>
                 </CardContent>
               </Card>
               <Card>
@@ -177,7 +177,7 @@ export function ReportScheduler({ isOpen, onClose }: ReportSchedulerProps) {
                   <div className="text-2xl font-bold text-wedo-orange">
                     {scheduledReports.filter(r => r.frequency === 'daily').length}
                   </div>
-                  <div className="text-sm text-gray-600">Diários</div>
+                  <div className="text-sm lia-text-base">Diários</div>
                 </CardContent>
               </Card>
               <Card>
@@ -189,14 +189,14 @@ export function ReportScheduler({ isOpen, onClose }: ReportSchedulerProps) {
                       return nextSend.toDateString() === today.toDateString()
                     }).length}
                   </div>
-                  <div className="text-sm text-gray-600">Hoje</div>
+                  <div className="text-sm lia-text-base">Hoje</div>
                 </CardContent>
               </Card>
             </div>
 
             {/* Scheduled Reports List */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-950 dark:text-gray-50">Relatórios Agendados</h3>
+              <h3 className="text-lg font-medium text-gray-950">Relatórios Agendados</h3>
 
               {scheduledReports.map((report) => (
                 <Card key={report.id} className="hover:transition-shadow">
@@ -204,7 +204,7 @@ export function ReportScheduler({ isOpen, onClose }: ReportSchedulerProps) {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <h4 className="text-lg font-medium text-gray-950 dark:text-gray-50">{report.name}</h4>
+                          <h4 className="text-lg font-medium text-gray-950">{report.name}</h4>
                           <Badge
                             variant={report.isActive ? "default" : "secondary"}
                             className={report.isActive ? "bg-status-success/15 text-status-success" : ""}
@@ -216,37 +216,37 @@ export function ReportScheduler({ isOpen, onClose }: ReportSchedulerProps) {
                           </Badge>
                         </div>
 
-                        <p className="text-gray-600 mb-3">{report.description}</p>
+                        <p className="lia-text-base mb-3">{report.description}</p>
 
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
                           <div>
-                            <span className="font-medium text-gray-800 dark:text-gray-200">Próximo Envio:</span>
+                            <span className="font-medium text-gray-800 dark:text-lia-text-primary">Próximo Envio:</span>
                             <div className="flex items-center gap-1 mt-1">
-                              <Calendar className="w-4 h-4 text-gray-800 dark:text-gray-200" />
+                              <Calendar className="w-4 h-4 text-gray-800 dark:text-lia-text-primary" />
                               <span>{getNextSendLabel(report.nextSend)}</span>
                             </div>
                           </div>
 
                           <div>
-                            <span className="font-medium text-gray-800 dark:text-gray-200">Horário:</span>
+                            <span className="font-medium text-gray-800 dark:text-lia-text-primary">Horário:</span>
                             <div className="flex items-center gap-1 mt-1">
-                              <Clock className="w-4 h-4 text-gray-800 dark:text-gray-200" />
+                              <Clock className="w-4 h-4 text-gray-800 dark:text-lia-text-primary" />
                               <span>{report.time}</span>
                             </div>
                           </div>
 
                           <div>
-                            <span className="font-medium text-gray-800 dark:text-gray-200">Destinatários:</span>
+                            <span className="font-medium text-gray-800 dark:text-lia-text-primary">Destinatários:</span>
                             <div className="flex items-center gap-1 mt-1">
-                              <Users className="w-4 h-4 text-gray-800 dark:text-gray-200" />
+                              <Users className="w-4 h-4 text-gray-800 dark:text-lia-text-primary" />
                               <span>{report.recipients.length} pessoa(s)</span>
                             </div>
                           </div>
 
                           <div>
-                            <span className="font-medium text-gray-800 dark:text-gray-200">Tipo:</span>
+                            <span className="font-medium text-gray-800 dark:text-lia-text-primary">Tipo:</span>
                             <div className="flex items-center gap-1 mt-1">
-                              <FileText className="w-4 h-4 text-gray-800 dark:text-gray-200" />
+                              <FileText className="w-4 h-4 text-gray-800 dark:text-lia-text-primary" />
                               <span className="capitalize">{report.reportType}</span>
                             </div>
                           </div>
@@ -254,7 +254,7 @@ export function ReportScheduler({ isOpen, onClose }: ReportSchedulerProps) {
 
                         {report.jobIds.length > 0 && (
                           <div className="mt-3">
-                            <span className="font-medium text-gray-800 dark:text-gray-200 text-sm">Vagas Específicas:</span>
+                            <span className="font-medium text-gray-800 dark:text-lia-text-primary text-sm">Vagas Específicas:</span>
                             <div className="flex flex-wrap gap-1 mt-1">
                               {report.jobIds.map(jobId => (
                                 <Badge key={jobId} variant="outline" className="text-xs">
@@ -266,7 +266,7 @@ export function ReportScheduler({ isOpen, onClose }: ReportSchedulerProps) {
                         )}
 
                         {report.lastSent && (
-                          <div className="mt-3 text-sm text-gray-800 dark:text-gray-200">
+                          <div className="mt-3 text-sm text-gray-800 dark:text-lia-text-primary">
                             Último envio: {new Date(report.lastSent).toLocaleDateString('pt-BR')} às {new Date(report.lastSent).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                           </div>
                         )}
@@ -319,7 +319,7 @@ export function ReportScheduler({ isOpen, onClose }: ReportSchedulerProps) {
 
               {scheduledReports.length === 0 && (
                 <Card className="p-8 text-center">
-                  <div className="text-gray-800 dark:text-gray-200">
+                  <div className="text-gray-800 dark:text-lia-text-primary">
                     <Timer className="w-12 h-12 mx-auto mb-4 opacity-50" />
                     <h3 className="text-lg font-medium mb-2">Nenhum relatório agendado</h3>
                     <p className="text-sm">Crie seu primeiro agendamento automático</p>
@@ -453,10 +453,10 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
     <div className="flex-1 overflow-y-auto p-6">
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
-          <h3 className="text-lg font-medium text-gray-950 dark:text-gray-50">
+          <h3 className="text-lg font-medium text-gray-950">
             {report ? 'Editar Agendamento' : 'Novo Agendamento'}
           </h3>
-          <p className="text-sm text-gray-600">Configure os detalhes do envio automático</p>
+          <p className="text-sm lia-text-base">Configure os detalhes do envio automático</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -464,40 +464,40 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
             {/* Left Column */}
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
                   Nome do Agendamento
                 </label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
                   placeholder="Ex: Relatório Semanal da Diretoria"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
                   Descrição
                 </label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
                   placeholder="Descreva o propósito deste relatório..."
                   rows={3}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
                   Frequência
                 </label>
                 <select
                   value={formData.frequency}
                   onChange={(e) => setFormData(prev => ({ ...prev, frequency: e.target.value as any }))}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
                 >
                   <option value="daily">Diário</option>
                   <option value="weekly">Semanal</option>
@@ -508,13 +508,13 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
 
               {formData.frequency === 'weekly' && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                  <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
                     Dia da Semana
                   </label>
                   <select
                     value={formData.dayOfWeek}
                     onChange={(e) => setFormData(prev => ({ ...prev, dayOfWeek: Number(e.target.value) }))}
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                    className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
                   >
                     <option value={1}>Segunda-feira</option>
                     <option value={2}>Terça-feira</option>
@@ -529,7 +529,7 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
 
               {formData.frequency === 'monthly' && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                  <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
                     Dia do Mês
                   </label>
                   <input
@@ -538,20 +538,20 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
                     max="31"
                     value={formData.dayOfMonth}
                     onChange={(e) => setFormData(prev => ({ ...prev, dayOfMonth: Number(e.target.value) }))}
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                    className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
                   />
                 </div>
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
                   Horário
                 </label>
                 <input
                   type="time"
                   value={formData.time}
                   onChange={(e) => setFormData(prev => ({ ...prev, time: e.target.value }))}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
                 />
               </div>
             </div>
@@ -559,13 +559,13 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
             {/* Right Column */}
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
                   Destinatários (separados por vírgula)
                 </label>
                 <textarea
                   value={formData.recipients}
                   onChange={(e) => setFormData(prev => ({ ...prev, recipients: e.target.value }))}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
                   placeholder="ana.silva@empresa.com, carlos.santos@empresa.com"
                   rows={3}
                   required
@@ -573,13 +573,13 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
                   Tipo de Relatório
                 </label>
                 <select
                   value={formData.reportType}
                   onChange={(e) => setFormData(prev => ({ ...prev, reportType: e.target.value as any }))}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
                 >
                   <option value="summary">Resumo</option>
                   <option value="detailed">Detalhado</option>
@@ -589,26 +589,26 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
                   IDs das Vagas (opcional - deixe vazio para todas)
                 </label>
                 <input
                   type="text"
                   value={formData.jobIds}
                   onChange={(e) => setFormData(prev => ({ ...prev, jobIds: e.target.value }))}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
                   placeholder="WDT-2025-001, WDT-2025-002"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
                   Template de Email
                 </label>
                 <select
                   value={formData.template}
                   onChange={(e) => setFormData(prev => ({ ...prev, template: e.target.value }))}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
                 >
                   <option value="">Template padrão</option>
                   <option value="executive-summary">Resumo Executivo</option>
@@ -617,7 +617,7 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
                 </select>
               </div>
 
-              <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-md">
+              <div className="bg-gray-100 dark:bg-lia-bg-secondary p-4 rounded-md">
                 <h4 className="font-medium text-wedo-cyan-dark mb-2">📋 Prévia do Próximo Envio</h4>
                 <div className="text-sm text-wedo-cyan-dark">
                   <div>Data: {calculateNextSend(formData.frequency, formData.dayOfWeek, formData.dayOfMonth, formData.time) && new Date(calculateNextSend(formData.frequency, formData.dayOfWeek, formData.dayOfMonth, formData.time)).toLocaleDateString('pt-BR')}</div>

@@ -144,7 +144,7 @@ const getSeverityConfig = (severity: string) => {
     case 'low':
       return { label: 'Baixo', color: 'bg-status-success/15 text-status-success', dot: 'bg-status-success' }
     default:
-      return { label: severity, color: 'bg-gray-100 text-gray-800 dark:text-gray-200', dot: 'bg-gray-500' }
+      return { label: severity, color: 'bg-gray-100 lia-text-800 dark:text-lia-text-primary', dot: 'bg-gray-500' }
   }
 }
 
@@ -153,13 +153,13 @@ const getStatusConfig = (status: string) => {
     case 'investigating':
       return { label: 'Investigando', color: 'bg-status-warning/15 text-status-warning', icon: Eye }
     case 'acknowledged':
-      return { label: 'Reconhecido', color: 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50', icon: CheckCircle2 }
+      return { label: 'Reconhecido', color: 'bg-gray-100 dark:bg-lia-bg-secondary lia-text-900 dark:lia-text-50', icon: CheckCircle2 }
     case 'resolved':
       return { label: 'Resolvido', color: 'bg-status-success/15 text-status-success', icon: CheckCircle2 }
     case 'open':
       return { label: 'Aberto', color: 'bg-status-error/15 text-status-error', icon: AlertCircle }
     default:
-      return { label: status, color: 'bg-gray-100 text-gray-800 dark:text-gray-200', icon: Clock }
+      return { label: status, color: 'bg-gray-100 lia-text-800 dark:text-lia-text-primary', icon: Clock }
   }
 }
 
@@ -174,16 +174,16 @@ export default function DashboardSegurancaPage() {
           <div 
             className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
           >
-            <MonitorDot className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <MonitorDot className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
           </div>
           <div>
             <h1 
-              className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+              className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary"
               
             >
               Dashboard de Segurança
             </h1>
-            <p className="text-sm text-gray-400 dark:text-gray-500" >
+            <p className="text-sm lia-text-400 dark:lia-text-500" >
               Monitoramento em tempo real • Atualizado há 2 minutos
             </p>
           </div>
@@ -194,10 +194,10 @@ export default function DashboardSegurancaPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-gray-400 dark:text-gray-500" >
+                  <p className="text-sm lia-text-400 dark:lia-text-500" >
                     Total de Eventos
                   </p>
-                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
+                  <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary" >
                     {securityMetrics.totalEvents.toLocaleString('pt-BR')}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -206,7 +206,7 @@ export default function DashboardSegurancaPage() {
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
-                  <Activity className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  <Activity className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                 </div>
               </div>
             </CardContent>
@@ -216,10 +216,10 @@ export default function DashboardSegurancaPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-gray-400 dark:text-gray-500" >
+                  <p className="text-sm lia-text-400 dark:lia-text-500" >
                     Alertas Críticos Ativos
                   </p>
-                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
+                  <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary" >
                     {securityMetrics.criticalAlerts}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -238,10 +238,10 @@ export default function DashboardSegurancaPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-gray-400 dark:text-gray-500" >
+                  <p className="text-sm lia-text-400 dark:lia-text-500" >
                     Tempo Médio de Resposta
                   </p>
-                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
+                  <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary" >
                     {securityMetrics.avgResponseTime}ms
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -261,10 +261,10 @@ export default function DashboardSegurancaPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-gray-400 dark:text-gray-500" >
+                  <p className="text-sm lia-text-400 dark:lia-text-500" >
                     Score de Segurança
                   </p>
-                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
+                  <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary" >
                     {securityMetrics.securityScore}/100
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -274,7 +274,7 @@ export default function DashboardSegurancaPage() {
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
-                  <Gauge className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  <Gauge className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                 </div>
               </div>
               <div className="mt-3">
@@ -291,10 +291,10 @@ export default function DashboardSegurancaPage() {
                 <div 
                   className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
                 >
-                  <KeyRound className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  <KeyRound className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                 </div>
                 <div>
-                  <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
+                  <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
                     Autenticação Empresarial (WorkOS)
                   </CardTitle>
                   <CardDescription className="mt-1">
@@ -315,32 +315,32 @@ export default function DashboardSegurancaPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="flex items-center gap-3 p-3 rounded-md border border-gray-200 dark:border-gray-700" >
+              <div className="flex items-center gap-3 p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle" >
                 <div className="w-2 h-2 rounded-full bg-status-success" />
                 <div>
-                  <p className="text-sm font-medium text-gray-800 dark:text-gray-100" >SSO</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500" >Ativo</p>
+                  <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary" >SSO</p>
+                  <p className="text-xs lia-text-400 dark:lia-text-500" >Ativo</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-3 rounded-md border border-gray-200 dark:border-gray-700" >
+              <div className="flex items-center gap-3 p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle" >
                 <div className="w-2 h-2 rounded-full bg-status-success" />
                 <div>
-                  <p className="text-sm font-medium text-gray-800 dark:text-gray-100" >SCIM</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500" >Ativo</p>
+                  <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary" >SCIM</p>
+                  <p className="text-xs lia-text-400 dark:lia-text-500" >Ativo</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-3 rounded-md border border-gray-200 dark:border-gray-700" >
+              <div className="flex items-center gap-3 p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle" >
                 <div className="w-2 h-2 rounded-full bg-status-success" />
                 <div>
-                  <p className="text-sm font-medium text-gray-800 dark:text-gray-100" >MFA</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500" >Habilitado</p>
+                  <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary" >MFA</p>
+                  <p className="text-xs lia-text-400 dark:lia-text-500" >Habilitado</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-3 rounded-md border border-gray-200 dark:border-gray-700" >
-                <Users className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              <div className="flex items-center gap-3 p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle" >
+                <Users className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                 <div>
-                  <p className="text-sm font-medium text-gray-800 dark:text-gray-100" >Sessões</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500" >Gerenciadas via WorkOS</p>
+                  <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary" >Sessões</p>
+                  <p className="text-xs lia-text-400 dark:lia-text-500" >Gerenciadas via WorkOS</p>
                 </div>
               </div>
             </div>
@@ -350,8 +350,8 @@ export default function DashboardSegurancaPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <Card className="lg:col-span-2" >
             <CardHeader className="pb-3">
-              <CardTitle className="text-base font-medium flex items-center gap-2 text-gray-800 dark:text-gray-100" >
-                <BarChart3 className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              <CardTitle className="text-base font-medium flex items-center gap-2 lia-text-800 dark:text-lia-text-primary" >
+                <BarChart3 className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                 Eventos por Dia (Últimos 7 dias)
               </CardTitle>
             </CardHeader>
@@ -365,31 +365,31 @@ export default function DashboardSegurancaPage() {
                       <div style={{ height: `${(item.high / item.count) * 100}%` }} className="bg-status-warning" />
                       <div style={{ height: `${(item.critical / item.count) * 100}%` }} className="bg-status-error" />
                     </div>
-                    <span className="text-xs font-medium mt-2 text-gray-800 dark:text-gray-100" >
+                    <span className="text-xs font-medium mt-2 lia-text-800 dark:text-lia-text-primary" >
                       {item.count}
                     </span>
-                    <span className="text-xs mt-1 text-gray-400 dark:text-gray-500" >
+                    <span className="text-xs mt-1 lia-text-400 dark:lia-text-500" >
                       {item.day}
                     </span>
                   </div>
                 ))}
               </div>
-              <div className="flex items-center justify-center gap-6 mt-4 pt-3 border-t border-gray-200 dark:border-gray-700" >
+              <div className="flex items-center justify-center gap-6 mt-4 pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle" >
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-md bg-status-error" />
-                  <span className="text-xs text-gray-400 dark:text-gray-500" >Crítico</span>
+                  <span className="text-xs lia-text-400 dark:lia-text-500" >Crítico</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-md bg-status-warning" />
-                  <span className="text-xs text-gray-400 dark:text-gray-500" >Alto</span>
+                  <span className="text-xs lia-text-400 dark:lia-text-500" >Alto</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-md bg-status-warning" />
-                  <span className="text-xs text-gray-400 dark:text-gray-500" >Médio</span>
+                  <span className="text-xs lia-text-400 dark:lia-text-500" >Médio</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-md bg-status-success" />
-                  <span className="text-xs text-gray-400 dark:text-gray-500" >Baixo</span>
+                  <span className="text-xs lia-text-400 dark:lia-text-500" >Baixo</span>
                 </div>
               </div>
             </CardContent>
@@ -397,8 +397,8 @@ export default function DashboardSegurancaPage() {
 
           <Card >
             <CardHeader className="pb-3">
-              <CardTitle className="text-base font-medium flex items-center gap-2 text-gray-800 dark:text-gray-100" >
-                <Shield className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              <CardTitle className="text-base font-medium flex items-center gap-2 lia-text-800 dark:text-lia-text-primary" >
+                <Shield className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                 Distribuição por Severidade
               </CardTitle>
             </CardHeader>
@@ -409,22 +409,22 @@ export default function DashboardSegurancaPage() {
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-md" style={{backgroundColor: item.color}} />
-                        <span className="text-sm font-medium text-gray-800 dark:text-gray-100" >
+                        <span className="text-sm font-medium lia-text-800 dark:text-lia-text-primary" >
                           {item.severity}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-400 dark:text-gray-500" >
+                        <span className="text-sm lia-text-400 dark:lia-text-500" >
                           {item.count}
                         </span>
-                        <span className="text-sm font-medium text-gray-800 dark:text-gray-100" >
+                        <span className="text-sm font-medium lia-text-800 dark:text-lia-text-primary" >
                           {item.percentage}%
                         </span>
                       </div>
                     </div>
                     <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
                       <div 
-                        className="h-full rounded-full transition-all"
+                        className="h-full rounded-full transition-[width,height]"
                         style={{width: `${item.percentage}%`, backgroundColor: item.color}}
                       />
                     </div>
@@ -434,7 +434,7 @@ export default function DashboardSegurancaPage() {
               <div 
                 className="mt-4 p-3 rounded-md bg-gray-200/20"
               >
-                <p className="text-xs text-gray-400 dark:text-gray-500" >
+                <p className="text-xs lia-text-400 dark:lia-text-500" >
                   Total: {totalSeverityCount.toLocaleString('pt-BR')} eventos nos últimos 7 dias
                 </p>
               </div>
@@ -445,8 +445,8 @@ export default function DashboardSegurancaPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <Card >
             <CardHeader className="pb-3">
-              <CardTitle className="text-base font-medium flex items-center gap-2 text-gray-800 dark:text-gray-100" >
-                <AlertTriangle className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              <CardTitle className="text-base font-medium flex items-center gap-2 lia-text-800 dark:text-lia-text-primary" >
+                <AlertTriangle className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                 Top 5 Tipos de Eventos
               </CardTitle>
             </CardHeader>
@@ -455,7 +455,7 @@ export default function DashboardSegurancaPage() {
                 {topEventTypes.map((event, idx) => (
                   <div 
                     key={idx}
-                    className="flex items-center justify-between p-3 rounded-md border hover:bg-gray-50 transition-colors border-gray-200 dark:border-gray-700"
+                    className="flex items-center justify-between p-3 rounded-md border hover:bg-gray-50 transition-colors border-lia-border-subtle dark:border-lia-border-subtle"
                     
                   >
                     <div className="flex items-center gap-3">
@@ -464,12 +464,12 @@ export default function DashboardSegurancaPage() {
                       >
                         {idx + 1}
                       </div>
-                      <span className="text-sm font-medium text-gray-800 dark:text-gray-100" >
+                      <span className="text-sm font-medium lia-text-800 dark:text-lia-text-primary" >
                         {event.type}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-gray-800 dark:text-gray-100" >
+                      <span className="text-sm font-semibold lia-text-800 dark:text-lia-text-primary" >
                         {event.count}
                       </span>
                       <div className={`flex items-center gap-1 ${event.trend > 0 ? 'text-status-error' : 'text-status-success'}`}>
@@ -490,11 +490,11 @@ export default function DashboardSegurancaPage() {
           <Card className="lg:col-span-2" >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-medium flex items-center gap-2 text-gray-800 dark:text-gray-100" >
-                  <Activity className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                <CardTitle className="text-base font-medium flex items-center gap-2 lia-text-800 dark:text-lia-text-primary" >
+                  <Activity className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                   Eventos Recentes
                 </CardTitle>
-                <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                <Badge className="bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary">
                   {recentEvents.length} eventos
                 </Badge>
               </div>
@@ -518,7 +518,7 @@ export default function DashboardSegurancaPage() {
                     return (
                       <TableRow key={event.id} className="hover:bg-gray-50">
                         <TableCell>
-                          <span className="text-xs font-mono text-gray-500 dark:text-gray-400" >
+                          <span className="text-xs font-mono lia-text-500 dark:text-lia-text-tertiary" >
                             {new Date(event.timestamp).toLocaleString('pt-BR', {
                               day: '2-digit',
                               month: '2-digit',
@@ -528,7 +528,7 @@ export default function DashboardSegurancaPage() {
                           </span>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm font-medium text-gray-800 dark:text-gray-100" >
+                          <span className="text-sm font-medium lia-text-800 dark:text-lia-text-primary" >
                             {event.type}
                           </span>
                         </TableCell>
@@ -538,7 +538,7 @@ export default function DashboardSegurancaPage() {
                           </Badge>
                         </TableCell>
                         <TableCell className="hidden md:table-cell max-w-sidebar-content">
-                          <span className="text-xs truncate block text-gray-400 dark:text-gray-500" >
+                          <span className="text-xs truncate block lia-text-400 dark:lia-text-500" >
                             {event.description}
                           </span>
                         </TableCell>

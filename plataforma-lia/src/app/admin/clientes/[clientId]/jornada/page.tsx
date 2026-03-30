@@ -88,8 +88,8 @@ export default function ClientJornadaPage({
     return (
       <div className="flex items-center justify-center py-16">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-gray-600 dark:text-gray-400 mx-auto mb-4" />
-          <p className="text-sm text-gray-400 dark:text-gray-500">
+          <Loader2 className="w-8 h-8 animate-spin lia-text-600 dark:text-lia-text-tertiary mx-auto mb-4" />
+          <p className="text-sm lia-text-400 dark:lia-text-500">
             Carregando jornada...
           </p>
         </div>
@@ -102,14 +102,14 @@ export default function ClientJornadaPage({
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <Workflow className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+            <Workflow className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />
             <h2 
-              className="text-lg font-semibold text-gray-800 dark:text-gray-100"
+              className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary"
             >
               Jornada de Recrutamento
             </h2>
           </div>
-          <p className="text-sm text-gray-400 dark:text-gray-500">
+          <p className="text-sm lia-text-400 dark:lia-text-500">
             Pipeline e etapas do processo seletivo
           </p>
         </div>
@@ -158,7 +158,7 @@ export default function ClientJornadaPage({
       <Card>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base text-gray-800 dark:text-gray-100">
+            <CardTitle className="text-base lia-text-800 dark:text-lia-text-primary">
               Pipeline de Etapas
             </CardTitle>
             <Badge variant="outline">
@@ -173,8 +173,8 @@ export default function ClientJornadaPage({
                 <div 
                   className={`flex flex-col items-center gap-2 px-4 py-3 rounded-md border min-w-[120px] ${
                     stage.isActive
-                      ? 'bg-white dark:bg-gray-900'
-                      : 'bg-gray-50 dark:bg-gray-800 opacity-50 border-gray-200 dark:border-gray-700'
+                      ? 'bg-white dark:bg-lia-bg-primary'
+                      : 'bg-gray-50 dark:bg-lia-bg-secondary opacity-50 border-lia-border-subtle dark:border-lia-border-subtle'
                   }`}
                   style={{borderColor: stage.isActive ? stage.color : undefined}}
                 >
@@ -183,18 +183,18 @@ export default function ClientJornadaPage({
                     style={{backgroundColor: stage.color}}
                   />
                   <span 
-                    className="text-sm font-medium text-center text-gray-800 dark:text-gray-100"
+                    className="text-sm font-medium text-center lia-text-800 dark:text-lia-text-primary"
                   >
                     {stage.name}
                   </span>
                   {stage.isActive ? (
                     <CheckCircle2 className="w-4 h-4 text-status-success" />
                   ) : (
-                    <Clock className="w-4 h-4 text-gray-400" />
+                    <Clock className="w-4 h-4 lia-text-400" />
                   )}
                 </div>
                 {index < stages.length - 1 && (
-                  <ArrowRight className="w-5 h-5 shrink-0 text-gray-400 dark:text-gray-500" />
+                  <ArrowRight className="w-5 h-5 shrink-0 lia-text-400 dark:lia-text-500" />
                 )}
               </React.Fragment>
             ))}
@@ -205,8 +205,8 @@ export default function ClientJornadaPage({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-semibold text-gray-900 dark:text-gray-50">{activeStages.length}</p>
-            <p className="text-sm text-gray-400 dark:text-gray-500">
+            <p className="text-2xl font-semibold lia-text-900 dark:lia-text-50">{activeStages.length}</p>
+            <p className="text-sm lia-text-400 dark:lia-text-500">
               Etapas Ativas
             </p>
           </CardContent>
@@ -216,7 +216,7 @@ export default function ClientJornadaPage({
             <p className="text-2xl font-semibold text-status-success">
               {stages.filter(s => s.automations?.emailFeedback).length}
             </p>
-            <p className="text-sm text-gray-400 dark:text-gray-500">
+            <p className="text-sm lia-text-400 dark:lia-text-500">
               Com Email Automático
             </p>
           </CardContent>
@@ -226,7 +226,7 @@ export default function ClientJornadaPage({
             <p className="text-2xl font-semibold text-wedo-purple">
               {stages.filter(s => s.automations?.whatsappNotification).length}
             </p>
-            <p className="text-sm text-gray-400 dark:text-gray-500">
+            <p className="text-sm lia-text-400 dark:lia-text-500">
               Com WhatsApp Automático
             </p>
           </CardContent>

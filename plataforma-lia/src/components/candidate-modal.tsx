@@ -182,11 +182,11 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
 
   const getInteractionIcon = (type: string) => {
     switch (type) {
-      case 'email': return <Mail className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+      case 'email': return <Mail className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
       case 'call': return <Phone className="w-4 h-4 text-status-success" />
-      case 'view': return <Eye className="w-4 h-4 text-gray-800 dark:text-gray-200" />
+      case 'view': return <Eye className="w-4 h-4 text-gray-800 dark:text-lia-text-primary" />
       case 'meeting': return <Video className="w-4 h-4 text-wedo-purple" />
-      default: return <MessageCircle className="w-4 h-4 text-gray-800 dark:text-gray-200" />
+      default: return <MessageCircle className="w-4 h-4 text-gray-800 dark:text-lia-text-primary" />
     }
   }
 
@@ -199,11 +199,11 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 dark:bg-gray-950/70 flex items-center justify-center z-50 p-4">
-      <div className="w-full max-w-6xl max-h-[90vh] bg-white dark:bg-gray-800 rounded-md overflow-hidden">
+    <div className="fixed inset-0 bg-black/50/70 flex items-center justify-center z-50 p-4">
+      <div className="w-full max-w-6xl max-h-[90vh] bg-white dark:bg-lia-bg-secondary rounded-md overflow-hidden">
 
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
+        <div className="flex items-center justify-between p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-elevated">
           <div className="flex items-center gap-4">
             <Avatar className="w-16 h-16">
               <AvatarImage src={candidate.avatar} alt={candidateData.fullName} />
@@ -213,21 +213,21 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
             </Avatar>
 
             <div>
-              <h2 className="text-2xl font-semibold text-gray-950 dark:text-gray-50">
+              <h2 className="text-2xl font-semibold text-gray-950">
                 {candidateData.fullName}
               </h2>
               <div className="flex items-center gap-3 mt-1">
-                <span className="text-gray-600 dark:text-gray-400">
+                <span className="text-gray-600 dark:text-lia-text-tertiary">
                   {candidateData.currentRole} • {candidateData.experience}
                 </span>
-                <Badge className={`${candidateData.status === 'Em triagem' ? 'bg-status-warning/15 text-status-warning dark:text-status-warning' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'}`}>
+                <Badge className={`${candidateData.status === 'Em triagem' ? 'bg-status-warning/15 text-status-warning dark:text-status-warning' : 'bg-gray-100 text-gray-700 dark:bg-lia-bg-elevated dark:text-lia-text-secondary'}`}>
                   {candidateData.status}
                 </Badge>
               </div>
 
               <div className="flex items-center gap-4 mt-2">
                 <div className="flex items-center gap-1">
-                  <BrainCircuit className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                  <BrainCircuit className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
                   <span className="text-sm font-medium text-wedo-cyan-dark">LIA: {candidateData.liaScore}/10</span>
                 </div>
                 <div className="flex items-center gap-1">
@@ -235,8 +235,8 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                   <span className="text-sm font-medium text-status-success">Match: {candidateData.skillsMatch}%</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <MapPin className="w-4 h-4 text-gray-800 dark:text-gray-200" />
-                  <span className="text-sm text-gray-600 dark:text-gray-400">{candidateData.location}</span>
+                  <MapPin className="w-4 h-4 text-gray-800 dark:text-lia-text-primary" />
+                  <span className="text-sm text-gray-600 dark:text-lia-text-tertiary">{candidateData.location}</span>
                 </div>
               </div>
             </div>
@@ -263,7 +263,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+        <div className="border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary">
           <div className="flex gap-8 px-6">
             {[
               { id: 'overview', label: 'Visão Geral', icon: User },
@@ -275,9 +275,9 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 py-4 border-b-2 transition-colors ${
-                  activeTab === tab.id
-                    ? 'border-gray-900 text-gray-900 dark:border-gray-100 dark:text-gray-100'
-                    : 'border-transparent text-gray-800 dark:text-gray-200 hover:text-gray-950 dark:hover:text-gray-50'
+ activeTab === tab.id
+                    ? 'border-gray-900 text-gray-900 dark:border-lia-border-subtle dark:text-lia-text-primary'
+                    : 'border-transparent text-gray-800 dark:text-lia-text-primary hover:text-gray-950 dark:hover:text-gray-50'
                 }`}
               >
                 <tab.icon className="w-4 h-4" />
@@ -297,7 +297,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
               {/* Informações Pessoais */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2 text-gray-950 dark:text-gray-50">
+                  <CardTitle className="text-lg flex items-center gap-2 text-gray-950">
                     <User className="w-5 h-5" />
                     Informações Pessoais
                   </CardTitle>
@@ -305,43 +305,43 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-sm font-medium text-gray-800 dark:text-gray-200">Email</label>
+                      <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">Email</label>
                       <div className="flex items-center gap-2 mt-1">
-                        <Mail className="w-4 h-4 text-gray-800 dark:text-gray-200" />
-                        <span className="text-sm text-gray-950 dark:text-gray-50">{candidateData.email}</span>
+                        <Mail className="w-4 h-4 text-gray-800 dark:text-lia-text-primary" />
+                        <span className="text-sm text-gray-950">{candidateData.email}</span>
                       </div>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-800 dark:text-gray-200">Telefone</label>
+                      <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">Telefone</label>
                       <div className="flex items-center gap-2 mt-1">
-                        <Phone className="w-4 h-4 text-gray-800 dark:text-gray-200" />
-                        <span className="text-sm text-gray-950 dark:text-gray-50">{candidateData.phone}</span>
+                        <Phone className="w-4 h-4 text-gray-800 dark:text-lia-text-primary" />
+                        <span className="text-sm text-gray-950">{candidateData.phone}</span>
                       </div>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-sm font-medium text-gray-800 dark:text-gray-200">LinkedIn</label>
+                      <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">LinkedIn</label>
                       <div className="flex items-center gap-2 mt-1">
-                        <Linkedin className="w-4 h-4 text-gray-600" />
-                        <a href={candidateData.linkedinUrl} className="text-sm text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 hover:underline">Ver perfil</a>
+                        <Linkedin className="w-4 h-4 lia-text-base" />
+                        <a href={candidateData.linkedinUrl} className="text-sm text-gray-700 hover:text-gray-900 dark:text-lia-text-secondary dark:hover:text-gray-100 hover:underline">Ver perfil</a>
                       </div>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-800 dark:text-gray-200">Portfolio</label>
+                      <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">Portfolio</label>
                       <div className="flex items-center gap-2 mt-1">
-                        <Globe className="w-4 h-4 text-gray-800 dark:text-gray-200" />
-                        <a href={candidateData.portfolio} className="text-sm text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 hover:underline">Ver portfolio</a>
+                        <Globe className="w-4 h-4 text-gray-800 dark:text-lia-text-primary" />
+                        <a href={candidateData.portfolio} className="text-sm text-gray-700 hover:text-gray-900 dark:text-lia-text-secondary dark:hover:text-gray-100 hover:underline">Ver portfolio</a>
                       </div>
                     </div>
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-gray-800 dark:text-gray-200">Empresa Atual</label>
+                    <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">Empresa Atual</label>
                     <div className="flex items-center gap-2 mt-1">
-                      <Building className="w-4 h-4 text-gray-800 dark:text-gray-200" />
-                      <span className="text-sm text-gray-950 dark:text-gray-50">
+                      <Building className="w-4 h-4 text-gray-800 dark:text-lia-text-primary" />
+                      <span className="text-sm text-gray-950">
                         {candidateData.currentRole} na {candidateData.currentCompany}
                       </span>
                     </div>
@@ -352,14 +352,14 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
               {/* Skills e Competências */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2 text-gray-950 dark:text-gray-50">
+                  <CardTitle className="text-lg flex items-center gap-2 text-gray-950">
                     <Star className="w-5 h-5" />
                     Skills e Competências
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2 block">Habilidades Técnicas</label>
+                    <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2 block">Habilidades Técnicas</label>
                     <div className="flex flex-wrap gap-2">
                       {candidateData.skills.map((skill: string, index: number) => (
                         <Badge key={index} variant="secondary" className="text-xs">
@@ -370,10 +370,10 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2 block">Idiomas</label>
+                    <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2 block">Idiomas</label>
                     <div className="space-y-1">
                       {candidateData.languages.map((language: string, index: number) => (
-                        <div key={index} className="text-sm text-gray-950 dark:text-gray-50">
+                        <div key={index} className="text-sm text-gray-950">
                           {language}
                         </div>
                       ))}
@@ -381,7 +381,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2 block">Tags</label>
+                    <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2 block">Tags</label>
                     <div className="flex flex-wrap gap-2">
                       {candidateData.tags.map((tag: string, index: number) => (
                         <Badge key={index} variant="outline" className="text-xs border-status-success/30 text-status-success">
@@ -396,7 +396,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
               {/* Educação */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2 text-gray-950 dark:text-gray-50">
+                  <CardTitle className="text-lg flex items-center gap-2 text-gray-950">
                     <GraduationCap className="w-5 h-5" />
                     Formação
                   </CardTitle>
@@ -404,8 +404,8 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                 <CardContent>
                   {candidateData.education.map((edu: { degree?: string; institution?: string; year?: string; location?: string }, index: number) => (
                     <div key={index} className="space-y-2">
-                      <div className="font-medium text-gray-950 dark:text-gray-50">{edu.degree}</div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                      <div className="font-medium text-gray-950">{edu.degree}</div>
+                      <div className="text-sm text-gray-600 dark:text-lia-text-tertiary">
                         {edu.institution} • {edu.year} • {edu.location}
                       </div>
                     </div>
@@ -416,23 +416,23 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
               {/* Expectativas */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2 text-gray-950 dark:text-gray-50">
+                  <CardTitle className="text-lg flex items-center gap-2 text-gray-950">
                     <Target className="w-5 h-5" />
                     Expectativas
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <label className="text-sm font-medium text-gray-800 dark:text-gray-200">Salário Atual</label>
-                    <div className="text-sm text-gray-950 dark:text-gray-50 mt-1">{candidateData.salary.current}</div>
+                    <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">Salário Atual</label>
+                    <div className="text-sm text-gray-950 mt-1">{candidateData.salary.current}</div>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-800 dark:text-gray-200">Pretensão Salarial</label>
-                    <div className="text-sm text-gray-950 dark:text-gray-50 mt-1">{candidateData.salary.expected}</div>
+                    <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">Pretensão Salarial</label>
+                    <div className="text-sm text-gray-950 mt-1">{candidateData.salary.expected}</div>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-800 dark:text-gray-200">Disponibilidade</label>
-                    <div className="text-sm text-gray-950 dark:text-gray-50 mt-1">{candidateData.availability}</div>
+                    <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">Disponibilidade</label>
+                    <div className="text-sm text-gray-950 mt-1">{candidateData.availability}</div>
                   </div>
                 </CardContent>
               </Card>
@@ -443,12 +443,12 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
           {activeTab === 'history' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-950 dark:text-gray-50">
+                <h3 className="text-lg font-semibold text-gray-950">
                   Histórico de Movimentações
                 </h3>
                 <div className="flex gap-2">
                   <select
-                    className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700"
+                    className="px-3 py-1 text-sm border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated"
                     onChange={(e) => handleStatusChange(e.target.value)}
                     value=""
                   >
@@ -464,11 +464,11 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
 
               <div className="space-y-4">
                 {candidateData.movementHistory.map((movement: { id: number; from?: string | null; to?: string; toName?: string; fromName?: string; date?: string; user?: string; notes?: string }, index: number) => (
-                  <div key={movement.id} className="flex gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-md">
+                  <div key={movement.id} className="flex gap-4 p-4 bg-gray-50 dark:bg-lia-bg-elevated rounded-md">
                     <div className="flex flex-col items-center">
-                      <div className="w-3 h-3 bg-gray-400 dark:bg-gray-800 rounded-full"></div>
+                      <div className="w-3 h-3 bg-gray-400 dark:bg-lia-bg-secondary rounded-full"></div>
                       {index < candidateData.movementHistory.length - 1 && (
-                        <div className="w-0.5 h-8 bg-gray-300 dark:bg-gray-600 mt-2"></div>
+                        <div className="w-0.5 h-8 bg-gray-300 mt-2"></div>
                       )}
                     </div>
 
@@ -476,23 +476,23 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                       <div className="flex items-center gap-2 mb-1">
                         {movement.from && (
                           <>
-                            <span className="text-sm font-medium text-gray-950 dark:text-gray-50">
+                            <span className="text-sm font-medium text-gray-950">
                               {movement.fromName}
                             </span>
-                            <ArrowRight className="w-4 h-4 text-gray-800 dark:text-gray-200" />
+                            <ArrowRight className="w-4 h-4 text-gray-800 dark:text-lia-text-primary" />
                           </>
                         )}
-                        <span className="text-sm font-medium text-gray-950 dark:text-gray-50">
+                        <span className="text-sm font-medium text-gray-950">
                           {movement.toName}
                         </span>
                       </div>
 
-                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">
+                      <div className="text-xs text-gray-600 dark:text-lia-text-tertiary mb-1">
                         {formatDate(movement.date)} • por {movement.user}
                       </div>
 
                       {movement.notes && (
-                        <div className="text-sm text-gray-800 dark:text-gray-200">
+                        <div className="text-sm text-gray-800 dark:text-lia-text-primary">
                           {movement.notes}
                         </div>
                       )}
@@ -510,16 +510,16 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
               {/* Add New Note */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg text-gray-950 dark:text-gray-50">Adicionar Nova Nota</CardTitle>
+                  <CardTitle className="text-lg text-gray-950">Adicionar Nova Nota</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex gap-2">
                     <button
                       onClick={() => setNoteType('positive')}
                       className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-                        noteType === 'positive'
+ noteType === 'positive'
                           ? 'bg-status-success/15 dark:bg-status-success/20 text-status-success dark:text-status-success border-status-success/30 dark:border-status-success/30'
-                          : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600'
+                          : 'bg-gray-100 dark:bg-lia-bg-elevated text-gray-600 dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default'
                       }`}
                     >
                       <ThumbsUp className="w-3 h-3 inline mr-1" />
@@ -528,9 +528,9 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                     <button
                       onClick={() => setNoteType('neutral')}
                       className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-                        noteType === 'neutral'
-                          ? 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
-                          : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600'
+ noteType === 'neutral'
+                          ? 'bg-gray-100 text-gray-700 dark:bg-lia-bg-elevated dark:text-lia-text-secondary border-lia-border-default dark:border-lia-border-default'
+                          : 'bg-gray-100 dark:bg-lia-bg-elevated text-gray-600 dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default'
                       }`}
                     >
                       <MessageCircle className="w-3 h-3 inline mr-1" />
@@ -539,9 +539,9 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                     <button
                       onClick={() => setNoteType('negative')}
                       className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-                        noteType === 'negative'
+ noteType === 'negative'
                           ? 'bg-status-error/15 dark:bg-status-error/20 text-status-error dark:text-status-error border-status-error/30 dark:border-status-error/30'
-                          : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600'
+                          : 'bg-gray-100 dark:bg-lia-bg-elevated text-gray-600 dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default'
                       }`}
                     >
                       <ThumbsDown className="w-3 h-3 inline mr-1" />
@@ -553,7 +553,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                     value={newNote}
                     onChange={(e) => setNewNote(e.target.value)}
                     placeholder="Escreva sua nota ou comentário sobre o candidato..."
-                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-950 dark:text-gray-50 text-sm resize-none h-24 focus:outline-none focus:ring-2 focus:ring-gray-400/30"
+                    className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-gray-950 text-sm resize-none h-24 focus:outline-none focus:ring-2 focus:ring-gray-400/30"
                   />
 
                   <Button onClick={handleAddNote} className="gap-2" disabled={!newNote.trim()}>
@@ -565,7 +565,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
 
               {/* Existing Notes */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-950 dark:text-gray-50">
+                <h3 className="text-lg font-semibold text-gray-950">
                   Notas e Comentários ({candidateData.notes.length})
                 </h3>
 
@@ -578,15 +578,15 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                             {note.author.split(' ').map((n: string) => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="font-medium text-sm text-gray-950 dark:text-gray-50">
+                        <span className="font-medium text-sm text-gray-950">
                           {note.author}
                         </span>
                       </div>
-                      <span className="text-xs text-gray-800 dark:text-gray-200">
+                      <span className="text-xs text-gray-800 dark:text-lia-text-primary">
                         {formatDate(note.date)}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">
+                    <p className="text-sm text-gray-800 dark:text-lia-text-primary leading-relaxed">
                       {note.content}
                     </p>
                   </div>
@@ -598,25 +598,25 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
           {/* Interactions Tab */}
           {activeTab === 'interactions' && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-950 dark:text-gray-50">
+              <h3 className="text-lg font-semibold text-gray-950">
                 Histórico de Interações
               </h3>
 
               <div className="space-y-3">
                 {candidateData.interactions.map((interaction: { id: number; type?: string; title?: string; date?: string; description?: string }) => (
-                  <div key={interaction.id} className="flex gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-md">
+                  <div key={interaction.id} className="flex gap-4 p-4 bg-gray-50 dark:bg-lia-bg-elevated rounded-md">
                     <div className="mt-1">
                       {getInteractionIcon(interaction.type)}
                     </div>
 
                     <div className="flex-1">
-                      <div className="font-medium text-sm text-gray-950 dark:text-gray-50 mb-1">
+                      <div className="font-medium text-sm text-gray-950 mb-1">
                         {interaction.title}
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                      <div className="text-sm text-gray-600 dark:text-lia-text-tertiary mb-1">
                         {interaction.description}
                       </div>
-                      <div className="text-xs text-gray-800 dark:text-gray-200">
+                      <div className="text-xs text-gray-800 dark:text-lia-text-primary">
                         {formatDate(interaction.date)}
                       </div>
                     </div>

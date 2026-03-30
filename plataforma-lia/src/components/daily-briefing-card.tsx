@@ -76,6 +76,7 @@ interface DailyBriefingCardProps {
   onActionClick?: (action: string, context?: any) => void
 }
 
+// [OPT-043] TODO: revisar inline styles dinâmicos (18 ocorrências)
 const API_BASE = '/api/backend-proxy'
 
 function getDefaultBriefing(): BriefingData {
@@ -195,7 +196,7 @@ export function DailyBriefingCard({
   const getGreetingIcon = () => {
     const hour = new Date().getHours()
     if (hour < 12) return <Sun className="w-5 h-5 text-status-warning" />
-    if (hour < 18) return <Cloud className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+    if (hour < 18) return <Cloud className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
     return <Moon className="w-5 h-5 text-wedo-purple" />
   }
 
@@ -253,11 +254,11 @@ export function DailyBriefingCard({
       case 'opportunity':
         return 'bg-status-success/10 border-status-success/30 text-status-success'
       case 'suggestion':
-        return 'bg-gray-50 dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-wedo-cyan-dark'
+        return 'bg-gray-50 dark:bg-lia-bg-primary border-lia-border-default dark:border-lia-border-default text-wedo-cyan-dark'
       case 'success':
         return 'bg-status-success/10 border-status-success/30 text-status-success'
       default:
-        return 'bg-gray-50 border-gray-200 text-gray-800'
+        return 'bg-gray-50 border-lia-border-subtle lia-text-strong'
     }
   }
 
@@ -291,17 +292,17 @@ export function DailyBriefingCard({
 
   return (
     <Card
-      className="border-0 overflow-hidden bg-gray-100 dark:bg-gray-800"
+      className="border-0 overflow-hidden bg-gray-100 dark:bg-lia-bg-secondary"
     >
       <CardHeader className="pb-3 pt-4 px-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {getGreetingIcon()}
             <div>
-              <CardTitle className="text-base font-semibold text-gray-800 dark:text-gray-100">
+              <CardTitle className="text-base font-semibold text-gray-800 dark:text-lia-text-primary">
                 {getGreeting()}, {displayName}!
               </CardTitle>
-              <p className="text-sm mt-0.5 text-gray-500 dark:text-gray-400">
+              <p className="text-sm mt-0.5 text-gray-500 dark:text-lia-text-tertiary">
                 Seu resumo do dia - {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
               </p>
             </div>
@@ -314,7 +315,7 @@ export function DailyBriefingCard({
               disabled={refreshing}
               className="h-8 w-8 p-0"
             >
-              <RefreshCw className={`w-4 h-4 text-gray-500 dark:text-gray-400 ${refreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 text-gray-500 dark:text-lia-text-tertiary ${refreshing ? 'animate-spin' : ''}`} />
             </Button>
             <Button
               variant="ghost"
@@ -323,9 +324,9 @@ export function DailyBriefingCard({
               className="h-8 w-8 p-0"
             >
               {expanded ? (
-                <ChevronUp className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <ChevronUp className="w-4 h-4 text-gray-500 dark:text-lia-text-tertiary" />
               ) : (
-                <ChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <ChevronDown className="w-4 h-4 text-gray-500 dark:text-lia-text-tertiary" />
               )}
             </Button>
           </div>
@@ -334,18 +335,18 @@ export function DailyBriefingCard({
 
       {expanded && (
         <CardContent className="px-5 pb-5 pt-0 space-y-4">
-          {/* Cards de Métricas - Paleta Monocromática ElevenLabs */}
+          {/* Cards de Métricas - Paleta Monocromática WeDo DS */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {/* Card Urgentes */}
             <div 
-              className="p-2 rounded-md border cursor-pointer hover:transition-all"
+              className="p-2 rounded-md border cursor-pointer transition-colors"
               style={{backgroundColor: briefing.summary.urgent_count > 0 ? 'var(--gray-50)' : 'var(--gray-50)',
                 borderColor: 'var(--gray-200)'}}
               onClick={() => handleActionClick('view_urgent')}
             >
               <div className="flex items-center gap-2 mb-1">
-                <AlertCircle className="w-3.5 h-3.5 text-gray-700" />
-                <span className="text-xs font-medium text-gray-700">Urgentes</span>
+                <AlertCircle className="w-3.5 h-3.5 lia-text-base" />
+                <span className="text-xs font-medium lia-text-base">Urgentes</span>
               </div>
               <p className="text-lg font-bold" style={{color: 'var(--wedo-cyan-dark)'}}>
                 {briefing.summary.urgent_count}
@@ -354,13 +355,13 @@ export function DailyBriefingCard({
             
             {/* Card Tarefas Hoje */}
             <div 
-              className="p-2 rounded-md border cursor-pointer hover:transition-all"
+              className="p-2 rounded-md border cursor-pointer transition-colors"
               style={{backgroundColor: 'var(--gray-50)', borderColor: 'var(--gray-200)'}}
               onClick={() => handleActionClick('view_tasks')}
             >
               <div className="flex items-center gap-2 mb-1">
-                <Target className="w-3.5 h-3.5 text-gray-700" />
-                <span className="text-xs font-medium text-gray-700">Tarefas Hoje</span>
+                <Target className="w-3.5 h-3.5 lia-text-base" />
+                <span className="text-xs font-medium lia-text-base">Tarefas Hoje</span>
               </div>
               <p className="text-lg font-bold" style={{color: 'var(--wedo-cyan-dark)'}}>
                 {briefing.summary.tasks_today}
@@ -369,13 +370,13 @@ export function DailyBriefingCard({
             
             {/* Card Entrevistas */}
             <div 
-              className="p-2 rounded-md border cursor-pointer hover:transition-all"
+              className="p-2 rounded-md border cursor-pointer transition-colors"
               style={{backgroundColor: 'var(--gray-50)', borderColor: 'var(--gray-200)'}}
               onClick={() => handleActionClick('view_interviews')}
             >
               <div className="flex items-center gap-2 mb-1">
-                <Calendar className="w-3.5 h-3.5 text-gray-700" />
-                <span className="text-xs font-medium text-gray-700">Entrevistas</span>
+                <Calendar className="w-3.5 h-3.5 lia-text-base" />
+                <span className="text-xs font-medium lia-text-base">Entrevistas</span>
               </div>
               <p className="text-lg font-bold" style={{color: 'var(--wedo-cyan-dark)'}}>
                 {briefing.summary.interviews_today}
@@ -384,13 +385,13 @@ export function DailyBriefingCard({
             
             {/* Card Alertas */}
             <div 
-              className="p-2 rounded-md border cursor-pointer hover:transition-all"
+              className="p-2 rounded-md border cursor-pointer transition-colors"
               style={{backgroundColor: 'var(--gray-50)', borderColor: 'var(--gray-200)'}}
               onClick={() => handleActionClick('view_alerts')}
             >
               <div className="flex items-center gap-2 mb-1">
-                <Bell className="w-3.5 h-3.5 text-gray-700" />
-                <span className="text-xs font-medium text-gray-700">Alertas</span>
+                <Bell className="w-3.5 h-3.5 lia-text-base" />
+                <span className="text-xs font-medium lia-text-base">Alertas</span>
               </div>
               <p className="text-lg font-bold" style={{color: 'var(--wedo-cyan-dark)'}}>
                 {briefing.summary.alerts_active}
@@ -401,7 +402,7 @@ export function DailyBriefingCard({
           {briefing.urgent_actions.length > 0 && (
             <div className="space-y-2">
               <h4 className="text-xs font-medium flex items-center gap-2" style={{color: 'var(--wedo-cyan-dark)'}}>
-                <Zap className="w-4 h-4 text-gray-700" />
+                <Zap className="w-4 h-4 lia-text-base" />
                 Ações Urgentes
               </h4>
               <div className="space-y-2">
@@ -416,14 +417,14 @@ export function DailyBriefingCard({
                       <p className="text-xs font-medium truncate" style={{color: 'var(--wedo-cyan-dark)'}}>
                         {action.title}
                       </p>
-                      <p className="text-xs truncate text-gray-700">
+                      <p className="text-xs truncate lia-text-base">
                         {action.description}
                       </p>
                     </div>
                     <Button
                       size="sm"
                       variant="outline"
-                      className="ml-3 h-7 text-xs shrink-0 font-semibold border-gray-300"
+                      className="ml-3 h-7 text-xs shrink-0 font-semibold border-lia-border-default"
                       onClick={() => handleActionClick(action.action_type, action)}
                     >
                       {action.action_label}
@@ -438,14 +439,14 @@ export function DailyBriefingCard({
           {briefing.schedule.length > 0 && (
             <div className="space-y-2">
               <h4 className="text-xs font-medium flex items-center gap-2" style={{color: 'var(--wedo-cyan-dark)'}}>
-                <Calendar className="w-4 h-4 text-gray-700" />
+                <Calendar className="w-4 h-4 lia-text-base" />
                 Agenda do Dia
               </h4>
               <div className="flex gap-2 overflow-x-auto pb-1">
                 {briefing.schedule.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center gap-2 p-2 rounded-md border shrink-0 cursor-pointer hover:transition-all"
+                    className="flex items-center gap-2 p-2 rounded-md border shrink-0 cursor-pointer transition-colors"
                     style={{backgroundColor: 'var(--gray-50)', borderColor: 'var(--gray-200)'}}
                     onClick={() => handleActionClick('view_interview', item)}
                   >
@@ -453,17 +454,17 @@ export function DailyBriefingCard({
                       className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
                       style={{backgroundColor: 'var(--gray-100)'}}
                     >
-                      <Clock className="w-4 h-4 text-gray-700" />
+                      <Clock className="w-4 h-4 lia-text-base" />
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-medium" style={{color: 'var(--wedo-cyan-dark)'}}>
                         {item.time}
                       </p>
-                      <p className="text-xs truncate text-gray-700">
+                      <p className="text-xs truncate lia-text-base">
                         {item.title}
                       </p>
                       {item.location && (
-                        <p className="text-xs truncate text-gray-400">
+                        <p className="text-xs truncate lia-text-secondary">
                           {item.location}
                         </p>
                       )}
@@ -522,15 +523,15 @@ export function DailyBriefingCard({
                   className="w-8 h-8 rounded-md flex items-center justify-center"
                   style={{backgroundColor: 'var(--gray-100)'}}
                 >
-                  <BarChart3 className="w-4 h-4 text-gray-700" />
+                  <BarChart3 className="w-4 h-4 lia-text-base" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-950 dark:text-gray-50">
+                  <p className="text-sm font-medium text-gray-950">
                     Pipeline: {briefing.pipeline.total_candidates} candidatos em {briefing.pipeline.active_jobs} vagas
                   </p>
                   <div className="flex items-center gap-3 mt-0.5">
                     {briefing.pipeline.stages_summary.slice(0, 4).map((stage, i) => (
-                      <span key={i} className="text-xs text-gray-500">
+                      <span key={i} className="text-xs lia-text-secondary">
                         {stage.label}: <strong>{stage.count}</strong>
                       </span>
                     ))}
@@ -540,7 +541,7 @@ export function DailyBriefingCard({
               <Button
                 size="sm"
                 variant="ghost"
-                className="text-xs font-semibold text-gray-700"
+                className="text-xs font-semibold lia-text-base"
                 onClick={() => onActionClick?.('open_pipeline_chat', { 
                   pipeline: briefing.pipeline,
                   stale_days: 3 

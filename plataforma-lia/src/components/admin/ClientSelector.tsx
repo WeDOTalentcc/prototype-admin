@@ -79,7 +79,7 @@ export function ClientSelector() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[280px] justify-between bg-white dark:bg-gray-950 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-100"
+          className="w-[280px] justify-between bg-white border-lia-border-subtle dark:border-lia-border-subtle text-gray-800 dark:text-lia-text-primary"
         >
           {selectedClient ? (
             <div className="flex items-center gap-2 truncate">
@@ -88,7 +88,7 @@ export function ClientSelector() {
                   <AvatarImage src={selectedClient.logoUrl} alt={selectedClient.name} />
                 ) : null}
                 <AvatarFallback 
-                  className="text-micro bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900"
+                  className="text-micro bg-gray-900 text-white"
                 >
                   {getClientInitials(selectedClient)}
                 </AvatarFallback>
@@ -118,15 +118,15 @@ export function ClientSelector() {
                 onSelect={() => handleSelect(null)}
                 className="flex items-center gap-3 py-2"
               >
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
-                  <Users className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 dark:bg-lia-bg-secondary">
+                  <Users className="h-4 w-4 text-gray-600 dark:text-lia-text-tertiary" />
                 </div>
                 <div className="flex flex-col">
                   <span className="font-medium">Todos os Clientes</span>
-                  <span className="text-xs text-gray-500">Visão global do admin</span>
+                  <span className="text-xs lia-text-secondary">Visão global do admin</span>
                 </div>
                 {!selectedClient && (
-                  <Check className="ml-auto h-4 w-4 text-gray-700 dark:text-gray-300" />
+                  <Check className="ml-auto h-4 w-4 text-gray-700 dark:text-lia-text-secondary" />
                 )}
               </CommandItem>
             </CommandGroup>
@@ -146,7 +146,7 @@ export function ClientSelector() {
                           <AvatarImage src={client.logoUrl} alt={client.name} />
                         ) : null}
                         <AvatarFallback 
-                          className="text-xs bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900"
+                          className="text-xs bg-gray-900 text-white"
                         >
                           {getClientInitials(client)}
                         </AvatarFallback>
@@ -156,7 +156,7 @@ export function ClientSelector() {
                           {client.tradeName || client.name}
                         </span>
                         {client.cnpj && (
-                          <span className="text-xs text-gray-500 truncate">
+                          <span className="text-xs lia-text-secondary truncate">
                             CNPJ: {client.cnpj}
                           </span>
                         )}
@@ -168,7 +168,7 @@ export function ClientSelector() {
                         {getStatusLabel(client.status)}
                       </Badge>
                       {selectedClient?.id === client.id && (
-                        <Check className="h-4 w-4 text-gray-700 dark:text-gray-300 shrink-0" />
+                        <Check className="h-4 w-4 text-gray-700 dark:text-lia-text-secondary shrink-0" />
                       )}
                     </CommandItem>
                   ))}

@@ -82,7 +82,7 @@ const CATEGORY_COLORS: Record<Skill['category'], { bg: string; text: string; bor
   database: { bg: 'bg-wedo-green/15', text: 'text-wedo-green', border: 'border-wedo-green/30' },
   tool: { bg: 'bg-status-warning/10', text: 'text-status-warning', border: 'border-status-warning/30' },
   infrastructure: { bg: 'bg-status-error/10', text: 'text-status-error', border: 'border-status-error/30' },
-  general: { bg: 'bg-gray-50', text: 'text-gray-700', border: 'border-gray-200' },
+  general: { bg: 'bg-gray-50', text: 'lia-text-base', border: 'border-lia-border-subtle' },
 }
 
 interface SkillCardProps {
@@ -98,22 +98,22 @@ function SkillCard({ skill, isSelected, onAdd }: SkillCardProps) {
   return (
     <div
       className={cn(
-        'p-3 rounded-md transition-all',
+ 'p-3 rounded-md transition-colors',
         isSelected
-          ? 'bg-gray-50 border-2 border-gray-900 dark:border-gray-50 opacity-60 cursor-not-allowed'
-          : 'bg-white border border-gray-200 hover:border-gray-900 dark:hover:border-gray-50 cursor-pointer'
+          ? 'bg-gray-50 border-2 border-gray-900 opacity-60 cursor-not-allowed'
+          : 'bg-lia-bg-primary border border-lia-border-subtle hover:border-gray-900 dark:hover:border-gray-50 cursor-pointer'
       )}
     >
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex-1">
-          <h4 className="text-xs font-semibold text-gray-800 mb-1">
+          <h4 className="text-xs font-semibold lia-text-strong mb-1">
             {skill.name}
           </h4>
           <div className="flex items-center gap-1.5 flex-wrap">
             <Badge
               variant="outline"
               className={cn(
-                'text-micro border',
+ 'text-micro border',
                 colors.border,
                 colors.bg,
                 colors.text
@@ -128,10 +128,10 @@ function SkillCard({ skill, isSelected, onAdd }: SkillCardProps) {
                   <Star
                     key={w}
                     className={cn(
-                      'w-2.5 h-2.5',
+ 'w-2.5 h-2.5',
                       w <= skill.weight!
-                        ? 'fill-gray-700 dark:fill-gray-300 text-gray-600 dark:text-gray-400'
-                        : 'text-gray-200'
+                        ? 'fill-gray-700 dark:fill-gray-300 text-gray-600 dark:text-lia-text-tertiary'
+                        : 'lia-text-muted'
                     )}
                   />
                 ))}
@@ -141,14 +141,14 @@ function SkillCard({ skill, isSelected, onAdd }: SkillCardProps) {
         </div>
 
         {isSelected ? (
-          <div className="flex-shrink-0 w-5 h-5 rounded-full bg-gray-900 dark:bg-gray-50 flex items-center justify-center">
+          <div className="flex-shrink-0 w-5 h-5 rounded-full bg-gray-900 flex items-center justify-center">
             <Check className="w-3 h-3 text-white" />
           </div>
         ) : (
           <button
             onClick={() => onAdd(skill)}
             disabled={isSelected}
-            className="flex-shrink-0 w-5 h-5 rounded-full border-2 border-gray-900 dark:border-gray-50 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:bg-gray-800 transition-all flex items-center justify-center disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-gray-400"
+            className="flex-shrink-0 w-5 h-5 rounded-full border-2 border-gray-900 text-gray-600 dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary transition-[width,height] flex items-center justify-center disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-gray-400"
             aria-label={`Adicionar ${skill.name}`}
           >
             <Plus className="w-3 h-3" />
@@ -156,7 +156,7 @@ function SkillCard({ skill, isSelected, onAdd }: SkillCardProps) {
         )}
       </div>
       {skill.description && (
-        <p className="text-micro text-gray-500 line-clamp-2">
+        <p className="text-micro lia-text-secondary line-clamp-2">
           {skill.description}
         </p>
       )}
@@ -189,18 +189,18 @@ function SkillsTabContent({ skills, selectedSkills, onAddSkill, tabLabel }: TabC
   return (
     <div className="space-y-4">
       <div className="relative">
-        <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+        <Search className="absolute left-3 top-2.5 w-4 h-4 lia-text-secondary" />
         <Input
           placeholder={`Buscar ${tabLabel.toLowerCase()}...`}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-9 bg-white border-gray-200 text-gray-800 placeholder:text-gray-400 rounded-md focus:border-gray-400"
+          className="pl-9 bg-lia-bg-primary border-lia-border-subtle lia-text-strong placeholder:lia-text-secondary rounded-md focus:border-gray-400"
         />
       </div>
 
       {filteredSkills.length === 0 ? (
         <div className="py-8 text-center">
-          <p className="text-xs text-gray-400">
+          <p className="text-xs lia-text-secondary">
             {searchQuery ? 'Nenhum resultado encontrado' : 'Nenhuma skill disponível'}
           </p>
         </div>
@@ -299,7 +299,7 @@ function CustomSkillForm({ onAddCustomSkill, selectedSkills }: CustomSkillFormPr
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="skill-name" className="text-xs font-medium text-gray-800">
+        <Label htmlFor="skill-name" className="text-xs font-medium lia-text-strong">
           Nome da Skill
         </Label>
         <Input
@@ -307,16 +307,16 @@ function CustomSkillForm({ onAddCustomSkill, selectedSkills }: CustomSkillFormPr
           placeholder="ex: Python, React, Docker..."
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="bg-white border-gray-200 rounded-md focus:border-gray-400"
+          className="bg-lia-bg-primary border-lia-border-subtle rounded-md focus:border-gray-400"
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="skill-category" className="text-xs font-medium text-gray-800">
+        <Label htmlFor="skill-category" className="text-xs font-medium lia-text-strong">
           Categoria
         </Label>
         <Select value={selectedCategory} onValueChange={(v) => setSelectedCategory(v as Skill['category'])}>
-          <SelectTrigger className="bg-white border-gray-200 rounded-md">
+          <SelectTrigger className="bg-lia-bg-secondary border-lia-border-subtle rounded-md">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -332,7 +332,7 @@ function CustomSkillForm({ onAddCustomSkill, selectedSkills }: CustomSkillFormPr
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="skill-weight" className="text-xs font-medium text-gray-800">
+        <Label htmlFor="skill-weight" className="text-xs font-medium lia-text-strong">
           Peso/Importância
         </Label>
         <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-md">
@@ -341,31 +341,31 @@ function CustomSkillForm({ onAddCustomSkill, selectedSkills }: CustomSkillFormPr
               key={w}
               type="button"
               onClick={() => setWeight(w)}
-              className="transition-all focus-visible:ring-2 focus-visible:ring-gray-400 rounded-full"
+              className="transition-colors focus-visible:ring-2 focus-visible:ring-gray-400 rounded-full"
               aria-label={`Peso ${w} de 5`}
             >
               <Star
                 className={cn(
-                  'w-5 h-5 transition-colors',
+ 'w-5 h-5 transition-colors',
                   w <= weight
-                    ? 'fill-gray-700 dark:fill-gray-300 text-gray-600 dark:text-gray-400'
-                    : 'text-gray-200'
+                    ? 'fill-gray-700 dark:fill-gray-300 text-gray-600 dark:text-lia-text-tertiary'
+                    : 'lia-text-muted'
                 )}
               />
             </button>
           ))}
-          <span className="ml-auto text-xs font-semibold text-gray-800">
+          <span className="ml-auto text-xs font-semibold lia-text-strong">
             {weight}/5
           </span>
         </div>
       </div>
 
-      <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-md">
+      <div className="flex items-center justify-between p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
         <div className="space-y-0.5">
-          <Label htmlFor="save-to-catalog" className="text-xs font-medium text-gray-800 cursor-pointer">
+          <Label htmlFor="save-to-catalog" className="text-xs font-medium lia-text-strong cursor-pointer">
             Salvar no Catálogo da Empresa
           </Label>
-          <p className="text-micro text-gray-500">
+          <p className="text-micro lia-text-secondary">
             Skill ficará disponível para futuras vagas
           </p>
         </div>
@@ -391,7 +391,7 @@ function CustomSkillForm({ onAddCustomSkill, selectedSkills }: CustomSkillFormPr
       <Button
         type="submit"
         disabled={isSaving}
-        className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 font-medium text-xs rounded-md disabled:opacity-50"
+        className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 font-medium text-xs rounded-md disabled:opacity-50"
       >
         <Plus className="w-3.5 h-3.5 mr-1.5" />
         {isSaving ? 'Salvando...' : 'Adicionar Skill Customizado'}
@@ -426,12 +426,12 @@ export function AddSkillModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md" role="dialog" aria-modal="true" aria-labelledby="add-skill-modal-title">
+      <DialogContent className="max-w-2xl bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md" role="dialog" aria-modal="true" aria-labelledby="add-skill-modal-title">
         <DialogHeader>
-          <DialogTitle id="add-skill-modal-title" className="text-sm font-semibold text-gray-800">
+          <DialogTitle id="add-skill-modal-title" className="text-sm font-semibold lia-text-strong">
             Adicionar Skill: {CATEGORY_LABELS[category]}
           </DialogTitle>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-xs text-gray-500 dark:text-lia-text-tertiary mt-1">
             Selecione uma skill do catálogo, sugestões de mercado ou crie uma customizada
           </p>
         </DialogHeader>
@@ -440,19 +440,19 @@ export function AddSkillModal({
           <TabsList className="grid w-full grid-cols-3 bg-gray-50 p-1 rounded-md mb-4">
             <TabsTrigger
               value="catalog"
-              className="text-xs font-medium rounded-md data-[state=active]:bg-white data-[state=active]:text-gray-600 dark:text-gray-400 text-gray-500"
+              className="text-xs font-medium rounded-md data-[state=active]:bg-lia-bg-primary data-[state=active]:text-gray-600 dark:text-lia-text-tertiary text-gray-500"
             >
               Catálogo da Empresa
             </TabsTrigger>
             <TabsTrigger
               value="market"
-              className="text-xs font-medium rounded-md data-[state=active]:bg-white data-[state=active]:text-gray-600 dark:text-gray-400 text-gray-500"
+              className="text-xs font-medium rounded-md data-[state=active]:bg-lia-bg-primary data-[state=active]:text-gray-600 dark:text-lia-text-tertiary text-gray-500"
             >
               Sugestões de Mercado
             </TabsTrigger>
             <TabsTrigger
               value="custom"
-              className="text-xs font-medium rounded-md data-[state=active]:bg-white data-[state=active]:text-gray-600 dark:text-gray-400 text-gray-500"
+              className="text-xs font-medium rounded-md data-[state=active]:bg-lia-bg-primary data-[state=active]:text-gray-600 dark:text-lia-text-tertiary text-gray-500"
             >
               Skill Customizado
             </TabsTrigger>
@@ -461,7 +461,7 @@ export function AddSkillModal({
           <TabsContent value="catalog" className="space-y-3">
             {catalogByCategory.length === 0 ? (
               <div className="py-8 text-center">
-                <p className="text-xs text-gray-400">
+                <p className="text-xs lia-text-secondary">
                   Nenhuma skill de {CATEGORY_LABELS[category].toLowerCase()} no catálogo da empresa
                 </p>
               </div>
@@ -478,7 +478,7 @@ export function AddSkillModal({
           <TabsContent value="market" className="space-y-3">
             {suggestionsWithoutSelected.length === 0 ? (
               <div className="py-8 text-center">
-                <p className="text-xs text-gray-400">
+                <p className="text-xs lia-text-secondary">
                   Nenhuma sugestão de mercado disponível para {CATEGORY_LABELS[category].toLowerCase()}
                 </p>
               </div>
@@ -497,11 +497,11 @@ export function AddSkillModal({
           </TabsContent>
         </Tabs>
 
-        <DialogFooter className="pt-4 border-t border-gray-200 dark:border-gray-700">
+        <DialogFooter className="pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="border-gray-200 text-gray-500 hover:bg-gray-50 rounded-md focus-visible:ring-2 focus-visible:ring-gray-400"
+            className="border-lia-border-subtle lia-text-secondary hover:bg-gray-50 rounded-md focus-visible:ring-2 focus-visible:ring-gray-400"
             aria-label="Fechar"
           >
             <X className="w-3.5 h-3.5 mr-1.5" />

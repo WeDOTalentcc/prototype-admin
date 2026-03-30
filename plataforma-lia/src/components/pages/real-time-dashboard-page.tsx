@@ -213,9 +213,9 @@ export function RealTimeDashboardPage() {
         return 'text-status-error bg-status-error/15 border-status-error/30'
       case 'offline':
       case 'queued':
-        return 'text-gray-600 bg-gray-100 border-gray-200'
+        return 'text-gray-600 bg-gray-100 border-lia-border-subtle'
       default:
-        return 'text-gray-600 bg-gray-100 border-gray-200'
+        return 'text-gray-600 bg-gray-100 border-lia-border-subtle'
     }
   }
 
@@ -250,7 +250,7 @@ export function RealTimeDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary">
       <div className="max-w-full mx-auto px-6 py-6">
         {/* Header */}
         <div className="mb-6">
@@ -266,7 +266,7 @@ export function RealTimeDashboardPage() {
                   </div>
                 )}
               </h1>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">
                 Monitoramento em tempo real de sistemas ATS, workflows e performance da plataforma
               </p>
             </div>
@@ -284,7 +284,7 @@ export function RealTimeDashboardPage() {
               <select
                 value={selectedTimeframe}
                 onChange={(e) => setSelectedTimeframe(e.target.value)}
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-sm"
+                className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary text-sm"
               >
                 <option value="1m">1 minuto</option>
                 <option value="5m">5 minutos</option>
@@ -299,7 +299,7 @@ export function RealTimeDashboardPage() {
             </div>
           </div>
 
-          <div className="text-xs text-gray-800 dark:text-gray-200">
+          <div className="text-xs text-gray-800 dark:text-lia-text-primary">
             Última atualização: {lastRefresh.toLocaleTimeString('pt-BR')} •
             Atualizando a cada {refreshInterval / 1000}s
           </div>
@@ -316,7 +316,7 @@ export function RealTimeDashboardPage() {
                     {metric.id === 'memory' && <HardDrive className="w-4 h-4 text-gray-600" />}
                     {metric.id === 'database' && <Database className="w-4 h-4 text-gray-600" />}
                     {metric.id === 'api' && <Network className="w-4 h-4 text-gray-600" />}
-                    <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{metric.name}</span>
+                    <span className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">{metric.name}</span>
                   </div>
                   {getTrendIcon(metric.trend)}
                 </div>
@@ -337,7 +337,7 @@ export function RealTimeDashboardPage() {
                 <div className="mt-3">
                   <div className="w-full bg-gray-200 rounded-full h-1.5">
                     <div
-                      className={`h-1.5 rounded-full transition-all ${
+                      className={`h-1.5 rounded-full transition-[width,height] ${
                         metric.value >= metric.threshold.critical ? 'bg-status-error' :
                         metric.value >= metric.threshold.warning ? 'bg-status-warning' : 'bg-status-success'
                       }`}
@@ -354,18 +354,18 @@ export function RealTimeDashboardPage() {
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Server className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <Server className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
               Status das Conexões ATS
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               {atsConnections.map((ats) => (
-                <div key={ats.id} className="p-4 border border-gray-200 rounded-md">
+                <div key={ats.id} className="p-4 border border-lia-border-subtle rounded-md">
                   <div className="flex items-center justify-between mb-3">
                     <div>
                       <h4 className="font-medium text-gray-950 dark:text-gray-50">{ats.name}</h4>
-                      <p className="text-xs text-gray-800 dark:text-gray-200">Última sync: {ats.lastSync}</p>
+                      <p className="text-xs text-gray-800 dark:text-lia-text-primary">Última sync: {ats.lastSync}</p>
                     </div>
                     <Badge variant="outline" className={`${getStatusColor(ats.status)}`}>
                       {getStatusIcon(ats.status)}
@@ -375,19 +375,19 @@ export function RealTimeDashboardPage() {
 
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="text-gray-800 dark:text-gray-200">Latência:</span>
+                      <span className="text-gray-800 dark:text-lia-text-primary">Latência:</span>
                       <div className="font-medium">{ats.latency}ms</div>
                     </div>
                     <div>
-                      <span className="text-gray-800 dark:text-gray-200">Throughput:</span>
+                      <span className="text-gray-800 dark:text-lia-text-primary">Throughput:</span>
                       <div className="font-medium">{ats.throughput}/min</div>
                     </div>
                     <div>
-                      <span className="text-gray-800 dark:text-gray-200">Registros:</span>
+                      <span className="text-gray-800 dark:text-lia-text-primary">Registros:</span>
                       <div className="font-medium">{ats.recordsProcessed.toLocaleString()}</div>
                     </div>
                     <div>
-                      <span className="text-gray-800 dark:text-gray-200">Uptime:</span>
+                      <span className="text-gray-800 dark:text-lia-text-primary">Uptime:</span>
                       <div className="font-medium text-status-success">{ats.uptime}%</div>
                     </div>
                   </div>
@@ -414,11 +414,11 @@ export function RealTimeDashboardPage() {
           <CardContent>
             <div className="space-y-4">
               {workflows.map((workflow) => (
-                <div key={workflow.id} className="p-4 border border-gray-200 rounded-md">
+                <div key={workflow.id} className="p-4 border border-lia-border-subtle rounded-md">
                   <div className="flex items-center justify-between mb-3">
                     <div>
                       <h4 className="font-medium text-gray-950 dark:text-gray-50">{workflow.name}</h4>
-                      <p className="text-xs text-gray-800 dark:text-gray-200">
+                      <p className="text-xs text-gray-800 dark:text-lia-text-primary">
                         Iniciado às {workflow.startTime} •
                         Etapa {workflow.stepsCurrent} de {workflow.stepsTotal}
                       </p>
@@ -436,7 +436,7 @@ export function RealTimeDashboardPage() {
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
-                        className="bg-gray-700 dark:bg-gray-300 h-2 rounded-full transition-all duration-500"
+                        className="bg-gray-700 dark:bg-gray-300 h-2 rounded-full transition-[width,height] duration-500"
                         style={{width: `${workflow.progress}%`}}
                       />
                     </div>
@@ -477,15 +477,15 @@ export function RealTimeDashboardPage() {
                 { time: "14:43:45", event: "Email NPS enviado para 23 candidatos", system: "Communication", type: "success" }
               ].map((activity, index) => (
                 <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-md">
-                  <div className="text-xs text-gray-800 dark:text-gray-200 w-16">{activity.time}</div>
+                  <div className="text-xs text-gray-800 dark:text-lia-text-primary w-16">{activity.time}</div>
                   <div className={`w-2 h-2 rounded-full ${
                     activity.type === 'success' ? 'bg-status-success' :
                     activity.type === 'warning' ? 'bg-status-warning' :
                     activity.type === 'error' ? 'bg-status-error' : 'bg-gray-700 dark:bg-gray-300'
                   }`} />
                   <div className="flex-1">
-                    <div className="text-sm font-medium text-gray-800 dark:text-gray-200">{activity.event}</div>
-                    <div className="text-xs text-gray-800 dark:text-gray-200">{activity.system}</div>
+                    <div className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">{activity.event}</div>
+                    <div className="text-xs text-gray-800 dark:text-lia-text-primary">{activity.system}</div>
                   </div>
                 </div>
               ))}

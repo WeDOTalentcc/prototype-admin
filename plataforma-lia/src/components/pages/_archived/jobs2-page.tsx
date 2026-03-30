@@ -249,14 +249,14 @@ export function Jobs2Page() {
 
   // Job Card Component for Simple View
   const JobCard = ({ job }: { job: Job }) => (
-    <Card className={`hover:transition-shadow border-l-4 ${priorityColors[job.priority]} bg-white dark:bg-gray-800`}>
+    <Card className={`hover:transition-shadow border-l-4 ${priorityColors[job.priority]} bg-white dark:bg-lia-bg-secondary`}>
       <CardContent className="p-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
               <div className="flex items-center gap-2">
                 <Hash className="w-4 h-4 text-gray-600" />
-                <span className="text-sm font-mono text-gray-600 dark:text-gray-400">{job.jobId}</span>
+                <span className="text-sm font-mono text-gray-600 dark:text-lia-text-tertiary">{job.jobId}</span>
               </div>
               {job.isConfidential && (
                 <Badge variant="outline" className="text-xs border-wedo-orange/30 text-wedo-orange">
@@ -283,12 +283,12 @@ export function Jobs2Page() {
 
             <div className="flex items-center gap-2 mb-3">
               <UserCheck className="w-4 h-4 text-gray-600" />
-              <span className="text-sm text-gray-600 dark:text-gray-400">
+              <span className="text-sm text-gray-600 dark:text-lia-text-tertiary">
                 Gestor: {job.manager}
               </span>
             </div>
 
-            <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-3">
+            <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-lia-text-tertiary mb-3">
               <div className="flex items-center gap-1">
                 <MapPin className="w-4 h-4" />
                 <span>{job.location}</span>
@@ -303,7 +303,7 @@ export function Jobs2Page() {
               </div>
             </div>
 
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
+            <p className="text-sm text-gray-600 dark:text-lia-text-tertiary mb-4 line-clamp-2">
               {job.description}
             </p>
 
@@ -312,34 +312,34 @@ export function Jobs2Page() {
               <h4 className="text-sm font-medium text-gray-950 dark:text-gray-50 mb-3">Funil de Candidatos</h4>
               <div className="grid grid-cols-5 gap-2">
                 <div className="text-center">
-                  <div className="bg-gray-50 dark:bg-gray-700 rounded-md p-2 border border-gray-200 dark:border-gray-600">
+                  <div className="bg-gray-50 dark:bg-lia-bg-elevated rounded-md p-2 border border-lia-border-subtle dark:border-lia-border-default">
                     <div className="text-sm font-semibold text-gray-950 dark:text-gray-50">{job.funnel.total}</div>
                   </div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Total</div>
+                  <div className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-1">Total</div>
                 </div>
                 <div className="text-center">
-                  <div className="bg-gray-50 dark:bg-gray-700 rounded-md p-2 border border-gray-200 dark:border-gray-600">
+                  <div className="bg-gray-50 dark:bg-lia-bg-elevated rounded-md p-2 border border-lia-border-subtle dark:border-lia-border-default">
                     <div className="text-sm font-semibold text-gray-950 dark:text-gray-50">{job.funnel.screening}</div>
                   </div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Triagem</div>
+                  <div className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-1">Triagem</div>
                 </div>
                 <div className="text-center">
-                  <div className="bg-gray-50 dark:bg-gray-700 rounded-md p-2 border border-gray-200 dark:border-gray-600">
+                  <div className="bg-gray-50 dark:bg-lia-bg-elevated rounded-md p-2 border border-lia-border-subtle dark:border-lia-border-default">
                     <div className="text-sm font-semibold text-gray-950 dark:text-gray-50">{job.funnel.interview}</div>
                   </div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Entrevista</div>
+                  <div className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-1">Entrevista</div>
                 </div>
                 <div className="text-center">
-                  <div className="bg-gray-50 dark:bg-gray-700 rounded-md p-2 border border-gray-200 dark:border-gray-600">
+                  <div className="bg-gray-50 dark:bg-lia-bg-elevated rounded-md p-2 border border-lia-border-subtle dark:border-lia-border-default">
                     <div className="text-sm font-semibold text-gray-950 dark:text-gray-50">{job.funnel.final}</div>
                   </div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Final</div>
+                  <div className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-1">Final</div>
                 </div>
                 <div className="text-center">
-                  <div className="bg-gray-50 dark:bg-gray-700 rounded-md p-2 border border-gray-200 dark:border-gray-600">
+                  <div className="bg-gray-50 dark:bg-lia-bg-elevated rounded-md p-2 border border-lia-border-subtle dark:border-lia-border-default">
                     <div className="text-sm font-semibold text-gray-950 dark:text-gray-50">{job.funnel.hired}</div>
                   </div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Contratado</div>
+                  <div className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-1">Contratado</div>
                 </div>
               </div>
             </div>
@@ -360,7 +360,7 @@ export function Jobs2Page() {
             {/* Publication Status */}
             <div className="flex items-center gap-4 mb-3">
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Publicações:</span>
+                <span className="text-sm text-gray-600 dark:text-lia-text-tertiary">Publicações:</span>
                 <div className="flex items-center gap-1">
                   <Linkedin className={`w-4 h-4 ${job.publishedLinkedIn ? 'text-gray-600' : 'text-gray-600'}`} />
                   <span className="text-xs">{job.publishedLinkedIn ? 'LinkedIn' : ''}</span>
@@ -375,7 +375,7 @@ export function Jobs2Page() {
             {/* NPS Score */}
             <div className="flex items-center gap-2 mb-3">
               <Heart className="w-4 h-4 text-wedo-magenta" />
-              <span className="text-sm text-gray-600 dark:text-gray-400">
+              <span className="text-sm text-gray-600 dark:text-lia-text-tertiary">
                 NPS: <span className="font-semibold text-gray-950 dark:text-gray-50">{job.nps}</span>
               </span>
             </div>
@@ -431,9 +431,9 @@ export function Jobs2Page() {
         </div>
 
         {job.deadline && (
-          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-md p-3">
+          <div className="bg-gray-50 dark:bg-lia-bg-elevated/50 rounded-md p-3">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600 dark:text-gray-400">
+              <span className="text-gray-600 dark:text-lia-text-tertiary">
                 Prazo para aplicações: {new Date(job.deadline).toLocaleDateString("pt-BR")}
               </span>
               <span className={`font-medium ${
@@ -463,7 +463,7 @@ export function Jobs2Page() {
               <h1 className="text-2xl font-semibold text-gray-950 dark:text-gray-50 mb-2 font-['Open_Sans',sans-serif]">
                 Vagas (Layout Básico)
               </h1>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-gray-600 dark:text-lia-text-tertiary">
                 Visualização simplificada de todas as posições abertas
               </p>
             </div>
@@ -477,7 +477,7 @@ export function Jobs2Page() {
         </div>
 
         {/* Filters */}
-        <Card className="bg-white dark:bg-gray-800 p-4 mb-6">
+        <Card className="bg-white dark:bg-lia-bg-secondary p-4 mb-6">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1">
               <AISearchToggle
@@ -492,7 +492,7 @@ export function Jobs2Page() {
               <select
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-950 dark:text-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-gray-950 dark:text-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
               >
                 <option value="Todas">Todos Status</option>
                 {uniqueStatuses.map(status => (
@@ -503,7 +503,7 @@ export function Jobs2Page() {
               <select
                 value={selectedDepartment}
                 onChange={(e) => setSelectedDepartment(e.target.value)}
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-950 dark:text-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-gray-950 dark:text-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
               >
                 <option value="Todos">Todos Departamentos</option>
                 {uniqueDepartments.map(dept => (
@@ -546,8 +546,8 @@ export function Jobs2Page() {
         </div>
 
         {filteredJobs.length === 0 && (
-          <Card className="bg-white dark:bg-gray-800 p-8 text-center">
-            <div className="text-gray-600 dark:text-gray-400">
+          <Card className="bg-white dark:bg-lia-bg-secondary p-8 text-center">
+            <div className="text-gray-600 dark:text-lia-text-tertiary">
               <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <h3 className="text-lg font-medium mb-2">Nenhuma vaga encontrada</h3>
               <p className="text-sm">Tente ajustar os filtros ou termos de busca</p>

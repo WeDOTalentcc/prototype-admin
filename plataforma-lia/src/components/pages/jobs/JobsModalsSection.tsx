@@ -764,36 +764,36 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
 
       {showReactivateScreeningDialog && reactivateScreeningJobs.length > 0 && (
         <Dialog open={showReactivateScreeningDialog} onOpenChange={(open) => !open && onSetReactivateScreeningDialog(false)}>
-          <DialogContent className="max-w-sm rounded-md bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700">
-            <DialogHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
+          <DialogContent className="max-w-sm rounded-md bg-white border border-lia-border-subtle dark:bg-lia-bg-primary dark:border-lia-border-subtle">
+            <DialogHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
               <DialogTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50 font-['Open_Sans',sans-serif]">
                 Reativar Triagem?
               </DialogTitle>
             </DialogHeader>
             <div className="py-4 space-y-3">
-              <p className="text-xs text-gray-600 dark:text-gray-400">
+              <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
                 {reactivateScreeningJobs.length === 1 
                   ? `A vaga "${reactivateScreeningJobs[0]?.title}" tinha a triagem ativa antes de ser pausada. Deseja reativar a triagem?`
                   : `${reactivateScreeningJobs.length} vagas tinham triagem ativa antes de serem pausadas. Deseja reativá-las?`
                 }
               </p>
               <div className="space-y-2">
-                <Label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                <Label className="text-xs font-medium text-gray-600 dark:text-lia-text-tertiary">
                   Nova data de término (opcional)
                 </Label>
                 <Input
                   type="date"
                   value={reactivateEndDate}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSetReactivateEndDate(e.target.value)}
-                  className="h-8 text-xs border-gray-200 dark:border-gray-600 dark:bg-gray-700"
+                  className="h-8 text-xs border-lia-border-subtle dark:border-lia-border-default dark:bg-lia-bg-elevated"
                 />
               </div>
             </div>
-            <DialogFooter className="gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+            <DialogFooter className="gap-2 pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
               <Button
                 variant="outline"
                 onClick={() => { onSetReactivateScreeningDialog(false); onSetReactivateScreeningJobs([]); onSetReactivateEndDate('') }}
-                className="h-8 px-4 text-xs border-gray-300 dark:border-gray-600"
+                className="h-8 px-4 text-xs border-lia-border-default dark:border-lia-border-default"
               >
                 Não, manter pausada
               </Button>

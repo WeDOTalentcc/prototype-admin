@@ -21,9 +21,9 @@ export function ContextPill({
 }: ContextPillProps) {
   return (
     <div 
-      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm border transition-all duration-200 bg-white border-gray-300 text-gray-800 ${className}`}
+      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm border transition-[width,height] duration-200 bg-lia-bg-primary border-lia-border-default lia-text-strong ${className}`}
     >
-      <span className="text-gray-600 dark:text-gray-400 flex-shrink-0">
+      <span className="text-gray-600 dark:text-lia-text-tertiary flex-shrink-0">
         {icon}
       </span>
       
@@ -33,8 +33,8 @@ export function ContextPill({
       
       {secondaryText && (
         <>
-          <span className="text-gray-400 dark:text-gray-500">•</span>
-          <span className="text-gray-500 dark:text-gray-400">
+          <span className="text-gray-400">•</span>
+          <span className="text-gray-500 dark:text-lia-text-tertiary">
             {secondaryText}
           </span>
         </>

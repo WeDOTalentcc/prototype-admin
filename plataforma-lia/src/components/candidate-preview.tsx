@@ -188,16 +188,16 @@ export function CandidatePreview({
   const fitScore = candidate.liaAnalysis?.fitScore || candidate.lia_analysis?.fit_score
 
   return (
-    <div className="h-full bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 flex flex-col transition-all duration-300 w-full">
+    <div className="h-full bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle flex flex-col transition-[width,height] duration-300 w-full">
       {/* Header */}
       <TooltipProvider delayDuration={200}>
-        <div className="p-3 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-900">
+        <div className="p-3 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary">
           {/* Top Row: Avatar + Name/Title + Header Action Buttons (LIA, Expand, Close) */}
           <div className="flex items-start gap-3 mb-1.5">
             {/* Avatar */}
             <Avatar className="w-12 h-12 flex-shrink-0 ring-2 ring-white">
               <AvatarImage src={candidate.avatar_url || candidate.avatar || candidate.photo_url || candidate.photoUrl} alt={candidate.name} />
-              <AvatarFallback className="font-semibold text-sm bg-gray-200 text-gray-700">
+              <AvatarFallback className="font-semibold text-sm bg-gray-200 lia-text-base">
                 {candidate.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -209,7 +209,7 @@ export function CandidatePreview({
                 <h3 className={`${textStyles.title} truncate`}>
                   {candidate.name}
                 </h3>
-                <Badge className="text-micro px-1.5 py-0 h-4 flex-shrink-0 font-mono font-medium bg-gray-100 text-gray-600 border border-gray-300">
+                <Badge className="text-micro px-1.5 py-0 h-4 flex-shrink-0 font-mono font-medium bg-gray-100 lia-text-base border border-lia-border-default">
                   {generateShortId(candidate.name, candidate.id || candidate.candidateId || candidate.pearch_id)}
                 </Badge>
                 {(candidate.seniority_level || candidate.seniorityLevel) && (
@@ -238,13 +238,13 @@ export function CandidatePreview({
                 <p className={`${textStyles.bodySmall} truncate`}>
                   {candidate.position || candidate.title || 'Cargo não informado'}
                 </p>
-                <span className={`${textStyles.bodySmall} text-gray-400`}>•</span>
+                <span className={`${textStyles.bodySmall} lia-text-secondary`}>•</span>
                 <p className={`${textStyles.bodySmall} truncate`}>
                   {candidate.workHistory?.[0]?.company || candidate.current_company || candidate.company || 'Empresa'}
                 </p>
                 {(candidate.workHistory?.[0]?.industry || candidate.workHistory?.[0]?.segment || candidate.company_segment || candidate.industry) && (
                   <>
-                    <span className={`${textStyles.description} text-gray-400`}>•</span>
+                    <span className={`${textStyles.description} lia-text-secondary`}>•</span>
                     <p className={`${textStyles.description} truncate`}>
                       {candidate.workHistory?.[0]?.industry || candidate.workHistory?.[0]?.segment || candidate.company_segment || candidate.industry}
                     </p>
@@ -266,7 +266,7 @@ export function CandidatePreview({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 hover:bg-gray-100 border border-gray-300 rounded-md flex-shrink-0"
+                  className="h-8 w-8 p-0 hover:bg-gray-100 border border-lia-border-default rounded-md flex-shrink-0"
                   title="Análises LIA"
                 >
                   <Brain className="w-5 h-5 text-wedo-cyan" />
@@ -282,7 +282,7 @@ export function CandidatePreview({
                     onClick={() => onOpenFullPage?.(candidate)}
                     className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
-                    <Expand className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                    <Expand className="w-4 h-4 text-gray-500 dark:text-lia-text-tertiary" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">Expandir</TooltipContent>
@@ -295,7 +295,7 @@ export function CandidatePreview({
                 onClick={onClose}
                 className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
               >
-                <X className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <X className="w-4 h-4 text-gray-500 dark:text-lia-text-tertiary" />
               </Button>
             </div>
           </div>
@@ -323,7 +323,7 @@ export function CandidatePreview({
                 {createdAt && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="text-micro text-gray-400 flex items-center gap-0.5 cursor-help">
+                      <span className="text-micro lia-text-secondary flex items-center gap-0.5 cursor-help">
                         <Calendar className="w-2.5 h-2.5" />
                         {formatDate(createdAt)}
                       </span>
@@ -334,7 +334,7 @@ export function CandidatePreview({
                 {updatedAt && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="text-micro text-gray-400 flex items-center gap-0.5 cursor-help">
+                      <span className="text-micro lia-text-secondary flex items-center gap-0.5 cursor-help">
                         <Clock className="w-2.5 h-2.5" />
                         {formatDate(updatedAt)}
                       </span>
@@ -345,7 +345,7 @@ export function CandidatePreview({
                 {lastContactedAt && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="text-micro text-gray-500 dark:text-gray-400 flex items-center gap-0.5 cursor-help">
+                      <span className="text-micro text-gray-500 dark:text-lia-text-tertiary flex items-center gap-0.5 cursor-help">
                         <MessageSquare className="w-2.5 h-2.5" />
                         {formatDate(lastContactedAt)}
                       </span>
@@ -371,7 +371,7 @@ export function CandidatePreview({
                     onClick={() => onSendEmail ? onSendEmail(candidate) : (candidate.email && window.open(`mailto:${candidate.email}`, '_self'))}
                     disabled={!candidate.email && !onSendEmail}
                   >
-                    <Mail className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                    <Mail className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">Email</TooltipContent>
@@ -392,7 +392,7 @@ export function CandidatePreview({
                     }}
                     disabled={!candidate.phone && !onSendWhatsApp}
                   >
-                    <Phone className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                    <Phone className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">WhatsApp</TooltipContent>
@@ -420,7 +420,7 @@ export function CandidatePreview({
                     className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
                     onClick={() => onWSIScreening ? onWSIScreening(candidate) : onSendTriagem?.(candidate)}
                   >
-                    <ClipboardCheck className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                    <ClipboardCheck className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">Triagem WSI</TooltipContent>
@@ -434,7 +434,7 @@ export function CandidatePreview({
                     className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
                     onClick={() => onAddToVacancy?.(candidate)}
                   >
-                    <Briefcase className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                    <Briefcase className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">Atribuir à Vaga</TooltipContent>
@@ -475,7 +475,7 @@ export function CandidatePreview({
               </Tooltip>
 
               {/* Separator before Social Icons */}
-              <span className="text-gray-200 mx-0.5">|</span>
+              <span className="lia-text-muted mx-0.5">|</span>
 
               {/* Social Icons */}
               <Tooltip>
@@ -570,7 +570,7 @@ export function CandidatePreview({
                     className={`p-1 rounded-md transition-colors ${(candidate.portfolio || candidate.portfolio_url) ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : 'opacity-30 cursor-default'}`}
                     onClick={(e) => !(candidate.portfolio || candidate.portfolio_url) && e.preventDefault()}
                   >
-                    <ExternalLink className={`w-3.5 h-3.5 ${(candidate.portfolio || candidate.portfolio_url) ? 'text-gray-600 dark:text-gray-400' : 'text-gray-400'}`} />
+                    <ExternalLink className={`w-3.5 h-3.5 ${(candidate.portfolio || candidate.portfolio_url) ? 'text-gray-600 dark:text-lia-text-tertiary' : 'text-gray-400'}`} />
                   </a>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">Portfolio</TooltipContent>
@@ -582,16 +582,16 @@ export function CandidatePreview({
       </TooltipProvider>
 
       {/* Tabs */}
-      <div className="border-b border-gray-100 dark:border-gray-700 flex items-center">
+      <div className="border-b border-lia-border-subtle dark:border-lia-border-subtle flex items-center">
         <div className="flex overflow-x-auto">
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as string)}
               className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium whitespace-nowrap transition-colors ${
-                activeTab === tab.id
-                  ? 'border-b-2 border-gray-800 text-gray-800 dark:text-gray-200 font-semibold'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-800'
+ activeTab === tab.id
+                  ? 'border-b-2 border-gray-800 text-gray-800 dark:text-lia-text-primary font-semibold'
+                  : 'text-gray-600 dark:text-lia-text-tertiary hover:text-gray-800'
               }`}
             >
               <tab.icon className="w-3 h-3" />
@@ -656,13 +656,13 @@ export function CandidatePreview({
         {activeTab === 'opinions' && (
           <div className="p-3 space-y-3">
             {/* Subtabs Header */}
-            <div className="flex items-center gap-1 border-b border-gray-100 dark:border-gray-700 pb-2">
+            <div className="flex items-center gap-1 border-b border-lia-border-subtle dark:border-lia-border-subtle pb-2">
               <button
                 onClick={() => setOpinionsSubTab('pareceres')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors ${
-                  opinionsSubTab === 'pareceres'
-                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-b-2 border-gray-900 dark:border-gray-100'
- : 'text-gray-500 hover:text-gray-700 dark:text-gray-300 hover:bg-gray-50'
+ opinionsSubTab === 'pareceres'
+                    ? 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-900 dark:text-lia-text-primary border-b-2 border-gray-900 dark:border-lia-border-subtle'
+ : 'text-gray-500 hover:text-gray-700 dark:text-lia-text-secondary hover:bg-gray-50'
                 }`}
               >
                 <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -676,9 +676,9 @@ export function CandidatePreview({
               <button
                 onClick={() => setOpinionsSubTab('analises')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors ${
-                  opinionsSubTab === 'analises'
+ opinionsSubTab === 'analises'
                     ? 'bg-wedo-purple/10 text-wedo-purple border-b-2 border-wedo-purple/30'
- : 'text-gray-500 hover:text-gray-700 dark:text-gray-300 hover:bg-gray-50'
+ : 'text-gray-500 hover:text-gray-700 dark:text-lia-text-secondary hover:bg-gray-50'
                 }`}
               >
                 <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -698,17 +698,17 @@ export function CandidatePreview({
                 {isLoadingHistory && (
                   <div className="space-y-3">
                     {[1, 2].map((i) => (
-                      <div key={i} className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-md p-4 animate-pulse">
+                      <div key={i} className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4 animate-pulse">
                         <div className="flex items-center gap-3 mb-3">
-                          <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                          <div className="w-8 h-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-full"></div>
                           <div className="flex-1">
-                            <div className="w-32 h-4 bg-gray-200 dark:bg-gray-700 rounded-md mb-1"></div>
-                            <div className="w-24 h-3 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                            <div className="w-32 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md mb-1"></div>
+                            <div className="w-24 h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-md"></div>
                           </div>
                         </div>
                         <div className="space-y-2">
-                          <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
-                          <div className="w-3/4 h-3 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                          <div className="w-full h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-md"></div>
+                          <div className="w-3/4 h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-md"></div>
                         </div>
                       </div>
                     ))}
@@ -717,9 +717,9 @@ export function CandidatePreview({
                 
                 {/* Empty State */}
                 {!isLoadingHistory && opinionsHistory.length === 0 && (
-                  <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-md p-6 text-center">
-                    <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-3">
-                      <FileText className="w-6 h-6 text-gray-400 dark:text-gray-500" />
+                  <div className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-6 text-center">
+                    <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center mx-auto mb-3">
+                      <FileText className="w-6 h-6 text-gray-400" />
                     </div>
                     <p className={`${textStyles.subtitle} mb-1`}>Nenhum parecer disponível</p>
                     <p className={textStyles.description}>
@@ -734,7 +734,7 @@ export function CandidatePreview({
                     {opinionsHistory.map((opinion: Record<string, unknown>) => (
                       <div key={opinion.id} className="relative">
                         {!opinion.is_current && (
-                          <Badge className="absolute top-2 right-2 text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-500 dark:text-gray-400 z-10">
+                          <Badge className="absolute top-2 right-2 text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-500 dark:text-lia-text-tertiary z-10">
                             v{opinion.version} - Histórico
                           </Badge>
                         )}
@@ -762,17 +762,17 @@ export function CandidatePreview({
                 {isLoadingAnalyses && (
                   <div className="space-y-3">
                     {[1, 2].map((i) => (
-                      <div key={i} className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-md p-4 animate-pulse">
+                      <div key={i} className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4 animate-pulse">
                         <div className="flex items-center gap-3 mb-3">
-                          <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                          <div className="w-8 h-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-full"></div>
                           <div className="flex-1">
-                            <div className="w-32 h-4 bg-gray-200 dark:bg-gray-700 rounded-md mb-1"></div>
-                            <div className="w-24 h-3 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                            <div className="w-32 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md mb-1"></div>
+                            <div className="w-24 h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-md"></div>
                           </div>
                         </div>
                         <div className="space-y-2">
-                          <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
-                          <div className="w-3/4 h-3 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                          <div className="w-full h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-md"></div>
+                          <div className="w-3/4 h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-md"></div>
                         </div>
                       </div>
                     ))}
@@ -781,7 +781,7 @@ export function CandidatePreview({
                 
                 {/* Empty State */}
                 {!isLoadingAnalyses && (!savedAnalyses || savedAnalyses.total_analyses === 0) && (
-                  <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-md p-6 text-center">
+                  <div className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-6 text-center">
                     <div className="w-12 h-12 rounded-full bg-wedo-purple/10 flex items-center justify-center mx-auto mb-3">
                       <Brain className="w-6 h-6 text-wedo-purple" />
                     </div>
@@ -806,7 +806,7 @@ export function CandidatePreview({
                       return (
                         <div 
                           key={analysis.id} 
-                          className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-md overflow-hidden hover:transition-shadow"
+                          className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md overflow-hidden hover:transition-shadow"
                         >
                           {/* Card Header - Always Visible */}
                           <div 
@@ -827,7 +827,7 @@ export function CandidatePreview({
                                     {analysisLabels[analysis.analysis_type] || analysis.analysis_type}
                                   </Badge>
                                 </div>
-                                <span className={`${textStyles.caption} text-gray-400`}>
+                                <span className={`${textStyles.caption} lia-text-secondary`}>
                                   {analysis.created_at ? new Date(analysis.created_at).toLocaleDateString('pt-BR', { 
                                     day: '2-digit', 
                                     month: '2-digit', 
@@ -851,20 +851,20 @@ export function CandidatePreview({
                                     {copiedItemId === `analysis-${analysis.id}` ? (
                                       <Check className="w-3.5 h-3.5 text-status-success" />
                                     ) : (
-                                      <Copy className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600 dark:text-gray-400" />
+                                      <Copy className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600 dark:text-lia-text-tertiary" />
                                     )}
                                   </button>
                                 </TooltipTrigger>
                                 <TooltipContent side="top" className="text-micro">Copiar análise</TooltipContent>
                               </Tooltip>
-                              <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                              <ChevronDown className={`w-4 h-4 lia-text-secondary transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                             </div>
                           </div>
                           
                           {/* Card Content - Expandable */}
                           {isExpanded && (
-                            <div className="px-3 pb-3 border-t border-gray-50 dark:border-gray-800">
-                              <div className={`${textStyles.description} text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap bg-gray-50 dark:bg-gray-800 rounded-md p-3 mt-2`}>
+                            <div className="px-3 pb-3 border-t border-gray-50">
+                              <div className={`${textStyles.description} text-gray-800 dark:text-lia-text-primary leading-relaxed whitespace-pre-wrap bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-3 mt-2`}>
                                 {cleanTextForCopy(analysis.content)}
                               </div>
                               {/* Delete button */}
@@ -878,7 +878,7 @@ export function CandidatePreview({
                                       }}
                                       className="p-1.5 hover:bg-status-error/10 rounded-md transition-colors group"
                                     >
-                                      <Trash2 className="w-4 h-4 text-gray-400 group-hover:text-status-error" />
+                                      <Trash2 className="w-4 h-4 lia-text-secondary group-hover:text-status-error" />
                                     </button>
                                   </TooltipTrigger>
                                   <TooltipContent side="top" className="text-micro">Remover análise</TooltipContent>
@@ -921,7 +921,7 @@ export function CandidatePreview({
       
       {/* AlertDialog para confirmação de novo parecer */}
       <AlertDialog open={showUpdateOpinionAlert} onOpenChange={setShowUpdateOpinionAlert}>
-        <AlertDialogContent className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-md">
+        <AlertDialogContent className="bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
           <AlertDialogHeader>
             <AlertDialogTitle className={textStyles.title}>
               Parecer Existente
@@ -945,7 +945,7 @@ export function CandidatePreview({
       
       {/* AlertDialog para confirmação de exclusão de análise */}
       <AlertDialog open={!!analysisToDelete} onOpenChange={(open: boolean) => !open && setAnalysisToDelete(null)}>
-        <AlertDialogContent className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-md">
+        <AlertDialogContent className="bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
           <AlertDialogHeader>
             <AlertDialogTitle className={textStyles.title}>
               Remover Análise

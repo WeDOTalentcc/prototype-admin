@@ -114,7 +114,7 @@ export function DiversidadeInclusaoDashboard() {
         <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-gray-800`}>
           <CardContent className="p-3">
             <div className="flex items-start justify-between mb-2">
-              <p className={`${textStyles.bodySmall} dark:text-gray-400`}>Pessoas com Deficiência</p>
+              <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>Pessoas com Deficiência</p>
               <Heart className="w-3.5 h-3.5 text-wedo-orange" />
             </div>
             <div className="text-xl font-inter font-bold text-gray-950 dark:text-gray-50">8.2%</div>
@@ -125,7 +125,7 @@ export function DiversidadeInclusaoDashboard() {
         <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-gray-800`}>
           <CardContent className="p-3">
             <div className="flex items-start justify-between mb-2">
-              <p className={`${textStyles.bodySmall} dark:text-gray-400`}>Equidade de Gênero</p>
+              <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>Equidade de Gênero</p>
               <Users className="w-3.5 h-3.5 text-wedo-purple" />
             </div>
             <div className="text-xl font-inter font-bold text-gray-950 dark:text-gray-50">48%</div>
@@ -136,7 +136,7 @@ export function DiversidadeInclusaoDashboard() {
         <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-gray-800`}>
           <CardContent className="p-3">
             <div className="flex items-start justify-between mb-2">
-              <p className={`${textStyles.bodySmall} dark:text-gray-400`}>Diversidade Racial</p>
+              <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>Diversidade Racial</p>
               <Users className="w-3.5 h-3.5 text-wedo-green" />
             </div>
             <div className="text-xl font-inter font-bold text-gray-950 dark:text-gray-50">42%</div>
@@ -147,18 +147,18 @@ export function DiversidadeInclusaoDashboard() {
         <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-gray-800`}>
           <CardContent className="p-3">
             <div className="flex items-start justify-between mb-2">
-              <p className={`${textStyles.bodySmall} dark:text-gray-400`}>LGBTQIA+</p>
-              <Heart className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+              <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>LGBTQIA+</p>
+              <Heart className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
             </div>
             <div className="text-xl font-inter font-bold text-gray-950 dark:text-gray-50">12%</div>
- <p className={`${textStyles.bodySmall} text-gray-900 dark:text-gray-300 mt-1`}>auto-declarados</p>
+ <p className={`${textStyles.bodySmall} text-gray-900 dark:text-lia-text-secondary mt-1`}>auto-declarados</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Distribuição de Gênero e Racial */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        <Card className="border-gray-200 dark:border-gray-800 rounded-md bg-white dark:bg-gray-950">
+        <Card className="border-lia-border-subtle dark:border-gray-800 rounded-md bg-white dark:bg-gray-950">
           <CardHeader className="px-4 py-3">
             <CardTitle className="text-xs font-sans font-open-sans font-semibold text-gray-950 dark:text-gray-50">
               Distribuição de Gênero por Cargo
@@ -167,13 +167,13 @@ export function DiversidadeInclusaoDashboard() {
           <CardContent className="space-y-3">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">C-Level</span>
+                <span className="text-xs font-open-sans text-gray-800 dark:text-lia-text-primary">C-Level</span>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-inter text-wedo-purple">40% M</span>
                   <span className="text-sm font-inter text-gray-950 dark:text-gray-50">60% H</span>
                 </div>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 flex overflow-hidden">
+              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2 flex overflow-hidden">
                 <div className="h-2 bg-wedo-purple w-[40%]"></div>
                 <div className="h-2 bg-gray-900 w-[60%]"></div>
               </div>
@@ -181,13 +181,13 @@ export function DiversidadeInclusaoDashboard() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Gerência</span>
+                <span className="text-xs font-open-sans text-gray-800 dark:text-lia-text-primary">Gerência</span>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-inter text-wedo-purple">45% M</span>
                   <span className="text-sm font-inter text-gray-950 dark:text-gray-50">55% H</span>
                 </div>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 flex overflow-hidden">
+              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2 flex overflow-hidden">
                 <div className="h-2 bg-wedo-purple w-[45%]"></div>
                 <div className="h-2 bg-gray-900 w-[55%]"></div>
               </div>
@@ -195,13 +195,13 @@ export function DiversidadeInclusaoDashboard() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Técnico</span>
+                <span className="text-xs font-open-sans text-gray-800 dark:text-lia-text-primary">Técnico</span>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-inter text-wedo-purple">48% M</span>
                   <span className="text-sm font-inter text-gray-950 dark:text-gray-50">52% H</span>
                 </div>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 flex overflow-hidden">
+              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2 flex overflow-hidden">
                 <div className="h-2 bg-wedo-purple w-[48%]"></div>
                 <div className="h-2 bg-gray-900 w-[52%]"></div>
               </div>
@@ -209,31 +209,31 @@ export function DiversidadeInclusaoDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="border-gray-200 dark:border-gray-800 rounded-md bg-white dark:bg-gray-950">
+        <Card className="border-lia-border-subtle dark:border-gray-800 rounded-md bg-white dark:bg-gray-950">
           <CardHeader className="px-4 py-3">
             <CardTitle className="text-xs font-sans font-open-sans font-semibold text-gray-950 dark:text-gray-50">
               Diversidade Racial
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded-md">
-              <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Brancos</span>
+            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
+              <span className="text-xs font-open-sans text-gray-800 dark:text-lia-text-primary">Brancos</span>
               <span className="text-sm font-inter font-bold">58%</span>
             </div>
-            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded-md">
-              <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Pardos</span>
+            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
+              <span className="text-xs font-open-sans text-gray-800 dark:text-lia-text-primary">Pardos</span>
               <span className="text-sm font-inter font-bold">24%</span>
             </div>
-            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded-md">
-              <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Pretos</span>
+            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
+              <span className="text-xs font-open-sans text-gray-800 dark:text-lia-text-primary">Pretos</span>
               <span className="text-sm font-inter font-bold">14%</span>
             </div>
-            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded-md">
-              <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Amarelos</span>
+            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
+              <span className="text-xs font-open-sans text-gray-800 dark:text-lia-text-primary">Amarelos</span>
               <span className="text-sm font-inter font-bold">3%</span>
             </div>
-            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded-md">
-              <span className="text-xs font-open-sans text-gray-800 dark:text-gray-200">Indígenas</span>
+            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
+              <span className="text-xs font-open-sans text-gray-800 dark:text-lia-text-primary">Indígenas</span>
               <span className="text-sm font-inter font-bold">1%</span>
             </div>
           </CardContent>
@@ -241,9 +241,9 @@ export function DiversidadeInclusaoDashboard() {
       </div>
 
       {/* Metas e Progresso */}
-      <Card className="border-gray-200 dark:border-gray-800 rounded-md bg-white dark:bg-gray-950">
+      <Card className="border-lia-border-subtle dark:border-gray-800 rounded-md bg-white dark:bg-gray-950">
         <CardHeader className="px-4 py-3">
-          <CardTitle className={`${textStyles.subtitle} dark:text-gray-100 flex items-center gap-2`}>
+          <CardTitle className={`${textStyles.subtitle} dark:text-lia-text-primary flex items-center gap-2`}>
             <Target className="w-3.5 h-3.5 text-wedo-green-bright" />
             Metas de Diversidade 2025
           </CardTitle>
@@ -253,16 +253,16 @@ export function DiversidadeInclusaoDashboard() {
             <CheckCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-wedo-green" />
             <div className="flex-1">
               <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50 mb-1">PCD: 8.2% atingido (meta 5%)</p>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
                 <div className="h-2 rounded-full bg-wedo-green w-[100%]"></div>
               </div>
             </div>
           </div>
           <div className="flex items-start gap-3">
-            <TrendingUp className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-600 dark:text-gray-400" />
+            <TrendingUp className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-600 dark:text-lia-text-tertiary" />
             <div className="flex-1">
               <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50 mb-1">Mulheres em Tech: 48% (meta 50%)</p>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
                 <div className="h-2 rounded-full bg-gray-700 dark:bg-gray-300 w-[96%]"></div>
               </div>
             </div>
@@ -271,7 +271,7 @@ export function DiversidadeInclusaoDashboard() {
             <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-wedo-orange" />
             <div className="flex-1">
               <p className="text-sm font-open-sans font-semibold text-gray-950 dark:text-gray-50 mb-1">Liderança Negra: 12% (meta 20%)</p>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
                 <div className="h-2 rounded-full bg-wedo-orange w-[60%]"></div>
               </div>
             </div>

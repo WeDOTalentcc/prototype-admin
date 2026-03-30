@@ -178,8 +178,8 @@ export function IndustrySingleSelect({
     <div className={cn("relative", className)}>
       <div
         className={cn(
-          "flex items-center gap-2 px-3 py-2 rounded-md border bg-white dark:bg-gray-900 transition-all cursor-text",
-          error ? "border-status-error/30" : "border-gray-200 dark:border-gray-700",
+          "flex items-center gap-2 px-3 py-2 rounded-md border bg-white dark:bg-lia-bg-primary transition-colors cursor-text",
+          error ? "border-status-error/30" : "border-lia-border-subtle dark:border-lia-border-subtle",
           isOpen && "ring-2 ring-gray-900/20 border-gray-400"
         )}
         onClick={() => {
@@ -187,18 +187,18 @@ export function IndustrySingleSelect({
           setIsOpen(true)
         }}
       >
-        <Search className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+        <Search className="w-3.5 h-3.5 lia-text-400 flex-shrink-0" />
         
         {selectedIndustry && !isOpen ? (
           <div className="flex-1 flex items-center justify-between">
-            <span className="text-sm text-gray-950 dark:text-gray-50">
+            <span className="text-sm lia-text-950 dark:lia-text-50">
               {selectedIndustry.labelPt}
             </span>
             <button
               onClick={handleClear}
               className="p-0.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
             >
-              <X className="w-3.5 h-3.5 text-gray-400" />
+              <X className="w-3.5 h-3.5 lia-text-400" />
             </button>
           </div>
         ) : (
@@ -215,14 +215,14 @@ export function IndustrySingleSelect({
               onFocus={() => setIsOpen(true)}
               onKeyDown={handleKeyDown}
               placeholder={selectedIndustry ? selectedIndustry.labelPt : placeholder}
-              className="flex-1 text-sm bg-transparent outline-none text-gray-950 dark:text-gray-50 placeholder:text-gray-400"
+              className="flex-1 text-sm bg-transparent outline-none lia-text-950 dark:lia-text-50 placeholder:lia-text-400"
              
             />
             {isLoadingAI && (
-              <Loader2 className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400 animate-spin flex-shrink-0" />
+              <Loader2 className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary animate-spin flex-shrink-0" />
             )}
             <ChevronDown className={cn(
-              "w-3.5 h-3.5 text-gray-400 transition-transform flex-shrink-0",
+              "w-3.5 h-3.5 lia-text-400 transition-transform flex-shrink-0",
               isOpen && "rotate-180"
             )} />
           </>
@@ -232,7 +232,7 @@ export function IndustrySingleSelect({
       {isOpen && dropdownItems.length > 0 && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-1 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md max-h-64 overflow-y-auto"
+          className="absolute z-50 w-full mt-1 py-1 bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md max-h-64 overflow-y-auto"
         >
           {dropdownItems.map((item, idx) => (
             <button
@@ -241,9 +241,9 @@ export function IndustrySingleSelect({
               className={cn(
                 "w-full px-3 py-2 text-left text-sm flex items-center gap-2 transition-colors",
                 focusedIndex === idx
-                  ? "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
-                  : "hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200",
-                item.type === 'ai' && "border-t border-gray-100 dark:border-gray-700"
+                  ? "bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary"
+                  : "hover:bg-gray-50 dark:hover:bg-gray-700 lia-text-800 dark:text-lia-text-primary",
+                item.type === 'ai' && "border-t border-lia-border-subtle dark:border-lia-border-subtle"
               )}
              
             >
@@ -255,7 +255,7 @@ export function IndustrySingleSelect({
               )}
               <span className="truncate">{item.label}</span>
               {item.industry && (
-                <span className="ml-auto text-micro text-gray-400 px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded-full">
+                <span className="ml-auto text-micro lia-text-400 px-1.5 py-0.5 bg-gray-100 dark:bg-lia-bg-elevated rounded-full">
                   {INDUSTRY_CATEGORIES[item.industry.category as IndustryCategory]?.labelPt}
                 </span>
               )}

@@ -15,10 +15,10 @@ export function TestStatusIndicators({ candidate }: TestStatusIndicatorsProps) {
         className="relative group"
         title={candidate.technicalTestScore ? `Teste Técnico: ${candidate.technicalTestScore}%` : 'Teste Técnico: Pendente'}
       >
-        <div className={`w-8 h-8 rounded-md flex items-center justify-center transition-all ${
-          candidate.technicalTestScore
+        <div className={`w-8 h-8 rounded-md flex items-center justify-center transition-colors ${
+ candidate.technicalTestScore
             ? 'bg-wedo-purple/15 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple'
-            : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-600'
+            : 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-600'
         }`}>
           <FileText className="w-4 h-4" />
         </div>
@@ -36,10 +36,10 @@ export function TestStatusIndicators({ candidate }: TestStatusIndicatorsProps) {
         className="relative group"
         title={candidate.englishTestScore ? `Teste de Inglês: ${candidate.englishTestScore}% (${candidate.englishLevel || 'N/A'})` : 'Teste de Inglês: Pendente'}
       >
-        <div className={`w-8 h-8 rounded-md flex items-center justify-center transition-all ${
-          candidate.englishTestScore
+        <div className={`w-8 h-8 rounded-md flex items-center justify-center transition-colors ${
+ candidate.englishTestScore
             ? 'bg-wedo-purple/15 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple'
-            : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-600'
+            : 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-600'
         }`}>
           <Globe className="w-4 h-4" />
         </div>
@@ -57,10 +57,10 @@ export function TestStatusIndicators({ candidate }: TestStatusIndicatorsProps) {
         className="relative group"
         title={candidate.bigFiveScores ? 'Assessment Big Five: Completo' : 'Assessment Big Five: Pendente'}
       >
-        <div className={`w-8 h-8 rounded-md flex items-center justify-center transition-all ${
-          candidate.bigFiveScores
+        <div className={`w-8 h-8 rounded-md flex items-center justify-center transition-colors ${
+ candidate.bigFiveScores
             ? 'bg-wedo-magenta/15 dark:bg-wedo-magenta/30 text-wedo-magenta dark:text-wedo-magenta'
-            : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-600'
+            : 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-600'
         }`}>
           <User className="w-4 h-4" />
         </div>

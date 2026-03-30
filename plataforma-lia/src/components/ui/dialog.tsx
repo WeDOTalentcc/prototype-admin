@@ -21,7 +21,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-black/30 backdrop-blur-[1px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+ "fixed inset-0 z-50 bg-black/30 backdrop-blur-[1px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
     {...props}
@@ -39,14 +39,14 @@ const DialogContent = React.forwardRef<
       <DialogPrimitive.Content
         ref={ref}
         className={cn(
-          "relative z-modal grid w-full max-w-lg gap-4 border border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800 p-6 rounded-md duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 pointer-events-auto",
+ "relative z-modal grid w-full max-w-lg gap-4 border border-lia-border-subtle bg-white dark:border-lia-border-subtle dark:bg-lia-bg-secondary p-6 rounded-md duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 pointer-events-auto",
           className
         )}
         style={style}
         {...props}
       >
         {children}
-        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-md p-1 text-gray-500 transition-all hover:text-gray-800 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-400 disabled:pointer-events-none data-[state=open]:bg-gray-100 data-[state=open]:text-gray-950 dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-gray-700 dark:focus:ring-gray-600 dark:data-[state=open]:bg-gray-700 dark:data-[state=open]:text-gray-100">
+        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-md p-1 lia-text-secondary transition-colors hover:text-gray-800 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-400 disabled:pointer-events-none data-[state=open]:bg-gray-100 data-[state=open]:text-gray-950 dark:text-lia-text-tertiary dark:hover:text-gray-100 dark:hover:bg-gray-700 dark:focus:ring-gray-600 dark:data-[state=open]:bg-gray-700 dark:data-[state=open]:text-gray-100">
           <X className="h-4 w-4" />
           <span className="sr-only">Close</span>
         </DialogPrimitive.Close>
@@ -121,7 +121,7 @@ const DraggableDialogContent = React.forwardRef<
             dialogRef.current = node
           }}
           className={cn(
-            "relative z-modal grid w-full max-w-lg gap-4 border border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800 p-6 rounded-md duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 pointer-events-auto",
+ "relative z-modal grid w-full max-w-lg gap-4 border border-lia-border-subtle bg-white dark:border-lia-border-subtle dark:bg-lia-bg-secondary p-6 rounded-md duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 pointer-events-auto",
             className
           )}
           style={{...style,
@@ -133,7 +133,7 @@ const DraggableDialogContent = React.forwardRef<
             onMouseDown={handleMouseDown}
           />
           {children}
-          <DialogPrimitive.Close className="absolute right-4 top-4 rounded-md p-1 text-gray-500 transition-all hover:text-gray-800 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-400 disabled:pointer-events-none data-[state=open]:bg-gray-100 data-[state=open]:text-gray-950 dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-gray-700 dark:focus:ring-gray-600 dark:data-[state=open]:bg-gray-700 dark:data-[state=open]:text-gray-100 z-10" data-dialog-close>
+          <DialogPrimitive.Close className="absolute right-4 top-4 rounded-md p-1 lia-text-secondary transition-colors hover:text-gray-800 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-400 disabled:pointer-events-none data-[state=open]:bg-gray-100 data-[state=open]:text-gray-950 dark:text-lia-text-tertiary dark:hover:text-gray-100 dark:hover:bg-gray-700 dark:focus:ring-gray-600 dark:data-[state=open]:bg-gray-700 dark:data-[state=open]:text-gray-100 z-10" data-dialog-close>
             <X className="h-4 w-4" />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>
@@ -150,7 +150,7 @@ const DialogHeader = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col space-y-1.5 text-center sm:text-left",
+ "flex flex-col space-y-1.5 text-center sm:text-left",
       className
     )}
     {...props}
@@ -164,7 +164,7 @@ const DialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
+ "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
       className
     )}
     {...props}
@@ -179,7 +179,7 @@ const DialogTitle = React.forwardRef<
   <DialogPrimitive.Title
     ref={ref}
     className={cn(
-      "text-xs font-semibold leading-none tracking-tight",
+ "text-xs font-semibold leading-none tracking-tight",
       className
     )}
     {...props}
@@ -193,7 +193,7 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn("text-xs text-gray-600 dark:text-gray-400", className)}
+    className={cn("text-xs text-gray-600 dark:text-lia-text-tertiary", className)}
     {...props}
   />
 ))

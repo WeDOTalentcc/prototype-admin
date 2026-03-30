@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { AlertTriangle, Brain, Clock, BellOff, Loader2, CheckCircle, Info } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
 import type { EmptyFieldNotification, FieldValueSuggestion } from "@/hooks/use-empty-field-notifications"
 
 interface EmptyFieldNotificationMessageProps {
@@ -64,11 +63,8 @@ export function EmptyFieldNotificationMessage({
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      className="w-full"
+    <div
+      className="w-full animate-in fade-in slide-in-from-bottom-2 duration-200"
     >
       <Card className="border-status-warning/30 bg-status-warning/10/50 dark:border-status-warning/30">
         <CardContent className="p-4">
@@ -103,20 +99,16 @@ export function EmptyFieldNotificationMessage({
                 </div>
               )}
 
-              <AnimatePresence mode="wait">
+              <>
                 {!showSuggestion ? (
-                  <motion.div 
-                    key="actions"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex flex-wrap gap-2"
+                  <div 
+                    className="flex flex-wrap gap-2 animate-in fade-in duration-150"
                   >
                     <Button
                       size="sm"
                       onClick={() => handleActionClick('fill_now')}
                       disabled={isProcessing !== null}
-                      className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                      className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
                     >
                       {isProcessing === 'fill_now' ? (
                         <Loader2 className="w-4 h-4 mr-1 animate-spin" />
@@ -154,13 +146,10 @@ export function EmptyFieldNotificationMessage({
                       )}
                       Não Lembrar
                     </Button>
-                  </motion.div>
+                  </div>
                 ) : (
-                  <motion.div
-                    key="suggestion"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="space-y-3"
+                  <div
+                    className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-150"
                   >
                     {isLoadingSuggestion ? (
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -168,7 +157,7 @@ export function EmptyFieldNotificationMessage({
                         <span>Buscando sugestão...</span>
                       </div>
                     ) : suggestion ? (
-                      <Card className="border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900">
+                      <Card className="border-lia-border-default dark:border-lia-border-default bg-gray-50 dark:bg-lia-bg-primary">
                         <CardContent className="p-3 space-y-2">
                           <div className="flex items-center gap-2">
                             <span className="text-lg">{getSourceIcon(suggestion.source)}</span>
@@ -190,7 +179,7 @@ export function EmptyFieldNotificationMessage({
                             <Button
                               size="sm"
                               onClick={handleAcceptSuggestion}
-                              className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                              className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
                             >
                               <CheckCircle className="w-4 h-4 mr-1" />
                               Usar Sugestão
@@ -219,13 +208,13 @@ export function EmptyFieldNotificationMessage({
                         </Button>
                       </div>
                     )}
-                  </motion.div>
+                  </div>
                 )}
-              </AnimatePresence>
+              </>
             </div>
           </div>
         </CardContent>
       </Card>
-    </motion.div>
+    </div>
   )
 }

@@ -192,21 +192,21 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
         <div className="bg-wedo-green-light/5 rounded-md p-3 border border-wedo-green-light/20">
           <div className="flex items-center gap-2 mb-2">
             <LIAIcon size="sm" />
-            <span className="text-base-ui font-semibold text-gray-800">
+            <span className="text-base-ui font-semibold lia-text-strong">
               Análise LIA para candidato específico
             </span>
           </div>
-          <div className="flex items-center gap-3 bg-white rounded-md px-3 py-2 border border-gray-100">
+          <div className="flex items-center gap-3 bg-lia-bg-primary rounded-md px-3 py-2 border border-lia-border-subtle">
             <Avatar className="w-8 h-8">
               <AvatarFallback className="bg-wedo-green-light/10 text-wedo-green-light text-sm">
                 {candidateContext.name?.split(' ').map((n: string) => n[0]).join('') || 'C'}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <div className="font-medium text-gray-800 text-base-ui">
+              <div className="font-medium lia-text-strong text-base-ui">
                 {candidateContext.name}
               </div>
-              <div className="text-xs text-gray-800 dark:text-gray-200">
+              <div className="text-xs text-gray-800 dark:text-lia-text-primary">
                 {candidateContext.position} • Score: {candidateContext.liaAnalysis?.score || candidateContext.score}%
               </div>
             </div>
@@ -219,28 +219,28 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
 
       {/* Candidatos Selecionados Preview */}
       {!candidateContext && selectedCandidates.length > 0 && (
-        <div className="bg-gray-50 rounded-md p-3 border border-gray-100">
+        <div className="bg-gray-50 rounded-md p-3 border border-lia-border-subtle">
           <div className="flex items-center gap-2 mb-2">
-            <Users className="w-4 h-4 text-gray-600" />
-            <span className="text-base-ui font-semibold text-gray-800">
+            <Users className="w-4 h-4 lia-text-base" />
+            <span className="text-base-ui font-semibold lia-text-strong">
               {selectedCandidates.length} candidato{selectedCandidates.length > 1 ? 's' : ''} selecionado{selectedCandidates.length > 1 ? 's' : ''}
             </span>
           </div>
           <div className="flex flex-wrap gap-2">
             {selectedCandidates.slice(0, 3).map((candidate, index) => (
-              <div key={index} className="flex items-center gap-1 bg-white rounded-md px-2 py-1 border border-gray-100">
+              <div key={index} className="flex items-center gap-1 bg-lia-bg-primary rounded-md px-2 py-1 border border-lia-border-subtle">
                 <Avatar className="w-4 h-4">
-                  <AvatarFallback className="bg-gray-200 text-gray-700 text-xs">
+                  <AvatarFallback className="bg-gray-200 lia-text-base text-xs">
                     {candidate.name?.charAt(0) || 'C'}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-xs text-gray-800 dark:text-gray-200">
+                <span className="text-xs text-gray-800 dark:text-lia-text-primary">
                   {candidate.name || `Candidato ${index + 1}`}
                 </span>
               </div>
             ))}
             {selectedCandidates.length > 3 && (
-              <div className="px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-800 dark:text-gray-200">
+              <div className="px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-800 dark:text-lia-text-primary">
                 +{selectedCandidates.length - 3} mais
               </div>
             )}
@@ -249,7 +249,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
       )}
 
       {/* Prompt Principal */}
-      <div className={`transition-all duration-300 ${statusInfo.bgColor} rounded-md border ${statusInfo.bgColor.includes('border') ? '' : 'border-gray-100'} overflow-hidden`}>
+      <div className={`transition-colors duration-300 ${statusInfo.bgColor} rounded-md border ${statusInfo.bgColor.includes('border') ? '' : 'border-lia-border-subtle'} overflow-hidden`}>
 
         {/* Campo de input compacto */}
         <div className="p-3">
@@ -259,7 +259,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
             <LIAIcon
               size="lg"
               animate={isProcessing}
-              className={`flex-shrink-0 transition-all duration-300 ${isProcessing ? 'scale-110' : ''}`}
+              className={`flex-shrink-0 transition-colors duration-300 ${isProcessing ? 'scale-110' : ''}`}
             />
 
             {/* Input Field */}
@@ -270,8 +270,8 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
               onFocus={() => !isProcessing && setIsExpanded(true)}
               placeholder={isProcessing ? "LIA processando..." : getPlaceholder()}
               disabled={isProcessing}
-              className={`flex-1 bg-transparent text-gray-950 dark:text-gray-50 placeholder-gray-500 text-xs focus:outline-none ${
-                isProcessing ? 'opacity-60 cursor-not-allowed' : ''
+              className={`flex-1 bg-transparent text-gray-950 placeholder-gray-500 text-xs focus:outline-none ${
+ isProcessing ? 'opacity-60 cursor-not-allowed' : ''
               }`}
             />
 
@@ -283,13 +283,13 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                     <button
                       type="button"
                       onClick={(e) => { e.stopPropagation(); setSearchSource('local'); }}
-                      className={`p-1.5 rounded-md transition-all ${
-                        searchSource === 'local' 
+                      className={`p-1.5 rounded-md transition-colors ${
+ searchSource === 'local' 
                           ? 'bg-gray-200' 
                           : 'hover:bg-gray-100'
                       }`}
                     >
-                      <Home className={`w-3.5 h-3.5 ${searchSource === 'local' ? 'text-gray-700' : 'text-gray-600'}`} />
+                      <Home className={`w-3.5 h-3.5 ${searchSource === 'local' ? 'lia-text-base' : 'lia-text-base'}`} />
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom">
@@ -305,13 +305,13 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                       <button
                         type="button"
                         onClick={(e) => { e.stopPropagation(); handleSourceChange('hybrid'); }}
-                        className={`p-1.5 rounded-md transition-all ${
-                          searchSource === 'hybrid' 
+                        className={`p-1.5 rounded-md transition-colors ${
+ searchSource === 'hybrid' 
                             ? 'bg-gray-200' 
                             : 'hover:bg-gray-100'
                         }`}
                       >
-                        <Zap className={`w-3.5 h-3.5 ${searchSource === 'hybrid' ? 'text-gray-700' : 'text-gray-600'}`} />
+                        <Zap className={`w-3.5 h-3.5 ${searchSource === 'hybrid' ? 'lia-text-base' : 'lia-text-base'}`} />
                       </button>
                     </TooltipTrigger>
                     <TooltipContent side="bottom">
@@ -328,13 +328,13 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                       <button
                         type="button"
                         onClick={(e) => { e.stopPropagation(); handleSourceChange('global'); }}
-                        className={`p-1.5 rounded-md transition-all ${
-                          searchSource === 'global' 
+                        className={`p-1.5 rounded-md transition-colors ${
+ searchSource === 'global' 
                             ? 'bg-gray-200' 
                             : 'hover:bg-gray-100'
                         }`}
                       >
-                        <Globe className={`w-3.5 h-3.5 ${searchSource === 'global' ? 'text-gray-700' : 'text-gray-600'}`} />
+                        <Globe className={`w-3.5 h-3.5 ${searchSource === 'global' ? 'lia-text-base' : 'lia-text-base'}`} />
                       </button>
                     </TooltipTrigger>
                     <TooltipContent side="bottom">
@@ -354,18 +354,18 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                     <button
                       type="button"
                       onClick={(e) => { e.stopPropagation(); setRequireEmails(!requireEmails); }}
-                      className={`p-1.5 rounded-md transition-all ${
-                        requireEmails 
+                      className={`p-1.5 rounded-md transition-colors ${
+ requireEmails 
                           ? 'bg-wedo-green-light/15 ring-1 ring-wedo-green-light' 
                           : 'hover:bg-gray-100'
                       }`}
                     >
-                      <Mail className={`w-3.5 h-3.5 ${requireEmails ? 'text-wedo-green-light' : 'text-gray-400'}`} />
+                      <Mail className={`w-3.5 h-3.5 ${requireEmails ? 'text-wedo-green-light' : 'lia-text-secondary'}`} />
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom">
                     <p className="text-xs font-medium">Apenas com Email</p>
-                    <p className="text-micro text-gray-400">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                    <p className="text-micro lia-text-secondary">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -377,18 +377,18 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                     <button
                       type="button"
                       onClick={(e) => { e.stopPropagation(); setRequirePhoneNumbers(!requirePhoneNumbers); }}
-                      className={`p-1.5 rounded-md transition-all ${
-                        requirePhoneNumbers 
+                      className={`p-1.5 rounded-md transition-colors ${
+ requirePhoneNumbers 
                           ? 'bg-wedo-green-light/15 ring-1 ring-wedo-green-light' 
                           : 'hover:bg-gray-100'
                       }`}
                     >
-                      <Phone className={`w-3.5 h-3.5 ${requirePhoneNumbers ? 'text-wedo-green-light' : 'text-gray-400'}`} />
+                      <Phone className={`w-3.5 h-3.5 ${requirePhoneNumbers ? 'text-wedo-green-light' : 'lia-text-secondary'}`} />
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom">
                     <p className="text-xs font-medium">Apenas com Telefone</p>
-                    <p className="text-micro text-gray-400">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                    <p className="text-micro lia-text-secondary">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -514,8 +514,8 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                   <div className="lia-tabs-container flex items-center gap-1">
                     <button
                       onClick={() => setSearchSource('local')}
-                      className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all ${
-                        searchSource === 'local' 
+                      className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-colors ${
+ searchSource === 'local' 
                           ? 'lia-tab-active' 
                           : 'lia-tab'
                       }`}
@@ -526,8 +526,8 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                     </button>
                     <button
                       onClick={() => handleSourceChange('hybrid')}
-                      className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all ${
-                        searchSource === 'hybrid' 
+                      className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-colors ${
+ searchSource === 'hybrid' 
                           ? 'lia-tab-active' 
                           : 'lia-tab'
                       }`}
@@ -538,8 +538,8 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                     </button>
                     <button
                       onClick={() => handleSourceChange('global')}
-                      className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all ${
-                        searchSource === 'global' 
+                      className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-colors ${
+ searchSource === 'global' 
                           ? 'lia-tab-active' 
                           : 'lia-tab'
                       }`}
@@ -553,7 +553,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                   {/* Estimativa de Créditos em Tempo Real */}
                   <div className="relative group">
                     <div className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-xs ${
-                      creditEstimate.isLocal 
+ creditEstimate.isLocal 
                         ? 'bg-status-success/10 text-status-success' 
                         : !creditEstimate.canAfford
                           ? 'bg-status-error/10 text-status-error'
@@ -594,24 +594,24 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                             {/* Saldo disponível */}
                             {creditEstimate.availableCredits !== undefined && (
                               <div className="flex justify-between pb-1.5 border-b border-gray-700">
-                                <span className="text-gray-300">Saldo disponível:</span>
+                                <span className="lia-text-muted">Saldo disponível:</span>
                                 <span className={`font-medium ${
-                                  creditEstimate.canAfford ? 'text-status-success' : 'text-status-error'
+ creditEstimate.canAfford ? 'text-status-success' : 'text-status-error'
                                 }`}>
                                   {creditEstimate.availableCredits} créditos
                                 </span>
                               </div>
                             )}
                             <div className="flex justify-between">
-                              <span className="text-gray-300">Tipo de busca:</span>
+                              <span className="lia-text-muted">Tipo de busca:</span>
                               <span className="font-medium">{pearchSearchType === 'fast' ? 'Rápida' : 'Profissional'}</span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-gray-300">Por candidato:</span>
+                              <span className="lia-text-muted">Por candidato:</span>
                               <span className="font-medium">{creditEstimate.perCandidate} créditos</span>
                             </div>
                             <div className="flex justify-between pt-1.5 border-t border-gray-700">
-                              <span className="text-gray-300">Total ({candidateLimit} cand.):</span>
+                              <span className="lia-text-muted">Total ({candidateLimit} cand.):</span>
                               <span className={`font-bold ${getCostColor(getCostLevel(creditEstimate.total))}`}>
                                 {creditEstimate.total} créditos
                               </span>
@@ -630,7 +630,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                   </div>
                   
                   {/* Contador de critérios */}
-                  <span className="text-xs text-gray-600 hidden md:inline">
+                  <span className="text-xs lia-text-base hidden md:inline">
                     {filledTagsCount}/5 critérios
                   </span>
                 </div>
@@ -640,8 +640,8 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
               <div className="flex items-center gap-1.5 mb-3 overflow-x-auto pb-1">
                 <button
                   onClick={() => setActiveSearchTab('natural')}
-                  className={`flex items-center gap-1.5 whitespace-nowrap transition-all ${
-                    activeSearchTab === 'natural'
+                  className={`flex items-center gap-1.5 whitespace-nowrap transition-colors ${
+ activeSearchTab === 'natural'
                       ? 'lia-pill-active'
                       : 'lia-pill'
                   }`}
@@ -651,8 +651,8 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                 </button>
                 <button
                   onClick={() => setActiveSearchTab('similar')}
-                  className={`flex items-center gap-1.5 whitespace-nowrap transition-all ${
-                    activeSearchTab === 'similar'
+                  className={`flex items-center gap-1.5 whitespace-nowrap transition-colors ${
+ activeSearchTab === 'similar'
                       ? 'lia-pill-active'
                       : 'lia-pill'
                   }`}
@@ -662,8 +662,8 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                 </button>
                 <button
                   onClick={() => setActiveSearchTab('job-description')}
-                  className={`flex items-center gap-1.5 whitespace-nowrap transition-all ${
-                    activeSearchTab === 'job-description'
+                  className={`flex items-center gap-1.5 whitespace-nowrap transition-colors ${
+ activeSearchTab === 'job-description'
                       ? 'lia-pill-active'
                       : 'lia-pill'
                   }`}
@@ -673,8 +673,8 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                 </button>
                 <button
                   onClick={() => setActiveSearchTab('boolean')}
-                  className={`flex items-center gap-1.5 whitespace-nowrap transition-all ${
-                    activeSearchTab === 'boolean'
+                  className={`flex items-center gap-1.5 whitespace-nowrap transition-colors ${
+ activeSearchTab === 'boolean'
                       ? 'lia-pill-active'
                       : 'lia-pill'
                   }`}
@@ -684,8 +684,8 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                 </button>
                 <button
                   onClick={() => setActiveSearchTab('filtros')}
-                  className={`flex items-center gap-1.5 whitespace-nowrap transition-all ${
-                    activeSearchTab === 'filtros'
+                  className={`flex items-center gap-1.5 whitespace-nowrap transition-colors ${
+ activeSearchTab === 'filtros'
                       ? 'lia-pill-active'
                       : 'lia-pill'
                   }`}
@@ -699,14 +699,14 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                     <TooltipTrigger asChild>
                       <Link
                         href="/funil?expandedSearch=true"
-                        className="ml-1 p-1.5 rounded-md hover:bg-gray-100 transition-all border border-gray-200"
+                        className="ml-1 p-1.5 rounded-md hover:bg-gray-100 transition-colors border border-lia-border-subtle"
                       >
-                        <Table2 className="w-3.5 h-3.5 text-gray-500" />
+                        <Table2 className="w-3.5 h-3.5 lia-text-secondary" />
                       </Link>
                     </TooltipTrigger>
                     <TooltipContent side="bottom">
                       <p className="text-xs font-medium">Abrir em Tabela</p>
-                      <p className="text-micro text-gray-400">Ir para resultados de busca</p>
+                      <p className="text-micro lia-text-secondary">Ir para resultados de busca</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -720,9 +720,9 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
 
               
               {/* Dica contextual */}
-              <div className="flex items-start gap-2 p-2 bg-gray-50 rounded-md mb-3 border border-gray-100">
-                <Lightbulb className="w-3.5 h-3.5 text-gray-600 mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-gray-800 dark:text-gray-200">
+              <div className="flex items-start gap-2 p-2 bg-gray-50 rounded-md mb-3 border border-lia-border-subtle">
+                <Lightbulb className="w-3.5 h-3.5 lia-text-base mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-gray-800 dark:text-lia-text-primary">
                   {activeSearchTab === 'natural' && 'Dica: Para melhores resultados, seja específico sobre skills, senioridade e localização.'}
                   {activeSearchTab === 'similar' && 'Dica: Cole o link do LinkedIn de um candidato que você considera ideal.'}
                   {activeSearchTab === 'job-description' && 'Dica: Cole a descrição do cargo completa para extrair automaticamente requisitos técnicos e comportamentais.'}
@@ -738,7 +738,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <LIAIcon size="sm" />
-                  <span className="text-sm font-medium text-gray-950 dark:text-gray-50">💡 Sugestões Inteligentes</span>
+                  <span className="text-sm font-medium text-gray-950">💡 Sugestões Inteligentes</span>
                   <Badge variant="outline" className="text-xs">
                     {suggestions.length} disponíveis
                   </Badge>
@@ -747,7 +747,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                 {commandHistory.length > 0 && (
                   <button
                     onClick={() => setShowHistory(!showHistory)}
-                    className="text-xs text-gray-600 hover:text-gray-700 flex items-center gap-1 transition-colors"
+                    className="text-xs lia-text-base hover:lia-text-base flex items-center gap-1 transition-colors"
                   >
                     📜 Histórico ({commandHistory.length})
                   </button>
@@ -757,15 +757,15 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
               {/* Histórico de Comandos */}
               {showHistory && commandHistory.length > 0 && (
                 <div className="mb-4 p-3 bg-gray-50 rounded-md border">
-                  <h4 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-2">Comandos Recentes</h4>
+                  <h4 className="text-xs font-medium text-gray-800 dark:text-lia-text-primary mb-2">Comandos Recentes</h4>
                   <div className="space-y-1">
                     {commandHistory.map((command, index) => (
                       <button
                         key={index}
                         onClick={() => handleHistoryCommand(command)}
                         disabled={isProcessing}
-                        className={`w-full text-left text-xs p-2 rounded-md hover:bg-white transition-colors ${
-                          isProcessing ? 'opacity-50' : 'text-gray-600 hover:text-gray-800'
+                        className={`w-full text-left text-xs p-2 rounded-md hover:bg-lia-bg-primary transition-colors ${
+ isProcessing ? 'opacity-50' : 'lia-text-base hover:lia-text-strong'
                         }`}
                       >
                         📝 {command}
@@ -782,22 +782,22 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                     key={suggestion.id}
                     onClick={() => handleSuggestionClick(suggestion)}
                     disabled={isProcessing}
-                    className={`flex items-start gap-3 p-3 text-left rounded-md border border-gray-100 bg-white transition-all group ${
-                      isProcessing
+                    className={`flex items-start gap-3 p-3 text-left rounded-md border border-lia-border-subtle bg-lia-bg-primary transition-colors group ${
+ isProcessing
                         ? 'opacity-50 cursor-not-allowed'
                         : 'hover:border-gray-400 hover:'
                     }`}
                   >
                     <span className="text-lg flex-shrink-0">{suggestion.icon}</span>
                     <div className="flex-1">
-                      <div className="text-base-ui font-semibold text-gray-800 group-hover:text-gray-700">
+                      <div className="text-base-ui font-semibold lia-text-strong group-hover:lia-text-base">
                         {suggestion.label}
                       </div>
-                      <div className="text-xs text-gray-600 mt-1">
+                      <div className="text-xs lia-text-base mt-1">
                         {suggestion.description}
                       </div>
                       {suggestion.category && (
-                        <Badge className="mt-2 text-micro bg-gray-100 text-gray-800 dark:text-gray-200 border-0">
+                        <Badge className="mt-2 text-micro bg-gray-100 text-gray-800 dark:text-lia-text-primary border-0">
                           {suggestion.category}
                         </Badge>
                       )}
@@ -819,13 +819,13 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
 
               {/* Processing Indicator */}
               {isProcessing && (
-                <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 bg-gray-50 p-2 rounded-md mb-3 border border-gray-100">
-                  <div className="w-2 h-2 bg-gray-900 dark:bg-gray-50 rounded-full animate-pulse"></div>
+                <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-lia-text-tertiary bg-gray-50 p-2 rounded-md mb-3 border border-lia-border-subtle">
+                  <div className="w-2 h-2 bg-gray-900 rounded-full animate-pulse"></div>
                   <span>🧠 LIA processando: "{lastCommand}"</span>
                 </div>
               )}
 
-              <div className="text-xs text-gray-800 dark:text-gray-200 text-center pt-2 space-y-1">
+              <div className="text-xs text-gray-800 dark:text-lia-text-primary text-center pt-2 space-y-1">
                 <div>💡 LIA aprende com seus padrões para sugerir ações mais precisas</div>
                 <div className="flex justify-center gap-4">
                   <span>⌨️ Esc para fechar</span>
@@ -882,9 +882,9 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
           onClick={closeEditArchetype}
         >
           <div 
-            className="bg-white rounded-md p-5 w-full max-w-md mx-4"
+            className="bg-lia-bg-primary rounded-md p-5 w-full max-w-md mx-4"
             onClick={(e) => e.stopPropagation()}
-            className="border border-gray-200"
+            className="border border-lia-border-subtle"
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold" style={{color: "var(--gray-950)"}}>
@@ -907,7 +907,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                     value={editArchetypeEmoji}
                     onChange={(e) => setEditArchetypeEmoji(e.target.value)}
                     maxLength={4}
-                    className="w-full rounded-md px-2 py-2 text-center text-lg focus:outline-none focus:ring-2 focus:ring-gray-400 border border-gray-200"
+                    className="w-full rounded-md px-2 py-2 text-center text-lg focus:outline-none focus:ring-2 focus:ring-gray-400 border border-lia-border-subtle"
                   />
                 </div>
                 <div className="flex-1">
@@ -917,7 +917,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                     value={editArchetypeName}
                     onChange={(e) => setEditArchetypeName(e.target.value)}
                     placeholder="Nome do arquétipo"
-                    className="w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 border border-gray-200"
+                    className="w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 border border-lia-border-subtle"
                   />
                 </div>
               </div>
@@ -929,7 +929,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                   onChange={(e) => setEditArchetypeQuery(e.target.value)}
                   placeholder="Ex: Desenvolvedor Python Sênior São Paulo"
                   rows={2}
-                  className="w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 resize-none border border-gray-200"
+                  className="w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 resize-none border border-lia-border-subtle"
                 />
               </div>
 
@@ -940,7 +940,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                   onChange={(e) => setEditArchetypeDescription(e.target.value)}
                   placeholder="Breve descrição do perfil ideal..."
                   rows={2}
-                  className="w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 resize-none border border-gray-200"
+                  className="w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 resize-none border border-lia-border-subtle"
                 />
               </div>
 
@@ -955,7 +955,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                       <Badge 
                         key={index} 
                         variant="secondary" 
-                        className="text-xs bg-gray-100 text-gray-800 dark:text-gray-200 pr-1 flex items-center gap-1"
+                        className="text-xs bg-gray-100 text-gray-800 dark:text-lia-text-primary pr-1 flex items-center gap-1"
                       >
                         {tag}
                         <button
@@ -986,9 +986,9 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                       }
                     }}
                     placeholder="Digite e pressione Enter para adicionar..."
-                    className="w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 border border-gray-200"
+                    className="w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 border border-lia-border-subtle"
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-micro text-gray-400">
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-micro lia-text-secondary">
                     Enter ↵
                   </span>
                 </div>
@@ -1035,15 +1035,15 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
           style={{backgroundColor: 'var(--gray-50)'}}
         >
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-base font-semibold text-gray-800 flex items-center gap-2">
+            <AlertDialogTitle className="text-base font-semibold lia-text-strong flex items-center gap-2">
               <Trash2 className="w-4 h-4 text-status-error" />
               Excluir Arquétipo
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-sm text-gray-600">
+            <AlertDialogDescription className="text-sm lia-text-base">
               Tem certeza que deseja excluir o arquétipo{' '}
-              <span className="font-medium text-gray-800">"{archetypeToDelete?.name}"</span>?
+              <span className="font-medium lia-text-strong">"{archetypeToDelete?.name}"</span>?
               <br />
-              <span className="text-xs text-gray-500 mt-1 block">
+              <span className="text-xs lia-text-secondary mt-1 block">
                 Esta ação não pode ser desfeita.
               </span>
             </AlertDialogDescription>
@@ -1054,7 +1054,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                 setShowDeleteArchetypeDialog(false)
                 setArchetypeToDelete(null)
               }}
-              className="flex-1 h-9 text-sm px-3 rounded-md bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
+              className="flex-1 h-9 text-sm px-3 rounded-md bg-lia-bg-primary border border-lia-border-subtle lia-text-base hover:bg-gray-50"
             >
               Cancelar
             </AlertDialogCancel>
@@ -1079,34 +1079,34 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
           <div className="space-y-2 text-[10px] leading-snug" >
             <div className="flex items-center gap-1.5">
               {pendingSourceChange === 'hybrid' ? (
-                <Zap className="w-3 h-3 text-gray-600" />
+                <Zap className="w-3 h-3 lia-text-base" />
               ) : (
                 <Globe className="w-3 h-3 text-status-warning" />
               )}
-              <h3 className="font-semibold text-xs text-gray-800">
+              <h3 className="font-semibold text-xs lia-text-strong">
                 {pendingSourceChange === 'hybrid' ? 'Busca Híbrida' : 'Busca Global'}
               </h3>
             </div>
             
-            <p className="text-micro text-gray-500">
+            <p className="text-micro lia-text-secondary">
               {pendingSourceChange === 'hybrid' 
                 ? 'Combina base local + global (800M+ perfis).'
                 : 'Acessa 800M+ perfis profissionais.'}
             </p>
             
-            <div className="bg-white rounded-md p-2 space-y-1 border border-gray-100">
+            <div className="bg-lia-bg-primary rounded-md p-2 space-y-1 border border-lia-border-subtle">
               {pendingSourceChange === 'hybrid' && (
                 <div className="flex justify-between text-micro">
-                  <span className="text-gray-600">Local:</span>
+                  <span className="lia-text-base">Local:</span>
                   <span className="font-medium text-wedo-green-light">Grátis</span>
                 </div>
               )}
               <div className="flex justify-between text-micro">
-                <span className="text-gray-600">Global:</span>
+                <span className="lia-text-base">Global:</span>
                 <span className="font-medium text-status-warning">1 cr/candidato</span>
               </div>
-              <div className="flex justify-between text-micro pt-1 border-t border-gray-100">
-                <span className="font-medium text-gray-800 dark:text-gray-200">Total estimado:</span>
+              <div className="flex justify-between text-micro pt-1 border-t border-lia-border-subtle">
+                <span className="font-medium text-gray-800 dark:text-lia-text-primary">Total estimado:</span>
                 <span className="font-semibold text-status-warning">1 cr/candidato</span>
               </div>
             </div>
@@ -1117,7 +1117,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                   setShowSourceChangeModal(false)
                   setPendingSourceChange(null)
                 }}
-                className="flex-1 h-6 text-micro px-2 rounded-full bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
+                className="flex-1 h-6 text-micro px-2 rounded-full bg-lia-bg-primary border border-lia-border-subtle lia-text-base hover:bg-gray-50"
               >
                 Cancelar
               </button>

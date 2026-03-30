@@ -274,7 +274,7 @@ export const TECH_STACK_CATEGORIES = [
     key: "backend",
     label: "Backend",
     icon: Server,
-    color: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+    color: "bg-gray-100 lia-text-700 dark:lia-bg-800 dark:lia-text-300",
     suggestions: [
       "Node.js",
       "Python",
@@ -490,17 +490,17 @@ export const getLevelLabel = (level: string): string => {
 
 export const getLevelColor = (level: string): string => {
   const colors: Record<string, string> = {
-    ceo: "bg-gray-900 text-white border-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:border-gray-200",
-    vp: "bg-gray-800 text-white border-gray-700 dark:bg-gray-200 dark:text-gray-900 dark:border-gray-300",
-    diretor: "bg-gray-700 text-white border-gray-600 dark:bg-gray-300 dark:text-gray-900 dark:border-gray-400",
-    gerente_senior: "bg-gray-600 text-white border-gray-500 dark:bg-gray-400 dark:text-gray-900 dark:border-gray-500",
-    gerente: "bg-gray-500 text-white border-gray-400 dark:bg-gray-500 dark:text-white dark:border-gray-600",
-    lider: "bg-gray-400 text-gray-900 border-gray-300 dark:bg-gray-600 dark:text-white dark:border-gray-700",
-    supervisor: "bg-gray-300 text-gray-900 border-gray-200 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-800",
-    especialista: "bg-gray-200 text-gray-800 border-gray-100 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-900",
-    analista: "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700",
-    estagiario: "bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-900 dark:text-gray-400 dark:border-gray-800",
-    outros: "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700",
+    ceo: "bg-gray-900 text-white border-gray-800 dark:lia-bg-100 dark:lia-text-900 dark:border-lia-border-subtle",
+    vp: "bg-gray-800 text-white border-gray-700 dark:lia-bg-200 dark:lia-text-900 dark:border-lia-border-default",
+    diretor: "bg-gray-700 text-white border-gray-600 dark:lia-bg-300 dark:lia-text-900 dark:lia-border-400",
+    gerente_senior: "bg-gray-600 text-white border-gray-500 dark:lia-bg-400 dark:lia-text-900 dark:lia-border-500",
+    gerente: "bg-gray-500 text-white border-gray-400 dark:lia-bg-500 dark:text-white dark:lia-border-600",
+    lider: "bg-gray-400 lia-text-900 border-lia-border-default dark:lia-bg-600 dark:text-white dark:lia-border-700",
+    supervisor: "bg-gray-300 lia-text-900 border-lia-border-subtle dark:lia-bg-700 dark:lia-text-100 dark:lia-border-800",
+    especialista: "bg-gray-200 lia-text-800 border-gray-100 dark:lia-bg-800 dark:lia-text-200 dark:lia-border-900",
+    analista: "bg-gray-100 lia-text-800 border-lia-border-subtle dark:lia-bg-800 dark:lia-text-300 dark:lia-border-700",
+    estagiario: "bg-gray-50 lia-text-700 border-lia-border-subtle dark:lia-bg-900 dark:lia-text-400 dark:lia-border-800",
+    outros: "bg-gray-100 lia-text-800 border-lia-border-subtle dark:lia-bg-800 dark:lia-text-300 dark:lia-border-700",
   };
-  return colors[level] || "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700";
+  return colors[level] || "bg-gray-100 lia-text-800 border-lia-border-subtle dark:lia-bg-800 dark:lia-text-300 dark:lia-border-700";
 };

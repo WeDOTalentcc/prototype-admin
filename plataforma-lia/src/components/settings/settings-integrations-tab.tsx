@@ -106,7 +106,7 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
       type: 'teams',
       status: 'active',
       icon: MessageSquare,
-      color: 'bg-gray-50 dark:bg-gray-900 text-gray-700',
+      color: 'bg-gray-50 dark:bg-lia-bg-primary lia-text-700',
       webhookUrl: 'https://outlook.office.com/webhook/xxxxx/IncomingWebhook/yyyyy',
       channels: ['RH Geral', 'Aprovações'],
       events: ['aprovacao_lote', 'candidato_final', 'relatorio_semanal'],
@@ -240,9 +240,9 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'connected': return <CheckCircle className="w-4 h-4 text-status-success" />
-      case 'connecting': return <RefreshCw className="w-4 h-4 text-gray-600 dark:text-gray-400 animate-spin" />
+      case 'connecting': return <RefreshCw className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary animate-spin" />
       case 'error': return <XCircle className="w-4 h-4 text-status-error" />
-      case 'disabled': return <Minus className="w-4 h-4 text-gray-800" />
+      case 'disabled': return <Minus className="w-4 h-4 lia-text-800" />
       default: return <AlertCircle className="w-4 h-4 text-status-warning" />
     }
   }
@@ -250,9 +250,9 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'connected': return 'bg-status-success/10 text-status-success border-status-success/30'
-      case 'connecting': return 'bg-gray-50 dark:bg-gray-900 text-gray-700 border-gray-900 dark:border-gray-50'
+      case 'connecting': return 'bg-gray-50 dark:bg-lia-bg-primary lia-text-700 border-gray-900 dark:lia-border-50'
       case 'error': return 'bg-status-error/10 text-status-error border-status-error/30'
-      case 'disabled': return 'bg-gray-50 text-gray-800 border-gray-200'
+      case 'disabled': return 'bg-gray-50 lia-text-800 border-lia-border-subtle'
       default: return 'bg-status-warning/10 text-status-warning border-status-warning/30'
     }
   }
@@ -262,7 +262,7 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
       case 'success': return <CheckCircle2 className="w-4 h-4 text-status-success" />
       case 'warning': return <AlertCircle className="w-4 h-4 text-status-warning" />
       case 'error': return <XCircle className="w-4 h-4 text-status-error" />
-      default: return <Info className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+      default: return <Info className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
     }
   }
 
@@ -274,11 +274,11 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-800">Sistemas Conectados</p>
-                <p className="text-2xl font-bold text-gray-950">
+                <p className="text-sm font-medium lia-text-800">Sistemas Conectados</p>
+                <p className="text-2xl font-bold lia-text-950">
                   {atsystems.filter(s => s.status === 'connected').length}
                 </p>
-                <p className="text-xs text-gray-800">de {atsystems.length} configurados</p>
+                <p className="text-xs lia-text-800">de {atsystems.length} configurados</p>
               </div>
               <div className="w-10 h-10 bg-status-success/15 rounded-md flex items-center justify-center">
                 <Link2 className="w-5 h-5 text-status-success" />
@@ -291,14 +291,14 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-800">Registros Sincronizados</p>
+                <p className="text-sm font-medium lia-text-800">Registros Sincronizados</p>
                 <p className="text-2xl font-bold text-wedo-cyan-dark">
                   {atsystems.reduce((acc, sys) => acc + sys.syncedRecords, 0).toLocaleString()}
                 </p>
                 <p className="text-xs text-status-success">+47 hoje</p>
               </div>
               <div className="w-10 h-10 bg-wedo-cyan/15 rounded-md flex items-center justify-center">
-                <Database className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                <Database className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
               </div>
             </div>
           </CardContent>
@@ -308,7 +308,7 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-800">Uptime Médio</p>
+                <p className="text-sm font-medium lia-text-800">Uptime Médio</p>
                 <p className="text-2xl font-bold text-wedo-orange">99.7%</p>
                 <p className="text-xs text-wedo-orange">últimos 30 dias</p>
               </div>
@@ -323,9 +323,9 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-800">Última Sincronização</p>
-                <p className="text-lg font-bold text-gray-950">Há 15min</p>
-                <p className="text-xs text-gray-800">SAP SuccessFactors</p>
+                <p className="text-sm font-medium lia-text-800">Última Sincronização</p>
+                <p className="text-lg font-bold lia-text-950">Há 15min</p>
+                <p className="text-xs lia-text-800">SAP SuccessFactors</p>
               </div>
               <div className="w-10 h-10 bg-wedo-purple/15 rounded-md flex items-center justify-center">
                 <RefreshCw className="w-5 h-5 text-wedo-purple" />
@@ -346,14 +346,14 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
         <CardContent>
           <div className="space-y-4">
             {atsystems.map(system => (
-              <div key={system.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-md">
+              <div key={system.id} className="flex items-center justify-between p-4 border border-lia-border-subtle rounded-md">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-gray-100 rounded-md flex items-center justify-center">
-                    <Server className="w-5 h-5 text-gray-800" />
+                    <Server className="w-5 h-5 lia-text-800" />
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-950">{system.name}</h4>
-                    <p className="text-sm text-gray-800">{system.description}</p>
+                    <h4 className="font-medium lia-text-950">{system.name}</h4>
+                    <p className="text-sm lia-text-800">{system.description}</p>
                     <div className="flex items-center gap-2 mt-1">
                       {getStatusIcon(system.status)}
                       <span className={`text-xs px-2 py-1 rounded-full border ${getStatusColor(system.status)}`}>
@@ -362,7 +362,7 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
                          system.status === 'error' ? 'Erro' : 'Desabilitado'}
                       </span>
                       {system.lastSync && (
-                        <span className="text-xs text-gray-800">
+                        <span className="text-xs lia-text-800">
                           Última sync: {new Date(system.lastSync).toLocaleString('pt-BR')}
                         </span>
                       )}
@@ -374,14 +374,14 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
                   {system.status === 'connected' && (
                     <>
                       <div className="text-center">
-                        <p className="font-medium text-gray-950">{system.syncedRecords}</p>
-                        <p className="text-gray-800">Registros</p>
+                        <p className="font-medium lia-text-950">{system.syncedRecords}</p>
+                        <p className="lia-text-800">Registros</p>
                       </div>
                       <div className="text-center">
                         <p className="font-medium text-status-success">
                           {Math.round((system.syncedRecords / system.totalRecords) * 100)}%
                         </p>
-                        <p className="text-gray-800">Sincronizado</p>
+                        <p className="lia-text-800">Sincronizado</p>
                       </div>
                     </>
                   )}
@@ -416,13 +416,13 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
                 <div className="flex items-center gap-3">
                   {getSyncStatusIcon(log.status)}
                   <div>
-                    <p className="text-sm font-medium text-gray-950">{log.message}</p>
-                    <p className="text-xs text-gray-800">
+                    <p className="text-sm font-medium lia-text-950">{log.message}</p>
+                    <p className="text-xs lia-text-800">
                       {log.system} • {new Date(log.timestamp).toLocaleString('pt-BR')}
                     </p>
                   </div>
                 </div>
-                <div className="text-right text-xs text-gray-800">
+                <div className="text-right text-xs lia-text-800">
                   <p>{log.records} registros</p>
                   <p>{log.duration}ms</p>
                 </div>
@@ -439,11 +439,11 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-gray-950 flex items-center gap-2">
-            <Link2 className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+          <h2 className="text-xl font-semibold lia-text-950 flex items-center gap-2">
+            <Link2 className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
             Integrações
           </h2>
-          <p className="text-sm text-gray-800">
+          <p className="text-sm lia-text-800">
             Conecte sistemas ATS, Slack, Teams e outras plataformas
           </p>
         </div>
@@ -465,8 +465,8 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
           onClick={() => setSelectedIntegrationType('ats')}
           className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
             selectedIntegrationType === 'ats'
-              ? 'bg-white text-gray-600 dark:text-gray-400'
-              : 'text-gray-800 hover:text-gray-950'
+              ? 'bg-lia-bg-primary lia-text-600 dark:text-lia-text-tertiary'
+              : 'lia-text-800 hover:lia-text-950'
           }`}
         >
           <Database className="w-4 h-4" />
@@ -476,8 +476,8 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
           onClick={() => setSelectedIntegrationType('communication')}
           className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
             selectedIntegrationType === 'communication'
-              ? 'bg-white text-gray-600 dark:text-gray-400'
-              : 'text-gray-800 hover:text-gray-950'
+              ? 'bg-lia-bg-primary lia-text-600 dark:text-lia-text-tertiary'
+              : 'lia-text-800 hover:lia-text-950'
           }`}
         >
           <MessageSquare className="w-4 h-4" />
@@ -510,8 +510,8 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
                     onClick={() => setSelectedView(tab.id as any)}
                     className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                       selectedView === tab.id
-                        ? 'bg-white text-gray-600 dark:text-gray-400'
-                        : 'text-gray-800 hover:text-gray-950'
+                        ? 'bg-lia-bg-primary lia-text-600 dark:text-lia-text-tertiary'
+                        : 'lia-text-800 hover:lia-text-950'
                     }`}
                   >
                     <tab.icon className="w-4 h-4" />
@@ -524,23 +524,23 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
               {selectedView === 'overview' && renderOverview()}
               {selectedView === 'systems' && (
                 <div className="text-center py-12">
-                  <Server className="w-12 h-12 text-gray-800 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-950 mb-2">Configuração de Sistemas</h3>
-                  <p className="text-gray-800">Conectar e configurar sistemas ATS externos</p>
+                  <Server className="w-12 h-12 lia-text-800 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium lia-text-950 mb-2">Configuração de Sistemas</h3>
+                  <p className="lia-text-800">Conectar e configurar sistemas ATS externos</p>
                 </div>
               )}
               {selectedView === 'mapping' && (
                 <div className="text-center py-12">
-                  <GitBranch className="w-12 h-12 text-gray-800 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-950 mb-2">Mapeamento de Campos</h3>
-                  <p className="text-gray-800">Interface visual drag-and-drop para mapear campos entre sistemas</p>
+                  <GitBranch className="w-12 h-12 lia-text-800 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium lia-text-950 mb-2">Mapeamento de Campos</h3>
+                  <p className="lia-text-800">Interface visual drag-and-drop para mapear campos entre sistemas</p>
                 </div>
               )}
               {selectedView === 'logs' && (
                 <div className="text-center py-12">
-                  <FileText className="w-12 h-12 text-gray-800 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-950 mb-2">Logs Detalhados</h3>
-                  <p className="text-gray-800">Histórico completo de sincronizações e operações</p>
+                  <FileText className="w-12 h-12 lia-text-800 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium lia-text-950 mb-2">Logs Detalhados</h3>
+                  <p className="lia-text-800">Histórico completo de sincronizações e operações</p>
                 </div>
               )}
             </>
@@ -560,11 +560,11 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
                     <MessageSquare className="w-5 h-5 text-wedo-purple" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-800">Integrações Ativas</p>
-                    <p className="text-2xl font-bold text-gray-950">
+                    <p className="text-sm font-medium lia-text-800">Integrações Ativas</p>
+                    <p className="text-2xl font-bold lia-text-950">
                       {communicationIntegrations.filter(i => i.status === 'active').length}
                     </p>
-                    <p className="text-xs text-gray-800">de {communicationIntegrations.length} total</p>
+                    <p className="text-xs lia-text-800">de {communicationIntegrations.length} total</p>
                   </div>
                 </div>
               </CardContent>
@@ -574,14 +574,14 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
               <CardContent className="p-6">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-wedo-cyan/15 rounded-md flex items-center justify-center">
-                    <Send className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                    <Send className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-800">Mensagens Enviadas</p>
-                    <p className="text-2xl font-bold text-gray-950">
+                    <p className="text-sm font-medium lia-text-800">Mensagens Enviadas</p>
+                    <p className="text-2xl font-bold lia-text-950">
                       {communicationIntegrations.reduce((acc, i) => acc + i.messagesCount, 0)}
                     </p>
-                    <p className="text-xs text-gray-800">últimos 30 dias</p>
+                    <p className="text-xs lia-text-800">últimos 30 dias</p>
                   </div>
                 </div>
               </CardContent>
@@ -594,9 +594,9 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
                     <CheckCircle className="w-5 h-5 text-status-success" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-800">Taxa de Sucesso</p>
-                    <p className="text-2xl font-bold text-gray-950">98.5%</p>
-                    <p className="text-xs text-gray-800">últimos 30 dias</p>
+                    <p className="text-sm font-medium lia-text-800">Taxa de Sucesso</p>
+                    <p className="text-2xl font-bold lia-text-950">98.5%</p>
+                    <p className="text-xs lia-text-800">últimos 30 dias</p>
                   </div>
                 </div>
               </CardContent>
@@ -611,19 +611,19 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
             <CardContent>
               <div className="space-y-4">
                 {communicationIntegrations.map(integration => (
-                  <div key={integration.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-md">
+                  <div key={integration.id} className="flex items-center justify-between p-4 border border-lia-border-subtle rounded-md">
                     <div className="flex items-center gap-4">
                       <div className={`w-10 h-10 rounded-md flex items-center justify-center ${integration.color}`}>
                         <integration.icon className="w-5 h-5" />
                       </div>
                       <div>
-                        <h3 className="font-medium text-gray-950">{integration.name}</h3>
-                        <p className="text-sm text-gray-800">{integration.channels.join(', ')}</p>
+                        <h3 className="font-medium lia-text-950">{integration.name}</h3>
+                        <p className="text-sm lia-text-800">{integration.channels.join(', ')}</p>
                         <div className="flex items-center gap-4 mt-1">
-                          <span className="text-xs text-gray-800">
+                          <span className="text-xs lia-text-800">
                             {integration.messagesCount} mensagens
                           </span>
-                          <span className="text-xs text-gray-800">
+                          <span className="text-xs lia-text-800">
                             Criado por {integration.createdBy}
                           </span>
                         </div>
@@ -633,7 +633,7 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
                       <Badge className={`${
                         integration.status === 'active' ? 'bg-status-success/15 text-status-success' :
                         integration.status === 'error' ? 'bg-status-error/15 text-status-error' :
-                        'bg-gray-100 text-gray-800'
+                        'bg-gray-100 lia-text-800'
                       }`}>
                         {integration.status === 'active' ? 'Ativo' :
                          integration.status === 'error' ? 'Erro' : 'Inativo'}
@@ -656,16 +656,16 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
             <CardContent>
               <div className="space-y-4">
                 {notificationTemplates.map(template => (
-                  <div key={template.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-md">
+                  <div key={template.id} className="flex items-center justify-between p-4 border border-lia-border-subtle rounded-md">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 bg-wedo-cyan/15 rounded-md flex items-center justify-center">
-                        <Bell className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                        <Bell className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                       </div>
                       <div>
-                        <h3 className="font-medium text-gray-950">{template.name}</h3>
-                        <p className="text-sm text-gray-800">{template.title}</p>
+                        <h3 className="font-medium lia-text-950">{template.name}</h3>
+                        <p className="text-sm lia-text-800">{template.title}</p>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs text-gray-800">
+                          <span className="text-xs lia-text-800">
                             {template.integrations.length} integrações
                           </span>
                           {template.mentions.length > 0 && (
@@ -677,7 +677,7 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <Badge className={template.active ? 'bg-status-success/15 text-status-success' : 'bg-gray-100 text-gray-800'}>
+                      <Badge className={template.active ? 'bg-status-success/15 text-status-success' : 'bg-gray-100 lia-text-800'}>
                         {template.active ? 'Ativo' : 'Inativo'}
                       </Badge>
                       <Button variant="outline" size="sm">
@@ -705,8 +705,8 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
             onClick={() => setSelectedView(tab.id as any)}
             className={`flex items-center gap-2 px-3 py-3 rounded-md text-sm font-medium transition-colors font-crimson ${
               selectedView === tab.id
-                ? 'bg-white text-gray-950'
-                : 'text-gray-800 hover:text-gray-950'
+                ? 'bg-lia-bg-primary lia-text-950'
+                : 'lia-text-800 hover:lia-text-950'
             }`}
           >
             <tab.icon className="w-4 h-4" />
@@ -719,23 +719,23 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
       {selectedView === 'overview' && renderOverview()}
       {selectedView === 'systems' && (
         <div className="text-center py-12">
-          <Server className="w-12 h-12 text-gray-800 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-950 mb-2">Gerenciamento de Sistemas</h3>
-          <p className="text-gray-800">Interface de configuração detalhada dos sistemas ATS</p>
+          <Server className="w-12 h-12 lia-text-800 mx-auto mb-4" />
+          <h3 className="text-lg font-medium lia-text-950 mb-2">Gerenciamento de Sistemas</h3>
+          <p className="lia-text-800">Interface de configuração detalhada dos sistemas ATS</p>
         </div>
       )}
       {selectedView === 'mapping' && (
         <div className="text-center py-12">
-          <GitBranch className="w-12 h-12 text-gray-800 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-950 mb-2">Mapeamento de Campos</h3>
-          <p className="text-gray-800">Interface visual drag-and-drop para mapear campos entre sistemas</p>
+          <GitBranch className="w-12 h-12 lia-text-800 mx-auto mb-4" />
+          <h3 className="text-lg font-medium lia-text-950 mb-2">Mapeamento de Campos</h3>
+          <p className="lia-text-800">Interface visual drag-and-drop para mapear campos entre sistemas</p>
         </div>
       )}
       {selectedView === 'logs' && (
         <div className="text-center py-12">
-          <FileText className="w-12 h-12 text-gray-800 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-950 mb-2">Logs Detalhados</h3>
-          <p className="text-gray-800">Histórico completo de sincronizações e operações</p>
+          <FileText className="w-12 h-12 lia-text-800 mx-auto mb-4" />
+          <h3 className="text-lg font-medium lia-text-950 mb-2">Logs Detalhados</h3>
+          <p className="lia-text-800">Histórico completo de sincronizações e operações</p>
         </div>
       )}
     </div>

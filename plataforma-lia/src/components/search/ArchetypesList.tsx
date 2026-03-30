@@ -60,9 +60,9 @@ export function ArchetypesList({
       {/* Criar Arquétipo */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-gray-800 dark:text-gray-200">Criar Novo Arquétipo</span>
+          <span className="text-xs font-medium lia-text-800 dark:text-lia-text-primary">Criar Novo Arquétipo</span>
           {naturalSearchValue && (
-            <Badge variant="outline" className="text-micro bg-wedo-cyan/10 text-gray-600 dark:text-gray-400 border-gray-900 dark:border-gray-50">
+            <Badge variant="outline" className="text-micro bg-wedo-cyan/10 lia-text-600 dark:text-lia-text-tertiary border-gray-900 dark:lia-border-50">
               Busca ativa detectada
             </Badge>
           )}
@@ -73,37 +73,37 @@ export function ArchetypesList({
           <div className="p-3 rounded-md border border-wedo-cyan/30 bg-wedo-cyan/5">
             <div className="flex items-start gap-2 mb-2">
               <Brain className="w-3.5 h-3.5 text-wedo-cyan mt-0.5" />
-              <span className="text-xs text-gray-600">Contexto da busca atual:</span>
+              <span className="text-xs lia-text-600">Contexto da busca atual:</span>
             </div>
-            <p className="text-sm text-gray-800 mb-2">{naturalSearchValue}</p>
+            <p className="text-sm lia-text-800 mb-2">{naturalSearchValue}</p>
 
             {/* Tags de entidades extraídas */}
             {Object.keys(parsedEntities).length > 0 && (
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {parsedEntities.job_title && (
-                  <Badge variant="secondary" className="text-micro bg-wedo-cyan/10 text-wedo-cyan-dark border-gray-300 dark:border-gray-600">
+                  <Badge variant="secondary" className="text-micro bg-wedo-cyan/10 text-wedo-cyan-dark border-lia-border-default dark:border-lia-border-default">
                     {parsedEntities.job_title}
                   </Badge>
                 )}
                 {parsedEntities.location && (
-                  <Badge variant="secondary" className="text-micro bg-gray-50 text-gray-700 border-gray-200">
+                  <Badge variant="secondary" className="text-micro bg-gray-50 lia-text-700 border-lia-border-subtle">
                     <MapPin className="w-2.5 h-2.5 mr-0.5" />
                     {parsedEntities.location}
                   </Badge>
                 )}
                 {parsedEntities.seniority && (
-                  <Badge variant="secondary" className="text-micro bg-gray-50 text-gray-700 border-gray-200">
+                  <Badge variant="secondary" className="text-micro bg-gray-50 lia-text-700 border-lia-border-subtle">
                     {parsedEntities.seniority}
                   </Badge>
                 )}
                 {parsedEntities.industry && (
-                  <Badge variant="secondary" className="text-micro bg-gray-50 text-gray-700 border-gray-200">
+                  <Badge variant="secondary" className="text-micro bg-gray-50 lia-text-700 border-lia-border-subtle">
                     <Building2 className="w-2.5 h-2.5 mr-0.5" />
                     {parsedEntities.industry}
                   </Badge>
                 )}
                 {parsedEntities.skills && parsedEntities.skills.map((skill, idx) => (
-                  <Badge key={idx} variant="secondary" className="text-micro bg-gray-50 text-gray-700 border-gray-200">
+                  <Badge key={idx} variant="secondary" className="text-micro bg-gray-50 lia-text-700 border-lia-border-subtle">
                     {skill}
                   </Badge>
                 ))}
@@ -115,7 +115,7 @@ export function ArchetypesList({
               <button
                 onClick={onCreateFromActiveSearch}
                 disabled={isCreatingFromSearch}
-                className="mt-3 w-full px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 text-xs rounded-md transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="mt-3 w-full px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 text-xs rounded-md transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isCreatingFromSearch ? (
                   <>
@@ -132,7 +132,7 @@ export function ArchetypesList({
             ) : (
               <button
                 onClick={() => onUseAsBase(naturalSearchValue)}
-                className="mt-3 w-full px-3 py-1.5 bg-gray-100 text-gray-800 dark:text-gray-200 text-xs rounded-md hover:bg-gray-200 transition-colors flex items-center justify-center gap-1.5"
+                className="mt-3 w-full px-3 py-1.5 bg-gray-100 lia-text-800 dark:text-lia-text-primary text-xs rounded-md hover:bg-gray-200 transition-colors flex items-center justify-center gap-1.5"
               >
                 <Plus className="w-3 h-3" />
                 Usar como base para novo arquétipo
@@ -145,7 +145,7 @@ export function ArchetypesList({
         {naturalSearchValue && hasParsedEntities() && (
           <div className="flex items-center gap-2">
             <div className="flex-1 h-px bg-gray-200" />
-            <span className="text-micro text-gray-400">ou crie do zero com LIA</span>
+            <span className="text-micro lia-text-400">ou crie do zero com LIA</span>
             <div className="flex-1 h-px bg-gray-200" />
           </div>
         )}
@@ -156,7 +156,7 @@ export function ArchetypesList({
             value={newArchetypeDescription}
             onChange={(e) => onNewArchetypeDescriptionChange(e.target.value)}
             placeholder="Descreva o perfil ideal: cargo, habilidades, experiência..."
-            className="lia-input w-full px-3 py-2.5 text-sm resize-none"
+            className="bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-lg lia-text-900 dark:text-lia-text-primary focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-400/20 w-full px-3 py-2.5 text-sm resize-none"
             rows={2}
           />
         </div>
@@ -183,14 +183,14 @@ export function ArchetypesList({
       {/* Divisor */}
       <div className="flex items-center gap-2">
         <div className="flex-1 h-px bg-gray-200" />
-        <span className="text-xs text-gray-500">ou selecione um existente</span>
+        <span className="text-xs lia-text-500">ou selecione um existente</span>
         <div className="flex-1 h-px bg-gray-200" />
       </div>
 
       {/* Lista de Arquétipos Existentes */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-gray-800 dark:text-gray-200">Meus Arquétipos</span>
+          <span className="text-xs font-medium lia-text-800 dark:text-lia-text-primary">Meus Arquétipos</span>
           <Badge variant="outline" className="text-micro">
             {filteredArchetypes.length} {filteredArchetypes.length === 1 ? 'arquétipo' : 'arquétipos'}
           </Badge>
@@ -199,13 +199,13 @@ export function ArchetypesList({
         {/* Campo de busca */}
         {archetypes.length > 3 && (
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 lia-text-400" />
             <input
               type="text"
               value={archetypeSearchFilter}
               onChange={(e) => onArchetypeSearchFilterChange(e.target.value)}
               placeholder="Buscar arquétipos..."
-              className="w-full pl-8 pr-3 py-1.5 text-xs rounded-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+              className="w-full pl-8 pr-3 py-1.5 text-xs rounded-md border border-lia-border-subtle focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
             />
           </div>
         )}
@@ -213,10 +213,10 @@ export function ArchetypesList({
         {/* Cards */}
         <div className="space-y-2 max-h-[200px] overflow-y-auto">
           {filteredArchetypes.length === 0 ? (
-            <div className="text-center py-6 text-gray-500">
+            <div className="text-center py-6 lia-text-500">
               <Target className="w-8 h-8 mx-auto mb-2 opacity-30" />
               <p className="text-xs">Nenhum arquétipo encontrado</p>
-              <p className="text-micro text-gray-400 mt-1">Crie um novo acima para começar</p>
+              <p className="text-micro lia-text-400 mt-1">Crie um novo acima para começar</p>
             </div>
           ) : (
             filteredArchetypes.map((arch) => {
@@ -225,7 +225,7 @@ export function ArchetypesList({
               return (
                 <div
                   key={arch.id}
-                  className="group relative p-3 rounded-md border border-gray-100 bg-white hover:border-gray-400 hover:transition-all cursor-pointer"
+                  className="group relative p-3 rounded-md border border-lia-border-subtle bg-lia-bg-primary hover:border-gray-400 transition-colors cursor-pointer"
                   onClick={() => onSelectArchetype(arch.id, query)}
                 >
                   {/* Edit/Delete */}
@@ -235,7 +235,7 @@ export function ArchetypesList({
                       className="p-1 rounded-md hover:bg-gray-100 transition-colors"
                       title="Editar arquétipo"
                     >
-                      <Pencil className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600" />
+                      <Pencil className="w-3.5 h-3.5 lia-text-400 hover:lia-text-600" />
                     </button>
                     <button
                       onClick={(e) => onDeleteArchetype(arch, e)}
@@ -244,9 +244,9 @@ export function ArchetypesList({
                       title="Excluir arquétipo"
                     >
                       {isDeletingArchetype === arch.id ? (
-                        <Loader2 className="w-3.5 h-3.5 text-gray-400 animate-spin" />
+                        <Loader2 className="w-3.5 h-3.5 lia-text-400 animate-spin" />
                       ) : (
-                        <Trash2 className="w-3.5 h-3.5 text-gray-400 hover:text-status-error" />
+                        <Trash2 className="w-3.5 h-3.5 lia-text-400 hover:text-status-error" />
                       )}
                     </button>
                   </div>
@@ -254,9 +254,9 @@ export function ArchetypesList({
                   <div className="flex items-start gap-2.5 pr-16">
                     <span className="text-lg flex-shrink-0">{archExtended.emoji || "🎯"}</span>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-gray-800 truncate">{arch.name}</div>
+                      <div className="text-sm font-medium lia-text-800 truncate">{arch.name}</div>
                       {arch.description && (
-                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{arch.description}</p>
+                        <p className="text-xs lia-text-500 mt-0.5 line-clamp-2">{arch.description}</p>
                       )}
                       {arch.department && (
                         <Badge variant="outline" className="mt-1.5 text-micro">{arch.department}</Badge>

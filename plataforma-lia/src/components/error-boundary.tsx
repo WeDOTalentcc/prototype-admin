@@ -57,11 +57,11 @@ interface ErrorFallbackProps {
 
 function ErrorFallbackScreen({ error, onReset }: ErrorFallbackProps) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-md w-full mx-auto p-8 text-center">
-        <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
+        <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center mx-auto mb-4">
           <svg
-            className="w-6 h-6 text-gray-500"
+            className="w-6 h-6 lia-text-secondary"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -76,15 +76,15 @@ function ErrorFallbackScreen({ error, onReset }: ErrorFallbackProps) {
           </svg>
         </div>
 
-        <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+        <h1 className="text-lg font-semibold text-gray-900 dark:text-lia-text-primary mb-2">
           Algo deu errado
         </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+        <p className="text-sm text-gray-500 dark:text-lia-text-tertiary mb-6">
           Ocorreu um erro inesperado. Nossa equipe foi notificada automaticamente.
         </p>
 
         {process.env.NODE_ENV === "development" && error && (
-          <pre className="text-left text-xs bg-gray-100 dark:bg-gray-800 rounded-md p-3 mb-4 overflow-auto max-h-32 text-status-error dark:text-status-error">
+          <pre className="text-left text-xs bg-gray-100 dark:bg-lia-bg-secondary rounded-md p-3 mb-4 overflow-auto max-h-32 text-status-error dark:text-status-error">
             {error.message}
           </pre>
         )}
@@ -100,7 +100,7 @@ function ErrorFallbackScreen({ error, onReset }: ErrorFallbackProps) {
           )}
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            className="px-4 py-2 text-sm font-medium border border-lia-border-default dark:border-lia-border-default text-gray-700 dark:text-lia-text-secondary rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
             Recarregar página
           </button>

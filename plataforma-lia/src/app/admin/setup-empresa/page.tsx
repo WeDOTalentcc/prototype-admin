@@ -53,12 +53,12 @@ import {
 const BENEFIT_CATEGORIES = [
   { id: "health", name: "Saúde & Bem-estar", icon: Stethoscope, color: "text-status-error" },
   { id: "food", name: "Alimentação", icon: Utensils, color: "text-wedo-orange" },
-  { id: "transport", name: "Transporte", icon: Car, color: "text-gray-600 dark:text-gray-400" },
+  { id: "transport", name: "Transporte", icon: Car, color: "lia-text-600 dark:text-lia-text-tertiary" },
   { id: "education", name: "Educação & Desenvolvimento", icon: GraduationCap, color: "text-wedo-purple" },
   { id: "financial", name: "Financeiro", icon: Wallet, color: "text-status-success" },
-  { id: "quality_life", name: "Qualidade de Vida", icon: Home, color: "text-gray-700 dark:text-gray-300" },
+  { id: "quality_life", name: "Qualidade de Vida", icon: Home, color: "lia-text-700 dark:text-lia-text-secondary" },
   { id: "family", name: "Família", icon: Baby, color: "text-wedo-magenta" },
-  { id: "security", name: "Segurança", icon: Shield, color: "text-gray-500" },
+  { id: "security", name: "Segurança", icon: Shield, color: "lia-text-500" },
 ]
 
 const SENIORITY_LEVELS = [
@@ -240,10 +240,10 @@ function BenefitsContent({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100" >
+          <h2 className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary" >
             Benefícios da Empresa
           </h2>
-          <p className="text-sm mt-1 text-gray-500 dark:text-gray-400" >
+          <p className="text-sm mt-1 lia-text-500 dark:text-lia-text-tertiary" >
             Configure os benefícios oferecidos aos colaboradores
           </p>
         </div>
@@ -259,7 +259,7 @@ function BenefitsContent({
           <Button
             variant="outline"
             onClick={() => setShowTemplateModal(true)}
-            className="gap-2 border-gray-300"
+            className="gap-2 border-lia-border-default"
           >
             <Library className="w-4 h-4" />
             Adicionar da Lista
@@ -279,16 +279,16 @@ function BenefitsContent({
 
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+          <Loader2 className="w-8 h-8 animate-spin lia-text-400" />
         </div>
       ) : benefits.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Gift className="w-12 h-12 text-gray-300 mb-4" />
-            <h3 className="text-lg font-medium mb-2 text-gray-800 dark:text-gray-100" >
+            <Gift className="w-12 h-12 lia-text-300 mb-4" />
+            <h3 className="text-lg font-medium mb-2 lia-text-800 dark:text-lia-text-primary" >
               Nenhum benefício cadastrado
             </h3>
-            <p className="text-sm text-center mb-4 text-gray-500 dark:text-gray-400" >
+            <p className="text-sm text-center mb-4 lia-text-500 dark:text-lia-text-tertiary" >
               Comece importando uma planilha ou adicionando benefícios manualmente
             </p>
             <div className="flex gap-2">
@@ -326,7 +326,7 @@ function BenefitsContent({
                 >
                   <div className="flex items-center gap-3">
                     <CategoryIcon className={`w-5 h-5 ${category.color}`} />
-                    <span className="font-medium text-gray-800 dark:text-gray-100" >
+                    <span className="font-medium lia-text-800 dark:text-lia-text-primary" >
                       {category.name}
                     </span>
                     <Badge variant="secondary" className="text-xs">
@@ -334,25 +334,25 @@ function BenefitsContent({
                     </Badge>
                   </div>
                   {isExpanded ? (
-                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                    <ChevronDown className="w-4 h-4 lia-text-400" />
                   ) : (
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                    <ChevronRight className="w-4 h-4 lia-text-400" />
                   )}
                 </div>
                 
                 {isExpanded && (
-                  <div className="border-t border-gray-200 dark:border-gray-700" >
+                  <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle" >
                     {categoryBenefits.map(benefit => (
                       <div 
                         key={benefit.id}
-                        className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 border-b last:border-b-0 border-gray-200 dark:border-gray-700"
+                        className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 border-b last:border-b-0 border-lia-border-subtle dark:border-lia-border-subtle"
                         
                       >
                         <div className="flex items-center gap-3 flex-1">
-                          <GripVertical className="w-4 h-4 text-gray-300 cursor-grab" />
+                          <GripVertical className="w-4 h-4 lia-text-300 cursor-grab" />
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <span className="font-medium text-sm text-gray-800 dark:text-gray-100" >
+                              <span className="font-medium text-sm lia-text-800 dark:text-lia-text-primary" >
                                 {benefit.name}
                               </span>
                               {benefit.is_highlighted && (
@@ -367,16 +367,16 @@ function BenefitsContent({
                               )}
                             </div>
                             <div className="flex items-center gap-4 mt-1">
-                              <span className="text-xs text-gray-400 dark:text-gray-500" >
+                              <span className="text-xs lia-text-400 dark:lia-text-500" >
                                 {formatBenefitValue(benefit)}
                               </span>
-                              <span className="text-xs text-gray-400 dark:text-gray-500" >
+                              <span className="text-xs lia-text-400 dark:lia-text-500" >
                                 {benefit.seniority_levels?.includes("all") 
                                   ? "Todos os níveis" 
                                   : benefit.seniority_levels?.map(l => SENIORITY_LEVELS.find(s => s.id === l)?.name).join(", ") || "Todos os níveis"}
                               </span>
                               {benefit.waiting_period_days > 0 && (
-                                <span className="text-xs text-gray-400 dark:text-gray-500" >
+                                <span className="text-xs lia-text-400 dark:lia-text-500" >
                                   Carência: {WAITING_PERIODS.find(w => w.id === benefit.waiting_period_days)?.name || `${benefit.waiting_period_days} dias`}
                                 </span>
                               )}
@@ -908,7 +908,7 @@ function SetupEmpresaContent() {
 
   const getCategoryColor = (categoryId: string) => {
     const cat = BENEFIT_CATEGORIES.find(c => c.id === categoryId)
-    return cat ? cat.color : "text-gray-500"
+    return cat ? cat.color : "lia-text-500"
   }
 
   const formatBenefitValue = (benefit: Benefit) => {
@@ -930,17 +930,17 @@ function SetupEmpresaContent() {
       <div className="p-8" suppressHydrationWarning>
         <div className="mb-8">
           <h1
-            className="text-3xl font-semibold mb-2 text-gray-800 dark:text-gray-100"
+            className="text-3xl font-semibold mb-2 lia-text-800 dark:text-lia-text-primary"
             
           >
             Setup Empresa
           </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400" >
+          <p className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
             Configure as informações da empresa, departamentos, benefícios e cultura organizacional
           </p>
         </div>
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+          <Loader2 className="w-8 h-8 animate-spin lia-text-400" />
         </div>
       </div>
     )
@@ -950,12 +950,12 @@ function SetupEmpresaContent() {
     <div className="p-8">
       <div className="mb-8">
         <h1
-          className="text-3xl font-semibold mb-2 text-gray-800 dark:text-gray-100"
+          className="text-3xl font-semibold mb-2 lia-text-800 dark:text-lia-text-primary"
           
         >
           Setup Empresa
         </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400" >
+        <p className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
           Configure as informações da empresa, departamentos, benefícios e cultura organizacional
         </p>
       </div>
@@ -1039,7 +1039,7 @@ function SetupEmpresaContent() {
                   </div>
                   <div className="space-y-2">
                     <Label className="flex items-center gap-2">
-                      <Globe className="w-4 h-4 text-gray-500" />
+                      <Globe className="w-4 h-4 lia-text-500" />
                       Website
                     </Label>
                     <Input
@@ -1061,7 +1061,7 @@ function SetupEmpresaContent() {
                   </div>
                   <div className="space-y-2">
                     <Label className="flex items-center gap-2">
-                      <Building className="w-4 h-4 text-gray-500" />
+                      <Building className="w-4 h-4 lia-text-500" />
                       Porte da Empresa
                     </Label>
                     <Select
@@ -1087,7 +1087,7 @@ function SetupEmpresaContent() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-gray-500" />
+                      <MapPin className="w-4 h-4 lia-text-500" />
                       Cidade (Sede)
                     </Label>
                     <Input
@@ -1132,7 +1132,7 @@ function SetupEmpresaContent() {
                 <div className="flex gap-4 items-end">
                   <div className="flex-1 space-y-2">
                     <Label className="flex items-center gap-2">
-                      <Linkedin className="w-4 h-4 text-[#0077B5]" />
+                      <Linkedin className="w-4 h-4 text-brand-linkedin" />
                       URL do LinkedIn da Empresa
                     </Label>
                     <Input
@@ -1166,14 +1166,14 @@ function SetupEmpresaContent() {
                   </div>
                 )}
 
- <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-4">
+ <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-4">
                   <div className="flex items-start gap-3">
                     <Brain className="w-5 h-5 text-wedo-cyan mt-0.5" />
                     <div>
- <p className="text-sm font-medium text-gray-9000">
+ <p className="text-sm font-medium lia-text-9000">
                         A LIA irá buscar e preencher automaticamente:
                       </p>
- <ul className="text-xs text-gray-900 dark:text-gray-300 mt-2 space-y-1">
+ <ul className="text-xs lia-text-900 dark:text-lia-text-secondary mt-2 space-y-1">
                         <li>• Descrição e tagline da empresa</li>
                         <li>• Setor, porte e localização</li>
                         <li>• Missão, visão e valores (via Glassdoor)</li>
@@ -1232,7 +1232,7 @@ function SetupEmpresaContent() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Star className="w-5 h-5 text-gray-700" />
+                  <Star className="w-5 h-5 lia-text-700" />
                   EVP Insights
                 </CardTitle>
                 <CardDescription>
@@ -1248,8 +1248,8 @@ function SetupEmpresaContent() {
 
                 {!evpData ? (
                   <div className="text-center py-8">
-                    <Star className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                    <p className="text-sm mb-4 text-gray-500 dark:text-gray-400" >
+                    <Star className="w-12 h-12 mx-auto mb-4 lia-text-300" />
+                    <p className="text-sm mb-4 lia-text-500 dark:text-lia-text-tertiary" >
                       Nenhuma análise EVP gerada ainda. Enriqueça o perfil com LinkedIn/Glassdoor ou clique para gerar manualmente.
                     </p>
                     <Button
@@ -1272,29 +1272,29 @@ function SetupEmpresaContent() {
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    <div className="bg-gradient-to-r from-gray-100 dark:from-gray-800 to-blue-50 dark:from-gray-900 dark:from-gray-50/20 dark:to-blue-900/20 rounded-md p-4 border border border-gray-300">
-                      <p className="text-lg font-medium text-gray-800 dark:text-gray-100" >
+                    <div className="bg-gradient-to-r from-gray-100 dark:lia-from-800 to-blue-50 dark:lia-from-900 dark:lia-from-50/20 dark:to-blue-900/20 rounded-md p-4 border border border-lia-border-default">
+                      <p className="text-lg font-medium lia-text-800 dark:text-lia-text-primary" >
                         "{evpData.statement}"
                       </p>
                     </div>
 
                     <div>
-                      <h4 className="font-medium mb-3 flex items-center gap-2 text-gray-800 dark:text-gray-100" >
-                        <Building2 className="w-4 h-4 text-gray-700" />
+                      <h4 className="font-medium mb-3 flex items-center gap-2 lia-text-800 dark:text-lia-text-primary" >
+                        <Building2 className="w-4 h-4 lia-text-700" />
                         Pilares do EVP
                       </h4>
                       <div className="grid gap-3">
                         {evpData.pillars.map((pillar, idx) => (
-                          <div key={idx} className="bg-white dark:bg-gray-800 border rounded-md p-4 border-gray-200 dark:border-gray-700" >
+                          <div key={idx} className="bg-white dark:bg-lia-bg-secondary border rounded-md p-4 border-lia-border-subtle dark:border-lia-border-subtle" >
                             <div className="flex items-start gap-3">
-                              <Badge className="shrink-0 bg-gray-900" style={{color: 'white'}}>
+                              <Badge className="shrink-0 bg-gray-900 text-white">
                                 {pillar.name}
                               </Badge>
                               <div className="flex-1">
-                                <p className="text-sm mb-2 text-gray-800 dark:text-gray-100" >
+                                <p className="text-sm mb-2 lia-text-800 dark:text-lia-text-primary" >
                                   {pillar.description}
                                 </p>
-                                <p className="text-xs italic text-gray-400 dark:text-gray-500" >
+                                <p className="text-xs italic lia-text-400 dark:lia-text-500" >
                                   Evidência: {pillar.evidence}
                                 </p>
                               </div>
@@ -1305,31 +1305,31 @@ function SetupEmpresaContent() {
                     </div>
 
                     <div>
-                      <h4 className="font-medium mb-3 flex items-center gap-2 text-gray-800 dark:text-gray-100" >
-                        <Heart className="w-4 h-4 text-gray-700" />
+                      <h4 className="font-medium mb-3 flex items-center gap-2 lia-text-800 dark:text-lia-text-primary" >
+                        <Heart className="w-4 h-4 lia-text-700" />
                         Tom de Comunicação
                       </h4>
                       <div className="flex flex-wrap gap-2">
                         {evpData.tone_guidance.map((tone, idx) => (
-                          <Badge key={idx} variant="outline" className="border-gray-300">
+                          <Badge key={idx} variant="outline" className="border-lia-border-default">
                             {tone}
                           </Badge>
                         ))}
                       </div>
                     </div>
 
-                    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-md p-4">
-                      <h4 className="font-medium mb-2 flex items-center gap-2 text-gray-800 dark:text-gray-100" >
-                        <Users className="w-4 h-4 text-gray-700" />
+                    <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4">
+                      <h4 className="font-medium mb-2 flex items-center gap-2 lia-text-800 dark:text-lia-text-primary" >
+                        <Users className="w-4 h-4 lia-text-700" />
                         Promessa ao Candidato
                       </h4>
-                      <p className="text-sm text-gray-500 dark:text-gray-400" >
+                      <p className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
                         {evpData.candidate_promise}
                       </p>
                     </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700" >
-                      <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500" >
+                    <div className="flex items-center justify-between pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle" >
+                      <div className="flex items-center gap-2 text-xs lia-text-400 dark:lia-text-500" >
                         <span>Fontes: {evpData.sources.join(', ')}</span>
                         <span>•</span>
                         <span>Gerado em: {new Date(evpData.generated_at).toLocaleDateString('pt-BR')}</span>
@@ -1339,7 +1339,7 @@ function SetupEmpresaContent() {
                         size="sm"
                         onClick={() => handleGenerateEvp()}
                         disabled={isGeneratingEvp}
-                        className="gap-2 border-gray-300"
+                        className="gap-2 border-lia-border-default"
                       >
                         {isGeneratingEvp ? (
                           <Loader2 className="w-3 h-3 animate-spin" />
@@ -1363,7 +1363,7 @@ function SetupEmpresaContent() {
               <CardDescription>Estrutura organizacional</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-gray-500">Em construção...</p>
+              <p className="text-sm lia-text-500">Em construção...</p>
             </CardContent>
           </Card>
         )}
@@ -1393,7 +1393,7 @@ function SetupEmpresaContent() {
               <CardDescription>Valores e cultura da empresa</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-gray-500">Em construção...</p>
+              <p className="text-sm lia-text-500">Em construção...</p>
             </CardContent>
           </Card>
         )}
@@ -1460,18 +1460,18 @@ function SetupEmpresaContent() {
                   {VALUE_TYPES.map(type => (
                     <div
                       key={type.id}
-                      className={`p-3 rounded-md border cursor-pointer transition-all ${
+                      className={`p-3 rounded-md border cursor-pointer transition-colors ${
                         editingBenefit.value_type === type.id
-                          ? 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                          ? 'border-lia-border-default dark:border-lia-border-default bg-gray-50 dark:bg-lia-bg-primary'
+                          : 'border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default'
                       }`}
                       onClick={() => setEditingBenefit({ ...editingBenefit, value_type: type.id })}
                     >
                       <div className="flex items-center gap-2 mb-1">
-                        <type.icon className={`w-4 h-4 ${editingBenefit.value_type === type.id ? 'text-gray-700 dark:text-gray-300' : 'text-gray-500'}`} />
+                        <type.icon className={`w-4 h-4 ${editingBenefit.value_type === type.id ? 'lia-text-700 dark:text-lia-text-secondary' : 'lia-text-500'}`} />
                         <span className="font-medium text-sm">{type.name}</span>
                       </div>
-                      <p className="text-xs text-gray-500">{type.description}</p>
+                      <p className="text-xs lia-text-500">{type.description}</p>
                     </div>
                   ))}
                 </div>
@@ -1495,7 +1495,7 @@ function SetupEmpresaContent() {
                         checked={editingBenefit.is_discount}
                         onCheckedChange={(checked: boolean) => setEditingBenefit({ ...editingBenefit, is_discount: checked })}
                       />
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm lia-text-600">
                         {editingBenefit.is_discount ? "Sim, desconto" : "Não, empresa custeia"}
                       </span>
                     </div>
@@ -1670,26 +1670,26 @@ function SetupEmpresaContent() {
                   <FileSpreadsheet className="w-8 h-8 text-status-success" />
                   <div className="text-left">
                     <p className="font-medium">{importFile.name}</p>
-                    <p className="text-xs text-gray-500">{(importFile.size / 1024).toFixed(1)} KB</p>
+                    <p className="text-xs lia-text-500">{(importFile.size / 1024).toFixed(1)} KB</p>
                   </div>
                 </div>
               ) : (
                 <>
-                  <Upload className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                  <Upload className="w-10 h-10 lia-text-300 mx-auto mb-3" />
                   <p className="font-medium mb-1">Arraste um arquivo ou clique para selecionar</p>
-                  <p className="text-xs text-gray-500">Suportado: Excel, CSV, PDF, Word</p>
+                  <p className="text-xs lia-text-500">Suportado: Excel, CSV, PDF, Word</p>
                 </>
               )}
             </div>
 
- <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-4">
+ <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-4">
               <div className="flex items-start gap-3">
                 <Brain className="w-5 h-5 text-wedo-cyan mt-0.5" />
                 <div>
- <p className="text-sm font-medium text-gray-9000">
+ <p className="text-sm font-medium lia-text-9000">
                     A LIA irá analisar o arquivo e:
                   </p>
- <ul className="text-xs text-gray-900 dark:text-gray-300 mt-2 space-y-1">
+ <ul className="text-xs lia-text-900 dark:text-lia-text-secondary mt-2 space-y-1">
                     <li>• Identificar todos os benefícios listados</li>
                     <li>• Categorizar automaticamente (saúde, alimentação, etc)</li>
                     <li>• Extrair valores, elegibilidade e carência</li>

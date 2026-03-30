@@ -178,13 +178,13 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
         onClick={() => setIsOpen(!isOpen)}
         className="gap-2 text-xs font-['Open_Sans'] min-w-sidebar-content justify-start"
       >
-        <Calendar className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-        <span className={value?.start_date ? 'text-gray-950' : 'text-gray-500'}>
+        <Calendar className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+        <span className={value?.start_date ? 'text-gray-950' : 'lia-text-secondary'}>
           {displayValue}
         </span>
         {value?.start_date && (
           <X 
-            className="w-4 h-4 ml-auto text-gray-400 hover:text-gray-600" 
+            className="w-4 h-4 ml-auto lia-text-secondary hover:lia-text-base" 
             onClick={(e) => {
               e.stopPropagation()
               handleClear()
@@ -194,7 +194,7 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
       </Button>
 
       {isOpen && (
-        <Card className="absolute z-50 mt-2 p-4 bg-white min-w-[360px]">
+        <Card className="absolute z-50 mt-2 p-4 bg-lia-bg-primary min-w-[360px]">
           <div className="flex gap-4">
             <div className="flex-1">
               <div className="flex items-center justify-between mb-4">
@@ -217,7 +217,7 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
 
               <div className="grid grid-cols-7 gap-1 mb-2">
                 {DAYS_PT.map(day => (
-                  <div key={day} className="text-center text-xs text-gray-500 font-['Open_Sans'] py-1">
+                  <div key={day} className="text-center text-xs lia-text-secondary font-['Open_Sans'] py-1">
                     {day}
                   </div>
                 ))}
@@ -238,12 +238,12 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
                       key={formatDateISO(date)}
                       onClick={() => handleDateClick(date)}
                       className={`
-                        h-8 text-xs font-['Open_Sans'] rounded-md transition-colors
+ h-8 text-xs font-['Open_Sans'] rounded-md transition-colors
                         ${isSelected 
-                          ? 'bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900 font-medium' 
+                          ? 'bg-gray-900 text-white font-medium' 
                           : isInRange 
-                            ? 'bg-gray-200 dark:bg-gray-700 text-gray-950 dark:text-gray-50' 
-                            : 'hover:bg-gray-100 text-gray-800 dark:text-gray-200'
+                            ? 'bg-gray-200 dark:bg-lia-bg-elevated text-gray-950' 
+                            : 'hover:bg-gray-100 text-gray-800 dark:text-lia-text-primary'
                         }
                         ${isToday && !isSelected ? 'ring-1 ring-gray-400' : ''}
                       `}
@@ -267,7 +267,7 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
                   size="sm" 
                   onClick={handleApply}
                   disabled={!tempStart || !tempEnd}
-                  className="flex-1 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                  className="flex-1 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
                 >
                   Aplicar
                 </Button>
@@ -275,13 +275,13 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
             </div>
 
             <div className="border-l pl-4 w-40">
-              <p className="text-xs font-medium text-gray-500 mb-2 font-['Open_Sans']">Atalhos</p>
+              <p className="text-xs font-medium lia-text-secondary mb-2 font-['Open_Sans']">Atalhos</p>
               <div className="space-y-1">
                 {PRESET_RANGES.map((preset) => (
                   <button
                     key={preset.label}
                     onClick={() => handlePreset(preset)}
-                    className="w-full text-left text-xs py-1.5 px-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200 font-['Open_Sans'] transition-colors"
+                    className="w-full text-left text-xs py-1.5 px-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-800 dark:text-lia-text-primary font-['Open_Sans'] transition-colors"
                   >
                     {preset.label}
                   </button>

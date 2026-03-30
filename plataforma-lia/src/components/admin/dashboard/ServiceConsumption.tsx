@@ -32,7 +32,7 @@ export function ServiceConsumption({
       case "down":
         return "text-status-success"
       default:
-        return "text-gray-500"
+        return "lia-text-secondary"
     }
   }
 
@@ -51,17 +51,17 @@ export function ServiceConsumption({
               <div className="flex items-center gap-3">
                 <Icon className="w-5 h-5" style={{color: item.iconColor}} />
                 <div>
-                  <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
+                  <p className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
                     {item.title}
                   </p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500">
+                  <p className="text-xs text-gray-400">
                     {item.subtitle}
                   </p>
                 </div>
               </div>
               <div className="text-right">
                 {item.value && (
-                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+                  <p className="text-sm font-semibold text-gray-800 dark:text-lia-text-primary">
                     {item.value}
                   </p>
                 )}

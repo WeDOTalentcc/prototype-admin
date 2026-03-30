@@ -35,7 +35,7 @@ export function SettingsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-sm font-semibold text-gray-950 dark:text-gray-50 font-inter">Configurações</h1>
-          <p className="text-xs text-gray-800 dark:text-gray-400">
+          <p className="text-xs text-gray-800 dark:text-lia-text-tertiary">
             Configure sua plataforma, empresa e processos de recrutamento
           </p>
         </div>
@@ -56,13 +56,13 @@ export function SettingsPage() {
 
       <div className="flex gap-4">
         <div
-          className="relative flex-shrink-0 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700"
+          className="relative flex-shrink-0 bg-white dark:bg-lia-bg-primary border-r border-lia-border-subtle dark:border-lia-border-subtle"
           style={{width: `${sidebarWidth}px`, minWidth: '200px', maxWidth: '400px'}}
         >
           <nav className="space-y-4 p-4 h-full overflow-y-auto">
             {categories.map((category) => (
               <div key={category.id}>
-                <h3 className="text-xs font-semibold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-4 font-inter 2xl:text-xs">
+                <h3 className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary uppercase tracking-wider mb-4 font-inter 2xl:text-xs">
                   {category.name}
                 </h3>
                 <div className="space-y-1">
@@ -72,15 +72,15 @@ export function SettingsPage() {
                       onClick={() => setActiveTab(tab.id)}
                       className={`w-full flex items-center gap-3 px-3 py-3 rounded-md text-left transition-colors font-open-sans settings-menu-item ${
                         activeTab === tab.id
- ? 'bg-gray-50 dark:bg-gray-800 border border-gray-900 dark:border-gray-200 text-gray-900 dark:text-gray-300'
-                          : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200'
+ ? 'bg-gray-50 dark:bg-lia-bg-secondary border border-gray-900 dark:border-lia-border-subtle text-gray-900 dark:text-lia-text-secondary'
+                          : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-lia-text-primary'
                       }`}
                       style={{fontSize: '0.6875rem', lineHeight: '1.125rem', fontWeight: '500'}}
                     >
                       <tab.icon className="w-4 h-4" />
                       <div>
                         <div className="text-sm font-medium 2xl:text-xs">{tab.name}</div>
-                        <div className="text-xs text-gray-800 dark:text-gray-400 2xl:text-xs">{tab.description}</div>
+                        <div className="text-xs text-gray-800 dark:text-lia-text-tertiary 2xl:text-xs">{tab.description}</div>
                       </div>
                     </button>
                   ))}
@@ -92,13 +92,13 @@ export function SettingsPage() {
           <div
             className={cn(
               "absolute top-0 right-0 w-1 h-full cursor-col-resize group z-10",
-              "hover:w-1.5 transition-all duration-200",
+              "hover:w-1.5 transition-colors duration-200",
               isResizing ? "bg-gray-400 w-1.5" : "bg-transparent hover:bg-gray-500"
             )}
             onMouseDown={startResize}
             title="Arrastar para redimensionar menu de configurações"
           >
-            <div className="absolute inset-y-0 right-0 w-px bg-gray-200 dark:bg-gray-700 group-hover:bg-wedo-cyan/10 transition-colors duration-200" />
+            <div className="absolute inset-y-0 right-0 w-px bg-gray-200 dark:bg-lia-bg-elevated group-hover:bg-wedo-cyan/10 transition-colors duration-200" />
             <div className="absolute top-0 -right-2 w-4 h-full" />
           </div>
         </div>

@@ -252,13 +252,13 @@ export const textStyles = {
  * Border-radius padrão: 8px (rounded-md) conforme DS v4.1
  */
 export const cardStyles = {
-  default: 'bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:border-gray-700',
-  elevated: 'bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:border-gray-700',
-  interactive: 'bg-white border border-gray-200 rounded-md hover:border-gray-300 transition-all duration-200 cursor-pointer dark:bg-gray-800 dark:border-gray-700 dark:hover:border-gray-600',
+  default: 'bg-white border border-lia-border-subtle rounded-md dark:bg-gray-800 dark:border-gray-700',
+  elevated: 'bg-white border border-lia-border-subtle rounded-md dark:bg-gray-800 dark:border-gray-700',
+  interactive: 'bg-white border border-lia-border-subtle rounded-md hover:border-lia-border-default transition-colors duration-200 cursor-pointer dark:bg-gray-800 dark:border-gray-700 dark:hover:border-gray-600',
   selected: 'bg-white border-2 border-gray-900 rounded-md dark:bg-gray-800 dark:border-gray-50',
-  flat: 'bg-gray-50 border border-gray-200 rounded-md dark:bg-gray-900 dark:border-gray-700',
-  compact: 'bg-white border border-gray-200 rounded-md p-3 dark:bg-gray-800 dark:border-gray-700',
-  expanded: 'bg-white border border-gray-200 rounded-md p-4 dark:bg-gray-800 dark:border-gray-700',
+  flat: 'bg-gray-50 border border-lia-border-subtle rounded-md dark:bg-gray-900 dark:border-gray-700',
+  compact: 'bg-white border border-lia-border-subtle rounded-md p-3 dark:bg-gray-800 dark:border-gray-700',
+  expanded: 'bg-white border border-lia-border-subtle rounded-md p-4 dark:bg-gray-800 dark:border-gray-700',
 } as const
 
 /**
@@ -274,7 +274,7 @@ export const buttonStyles = {
   secondary: 'bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-700 font-semibold rounded-md px-4 py-2 transition-colors focus:ring-2 focus:ring-gray-500/20 focus:outline-none dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600',
   
   // v4.1: Outline
-  outline: 'bg-transparent border border-gray-300 hover:bg-gray-50 hover:border-gray-400 text-gray-700 font-semibold rounded-md px-4 py-2 transition-colors focus:ring-2 focus:ring-gray-500/20 focus:outline-none dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:border-gray-500',
+  outline: 'bg-transparent border border-lia-border-default hover:bg-gray-50 hover:border-gray-400 text-gray-700 font-semibold rounded-md px-4 py-2 transition-colors focus:ring-2 focus:ring-gray-500/20 focus:outline-none dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:border-gray-500',
   
   // v4.1: Ghost
   ghost: 'bg-transparent hover:bg-gray-100 text-gray-600 font-medium rounded-md px-4 py-2 transition-colors focus:ring-2 focus:ring-gray-500/20 focus:outline-none dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200',
@@ -295,10 +295,10 @@ export const buttonStyles = {
  * Focus ring usa gray-900 (preto)
  */
 export const inputStyles = {
-  default: 'border border-gray-300 hover:border-gray-400 rounded-md px-3 py-2 text-base-ui font-normal text-gray-800 placeholder:text-gray-400 focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 outline-none transition-all',
+  default: 'border border-lia-border-default hover:border-gray-400 rounded-md px-3 py-2 text-base-ui font-normal text-gray-800 placeholder:text-gray-400 focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 outline-none transition-colors',
   error: 'border border-status-error/30 rounded-md px-3 py-2 text-base-ui font-normal text-gray-800 focus:ring-2 focus:ring-red-500/10 focus:border-status-error/30 outline-none',
   success: 'border border-status-success/30 rounded-md px-3 py-2 text-base-ui font-normal text-gray-800 focus:ring-2 focus:ring-green-500/10 focus:border-status-success/30 outline-none',
-  disabled: 'border border-gray-200 bg-gray-100 rounded-md px-3 py-2 text-base-ui font-normal text-gray-400 cursor-not-allowed',
+  disabled: 'border border-lia-border-subtle bg-gray-100 rounded-md px-3 py-2 text-base-ui font-normal text-gray-400 cursor-not-allowed',
 } as const
 
 /**
@@ -325,7 +325,7 @@ export const badgeStyles = {
   primary: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-cyan/10 text-wedo-cyan-dark dark:bg-wedo-cyan/20 dark:text-wedo-cyan',
   
   // v4.1: Outline variants com dark mode
-  outlineDefault: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-transparent border border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-300',
+  outlineDefault: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-transparent border border-lia-border-default text-gray-700 dark:border-gray-600 dark:text-gray-300',
   outlineSuccess: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-transparent border border-status-success/30 text-status-success dark:border-status-success/30 dark:text-status-success',
   outlineWarning: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-transparent border border-status-warning/30 text-status-warning dark:border-status-warning/30 dark:text-status-warning',
   outlineError: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-transparent border border-status-error/30 text-status-error dark:border-status-error/30 dark:text-status-error',
@@ -337,8 +337,8 @@ export const badgeStyles = {
  */
 export const tabStyles = {
   // Estilo underline (tradicional)
-  container: 'flex border-b border-gray-200 dark:border-gray-700',
-  tab: 'px-4 py-2 text-xs font-medium text-gray-600 hover:text-gray-900 border-b-2 border-transparent hover:border-gray-300 transition-colors cursor-pointer dark:text-gray-400 dark:hover:text-gray-200',
+  container: 'flex border-b border-lia-border-subtle dark:border-gray-700',
+  tab: 'px-4 py-2 text-xs font-medium text-gray-600 hover:text-gray-900 border-b-2 border-transparent hover:border-lia-border-default transition-colors cursor-pointer dark:text-gray-400 dark:hover:text-gray-200',
   tabActive: 'px-4 py-2 text-xs font-semibold text-gray-900 border-b-2 border-gray-900 dark:text-gray-50 dark:border-gray-50',
   tabDisabled: 'px-4 py-2 text-xs font-medium text-gray-400 cursor-not-allowed',
   
@@ -357,8 +357,8 @@ export const actionButtonStyles = {
   // Botões pequenos para ações inline
   sm: "inline-flex items-center gap-1.5 py-1.5 px-2.5 text-xs font-medium rounded-md transition-colors",
   smPrimary: "inline-flex items-center gap-1.5 py-1.5 px-2.5 text-xs font-medium rounded-md transition-colors bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 disabled:opacity-50",
-  smSecondary: "inline-flex items-center gap-1.5 py-1.5 px-2.5 text-xs font-medium rounded-md transition-colors border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 disabled:opacity-50",
-  smOutline: "inline-flex items-center gap-1.5 py-1.5 px-2.5 text-xs font-medium rounded-md transition-colors border border-gray-300 bg-transparent text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800",
+  smSecondary: "inline-flex items-center gap-1.5 py-1.5 px-2.5 text-xs font-medium rounded-md transition-colors border border-lia-border-default bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 disabled:opacity-50",
+  smOutline: "inline-flex items-center gap-1.5 py-1.5 px-2.5 text-xs font-medium rounded-md transition-colors border border-lia-border-default bg-transparent text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800",
   // Ícones padrão para botões de ação
   icon: 'w-3.5 h-3.5',
 } as const
@@ -368,11 +368,11 @@ export const actionButtonStyles = {
  */
 export const modalStyles = {
   overlay: 'fixed inset-0 bg-black/50 backdrop-blur-[1px] z-50',
-  container: 'bg-white border border-gray-200 rounded-md',
-  header: 'px-6 py-4 border-b border-gray-200',
+  container: 'bg-white border border-lia-border-subtle rounded-md',
+  header: 'px-6 py-4 border-b border-lia-border-subtle',
   headerTitle: "font-['Open_Sans',sans-serif] text-base font-semibold text-gray-900",
   body: 'px-6 py-4',
-  footer: 'px-6 py-4 border-t border-gray-200 flex justify-end gap-3',
+  footer: 'px-6 py-4 border-t border-lia-border-subtle flex justify-end gap-3',
 } as const
 
 /**
@@ -394,8 +394,8 @@ export const tailwindToVuetify = {
     'bg-gray-900': 'color="grey-darken-4"',
     'bg-gray-100': 'class="bg-grey-lighten-4"',
     'bg-gray-50': 'class="bg-grey-lighten-5"',
-    'border-gray-200': 'class="border-grey-lighten-3"',
-    'border-gray-300': 'class="border-grey-lighten-2"',
+    'border-lia-border-subtle': 'class="border-grey-lighten-3"',
+    'border-lia-border-default': 'class="border-grey-lighten-2"',
     'text-gray-900': 'class="text-grey-darken-4"',
     'text-gray-800': 'class="text-grey-darken-3"',
     'text-gray-600': 'class="text-grey-darken-1"',
@@ -467,7 +467,7 @@ export const tailwindToVuetify = {
     primaryColor: 'Em Vuetify, configure grey-darken-4 (#111827) como cor primária para botões',
     typography: 'Configure Open Sans como fonte padrão no theme do Vuetify',
     borderRadius: 'Use rounded-md="md" (8px) para botões/inputs/cards/modais, rounded-md="pill" para badges/tabs conforme DS v4.1',
-    elevation: 'Sem sombras — usar bordas (border border-gray-200) para separação visual',
+    elevation: 'Sem sombras — usar bordas (border border-lia-border-subtle) para separação visual',
   },
 } as const
 

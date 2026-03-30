@@ -189,35 +189,35 @@ export function AddColumnPopover({
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-gray-900 rounded-md w-full max-w-[420px] max-h-[600px] overflow-y-auto p-6"
+        className="bg-white dark:bg-lia-bg-primary rounded-md w-full max-w-[420px] max-h-[600px] overflow-y-auto p-6"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Adicionar Coluna ao Pipeline</h3>
+          <h3 className="text-sm font-semibold text-gray-800 dark:text-lia-text-primary">Adicionar Coluna ao Pipeline</h3>
           <button onClick={onClose} className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
             <X className="w-4 h-4 text-gray-400 dark:text-gray-500" />
           </button>
         </div>
 
         <div className="space-y-3 mb-4">
-          <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Nome da Etapa</label>
+          <label className="text-xs font-medium text-gray-600 dark:text-lia-text-tertiary">Nome da Etapa</label>
           <input
             type="text"
             value={columnName}
             onChange={(e) => { setColumnName(e.target.value); setInferredBehavior(null) }}
             placeholder="Ex: Teste de Lógica, Entrevista Cultural..."
-            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-all"
+            className="w-full px-3 py-2 text-sm border border-lia-border-subtle dark:border-lia-border-subtle dark:bg-lia-bg-secondary dark:text-lia-text-primary rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors"
           />
           {columnName.length >= 3 && !inferredBehavior && (
             <button
               onClick={handleInferBehavior}
-              className="text-xs px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 transition-all"
+              className="text-xs px-3 py-2 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-lia-text-tertiary transition-colors"
             >
               Sugerir tipo de ação
             </button>
           )}
           {inferredBehavior && (
-            <div className="flex items-center gap-2 p-2 rounded-md bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-2 p-2 rounded-md bg-gray-50 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
               <span className="text-micro px-2 py-0.5 rounded-full font-medium bg-wedo-cyan/15 text-wedo-cyan">
                 {inferredBehavior.suggested_behavior}
               </span>
@@ -231,25 +231,25 @@ export function AddColumnPopover({
         <button
           disabled={columnName.length < 2 || isAddingColumn}
           onClick={handleAddCustom}
-          className="w-full py-2.5 rounded-md text-sm font-medium text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          className="w-full py-2.5 rounded-md text-sm font-medium text-white transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
           style={{backgroundColor: columnName.length >= 2 && !isAddingColumn ? 'var(--gray-950)' : 'var(--gray-400)'}}
         >
           {isAddingColumn ? 'Adicionando...' : 'Adicionar Coluna'}
         </button>
 
         {availableCatalog.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-            <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 block">Ou escolha do catálogo:</label>
+          <div className="mt-4 pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
+            <label className="text-xs font-medium text-gray-500 dark:text-lia-text-tertiary mb-2 block">Ou escolha do catálogo:</label>
             <div className="grid grid-cols-2 gap-2">
               {availableCatalog.map(cat => (
                 <button
                   key={cat.name}
                   disabled={isAddingColumn}
                   onClick={() => handleAddCatalog(cat)}
-                  className="flex items-center gap-2 p-2 rounded-md border border-gray-200 dark:border-gray-700 hover:border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 p-2 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <div className="w-3 h-3 rounded-full flex-shrink-0" style={{backgroundColor: cat.color}} />
-                  <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">{cat.name}</span>
+                  <span className="text-xs text-gray-700 dark:text-lia-text-secondary font-medium">{cat.name}</span>
                 </button>
               ))}
             </div>

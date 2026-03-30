@@ -131,18 +131,18 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
     children: React.ReactNode
     count?: number
   }) => (
-    <div className="rounded-md border border-gray-200 overflow-hidden">
+    <div className="rounded-md border border-lia-border-subtle overflow-hidden">
       <button
         onClick={() => setActiveSection(activeSection === id ? null : id)}
         className="w-full px-3 py-2 bg-gray-50 flex items-center justify-between hover:bg-gray-100 transition-colors"
       >
         <div className="flex items-center gap-2">
-          <Icon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-          <span className="text-xs font-semibold text-gray-800">
+          <Icon className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+          <span className="text-xs font-semibold lia-text-strong">
             {title}
           </span>
           {count !== undefined && (
-            <span className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-micro font-medium rounded-full">
+            <span className="px-1.5 py-0.5 bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary text-micro font-medium rounded-full">
               {count}
             </span>
           )}
@@ -150,7 +150,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
         <CheckCircle2 className="w-4 h-4 text-status-success" />
       </button>
       {activeSection === id && (
-        <div className="p-3 bg-white border-t border-gray-200">
+        <div className="p-3 bg-lia-bg-primary border-t border-lia-border-subtle">
           {children}
         </div>
       )}
@@ -160,18 +160,18 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
   return (
     <div className="space-y-3">
       {/* Job Description Section */}
-      <div className="rounded-md border border-gray-200 overflow-hidden">
+      <div className="rounded-md border border-lia-border-subtle overflow-hidden">
         <div className="px-3 py-2 bg-gray-50 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-            <span className="text-xs font-semibold text-gray-800">
+            <FileText className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+            <span className="text-xs font-semibold lia-text-strong">
               Descrição da Vaga
             </span>
           </div>
           <button
             onClick={generateDescription}
             disabled={isGeneratingDescription}
-            className="flex items-center gap-1 px-2 py-1 text-micro text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:bg-gray-800 rounded-full transition-colors"
+            className="flex items-center gap-1 px-2 py-1 text-micro text-gray-600 dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-full transition-colors"
           >
             {isGeneratingDescription ? (
               <Loader2 className="w-3 h-3 animate-spin" />
@@ -181,22 +181,22 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
             {jobDescription ? 'Regenerar' : 'Gerar'}
           </button>
         </div>
-        <div className="p-3 bg-white border-t border-gray-200">
+        <div className="p-3 bg-lia-bg-primary border-t border-lia-border-subtle">
           {isGeneratingDescription ? (
             <div className="flex items-center justify-center py-8 gap-2">
-              <Loader2 className="w-5 h-5 text-gray-600 dark:text-gray-400 animate-spin" />
-              <span className="text-sm text-gray-500">Gerando descrição...</span>
+              <Loader2 className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary animate-spin" />
+              <span className="text-sm lia-text-secondary">Gerando descrição...</span>
             </div>
           ) : jobDescription ? (
             <div className="prose prose-sm max-w-none">
-              <pre className="whitespace-pre-wrap text-xs text-gray-800 font-sans leading-relaxed">
+              <pre className="whitespace-pre-wrap text-xs lia-text-strong font-sans leading-relaxed">
                 {jobDescription}
               </pre>
             </div>
           ) : (
             <button
               onClick={generateDescription}
-              className="w-full py-6 border-2 border-dashed border-gray-200 rounded-md text-gray-600 dark:text-gray-400 hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-gray-800/50 transition-all flex flex-col items-center gap-2"
+              className="w-full py-6 border-2 border-dashed border-lia-border-subtle rounded-md text-gray-600 dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors flex flex-col items-center gap-2"
             >
               <FileText className="w-6 h-6" />
               <span className="text-xs font-medium">Clique para gerar a descrição da vaga</span>
@@ -209,34 +209,34 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
       <SectionCard id="basic" title="Informações Básicas" icon={Briefcase}>
         <div className="grid grid-cols-2 gap-2 text-xs">
           <div className="flex items-center gap-1.5">
-            <Briefcase className="w-3 h-3 text-gray-400" />
-            <span className="text-gray-500">Cargo:</span>
-            <span className="font-medium text-gray-800">{basicInfoFields.cargo || '-'}</span>
+            <Briefcase className="w-3 h-3 lia-text-secondary" />
+            <span className="lia-text-secondary">Cargo:</span>
+            <span className="font-medium lia-text-strong">{basicInfoFields.cargo || '-'}</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Building className="w-3 h-3 text-gray-400" />
-            <span className="text-gray-500">Área:</span>
-            <span className="font-medium text-gray-800">{basicInfoFields.area || '-'}</span>
+            <Building className="w-3 h-3 lia-text-secondary" />
+            <span className="lia-text-secondary">Área:</span>
+            <span className="font-medium lia-text-strong">{basicInfoFields.area || '-'}</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <MapPin className="w-3 h-3 text-gray-400" />
-            <span className="text-gray-500">Local:</span>
-            <span className="font-medium text-gray-800">{basicInfoFields.localidade || '-'}</span>
+            <MapPin className="w-3 h-3 lia-text-secondary" />
+            <span className="lia-text-secondary">Local:</span>
+            <span className="font-medium lia-text-strong">{basicInfoFields.localidade || '-'}</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Globe className="w-3 h-3 text-gray-400" />
-            <span className="text-gray-500">Modelo:</span>
-            <span className="font-medium text-gray-800">{basicInfoFields.modeloTrabalho || '-'}</span>
+            <Globe className="w-3 h-3 lia-text-secondary" />
+            <span className="lia-text-secondary">Modelo:</span>
+            <span className="font-medium lia-text-strong">{basicInfoFields.modeloTrabalho || '-'}</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Clock className="w-3 h-3 text-gray-400" />
-            <span className="text-gray-500">Contrato:</span>
-            <span className="font-medium text-gray-800">{basicInfoFields.tipoContrato || '-'}</span>
+            <Clock className="w-3 h-3 lia-text-secondary" />
+            <span className="lia-text-secondary">Contrato:</span>
+            <span className="font-medium lia-text-strong">{basicInfoFields.tipoContrato || '-'}</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Users className="w-3 h-3 text-gray-400" />
-            <span className="text-gray-500">Gestor:</span>
-            <span className="font-medium text-gray-800">{basicInfoFields.gestor || '-'}</span>
+            <Users className="w-3 h-3 lia-text-secondary" />
+            <span className="lia-text-secondary">Gestor:</span>
+            <span className="font-medium lia-text-strong">{basicInfoFields.gestor || '-'}</span>
           </div>
         </div>
       </SectionCard>
@@ -245,7 +245,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
       <SectionCard id="competencies" title="Competências" icon={Code} count={technicalSkills.length + enabledBehavioral.length}>
         <div className="space-y-2">
           <div>
-            <span className="text-micro font-semibold text-gray-500 uppercase">Técnicas ({technicalSkills.length})</span>
+            <span className="text-micro font-semibold lia-text-secondary uppercase">Técnicas ({technicalSkills.length})</span>
             <div className="flex flex-wrap gap-1 mt-1">
               {technicalSkills.slice(0, 8).map(s => (
                 <span key={s.id} className="px-1.5 py-0.5 bg-wedo-cyan/10 text-wedo-cyan-dark text-micro rounded-full">
@@ -253,14 +253,14 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
                 </span>
               ))}
               {technicalSkills.length > 8 && (
-                <span className="px-1.5 py-0.5 bg-gray-100 text-gray-500 text-micro rounded-full">
+                <span className="px-1.5 py-0.5 bg-gray-100 lia-text-secondary text-micro rounded-full">
                   +{technicalSkills.length - 8} mais
                 </span>
               )}
             </div>
           </div>
           <div>
-            <span className="text-micro font-semibold text-gray-500 uppercase">Comportamentais ({enabledBehavioral.length})</span>
+            <span className="text-micro font-semibold lia-text-secondary uppercase">Comportamentais ({enabledBehavioral.length})</span>
             <div className="flex flex-wrap gap-1 mt-1">
               {enabledBehavioral.map(c => (
                 <span key={c.id} className="px-1.5 py-0.5 bg-wedo-purple/10 text-wedo-purple text-micro rounded-full">
@@ -276,8 +276,8 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
       <SectionCard id="salary" title="Remuneração" icon={DollarSign}>
         <div className="space-y-1 text-xs">
           <div className="flex justify-between">
-            <span className="text-gray-500">Salário Base:</span>
-            <span className="font-medium text-gray-800">
+            <span className="lia-text-secondary">Salário Base:</span>
+            <span className="font-medium lia-text-strong">
               {salaryInfo.minSalary && salaryInfo.maxSalary 
                 ? `R$ ${salaryInfo.minSalary} - R$ ${salaryInfo.maxSalary}`
                 : 'Não informado'}
@@ -285,15 +285,15 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
           </div>
           {(salaryInfo.minBonus || salaryInfo.maxBonus) && (
             <div className="flex justify-between">
-              <span className="text-gray-500">Bônus:</span>
-              <span className="font-medium text-gray-800">
+              <span className="lia-text-secondary">Bônus:</span>
+              <span className="font-medium lia-text-strong">
                 R$ {salaryInfo.minBonus} - R$ {salaryInfo.maxBonus}
               </span>
             </div>
           )}
           <div className="flex justify-between">
-            <span className="text-gray-500">Benefícios:</span>
-            <span className="font-medium text-gray-600 dark:text-gray-400">{enabledBenefits.length} selecionados</span>
+            <span className="lia-text-secondary">Benefícios:</span>
+            <span className="font-medium text-gray-600 dark:text-lia-text-tertiary">{enabledBenefits.length} selecionados</span>
           </div>
         </div>
       </SectionCard>
@@ -306,46 +306,46 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
               <span className="w-4 h-4 rounded-full bg-whatsapp-green/10 text-whatsapp-green text-micro flex items-center justify-center flex-shrink-0">
                 {i + 1}
               </span>
-              <span className="text-gray-800 line-clamp-1">{q.question}</span>
+              <span className="lia-text-strong line-clamp-1">{q.question}</span>
             </div>
           ))}
         </div>
       </SectionCard>
 
       {/* Publishing Platforms */}
-      <div className="rounded-md border border-gray-200 overflow-hidden">
+      <div className="rounded-md border border-lia-border-subtle overflow-hidden">
         <div className="px-3 py-2 bg-gray-50 flex items-center gap-2">
-          <Rocket className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-          <span className="text-xs font-semibold text-gray-800">
+          <Rocket className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+          <span className="text-xs font-semibold lia-text-strong">
             Publicar em
           </span>
         </div>
-        <div className="p-3 bg-white border-t border-gray-200">
+        <div className="p-3 bg-lia-bg-primary border-t border-lia-border-subtle">
           <div className="grid grid-cols-2 gap-2">
             {publishingPlatforms.map(platform => (
               <button
                 key={platform.id}
                 onClick={() => togglePlatform(platform.id)}
                 className={cn(
-                  "flex items-center gap-2 p-2 rounded-md transition-all",
+ "flex items-center gap-2 p-2 rounded-md transition-colors",
                   platform.enabled
-                    ? "bg-gray-100 dark:bg-gray-800 border border-gray-900 dark:border-gray-50"
-                    : "bg-gray-50 border border-transparent hover:border-gray-200"
+                    ? "bg-gray-100 dark:bg-lia-bg-secondary border border-gray-900"
+                    : "bg-gray-50 border border-transparent hover:border-lia-border-subtle"
                 )}
               >
                 <div className={cn(
-                  "w-4 h-4 rounded-md flex items-center justify-center",
-                  platform.enabled ? "bg-gray-900 dark:bg-gray-50 text-white" : "border border-gray-200"
+ "w-4 h-4 rounded-md flex items-center justify-center",
+                  platform.enabled ? "bg-gray-900 text-white" : "border border-lia-border-subtle"
                 )}>
                   {platform.enabled && <CheckCircle2 className="w-2.5 h-2.5" />}
                 </div>
-                <span className="text-xs font-medium text-gray-800">
+                <span className="text-xs font-medium lia-text-strong">
                   {platform.name}
                 </span>
               </button>
             ))}
           </div>
-          <p className="text-micro text-gray-400 mt-2">
+          <p className="text-micro lia-text-secondary mt-2">
             {enabledPlatforms.length} plataforma(s) selecionada(s)
           </p>
         </div>

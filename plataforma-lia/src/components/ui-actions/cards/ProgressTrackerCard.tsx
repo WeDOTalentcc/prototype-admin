@@ -60,10 +60,10 @@ export function ProgressTrackerCard({
               <Target className="h-5 w-5 text-wedo-purple" />
             </div>
             <div>
-              <div className="font-semibold text-[var(--lia-text-primary)]">
+              <div className="font-semibold text-lia-text-primary">
                 {data.job_title}
               </div>
-              <div className="text-xs text-[var(--lia-text-tertiary)]">
+              <div className="text-xs text-lia-text-tertiary">
                 Progresso do Pipeline
               </div>
             </div>
@@ -79,7 +79,7 @@ export function ProgressTrackerCard({
               </>
             ) : (
               <>
-                <AlertTriangle className="h-3 w-3 mr-1 text-gray-700 dark:text-gray-300" />
+                <AlertTriangle className="h-3 w-3 mr-1 text-gray-700 dark:text-lia-text-secondary" />
                 Atenção
               </>
             )}
@@ -89,7 +89,7 @@ export function ProgressTrackerCard({
         <div className="mb-4">
           <div className="flex items-center justify-between text-sm mb-2">
             <span className="text-lia-text-secondary">Meta de Candidatos</span>
-            <span className="font-semibold text-[var(--lia-text-primary)]">
+            <span className="font-semibold text-lia-text-primary">
               {data.total_candidates} / {data.target_candidates}
             </span>
           </div>
@@ -97,7 +97,7 @@ export function ProgressTrackerCard({
             className="relative h-2 rounded-full overflow-hidden bg-lia-bg-tertiary"
           >
             <div
-              className="absolute inset-y-0 left-0 rounded-full transition-all duration-500 bg-lia-text-primary"
+              className="absolute inset-y-0 left-0 rounded-full transition-[width,height] duration-500 bg-lia-text-primary"
               style={{width: `${progressPercent}%`}}
             />
           </div>
@@ -110,7 +110,7 @@ export function ProgressTrackerCard({
 
         {!compact && data.stages && data.stages.length > 0 && (
           <div className="mb-4">
-            <div className="text-sm mb-2 text-[var(--lia-text-secondary)]">Pipeline</div>
+            <div className="text-sm mb-2 text-lia-text-secondary">Pipeline</div>
             <div
               className="flex h-4 rounded-full overflow-hidden bg-lia-bg-tertiary"
             >
@@ -129,7 +129,7 @@ export function ProgressTrackerCard({
                 <div key={index} className="flex items-center gap-1.5 text-xs">
                   <div className={`h-2 w-2 rounded-full ${stage.color}`} />
                   <span className="text-lia-text-secondary">{stage.name}</span>
-                  <span className="font-medium text-[var(--lia-text-primary)]">
+                  <span className="font-medium text-lia-text-primary">
                     {stage.count}
                   </span>
                 </div>
@@ -142,17 +142,17 @@ export function ProgressTrackerCard({
           <div
             className="text-center p-2 rounded-md border bg-lia-bg-primary border-lia-border-subtle"
           >
-            <div className="text-lg font-bold text-gray-700 dark:text-gray-300">{data.days_open}</div>
-            <div className="text-xs text-[var(--lia-text-tertiary)]">Dias Aberta</div>
+            <div className="text-lg font-bold text-gray-700 dark:text-lia-text-secondary">{data.days_open}</div>
+            <div className="text-xs text-lia-text-tertiary">Dias Aberta</div>
           </div>
           {data.avg_time_to_hire !== undefined && (
             <div
               className="text-center p-2 rounded-md border bg-lia-bg-primary border-lia-border-subtle"
             >
-              <div className="text-lg font-bold text-[var(--lia-text-primary)]">
+              <div className="text-lg font-bold text-lia-text-primary">
                 {data.avg_time_to_hire}d
               </div>
-              <div className="text-xs text-[var(--lia-text-tertiary)]">Tempo Médio</div>
+              <div className="text-xs text-lia-text-tertiary">Tempo Médio</div>
             </div>
           )}
           {data.conversion_rate !== undefined && (
@@ -160,7 +160,7 @@ export function ProgressTrackerCard({
               className="text-center p-2 rounded-md border bg-lia-bg-primary border-lia-border-subtle"
             >
               <div className="text-lg font-bold text-wedo-green">{data.conversion_rate}%</div>
-              <div className="text-xs text-[var(--lia-text-tertiary)]">Conversão</div>
+              <div className="text-xs text-lia-text-tertiary">Conversão</div>
             </div>
           )}
         </div>
@@ -172,7 +172,7 @@ export function ProgressTrackerCard({
                 key={index}
                 className="flex items-start gap-2 text-xs px-2 py-1.5 rounded-md bg-lia-bg-tertiary text-lia-text-secondary"
               >
-                <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0 text-gray-700 dark:text-gray-300" />
+                <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0 text-gray-700 dark:text-lia-text-secondary" />
                 <span>{alert}</span>
               </div>
             ))}

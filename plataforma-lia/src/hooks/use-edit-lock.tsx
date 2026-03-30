@@ -48,7 +48,7 @@ export function useEditLock(options: UseEditLockOptions = {}): UseEditLockReturn
     return (
       <button
         onClick={startEditing}
-        className={`inline-flex items-center font-medium rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 transition-colors ${sizeClasses} ${className || ''}`}
+        className={`inline-flex items-center font-medium rounded-xl border border-lia-border-default bg-lia-bg-primary hover:bg-gray-50 lia-text-base transition-colors ${sizeClasses} ${className || ''}`}
        
       >
         <svg className={size === 'sm' ? 'w-3.5 h-3.5' : 'w-4 h-4'} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -71,7 +71,7 @@ export function useEditLock(options: UseEditLockOptions = {}): UseEditLockReturn
         <button
           onClick={cancelEditing}
           disabled={isSaving}
-          className="inline-flex items-center py-1.5 px-3 text-xs font-medium rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 transition-colors disabled:opacity-50"
+          className="inline-flex items-center py-1.5 px-3 text-xs font-medium rounded-xl border border-lia-border-default bg-lia-bg-primary hover:bg-gray-50 lia-text-base transition-colors disabled:opacity-50"
          
         >
           {cancelLabel}
@@ -79,7 +79,7 @@ export function useEditLock(options: UseEditLockOptions = {}): UseEditLockReturn
         <button
           onClick={saveAndExit}
           disabled={isSaving}
-          className="inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-medium rounded-2xl text-white transition-colors disabled:opacity-50 bg-gray-900"
+          className="inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-medium rounded-xl text-white transition-colors disabled:opacity-50 bg-gray-900"
         >
           {isSaving ? (
             <>

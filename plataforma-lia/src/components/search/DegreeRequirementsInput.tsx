@@ -48,10 +48,10 @@ export function DegreeRequirementsInput({
         <button
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           className={cn(
-            "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all",
+            "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-[width,height]",
             mode === 'regular'
-              ? "border-gray-300 bg-white text-gray-800 dark:text-gray-200"
-              : "border-gray-900 dark:border-gray-50 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50"
+              ? "border-lia-border-default bg-lia-bg-primary lia-text-800 dark:text-lia-text-primary"
+              : "border-gray-900 dark:lia-border-50 bg-gray-100 dark:bg-lia-bg-secondary lia-text-900 dark:lia-text-50"
           )}
         >
           {mode === 'regular' ? 'Regular' : 'Nested'}
@@ -59,7 +59,7 @@ export function DegreeRequirementsInput({
         </button>
 
         {isDropdownOpen && (
-          <div className="absolute z-50 mt-1 w-72 bg-white border border-gray-200 rounded-md">
+          <div className="absolute z-50 mt-1 w-72 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
             <button
               onClick={() => {
                 onModeChange('regular')
@@ -75,15 +75,15 @@ export function DegreeRequirementsInput({
                   "w-3 h-3 rounded-full border-2",
                   mode === 'regular' 
                     ? "border-gray-700 bg-gray-700" 
-                    : "border-gray-300"
+                    : "border-lia-border-default"
                 )}>
                   {mode === 'regular' && (
-                    <div className="w-full h-full rounded-full bg-white scale-50" />
+                    <div className="w-full h-full rounded-full bg-lia-bg-primary scale-50" />
                   )}
                 </div>
-                <span className="font-medium text-sm text-gray-800">Regular</span>
+                <span className="font-medium text-sm lia-text-800">Regular</span>
               </div>
-              <p className="text-xs text-gray-500 mt-1 ml-5">
+              <p className="text-xs lia-text-500 mt-1 ml-5">
                 Find people who have this degree from any university
               </p>
             </button>
@@ -94,24 +94,24 @@ export function DegreeRequirementsInput({
                 setIsDropdownOpen(false)
               }}
               className={cn(
-                "w-full text-left px-4 py-3 transition-colors hover:bg-gray-50 rounded-b-lg border-t border-gray-100",
-                mode === 'nested' && "bg-gray-50 dark:bg-gray-800/50"
+                "w-full text-left px-4 py-3 transition-colors hover:bg-gray-50 rounded-b-lg border-t border-lia-border-subtle",
+                mode === 'nested' && "bg-gray-50 dark:bg-lia-bg-secondary/50"
               )}
             >
               <div className="flex items-center gap-2">
                 <div className={cn(
                   "w-3 h-3 rounded-full border-2",
                   mode === 'nested' 
-                    ? "border-gray-900 bg-gray-900 dark:border-gray-50 dark:bg-gray-50" 
-                    : "border-gray-300"
+                    ? "border-gray-900 bg-gray-900 dark:lia-border-50 dark:lia-bg-50" 
+                    : "border-lia-border-default"
                 )}>
                   {mode === 'nested' && (
-                    <div className="w-full h-full rounded-full bg-white scale-50" />
+                    <div className="w-full h-full rounded-full bg-lia-bg-primary scale-50" />
                   )}
                 </div>
-                <span className="font-medium text-sm text-gray-800">Nested</span>
+                <span className="font-medium text-sm lia-text-800">Nested</span>
               </div>
-              <p className="text-xs text-gray-500 mt-1 ml-5">
+              <p className="text-xs lia-text-500 mt-1 ml-5">
                 Find people who have this degree from selected universities
               </p>
             </button>
@@ -122,15 +122,15 @@ export function DegreeRequirementsInput({
       <div className="flex items-center gap-2">
         <Popover>
           <PopoverTrigger asChild>
-            <button className="text-gray-400 hover:text-gray-600 transition-colors">
+            <button className="lia-text-400 hover:lia-text-600 transition-colors">
               <Info className="w-3.5 h-3.5" />
             </button>
           </PopoverTrigger>
-          <PopoverContent className="w-64 p-3 text-xs bg-white" side="right">
-            <p className="text-gray-600 leading-relaxed">
+          <PopoverContent className="w-64 p-3 text-xs bg-lia-bg-elevated" side="right">
+            <p className="lia-text-600 leading-relaxed">
               <strong>Regular:</strong> Matches candidates with this degree from any university.
             </p>
-            <p className="text-gray-600 leading-relaxed mt-2">
+            <p className="lia-text-600 leading-relaxed mt-2">
               <strong>Nested:</strong> Only matches candidates who have this degree from the universities you've selected above.
             </p>
           </PopoverContent>
@@ -141,17 +141,17 @@ export function DegreeRequirementsInput({
         value={value || "not_selected"}
         onValueChange={(val) => onChange(val === "not_selected" ? null : val)}
       >
-        <SelectTrigger className="border-gray-200 focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 bg-white text-xs">
+        <SelectTrigger className="border-lia-border-subtle focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 bg-lia-bg-secondary text-xs">
           <SelectValue placeholder="Selecione o grau" />
         </SelectTrigger>
-        <SelectContent className="bg-white">
+        <SelectContent className="bg-lia-bg-secondary">
           {DEGREE_OPTIONS.map(option => (
             <SelectItem 
               key={option.value} 
               value={option.value}
               className={cn(
                 "py-2 text-xs",
-                option.value === "not_selected" && value === null && "text-gray-800 dark:text-gray-200"
+                option.value === "not_selected" && value === null && "lia-text-800 dark:text-lia-text-primary"
               )}
             >
               {option.label}

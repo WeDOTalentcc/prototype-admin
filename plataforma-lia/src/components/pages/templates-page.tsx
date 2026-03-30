@@ -237,16 +237,16 @@ export function TemplatesPage() {
   // Cores por categoria
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case 'search': return 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50 border-gray-300 dark:border-gray-600'
+      case 'search': return 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-900 dark:text-gray-50 border-lia-border-default dark:border-lia-border-default'
       case 'communication': return 'bg-status-success/15 text-status-success border-status-success/30'
       case 'workflow': return 'bg-wedo-purple/15 text-wedo-purple border-wedo-purple/30'
       case 'analysis': return 'bg-wedo-orange/15 text-wedo-orange border-wedo-orange/30'
-      default: return 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200'
+      default: return 'bg-gray-100 text-gray-800 dark:text-lia-text-primary border-lia-border-subtle'
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -254,7 +254,7 @@ export function TemplatesPage() {
             <Brain className="w-6 h-6 text-wedo-cyan" />
             Templates LIA
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-gray-600 dark:text-lia-text-tertiary">
             Gerencie comandos personalizados e acelere seu workflow de recrutamento
           </p>
         </div>
@@ -272,9 +272,9 @@ export function TemplatesPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              <BookOpen className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Templates</p>
+                <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">Templates</p>
                 <p className="text-xl font-semibold text-gray-950 dark:text-gray-50">{stats.total}</p>
               </div>
             </div>
@@ -286,7 +286,7 @@ export function TemplatesPage() {
             <div className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-status-success" />
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Execuções</p>
+                <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">Execuções</p>
                 <p className="text-xl font-semibold text-gray-950 dark:text-gray-50">{stats.totalUsage}</p>
               </div>
             </div>
@@ -298,7 +298,7 @@ export function TemplatesPage() {
             <div className="flex items-center gap-2">
               <Target className="w-4 h-4 text-wedo-purple" />
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Taxa Sucesso</p>
+                <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">Taxa Sucesso</p>
                 <p className="text-xl font-semibold text-gray-950 dark:text-gray-50">{stats.avgSuccessRate}%</p>
               </div>
             </div>
@@ -310,7 +310,7 @@ export function TemplatesPage() {
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-wedo-orange" />
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Tempo Poupado</p>
+                <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">Tempo Poupado</p>
                 <p className="text-xl font-semibold text-gray-950 dark:text-gray-50">{stats.totalTimeSaved}h</p>
               </div>
             </div>
@@ -322,7 +322,7 @@ export function TemplatesPage() {
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-wedo-cyan" />
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Compartilhados</p>
+                <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">Compartilhados</p>
                 <p className="text-xl font-semibold text-gray-950 dark:text-gray-50">{stats.sharedTemplates}</p>
               </div>
             </div>
@@ -345,7 +345,7 @@ export function TemplatesPage() {
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-950 dark:text-gray-50"
+            className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-gray-950 dark:text-gray-50"
           >
             <option value="all">Todas Categorias</option>
             <option value="search">🔍 Busca</option>
@@ -357,7 +357,7 @@ export function TemplatesPage() {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-950 dark:text-gray-50"
+            className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-gray-950 dark:text-gray-50"
           >
             <option value="usage">Mais Usados</option>
             <option value="recent">Mais Recentes</option>
@@ -386,7 +386,7 @@ export function TemplatesPage() {
                     )}
                   </div>
                   <CardTitle className="text-lg">{template.name}</CardTitle>
-                  <p className="text-sm text-gray-800 dark:text-gray-200 mt-1">
+                  <p className="text-sm text-gray-800 dark:text-lia-text-primary mt-1">
                     {template.description}
                   </p>
                 </div>
@@ -411,15 +411,15 @@ export function TemplatesPage() {
               <div className="grid grid-cols-3 gap-2 text-center mb-4">
                 <div>
                   <p className="text-lg font-semibold text-gray-950 dark:text-gray-50">{template.usageCount}</p>
-                  <p className="text-xs text-gray-800 dark:text-gray-200">Usos</p>
+                  <p className="text-xs text-gray-800 dark:text-lia-text-primary">Usos</p>
                 </div>
                 <div>
                   <p className="text-lg font-semibold text-status-success">{template.successRate}%</p>
-                  <p className="text-xs text-gray-800 dark:text-gray-200">Sucesso</p>
+                  <p className="text-xs text-gray-800 dark:text-lia-text-primary">Sucesso</p>
                 </div>
                 <div>
                   <p className="text-lg font-semibold text-gray-900 dark:text-gray-50">{Math.round(template.estimatedTime/60)}min</p>
-                  <p className="text-xs text-gray-800 dark:text-gray-200">Economia</p>
+                  <p className="text-xs text-gray-800 dark:text-lia-text-primary">Economia</p>
                 </div>
               </div>
 
@@ -454,8 +454,8 @@ export function TemplatesPage() {
               </div>
 
               {/* Info adicional */}
-              <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between text-xs text-gray-800 dark:text-gray-200">
+              <div className="mt-3 pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
+                <div className="flex items-center justify-between text-xs text-gray-800 dark:text-lia-text-primary">
                   <span>Por {template.createdBy}</span>
                   <span>{template.updatedAt.toLocaleDateString()}</span>
                 </div>
@@ -473,7 +473,7 @@ export function TemplatesPage() {
             <h3 className="text-lg font-medium text-gray-950 dark:text-gray-50 mb-2">
               Nenhum template encontrado
             </h3>
-            <p className="text-gray-800 dark:text-gray-200 mb-4">
+            <p className="text-gray-800 dark:text-lia-text-primary mb-4">
               {searchTerm || selectedCategory !== "all"
                 ? "Tente ajustar os filtros de busca"
                 : "Crie seu primeiro template para acelerar seu workflow"

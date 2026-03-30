@@ -355,7 +355,7 @@ export default function SharedSearchPage() {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center font-['Open_Sans']">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-8 h-8 text-gray-600 dark:text-gray-400 animate-spin" />
+          <Loader2 className="w-8 h-8 lia-text-600 dark:text-lia-text-tertiary animate-spin" />
           <p className="text-zinc-400">Carregando...</p>
         </div>
       </div>
@@ -369,7 +369,7 @@ export default function SharedSearchPage() {
           <div className="text-status-error text-lg mb-4">{error}</div>
           <Button
             onClick={() => fetchSharedData()}
-            className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+            className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
           >
             Tentar novamente
           </Button>
@@ -455,7 +455,7 @@ export default function SharedSearchPage() {
           <section className="mb-8">
             <div className="bg-zinc-900 rounded-md p-6 border border-zinc-800 max-w-md mx-auto">
               <div className="flex items-center gap-3 mb-4">
-                <Mail className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                <Mail className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                 <h3 className="text-lg font-medium text-white">Acesso Necessário</h3>
               </div>
               <p className="text-zinc-400 text-sm mb-4">
@@ -477,7 +477,7 @@ export default function SharedSearchPage() {
                   <Button
                     onClick={handleRequestOtp}
                     disabled={authLoading}
-                    className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                    className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
                   >
                     {authLoading ? (
                       <Loader2 className="w-4 h-4 animate-spin mr-2" />
@@ -506,7 +506,7 @@ export default function SharedSearchPage() {
                   <Button
                     onClick={handleVerifyOtp}
                     disabled={authLoading}
-                    className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                    className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
                   >
                     {authLoading ? (
                       <Loader2 className="w-4 h-4 animate-spin mr-2" />
@@ -545,7 +545,7 @@ export default function SharedSearchPage() {
                 </div>
                 <div className="w-full bg-zinc-800 rounded-full h-2">
                   <div
-                    className="bg-gray-900 dark:bg-gray-50 h-2 rounded-full transition-all duration-300"
+                    className="bg-gray-900 dark:lia-bg-50 h-2 rounded-full transition-[width,height] duration-300"
                     style={{width: `${(evaluatedCount / totalCount) * 100 || 0}%`}}
                   />
                 </div>
@@ -580,7 +580,7 @@ export default function SharedSearchPage() {
                     onClick={() => setActiveFilter(key)}
                     className={`px-4 py-2 rounded-md text-sm transition-colors ${
                       activeFilter === key
-                        ? 'bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900'
+                        ? 'bg-gray-900 text-white dark:lia-bg-50 dark:lia-text-900'
                         : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800 border border-zinc-800'
                     }`}
                   >
@@ -631,7 +631,7 @@ export default function SharedSearchPage() {
                                 )}
                               </div>
                               {candidate.wsi_score !== undefined && (
-                                <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-0 flex-shrink-0">
+                                <Badge className="bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary border-0 flex-shrink-0">
                                   WSI {candidate.wsi_score}
                                 </Badge>
                               )}
@@ -660,7 +660,7 @@ export default function SharedSearchPage() {
                                   href={candidate.linkedin_url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="flex items-center gap-1 text-[#0A66C2] hover:text-[#004182] transition-colors"
+                                  className="flex items-center gap-1 text-brand-linkedin hover:text-brand-linkedin-hover transition-colors"
                                 >
                                   <Linkedin className="w-3.5 h-3.5" />
                                   LinkedIn
@@ -704,7 +704,7 @@ export default function SharedSearchPage() {
 
                         <button
                           onClick={() => toggleCardExpanded(candidate.id)}
-                          className="flex items-center gap-1 text-gray-600 dark:text-gray-400 text-sm mt-4 hover:text-wedo-cyan-dark transition-colors"
+                          className="flex items-center gap-1 lia-text-600 dark:text-lia-text-tertiary text-sm mt-4 hover:text-wedo-cyan-dark transition-colors"
                         >
                           {isExpanded ? (
                             <>
@@ -867,7 +867,7 @@ export default function SharedSearchPage() {
                                     onClick={() => handleSaveFeedback(candidate.id)}
                                     disabled={isSaving}
                                     size="sm"
-                                    className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                                    className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
                                   >
                                     {isSaving ? (
                                       <Loader2 className="w-4 h-4 animate-spin mr-1" />
@@ -907,7 +907,7 @@ export default function SharedSearchPage() {
             href="/privacidade"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-zinc-500 text-sm hover:text-gray-900 dark:hover:text-gray-50 transition-colors"
+            className="text-zinc-500 text-sm hover:lia-text-900 dark:hover:lia-text-50 transition-colors"
           >
             Política de Privacidade
           </a>

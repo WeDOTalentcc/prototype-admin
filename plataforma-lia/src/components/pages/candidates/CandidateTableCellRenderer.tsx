@@ -143,13 +143,13 @@ export function createCellRenderer(deps: CellRendererDeps) {
           <div className="relative group flex items-center justify-center cursor-help">
             {isLocal ? (
               <div
-                className="w-6 h-6 rounded-full flex items-center justify-center transition-all hover:scale-110 bg-stone-400/20"
+                className="w-6 h-6 rounded-full flex items-center justify-center transition-[width,height] hover:scale-110 bg-stone-400/20"
               >
                 <Home className="w-3.5 h-3.5" style={{color: "var(--gray-500)"}} />
               </div>
             ) : (
-              <div className="w-6 h-6 rounded-full flex items-center justify-center transition-all hover:scale-110 bg-gray-100 dark:bg-gray-700">
-                <Globe className="w-3.5 h-3.5 text-gray-600 dark:text-gray-300" />
+              <div className="w-6 h-6 rounded-full flex items-center justify-center transition-[width,height] hover:scale-110 bg-gray-100 dark:bg-lia-bg-elevated">
+                <Globe className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-secondary" />
               </div>
             )}
             {/* Tooltip dinâmico com informações de créditos */}
@@ -238,12 +238,12 @@ export function createCellRenderer(deps: CellRendererDeps) {
                   strokeDasharray={circumference}
                   strokeDashoffset={strokeDashoffset}
                   strokeLinecap="round"
-                  className="transition-all duration-300"
+                  className="transition-colors duration-300"
                 />
               </svg>
               {/* Percentage text */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className={`${textStyles.label} font-bold dark:text-gray-200`}>
+                <span className={`${textStyles.label} font-bold dark:text-lia-text-primary`}>
                   {matchScore}
                 </span>
               </div>
@@ -270,7 +270,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
                   }
                   alt={candidate.name}
                 />
-                <AvatarFallback className="text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                <AvatarFallback className="text-sm font-medium bg-gray-100 dark:bg-lia-bg-elevated text-gray-600 dark:text-lia-text-secondary">
                   {candidate.name
                     .split(" ")
                     .map((n) => n[0])
@@ -290,7 +290,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
             </div>
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="font-medium text-gray-950 dark:text-gray-200 truncate text-xs">
+                <span className="font-medium text-gray-950 dark:text-lia-text-primary truncate text-xs">
                   {candidate.name}
                 </span>
               </div>
@@ -316,7 +316,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
             <div className="relative group cursor-help">
               <span className="text-xs text-gray-800">—</span>
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50">
-                <div className="bg-gray-900 dark:bg-gray-700 text-white px-3 py-2 rounded-md text-xs min-w-[180px]">
+                <div className="bg-gray-900 dark:bg-lia-bg-elevated text-white px-3 py-2 rounded-md text-xs min-w-[180px]">
                   <div className="font-semibold mb-1.5 flex items-center gap-1.5">
                     <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                     Sem avaliação
@@ -379,7 +379,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
                 e.stopPropagation()
                 onRevealContact(candidate, "email")
               }}
-              className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:hover:bg-gray-700 transition-colors"
               title="Clique para revelar email (2 créditos)"
             >
               <Mail className="w-3 h-3" />
@@ -774,7 +774,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
             href={candidate.resume_url}
             target="_blank"
             rel="noopener"
-            className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:underline text-xs flex items-center gap-1"
+            className="text-gray-700 dark:text-lia-text-secondary hover:text-gray-900 dark:hover:text-gray-100 hover:underline text-xs flex items-center gap-1"
           >
             <FileText className="w-3 h-3" /> Currículo
           </a>
@@ -829,7 +829,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
         )
       case "is_top_universities":
         return candidate.is_top_universities ? (
-          <Badge className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+          <Badge className="text-xs bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary">
             Top University
           </Badge>
         ) : (
@@ -897,7 +897,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
         return candidate.best_personal_email ? (
           <a
             href={`mailto:${candidate.best_personal_email}`}
-            className="text-xs text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:underline truncate"
+            className="text-xs text-gray-700 dark:text-lia-text-secondary hover:text-gray-900 dark:hover:text-gray-100 hover:underline truncate"
           >
             {candidate.best_personal_email}
           </a>
@@ -957,10 +957,10 @@ export function createCellRenderer(deps: CellRendererDeps) {
                     insight.match_level === "Exceeds"
                       ? "bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success"
                       : insight.match_level === "Meets"
-                        ? "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
+                        ? "bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary"
                         : insight.match_level === "Partial"
                           ? "bg-status-warning/15 dark:bg-status-warning/30 text-status-warning dark:text-status-warning"
-                          : "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300"
+                          : "bg-gray-100 dark:bg-lia-bg-secondary text-gray-800 dark:text-lia-text-secondary"
                   }`}
                 >
                   {insight.match_level}
@@ -989,7 +989,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
         return candidate.best_business_email ? (
           <a
             href={`mailto:${candidate.best_business_email}`}
-            className="text-xs text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:underline truncate"
+            className="text-xs text-gray-700 dark:text-lia-text-secondary hover:text-gray-900 dark:hover:text-gray-100 hover:underline truncate"
           >
             {candidate.best_business_email}
           </a>
@@ -1058,7 +1058,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
       // Status
       case "status": {
         const statusColors: Record<string, string> = {
-          novo: "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300",
+          novo: "bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary",
           triagem:
             "bg-status-warning/15 dark:bg-status-warning/30 text-status-warning dark:text-status-warning",
           entrevista:

@@ -66,12 +66,12 @@ export function CalibrationStage() {
   if (isLoading || (totalCandidates === 0 && !calibrationComplete)) {
     return (
       <div className="flex flex-col items-center justify-center py-12 gap-4">
-        <Loader2 className="w-8 h-8 text-gray-600 dark:text-gray-400 animate-spin" />
+        <Loader2 className="w-8 h-8 text-gray-600 dark:text-lia-text-tertiary animate-spin" />
         <div className="text-center">
-          <p className="text-sm text-gray-800 font-medium">
+          <p className="text-sm lia-text-strong font-medium">
             Buscando candidatos compatíveis...
           </p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs lia-text-secondary mt-1">
             Analisando perfis no mercado
           </p>
         </div>
@@ -87,10 +87,10 @@ export function CalibrationStage() {
           <Trophy className="w-8 h-8 text-status-success" />
         </div>
         <div className="text-center">
-          <p className="text-sm text-gray-800 font-semibold">
+          <p className="text-sm lia-text-strong font-semibold">
             Calibração Concluída!
           </p>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs lia-text-secondary mt-1">
             {approvedCandidates.length} aprovado(s) • {rejectedCandidates.length} rejeitado(s)
           </p>
         </div>
@@ -104,7 +104,7 @@ export function CalibrationStage() {
             <span className="text-xs font-medium text-status-error">{rejectedCandidates.length}</span>
           </div>
         </div>
-        <p className="text-micro text-gray-400 text-center max-w-xs">
+        <p className="text-micro lia-text-secondary text-center max-w-xs">
           O algoritmo de busca foi calibrado com suas preferências. 
           Os candidatos no kanban serão priorizados de acordo.
         </p>
@@ -114,7 +114,7 @@ export function CalibrationStage() {
 
   if (!currentCandidate) {
     return (
-      <div className="text-center py-8 text-gray-500">
+      <div className="text-center py-8 lia-text-secondary">
         <User className="w-8 h-8 mx-auto mb-2 opacity-50" />
         <p className="text-sm">Nenhum candidato disponível</p>
       </div>
@@ -127,12 +127,12 @@ export function CalibrationStage() {
     <div className="space-y-3">
       {/* Progress bar */}
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-micro text-gray-500">
+        <span className="text-micro lia-text-secondary">
           Calibração: {processedCount}/{Math.min(5, totalCandidates)}
         </span>
         <div className="flex-1 h-1 bg-gray-200 rounded-full overflow-hidden">
           <div 
-            className="h-full bg-gray-900 dark:bg-gray-50 transition-all duration-300"
+            className="h-full bg-gray-900 transition-[width,height] duration-300"
             style={{width: `${(processedCount / Math.min(5, totalCandidates)) * 100}%`}}
           />
         </div>
@@ -147,11 +147,11 @@ export function CalibrationStage() {
               key={c.id}
               onClick={() => setCurrentCalibrationIndex(i)}
               className={cn(
-                "w-2 h-2 rounded-full transition-all",
+ "w-2 h-2 rounded-full transition-[width,height]",
                 i === currentCalibrationIndex && "w-4",
                 cStatus === 'approved' ? "bg-status-success" :
                 cStatus === 'rejected' ? "bg-status-error" :
-                i === currentCalibrationIndex ? "bg-gray-900 dark:bg-gray-50" : "bg-gray-300"
+                i === currentCalibrationIndex ? "bg-gray-900" : "bg-gray-300"
               )}
             />
           )
@@ -160,49 +160,49 @@ export function CalibrationStage() {
 
       {/* Candidate Card */}
       <div className={cn(
-        "rounded-md border overflow-hidden transition-all",
+ "rounded-md border overflow-hidden transition-colors",
         status === 'approved' ? "border-status-success bg-status-success/5" :
         status === 'rejected' ? "border-status-error/30 bg-status-error/10" :
-        "border-gray-200"
+        "border-lia-border-subtle"
       )}>
         {/* Header */}
-        <div className="p-3 bg-white border-b border-gray-200 flex items-center gap-3">
+        <div className="p-3 bg-lia-bg-primary border-b border-lia-border-subtle flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-100 dark:from-gray-800 to-wedo-cyan-dark flex items-center justify-center text-white font-semibold text-lg">
             {currentCandidate.name?.charAt(0) || 'C'}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold text-gray-800 truncate">
+              <h3 className="text-sm font-semibold lia-text-strong truncate">
                 {currentCandidate.name}
               </h3>
               {currentCandidate.linkedinUrl && (
-                <a href={currentCandidate.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-gray-600">
+                <a href={currentCandidate.linkedinUrl} target="_blank" rel="noopener noreferrer" className="lia-text-base">
                   <Linkedin className="w-4 h-4" />
                 </a>
               )}
             </div>
-            <p className="text-xs text-gray-500 truncate">{currentCandidate.currentRole}</p>
-            <p className="text-micro text-gray-400 truncate">{currentCandidate.currentCompany}</p>
+            <p className="text-xs lia-text-secondary truncate">{currentCandidate.currentRole}</p>
+            <p className="text-micro lia-text-secondary truncate">{currentCandidate.currentCompany}</p>
           </div>
           <div className="text-right">
             <div className="flex items-center gap-1 justify-end">
               <Star className="w-4 h-4 fill-amber-400 text-status-warning" />
-              <span className="text-sm font-semibold text-gray-800">{currentCandidate.overallScore || 85}%</span>
+              <span className="text-sm font-semibold lia-text-strong">{currentCandidate.overallScore || 85}%</span>
             </div>
-            <span className="text-micro text-gray-400">Match Score</span>
+            <span className="text-micro lia-text-secondary">Match Score</span>
           </div>
         </div>
 
         {/* Content */}
-        <div className="p-3 bg-white space-y-3">
+        <div className="p-3 bg-lia-bg-primary space-y-3">
           {/* Highlights */}
           {currentCandidate.highlights && currentCandidate.highlights.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {currentCandidate.highlights.map((h, i) => (
                 <div key={i} className="flex items-center gap-1 px-2 py-1 bg-gray-50 rounded-md">
                   <span className="text-micro">{h.icon}</span>
-                  <span className="text-micro text-gray-500">{h.label}:</span>
-                  <span className="text-micro font-medium text-gray-800">{h.value}</span>
+                  <span className="text-micro lia-text-secondary">{h.label}:</span>
+                  <span className="text-micro font-medium lia-text-strong">{h.value}</span>
                 </div>
               ))}
             </div>
@@ -210,15 +210,15 @@ export function CalibrationStage() {
 
           {/* Location & Experience */}
           <div className="flex items-center gap-3 text-xs">
-            <div className="flex items-center gap-1 text-gray-500">
+            <div className="flex items-center gap-1 lia-text-secondary">
               <MapPin className="w-3 h-3" />
               {currentCandidate.location}
             </div>
-            <div className="flex items-center gap-1 text-gray-500">
+            <div className="flex items-center gap-1 lia-text-secondary">
               <Clock className="w-3 h-3" />
               {currentCandidate.totalExperience || '5+ anos'}
             </div>
-            <div className="flex items-center gap-1 text-gray-500">
+            <div className="flex items-center gap-1 lia-text-secondary">
               <GraduationCap className="w-3 h-3" />
               {currentCandidate.education}
             </div>
@@ -227,7 +227,7 @@ export function CalibrationStage() {
           {/* Skills */}
           {currentCandidate.skillMap && currentCandidate.skillMap.length > 0 && (
             <div>
-              <span className="text-micro font-semibold text-gray-500 uppercase">Skills</span>
+              <span className="text-micro font-semibold lia-text-secondary uppercase">Skills</span>
               <div className="flex flex-wrap gap-1 mt-1">
                 {currentCandidate.skillMap.flatMap(sm => sm.skills).slice(0, 8).map((skill, i) => (
                   <span key={i} className="px-1.5 py-0.5 bg-wedo-cyan/10 text-wedo-cyan-dark text-micro rounded-full">
@@ -241,7 +241,7 @@ export function CalibrationStage() {
           {/* Match Criteria */}
           {currentCandidate.matchCriteria && currentCandidate.matchCriteria.length > 0 && (
             <div>
-              <span className="text-micro font-semibold text-gray-500 uppercase flex items-center gap-1">
+              <span className="text-micro font-semibold lia-text-secondary uppercase flex items-center gap-1">
                 <Target className="w-3 h-3" />
                 Critérios de Match
               </span>
@@ -253,7 +253,7 @@ export function CalibrationStage() {
                     ) : (
                       <XCircle className="w-3 h-3 text-status-error" />
                     )}
-                    <span className={mc.isMatch ? "text-gray-800" : "text-gray-400"}>
+                    <span className={mc.isMatch ? "lia-text-strong" : "lia-text-secondary"}>
                       {mc.criteria}
                     </span>
                   </div>
@@ -264,11 +264,11 @@ export function CalibrationStage() {
         </div>
 
         {/* Actions */}
-        <div className="p-3 bg-gray-50 border-t border-gray-200 flex items-center gap-2">
+        <div className="p-3 bg-gray-50 border-t border-lia-border-subtle flex items-center gap-2">
           <button
             onClick={goToPrevious}
             disabled={currentCalibrationIndex === 0}
-            className="p-2 text-gray-500 hover:text-gray-700 disabled:opacity-50"
+            className="p-2 lia-text-secondary hover:lia-text-base disabled:opacity-50"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
@@ -276,7 +276,7 @@ export function CalibrationStage() {
           <button
             onClick={() => handleReject(currentCandidate.id)}
             className={cn(
-              "flex-1 py-2 px-4 rounded-md text-xs font-medium transition-all flex items-center justify-center gap-1.5",
+ "flex-1 py-2 px-4 rounded-md text-xs font-medium transition-colors flex items-center justify-center gap-1.5",
               status === 'rejected'
                 ? "bg-status-error text-white"
                 : "border border-status-error/30 text-status-error hover:bg-status-error/10"
@@ -289,10 +289,10 @@ export function CalibrationStage() {
           <button
             onClick={() => handleApprove(currentCandidate.id)}
             className={cn(
-              "flex-1 py-2 px-4 rounded-md text-xs font-medium transition-all flex items-center justify-center gap-1.5",
+ "flex-1 py-2 px-4 rounded-md text-xs font-medium transition-colors flex items-center justify-center gap-1.5",
               status === 'approved'
                 ? "bg-status-success text-white"
-                : "bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                : "bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200"
             )}
           >
             <CheckCircle2 className="w-4 h-4" />
@@ -302,7 +302,7 @@ export function CalibrationStage() {
           <button
             onClick={goToNext}
             disabled={currentCalibrationIndex === totalCandidates - 1}
-            className="p-2 text-gray-500 hover:text-gray-700 disabled:opacity-50"
+            className="p-2 lia-text-secondary hover:lia-text-base disabled:opacity-50"
           >
             <ChevronRight className="w-5 h-5" />
           </button>
@@ -310,7 +310,7 @@ export function CalibrationStage() {
       </div>
 
       {/* Feedback note */}
-      <p className="text-micro text-gray-400 text-center">
+      <p className="text-micro lia-text-secondary text-center">
         Suas avaliações ajudam a LIA a entender melhor o perfil ideal para esta vaga
       </p>
     </div>

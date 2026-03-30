@@ -41,7 +41,7 @@ function ScoreBar({ value, max = 100 }: { value: number | null; max?: number }) 
   const pct = Math.round((value / max) * 100)
   return (
     <div className="flex items-center gap-1.5">
-      <div className="flex-1 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full">
+      <div className="flex-1 h-1.5 bg-gray-200 dark:bg-lia-bg-elevated rounded-full">
         <div
           className={cn(
             "h-1.5 rounded-full",
@@ -122,14 +122,14 @@ export function CandidateCompareModal({
 
             {/* Scores gerais */}
             <div>
-              <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              <p className="text-xs font-semibold text-gray-700 dark:text-lia-text-secondary mb-2">
                 Score Geral
               </p>
               <div className="grid gap-1.5">
                 {Object.entries(data.candidate_scores).map(([cId, score]) => (
                   <div key={cId} className="grid grid-cols-[1fr_auto] items-center gap-2">
                     <div>
-                      <p className="text-micro font-medium text-gray-800 dark:text-gray-200 truncate">
+                      <p className="text-micro font-medium text-gray-800 dark:text-lia-text-primary truncate">
                         {nameById[cId] || cId}
                       </p>
                       <ScoreBar value={score} />
@@ -145,7 +145,7 @@ export function CandidateCompareModal({
             {/* Dimensões */}
             {Object.keys(data.dimension_comparison).length > 0 && (
               <div>
-                <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                <p className="text-xs font-semibold text-gray-700 dark:text-lia-text-secondary mb-2">
                   Por Dimensão
                 </p>
                 <div className="space-y-2">
@@ -178,8 +178,8 @@ export function CandidateCompareModal({
 
             {/* Análise */}
             {data.analysis && (
-              <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
-                <p className="text-micro text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-4">
+              <div className="pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
+                <p className="text-micro text-gray-600 dark:text-lia-text-tertiary leading-relaxed line-clamp-4">
                   {data.analysis}
                 </p>
               </div>

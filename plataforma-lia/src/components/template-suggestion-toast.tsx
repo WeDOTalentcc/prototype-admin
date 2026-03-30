@@ -100,7 +100,7 @@ export function TemplateSuggestionToast({
     } else if (suggestion.complexity >= 8) {
       return <Brain className="w-4 h-4 text-wedo-cyan" />
     } else {
-      return <Lightbulb className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+      return <Lightbulb className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
     }
   }
 
@@ -111,23 +111,23 @@ export function TemplateSuggestionToast({
     } else if (suggestion.complexity >= 8) {
       return 'bg-wedo-purple/15 text-wedo-purple border-wedo-purple/30'
     } else {
-      return 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600'
+      return 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default'
     }
   }
 
   return (
     <div
-      className={`fixed ${getPositionClasses()} z-50 transform transition-all duration-300 ease-in-out ${
+      className={`fixed ${getPositionClasses()} z-50 transform transition-colors duration-300 ease-in-out ${
         isDismissing ? 'translate-y-full opacity-0' : 'translate-y-0 opacity-100'
       }`}
     >
-      <Card className="w-80 border-l-4 border-l-gray-400 dark:border-l-gray-500 bg-white dark:bg-gray-800">
+      <Card className="w-80 border-l-4 border-l-gray-400 dark:border-l-gray-500 bg-white dark:bg-lia-bg-secondary">
         <CardContent className="p-4">
           {/* Header */}
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               {getReasonIcon()}
-              <span className="font-medium text-gray-950 dark:text-gray-50 text-sm">
+              <span className="font-medium text-gray-950 text-sm">
                 Sugestão de Template
               </span>
             </div>
@@ -135,7 +135,7 @@ export function TemplateSuggestionToast({
               variant="ghost"
               size="sm"
               onClick={handleDismiss}
-              className="h-6 w-6 p-0 text-gray-600 hover:text-gray-600"
+              className="h-6 w-6 p-0 lia-text-base hover:lia-text-base"
             >
               <X className="w-3 h-3" />
             </Button>
@@ -149,17 +149,17 @@ export function TemplateSuggestionToast({
           </div>
 
           {/* Comando */}
-          <div className="mb-3 p-2 bg-gray-50 dark:bg-gray-700 rounded-md text-xs font-mono text-gray-800 dark:text-gray-200 line-clamp-2">
+          <div className="mb-3 p-2 bg-gray-50 dark:bg-lia-bg-elevated rounded-md text-xs font-mono text-gray-800 dark:text-lia-text-primary line-clamp-2">
             "{suggestion.command}"
           </div>
 
           {/* Benefícios */}
           <div className="grid grid-cols-2 gap-2 mb-4 text-xs">
-            <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
+            <div className="flex items-center gap-1 text-gray-600 dark:text-lia-text-tertiary">
               <Clock className="w-3 h-3" />
               <span>~{Math.round(suggestion.estimatedTime/60)}min economia</span>
             </div>
-            <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
+            <div className="flex items-center gap-1 text-gray-600 dark:text-lia-text-tertiary">
               <FileText className="w-3 h-3" />
               <span>Complexidade {suggestion.complexity}/10</span>
             </div>
@@ -169,7 +169,7 @@ export function TemplateSuggestionToast({
           <div className="space-y-2">
             <Button
               onClick={handleCreateTemplate}
-              className="w-full gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 text-sm h-8"
+              className="w-full gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 text-sm h-8"
             >
               <Archive className="w-3 h-3" />
               Criar Template
@@ -189,7 +189,7 @@ export function TemplateSuggestionToast({
                 variant="ghost"
                 size="sm"
                 onClick={onNotAskAgain}
-                className="flex-1 text-xs h-7 text-gray-800 hover:text-gray-800"
+                className="flex-1 text-xs h-7 lia-text-strong hover:lia-text-strong"
               >
                 Não Perguntar
               </Button>
@@ -197,11 +197,11 @@ export function TemplateSuggestionToast({
           </div>
 
           {/* Footer */}
-          <div className="mt-3 pt-2 border-t border-gray-200 dark:border-gray-600 flex items-center justify-between text-xs text-gray-800 dark:text-gray-200">
+          <div className="mt-3 pt-2 border-t border-lia-border-subtle dark:border-lia-border-default flex items-center justify-between text-xs text-gray-800 dark:text-lia-text-primary">
             <span>💡 LIA Intelligence</span>
             <button
               onClick={() => {/* Abrir configurações */}}
-              className="hover:text-gray-700 transition-colors"
+              className="hover:lia-text-base transition-colors"
             >
               <Settings className="w-3 h-3" />
             </button>
@@ -210,9 +210,9 @@ export function TemplateSuggestionToast({
       </Card>
 
       {/* Indicador de progresso (auto-dismiss) */}
-      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200 dark:bg-gray-700 rounded-b">
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200 dark:bg-lia-bg-elevated rounded-b">
         <div
-          className="h-full bg-gray-700 dark:bg-gray-300 rounded-b transition-all duration-[15000ms] ease-linear"
+          className="h-full bg-gray-700 rounded-b transition-[width,height] duration-[15000ms] ease-linear"
           style={{width: isVisible ? '0%' : '100%'}}
         />
       </div>

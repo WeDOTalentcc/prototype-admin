@@ -47,7 +47,7 @@ const STATUS_CONFIG = {
   healthy:  { label: "Saudável",  color: "bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success", icon: CheckCircle2 },
   warning:  { label: "Atenção",   color: "bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning", icon: AlertTriangle },
   degraded: { label: "Degradado", color: "bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error", icon: TrendingDown },
-  stale:    { label: "Inativo",   color: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400", icon: Clock },
+  stale:    { label: "Inativo",   color: "bg-gray-100 lia-text-600 dark:bg-lia-bg-secondary dark:text-lia-text-tertiary", icon: Clock },
 }
 
 const DOMAIN_LABELS: Record<string, string> = {
@@ -101,17 +101,17 @@ export default function AgentHealthDashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+          <h1 className="text-lg font-semibold lia-text-900 dark:text-lia-text-primary flex items-center gap-2">
             <Activity className="h-5 w-5" />
             Saúde dos Agentes IA
           </h1>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+          <p className="text-xs lia-text-500 dark:text-lia-text-tertiary mt-0.5">
             Métricas de execução por domínio — baseado em registros reais
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Select value={windowDays} onValueChange={setWindowDays}>
-            <SelectTrigger className="w-32 h-8 text-xs rounded-md border-gray-200 dark:border-gray-700">
+            <SelectTrigger className="w-32 h-8 text-xs rounded-md border-lia-border-subtle dark:border-lia-border-subtle">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -143,11 +143,11 @@ export default function AgentHealthDashboardPage() {
           { label: "Saudáveis",  value: healthyCnt,  color: "text-status-success dark:text-status-success" },
           { label: "Atenção",    value: warningCnt,  color: "text-status-warning dark:text-status-warning" },
           { label: "Degradados", value: degradedCnt, color: "text-status-error dark:text-status-error" },
-          { label: "Inativos",   value: staleCnt,    color: "text-gray-500 dark:text-gray-400" },
+          { label: "Inativos",   value: staleCnt,    color: "lia-text-500 dark:text-lia-text-tertiary" },
         ].map((item) => (
-          <Card key={item.label} className="rounded-md border border-gray-200 dark:border-gray-700 shadow-none">
+          <Card key={item.label} className="rounded-md border border-lia-border-subtle dark:border-lia-border-subtle shadow-none">
             <CardContent className="p-4">
-              <p className="text-xs text-gray-500 dark:text-gray-400">{item.label}</p>
+              <p className="text-xs lia-text-500 dark:text-lia-text-tertiary">{item.label}</p>
               <p className={`text-2xl font-semibold mt-1 ${item.color}`}>{item.value}</p>
             </CardContent>
           </Card>
@@ -157,7 +157,7 @@ export default function AgentHealthDashboardPage() {
       {/* Estado de carregamento / erro */}
       {loading && (
         <div className="flex justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+          <Loader2 className="h-6 w-6 animate-spin lia-text-400" />
         </div>
       )}
 
@@ -168,25 +168,25 @@ export default function AgentHealthDashboardPage() {
       )}
 
       {!loading && !error && domains.length === 0 && (
-        <div className="rounded-md border border-gray-200 dark:border-gray-700 p-8 text-center text-xs text-gray-400">
+        <div className="rounded-md border border-lia-border-subtle dark:border-lia-border-subtle p-8 text-center text-xs lia-text-400">
           Nenhum dado de execução encontrado nos últimos {windowDays} dias.
         </div>
       )}
 
       {/* Tabela de domínios */}
       {!loading && domains.length > 0 && (
-        <Card className="rounded-md border border-gray-200 dark:border-gray-700 shadow-none">
-          <CardHeader className="py-3 px-4 border-b border-gray-200 dark:border-gray-700">
-            <CardTitle className="text-xs font-medium text-gray-700 dark:text-gray-300">
+        <Card className="rounded-md border border-lia-border-subtle dark:border-lia-border-subtle shadow-none">
+          <CardHeader className="py-3 px-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+            <CardTitle className="text-xs font-medium lia-text-700 dark:text-lia-text-secondary">
               Métricas por Domínio
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <table className="w-full text-xs">
               <thead>
-                <tr className="border-b border-gray-100 dark:border-gray-800">
+                <tr className="border-b border-lia-border-subtle dark:lia-border-800">
                   {["Domínio", "Status", "Execuções", "Confiança Média", "Falha Tools", "Iterações", "Duração (ms)", "Última Execução"].map((h) => (
-                    <th key={h} className="text-left px-4 py-2.5 text-gray-500 dark:text-gray-400 font-medium">
+                    <th key={h} className="text-left px-4 py-2.5 lia-text-500 dark:text-lia-text-tertiary font-medium">
                       {h}
                     </th>
                   ))}
@@ -200,11 +200,11 @@ export default function AgentHealthDashboardPage() {
                   return (
                     <tr
                       key={domain.domain}
-                      className="border-b border-gray-50 dark:border-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors"
+                      className="border-b border-gray-50 dark:lia-border-800/50 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors"
                     >
-                      <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
+                      <td className="px-4 py-3 font-medium lia-text-900 dark:text-lia-text-primary">
                         <span className="flex items-center gap-1.5">
-                          <Zap className="h-3 w-3 text-gray-400" />
+                          <Zap className="h-3 w-3 lia-text-400" />
                           {label}
                         </span>
                       </td>
@@ -214,26 +214,26 @@ export default function AgentHealthDashboardPage() {
                           {cfg.label}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
+                      <td className="px-4 py-3 lia-text-700 dark:text-lia-text-secondary">
                         {domain.total_executions.toLocaleString("pt-BR")}
                       </td>
-                      <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
+                      <td className="px-4 py-3 lia-text-700 dark:text-lia-text-secondary">
                         <span className={domain.avg_confidence < 0.5 ? "text-status-error dark:text-status-error" : ""}>
                           {(domain.avg_confidence * 100).toFixed(1)}%
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
+                      <td className="px-4 py-3 lia-text-700 dark:text-lia-text-secondary">
                         <span className={domain.tool_failure_rate > 0.1 ? "text-status-warning dark:text-status-warning" : ""}>
                           {(domain.tool_failure_rate * 100).toFixed(1)}%
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
+                      <td className="px-4 py-3 lia-text-700 dark:text-lia-text-secondary">
                         {domain.avg_iterations.toFixed(1)}
                       </td>
-                      <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
+                      <td className="px-4 py-3 lia-text-700 dark:text-lia-text-secondary">
                         {domain.avg_duration_ms > 0 ? domain.avg_duration_ms.toFixed(0) : "—"}
                       </td>
-                      <td className="px-4 py-3 text-gray-500 dark:text-gray-400">
+                      <td className="px-4 py-3 lia-text-500 dark:text-lia-text-tertiary">
                         {domain.days_since_last_execution !== null
                           ? domain.days_since_last_execution === 0
                             ? "Hoje"

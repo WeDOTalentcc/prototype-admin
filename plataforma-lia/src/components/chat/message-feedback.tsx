@@ -73,10 +73,10 @@ export function MessageFeedback({
       <button
         onClick={() => handleThumbs('up')}
         className={cn(
-          "p-1.5 rounded-md transition-all focus-visible:ring-2 focus-visible:ring-gray-400",
+          "p-1.5 rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-gray-400",
           thumbsState === 'up'
             ? "bg-status-success/15 text-status-success dark:text-status-success"
-            : "text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+            : "lia-text-400 hover:lia-text-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:lia-text-300"
         )}
         title="Resposta útil"
         aria-label="Resposta útil"
@@ -87,10 +87,10 @@ export function MessageFeedback({
       <button
         onClick={() => handleThumbs('down')}
         className={cn(
-          "p-1.5 rounded-md transition-all focus-visible:ring-2 focus-visible:ring-gray-400",
+          "p-1.5 rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-gray-400",
           thumbsState === 'down'
             ? "bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error"
-            : "text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+            : "lia-text-400 hover:lia-text-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:lia-text-300"
         )}
         title="Resposta não útil"
         aria-label="Resposta não útil"
@@ -102,10 +102,10 @@ export function MessageFeedback({
         <PopoverTrigger asChild>
           <button
             className={cn(
-              "p-1.5 rounded-md transition-all focus-visible:ring-2 focus-visible:ring-gray-400",
+              "p-1.5 rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-gray-400",
               rating > 0
                 ? "bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning"
-                : "text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                : "lia-text-400 hover:lia-text-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:lia-text-300"
             )}
             title="Avaliar resposta"
             aria-label="Avaliar resposta"
@@ -115,7 +115,7 @@ export function MessageFeedback({
         </PopoverTrigger>
         <PopoverContent className="w-auto p-3" align="start" sideOffset={8}>
           <div className="flex flex-col gap-2">
-            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+            <span className="text-xs font-medium lia-text-700 dark:text-lia-text-secondary">
               Avalie esta resposta
             </span>
             <div className="flex gap-1">
@@ -127,15 +127,15 @@ export function MessageFeedback({
                   onMouseLeave={() => setHoveredStar(0)}
                   aria-label={`Avaliar ${star} estrela${star > 1 ? 's' : ''}`}
                   className={cn(
-                    "p-1 rounded-md transition-all focus-visible:ring-2 focus-visible:ring-gray-400",
+                    "p-1 rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-gray-400",
                     (hoveredStar >= star || rating >= star)
                       ? "text-status-warning"
-                      : "text-gray-300 dark:text-gray-600"
+                      : "lia-text-300 dark:lia-text-600"
                   )}
                 >
                   <Star 
                     className={cn(
-                      "w-5 h-5 transition-all",
+                      "w-5 h-5 transition-colors",
                       (hoveredStar >= star || rating >= star) && "fill-current"
                     )} 
                   />
@@ -156,10 +156,10 @@ export function MessageFeedback({
         <PopoverTrigger asChild>
           <button
             className={cn(
-              "p-1.5 rounded-md transition-all focus-visible:ring-2 focus-visible:ring-gray-400",
+              "p-1.5 rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-gray-400",
               correctionSubmitted
                 ? "bg-wedo-cyan/15 text-wedo-cyan-dark dark:text-wedo-cyan-dark"
-                : "text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                : "lia-text-400 hover:lia-text-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:lia-text-300"
             )}
             title="Sugerir correção"
             aria-label="Sugerir correção"
@@ -170,10 +170,10 @@ export function MessageFeedback({
         <PopoverContent className="w-80 p-3" align="start" sideOffset={8}>
           <div className="flex flex-col gap-3">
             <div>
-              <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+              <span className="text-xs font-medium lia-text-700 dark:text-lia-text-secondary">
                 Sugerir correção
               </span>
-              <p className="text-micro text-gray-500 dark:text-gray-400 mt-0.5">
+              <p className="text-micro lia-text-500 dark:text-lia-text-tertiary mt-0.5">
                 Ajude a LIA a melhorar suas respostas
               </p>
             </div>

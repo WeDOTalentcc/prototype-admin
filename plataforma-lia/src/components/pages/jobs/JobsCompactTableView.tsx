@@ -49,6 +49,7 @@ interface JobsCompactTableViewProps {
   onColumnResize: (column: string, e: React.MouseEvent) => void
 }
 
+// [OPT-043] TODO: revisar inline styles dinâmicos (20 ocorrências)
 const jobsColumnConfig: Record<string, { label: string; sortable: boolean; align: 'left' | 'center' | 'right' }> = {
   checkbox: { label: '', sortable: false, align: 'center' },
   id: { label: 'ID', sortable: true, align: 'left' },
@@ -107,37 +108,37 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
           <thead>
             <tr className="">
               <th className="py-3 px-3 text-center w-12">
-                <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse mx-auto" />
+                <div className="w-4 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse mx-auto" />
               </th>
               <th className="py-3 px-3 text-left w-[80px]">
-                <div className="w-8 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse" />
+                <div className="w-8 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse" />
               </th>
               <th className="py-3 px-3 text-left w-[200px]">
-                <div className="w-16 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse" />
+                <div className="w-16 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse" />
               </th>
               <th className="py-3 px-3 text-center w-[100px]">
-                <div className="w-20 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse mx-auto" />
+                <div className="w-20 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse mx-auto" />
               </th>
               <th className="py-3 px-3 text-left w-[180px]">
-                <div className="w-32 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse" />
+                <div className="w-32 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse" />
               </th>
               <th className="py-3 px-3 text-left w-[100px]">
-                <div className="w-14 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse" />
+                <div className="w-14 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse" />
               </th>
               <th className="py-3 px-3 text-left w-[60px]">
-                <div className="w-10 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse" />
+                <div className="w-10 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse" />
               </th>
               <th className="py-3 px-3 text-left w-[120px]">
-                <div className="w-20 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse" />
+                <div className="w-20 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse" />
               </th>
               <th className="py-3 px-3 text-left w-[100px]">
-                <div className="w-14 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse" />
+                <div className="w-14 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse" />
               </th>
               <th className="py-3 px-3 text-center w-[100px]">
-                <div className="w-16 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse mx-auto" />
+                <div className="w-16 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse mx-auto" />
               </th>
               <th className="py-3 px-3 text-center w-[80px]">
-                <div className="w-12 h-4 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse mx-auto" />
+                <div className="w-12 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse mx-auto" />
               </th>
             </tr>
           </thead>
@@ -145,49 +146,49 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
             {[1, 2, 3, 4, 5, 6, 7, 8].map((row) => (
               <tr key={row} className="">
                 <td className="py-3 px-3 text-center">
-                  <div className="w-4 h-4 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse mx-auto" />
+                  <div className="w-4 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse mx-auto" />
                 </td>
                 <td className="py-3 px-3">
-                  <div className="w-16 h-4 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse" />
+                  <div className="w-16 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse" />
                 </td>
                 <td className="py-3 px-3">
                   <div className="space-y-1">
-                    <div className="w-40 h-4 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse" />
-                    <div className="w-24 h-3 bg-gray-50 dark:bg-gray-800/50 rounded-md animate-pulse" />
+                    <div className="w-40 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse" />
+                    <div className="w-24 h-3 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md animate-pulse" />
                   </div>
                 </td>
                 <td className="py-3 px-3 text-center">
-                  <div className="w-8 h-6 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse mx-auto" />
+                  <div className="w-8 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse mx-auto" />
                 </td>
                 <td className="py-3 px-3">
                   <div className="flex gap-1">
-                    <div className="w-6 h-4 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse" />
-                    <div className="w-6 h-4 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse" />
-                    <div className="w-6 h-4 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse" />
-                    <div className="w-6 h-4 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse" />
-                    <div className="w-6 h-4 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse" />
+                    <div className="w-6 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse" />
+                    <div className="w-6 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse" />
+                    <div className="w-6 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse" />
+                    <div className="w-6 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse" />
+                    <div className="w-6 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse" />
                   </div>
                 </td>
                 <td className="py-3 px-3">
-                  <div className="w-16 h-5 bg-gray-100 dark:bg-gray-800 rounded-full animate-pulse" />
+                  <div className="w-16 h-5 bg-gray-100 dark:bg-lia-bg-secondary rounded-full animate-pulse" />
                 </td>
                 <td className="py-3 px-3">
-                  <div className="w-8 h-4 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse" />
+                  <div className="w-8 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse" />
                 </td>
                 <td className="py-3 px-3">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded-full animate-pulse" />
-                    <div className="w-20 h-4 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse" />
+                    <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-full animate-pulse" />
+                    <div className="w-20 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse" />
                   </div>
                 </td>
                 <td className="py-3 px-3">
-                  <div className="w-20 h-4 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse" />
+                  <div className="w-20 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse" />
                 </td>
                 <td className="py-3 px-3 text-center">
-                  <div className="w-16 h-5 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse mx-auto" />
+                  <div className="w-16 h-5 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse mx-auto" />
                 </td>
                 <td className="py-3 px-3 text-center">
-                  <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse mx-auto" />
+                  <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse mx-auto" />
                 </td>
               </tr>
             ))}
@@ -206,7 +207,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
   return (
     <div className="overflow-auto h-full">
       <table className="w-full table-fixed">
-        <thead className="sticky top-0 z-10 bg-white dark:bg-gray-900">
+        <thead className="sticky top-0 z-10 bg-white dark:bg-lia-bg-primary">
           <tr className="">
             {jobsColumnOrder.filter((columnId) => {
               if (columnId === 'checkbox' || columnId === 'acoes') return true
@@ -245,11 +246,11 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                 return (
                   <th 
                     key={columnId} 
-                    className="text-center py-3 px-3 text-xs font-semibold text-gray-950 dark:text-gray-200"
+                    className="text-center py-3 px-3 text-xs font-semibold text-gray-950 dark:text-lia-text-primary"
                     style={{width: jobsColumnWidths.acoes}} /* dynamic */
                   >
                     <span className="sr-only">Ações</span>
-                    <MoreVertical className="w-4 h-4 text-gray-800 dark:text-gray-200 mx-auto" aria-hidden="true" />
+                    <MoreVertical className="w-4 h-4 text-gray-800 dark:text-lia-text-primary mx-auto" aria-hidden="true" />
                   </th>
                 )
               }
@@ -262,7 +263,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                 <th
                   key={columnId}
                   className={`
-                    text-${config.align} py-3 px-3 text-xs font-semibold text-gray-950 dark:text-gray-200 
+                    text-${config.align} py-3 px-3 text-xs font-semibold text-gray-950 dark:text-lia-text-primary 
                     relative group select-none
                     ${isDragging ? 'opacity-50' : ''}
                     ${isDragOver ? 'bg-wedo-cyan/10 dark:bg-wedo-cyan/20' : ''}
@@ -341,7 +342,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                         if (columnId === 'id') {
                           return (
                             <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}} /* dynamic */>
-                              <span className="text-xs font-normal text-gray-800 dark:text-gray-200">
+                              <span className="text-xs font-normal text-gray-800 dark:text-lia-text-primary">
                                 V{job.id.toString().padStart(4, '0')}
                               </span>
                             </td>
@@ -354,7 +355,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                               <div>
                                 <div className="font-semibold text-xs text-gray-950 dark:text-gray-50 flex items-center gap-1">
                                   {pinnedJobs.has(job.id) && (
-                                    <Pin className="w-3 h-3 text-gray-800 dark:text-gray-200 fill-current" />
+                                    <Pin className="w-3 h-3 text-gray-800 dark:text-lia-text-primary fill-current" />
                                   )}
                                   {job.title}
                                   {(job.visibility === 'confidential' || job.isConfidential) && (
@@ -364,7 +365,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   )}
                                   {job.visibility === 'internal' && (
                                     <span title="Vaga Interna" className="flex items-center">
-                                      <Building className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                                      <Building className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                                     </span>
                                   )}
                                   {job.visibility === 'hidden' && (
@@ -396,7 +397,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   </span>
                                 </div>
                                 <div className="absolute bottom-full mb-2 hidden group-hover:block z-50">
-                                  <div className="bg-gray-900 dark:bg-gray-700 text-white px-3 py-2 rounded-md text-xs min-w-sidebar-content">
+                                  <div className="bg-gray-900 dark:bg-lia-bg-elevated text-white px-3 py-2 rounded-md text-xs min-w-sidebar-content">
                                     <div className="font-semibold mb-2">Funil de Candidatos</div>
                                     <div className="space-y-1.5 mb-2">
                                       <div className="flex items-center justify-between">
@@ -440,7 +441,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                         </span>
                                       </div>
                                     </div>
-                                    <div className="absolute top-full left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-gray-700"></div>
+                                    <div className="absolute top-full left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-lia-bg-elevated"></div>
                                   </div>
                                 </div>
                               </div>
@@ -478,75 +479,75 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                 <div className="flex items-center gap-0.5">
                                   <div className="flex flex-col items-center group relative cursor-help">
                                     <div 
-                                      className="h-6 rounded-md flex items-center justify-center transition-all hover:ring-2 hover:scale-105 bg-gray-200" 
+                                      className="h-6 rounded-md flex items-center justify-center transition-[color,background-color,border-color,transform] hover:ring-2 hover:scale-105 bg-gray-200" 
                                       style={{width: `${getCardWidth(liaTriages.pipeline)}px`,
                                         minWidth: '24px'}} /* dynamic */>
-                                      <span className="text-xs font-normal text-gray-950 dark:text-gray-200">
+                                      <span className="text-xs font-normal text-gray-950 dark:text-lia-text-primary">
                                         {liaTriages.pipeline}
                                       </span>
                                     </div>
                                     <div className="absolute bottom-full mb-2 hidden group-hover:block z-50">
-                                      <div className="bg-gray-900 dark:bg-gray-700 text-white px-3 py-2 rounded-md whitespace-nowrap text-xs">
+                                      <div className="bg-gray-900 dark:bg-lia-bg-elevated text-white px-3 py-2 rounded-md whitespace-nowrap text-xs">
                                         <div className="font-semibold mb-1 flex items-center gap-1">
                                           <Brain className="w-3 h-3 text-wedo-cyan" />
                                           Pipeline LIA
                                         </div>
                                         <div className="text-xs text-gray-500">{liaTriages.pipeline} candidatos contatados</div>
-                                        <div className="absolute top-full left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-gray-700"></div>
+                                        <div className="absolute top-full left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-lia-bg-elevated"></div>
                                       </div>
                                     </div>
                                   </div>
                                   <ChevronRight className="w-2 h-2 text-gray-800 flex-shrink-0" />
                                   <div className="flex flex-col items-center group relative cursor-help">
                                     <div 
-                                      className="h-6 rounded-md flex items-center justify-center transition-all hover:ring-2 hover:scale-105 bg-gray-300" 
+                                      className="h-6 rounded-md flex items-center justify-center transition-[color,background-color,border-color,transform] hover:ring-2 hover:scale-105 bg-gray-300" 
                                       style={{width: `${getCardWidth(liaTriages.agendadas)}px`,
                                         minWidth: '24px'}} /* dynamic */>
-                                      <span className="text-xs font-normal text-gray-950 dark:text-gray-200">
+                                      <span className="text-xs font-normal text-gray-950 dark:text-lia-text-primary">
                                         {liaTriages.agendadas}
                                       </span>
                                     </div>
                                     <div className="absolute bottom-full mb-2 hidden group-hover:block z-50">
-                                      <div className="bg-gray-900 dark:bg-gray-700 text-white px-3 py-2 rounded-md whitespace-nowrap text-xs">
+                                      <div className="bg-gray-900 dark:bg-lia-bg-elevated text-white px-3 py-2 rounded-md whitespace-nowrap text-xs">
                                         <div className="font-semibold mb-1">Triagens Agendadas</div>
                                         <div className="text-xs text-gray-500">{liaTriages.agendadas} triagens marcadas</div>
-                                        <div className="absolute top-full left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-gray-700"></div>
+                                        <div className="absolute top-full left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-lia-bg-elevated"></div>
                                       </div>
                                     </div>
                                   </div>
                                   <ChevronRight className="w-2 h-2 text-gray-800 flex-shrink-0" />
                                   <div className="flex flex-col items-center group relative cursor-help">
                                     <div 
-                                      className="h-6 rounded-md flex items-center justify-center transition-all hover:ring-2 hover:scale-105 bg-wedo-green-pastel" 
+                                      className="h-6 rounded-md flex items-center justify-center transition-[color,background-color,border-color,transform] hover:ring-2 hover:scale-105 bg-wedo-green-pastel" 
                                       style={{width: `${getCardWidth(liaTriages.realizadas)}px`,
                                         minWidth: '24px'}} /* dynamic */>
-                                      <span className="text-xs font-normal text-gray-950 dark:text-gray-200">
+                                      <span className="text-xs font-normal text-gray-950 dark:text-lia-text-primary">
                                         {liaTriages.realizadas}
                                       </span>
                                     </div>
                                     <div className="absolute bottom-full mb-2 hidden group-hover:block z-50">
-                                      <div className="bg-gray-900 dark:bg-gray-700 text-white px-3 py-2 rounded-md whitespace-nowrap text-xs">
+                                      <div className="bg-gray-900 dark:bg-lia-bg-elevated text-white px-3 py-2 rounded-md whitespace-nowrap text-xs">
                                         <div className="font-semibold mb-1">Triagens Completas</div>
                                         <div className="text-xs text-gray-500">{liaTriages.realizadas} triagens finalizadas</div>
-                                        <div className="absolute top-full left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-gray-700"></div>
+                                        <div className="absolute top-full left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-lia-bg-elevated"></div>
                                       </div>
                                     </div>
                                   </div>
                                   <ChevronRight className="w-2 h-2 text-gray-800 flex-shrink-0" />
                                   <div className="flex flex-col items-center group relative cursor-help">
                                     <div 
-                                      className="h-6 rounded-md flex items-center justify-center transition-all hover:ring-2 hover:scale-105 bg-gray-200" 
+                                      className="h-6 rounded-md flex items-center justify-center transition-[color,background-color,border-color,transform] hover:ring-2 hover:scale-105 bg-gray-200" 
                                       style={{width: `${getCardWidth(liaTriages.entrevistasAgendadas)}px`,
                                         minWidth: '24px'}} /* dynamic */>
-                                      <span className="text-xs font-normal text-gray-950 dark:text-gray-200">
+                                      <span className="text-xs font-normal text-gray-950 dark:text-lia-text-primary">
                                         {liaTriages.entrevistasAgendadas}
                                       </span>
                                     </div>
                                     <div className="absolute bottom-full mb-2 hidden group-hover:block z-50">
-                                      <div className="bg-gray-900 dark:bg-gray-700 text-white px-3 py-2 rounded-md whitespace-nowrap text-xs">
+                                      <div className="bg-gray-900 dark:bg-lia-bg-elevated text-white px-3 py-2 rounded-md whitespace-nowrap text-xs">
                                         <div className="font-semibold mb-1">Entrevistas Agendadas</div>
                                         <div className="text-xs text-gray-500">{liaTriages.entrevistasAgendadas} entrevistas marcadas</div>
-                                        <div className="absolute top-full left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-gray-700"></div>
+                                        <div className="absolute top-full left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-lia-bg-elevated"></div>
                                       </div>
                                     </div>
                                   </div>
@@ -605,7 +606,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                               <div className="flex items-center gap-2">
                                 <Avatar className="w-8 h-8">
                                   <AvatarImage src={`https://i.pravatar.cc/100?u=${job.recruiterEmail}`} />
-                                  <AvatarFallback className="text-xs bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+                                  <AvatarFallback className="text-xs bg-gray-200 text-gray-800 dark:bg-lia-bg-elevated dark:text-lia-text-primary">
                                     {job.recruiter.split(' ').map(n => n[0]).join('')}
                                   </AvatarFallback>
                                 </Avatar>
@@ -676,7 +677,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   <AlertTriangle className={`w-3.5 h-3.5 transition-colors ${
                                     isUrgent 
                                       ? 'text-status-error fill-red-100' 
-                                      : 'text-gray-800 dark:text-gray-200'
+                                      : 'text-gray-800 dark:text-lia-text-primary'
                                   }`} />
                                 </Button>
                                 <Button
@@ -684,7 +685,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   size="sm"
                                   className={`h-7 w-7 p-0 transition-colors ${
                                     isPinned 
-                                      ? 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700' 
+                                      ? 'bg-gray-100 hover:bg-gray-200 dark:bg-lia-bg-secondary dark:hover:bg-gray-700' 
                                       : 'hover:bg-gray-100 dark:hover:bg-gray-800'
                                   }`}
                                   onClick={(e) => {
@@ -696,7 +697,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   <Pin className={`w-3 h-3 transition-colors ${
                                     isPinned 
                                       ? 'text-gray-950 dark:text-gray-50 fill-current' 
-                                      : 'text-gray-800 dark:text-gray-200'
+                                      : 'text-gray-800 dark:text-lia-text-primary'
                                   }`} />
                                 </Button>
                                 <Button
@@ -716,7 +717,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   <Star className={`w-3 h-3 transition-colors ${
                                     isFavorite 
                                       ? 'text-status-warning fill-yellow-400' 
-                                      : 'text-gray-800 dark:text-gray-200'
+                                      : 'text-gray-800 dark:text-lia-text-primary'
                                   }`} />
                                 </Button>
                                 <Button
@@ -743,7 +744,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   }}
                                   title="Compartilhar vaga (copiar link público)"
                                 >
-                                  <Share2 className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
+                                  <Share2 className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
                                 </Button>
                                 <Button
                                   variant="ghost"
@@ -756,7 +757,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   }}
                                   title="Abrir Kanban da vaga"
                                 >
-                                  <ChevronRight className="w-4 h-4 text-gray-800 dark:text-gray-200" />
+                                  <ChevronRight className="w-4 h-4 text-gray-800 dark:text-lia-text-primary" />
                                 </Button>
                               </div>
                             </td>

@@ -162,7 +162,7 @@ const SmartSearchInput = dynamic(
   () => import("@/components/search/smart-search-input").then(m => ({ default: m.SmartSearchInput })).catch(() => {
     return { default: () => null as unknown }
   }),
-  { ssr: false, loading: () => <div className="h-12 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" /> }
+  { ssr: false, loading: () => <div className="h-12 bg-gray-100 dark:bg-lia-bg-secondary rounded-lg animate-pulse" /> }
 )
 const AdvancedFiltersModal = dynamic(() => import("@/components/search/advanced-filters-modal").then(m => ({ default: m.AdvancedFiltersModal })), { ssr: false })
 // Tipo para controle de origem de busca (local, global ou híbrido)
@@ -455,7 +455,7 @@ export function useCandidatesPageCore({ onAddRecentItem, pendingCandidateOpen, o
   // Estados para o novo sistema de pesquisa avançada da LIA - 6 abas
   type SearchTab = 'ia-natural' | 'similar' | 'job-description' | 'boolean' | 'arquetipos' | 'filtros'
   const [activeSearchTab, setActiveSearchTab] = useState<SearchTab>('ia-natural')
-  const [liaWidth, setLiaWidth] = useState(400) // Largura padrão 400px - ElevenLabs pattern
+  const [liaWidth, setLiaWidth] = useState(400) // Largura padrão 400px - WeDo DS — layout pattern
   const [isResizingLIA, setIsResizingLIA] = useState(false)
   const [isLiaSuperChat, setIsLiaSuperChat] = useState(false) // Modo superchat expandido
   
@@ -827,7 +827,7 @@ export function useCandidatesPageCore({ onAddRecentItem, pendingCandidateOpen, o
   // Funções utilitárias
   const getScoreColor = (score: number) => {
     if (score >= 90) return "bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success border-status-success/30 dark:border-status-success/30"
-    if (score >= 80) return "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700"
+    if (score >= 80) return "bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary border-lia-border-subtle dark:border-lia-border-subtle"
     if (score >= 70) return "bg-status-warning/15 dark:bg-status-warning/30 text-status-warning dark:text-status-warning border-status-warning/30 dark:border-status-warning/30"
     return "bg-status-error/15 dark:bg-status-error/30 text-status-error dark:text-status-error border-status-error/30 dark:border-status-error/30"
   }

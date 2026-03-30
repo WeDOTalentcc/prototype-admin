@@ -233,13 +233,13 @@ export function LiaAnalysisModal({
         {children}
       </PopoverTrigger>
       <PopoverContent 
-        className="w-[420px] p-0 border border-gray-200 rounded-md"
+        className="w-[420px] p-0 border border-lia-border-subtle rounded-md"
         side="left"
         align="start"
         sideOffset={8}
       >
         <div className="flex flex-col">
-          <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-100 bg-gray-50/50 rounded-t-lg">
+          <div className="flex items-center justify-between px-3 py-2.5 border-b border-lia-border-subtle bg-gray-50/50 rounded-t-lg">
             <div className="flex items-center gap-1.5">
               <Brain className="w-4 h-4 text-wedo-cyan" />
               <span className="text-xs font-semibold text-gray-950">Resumo do Perfil</span>
@@ -252,7 +252,7 @@ export function LiaAnalysisModal({
             </button>
           </div>
 
-          <div className="flex gap-1 px-3 py-2 border-b border-gray-100 bg-white">
+          <div className="flex gap-1 px-3 py-2 border-b border-lia-border-subtle bg-lia-bg-primary">
             {ANALYSIS_TABS.map(tab => (
               <button
                 key={tab.id}
@@ -268,11 +268,11 @@ export function LiaAnalysisModal({
             ))}
           </div>
 
-          <div className="min-h-[200px] max-h-[320px] overflow-y-auto p-4 bg-white">
+          <div className="min-h-[200px] max-h-[320px] overflow-y-auto p-4 bg-lia-bg-primary">
             {renderAnalysisContent(activeTab)}
           </div>
 
-          <div className="px-4 py-3 border-t border-gray-100 bg-gray-50/50 rounded-b-lg space-y-2">
+          <div className="px-4 py-3 border-t border-lia-border-subtle bg-gray-50/50 rounded-b-lg space-y-2">
             <div className="flex items-center justify-between">
               <p className="text-micro text-gray-600">Análise gerada pela LIA. Confirme informações.</p>
               <div className="flex items-center gap-1.5">
@@ -281,7 +281,7 @@ export function LiaAnalysisModal({
                   size="sm"
                   onClick={() => handleCopy(activeTab)}
                   disabled={!analyses[activeTab]?.content}
-                  className="h-7 px-2.5 gap-1 text-xs border-gray-200"
+                  className="h-7 px-2.5 gap-1 text-xs border-lia-border-subtle"
                 >
                   {copiedTab === activeTab ? (
                     <>
@@ -310,7 +310,7 @@ export function LiaAnalysisModal({
                   variant="outline"
                   size="sm"
                   onClick={handleTransport}
-                  className="w-full h-7 gap-1.5 text-xs border-gray-900 dark:border-gray-50 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:bg-gray-800"
+                  className="w-full h-7 gap-1.5 text-xs border-gray-900 dark:border-gray-50 text-gray-600 dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary"
                 >
                   <ArrowRight className="w-3.5 h-3.5" />
                   Transportar "{ANALYSIS_TABS.find(t => t.id === activeTab)?.label}" para Pareceres

@@ -107,8 +107,8 @@ export function RecruitmentJourneyConfig({
     if (el) {
       setTimeout(() => {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-        el.classList.add('ring-2', 'ring-gray-900', 'dark:ring-gray-100', 'ring-offset-2')
-        setTimeout(() => el.classList.remove('ring-2', 'ring-gray-900', 'dark:ring-gray-100', 'ring-offset-2'), 2000)
+        el.classList.add('ring-2', 'ring-gray-900', 'dark:lia-ring-100', 'ring-offset-2')
+        setTimeout(() => el.classList.remove('ring-2', 'ring-gray-900', 'dark:lia-ring-100', 'ring-offset-2'), 2000)
       }, 100)
     }
     setNewlyAddedStageId(null)
@@ -195,7 +195,7 @@ export function RecruitmentJourneyConfig({
       {!hideHeader && (
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className={`${textStyles.titleLarge} text-gray-800 dark:text-gray-100`}>
+            <h3 className={`${textStyles.titleLarge} lia-text-800 dark:text-lia-text-primary`}>
               Jornada de Recrutamento
             </h3>
             <p className={`${textStyles.description} mt-1`}>
@@ -208,14 +208,14 @@ export function RecruitmentJourneyConfig({
           {isEditMode && (
             <Popover open={catalogOpen} onOpenChange={setCatalogOpen}>
               <PopoverTrigger asChild>
-                <Button className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 rounded-md px-4 py-2 text-xs font-semibold transition-colors">
+                <Button className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 rounded-md px-4 py-2 text-xs font-semibold transition-colors">
                   <Plus className="h-4 w-4 mr-2" />
                   Adicionar etapa
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="end" className="w-80 p-0">
-                <div className="p-3 border-b border-gray-100 dark:border-gray-700">
-                  <h4 className={`${textStyles.bodyLarge} font-semibold text-gray-800 dark:text-gray-200`}>
+                <div className="p-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+                  <h4 className={`${textStyles.bodyLarge} font-semibold lia-text-800 dark:text-lia-text-primary`}>
                     Adicionar do Catálogo
                   </h4>
                 </div>
@@ -228,9 +228,9 @@ export function RecruitmentJourneyConfig({
                         className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors text-left"
                       >
                         <span className="w-3 h-3 rounded-full flex-shrink-0" style={{backgroundColor: cs.color || 'var(--gray-400)'}} />
-                        <span className={`flex-1 ${textStyles.body} text-gray-800 dark:text-gray-200`}>{cs.display_name}</span>
+                        <span className={`flex-1 ${textStyles.body} lia-text-800 dark:text-lia-text-primary`}>{cs.display_name}</span>
                         {cs.action_behavior && (
-                          <span className="text-micro text-gray-400">{getActionBehaviorShort(cs.action_behavior)}</span>
+                          <span className="text-micro lia-text-400">{getActionBehaviorShort(cs.action_behavior)}</span>
                         )}
                       </button>
                     ))
@@ -240,13 +240,13 @@ export function RecruitmentJourneyConfig({
                     </p>
                   )}
                 </div>
-                <div className="border-t border-gray-100 dark:border-gray-700 p-2">
+                <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle p-2">
                   <button
                     onClick={handleAddStage}
                     className="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors text-left"
                   >
-                    <Plus className="h-4 w-4 text-gray-500" />
-                    <span className={`${textStyles.body} text-gray-600 dark:text-gray-400`}>Criar etapa customizada</span>
+                    <Plus className="h-4 w-4 lia-text-500" />
+                    <span className={`${textStyles.body} lia-text-600 dark:text-lia-text-tertiary`}>Criar etapa customizada</span>
                   </button>
                 </div>
               </PopoverContent>
@@ -255,10 +255,10 @@ export function RecruitmentJourneyConfig({
         </div>
       )}
 
-      <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-900 rounded-md border border-gray-100 dark:border-gray-800">
+      <div className="mb-4 p-3 bg-gray-50 dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:lia-border-800">
         <div className={`flex items-center gap-4 flex-wrap ${textStyles.caption}`}>
           <div className="flex items-center gap-1">
-            <Lock className="h-3 w-3 text-gray-400" />
+            <Lock className="h-3 w-3 lia-text-400" />
             <span><strong>Sistema:</strong> SLA, ação e canal configuráveis — nome e exclusão bloqueados</span>
           </div>
           <div className="flex items-center gap-1">
@@ -300,7 +300,7 @@ export function RecruitmentJourneyConfig({
       )}
 
       {stages.length === 0 && (
-        <div className="text-center py-12 bg-gray-50 dark:bg-gray-900 rounded-md border-2 border-dashed border-gray-200 dark:border-gray-700">
+        <div className="text-center py-12 bg-gray-50 dark:bg-lia-bg-primary rounded-md border-2 border-dashed border-lia-border-subtle dark:border-lia-border-subtle">
           <p className={textStyles.bodyLarge}>
             Nenhuma etapa configurada. {isEditMode && 'Clique em "Adicionar etapa" para começar.'}
           </p>

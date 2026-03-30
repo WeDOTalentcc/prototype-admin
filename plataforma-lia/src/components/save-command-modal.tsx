@@ -48,7 +48,7 @@ export interface SavedCommandData {
 }
 
 const categories = [
-  { id: "candidates", name: "Candidatos", icon: Users, color: "text-gray-600 dark:text-gray-400" },
+  { id: "candidates", name: "Candidatos", icon: Users, color: "text-gray-600 dark:text-lia-text-tertiary" },
   { id: "jobs", name: "Vagas", icon: Briefcase, color: "text-status-success" },
   { id: "analytics", name: "Indicadores", icon: BarChart3, color: "text-wedo-purple" },
   { id: "automation", name: "Automações", icon: Zap, color: "text-wedo-orange" },
@@ -165,17 +165,17 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-3xl max-h-[90vh] bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 overflow-y-auto">
-        <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
+      <Card className="w-full max-w-3xl max-h-[90vh] bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle overflow-y-auto">
+        <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-wedo-purple/15 dark:bg-wedo-purple/20 rounded-md flex items-center justify-center">
               <BookOpen className="w-5 h-5 text-wedo-purple dark:text-wedo-purple" />
             </div>
             <div>
-              <CardTitle className="text-lg font-semibold text-gray-950 dark:text-gray-50">
+              <CardTitle className="text-lg font-semibold text-gray-950">
                 Salvar Novo Comando
               </CardTitle>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-gray-500 dark:text-lia-text-tertiary">
                 Adicione este comando à biblioteca da LIA para futuros usos
               </p>
             </div>
@@ -192,12 +192,12 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
 
         <CardContent className="space-y-6">
           {/* Comando Original */}
- <div className="bg-gray-100 dark:bg-gray-800 rounded-md p-4 border border-gray-300">
+ <div className="bg-gray-100 dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-default">
             <div className="flex items-center gap-2 mb-2">
-              <MessageCircle className="w-4 h-4 text-gray-600 dark:text-gray-400" />
- <span className="text-sm font-medium text-gray-600">Comando Original:</span>
+              <MessageCircle className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+ <span className="text-sm font-medium lia-text-base">Comando Original:</span>
             </div>
- <div className="text-sm text-gray-600 font-mono bg-white rounded-md p-2">
+ <div className="text-sm lia-text-base font-mono bg-lia-bg-primary rounded-md p-2">
               "{originalCommand}"
             </div>
           </div>
@@ -208,7 +208,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
               variant="outline"
               size="sm"
               onClick={() => setTitle(suggestTitle())}
-              className="gap-2 bg-white border border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700"
+              className="gap-2 bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700"
             >
               <Brain className="w-3 h-3 text-wedo-cyan" />
               Sugerir Título
@@ -217,7 +217,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
               variant="outline"
               size="sm"
               onClick={() => setSelectedCategory(suggestCategory())}
-              className="gap-2 bg-white border border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700"
+              className="gap-2 bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700"
             >
               <Tag className="w-3 h-3" />
               Sugerir Categoria
@@ -226,7 +226,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
 
           {/* Título */}
           <div>
-            <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+            <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
               Título do Comando *
             </label>
             <input
@@ -234,13 +234,13 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Ex: Análise Avançada de Candidatos"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-950 dark:text-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-gray-950 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
           </div>
 
           {/* Categoria */}
           <div>
-            <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+            <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
               Categoria *
             </label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -248,14 +248,14 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
                 <button
                   key={category.id}
                   onClick={() => setSelectedCategory(category.id)}
-                  className={`p-3 rounded-md border transition-all ${
-                    selectedCategory === category.id
+                  className={`p-3 rounded-md border transition-colors ${
+ selectedCategory === category.id
                       ? 'border-wedo-purple/30 bg-wedo-purple/10 dark:bg-wedo-purple/20'
-                      : 'border-gray-200 dark:border-gray-600 hover:border-wedo-purple/30'
+                      : 'border-lia-border-subtle dark:border-lia-border-default hover:border-wedo-purple/30'
                   }`}
                 >
                   <category.icon className={`w-5 h-5 mb-1 mx-auto ${category.color}`} />
-                  <div className="text-xs font-medium text-gray-950 dark:text-gray-50">
+                  <div className="text-xs font-medium text-gray-950">
                     {category.name}
                   </div>
                 </button>
@@ -265,7 +265,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
 
           {/* Descrição */}
           <div>
-            <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+            <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
               Descrição *
             </label>
             <textarea
@@ -273,19 +273,19 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Descreva o que este comando faz e quando deve ser usado..."
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-950 dark:text-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+              className="w-full px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-gray-950 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
             />
           </div>
 
           {/* Exemplos */}
           <div>
-            <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+            <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
               Exemplos de Uso
             </label>
             <div className="space-y-2">
               {examples.map((example, index) => (
                 <div key={index} className="flex items-center gap-2">
-                  <div className="flex-1 text-sm text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700 rounded-md px-3 py-2">
+                  <div className="flex-1 text-sm text-gray-800 dark:text-lia-text-primary bg-gray-50 dark:bg-lia-bg-elevated rounded-md px-3 py-2">
                     "{example}"
                   </div>
                   {examples.length > 1 && (
@@ -307,10 +307,10 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
                   value={newExample}
                   onChange={(e) => setNewExample(e.target.value)}
                   placeholder="Adicionar outro exemplo..."
-                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-950 dark:text-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="flex-1 px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-gray-950 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                   onKeyPress={(e) => e.key === 'Enter' && handleAddExample()}
                 />
-                <Button variant="outline" size="sm" onClick={handleAddExample} disabled={!newExample.trim()} className="bg-white border border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700">
+                <Button variant="outline" size="sm" onClick={handleAddExample} disabled={!newExample.trim()} className="bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700">
                   <Plus className="w-4 h-4" />
                 </Button>
               </div>
@@ -319,7 +319,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
 
           {/* Tags */}
           <div>
-            <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+            <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
               Tags (palavras-chave)
             </label>
             <div className="space-y-2">
@@ -330,7 +330,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
                       {tag}
                       <button
                         onClick={() => handleRemoveTag(tag)}
-                        className="ml-1 text-gray-700 hover:text-gray-900"
+                        className="ml-1 lia-text-base hover:lia-text-strong"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -345,10 +345,10 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
                   placeholder="Adicionar tag..."
-                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-950 dark:text-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="flex-1 px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-gray-950 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                   onKeyPress={(e) => e.key === 'Enter' && handleAddTag()}
                 />
-                <Button variant="outline" size="sm" onClick={handleAddTag} disabled={!newTag.trim()} className="bg-white border border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700">
+                <Button variant="outline" size="sm" onClick={handleAddTag} disabled={!newTag.trim()} className="bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700">
                   <Plus className="w-4 h-4" />
                 </Button>
               </div>
@@ -369,14 +369,14 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
           )}
 
           {/* Botões */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 bg-gray-50 dark:bg-gray-900 dark:border-gray-700 -mx-6 px-6 pb-0 mt-6">
-            <Button variant="outline" onClick={onClose} className="bg-white border border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700">
+          <div className="flex justify-end gap-3 pt-4 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle -mx-6 px-6 pb-0 mt-6">
+            <Button variant="outline" onClick={onClose} className="bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700">
               Cancelar
             </Button>
             <Button
               onClick={handleSave}
               disabled={!title.trim() || !description.trim() || isSaving}
-              className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+              className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
             >
               {isSaving ? (
                 <>

@@ -46,10 +46,10 @@ export function MatrixSection({
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400" >
+          <h3 className="text-sm font-medium lia-text-500 dark:text-lia-text-tertiary" >
             Matriz de Comunicações
           </h3>
-          <p className="text-xs mt-1 text-gray-400 dark:text-gray-500" >
+          <p className="text-xs mt-1 lia-text-400 dark:lia-text-500" >
             Configure todos os triggers de comunicação do sistema por módulo
           </p>
         </div>
@@ -83,7 +83,7 @@ export function MatrixSection({
           variant={selectedMatrixModule === null ? 'default' : 'outline'}
           size="sm"
           onClick={() => setSelectedMatrixModule(null)}
-          className={selectedMatrixModule === null ? 'bg-gray-900 dark:bg-gray-50 hover:bg-gray-800 dark:hover:bg-gray-200 text-white dark:text-gray-900' : ''}
+          className={selectedMatrixModule === null ? 'bg-gray-900 dark:lia-bg-50 hover:bg-gray-800 dark:hover:bg-gray-200 text-white dark:lia-text-900' : ''}
         >
           <Grid3X3 className="w-4 h-4 mr-2" />
           Todos
@@ -96,7 +96,7 @@ export function MatrixSection({
               variant={selectedMatrixModule === key ? 'default' : 'outline'}
               size="sm"
               onClick={() => setSelectedMatrixModule(key)}
-              className={selectedMatrixModule === key ? 'bg-gray-900 dark:bg-gray-50 hover:bg-gray-800 dark:hover:bg-gray-200 text-white dark:text-gray-900' : ''}
+              className={selectedMatrixModule === key ? 'bg-gray-900 dark:lia-bg-50 hover:bg-gray-800 dark:hover:bg-gray-200 text-white dark:lia-text-900' : ''}
             >
               {ModIcon && <ModIcon className="w-4 h-4 mr-2" />}
               <span className="mr-1">{emoji}</span>
@@ -108,23 +108,23 @@ export function MatrixSection({
 
       {matrixLoading && matrixModules.length === 0 ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-gray-700 dark:text-gray-300" />
-          <span className="ml-3 text-sm text-gray-500 dark:text-gray-400" >
+          <Loader2 className="w-8 h-8 animate-spin lia-text-700 dark:text-lia-text-secondary" />
+          <span className="ml-3 text-sm lia-text-500 dark:text-lia-text-tertiary" >
             Carregando matriz...
           </span>
         </div>
       ) : matrixModules.length === 0 ? (
         <Card className="flex flex-col items-center justify-center py-12">
-          <Grid3X3 className="w-12 h-12 mb-3 text-gray-400 dark:text-gray-500"  />
-          <p className="text-sm font-medium mb-1 text-gray-500 dark:text-gray-400" >
+          <Grid3X3 className="w-12 h-12 mb-3 lia-text-400 dark:lia-text-500"  />
+          <p className="text-sm font-medium mb-1 lia-text-500 dark:text-lia-text-tertiary" >
             Nenhuma configuração encontrada
           </p>
-          <p className="text-xs mb-4 text-gray-400 dark:text-gray-500" >
+          <p className="text-xs mb-4 lia-text-400 dark:lia-text-500" >
             Popule a matriz com os dados padrão para começar
           </p>
           <Button
             size="sm"
-            className="bg-gray-900 dark:bg-gray-50 hover:bg-gray-800 dark:hover:bg-gray-200"
+            className="bg-gray-900 dark:lia-bg-50 hover:bg-gray-800 dark:hover:bg-gray-200"
             onClick={handleSeedMatrix}
             disabled={seedingMatrix}
           >
@@ -147,15 +147,15 @@ export function MatrixSection({
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-100 dark:bg-gray-800">
-                        {ModIcon && <ModIcon className="w-5 h-5 text-gray-700 dark:text-gray-300" />}
+                      <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-100 dark:bg-lia-bg-secondary">
+                        {ModIcon && <ModIcon className="w-5 h-5 lia-text-700 dark:text-lia-text-secondary" />}
                       </div>
                       <div>
                         <CardTitle className="text-base flex items-center gap-2">
                           <span>{modLabel.emoji}</span>
                           {modLabel.label}
                         </CardTitle>
-                        <p className="text-xs text-gray-400 dark:text-gray-500" >
+                        <p className="text-xs lia-text-400 dark:lia-text-500" >
                           {mod.description || `${mod.totalEntries} triggers configurados`}
                         </p>
                       </div>
@@ -168,19 +168,19 @@ export function MatrixSection({
                 <CardContent className="pt-0">
                   <div className="space-y-3">
                     {mod.entries.map(entry => {
-                      const recipientInfo = recipientLabels[entry.recipientType] || { label: entry.recipientType, color: 'bg-gray-100 text-gray-600' }
+                      const recipientInfo = recipientLabels[entry.recipientType] || { label: entry.recipientType, color: 'bg-gray-100 lia-text-600' }
                       const isUpdating = updatingMatrixEntry === entry.id
                       
                       return (
                         <div
                           key={entry.id}
- className={`p-4 rounded-md border transition-all ${entry.isActive ? 'bg-white' : 'bg-gray-50 dark:bg-gray-800/50 opacity-60'}`}
-                          className="border-gray-200 dark:border-gray-700" 
+ className={`p-4 rounded-md border transition-opacity ${entry.isActive ? 'bg-white' : 'bg-gray-50 dark:bg-lia-bg-secondary/50 opacity-60'}`}
+                          className="border-lia-border-subtle dark:border-lia-border-subtle" 
                         >
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                <h4 className="font-medium text-sm truncate text-gray-800 dark:text-gray-100" >
+                                <h4 className="font-medium text-sm truncate lia-text-800 dark:text-lia-text-primary" >
                                   {entry.triggerName.replace(/_/g, ' ')}
                                 </h4>
                                 <Badge className={`text-xs ${recipientInfo.color}`}>
@@ -192,7 +192,7 @@ export function MatrixSection({
                                     Automático
                                   </Badge>
                                 ) : (
-                                  <Badge className="text-xs bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                                  <Badge className="text-xs bg-gray-100 lia-text-600 dark:bg-lia-bg-secondary dark:text-lia-text-tertiary">
                                     Manual
                                   </Badge>
                                 )}
@@ -204,17 +204,17 @@ export function MatrixSection({
                                 )}
                               </div>
                               {entry.triggerDescription && (
-                                <p className="text-xs mb-3 text-gray-400 dark:text-gray-500" >
+                                <p className="text-xs mb-3 lia-text-400 dark:lia-text-500" >
                                   {entry.triggerDescription}
                                 </p>
                               )}
                               
                               <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-xs font-medium text-gray-500 dark:text-gray-400" >
+                                <span className="text-xs font-medium lia-text-500 dark:text-lia-text-tertiary" >
                                   Canais:
                                 </span>
                                 {allChannels.map(channel => {
-                                  const config = channelConfig[channel] || { label: channel, color: 'bg-gray-100 text-gray-500', activeColor: 'bg-gray-200 text-gray-700' }
+                                  const config = channelConfig[channel] || { label: channel, color: 'bg-gray-100 lia-text-500', activeColor: 'bg-gray-200 lia-text-700' }
                                   const isActive = entry.channels.includes(channel)
                                   return (
                                     <button
@@ -231,7 +231,7 @@ export function MatrixSection({
 
                               {entry.templateId && (
                                 <div className="flex items-center gap-2 mt-2">
-                                  <span className="text-xs text-gray-400 dark:text-gray-500" >
+                                  <span className="text-xs lia-text-400 dark:lia-text-500" >
                                     Template:
                                   </span>
                                   <Badge variant="outline" className="text-xs">
@@ -244,7 +244,7 @@ export function MatrixSection({
                             
                             <div className="flex items-center gap-2">
                               {isUpdating && (
-                                <Loader2 className="w-4 h-4 animate-spin text-gray-700 dark:text-gray-300" />
+                                <Loader2 className="w-4 h-4 animate-spin lia-text-700 dark:text-lia-text-secondary" />
                               )}
                               <Switch
                                 checked={entry.isActive}

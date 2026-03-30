@@ -91,7 +91,7 @@ function getStatusBadge(status: string) {
       )
     case 'in_progress':
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary">
           <Clock className="w-3 h-3" />
           Em Progresso
         </span>
@@ -99,7 +99,7 @@ function getStatusBadge(status: string) {
     case 'planned':
     case 'monitoring':
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:text-gray-200">
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 lia-text-800 dark:text-lia-text-primary">
           Planejado
         </span>
       )
@@ -129,27 +129,27 @@ export default function PublicTrustCenterPage() {
   
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
+      <header className="bg-lia-bg-primary border-b border-lia-border-subtle">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-md bg-gray-900 dark:bg-gray-50 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-md bg-gray-900 dark:lia-bg-50 flex items-center justify-center">
               <span className="text-white font-bold text-lg">W</span>
             </div>
             <div>
-              <h1 className="font-semibold text-gray-950 dark:text-gray-50">WeDo Talent</h1>
-              <p className="text-xs text-gray-500">Centro de Confiança</p>
+              <h1 className="font-semibold lia-text-950 dark:lia-text-50">WeDo Talent</h1>
+              <p className="text-xs lia-text-500">Centro de Confiança</p>
             </div>
           </div>
           <nav className="flex items-center gap-4">
             <Link 
               href="/privacidade" 
-              className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+              className="text-sm lia-text-600 hover:lia-text-900 transition-colors"
             >
               Portal LGPD
             </Link>
             <Link 
               href="/login" 
-              className="text-sm px-4 py-2 rounded-md bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 transition-colors"
+              className="text-sm px-4 py-2 rounded-md bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 transition-colors"
             >
               Acessar Plataforma
             </Link>
@@ -163,52 +163,52 @@ export default function PublicTrustCenterPage() {
             <Shield className="w-4 h-4" />
             Segurança & Compliance
           </div>
-          <h1 className="text-4xl font-bold text-gray-950 dark:text-gray-50 mb-4">
+          <h1 className="text-4xl font-bold lia-text-950 dark:lia-text-50 mb-4">
             Centro de Confiança
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg lia-text-600 max-w-2xl mx-auto">
             Transparência sobre nossas práticas de segurança, certificações e como protegemos os dados dos nossos clientes e candidatos.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-          <div className="bg-white rounded-md border border-gray-200 p-6 text-center">
+          <div className="bg-lia-bg-primary rounded-md border border-lia-border-subtle p-6 text-center">
             <div className="w-12 h-12 rounded-full bg-status-success/15 flex items-center justify-center mx-auto mb-4">
               <BadgeCheck className="w-6 h-6 text-status-success" />
             </div>
-            <div className="text-3xl font-bold text-gray-950 dark:text-gray-50 mb-1">{activeCompliance}</div>
-            <p className="text-gray-600 text-sm">Frameworks Ativos</p>
+            <div className="text-3xl font-bold lia-text-950 dark:lia-text-50 mb-1">{activeCompliance}</div>
+            <p className="lia-text-600 text-sm">Frameworks Ativos</p>
           </div>
 
-          <div className="bg-white rounded-md border border-gray-200 p-6 text-center">
-            <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
-              <Building2 className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+          <div className="bg-lia-bg-primary rounded-md border border-lia-border-subtle p-6 text-center">
+            <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center mx-auto mb-4">
+              <Building2 className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />
             </div>
-            <div className="text-3xl font-bold text-gray-950 dark:text-gray-50 mb-1">{subprocessors.length}</div>
-            <p className="text-gray-600 text-sm">Subprocessadores</p>
+            <div className="text-3xl font-bold lia-text-950 dark:lia-text-50 mb-1">{subprocessors.length}</div>
+            <p className="lia-text-600 text-sm">Subprocessadores</p>
           </div>
 
-          <div className="bg-white rounded-md border border-gray-200 p-6 text-center">
+          <div className="bg-lia-bg-primary rounded-md border border-lia-border-subtle p-6 text-center">
             <div className="w-12 h-12 rounded-full bg-wedo-purple/15 flex items-center justify-center mx-auto mb-4">
               <FileText className="w-6 h-6 text-wedo-purple" />
             </div>
-            <div className="text-3xl font-bold text-gray-950 dark:text-gray-50 mb-1">{resources.length}</div>
-            <p className="text-gray-600 text-sm">Documentos</p>
+            <div className="text-3xl font-bold lia-text-950 dark:lia-text-50 mb-1">{resources.length}</div>
+            <p className="lia-text-600 text-sm">Documentos</p>
           </div>
 
-          <div className="bg-white rounded-md border border-gray-200 p-6 text-center">
+          <div className="bg-lia-bg-primary rounded-md border border-lia-border-subtle p-6 text-center">
             <div className="w-12 h-12 rounded-full bg-status-warning/15 flex items-center justify-center mx-auto mb-4">
               <Globe className="w-6 h-6 text-status-warning" />
             </div>
-            <div className="text-3xl font-bold text-gray-950 dark:text-gray-50 mb-1">33+</div>
-            <p className="text-gray-600 text-sm">Integrações</p>
+            <div className="text-3xl font-bold lia-text-950 dark:lia-text-50 mb-1">33+</div>
+            <p className="lia-text-600 text-sm">Integrações</p>
           </div>
         </div>
 
         <section className="mb-12">
           <div className="flex items-center gap-3 mb-6">
-            <Award className="w-6 h-6 text-gray-600 dark:text-gray-400" />
-            <h2 className="text-2xl font-bold text-gray-950 dark:text-gray-50">Certificações & Compliance</h2>
+            <Award className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />
+            <h2 className="text-2xl font-bold lia-text-950 dark:lia-text-50">Certificações & Compliance</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {certifications.map((cert) => {
@@ -216,19 +216,19 @@ export default function PublicTrustCenterPage() {
               return (
                 <div 
                   key={cert.id}
-                  className="bg-white rounded-md border border-gray-200 p-6"
+                  className="bg-lia-bg-primary rounded-md border border-lia-border-subtle p-6"
                 >
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 rounded-md bg-gray-100 flex items-center justify-center flex-shrink-0">
-                      <IconComponent className="w-6 h-6 text-gray-600" />
+                      <IconComponent className="w-6 h-6 lia-text-600" />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-start justify-between mb-2">
-                        <h3 className="font-semibold text-gray-950 dark:text-gray-50">{cert.name}</h3>
+                        <h3 className="font-semibold lia-text-950 dark:lia-text-50">{cert.name}</h3>
                         {getStatusBadge(cert.status)}
                       </div>
-                      <p className="text-sm text-gray-600 mb-3">{cert.description}</p>
-                      <div className="text-xs text-gray-500">
+                      <p className="text-sm lia-text-600 mb-3">{cert.description}</p>
+                      <div className="text-xs lia-text-500">
                         <p>{cert.issuer}</p>
                         {cert.targetDate && <p>Previsão: {cert.targetDate}</p>}
                         {cert.expires && <p>Válido até: {new Date(cert.expires).toLocaleDateString('pt-BR')}</p>}
@@ -243,23 +243,23 @@ export default function PublicTrustCenterPage() {
 
         <section className="mb-12">
           <div className="flex items-center gap-3 mb-6">
-            <Building2 className="w-6 h-6 text-gray-600 dark:text-gray-400" />
-            <h2 className="text-2xl font-bold text-gray-950 dark:text-gray-50">Subprocessadores</h2>
+            <Building2 className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />
+            <h2 className="text-2xl font-bold lia-text-950 dark:lia-text-50">Subprocessadores</h2>
           </div>
-          <p className="text-gray-600 mb-6">
+          <p className="lia-text-600 mb-6">
             Lista completa de terceiros que processam dados em nosso nome, conforme exigido pela LGPD e GDPR. 
             Todos os subprocessadores são avaliados quanto às suas práticas de segurança.
           </p>
-          <div className="bg-white rounded-md border border-gray-200 overflow-hidden">
+          <div className="bg-lia-bg-primary rounded-md border border-lia-border-subtle overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
+                <thead className="bg-gray-50 border-b border-lia-border-subtle">
                   <tr>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Empresa</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Serviço</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">País</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Região de Dados</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Certificações</th>
+                    <th className="text-left px-6 py-3 text-xs font-medium lia-text-500 uppercase">Empresa</th>
+                    <th className="text-left px-6 py-3 text-xs font-medium lia-text-500 uppercase">Serviço</th>
+                    <th className="text-left px-6 py-3 text-xs font-medium lia-text-500 uppercase">País</th>
+                    <th className="text-left px-6 py-3 text-xs font-medium lia-text-500 uppercase">Região de Dados</th>
+                    <th className="text-left px-6 py-3 text-xs font-medium lia-text-500 uppercase">Certificações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -270,15 +270,15 @@ export default function PublicTrustCenterPage() {
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-md bg-gray-100 flex items-center justify-center">
-                              <IconComponent className="w-4 h-4 text-gray-600" />
+                              <IconComponent className="w-4 h-4 lia-text-600" />
                             </div>
-                            <span className="text-sm font-medium text-gray-950 dark:text-gray-50">{sub.name}</span>
+                            <span className="text-sm font-medium lia-text-950 dark:lia-text-50">{sub.name}</span>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{sub.service}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{sub.country}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{sub.region}</td>
-                        <td className="px-6 py-4 text-xs text-gray-500">{sub.certifications}</td>
+                        <td className="px-6 py-4 text-sm lia-text-600">{sub.service}</td>
+                        <td className="px-6 py-4 text-sm lia-text-600">{sub.country}</td>
+                        <td className="px-6 py-4 text-sm lia-text-600">{sub.region}</td>
+                        <td className="px-6 py-4 text-xs lia-text-500">{sub.certifications}</td>
                       </tr>
                     )
                   })}
@@ -286,30 +286,30 @@ export default function PublicTrustCenterPage() {
               </table>
             </div>
           </div>
-          <p className="text-xs text-gray-500 mt-4">
+          <p className="text-xs lia-text-500 mt-4">
             Última atualização: Janeiro 2026. Para notificações de alterações na lista de subprocessadores, entre em contato com nossa equipe.
           </p>
         </section>
 
         <section className="mb-12">
           <div className="flex items-center gap-3 mb-6">
-            <Download className="w-6 h-6 text-gray-600 dark:text-gray-400" />
-            <h2 className="text-2xl font-bold text-gray-950 dark:text-gray-50">Recursos para Download</h2>
+            <Download className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />
+            <h2 className="text-2xl font-bold lia-text-950 dark:lia-text-50">Recursos para Download</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {resources.map((resource) => (
               <button 
                 key={resource.id}
-                className="bg-white rounded-md border border-gray-200 p-4 flex items-start gap-4 hover:border-gray-900 dark:hover:border-gray-50 hover:transition-all text-left"
+                className="bg-lia-bg-primary rounded-md border border-lia-border-subtle p-4 flex items-start gap-4 hover:border-gray-900 dark:hover:border-gray-50 transition-colors text-left"
               >
                 <div className="w-10 h-10 rounded-md bg-status-error/15 flex items-center justify-center flex-shrink-0">
                   <FileText className="w-5 h-5 text-status-error" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-950 dark:text-gray-50 text-sm">{resource.name}</p>
-                  <p className="text-xs text-gray-500 mt-1">{resource.description}</p>
+                  <p className="font-medium lia-text-950 dark:lia-text-50 text-sm">{resource.name}</p>
+                  <p className="text-xs lia-text-500 mt-1">{resource.description}</p>
                 </div>
-                <Download className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <Download className="w-4 h-4 lia-text-400 flex-shrink-0" />
               </button>
             ))}
           </div>
@@ -318,67 +318,67 @@ export default function PublicTrustCenterPage() {
         <section className="mb-12">
           <div className="flex items-center gap-3 mb-6">
             <Brain className="w-6 h-6 text-wedo-cyan" />
-            <h2 className="text-2xl font-bold text-gray-950 dark:text-gray-50">IA Responsável</h2>
+            <h2 className="text-2xl font-bold lia-text-950 dark:lia-text-50">IA Responsável</h2>
           </div>
           
-          <div className="bg-white rounded-md border border-gray-200 p-6 mb-6">
-            <h3 className="font-semibold text-gray-950 dark:text-gray-50 mb-4">Metodologias de Avaliação</h3>
-            <p className="text-sm text-gray-600 mb-4">
+          <div className="bg-lia-bg-primary rounded-md border border-lia-border-subtle p-6 mb-6">
+            <h3 className="font-semibold lia-text-950 dark:lia-text-50 mb-4">Metodologias de Avaliação</h3>
+            <p className="text-sm lia-text-600 mb-4">
               Nossa IA utiliza múltiplas metodologias científicas e auditáveis para avaliar candidatos de forma justa e transparente:
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="border border-gray-200 rounded-md p-4">
+              <div className="border border-lia-border-subtle rounded-md p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                    <MessageSquare className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                  <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
+                    <MessageSquare className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                   </div>
-                  <h4 className="font-medium text-gray-950 dark:text-gray-50">WSI (WeDoTalent Skill Index)</h4>
+                  <h4 className="font-medium lia-text-950 dark:lia-text-50">WSI (WeDoTalent Skill Index)</h4>
                 </div>
-                <p className="text-xs text-gray-600">
+                <p className="text-xs lia-text-600">
                   Índice conversacional que combina IA com psicometria. Base teórica: CBI (McClelland), Taxonomia de Bloom, Modelo Dreyfus e Big Five. Avalia competências técnicas (70%) e comportamentais (30%) em 5-10 minutos.
                 </p>
               </div>
-              <div className="border border-gray-200 rounded-md p-4">
+              <div className="border border-lia-border-subtle rounded-md p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-8 h-8 rounded-md bg-wedo-purple/15 flex items-center justify-center">
                     <FileText className="w-4 h-4 text-wedo-purple" />
                   </div>
-                  <h4 className="font-medium text-gray-950 dark:text-gray-50">Rubric Evaluation (CV vs Vaga)</h4>
+                  <h4 className="font-medium lia-text-950 dark:lia-text-50">Rubric Evaluation (CV vs Vaga)</h4>
                 </div>
-                <p className="text-xs text-gray-600">
+                <p className="text-xs lia-text-600">
                   Análise estruturada do currículo contra requisitos da vaga usando rubricas ponderadas. Cada critério recebe pontuação de 1-5 com justificativa explícita e evidências do CV.
                 </p>
               </div>
-              <div className="border border-gray-200 rounded-md p-4">
+              <div className="border border-lia-border-subtle rounded-md p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-8 h-8 rounded-md bg-status-success/15 flex items-center justify-center">
                     <Award className="w-4 h-4 text-status-success" />
                   </div>
-                  <h4 className="font-medium text-gray-950 dark:text-gray-50">LIA Scoring</h4>
+                  <h4 className="font-medium lia-text-950 dark:lia-text-50">LIA Scoring</h4>
                 </div>
-                <p className="text-xs text-gray-600">
+                <p className="text-xs lia-text-600">
                   Score numérico (0-100) calculado a partir de múltiplos fatores: aderência técnica, experiência relevante, formação e fit cultural. Algoritmo documentado e auditável.
                 </p>
               </div>
-              <div className="border border-gray-200 rounded-md p-4">
+              <div className="border border-lia-border-subtle rounded-md p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-8 h-8 rounded-md bg-status-warning/15 flex items-center justify-center">
                     <FileText className="w-4 h-4 text-status-warning" />
                   </div>
-                  <h4 className="font-medium text-gray-950 dark:text-gray-50">LIA Opinion (Parecer)</h4>
+                  <h4 className="font-medium lia-text-950 dark:lia-text-50">LIA Opinion (Parecer)</h4>
                 </div>
-                <p className="text-xs text-gray-600">
+                <p className="text-xs lia-text-600">
                   Parecer qualitativo em linguagem natural explicando pontos fortes, gaps identificados e recomendação. Sempre acompanhado de justificativa baseada em evidências.
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-md border border-gray-200 p-6 mb-6">
+          <div className="bg-lia-bg-primary rounded-md border border-lia-border-subtle p-6 mb-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h3 className="font-semibold text-gray-950 dark:text-gray-50 mb-3">Transparência Algorítmica</h3>
-                <ul className="space-y-2 text-sm text-gray-600">
+                <h3 className="font-semibold lia-text-950 dark:lia-text-50 mb-3">Transparência Algorítmica</h3>
+                <ul className="space-y-2 text-sm lia-text-600">
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-status-success mt-0.5 flex-shrink-0" />
                     <span>Explicação automática de todas as decisões (LGPD Art. 20)</span>
@@ -398,8 +398,8 @@ export default function PublicTrustCenterPage() {
                 </ul>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-950 dark:text-gray-50 mb-3">Supervisão Humana (EU AI Act Art. 14)</h3>
-                <ul className="space-y-2 text-sm text-gray-600">
+                <h3 className="font-semibold lia-text-950 dark:lia-text-50 mb-3">Supervisão Humana (EU AI Act Art. 14)</h3>
+                <ul className="space-y-2 text-sm lia-text-600">
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-status-success mt-0.5 flex-shrink-0" />
                     <span>IA nunca toma decisão final de contratação/rejeição</span>
@@ -421,11 +421,11 @@ export default function PublicTrustCenterPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-md border border-gray-200 p-6">
+          <div className="bg-lia-bg-primary rounded-md border border-lia-border-subtle p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h3 className="font-semibold text-gray-950 dark:text-gray-50 mb-3">Mitigação de Viés</h3>
-                <ul className="space-y-2 text-sm text-gray-600">
+                <h3 className="font-semibold lia-text-950 dark:lia-text-50 mb-3">Mitigação de Viés</h3>
+                <ul className="space-y-2 text-sm lia-text-600">
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-status-success mt-0.5 flex-shrink-0" />
                     <span>Exclusão de campos protegidos (gênero, idade, etnia, estado civil)</span>
@@ -445,8 +445,8 @@ export default function PublicTrustCenterPage() {
                 </ul>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-950 dark:text-gray-50 mb-3">Direitos do Candidato</h3>
-                <ul className="space-y-2 text-sm text-gray-600">
+                <h3 className="font-semibold lia-text-950 dark:lia-text-50 mb-3">Direitos do Candidato</h3>
+                <ul className="space-y-2 text-sm lia-text-600">
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-status-success mt-0.5 flex-shrink-0" />
                     <span>Notificação de uso de IA na avaliação (NYC LL144)</span>
@@ -466,8 +466,8 @@ export default function PublicTrustCenterPage() {
                 </ul>
               </div>
             </div>
-            <div className="mt-6 p-4 bg-gray-100 dark:bg-gray-800 rounded-md border border-gray-300 dark:border-gray-600">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+            <div className="mt-6 p-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default">
+              <p className="text-sm lia-text-600 dark:text-lia-text-tertiary">
                 <strong>Conformidade Regulatória:</strong> Nossa plataforma está em conformidade com LGPD (Brasil), 
                 em preparação para NYC LL144 (Nova York) e monitorando requisitos do EU AI Act (União Europeia). 
                 A IA de recrutamento é classificada como "alto risco" pelo EU AI Act, e implementamos controles proporcionais.
@@ -476,35 +476,35 @@ export default function PublicTrustCenterPage() {
           </div>
         </section>
 
-        <section className="bg-white rounded-md border border-gray-200 p-8">
+        <section className="bg-lia-bg-primary rounded-md border border-lia-border-subtle p-8">
           <div className="flex items-start gap-6">
-            <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
-              <Mail className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+            <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
+              <Mail className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-950 dark:text-gray-50 mb-2">Dúvidas sobre Segurança?</h2>
-              <p className="text-gray-600 mb-4">
+              <h2 className="text-xl font-bold lia-text-950 dark:lia-text-50 mb-2">Dúvidas sobre Segurança?</h2>
+              <p className="lia-text-600 mb-4">
                 Entre em contato com nossa equipe de segurança e compliance para questões sobre certificações, 
                 auditorias, avaliações de fornecedores ou solicitações de DPA.
               </p>
               <div className="flex flex-wrap gap-4">
                 <a 
                   href="mailto:security@wedotalent.com.br"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 text-sm font-medium transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 text-sm font-medium transition-colors"
                 >
                   <Mail className="w-4 h-4" />
                   security@wedotalent.com.br
                 </a>
                 <a 
                   href="mailto:dpo@wedotalent.com.br"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-gray-200 text-gray-800 dark:text-gray-200 text-sm font-medium hover:bg-gray-50 transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-lia-border-subtle lia-text-800 dark:text-lia-text-primary text-sm font-medium hover:bg-gray-50 transition-colors"
                 >
                   <Shield className="w-4 h-4" />
                   DPO: dpo@wedotalent.com.br
                 </a>
                 <Link 
                   href="/privacidade"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-gray-200 text-gray-800 dark:text-gray-200 text-sm font-medium hover:bg-gray-50 transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-lia-border-subtle lia-text-800 dark:text-lia-text-primary text-sm font-medium hover:bg-gray-50 transition-colors"
                 >
                   <ExternalLink className="w-4 h-4" />
                   Portal LGPD
@@ -515,12 +515,12 @@ export default function PublicTrustCenterPage() {
         </section>
       </main>
 
-      <footer className="bg-white border-t border-gray-200 mt-12">
-        <div className="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between text-sm text-gray-500">
+      <footer className="bg-lia-bg-primary border-t border-lia-border-subtle mt-12">
+        <div className="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between text-sm lia-text-500">
           <p>&copy; {new Date().getFullYear()} WeDo Talent. Todos os direitos reservados.</p>
           <div className="flex items-center gap-4">
-            <Link href="/privacidade" className="hover:text-gray-900">Privacidade</Link>
-            <Link href="/" className="hover:text-gray-900">Termos</Link>
+            <Link href="/privacidade" className="hover:lia-text-900">Privacidade</Link>
+            <Link href="/" className="hover:lia-text-900">Termos</Link>
           </div>
         </div>
       </footer>

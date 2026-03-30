@@ -205,10 +205,10 @@ export function AISearchToggle({
       <div className="relative w-full max-w-md">
         <div
           onClick={handleExpand}
-          className="flex items-center gap-3 px-4 py-2.5 bg-white dark:bg-gray-800 rounded-md cursor-pointer hover:transition-all duration-200"
+          className="flex items-center gap-3 px-4 py-2.5 bg-white dark:bg-lia-bg-secondary rounded-md cursor-pointer transition-colors duration-200"
         >
           <Brain className="w-4 h-4 text-status-success dark:text-status-success" />
-          <span className="text-sm text-gray-800 dark:text-gray-200 flex-1">
+          <span className="text-sm text-gray-800 dark:text-lia-text-primary flex-1">
             {placeholder}
           </span>
           <div className="flex items-center gap-2">
@@ -254,7 +254,7 @@ export function AISearchToggle({
 
           {/* Input Principal */}
           <div className="p-4">
-            <div className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-md">
+            <div className="flex items-center gap-3 p-3 bg-white dark:bg-lia-bg-secondary rounded-md">
               <Brain className="w-4 h-4 text-status-success" />
               <input
                 ref={inputRef}
@@ -262,7 +262,7 @@ export function AISearchToggle({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Digite seu comando ou escolha uma sugestão abaixo..."
-                className="flex-1 border-0 focus:ring-0 focus:outline-none text-sm bg-transparent text-gray-950 dark:text-gray-50"
+                className="flex-1 border-0 focus:ring-0 focus:outline-none text-sm bg-transparent text-gray-950"
                 onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
               />
               <Button
@@ -276,7 +276,7 @@ export function AISearchToggle({
               <Button
                 onClick={() => handleSubmit()}
                 disabled={!query.trim()}
-                className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 px-3 py-1.5 text-sm"
+                className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 px-3 py-1.5 text-sm"
               >
                 <Send className="w-3 h-3" />
               </Button>
@@ -293,7 +293,7 @@ export function AISearchToggle({
                 <button
                   key={index}
                   onClick={() => handleSubmit(suggestion.command)}
-                  className="text-left p-3 bg-white dark:bg-gray-800 rounded-md hover:transition-all duration-200 group"
+                  className="text-left p-3 bg-white dark:bg-lia-bg-secondary rounded-md transition-colors duration-200 group"
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <suggestion.icon className="w-4 h-4 text-status-success group-hover:text-status-success" />
@@ -375,7 +375,7 @@ export function AISearchToggle({
 
         {/* Input Principal */}
         <div className="p-6">
-          <div className="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-md">
+          <div className="flex items-center gap-3 p-4 bg-white dark:bg-lia-bg-secondary rounded-md">
             <Brain className="w-5 h-5 text-status-success" />
             <input
               ref={inputRef}
@@ -383,7 +383,7 @@ export function AISearchToggle({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Digite seu comando ou escolha uma sugestão abaixo..."
-              className="flex-1 border-0 focus:ring-0 focus:outline-none text-base bg-transparent text-gray-950 dark:text-gray-50"
+              className="flex-1 border-0 focus:ring-0 focus:outline-none text-base bg-transparent text-gray-950"
               onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
             />
             <Button
@@ -397,7 +397,7 @@ export function AISearchToggle({
             <Button
               onClick={() => handleSubmit()}
               disabled={!query.trim()}
-              className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+              className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
             >
               <Send className="w-4 h-4" />
             </Button>
@@ -414,7 +414,7 @@ export function AISearchToggle({
               <button
                 key={index}
                 onClick={() => handleSubmit(suggestion.command)}
-                className="text-left p-4 bg-white dark:bg-gray-800 rounded-md hover:transition-all duration-200 group"
+                className="text-left p-4 bg-white dark:bg-lia-bg-secondary rounded-md transition-colors duration-200 group"
               >
                 <div className="flex items-center gap-3 mb-2">
                   <suggestion.icon className="w-5 h-5 text-status-success group-hover:text-status-success" />
@@ -425,7 +425,7 @@ export function AISearchToggle({
                 <p className="text-xs text-status-success dark:text-status-success mb-2">
                   {suggestion.description}
                 </p>
-                <p className="text-xs text-gray-800 dark:text-gray-200 italic">
+                <p className="text-xs text-gray-800 dark:text-lia-text-primary italic">
                   "{suggestion.command}"
                 </p>
               </button>

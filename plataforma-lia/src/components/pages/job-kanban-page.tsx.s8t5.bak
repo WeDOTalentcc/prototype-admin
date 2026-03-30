@@ -1,0 +1,1486 @@
+"use client"
+
+import React from "react"
+import dynamic from "next/dynamic"
+import { SCREENING_STATUS_LABELS, type ScreeningStatus } from "@/types/screening"
+import { liaApi } from "@/services/lia-api"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  RECRUITMENT_STAGES,
+  getStageByName,
+  getSubStatusDisplayName,
+  getCompanyPipelineStages,
+} from "@/lib/recruitment-stages"
+import {
+  ArrowLeft, ArrowRight, Layers3, FileText, TrendingUp, Briefcase, MapPin, ListChecks, ChevronRight, ChevronUp, ChevronDown, ChevronLeft,
+  ClipboardList, MessageCircle, Clock, Brain, Send, Code, Globe, BrainCircuit, Flag, Linkedin, Languages,
+  CheckCircle, AlertCircle, AlertTriangle, X, Download, Share2, Settings, User, Mic, Search, Filter,
+  Plus, Users, Star, Heart, MoreVertical, MoreHorizontal, Eye, Calendar, CalendarCheck, Archive, Mail, Phone, Video,
+  Trophy, XCircle, ThumbsUp, Target, MessageSquareText, MessageSquare, Building, BarChart3, DollarSign, Activity,
+  ArrowUp, ArrowDown, TrendingDown, Award, Pin, Edit, Pencil, Trash2, RefreshCw, Wand2, Library, BookOpen, Folder,
+  History, Gauge, UserCheck, Timer, RotateCcw, SortAsc, SortDesc, Columns, Table as TableIcon, Bell, Maximize2, ThumbsDown, ArrowUpDown, EyeOff, GripVertical, Lightbulb, Bookmark, Paperclip, ChevronsLeftRight, Copy, Fingerprint, Loader2, Save, Link2, PauseCircle, PlayCircle
+} from "lucide-react"
+import { type BulkActionType } from "@/components/ui/bulk-selection-bar"
+import { Button } from "@/components/ui/button"
+import { EmptyState } from "@/components/ui/empty-state"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Switch } from "@/components/ui/switch"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { TriagemDetailsModal } from "@/components/triagem-details-modal"
+import { JobReportModal } from "@/components/job-report-modal"
+import { SendEmailModal } from "@/components/email-templates/send-email-modal"
+import { UnifiedCommunicationModal } from "@/components/modals/unified-communication-modal"
+import { AddToListModal } from "@/components/modals/add-to-list-modal"
+import { WSITextScreeningModal } from "@/components/wsi/wsi-text-screening-modal"
+import { WSITriagemInviteModal } from "@/components/wsi/wsi-triagem-invite-modal"
+import { AddCandidatesToVacancyModal } from "@/components/modals/add-candidates-to-vacancy-modal"
+import { RubricEvaluationModal } from "@/components/rubric-evaluation-modal"
+import { BigFiveModal } from "@/components/big-five-modal"
+import { ScoreIconButton } from "@/components/ui/score-icon-button"
+import { ScoreBreakdownBadgeLazy } from "@/components/score/ScoreBreakdownBadge"
+import { GeneralScoreModal } from "@/components/modals/general-score-modal"
+import { TechnicalTestModal } from "@/components/modals/technical-test-modal"
+import { EnglishTestModal } from "@/components/modals/english-test-modal"
+import { CandidateDecisionFlowModal } from "@/components/candidate-decision-flow-modal"
+import { TestPreviewModal } from "@/components/pages/job-kanban/TestPreviewModal"
+import { LIASuggestionsPanel } from "@/components/pages/job-kanban/LIASuggestionsPanel"
+import { TestLibraryModal } from "@/components/pages/job-kanban/TestLibraryModal"
+import { TestHistoryModal } from "@/components/pages/job-kanban/TestHistoryModal"
+import { LIAQuestionsPanel } from "@/components/pages/job-kanban/LIAQuestionsPanel"
+import { CandidateCompareModal } from "@/components/modals/candidate-compare-modal"
+
+import { AISuggestionBadge } from "@/components/ai"
+import { 
+  UnifiedCandidateTable, 
+  type TableColumn, 
+  type TableSortConfig,
+  getColumnDefinition,
+  getDefaultTableColumns,
+  COLUMN_PRESETS,
+  InteractiveSubStatusCell,
+  InteractiveStageCell
+} from "@/components/tables"
+import { 
+  DataRequestIndicator, 
+  type DataRequestStatus, 
+  type RequestedField,
+  getDataRequestStatusFromFields
+} from "@/components/ui/data-request-indicator"
+import { 
+  StatusBadge, 
+  ChannelBadge, 
+  SourceBadge, 
+  WarningBadge,
+  DateTimeBadge,
+  OriginBadge,
+  AwaitingBadge,
+  STAGE_PASTEL_COLORS as STATUS_BADGE_PASTEL_COLORS
+} from "@/components/ui/status-badge"
+import { OverrideApproveButton } from "@/components/kanban/components/OverrideApproveButton"
+import { DataRequestModal, type DataRequestSubmitData } from "@/components/modals/data-request-modal"
+import { CloseVacancyModal } from "@/components/modals/close-vacancy-modal"
+import { JobStatusModal } from "@/components/modals/job-status-modal"
+import { ShareSearchModal } from "@/components/modals/share-search-modal"
+import { Checkbox } from "@/components/ui/checkbox"
+import { BulkActionModal } from "@/components/modals/bulk-action-modal"
+import { UnifiedBulkActionsBar, type BulkActionId } from "@/components/ui/unified-bulk-actions-bar"
+import { PipelineStagesCarousel } from "@/components/ui/pipeline-stages-carousel"
+import { 
+  generateWorkHistory, 
+  generateEducation, 
+  seededRandom, 
+  getSalaryByExperience,
+  type CandidateForDataGeneration 
+} from "@/components/kanban/mock/data-generators"
+import { 
+  getUrgencyLevel,
+  getScoreColor,
+  getScoreBgColor,
+  getStageColor,
+  calculateGeneralScore,
+  type UrgencyLevel 
+} from "@/components/kanban/utils/status-utils"
+import { CandidateTableRow } from "@/components/kanban/components/CandidateTableRow"
+import { ScreeningQuestionsPanel } from "@/components/job-creation"
+import { JobEditTab } from "@/components/jobs/JobEditTab"
+import { ColumnContextMenu } from "@/components/kanban/components/ColumnContextMenu"
+import { SaturationBadge } from "@/components/kanban/components/SaturationBadge"
+import { KanbanFiltersPanel } from "@/components/pages/job-kanban/KanbanFiltersPanel"
+import { KanbanColumnConfigPanel } from "@/components/pages/job-kanban/KanbanColumnConfigPanel"
+import { KanbanTableView } from "@/components/pages/job-kanban/KanbanTableView"
+import { KanbanLIASidebar } from "@/components/pages/job-kanban/KanbanLIASidebar"
+import { KanbanColumnRenderer } from "@/components/pages/job-kanban/KanbanColumnRenderer"
+
+import { AddColumnPopover } from "@/components/pages/job-kanban/AddColumnPopover"
+import { calculateNotaLiaGeral, getLiaAlerts, getFilteredAndSortedCandidates as getFilteredAndSortedCandidatesUtil } from "@/components/pages/job-kanban/utils/kanbanHelpers"
+const CandidatePreview = dynamic(() => import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview })), { ssr: false })
+const CandidatePage = dynamic(() => import("@/components/candidate-page").then(m => ({ default: m.CandidatePage })), { ssr: false })
+const ExpandedChatModal = dynamic(() => import("@/components/expanded-chat-modal").then(m => ({ default: m.ExpandedChatModal })), { ssr: false })
+import { useKanbanPageCore } from "@/components/pages/job-kanban/hooks/useKanbanPageCore"
+import { KanbanPageModals } from "@/components/pages/job-kanban/KanbanPageModals"
+
+export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, onBack?: () => void }) {
+  const state = useKanbanPageCore({ job, onBack })
+  const {
+    viewMode, setViewMode, currentJob, jobEditForm, setJobEditForm,
+    activeTab, setActiveTab, showJobEditor, setShowJobEditor,
+    isCreationMode, isPublishing, publicLink, showPublishSuccess, setShowPublishSuccess,
+    handlePublishJob, companyDefaults, savingJobSection,
+    handleSaveJobSection, isClient, dynamicStages, setDynamicStages,
+    candidatesData, setCandidatesData, isLoadingCandidates, hasMounted,
+    showSuperChat, setShowSuperChat, showExpandedLIA, setShowExpandedLIA,
+    userCollapsedLIA, setUserCollapsedLIA,
+    showKanbanFiltersPanel, setShowKanbanFiltersPanel,
+    showTableFiltersPanel, setShowTableFiltersPanel,
+    showColumnConfig, setShowColumnConfig,
+    kanbanScoreMin, setKanbanScoreMin, kanbanStatusFilter, setKanbanStatusFilter,
+    kanbanWorkModelFilter, setKanbanWorkModelFilter, kanbanOriginFilter, setKanbanOriginFilter,
+    searchQuery, setSearchQuery, selectedCandidates, setSelectedCandidates,
+    allTableCandidates, proactiveInsights, dismissInsight,
+    pipelineInheritance, computedSuggestions,
+    liaMessages, setLiaMessages, liaPromptValue, setLiaPromptValue,
+    isLiaLoading, liaExpandedWidth, setLiaExpandedWidth,
+    showLiaSuggestionsPanel, setShowLiaSuggestionsPanel,
+    isResizingLIA, setIsResizingLIA, chatScrollRef,
+    handleAICommand, handleLiaUiAction, openSuperChat, returnToExpandedPrompt,
+    selectedCandidate, setSelectedCandidate, showCandidatePage, setShowCandidatePage,
+    handleOrchestratedMessage, tableStageFilter, setTableStageFilter,
+    tableSortColumn, setTableSortColumn, tableSortDirection, setTableSortDirection,
+    currentPage, setCurrentPage, tableColumns, setTableColumns,
+    handleTableColumnResize, getPaginatedCandidates,
+    saturationData, isPreviewOpen, setIsPreviewOpen,
+    previewCandidate, setPreviewCandidate, isPreviewMaximized,
+    handleOpenPreview, handleClosePreview, handleTogglePreviewMaximize,
+    handleNavigateCandidate, handleCandidatePageOpen, handleCloseCandidatePage,
+    favoriteCandidates, handleToggleFavorite, handleToggleShortList,
+    handleSendEmail, handleSendWhatsApp, handleSendTriagem,
+    handleSendAgendamento, handleSendFeedback,
+    handleScheduleInterview, handleAddToVacancy, handleSendWSIInvite,
+    handleOpenTriagem, isTriagemOpen,
+    handleOpenAnalysis, handleOpenScoreModal, openDecisionFlowModal,
+    handleApproveFromScreening, handleRejectFromScreening,
+    handleApproveCandidate, handleRejectCandidate,
+    handleBulkAction, draggedCandidate, dragOverColumn,
+    handleDragStart, handleDragEnd, handleDragOver, handleDragLeave, handleDrop,
+    selectedForCompare, setSelectedForCompare, viewedCandidateIds,
+    aiSuggestions, approveSuggestion, rejectSuggestion,
+    kanbanColumns, getColumnStyle, getStageCategory, getStageAccentStyle,
+    STAGE_PASTEL_COLORS, showAddColumnPopover, setShowAddColumnPopover,
+    isAddingColumn, setIsAddingColumn, newColumnName, setNewColumnName,
+    showAddToVacancyModal, setShowAddToVacancyModal,
+    candidateForVacancy, setCandidateForVacancy,
+    pipelineStages, clearStageFilters, toggleStageFilter, getStageCount,
+    jobData, _jobIdForSL, allCandidateIds, shortListedCandidateIds,
+    handleInteractiveStatusChange,
+    handleTableTransitionRequest, handleTransitionRequired,
+    setSelectedCandidateForModal, setActiveModal,
+    setShowBigFiveModal, scoreModalCandidate,
+    getDataRequestForCandidate, handleDataRequestResend, handleDataRequestViewDetails,
+    setTransitionInitialPrompt, setTransitionAllowStageSelection, setTransitionInterviewAlert,
+    openTransition, router, user, toast,
+    handleInlineRename, handleInlineToggleActive, handleInlineRemove,
+    handleInlineMoveLeft, handleInlineMoveRight, handleInlineUpdateSLA,
+    handleSaveJobSection: handleSaveJobSectionFromHook,
+    showReport, setShowReport, handleCloseReport, handleShowReport,
+    showExpandedMetrics, setShowExpandedMetrics,
+    showTestLibrary, setShowTestLibrary,
+    showTestPreview, setShowTestPreview,
+    showTestHistory, setShowTestHistory,
+    showLiaSuggestions, setShowLiaSuggestions,
+    showTriagemSuggestions, setShowTriagemSuggestions,
+    isEditMode, setIsEditMode,
+    isEditModeTriagem, setIsEditModeTriagem,
+    columnSearchTerm, setColumnSearchTerm,
+    showApresentacaoPrompt, setShowApresentacaoPrompt,
+    showConceptualPrompt, setShowConceptualPrompt,
+    showConceptualPromptTriagem, setShowConceptualPromptTriagem,
+    showFechamentoPrompt, setShowFechamentoPrompt,
+    expandedCronograma, setExpandedCronograma,
+    expandedRoteiro, setExpandedRoteiro,
+    expandedTesteTecnico, setExpandedTesteTecnico,
+    expandedTesteIngles, setExpandedTesteIngles,
+    editingQuestion, setEditingQuestion,
+    editingSection, setEditingSection,
+    habilidadesTecnicas, setHabilidadesTecnicas,
+    isSkillWeightsModified, setIsSkillWeightsModified,
+    inferredBehavior, setInferredBehavior,
+    perguntasEliminatorias, setPerguntasEliminatorias,
+    perguntasInformativas, setPerguntasInformativas,
+    perguntasSituacionais, setPerguntasSituacionais,
+    perguntasTecnicasAvaliacao, setPerguntasTecnicasAvaliacao,
+    jobLocalOverrides, setJobLocalOverrides,
+    handleTableSort, startTableColumnResize,
+    handleTableColumnDragStart, handleTableColumnDragOver,
+    handleTableColumnDragLeave, handleTableColumnDrop, handleTableColumnDragEnd,
+    draggedTableColumnId, dragOverTableColumnId,
+    setJobStatusModalMode,
+    getConversionRate,
+    getAllCandidates,
+    getFilteredAndSortedCandidates,
+    filterCandidates,
+    handleBulkActionExecute,
+    handleStartWSITextScreening,
+    statusModalOpen, pendingMove, confirmMove, cancelMove,
+    getSuggestedSubStatus, getAvailableSubStatuses, getSubStatusColor,
+    getStageDisplayName, selectedSubStatus, setSelectedSubStatus,
+    markCandidateAsViewed, findCandidateById,
+    liaConversationId, liaSearchQuery, setLiaSearchQuery,
+    showDecisionFlowModal, setShowDecisionFlowModal,
+    decisionFlowCandidate, setDecisionFlowCandidate,
+    decisionFlowType, handleDecisionFlowConfirm,
+    showEmailModal, setShowEmailModal, emailCandidate, setEmailCandidate,
+    unifiedModalOpen, unifiedModalCandidate, unifiedModalType, unifiedModalSituation,
+    handleUnifiedModalClose, openUnifiedModal,
+    showRubricModal, rubricCandidate, rubricEvaluationData, handleRubricModalClose,
+    showWSIModal, setShowWSIModal, wsiCandidate, setWsiCandidate,
+    showWSIInviteModal, setShowWSIInviteModal,
+    wsiInviteCandidate, setWsiInviteCandidate,
+    showAddToListModal, setShowAddToListModal,
+    showBigFiveModal, selectedCandidateForModal,
+    showGeneralScoreModal, setShowGeneralScoreModal,
+    showTechnicalTestModal, setShowTechnicalTestModal,
+    showEnglishTestModal, setShowEnglishTestModal,
+    showCompareModal, setShowCompareModal, compareCandidates, setCompareCandidates,
+    activeModal, setActiveModal: _setActiveModalAlias,
+    universalModalState, closeTransition,
+    handleUniversalTransitionConfirm, handleOpenSpecializedModal,
+    transitionInitialPrompt, transitionAllowStageSelection, transitionInterviewAlert,
+    showDataRequestModal, setShowDataRequestModal,
+    dataRequestModalCandidate, setDataRequestModalCandidate,
+    handleDataRequestSubmit,
+    showBulkActionModal, setShowBulkActionModal, bulkActionType,
+    showJobStatusModal, setShowJobStatusModal, jobStatusModalMode,
+    showCloseVacancyModal, setShowCloseVacancyModal,
+    showShareGestorModal, setShowShareGestorModal,
+    _companyIdForSL,
+    activeShortListId, stagesRequiringConfirmation,
+    returnEvents, getAlertForCandidate, computeAlerts, hasAlerts,
+    saveJobsState, talentFunnel,
+    handleCloseCandidatePage: _handleCloseCP,
+    triagemCandidate,
+    handleCloseTriagem, handleTriagemApprove, handleTriagemReject,
+    liaSuggestionsData,
+    selectedTriagemQuestion,
+    selectedTestForHistory,
+    isAddingToList,
+    calculateNotaLiaGeral,
+    setDecisionFlowType,
+    setScoreModalCandidate,
+  } = state
+
+  const renderKanbanColumn = (stageId: string, candidates: Record<string, unknown>[], colorClass: string, bgClass: string) => (
+    <KanbanColumnRenderer
+      stageId={stageId}
+      candidates={candidates}
+      colorClass={colorClass}
+      bgClass={bgClass}
+      dynamicStages={dynamicStages}
+      searchQuery={searchQuery}
+      draggedCandidate={draggedCandidate}
+      dragOverColumn={dragOverColumn}
+      selectedCandidates={selectedCandidates}
+      selectedForCompare={selectedForCompare}
+      viewedCandidateIds={viewedCandidateIds}
+      favoriteCandidates={favoriteCandidates}
+      shortListedCandidateIds={shortListedCandidateIds}
+      aiSuggestions={aiSuggestions}
+      kanbanScoreMin={kanbanScoreMin}
+      kanbanStatusFilter={kanbanStatusFilter}
+      kanbanWorkModelFilter={kanbanWorkModelFilter}
+      kanbanOriginFilter={kanbanOriginFilter}
+      currentJob={currentJob}
+      _jobIdForSL={_jobIdForSL}
+      getColumnStyle={getColumnStyle}
+      getStageCategory={getStageCategory}
+      calculateNotaLiaGeral={calculateNotaLiaGeral}
+      getDataRequestForCandidate={getDataRequestForCandidate}
+      setSelectedCandidates={setSelectedCandidates}
+      setSelectedForCompare={setSelectedForCompare}
+      setCandidatesData={setCandidatesData}
+      setTransitionInitialPrompt={setTransitionInitialPrompt}
+      setTransitionInterviewAlert={setTransitionInterviewAlert}
+      setTransitionAllowStageSelection={setTransitionAllowStageSelection}
+      setDecisionFlowCandidate={setDecisionFlowCandidate}
+      setDecisionFlowType={setDecisionFlowType}
+      setShowDecisionFlowModal={setShowDecisionFlowModal}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+      onDragLeave={handleDragLeave}
+      onOpenPreview={handleOpenPreview}
+      onSendEmail={handleSendEmail}
+      onSendWhatsApp={handleSendWhatsApp}
+      onScheduleInterview={handleScheduleInterview}
+      onToggleFavorite={handleToggleFavorite}
+      onToggleShortList={handleToggleShortList}
+      onOpenAnalysis={handleOpenAnalysis}
+      onOpenScoreModal={handleOpenScoreModal}
+      onOpenDecisionFlowModal={openDecisionFlowModal}
+      onSendWSIInvite={handleSendWSIInvite}
+      onSendFeedback={handleSendFeedback}
+      onApproveFromScreening={handleApproveFromScreening}
+      onRejectFromScreening={handleRejectFromScreening}
+      onInlineRename={handleInlineRename}
+      onInlineToggleActive={handleInlineToggleActive}
+      onInlineRemove={handleInlineRemove}
+      onInlineMoveLeft={handleInlineMoveLeft}
+      onInlineMoveRight={handleInlineMoveRight}
+      onInlineUpdateSLA={handleInlineUpdateSLA}
+      onOpenSettings={() => router.push('/configuracoes')}
+      onDataRequestResend={handleDataRequestResend}
+      onDataRequestViewDetails={handleDataRequestViewDetails}
+      approveSuggestion={approveSuggestion}
+      rejectSuggestion={rejectSuggestion}
+      openTransition={openTransition}
+    />
+  )
+  // Renderização apenas no cliente para evitar erros de hidratação SSR
+  if (!isClient) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-50">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
+          <span className="text-sm text-gray-500 font-['Open_Sans']">Carregando...</span>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <style jsx>{`
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.7;
+          }
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+
+        .dragging {
+          opacity: 0.5;
+          cursor: grabbing !important;
+        }
+
+        .drop-zone-active {
+          background-color: var(--wedo-cyan-bg-05);
+          border-color: 'var(--wedo-cyan)';
+        }
+      `}</style>
+
+    <div className="h-screen bg-gray-50 dark:bg-gray-950 flex flex-col overflow-hidden">
+      {/* Header Principal */}
+      <div className="bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-700">
+        <div className="w-full px-4">
+          <div className="flex flex-col lg:flex-row items-start justify-between gap-4 mb-4">
+            {/* Left: Título e Informações Principais */}
+            <div className="flex items-start gap-3 flex-1 min-w-0">
+              <Button variant="ghost" size="sm" onClick={() => onBack ? onBack() : router.back()} className="gap-2 mt-1 flex-shrink-0">
+                <ArrowLeft className="w-4 h-4" />
+                Voltar
+              </Button>
+              <div className="h-8 w-px bg-gray-300 dark:bg-gray-600 mt-1 flex-shrink-0"></div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-lg font-semibold text-gray-950 dark:text-gray-50 whitespace-nowrap">
+                    {currentJob.title}
+                  </h1>
+                  {currentJob.jobId && (
+                    <span className="text-micro font-mono text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-1.5 py-0.5 rounded-md whitespace-nowrap">
+                      {currentJob.jobId}
+                    </span>
+                  )}
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-xs px-2 py-0.5 cursor-pointer hover:bg-gray-100 transition-colors select-none">
+                        {jobEditForm.status || currentJob.status}
+                      </Badge>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-44 p-1" align="start">
+                      {(() => { const st = jobEditForm.status || currentJob.status; return st === 'Ativa' || st === 'active' })() ? (
+                        <>
+                          <button
+                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-100 transition-colors"
+                            onClick={() => { setJobStatusModalMode('pause'); setShowJobStatusModal(true) }}
+                          >
+                            <PauseCircle className="w-3.5 h-3.5 text-status-warning" />
+                            Pausar vaga
+                          </button>
+                          <button
+                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-status-error hover:bg-status-error/10 transition-colors"
+                            onClick={() => setShowCloseVacancyModal(true)}
+                          >
+                            <Archive className="w-3.5 h-3.5" />
+                            Fechar vaga
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-status-success hover:bg-status-success/10 transition-colors"
+                            onClick={() => { setJobStatusModalMode('activate'); setShowJobStatusModal(true) }}
+                          >
+                            <PlayCircle className="w-3.5 h-3.5" />
+                            Reativar vaga
+                          </button>
+                          <button
+                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-status-error hover:bg-status-error/10 transition-colors"
+                            onClick={() => setShowCloseVacancyModal(true)}
+                          >
+                            <Archive className="w-3.5 h-3.5" />
+                            Fechar vaga
+                          </button>
+                        </>
+                      )}
+                    </PopoverContent>
+                  </Popover>
+                  {(() => {
+                    const scrStatus = currentJob.screeningStatus || 'not_configured'
+                    const scrLabels = Object.fromEntries(
+                      Object.entries(SCREENING_STATUS_LABELS).map(([k, v]) => [k, `Triagem: ${v}`])
+                    ) as Record<string, string>
+                    const scrStyles: Record<string, string> = {
+                      not_configured: 'bg-gray-100 text-gray-700 border border-gray-300',
+                      not_started: 'bg-status-warning/10 text-status-warning border border-status-warning/30',
+                      active: 'bg-status-success/10 text-status-success border border-status-success/30',
+                      paused: 'bg-wedo-orange/10 text-wedo-orange border border-wedo-orange/30',
+                      completed: 'bg-wedo-cyan/10 text-wedo-cyan border border-wedo-cyan/30',
+                    }
+                    const handleScreeningStatusChange = async (newStatus: string) => {
+                      const jobId = currentJob.backendId || currentJob.jobId || currentJob.id
+                      try {
+                        await liaApi.updateJobVacancy(jobId, { screeningStatus: newStatus } as Record<string, unknown>)
+                        setJobEditForm((prev: Record<string, unknown>) => ({ ...prev, screeningStatus: newStatus }))
+                        toast({ title: `Triagem ${newStatus === 'active' ? 'ativada' : newStatus === 'paused' ? 'pausada' : 'atualizada'}` })
+                      } catch {
+                        toast({ title: 'Erro ao atualizar triagem', variant: 'destructive' })
+                      }
+                    }
+                    const badge = (
+                      <Badge className={`font-semibold whitespace-nowrap text-xs px-2 py-0.5 cursor-pointer hover:opacity-80 transition-opacity select-none ${scrStyles[scrStatus] || scrStyles.not_configured}`}>
+                        {scrLabels[scrStatus] || 'Triagem: N/C'}
+                      </Badge>
+                    )
+                    if (scrStatus === 'completed') return badge
+                    return (
+                      <Popover>
+                        <PopoverTrigger asChild>{badge}</PopoverTrigger>
+                        <PopoverContent className="w-48 p-1" align="start">
+                          {scrStatus === 'not_configured' && (
+                            <button
+                              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-100 transition-colors"
+                              onClick={() => setActiveTab('edit')}
+                            >
+                              <Settings className="w-3.5 h-3.5 text-gray-500" />
+                              Configurar Triagem
+                            </button>
+                          )}
+                          {scrStatus === 'not_started' && (
+                            <>
+                              <button
+                                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-status-success hover:bg-status-success/10 transition-colors"
+                                onClick={() => handleScreeningStatusChange('active')}
+                              >
+                                <PlayCircle className="w-3.5 h-3.5" />
+                                Iniciar Triagem
+                              </button>
+                              <button
+                                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-100 transition-colors"
+                                onClick={() => setActiveTab('edit')}
+                              >
+                                <Settings className="w-3.5 h-3.5 text-gray-500" />
+                                Configurar
+                              </button>
+                            </>
+                          )}
+                          {scrStatus === 'active' && (
+                            <button
+                              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-status-warning hover:bg-status-warning/10 transition-colors"
+                              onClick={() => handleScreeningStatusChange('paused')}
+                            >
+                              <PauseCircle className="w-3.5 h-3.5" />
+                              Pausar Triagem
+                            </button>
+                          )}
+                          {scrStatus === 'paused' && (
+                            <>
+                              <button
+                                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-status-success hover:bg-status-success/10 transition-colors"
+                                onClick={() => handleScreeningStatusChange('active')}
+                              >
+                                <PlayCircle className="w-3.5 h-3.5" />
+                                Retomar Triagem
+                              </button>
+                              <button
+                                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-100 transition-colors"
+                                onClick={() => setActiveTab('edit')}
+                              >
+                                <Settings className="w-3.5 h-3.5 text-gray-500" />
+                                Configurar
+                              </button>
+                            </>
+                          )}
+                        </PopoverContent>
+                      </Popover>
+                    )
+                  })()}
+                </div>
+                <div className="flex items-center gap-1.5 flex-wrap mt-1">
+                  {currentJob.status === 'Rascunho' && (
+                    <Badge className="bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 text-status-warning dark:text-status-warning font-semibold whitespace-nowrap text-micro px-1.5 py-0">
+                      Rascunho
+                    </Badge>
+                  )}
+                  <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-semibold whitespace-nowrap text-micro px-1.5 py-0">
+                    {currentJob.level}
+                  </Badge>
+                  <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium capitalize whitespace-nowrap text-micro px-1.5 py-0">
+                    {currentJob.workModel || '—'}
+                  </Badge>
+                  <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                    {currentJob.type || '—'}
+                  </Badge>
+                  <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                    {currentJob.department}
+                  </Badge>
+                  <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                    {currentJob.location}
+                  </Badge>
+                  {currentJob.salary && currentJob.salary !== 'A combinar' && (
+                    <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                      {currentJob.salary}
+                    </Badge>
+                  )}
+                  {currentJob.publishedLinkedIn && (
+                    <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                      Publicada
+                    </Badge>
+                  )}
+                  <span className="text-micro text-gray-300 dark:text-gray-600 mx-0.5">|</span>
+                  {currentJob.openDate && (
+                    <span className="text-micro text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                      <Calendar className="w-3 h-3 inline mr-0.5 -mt-0.5" />
+                      {new Date(currentJob.openDate).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </span>
+                  )}
+                  {currentJob.openDate && (() => {
+                    const days = Math.floor((Date.now() - new Date(currentJob.openDate).getTime()) / (1000 * 60 * 60 * 24))
+                    if (days <= 0) return null
+                    const isLate = days > 30
+                    return (
+                      <span className={`text-micro font-semibold whitespace-nowrap ${isLate ? 'text-status-error' : 'text-gray-700 dark:text-gray-300'}`}>
+                        {days}d {isLate ? 'de atraso' : 'aberta'}
+                      </span>
+                    )
+                  })()}
+                  {currentJob.updatedAt && (
+                    <span className="text-micro text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                      Atualizada: {new Date(currentJob.updatedAt).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
+                    </span>
+                  )}
+                  {currentJob.deadlineScreening && (
+                    <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                      <Calendar className="w-3 h-3 mr-0.5" />
+                      Prazo triagem: {new Date(currentJob.deadlineScreening).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
+                    </Badge>
+                  )}
+                  {currentJob.deadlineShortlist && (
+                    <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                      <Calendar className="w-3 h-3 mr-0.5" />
+                      Prazo short: {new Date(currentJob.deadlineShortlist).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
+                    </Badge>
+                  )}
+                  {currentJob.deadlineClosing && (
+                    <Badge className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                      <Calendar className="w-3 h-3 mr-0.5" />
+                      Encerramento: {new Date(currentJob.deadlineClosing).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
+                    </Badge>
+                  )}
+                  {computedSuggestions.length > 0 && (
+                    <Badge 
+                      className="bg-wedo-cyan text-white border-0 font-semibold whitespace-nowrap text-micro px-1.5 py-0 cursor-pointer hover:bg-wedo-cyan-dark transition-colors"
+                      onClick={() => {
+                        setShowExpandedLIA(true)
+                        setShowLiaSuggestionsPanel(true)
+                      }}
+                    >
+                      <Lightbulb className="w-3 h-3 mr-1" />
+                      {computedSuggestions.length} sugestão{computedSuggestions.length > 1 ? 'ões' : ''} da LIA
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Action Buttons */}
+            <div className="flex items-center gap-2 pt-1 flex-shrink-0">
+              <Button variant="outline" size="sm" className="gap-2 h-8" onClick={() => {
+                toast({
+                  title: "Em breve",
+                  description: "Em breve: Configuração de etapas do pipeline",
+                })
+              }}>
+                <Settings className="w-3.5 h-3.5" />
+                Configurar Etapas
+              </Button>
+              <Button variant="outline" size="sm" className="gap-2 h-8" onClick={handleShowReport}>
+                <FileText className="w-3.5 h-3.5" />
+                Relatório
+              </Button>
+              <Button variant="outline" size="sm" className="gap-2 h-8" onClick={() => {
+                if (selectedCandidates.size > 0) {
+                  setShowShareGestorModal(true)
+                } else {
+                  setSelectedCandidates(new Set(allTableCandidates.map(c => c.id)))
+                  toast({
+                    title: "Modo Compartilhamento",
+                    description: "Todos os candidatos foram selecionados. Ajuste a seleção e clique em Compartilhar na barra de ações.",
+                  })
+                }
+              }}>
+                <Share2 className="w-3.5 h-3.5" />
+                Compartilhar
+              </Button>
+            </div>
+          </div>
+
+          {/* Tab Navigation */}
+          <div className="flex items-center gap-1 px-4 mt-2">
+            <button
+              onClick={() => { setActiveTab('management'); setShowJobEditor(false); }}
+              className={`flex items-center gap-2 px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
+                activeTab === 'management'
+                  ? 'border-gray-900 text-gray-900 dark:border-gray-100 dark:text-gray-100'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+              }`}
+            >
+              <Layers3 className="w-3.5 h-3.5" />
+              Gestão da Vaga
+              <Badge className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-micro px-1.5 py-0 ml-1">
+                {allTableCandidates?.length || 0}
+              </Badge>
+            </button>
+            <button
+              onClick={() => { setActiveTab('edit'); setShowJobEditor(true); }}
+              className={`flex items-center gap-2 px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
+                activeTab === 'edit'
+                  ? 'border-gray-900 text-gray-900 dark:border-gray-100 dark:text-gray-100'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+              }`}
+            >
+              <Settings className="w-3.5 h-3.5" />
+              Configurações
+            </button>
+            <div className="ml-auto flex items-center gap-2">
+              {pipelineInheritance.isCustomized ? (
+                <>
+                  <span className="inline-flex items-center gap-1 text-micro text-status-warning dark:text-status-warning">
+                    <Settings className="w-3 h-3" />
+                    Pipeline personalizado
+                  </span>
+                  <button
+                    onClick={async () => {
+                      const success = await pipelineInheritance.resetToCompanyDefault()
+                      if (success) {
+                        toast({ title: 'Pipeline resetado', description: 'Pipeline restaurado para o padrão da empresa.' })
+                        window.location.reload()
+                      }
+                    }}
+                    disabled={pipelineInheritance.isLoading}
+                    className="inline-flex items-center gap-1 px-2 py-1 text-micro font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors"
+                   
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    Resetar para padrão
+                  </button>
+                </>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-micro text-gray-400 dark:text-gray-500">
+                  <Link2 className="w-3 h-3" />
+                  Herdado da empresa
+                </span>
+              )}
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* D8 — Insights Proativos (dismiss por sessão via localStorage) */}
+      {proactiveInsights.length > 0 && activeTab === 'management' && (
+        <div className="px-4 py-2 space-y-1.5">
+          {proactiveInsights.slice(0, 3).map(insight => (
+            <div
+              key={insight.id}
+              className={`flex items-start gap-2 px-3 py-2 rounded-md border text-xs ${
+                insight.urgency === 'urgent' ? 'bg-status-error/10 border-status-error/30 text-status-error' :
+                insight.urgency === 'high' ? 'bg-status-warning/10 border-status-warning/30 text-status-warning' :
+                'bg-gray-50 border-gray-200 text-gray-700'
+              }`}
+            >
+              <span className="font-medium flex-shrink-0">{insight.title}</span>
+              <span className="flex-1">{insight.message}</span>
+              <button
+                onClick={() => dismissInsight(insight.id)}
+                className="flex-shrink-0 opacity-50 hover:opacity-100"
+                aria-label="Dispensar"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {activeTab === 'edit' ? (
+        <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-900">
+          <div className="px-4 py-4 pb-12">
+            <JobEditTab
+              jobEditForm={jobEditForm}
+              setJobEditForm={setJobEditForm}
+              onSaveSection={handleSaveJobSection}
+              savingSection={savingJobSection}
+              companyDefaults={companyDefaults}
+              job={currentJob}
+              onJobUpdate={(updatedJob) => {
+                setJobEditForm((prev: Record<string, unknown>) => ({ ...prev, ...updatedJob }))
+                setJobLocalOverrides((prev) => ({ ...prev, ...updatedJob }))
+              }}
+              onFormUpdate={(updates) => {
+                setJobEditForm((prev: Record<string, unknown>) => ({ ...prev, ...updates }))
+              }}
+              isCreationMode={isCreationMode}
+              onPublish={handlePublishJob}
+              isPublishing={isPublishing}
+              publicLink={publicLink}
+            />
+          </div>
+        </div>
+      ) : (
+        <div className="flex-1 overflow-hidden bg-gray-100 dark:bg-gray-900 flex flex-col min-w-0">
+          {/* Pipeline Flow - Cards do Funil (apenas no modo Tabela) */}
+          {viewMode === "table" && (
+            <div className="flex-shrink-0 bg-white dark:bg-gray-900 px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+              <div className="w-full">
+                <div className="flex items-center gap-2">
+                  {tableStageFilter.length > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearStageFilters}
+                      className="h-6 text-micro gap-1 flex-shrink-0 px-2"
+                    >
+                      <X className="w-3 h-3" />
+                      Limpar
+                    </Button>
+                  )}
+                  <PipelineStagesCarousel
+                    stages={pipelineStages.map(stage => ({
+                      id: stage.id,
+                      name: stage.id,
+                      displayName: stage.name,
+                      count: getStageCount(stage.name),
+                    }))}
+                    selectedStages={tableStageFilter}
+                    onStageClick={(stageId) => {
+                      const stage = pipelineStages.find(s => s.id === stageId)
+                      if (stage) toggleStageFilter(stage.name)
+                    }}
+                    className="flex-1"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Bulk Actions Banner - Componente Unificado */}
+          {selectedCandidates.size > 0 && (
+            <div className="flex-shrink-0 px-4 py-2">
+              <UnifiedBulkActionsBar
+                context="vacancy"
+                selectedCount={selectedCandidates.size}
+                totalCount={allTableCandidates.length}
+                showSelectAll={true}
+                isAllSelected={selectedCandidates.size === allTableCandidates.length && allTableCandidates.length > 0}
+                onSelectAll={() => {
+                  if (selectedCandidates.size === allTableCandidates.length) {
+                    setSelectedCandidates(new Set())
+                  } else {
+                    setSelectedCandidates(new Set(allTableCandidates.map(c => c.id)))
+                  }
+                }}
+                onDeselectAll={() => setSelectedCandidates(new Set())}
+                onAction={(actionId) => handleBulkAction(actionId as BulkActionType | string)}
+              />
+            </div>
+          )}
+
+          {/* Controles de Visualização e Filtros */}
+          <div className="flex-shrink-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-2">
+            <div className="w-full px-4 flex items-center justify-between gap-2">
+              {/* Lado Esquerdo: Prompt LIA - Oculto quando prompt expandido está aberto */}
+              {!showExpandedLIA && (
+                <div className="flex items-center gap-2">
+                  {/* Prompt LIA Compacto - Estilo padronizado */}
+                  <div className="flex-shrink-0 flex-1 max-w-panel-sm">
+                    <div className="relative">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10 cursor-pointer" onClick={() => setShowExpandedLIA(!showExpandedLIA)}>
+                        <Brain className="w-4 h-4 text-wedo-cyan" />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Ex: Analisar candidatos com maior fit..."
+                        value={liaPromptValue}
+                        onChange={(e) => setLiaPromptValue(e.target.value)}
+                        className="w-full h-10 pl-10 pr-20 text-base-ui rounded-md focus:outline-none placeholder:text-gray-600 transition-colors border"
+                        style={{backgroundColor: 'var(--gray-50)',
+                          color: 'var(--gray-950)'}}
+                        onFocus={(e) => {
+                          e.currentTarget.style.borderColor = 'var(--gray-800)'
+                          e.currentTarget.style.boxShadow = '0 0 0 2px var(--gray-600-bg-12)'
+                          setShowExpandedLIA(true)
+                        }}
+                        onBlur={(e) => {
+                          e.currentTarget.style.borderColor = 'var(--gray-200)'
+                          e.currentTarget.style.boxShadow = 'none'
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && liaPromptValue.trim()) {
+                            handleAICommand(liaPromptValue)
+                          }
+                        }}
+                      />
+                      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                        <button
+                          className="p-1.5 rounded-md transition-colors hover:bg-gray-100"
+                          onClick={() => setShowExpandedLIA(true)}
+                          title="Expandir chat"
+                          aria-label="Expandir chat da LIA"
+                        >
+                          <Maximize2 className="w-4 h-4 text-gray-700" aria-hidden="true" />
+                        </button>
+                        <button
+                          className="p-1.5 rounded-md transition-colors hover:bg-gray-100"
+                          onClick={() => {
+                            if (liaPromptValue.trim()) {
+                              handleAICommand(liaPromptValue)
+                            }
+                          }}
+                          aria-label="Enviar mensagem para a LIA"
+                        >
+                          <Send className="w-4 h-4 text-gray-700" aria-hidden="true" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Ações do lado direito */}
+              <div className="flex items-center gap-2">
+                {/* Barra de Busca - Primeiro elemento */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
+                  <Input
+                    type="text"
+                    placeholder="Buscar..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 pr-3 py-1.5 text-sm w-48"
+                    aria-label="Buscar candidatos"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-md"
+                      aria-label="Limpar busca"
+                    >
+                      <X className="w-3 h-3 text-gray-800 dark:text-gray-200" aria-hidden="true" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Botões de Alternância de Visualização */}
+                <div className="bg-gray-100 dark:bg-gray-700 rounded-md p-0.5 flex">
+                  <button
+                    onClick={() => setViewMode("kanban")}
+                    className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                      viewMode === "kanban"
+                        ? "bg-white dark:bg-gray-600 text-gray-950 dark:text-gray-50 font-bold"
+                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <Layers3 className="w-3.5 h-3.5" />
+                      Kanban
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setViewMode("table")}
+                    className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                      viewMode === "table"
+                        ? "bg-white dark:bg-gray-600 text-gray-950 dark:text-gray-50 font-bold"
+                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <ListChecks className="w-3.5 h-3.5" />
+                      Tabela
+                    </div>
+                  </button>
+                </div>
+
+                {/* Botão Selecionar Todos - Context-aware em ambos os modos */}
+                <button
+                  onClick={() => {
+                    // Calcular candidatos visíveis baseado no modo atual
+                    let visibleCandidates = allTableCandidates
+                    
+                    if (viewMode === "kanban") {
+                      // No Kanban, aplicar TODOS os filtros (busca + filtros Kanban)
+                      visibleCandidates = allTableCandidates.filter(candidate => {
+                        // Filtro de busca
+                        if (searchQuery) {
+                          const query = searchQuery.toLowerCase()
+                          const matchesSearch = 
+                            candidate.name.toLowerCase().includes(query) ||
+                            candidate.role?.toLowerCase().includes(query) ||
+                            candidate.company?.toLowerCase().includes(query) ||
+                            candidate.location?.toLowerCase().includes(query) ||
+                            candidate.currentCompany?.toLowerCase().includes(query)
+                          if (!matchesSearch) return false
+                        }
+
+                        // Filtro de Score LIA Mínimo
+                        if (kanbanScoreMin > 0 && candidate.score && candidate.score < kanbanScoreMin) {
+                          return false
+                        }
+
+                        // Filtro de Status
+                        if (kanbanStatusFilter.length > 0 && candidate.status) {
+                          const candidateStatus = candidate.status.toLowerCase().replace(/ /g, '_')
+                          if (!kanbanStatusFilter.includes(candidateStatus)) return false
+                        }
+
+                        // Filtro de Modelo de Trabalho
+                        if (kanbanWorkModelFilter.length > 0 && candidate.workModel) {
+                          const workModel = candidate.workModel.toLowerCase()
+                          if (!kanbanWorkModelFilter.includes(workModel)) return false
+                        }
+
+                        if (kanbanOriginFilter.length > 0) {
+                          const candidateOrigin = (candidate.origin || '').toLowerCase()
+                          if (!candidateOrigin || !kanbanOriginFilter.includes(candidateOrigin)) return false
+                        }
+
+                        return true
+                      })
+                    } else {
+                      // No Table, aplicar filtros de etapa
+                      if (tableStageFilter.length > 0) {
+                        visibleCandidates = allTableCandidates.filter(c => {
+                          // Determinar a etapa do candidato
+                          const stage = 
+                            candidatesData.sourcing?.includes(c) ? 'sourcing' :
+                            candidatesData.screening?.includes(c) ? 'screening' :
+                            candidatesData.interview_hr?.includes(c) ? 'interview_hr' :
+                            candidatesData.interview_technical?.includes(c) ? 'interview_technical' :
+                            candidatesData.interview_manager?.includes(c) ? 'interview_manager' :
+                            candidatesData.offer?.includes(c) ? 'offer' :
+                            candidatesData.hired?.includes(c) ? 'hired' :
+                            candidatesData.rejected?.includes(c) ? 'rejected' :
+                            candidatesData.offer_declined?.includes(c) ? 'offer_declined' : ''
+                          return tableStageFilter.includes(stage)
+                        })
+                      }
+                    }
+                    
+                    if (selectedCandidates.size === visibleCandidates.length && visibleCandidates.length > 0) {
+                      // Se todos visíveis já estão selecionados, desmarcar todos
+                      setSelectedCandidates(new Set())
+                    } else {
+                      // Selecionar todos os visíveis
+                      const allIds = new Set(visibleCandidates.map(c => c.id))
+                      setSelectedCandidates(allIds)
+                    }
+                  }}
+                  className="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-gray-800 dark:text-gray-200 bg-white border border-gray-200 rounded-full hover:bg-gray-50 transition-colors"
+                 
+                >
+                  {/* Calcular candidatos visíveis para o texto do botão */}
+                  {(() => {
+                    let visibleCandidates = allTableCandidates
+                    if (viewMode === "kanban") {
+                      // Aplicar TODOS os filtros Kanban
+                      visibleCandidates = allTableCandidates.filter(candidate => {
+                        // Filtro de busca
+                        if (searchQuery) {
+                          const query = searchQuery.toLowerCase()
+                          const matchesSearch = 
+                            candidate.name.toLowerCase().includes(query) ||
+                            candidate.role?.toLowerCase().includes(query) ||
+                            candidate.company?.toLowerCase().includes(query) ||
+                            candidate.location?.toLowerCase().includes(query) ||
+                            candidate.currentCompany?.toLowerCase().includes(query)
+                          if (!matchesSearch) return false
+                        }
+
+                        // Filtro de Score LIA Mínimo
+                        if (kanbanScoreMin > 0 && candidate.score && candidate.score < kanbanScoreMin) {
+                          return false
+                        }
+
+                        // Filtro de Status
+                        if (kanbanStatusFilter.length > 0 && candidate.status) {
+                          const candidateStatus = candidate.status.toLowerCase().replace(/ /g, '_')
+                          if (!kanbanStatusFilter.includes(candidateStatus)) return false
+                        }
+
+                        // Filtro de Modelo de Trabalho
+                        if (kanbanWorkModelFilter.length > 0 && candidate.workModel) {
+                          const workModel = candidate.workModel.toLowerCase()
+                          if (!kanbanWorkModelFilter.includes(workModel)) return false
+                        }
+
+                        if (kanbanOriginFilter.length > 0) {
+                          const candidateOrigin = (candidate.origin || '').toLowerCase()
+                          if (!candidateOrigin || !kanbanOriginFilter.includes(candidateOrigin)) return false
+                        }
+
+                        return true
+                      })
+                    } else if (tableStageFilter.length > 0) {
+                      visibleCandidates = allTableCandidates.filter(c => {
+                        const stage = 
+                          candidatesData.sourcing?.includes(c) ? 'sourcing' :
+                          candidatesData.screening?.includes(c) ? 'screening' :
+                          candidatesData.interview_hr?.includes(c) ? 'interview_hr' :
+                          candidatesData.interview_technical?.includes(c) ? 'interview_technical' :
+                          candidatesData.interview_manager?.includes(c) ? 'interview_manager' :
+                          candidatesData.offer?.includes(c) ? 'offer' :
+                          candidatesData.hired?.includes(c) ? 'hired' :
+                          candidatesData.rejected?.includes(c) ? 'rejected' :
+                          candidatesData.offer_declined?.includes(c) ? 'offer_declined' : ''
+                        return tableStageFilter.includes(stage)
+                      })
+                    }
+                    
+                    const allSelected = selectedCandidates.size === visibleCandidates.length && visibleCandidates.length > 0
+                    
+                    return allSelected ? (
+                      <>
+                        <XCircle className="w-4 h-4 text-gray-500" />
+                        Desmarcar Todos
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="w-4 h-4 text-gray-500" />
+                        Selecionar Todos ({visibleCandidates.length})
+                      </>
+                    )
+                  })()}
+                </button>
+
+                {/* Botão Filtros - Disponível em ambos os modos */}
+                <button
+                  onClick={() => {
+                    if (viewMode === "kanban") {
+                      setShowKanbanFiltersPanel(!showKanbanFiltersPanel)
+                    } else {
+                      setShowTableFiltersPanel(!showTableFiltersPanel)
+                    }
+                  }}
+                  className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors ${
+                    (viewMode === "kanban" ? showKanbanFiltersPanel : showTableFiltersPanel)
+                      ? 'bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200' 
+                      : 'text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  }`}
+                 
+                >
+                  <Target className="w-4 h-4" />
+                  Filtros
+                </button>
+
+                {viewMode === "table" && (
+                  <button
+                    onClick={() => setShowColumnConfig(!showColumnConfig)}
+                    title="Configurar colunas da tabela"
+                    className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors ${
+                      showColumnConfig 
+                        ? 'bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200' 
+                        : 'text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                   
+                  >
+                    <ChevronsLeftRight className="w-4 h-4" />
+                    Colunas
+                    <span className={`text-xs font-medium ${showColumnConfig ? 'text-gray-300' : 'text-gray-500'}`}>
+                      {tableColumns.filter(col => col.visible).length}
+                    </span>
+                  </button>
+                )}
+
+              </div>
+            </div>
+          </div>
+
+          {/* Container Principal com LIA Sidebar Unificada */}
+          <div className="flex-1 flex gap-2 overflow-hidden bg-gray-50 dark:bg-gray-900 min-w-0">
+            {/* Super Chat Expandido - Ocupa a maior parte da tela, deixando apenas uma coluna visível */}
+            {showSuperChat && (
+              <>
+              <div 
+                className="flex-1 transition-colors duration-300 pl-4 py-4 pr-0 min-w-0"
+                style={{maxWidth: 'calc(100% - 48px)'}}
+              >
+                <div className="h-full flex flex-col">
+                  <ExpandedChatModal
+                    isOpen={true}
+                    onClose={() => {
+                      setShowSuperChat(false)
+                      setUserCollapsedLIA(true)
+                    }}
+                    initialMessage={liaPromptValue}
+                    initialMessages={liaMessages.map(msg => ({
+                      id: msg.id,
+                      role: msg.type === 'user' ? 'user' : 'assistant',
+                      content: msg.content,
+                      timestamp: new Date(msg.timestamp)
+                    }))}
+                    contextTitle="Análise de Candidatos"
+                    inline={true}
+                    mode="general"
+                    onReturnToLateral={returnToExpandedPrompt}
+                    hideModeButtons={true}
+                    onOrchestratedMessage={handleOrchestratedMessage}
+                  />
+                </div>
+              </div>
+
+              {/* Barra Vertical de Navegação - Estilo colapsado com ícones */}
+              <div className="flex-shrink-0 w-12 transition-colors duration-300 py-4 pr-2">
+                <div className="h-[calc(100vh-12rem)] flex flex-col items-center bg-white border border-gray-200 rounded-md py-3 gap-2">
+                  {/* Botão Expandir */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowSuperChat(false)}
+                    className="h-8 w-8 p-0 rounded-md hover:bg-gray-100"
+                    title="Expandir visualização"
+                  >
+                    <ChevronRight className="w-4 h-4 text-gray-500" />
+                  </Button>
+                  
+                  <div className="w-6 h-px bg-gray-200 my-1" />
+                  
+                  {/* Ícone HubSpot/Integração */}
+                  <div className="flex flex-col items-center gap-1 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-colors">
+                    <div className="w-6 h-6 rounded-full bg-wedo-orange flex items-center justify-center">
+                      <span className="text-white text-micro font-bold">H</span>
+                    </div>
+                  </div>
+                  
+                  {/* Ícone Ações/Automação */}
+                  <div className="flex flex-col items-center gap-1 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-colors">
+                    <div className="w-6 h-6 rounded-full bg-status-warning flex items-center justify-center">
+                      <Brain className="w-3.5 h-3.5 text-white" />
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1" />
+                  
+                  {/* Candidatos - Texto Vertical */}
+                  <div 
+                    className="flex flex-col items-center gap-1 py-3 cursor-pointer hover:bg-gray-50 rounded-md px-1 transition-colors border-r-2 border-gray-900 dark:border-gray-50"
+                    onClick={() => setShowSuperChat(false)}
+                  >
+                    <Users className="w-4 h-4 text-gray-600" />
+                    <span 
+                      className="text-micro font-medium text-gray-600 tracking-wide"
+                      style={{writingMode: 'vertical-rl', textOrientation: 'mixed'}}
+                    >
+                      Candidatos ({Object.values(candidatesData).flat().length})
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </>
+            )}
+
+            {/* LIA Sidebar Unificada - Visível em ambos os modos (Kanban e Tabela) */}
+            {showExpandedLIA && !showSuperChat && (
+              <KanbanLIASidebar
+                liaMessages={liaMessages}
+                liaPromptValue={liaPromptValue}
+                isLiaLoading={isLiaLoading}
+                liaExpandedWidth={liaExpandedWidth}
+                computedSuggestions={computedSuggestions}
+                showLiaSuggestionsPanel={showLiaSuggestionsPanel}
+                selectedCandidates={selectedCandidates}
+                isResizingLIA={isResizingLIA}
+                candidatesData={candidatesData}
+                chatScrollRef={chatScrollRef}
+                setLiaMessages={setLiaMessages}
+                setLiaPromptValue={setLiaPromptValue}
+                setLiaExpandedWidth={setLiaExpandedWidth}
+                setShowExpandedLIA={setShowExpandedLIA}
+                setUserCollapsedLIA={setUserCollapsedLIA}
+                setShowLiaSuggestionsPanel={setShowLiaSuggestionsPanel}
+                setSelectedCandidates={setSelectedCandidates}
+                setIsResizingLIA={setIsResizingLIA}
+                setSelectedCandidate={setSelectedCandidate}
+                setShowCandidatePage={setShowCandidatePage}
+                openSuperChat={openSuperChat}
+                handleAICommand={handleAICommand}
+                handleLiaUiAction={handleLiaUiAction}
+              />
+            )}
+
+            {/* Visualização Kanban */}
+            {viewMode === "kanban" && !showSuperChat && (
+              <>
+              {/* Painel de Filtros - KANBAN */}
+              <KanbanFiltersPanel
+                open={showKanbanFiltersPanel}
+                onClose={() => setShowKanbanFiltersPanel(false)}
+                scoreMin={kanbanScoreMin}
+                onScoreMinChange={setKanbanScoreMin}
+                statusFilter={kanbanStatusFilter}
+                onStatusFilterChange={setKanbanStatusFilter}
+                originFilter={kanbanOriginFilter}
+                onOriginFilterChange={setKanbanOriginFilter}
+                workModelFilter={kanbanWorkModelFilter}
+                onWorkModelFilterChange={setKanbanWorkModelFilter}
+              />
+
+              <div className="flex-1 overflow-x-auto overflow-y-hidden" suppressHydrationWarning>
+                <div className="p-4 h-full" suppressHydrationWarning>
+                  {(!hasMounted || isLoadingCandidates) ? (
+                    <div className="flex gap-3 h-full min-w-max" suppressHydrationWarning>
+                      {dynamicStages.map((stage) => (
+                        <div key={stage.id} className="flex flex-col flex-1 bg-white rounded-md min-w-[250px] max-w-[320px] border border-gray-200 h-[calc(100vh-16rem)]" suppressHydrationWarning>
+                          <div className="flex-shrink-0 p-2.5 pb-1.5">
+                            <div className="flex items-center gap-1.5">
+                              <div className="w-2 h-2 rounded-full animate-pulse" style={{backgroundColor: stage.color}}></div>
+                              <h3 className="font-medium text-xs text-gray-400">{stage.displayName}</h3>
+                              <span className="text-micro text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full animate-pulse">...</span>
+                            </div>
+                          </div>
+                          <div className="flex-1 flex items-center justify-center">
+                            <div className="animate-pulse text-gray-400 text-xs" suppressHydrationWarning>Carregando...</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (() => {
+                    const totalCandidates = Object.values(candidatesData).reduce(
+                      (sum, arr) => sum + (arr?.length || 0), 0
+                    )
+                    if (totalCandidates === 0) {
+                      return (
+                        <EmptyState
+                          icon={<Users />}
+                          title="Nenhum candidato neste pipeline ainda"
+                          description="Adicione candidatos ou busque no banco de talentos para iniciar o processo."
+                          action={{
+                            label: "Buscar candidatos",
+                            onClick: () => setShowAddToVacancyModal(true),
+                          }}
+                          className="h-64"
+                        />
+                      )
+                    }
+                    return (
+                    <div
+                      className="flex gap-3 h-full min-w-max"
+                      key={`kanban-${dynamicStages.map(s => candidatesData[s.id]?.length || 0).join('-')}`}
+                      suppressHydrationWarning
+                    >
+                      {dynamicStages.map(stage => (
+                        <React.Fragment key={stage.id}>
+                          {renderKanbanColumn(stage.id, candidatesData[stage.id] || [], '', '')}
+                        </React.Fragment>
+                      ))}
+                      <div className="flex-shrink-0 w-[280px]">
+                        <div 
+                          className="h-full min-h-[200px] rounded-md border-2 border-dashed border-gray-300 hover:border-gray-400 flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors hover:bg-gray-50/50 group"
+                          onClick={() => setShowAddColumnPopover(true)}
+                        >
+                          <div className="w-10 h-10 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors">
+                            <Plus className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                          </div>
+                          <span className="text-xs text-gray-400 group-hover:text-gray-600 font-medium transition-colors">
+                            Adicionar Coluna
+                          </span>
+                        </div>
+                      </div>
+                      <AddColumnPopover
+                        isOpen={showAddColumnPopover}
+                        onClose={() => setShowAddColumnPopover(false)}
+                        dynamicStages={dynamicStages}
+                        isAddingColumn={isAddingColumn}
+                        onSetIsAddingColumn={setIsAddingColumn}
+                        onAddStage={(stage) => {
+                          setDynamicStages(prev => {
+                            const finalStages = prev.filter(s => s.isFinal || s.isHired || s.isRejection)
+                            const activeStages = prev.filter(s => !s.isFinal && !s.isHired && !s.isRejection)
+                            return [...activeStages, stage, ...finalStages]
+                          })
+                          setCandidatesData(prev => ({ ...prev, [stage.id]: [] }))
+                        }}
+                      />
+                    </div>
+                  )
+                  })()}
+                </div>
+              </div>
+
+              {/* Preview do Candidato - Painel Lateral Direito (KANBAN) */}
+              {isPreviewOpen && previewCandidate && (
+                <div className={`flex-shrink-0 transition-colors duration-300 ${isPreviewMaximized ? 'w-[600px]' : 'w-panel-lg'}`}>
+                  <div className="bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 h-[calc(100vh-6rem)] overflow-hidden">
+                  <CandidatePreview
+                    candidate={previewCandidate}
+                    isOpen={isPreviewOpen}
+                    onClose={handleClosePreview}
+                    isMaximized={isPreviewMaximized}
+                    onToggleMaximize={handleTogglePreviewMaximize}
+                    candidates={(() => {
+                      const data = candidatesData as Record<string, Record<string, unknown>[]>
+                      const currentColumn = Object.keys(data).find(col => 
+                        data[col].some((c: Record<string, unknown>) => c.id === previewCandidate?.id)
+                      )
+                      return currentColumn ? data[currentColumn] : []
+                    })()}
+                    currentIndex={(() => {
+                      const data = candidatesData as Record<string, Record<string, unknown>[]>
+                      const currentColumn = Object.keys(data).find(col => 
+                        data[col].some((c: Record<string, unknown>) => c.id === previewCandidate?.id)
+                      )
+                      return currentColumn ? data[currentColumn].findIndex((c: Record<string, unknown>) => c.id === previewCandidate?.id) : 0
+                    })()}
+                    onNavigateCandidate={handleNavigateCandidate}
+                    onOpenFullPage={handleCandidatePageOpen}
+                    onScheduleInterview={handleScheduleInterview}
+                    onAddToVacancy={handleAddToVacancy}
+                    onToggleFavorite={handleToggleFavorite}
+                    onWSIScreening={handleSendWSIInvite}
+                    onOpenTriagemDetails={handleOpenTriagem}
+                    isFavorite={previewCandidate ? favoriteCandidates.has(previewCandidate.id) : false}
+                    onSendEmail={(candidate) => handleSendEmail(candidate)}
+                    onSendWhatsApp={(candidate) => handleSendWhatsApp(candidate)}
+                    onSendTriagem={(candidate) => handleSendTriagem(candidate)}
+                    onSendAgendamento={(candidate) => handleSendAgendamento(candidate)}
+                    onSendFeedback={(candidate) => handleSendFeedback(candidate)}
+                    jobId={jobData.id?.toString()}
+                  />
+                  </div>
+                </div>
+              )}
+              </>
+            )}
+
+            {/* Visualização em Tabela */}
+            {viewMode === "table" && !showSuperChat && (
+              <KanbanTableView
+                showSuperChat={showSuperChat}
+                showTableFiltersPanel={showTableFiltersPanel}
+                onShowTableFiltersPanelChange={setShowTableFiltersPanel}
+                dynamicStages={dynamicStages}
+                tableStageFilter={tableStageFilter}
+                onTableStageFilterChange={setTableStageFilter}
+                tableSortColumn={tableSortColumn}
+                tableSortDirection={tableSortDirection}
+                onSortChange={(config) => {
+                  setTableSortColumn(config.field)
+                  setTableSortDirection(config.direction)
+                }}
+                currentPage={currentPage}
+                onCurrentPageChange={setCurrentPage}
+                getPaginatedCandidates={getPaginatedCandidates}
+                showColumnConfig={showColumnConfig}
+                onShowColumnConfigChange={setShowColumnConfig}
+                tableColumns={tableColumns}
+                onTableColumnsChange={setTableColumns}
+                selectedCandidates={selectedCandidates}
+                onSelectionChange={setSelectedCandidates}
+                jobVacancyId={jobData?.id?.toString()}
+                saturationData={saturationData}
+                onColumnResize={handleTableColumnResize}
+                onCandidateClick={handleOpenPreview}
+                onStatusChange={handleInteractiveStatusChange}
+                onTransitionRequest={handleTableTransitionRequest}
+                onTransitionRequired={handleTransitionRequired}
+                calculateNotaLiaGeral={calculateNotaLiaGeral}
+                getLiaAlerts={getLiaAlerts}
+                viewedCandidateIds={viewedCandidateIds}
+                onOpenTriagem={handleOpenTriagem}
+                onOpenAnalysis={handleOpenAnalysis}
+                onSetSelectedCandidateForModal={setSelectedCandidateForModal}
+                onSetActiveModal={setActiveModal}
+                onSetShowBigFiveModal={setShowBigFiveModal}
+                onSetScoreModalCandidate={setScoreModalCandidate}
+                getDataRequestForCandidate={getDataRequestForCandidate}
+                onDataRequestResend={handleDataRequestResend}
+                onDataRequestViewDetails={handleDataRequestViewDetails}
+                onApproveFromScreening={handleApproveFromScreening}
+                onRejectFromScreening={handleRejectFromScreening}
+                onApproveCandidate={handleApproveCandidate}
+                onRejectCandidate={handleRejectCandidate}
+                openDecisionFlowModal={openDecisionFlowModal}
+                onSetTransitionInitialPrompt={setTransitionInitialPrompt}
+                onSetTransitionAllowStageSelection={setTransitionAllowStageSelection}
+                onSetTransitionInterviewAlert={setTransitionInterviewAlert}
+                openTransition={openTransition}
+                isPreviewOpen={isPreviewOpen}
+                previewCandidate={previewCandidate}
+                isPreviewMaximized={isPreviewMaximized}
+                onClosePreview={handleClosePreview}
+                onTogglePreviewMaximize={handleTogglePreviewMaximize}
+                onNavigateCandidate={handleNavigateCandidate}
+                onCandidatePageOpen={handleCandidatePageOpen}
+                onScheduleInterview={handleScheduleInterview}
+                onAddToVacancy={handleAddToVacancy}
+                onToggleFavorite={handleToggleFavorite}
+                favoriteCandidates={favoriteCandidates}
+                onSendWSIInvite={handleSendWSIInvite}
+                onSendEmail={handleSendEmail}
+                onSendWhatsApp={handleSendWhatsApp}
+                onSendTriagem={handleSendTriagem}
+                onSendAgendamento={handleSendAgendamento}
+                onSendFeedback={handleSendFeedback}
+                candidatesData={candidatesData}
+              />
+            )}
+          </div>
+        </div>
+      )}
+
+
+      <KanbanPageModals {...state} />
+
+    </div>
+    </>
+  )
+}

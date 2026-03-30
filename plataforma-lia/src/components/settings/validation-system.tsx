@@ -400,7 +400,7 @@ export function ValidationSystem({ data, section, onValidationChange, onAutoCorr
       case 'warning': return `${badgeStyles.warning} border-status-warning/30`
       case 'info': return `${badgeStyles.info} border-wedo-cyan/30`
       case 'success': return `${badgeStyles.success} border-status-success/30`
-      default: return `${badgeStyles.default} border-gray-200`
+      default: return `${badgeStyles.default} border-lia-border-subtle`
     }
   }
 
@@ -418,7 +418,7 @@ export function ValidationSystem({ data, section, onValidationChange, onAutoCorr
     switch (category) {
       case 'required': return badgeStyles.error
       case 'format': return badgeStyles.info
-      case 'business': return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+      case 'business': return 'bg-gray-100 lia-text-700 dark:bg-lia-bg-secondary dark:text-lia-text-secondary'
       case 'security': return badgeStyles.warning
       case 'compliance': return badgeStyles.success
       default: return badgeStyles.default
@@ -430,13 +430,13 @@ export function ValidationSystem({ data, section, onValidationChange, onAutoCorr
   const successResults = validationResults.filter(r => r.isValid)
 
   return (
-    <Card className="mb-6 dark:bg-gray-900 dark:border-gray-700">
+    <Card className="mb-6 dark:bg-lia-bg-primary dark:border-lia-border-subtle">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-xs">
-            <Shield className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <Shield className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
             Sistema de Validação
-            {isValidating && <RefreshCw className="w-4 h-4 animate-spin text-gray-600 dark:text-gray-400" />}
+            {isValidating && <RefreshCw className="w-4 h-4 animate-spin lia-text-600 dark:text-lia-text-tertiary" />}
           </CardTitle>
           <div className="flex items-center gap-2">
             <Button
@@ -504,7 +504,7 @@ export function ValidationSystem({ data, section, onValidationChange, onAutoCorr
                     )}
 
                     {showSuggestions && result.suggestions && result.suggestions.length > 0 && (
-                      <div className="bg-white bg-opacity-50 rounded-md p-2 mt-2">
+                      <div className="bg-lia-bg-primary bg-opacity-50 rounded-md p-2 mt-2">
                         <div className="flex items-center gap-1 mb-1">
                           <Lightbulb className="w-3 h-3" />
                           <span className="text-xs font-medium">Sugestões:</span>
@@ -523,7 +523,7 @@ export function ValidationSystem({ data, section, onValidationChange, onAutoCorr
                     {result.correctedValue && onAutoCorrect && (
                       <div className="flex items-center gap-2 mt-2">
                         <span className="text-xs">Correção sugerida:</span>
-                        <code className="text-xs bg-white bg-opacity-50 px-2 py-1 rounded-full">
+                        <code className="text-xs bg-lia-bg-primary bg-opacity-50 px-2 py-1 rounded-full">
                           {result.correctedValue}
                         </code>
                         <Button
@@ -552,7 +552,7 @@ export function ValidationSystem({ data, section, onValidationChange, onAutoCorr
         </div>
 
         {/* Botões de Ação */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-200 mt-6">
+        <div className="flex items-center justify-between pt-4 border-t border-lia-border-subtle mt-6">
           <div className={textStyles.description}>
             Última validação: {new Date().toLocaleTimeString('pt-BR')}
           </div>

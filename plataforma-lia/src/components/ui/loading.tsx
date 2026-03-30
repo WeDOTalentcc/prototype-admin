@@ -32,12 +32,12 @@ export function Loading({
       <div className={cn('flex items-center gap-2', className)}>
         <div
           className={cn(
-            'rounded-full border-2 border-gray-200 border-t-gray-400 dark:border-t-gray-500 animate-spin',
+ 'rounded-full border-2 border-lia-border-subtle border-t-gray-400 dark:border-t-gray-500 animate-spin',
             sizeClasses[size]
           )}
         />
         {text && (
-          <span className={cn('text-gray-600 dark:text-gray-400', textSizeClasses[size])}>
+          <span className={cn('text-gray-600 dark:text-lia-text-tertiary', textSizeClasses[size])}>
             {text}
           </span>
         )}
@@ -53,7 +53,7 @@ export function Loading({
             <div
               key={i}
               className={cn(
-                'rounded-full bg-gray-700 dark:bg-gray-300',
+ 'rounded-full bg-gray-700',
                 size === 'sm' ? 'w-1 h-1' : size === 'md' ? 'w-2 h-2' : 'w-3 h-3'
               )}
               style={{animation: `dotsPulse 0.8s infinite ${i * 0.2}s`}}
@@ -61,7 +61,7 @@ export function Loading({
           ))}
         </div>
         {text && (
-          <span className={cn('text-gray-600 dark:text-gray-400', textSizeClasses[size])}>
+          <span className={cn('text-gray-600 dark:text-lia-text-tertiary', textSizeClasses[size])}>
             {text}
           </span>
         )}
@@ -84,12 +84,12 @@ export function Loading({
       <div className={cn('flex items-center gap-2', className)}>
         <div
           className={cn(
-            'rounded-full bg-gray-700 dark:bg-gray-300 animate-pulse',
+ 'rounded-full bg-gray-700 animate-pulse',
             sizeClasses[size]
           )}
         />
         {text && (
-          <span className={cn('text-gray-600 dark:text-gray-400', textSizeClasses[size])}>
+          <span className={cn('text-gray-600 dark:text-lia-text-tertiary', textSizeClasses[size])}>
             {text}
           </span>
         )}

@@ -51,26 +51,26 @@ const stateConfig: Record<LIAProcessingState, {
 }> = {
   thinking: {
     icon: Brain,
-    color: 'text-gray-600 dark:text-gray-400',
-    bgColor: 'bg-gray-100 dark:bg-gray-800',
+    color: 'text-gray-600 dark:text-lia-text-tertiary',
+    bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary',
     label: 'Pensando...'
   },
   analyzing: {
     icon: BarChart3,
-    color: 'text-gray-600 dark:text-gray-400',
-    bgColor: 'bg-gray-100 dark:bg-gray-800',
+    color: 'text-gray-600 dark:text-lia-text-tertiary',
+    bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary',
     label: 'Analisando...'
   },
   searching: {
     icon: Search,
-    color: 'text-gray-600 dark:text-gray-400',
-    bgColor: 'bg-gray-100 dark:bg-gray-800',
+    color: 'text-gray-600 dark:text-lia-text-tertiary',
+    bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary',
     label: 'Buscando...'
   },
   generating: {
     icon: Brain,
-    color: 'text-gray-600 dark:text-gray-400',
-    bgColor: 'bg-gray-100 dark:bg-gray-800',
+    color: 'text-gray-600 dark:text-lia-text-tertiary',
+    bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary',
     label: 'Gerando...'
   },
   completed: {
@@ -96,19 +96,19 @@ export function LIATaskStepItem({
 
   return (
     <div className={cn(
-      "rounded-md transition-all duration-200",
-      isActive && !step.isCompleted ? "bg-gray-50 dark:bg-gray-800/50" : "",
+ "rounded-md transition-colors duration-200",
+      isActive && !step.isCompleted ? "bg-gray-50 dark:bg-lia-bg-secondary/50" : "",
       step.isCompleted ? "opacity-90" : ""
     )}>
       <div 
         className={cn(
-          "flex items-center gap-3 px-3 py-2.5 cursor-pointer",
+ "flex items-center gap-3 px-3 py-2.5 cursor-pointer",
           hasDetails ? "hover:bg-gray-50 dark:hover:bg-gray-800" : ""
         )}
         onClick={hasDetails ? onToggle : undefined}
       >
         <div className={cn(
-          "w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 transition-all",
+ "w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 transition-colors",
           step.isCompleted 
             ? "bg-status-success/15" 
             : config.bgColor
@@ -117,7 +117,7 @@ export function LIATaskStepItem({
             <Loader2 className={cn("w-4 h-4 animate-spin", config.color)} />
           ) : (
             <Icon className={cn(
-              "w-4 h-4",
+ "w-4 h-4",
               step.isCompleted ? "text-status-success dark:text-status-success" : config.color
             )} />
           )}
@@ -126,10 +126,10 @@ export function LIATaskStepItem({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className={cn(
-              "text-sm font-medium",
+ "text-sm font-medium",
               step.isCompleted 
-                ? "text-gray-600 dark:text-gray-400" 
-                : "text-gray-800 dark:text-gray-200"
+                ? "text-gray-600 dark:text-lia-text-tertiary" 
+                : "text-gray-800 dark:text-lia-text-primary"
             )}>
               {step.label}
             </span>
@@ -140,14 +140,14 @@ export function LIATaskStepItem({
             )}
           </div>
           {step.description && (
-            <p className="text-xs text-gray-500 mt-0.5 truncate">
+            <p className="text-xs lia-text-secondary mt-0.5 truncate">
               {step.description}
             </p>
           )}
         </div>
 
         {hasDetails && (
-          <button className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+          <button className="p-1 lia-text-secondary hover:lia-text-base dark:hover:lia-text-muted">
             {step.isExpanded ? (
               <ChevronUp className="w-4 h-4" />
             ) : (
@@ -159,7 +159,7 @@ export function LIATaskStepItem({
 
       {hasDetails && step.isExpanded && (
         <div className="px-3 pb-3 pl-12">
-          <div className="text-xs text-gray-500 bg-gray-50 dark:bg-gray-800 rounded-md p-2.5 font-mono">
+          <div className="text-xs lia-text-secondary bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-2.5 font-mono">
             {step.details}
           </div>
         </div>
@@ -194,10 +194,10 @@ export function LIAProcessingCard({
 
   return (
     <div className={cn(
-      "rounded-xl border transition-all",
+ "rounded-xl border transition-colors",
       allCompleted 
         ? "border-status-success/30 dark:border-status-success/30 bg-status-success/10/50" 
-        : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900",
+        : "border-lia-border-default dark:border-lia-border-default bg-white dark:bg-lia-bg-primary",
       className
     )}>
       {isCollapsible && (
@@ -207,8 +207,8 @@ export function LIAProcessingCard({
         >
           <div className="flex items-center gap-3">
             <div className={cn(
-              "w-8 h-8 rounded-md flex items-center justify-center",
-              allCompleted ? "bg-status-success/15" : "bg-gray-100 dark:bg-gray-800"
+ "w-8 h-8 rounded-md flex items-center justify-center",
+              allCompleted ? "bg-status-success/15" : "bg-gray-100 dark:bg-lia-bg-secondary"
             )}>
               {allCompleted ? (
                 <Check className="w-5 h-5 text-status-success dark:text-status-success" />
@@ -217,36 +217,36 @@ export function LIAProcessingCard({
               )}
             </div>
             <div className="text-left">
-              <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+              <span className="text-sm font-semibold text-gray-800 dark:text-lia-text-primary">
                 {allCompleted ? "Processamento concluído" : "LIA processando..."}
               </span>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <div className="h-1 w-16 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div className="h-1 w-16 bg-gray-200 dark:bg-lia-bg-elevated rounded-full overflow-hidden">
                   <div 
                     className={cn(
-                      "h-full rounded-full transition-all duration-500",
-                      allCompleted ? "bg-status-success" : "bg-gray-900 dark:bg-gray-50"
+ "h-full rounded-full transition-[width,height] duration-500",
+                      allCompleted ? "bg-status-success" : "bg-gray-900"
                     )}
                     style={{width: `${(completedCount / steps.length) * 100}%`}}
                   />
                 </div>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs lia-text-secondary">
                   {completedCount}/{steps.length}
                 </span>
               </div>
             </div>
           </div>
           {isCardExpanded ? (
-            <ChevronUp className="w-4 h-4 text-gray-400" />
+            <ChevronUp className="w-4 h-4 lia-text-secondary" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-gray-400" />
+            <ChevronDown className="w-4 h-4 lia-text-secondary" />
           )}
         </button>
       )}
 
       {isCardExpanded && (
         <div className={cn(
-          "space-y-1",
+ "space-y-1",
           isCollapsible ? "px-2 pb-3" : "p-3"
         )}>
           {steps.map((step) => (
@@ -290,10 +290,10 @@ export function LIAFeedbackButtons({
       <button
         onClick={() => handleFeedback(true)}
         className={cn(
-          "p-1.5 rounded-md transition-all",
+ "p-1.5 rounded-md transition-colors",
           feedback === 'positive'
             ? "bg-status-success/15 text-status-success dark:text-status-success"
-            : "text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+            : "lia-text-secondary hover:lia-text-base hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:lia-text-muted"
         )}
         title="Resposta útil"
       >
@@ -302,10 +302,10 @@ export function LIAFeedbackButtons({
       <button
         onClick={() => handleFeedback(false)}
         className={cn(
-          "p-1.5 rounded-md transition-all",
+ "p-1.5 rounded-md transition-colors",
           feedback === 'negative'
             ? "bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error"
-            : "text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+            : "lia-text-secondary hover:lia-text-base hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:lia-text-muted"
         )}
         title="Resposta não útil"
       >
@@ -328,16 +328,16 @@ export function LIACommandBadge({
 }: LIACommandBadgeProps) {
   return (
     <div className={cn(
-      "inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700",
+ "inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle",
       className
     )}>
       {status === 'running' && (
-        <Loader2 className="w-3 h-3 animate-spin text-gray-600 dark:text-gray-400" />
+        <Loader2 className="w-3 h-3 animate-spin text-gray-600 dark:text-lia-text-tertiary" />
       )}
       {status === 'completed' && (
         <Check className="w-3 h-3 text-status-success" />
       )}
-      <span className="text-xs font-mono text-gray-600 dark:text-gray-400 truncate max-w-panel-sm">
+      <span className="text-xs font-mono text-gray-600 dark:text-lia-text-tertiary truncate max-w-panel-sm">
         {command}
       </span>
     </div>
@@ -369,20 +369,20 @@ export function LIAFileBadge({
 
   return (
     <div className={cn(
-      "inline-flex items-center gap-3 px-3 py-2 rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700",
-      onDownload && "cursor-pointer hover:border-gray-900 dark:hover:border-gray-50 hover:transition-all",
+ "inline-flex items-center gap-3 px-3 py-2 rounded-md bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle",
+      onDownload && "cursor-pointer hover:border-gray-900 dark:hover:border-gray-50 transition-colors",
       className
     )}
     onClick={onDownload}
     >
-      <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-        <Icon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+      <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
+        <Icon className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
+        <div className="text-sm font-medium text-gray-800 dark:text-lia-text-primary truncate">
           {fileName}
         </div>
-        <div className="text-xs text-gray-500">
+        <div className="text-xs lia-text-secondary">
           {status === 'processing' ? 'Processando...' : 
            status === 'finished' ? 'Finalizado' : 'Erro'}
         </div>
@@ -391,7 +391,7 @@ export function LIAFileBadge({
         <Check className="w-5 h-5 text-status-success" />
       )}
       {status === 'processing' && (
-        <Loader2 className="w-5 h-5 text-gray-600 dark:text-gray-400 animate-spin" />
+        <Loader2 className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary animate-spin" />
       )}
     </div>
   )
@@ -411,14 +411,14 @@ export function LIASimpleProcessing({
 
   return (
     <div className={cn(
-      "inline-flex items-center gap-2.5 px-4 py-2.5 rounded-2xl",
+ "inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl",
       config.bgColor,
       className
     )}>
-      <div className="w-7 h-7 rounded-md bg-white dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+      <div className="w-7 h-7 rounded-md bg-white dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
         <Loader2 className={cn("w-4 h-4 animate-spin", config.color)} />
       </div>
-      <span className="text-sm text-gray-600 dark:text-gray-400">
+      <span className="text-sm text-gray-600 dark:text-lia-text-tertiary">
         {message || config.label}
       </span>
     </div>

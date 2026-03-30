@@ -43,8 +43,8 @@ export function MultimodalUpload({
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const getFileIcon = (fileType: string) => {
-    if (fileType.startsWith('image/')) return <ImageIcon className="h-8 w-8 text-gray-600 dark:text-gray-400" />
-    return <FileText className="h-8 w-8 text-gray-600 dark:text-gray-400" />
+    if (fileType.startsWith('image/')) return <ImageIcon className="h-8 w-8 lia-text-600 dark:text-lia-text-tertiary" />
+    return <FileText className="h-8 w-8 lia-text-600 dark:text-lia-text-tertiary" />
   }
 
   const formatFileSize = (bytes: number) => {
@@ -186,7 +186,7 @@ export function MultimodalUpload({
           size="icon"
           onClick={() => fileInputRef.current?.click()}
           disabled={isAnalyzing}
-          className="h-8 w-8 text-gray-500 hover:text-gray-900 dark:hover:text-gray-50 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-gray-400"
+          className="h-8 w-8 lia-text-500 hover:lia-text-900 dark:hover:lia-text-50 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-gray-400"
           title="Anexar arquivo para análise"
           aria-label="Anexar arquivo para análise"
         >
@@ -197,11 +197,11 @@ export function MultimodalUpload({
           )}
         </Button>
         {file && (
-          <div className="flex items-center gap-2 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md text-xs">
+          <div className="flex items-center gap-2 px-2 py-1 bg-gray-100 dark:bg-lia-bg-secondary rounded-md text-xs">
             <span className="max-w-[100px] truncate">{file.name}</span>
             <button
               onClick={clearFile}
-              className="text-gray-400 hover:text-gray-600 focus-visible:ring-2 focus-visible:ring-gray-400 rounded-md"
+              className="lia-text-400 hover:lia-text-600 focus-visible:ring-2 focus-visible:ring-gray-400 rounded-md"
               aria-label="Remover arquivo"
             >
               <X className="h-3 w-3" />
@@ -229,20 +229,20 @@ export function MultimodalUpload({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           className={cn(
-            "border-2 border-dashed rounded-md p-8 text-center cursor-pointer transition-all",
+            "border-2 border-dashed rounded-md p-8 text-center cursor-pointer transition-colors",
             isDragOver 
-              ? "border-gray-900 dark:border-gray-50 bg-gray-50 dark:bg-gray-800/50" 
-              : "border-gray-200 dark:border-gray-700 hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:hover:bg-gray-800"
+              ? "border-gray-900 dark:lia-border-50 bg-gray-50 dark:bg-lia-bg-secondary/50" 
+              : "border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:hover:bg-gray-800"
           )}
         >
           <Upload className={cn(
             "h-10 w-10 mx-auto mb-3 transition-colors",
-            isDragOver ? "text-gray-600 dark:text-gray-400" : "text-gray-400"
+            isDragOver ? "lia-text-600 dark:text-lia-text-tertiary" : "lia-text-400"
           )} />
-          <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+          <p className="text-sm font-medium lia-text-700 dark:text-lia-text-primary mb-1">
             Arraste um arquivo ou clique para selecionar
           </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+          <p className="text-xs lia-text-500 dark:text-lia-text-tertiary">
             Imagens, PDFs, documentos Word
           </p>
         </div>
@@ -256,16 +256,16 @@ export function MultimodalUpload({
                 className="w-16 h-16 object-cover rounded-md border"
               />
             ) : (
-              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center">
+              <div className="w-16 h-16 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
                 {getFileIcon(file.type)}
               </div>
             )}
             
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 dark:text-gray-50 truncate">
+              <p className="text-sm font-medium lia-text-900 dark:lia-text-50 truncate">
                 {file.name}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs lia-text-500 dark:text-lia-text-tertiary">
                 {formatFileSize(file.size)}
               </p>
               {resultType && (
@@ -286,7 +286,7 @@ export function MultimodalUpload({
               variant="ghost"
               size="icon"
               onClick={clearFile}
-              className="h-8 w-8 text-gray-400 hover:text-gray-600 focus-visible:ring-2 focus-visible:ring-gray-400"
+              className="h-8 w-8 lia-text-400 hover:lia-text-600 focus-visible:ring-2 focus-visible:ring-gray-400"
               aria-label="Remover arquivo"
             >
               <X className="h-4 w-4" />
@@ -296,7 +296,7 @@ export function MultimodalUpload({
           {isAnalyzing && (
             <div className="space-y-2">
               <Progress value={progress} className="h-2" />
-              <p className="text-xs text-center text-gray-500">
+              <p className="text-xs text-center lia-text-500">
                 Analisando arquivo...
               </p>
             </div>
@@ -319,7 +319,7 @@ export function MultimodalUpload({
           {!result && !isAnalyzing && !error && (
             <Button
               onClick={() => analyzeFile()}
-              className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+              className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
             >
               <FileText className="h-4 w-4 mr-2" />
               Analisar Arquivo

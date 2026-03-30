@@ -80,7 +80,7 @@ const categoryIcons: Record<string, React.ElementType> = {
 }
 
 const typeColors: Record<string, { bg: string; text: string; border: string }> = {
-  info: { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-600 dark:text-gray-400', border: 'border-gray-300 dark:border-gray-600' },
+  info: { bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: 'text-gray-600 dark:text-lia-text-tertiary', border: 'border-lia-border-default dark:border-lia-border-default' },
   success: { bg: 'bg-status-success/10', text: 'text-status-success', border: 'border-status-success/30' },
   warning: { bg: 'bg-status-warning/10', text: 'text-status-warning', border: 'border-status-warning/30' },
   urgent: { bg: 'bg-status-error/10', text: 'text-status-error', border: 'border-status-error/30' },
@@ -214,7 +214,7 @@ export function NotificationCenter({ userId = 'default_user', onNavigate }: Noti
           className="relative h-8 w-8 p-0"
           aria-label="Notificações"
         >
-          <Bell className="h-4 w-4 text-gray-800 dark:text-gray-500" />
+          <Bell className="h-4 w-4 text-gray-800" aria-hidden="true" />
           {unreadCount > 0 && (
             <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-status-error text-xs font-medium text-white">
               {unreadCount > 9 ? '9+' : unreadCount}
@@ -224,14 +224,14 @@ export function NotificationCenter({ userId = 'default_user', onNavigate }: Noti
       </PopoverTrigger>
       
       <PopoverContent 
-        className="w-96 p-0 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+        className="w-96 p-0 bg-white dark:bg-lia-bg-primary border border-lia-border-subtle"
         align="end"
         sideOffset={8}
       >
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-lia-border-subtle">
           <div className="flex items-center gap-2">
-            <Bell className="w-4 h-4" style={{color: 'var(--wedo-blue)'}} />
-            <h3 className="font-sans font-semibold text-sm text-gray-950 dark:text-gray-50">Notificações</h3>
+            <Bell className="w-4 h-4" style={{color: 'var(--wedo-blue)'}} aria-hidden="true" />
+            <h3 className="font-sans font-semibold text-sm text-gray-950">Notificações</h3>
             {unreadCount > 0 && (
               <Badge variant="secondary" className="h-5 px-1.5 text-xs">
                 {unreadCount} novas
@@ -272,7 +272,7 @@ export function NotificationCenter({ userId = 'default_user', onNavigate }: Noti
                 className="h-7 px-2 text-xs"
                 onClick={markAllAsRead}
               >
-                <CheckCheck className="w-3.5 h-3.5 mr-1" />
+                <CheckCheck className="w-3.5 h-3.5 mr-1" aria-hidden="true" />
                 Ler todas
               </Button>
             )}
@@ -282,13 +282,13 @@ export function NotificationCenter({ userId = 'default_user', onNavigate }: Noti
         <ScrollArea className="h-[400px]">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-300 border-t-gray-400 dark:border-t-gray-500" />
+              <div className="animate-spin rounded-full h-6 w-6 border-2 border-lia-border-default border-t-gray-400 dark:border-t-gray-500" />
             </div>
           ) : filteredNotifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-              <Bell className="w-10 h-10 text-gray-800 mb-3" />
-              <p className="text-sm text-gray-800">Nenhuma notificação</p>
-              <p className="text-xs text-gray-800 mt-1">
+              <Bell className="w-10 h-10 lia-text-strong mb-3" />
+              <p className="text-sm lia-text-strong">Nenhuma notificação</p>
+              <p className="text-xs lia-text-strong mt-1">
                 Você está em dia com tudo!
               </p>
             </div>
@@ -302,14 +302,14 @@ export function NotificationCenter({ userId = 'default_user', onNavigate }: Noti
                   <div
                     key={notification.id}
                     className={cn(
-                      "px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer",
-                      !notification.is_read && "bg-gray-100 dark:bg-gray-800"
+ "px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer",
+                      !notification.is_read && "bg-gray-100 dark:bg-lia-bg-secondary"
                     )}
                     onClick={() => handleAction(notification)}
                   >
                     <div className="flex items-start gap-3">
                       <div className={cn(
-                        "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center",
+ "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center",
                         colors.bg
                       )}>
                         <CategoryIcon className={cn("w-4 h-4", colors.text)} />
@@ -318,24 +318,24 @@ export function NotificationCenter({ userId = 'default_user', onNavigate }: Noti
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
                           <h4 className={cn(
-                            "text-sm font-medium truncate",
+ "text-sm font-medium truncate",
                             notification.is_read 
-                              ? "text-gray-800 dark:text-gray-500" 
-                              : "text-gray-950 dark:text-gray-50"
+                              ? "text-gray-800" 
+                              : "text-gray-950"
                           )}>
                             {notification.title}
                           </h4>
                           {!notification.is_read && (
-                            <span className="w-2 h-2 rounded-full bg-gray-700 dark:bg-gray-300 flex-shrink-0" />
+                            <span className="w-2 h-2 rounded-full bg-gray-700 flex-shrink-0" />
                           )}
                         </div>
                         
-                        <p className="text-xs text-gray-800 dark:text-gray-500 line-clamp-2">
+                        <p className="text-xs text-gray-800 line-clamp-2">
                           {notification.message}
                         </p>
                         
                         <div className="flex items-center gap-2 mt-1.5">
-                          <span className="text-xs text-gray-800">
+                          <span className="text-xs lia-text-strong">
                             {formatTime(notification.created_at)}
                           </span>
                           
@@ -358,7 +358,7 @@ export function NotificationCenter({ userId = 'default_user', onNavigate }: Noti
                               markAsRead(notification.id)
                             }}
                           >
-                            <Check className="w-3 h-3 text-gray-800" />
+                            <Check className="w-3 h-3 lia-text-strong" aria-hidden="true" />
                           </Button>
                         )}
                         <Button
@@ -370,7 +370,7 @@ export function NotificationCenter({ userId = 'default_user', onNavigate }: Noti
                             dismissNotification(notification.id)
                           }}
                         >
-                          <X className="w-3 h-3 text-gray-800" />
+                          <X className="w-3 h-3 lia-text-strong" />
                         </Button>
                       </div>
                     </div>
@@ -381,7 +381,7 @@ export function NotificationCenter({ userId = 'default_user', onNavigate }: Noti
           )}
         </ScrollArea>
 
-        <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-800">
+        <div className="px-4 py-2 border-t border-lia-border-subtle">
           <Button 
             variant="ghost" 
             size="sm" 

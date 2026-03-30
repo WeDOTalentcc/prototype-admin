@@ -163,7 +163,7 @@ export function ExperienceHighlightCard({ candidate, companyId = "demo_company" 
 
   if (isLoading) {
     return (
-      <Card className="bg-white border border-gray-100 p-4 mb-4">
+      <Card className="bg-lia-bg-primary border border-lia-border-subtle p-4 mb-4">
         <div className="flex items-start gap-3">
           <Skeleton className="h-5 w-5 rounded-full flex-shrink-0" />
           <div className="flex-1 space-y-2">
@@ -177,8 +177,8 @@ export function ExperienceHighlightCard({ candidate, companyId = "demo_company" 
 
   if (error && !highlight) {
     return (
-      <Card className="bg-white border border-gray-100 p-4 mb-4">
-        <div className="flex items-center gap-3 text-gray-500">
+      <Card className="bg-lia-bg-primary border border-lia-border-subtle p-4 mb-4">
+        <div className="flex items-center gap-3 lia-text-secondary">
           <AlertCircle className="h-5 w-5 flex-shrink-0 text-status-warning" />
           <span className="text-sm">{error}</span>
           <Button
@@ -211,15 +211,15 @@ export function ExperienceHighlightCard({ candidate, companyId = "demo_company" 
   }
 
   return (
-    <Card className="bg-white border border-gray-100 p-3 mb-4">
+    <Card className="bg-lia-bg-primary border border-lia-border-subtle p-3 mb-4">
       <div className="flex items-start gap-2">
         <Brain className="h-4 w-4 text-wedo-cyan flex-shrink-0 mt-0.5" />
-        <p className="text-xs font-medium text-gray-800 leading-relaxed flex-1">
+        <p className="text-xs font-medium lia-text-strong leading-relaxed flex-1">
           {highlight.highlight_text}
         </p>
       </div>
       <div className="flex items-center justify-between mt-2">
-        <p className="text-micro text-gray-400">
+        <p className="text-micro lia-text-secondary">
           Gerado pela LIA em {formatGeneratedDate(highlight.generated_at)}
         </p>
         <TooltipProvider>
@@ -230,7 +230,7 @@ export function ExperienceHighlightCard({ candidate, companyId = "demo_company" 
                 size="sm"
                 onClick={handleRegenerate}
                 disabled={isRegenerating}
-                className="h-5 w-5 p-0 text-gray-400 hover:text-gray-900 dark:hover:text-gray-50"
+                className="h-5 w-5 p-0 lia-text-secondary hover:lia-text-strong dark:hover:lia-text-subtle"
               >
                 <RefreshCw className={`h-3 w-3 ${isRegenerating ? 'animate-spin' : ''}`} />
               </Button>

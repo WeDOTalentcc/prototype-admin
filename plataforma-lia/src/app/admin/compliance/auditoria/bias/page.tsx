@@ -101,21 +101,21 @@ export default function BiasAuditPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30 dark:bg-gray-700/30">
-              <Scale className="w-5 h-5 text-gray-600 dark:text-gray-400" aria-hidden="true" />
+            <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30 dark:bg-lia-bg-elevated/30">
+              <Scale className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" aria-hidden="true" />
             </div>
             <div>
               <h1
-                className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+                className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary"
               >
                 Auditorias de Bias
               </h1>
-              <p className="text-sm text-gray-400 dark:text-gray-500">
+              <p className="text-sm lia-text-400 dark:lia-text-500">
                 Análise de viés algorítmico — Four-Fifths Rule (adverse impact ≥ 0.80)
               </p>
             </div>
           </div>
-          <Button className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200">
+          <Button className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200">
             <FileText className="w-4 h-4" aria-hidden="true" />
             Exportar Relatório
           </Button>
@@ -128,7 +128,7 @@ export default function BiasAuditPage() {
               <div className="flex-1">
                 <label
                   htmlFor="job-id-input"
-                  className="text-xs font-medium text-gray-500 mb-1 block"
+                  className="text-xs font-medium lia-text-500 mb-1 block"
                 >
                   ID da Vaga (UUID)
                 </label>
@@ -140,14 +140,14 @@ export default function BiasAuditPage() {
                   onChange={(e) => setJobIdInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                   aria-label="ID da vaga para auditoria de viés"
-                  className="w-full px-3 py-2 text-sm rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-400"
+                  className="w-full px-3 py-2 text-sm rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary lia-text-900 dark:lia-text-50 focus:outline-none focus:ring-1 focus:ring-gray-400"
                 />
               </div>
               <Button
                 onClick={handleSearch}
                 disabled={!jobIdInput.trim() || loading}
                 aria-label="Analisar auditoria de viés para a vaga"
-                className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
               >
                 {loading ? (
                   <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
@@ -183,11 +183,11 @@ export default function BiasAuditPage() {
         {!auditData && !loading && !error && (
           <Card className="mb-6">
             <CardContent className="p-8 text-center">
-              <Scale className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" aria-hidden="true" />
-              <p className="text-sm text-gray-500">
+              <Scale className="w-10 h-10 lia-text-300 dark:lia-text-600 mx-auto mb-3" aria-hidden="true" />
+              <p className="text-sm lia-text-500">
                 Informe o ID da vaga para calcular a auditoria de viés em tempo real.
               </p>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs lia-text-400 mt-1">
                 Dimensões analisadas: gênero · faixa etária · PCD · região
               </p>
             </CardContent>
@@ -198,8 +198,8 @@ export default function BiasAuditPage() {
         {loading && (
           <Card className="mb-6" role="status" aria-label="Carregando auditoria">
             <CardContent className="p-8 text-center">
-              <Loader2 className="w-8 h-8 text-gray-400 animate-spin mx-auto mb-3" aria-hidden="true" />
-              <p className="text-sm text-gray-500">Calculando auditoria de viés…</p>
+              <Loader2 className="w-8 h-8 lia-text-400 animate-spin mx-auto mb-3" aria-hidden="true" />
+              <p className="text-sm lia-text-500">Calculando auditoria de viés…</p>
             </CardContent>
           </Card>
         )}
@@ -216,8 +216,8 @@ export default function BiasAuditPage() {
                       <Calendar className="w-5 h-5 text-wedo-purple" aria-hidden="true" />
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Avaliado em</p>
-                      <p className="text-sm font-semibold text-gray-950 dark:text-gray-50">
+                      <p className="text-sm lia-text-500">Avaliado em</p>
+                      <p className="text-sm font-semibold lia-text-950 dark:lia-text-50">
                         {formatDate(auditData.evaluated_at)}
                       </p>
                     </div>
@@ -229,12 +229,12 @@ export default function BiasAuditPage() {
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-md">
-                      <BarChart3 className="w-5 h-5 text-gray-600 dark:text-gray-400" aria-hidden="true" />
+                    <div className="p-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+                      <BarChart3 className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" aria-hidden="true" />
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Candidatos Avaliados</p>
-                      <p className="text-lg font-semibold text-gray-950 dark:text-gray-50">
+                      <p className="text-sm lia-text-500">Candidatos Avaliados</p>
+                      <p className="text-lg font-semibold lia-text-950 dark:lia-text-50">
                         {auditData.total_candidates}
                       </p>
                     </div>
@@ -256,8 +256,8 @@ export default function BiasAuditPage() {
                       )}
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Alertas de Viés</p>
-                      <p className="text-lg font-semibold text-gray-950 dark:text-gray-50">
+                      <p className="text-sm lia-text-500">Alertas de Viés</p>
+                      <p className="text-lg font-semibold lia-text-950 dark:lia-text-50">
                         {alertCount} {alertCount === 1 ? "alerta" : "alertas"}
                       </p>
                     </div>
@@ -283,21 +283,21 @@ export default function BiasAuditPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full" role="table" aria-label="Resultados de adverse impact por dimensão">
                     <thead>
-                      <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-                        <th scope="col" className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">Dimensão</th>
-                        <th scope="col" className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-4 py-3">Status</th>
-                        <th scope="col" className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-4 py-3">Adverse Impact Ratio</th>
-                        <th scope="col" className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-4 py-3">Grupos</th>
+                      <tr className="border-b border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary/50">
+                        <th scope="col" className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-6 py-3">Dimensão</th>
+                        <th scope="col" className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-4 py-3">Status</th>
+                        <th scope="col" className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-4 py-3">Adverse Impact Ratio</th>
+                        <th scope="col" className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-4 py-3">Grupos</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                    <tbody className="divide-y divide-gray-200 dark:lia-divide-700">
                       {auditData.dimensions.map((dim) => (
                         <tr key={dim.dimension} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                           <td className="px-6 py-4">
-                            <p className="text-sm font-medium text-gray-950 dark:text-gray-50">
+                            <p className="text-sm font-medium lia-text-950 dark:lia-text-50">
                               {DIMENSION_LABELS[dim.dimension] ?? dim.dimension}
                             </p>
-                            <p className="text-xs text-gray-500 font-mono">{dim.dimension}</p>
+                            <p className="text-xs lia-text-500 font-mono">{dim.dimension}</p>
                           </td>
                           <td className="px-4 py-4">
                             {getDimensionStatusBadge(dim.alert_level)}
@@ -305,7 +305,7 @@ export default function BiasAuditPage() {
                           <td className="px-4 py-4">
                             <div className="flex items-center gap-2 min-w-[140px]">
                               <div
-                                className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden"
+                                className="flex-1 h-2 bg-gray-200 dark:bg-lia-bg-elevated rounded-full overflow-hidden"
                                 role="progressbar"
                                 aria-valuenow={Math.round(dim.adverse_impact_ratio * 100)}
                                 aria-valuemin={0}
@@ -317,7 +317,7 @@ export default function BiasAuditPage() {
                                   style={{width: `${Math.min(dim.adverse_impact_ratio * 100, 100)}%`}}
                                 />
                               </div>
-                              <span className="text-sm font-mono text-gray-600 dark:text-gray-400">
+                              <span className="text-sm font-mono lia-text-600 dark:text-lia-text-tertiary">
                                 {(dim.adverse_impact_ratio * 100).toFixed(0)}%
                               </span>
                             </div>
@@ -330,7 +330,7 @@ export default function BiasAuditPage() {
                               {Object.entries(dim.groups).map(([label, stats]) => (
                                 <span
                                   key={label}
-                                  className="text-xs px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+                                  className="text-xs px-2 py-0.5 rounded-md bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary"
                                   title={`${stats.approved}/${stats.count} aprovados`}
                                 >
                                   {label}: {(stats.rate * 100).toFixed(0)}%
@@ -352,7 +352,7 @@ export default function BiasAuditPage() {
         <Card className="mb-6">
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-medium flex items-center gap-2">
-              <Shield className="w-4 h-4 text-gray-600 dark:text-gray-400" aria-hidden="true" />
+              <Shield className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" aria-hidden="true" />
               Frameworks de Compliance
             </CardTitle>
           </CardHeader>
@@ -361,13 +361,13 @@ export default function BiasAuditPage() {
               {complianceFrameworks.map((fw) => (
                 <div
                   key={fw.id}
-                  className="p-3 rounded-md border border-gray-200 dark:border-gray-700"
+                  className="p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle"
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium text-gray-950 dark:text-gray-50">{fw.name}</span>
+                    <span className="text-sm font-medium lia-text-950 dark:lia-text-50">{fw.name}</span>
                     <Badge variant="success" className="text-xs">Ativo</Badge>
                   </div>
-                  <p className="text-xs text-gray-500">{fw.description}</p>
+                  <p className="text-xs lia-text-500">{fw.description}</p>
                 </div>
               ))}
             </div>
@@ -378,14 +378,14 @@ export default function BiasAuditPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-md">
-                <Info className="w-5 h-5 text-gray-600 dark:text-gray-400" aria-hidden="true" />
+              <div className="p-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+                <Info className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" aria-hidden="true" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-950 dark:text-gray-50">
+                <p className="text-sm font-medium lia-text-950 dark:lia-text-50">
                   Metodologia de Análise
                 </p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs lia-text-500 mt-1">
                   Métricas calculadas conforme Four-Fifths Rule (NYC LL144 / EU AI Act Art. 10).
                   Impact Ratio = taxa_grupo_menor / taxa_grupo_maior. Valores abaixo de 80% (0.80)
                   indicam possível viés adverso. Apenas estatísticas agregadas são retornadas — sem

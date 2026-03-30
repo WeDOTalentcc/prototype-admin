@@ -57,7 +57,7 @@ export function InsufficientDataModal({
   
   return (
     <AlertDialog open={isOpen} onOpenChange={(open: boolean) => !open && onClose()}>
-      <AlertDialogContent className="max-w-md rounded-md dark:bg-gray-900 dark:border-gray-700">
+      <AlertDialogContent className="max-w-md rounded-md dark:bg-lia-bg-primary dark:border-lia-border-subtle">
         <AlertDialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className={`p-2.5 rounded-md ${hasEnoughData ? 'bg-status-warning/15 text-status-warning' : 'bg-status-error/15 text-status-error'}`}>
@@ -69,7 +69,7 @@ export function InsufficientDataModal({
           </div>
           <AlertDialogDescription asChild>
             <div className="space-y-4">
-              <p className="text-gray-800 dark:text-gray-200">
+              <p className="text-gray-800 dark:text-lia-text-primary">
                 {hasEnoughData ? (
                   <>
                     Para gerar um parecer mais preciso para <strong className="text-gray-950 dark:text-gray-50">{candidateName || 'este candidato'}</strong>, 
@@ -144,7 +144,7 @@ export function InsufficientDataModal({
                 </div>
               )}
 
-              <p className="text-xs text-gray-600 dark:text-gray-400">
+              <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
                 {hasEnoughData 
                   ? 'Você pode prosseguir, mas o parecer terá qualidade limitada.'
                   : 'Complete o perfil do candidato com as informações obrigatórias para gerar um parecer.'}
@@ -152,11 +152,11 @@ export function InsufficientDataModal({
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className="gap-2 sm:gap-2 flex-col sm:flex-row border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4 -mx-6 -mb-6 rounded-b-xl">
+        <AlertDialogFooter className="gap-2 sm:gap-2 flex-col sm:flex-row border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary p-4 -mx-6 -mb-6 rounded-b-xl">
           <Button 
             variant="outline" 
             onClick={onClose}
-            className="gap-2 bg-white border border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 dark:text-gray-200"
+            className="gap-2 bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 dark:text-lia-text-primary"
           >
             <X className="w-4 h-4" />
             {hasEnoughData ? 'Cancelar' : 'Entendi'}

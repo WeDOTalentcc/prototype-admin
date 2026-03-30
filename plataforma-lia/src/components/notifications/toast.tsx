@@ -34,10 +34,10 @@ const typeConfig = {
   },
   info: {
     icon: Info,
-    bgColor: 'bg-gray-100 dark:bg-gray-800',
-    borderColor: 'border-gray-300 dark:border-gray-600',
-    iconColor: 'text-gray-600 dark:text-gray-400',
-    titleColor: 'text-gray-700 dark:text-gray-300'
+    bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary',
+    borderColor: 'border-lia-border-default dark:border-lia-border-default',
+    iconColor: 'text-gray-600 dark:text-lia-text-tertiary',
+    titleColor: 'text-gray-700 dark:text-lia-text-secondary'
   }
 }
 
@@ -58,7 +58,7 @@ export function Toast({ notification }: ToastProps) {
   return (
     <div
       className={cn(
-        "relative w-full max-w-sm p-4 rounded-md border backdrop-blur-sm",
+ "relative w-full max-w-sm p-4 rounded-md border backdrop-blur-sm",
         config.bgColor,
         config.borderColor
       )}
@@ -79,7 +79,7 @@ export function Toast({ notification }: ToastProps) {
 
       <div className="flex items-start gap-3">
         <div style={{animation: 'scaleRotateIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s backwards'}}>
-          <Icon className={cn("w-5 h-5 flex-shrink-0", config.iconColor)} />
+          <Icon className={cn("w-5 h-5 flex-shrink-0", config.iconColor)} aria-hidden="true" />
         </div>
 
         <div className="flex-1 min-w-0">
@@ -87,10 +87,10 @@ export function Toast({ notification }: ToastProps) {
             <h4 className={cn("text-sm font-semibold", config.titleColor)}>
               {notification.title}
             </h4>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+            <p className="text-sm text-gray-600 dark:text-lia-text-secondary mt-1">
               {notification.message}
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+            <p className="text-xs text-gray-500 dark:text-lia-text-tertiary mt-2">
               {formatTime(notification.timestamp)}
             </p>
           </div>
@@ -121,9 +121,10 @@ export function Toast({ notification }: ToastProps) {
             variant="ghost"
             size="sm"
             onClick={() => removeNotification(notification.id)}
-            className="h-6 w-6 p-0 hover:bg-black/5 dark:hover:bg-white/5"
+            className="h-6 w-6 p-0 hover:bg-black/5 dark:hover:bg-lia-bg-primary/5"
+            aria-label="Fechar notificação"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4" aria-hidden="true" />
           </Button>
         </div>
       </div>

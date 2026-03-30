@@ -30,19 +30,19 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-md w-full max-w-3xl max-h-[85vh] border border-gray-200 flex flex-col"
+        className="bg-lia-bg-primary rounded-md w-full max-w-3xl max-h-[85vh] border border-lia-border-subtle flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-gray-200 shrink-0">
+        <div className="flex items-center justify-between p-5 border-b border-lia-border-subtle shrink-0">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-gray-100 dark:bg-gray-800 rounded-md">
-              <GraduationCap className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+            <div className="p-1.5 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+              <GraduationCap className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
             </div>
             <h3 className="text-sm font-semibold text-gray-950">
               Tutorial: Metodologia WSI
             </h3>
-            <Badge className="text-micro px-2 py-0.5 h-5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+            <Badge className="text-micro px-2 py-0.5 h-5 bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary">
               WeDoTalent Skill Index
             </Badge>
           </div>
@@ -57,7 +57,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
         {/* Content - Scrollable */}
         <div className="flex-1 overflow-y-auto p-5 space-y-5">
           {/* Seção 1: O que é WSI? */}
-          <div className="p-4 bg-gradient-to-r from-gray-50 dark:from-gray-900 to-gray-100 dark:to-gray-800 border border-gray-300 dark:border-gray-600 rounded-md">
+          <div className="p-4 bg-gradient-to-r from-gray-50 dark:from-gray-900 to-gray-100 dark:to-gray-800 border border-lia-border-default dark:border-lia-border-default rounded-md">
             <div className="flex items-center gap-2 mb-2">
               <Brain className="w-4 h-4 text-wedo-cyan" />
               <h4 className="text-xs font-semibold text-gray-950">O que é WSI?</h4>
@@ -70,22 +70,22 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
           </div>
 
           {/* Seção 2: Base Teórica */}
-          <div className="p-4 bg-gray-50 border border-gray-200 rounded-md">
+          <div className="p-4 bg-gray-50 border border-lia-border-subtle rounded-md">
             <div className="flex items-center gap-2 mb-3">
               <BookOpen className="w-4 h-4 text-wedo-purple" />
               <h4 className="text-xs font-semibold text-gray-950">Base Teórica (4 Modelos Científicos)</h4>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 bg-white rounded-md border border-gray-100">
+              <div className="p-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
                 <div className="flex items-center gap-2 mb-1">
-                  <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-50 dark:bg-gray-900 text-gray-600">CBI</Badge>
+                  <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-50 dark:bg-lia-bg-primary text-gray-600">CBI</Badge>
                   <span className="text-micro text-gray-600">McClelland, 1973</span>
                 </div>
                 <p className="text-micro text-gray-800">
                   Competency-Based Interviewing - perguntas situacionais baseadas em comportamentos passados
                 </p>
               </div>
-              <div className="p-3 bg-white rounded-md border border-gray-100">
+              <div className="p-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
                 <div className="flex items-center gap-2 mb-1">
                   <Badge className="text-micro px-1.5 py-0 h-4 bg-status-success/15 text-status-success">Bloom</Badge>
                   <span className="text-micro text-gray-600">Anderson et al., 2001</span>
@@ -94,7 +94,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
                   Taxonomia de níveis cognitivos (Lembrar → Criar)
                 </p>
               </div>
-              <div className="p-3 bg-white rounded-md border border-gray-100">
+              <div className="p-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
                 <div className="flex items-center gap-2 mb-1">
                   <Badge className="text-micro px-1.5 py-0 h-4 bg-wedo-orange/15 text-wedo-orange">Dreyfus</Badge>
                   <span className="text-micro text-gray-600">1980</span>
@@ -103,7 +103,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
                   Estágios de domínio de habilidade (1-5: Novice → Expert)
                 </p>
               </div>
-              <div className="p-3 bg-white rounded-md border border-gray-100">
+              <div className="p-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
                 <div className="flex items-center gap-2 mb-1">
                   <Badge className="text-micro px-1.5 py-0 h-4 bg-wedo-purple/15 text-wedo-purple">Big Five</Badge>
                   <span className="text-micro text-gray-600">1992</span>
@@ -116,12 +116,12 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
           </div>
 
           {/* Seção 3: Versões do WSI - Tabela */}
-          <div className="p-4 bg-gray-50 border border-gray-200 rounded-md">
+          <div className="p-4 bg-gray-50 border border-lia-border-subtle rounded-md">
             <div className="flex items-center gap-2 mb-3">
-              <Layers3 className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              <Layers3 className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
               <h4 className="text-xs font-semibold text-gray-950">Versões do WSI</h4>
             </div>
-            <div className="overflow-hidden rounded-md border border-gray-200">
+            <div className="overflow-hidden rounded-md border border-lia-border-subtle">
               <table className="w-full text-xs">
                 <thead className="bg-gray-100">
                   <tr>
@@ -131,10 +131,10 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
                     <th className="text-left p-2 font-semibold text-gray-800">Indicado Para</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-100">
+                <tbody className="bg-lia-bg-primary divide-y divide-gray-100">
                   <tr>
                     <td className="p-2">
-                      <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">WSI Compact</Badge>
+                      <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary">WSI Compact</Badge>
                     </td>
                     <td className="p-2 text-center text-gray-800">6-8</td>
                     <td className="p-2 text-center text-gray-800">5-7 min</td>
@@ -154,7 +154,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
           </div>
 
           {/* Seção 4: 7 Blocos da Triagem */}
-          <div className="p-4 bg-gray-50 border border-gray-200 rounded-md">
+          <div className="p-4 bg-gray-50 border border-lia-border-subtle rounded-md">
             <div className="flex items-center gap-2 mb-3">
               <ClipboardList className="w-4 h-4 text-gray-600" />
               <h4 className="text-xs font-semibold text-gray-950">7 Blocos da Triagem</h4>
@@ -169,14 +169,14 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
                 { id: '5', name: 'Análise Situacional e Fit', time: '4min', type: 'editável', color: 'bg-status-success/15 text-status-success' },
                 { id: '6', name: 'Resultado e Encerramento', time: '3min', type: 'automático', color: 'bg-gray-100 text-gray-800' },
               ].map((block) => (
-                <div key={block.id} className="flex items-center gap-3 p-2 bg-white rounded-md border border-gray-100">
-                  <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                <div key={block.id} className="flex items-center gap-3 p-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
+                  <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
                     <span className="text-micro font-semibold text-gray-900 dark:text-gray-50">{block.id}</span>
                   </div>
                   <div className="flex-1">
                     <span className="text-xs font-medium text-gray-950">{block.name}</span>
                   </div>
-                  <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-50 text-gray-600 border border-gray-200">
+                  <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-50 text-gray-600 border border-lia-border-subtle">
                     {block.time}
                   </Badge>
                   <Badge className={`text-micro px-1.5 py-0 h-4 ${block.color}`}>
@@ -191,7 +191,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
           </div>
 
           {/* Seção 5: Tipos de Validação */}
-          <div className="p-4 bg-gray-50 border border-gray-200 rounded-md">
+          <div className="p-4 bg-gray-50 border border-lia-border-subtle rounded-md">
             <div className="flex items-center gap-2 mb-3">
               <CheckCircle className="w-4 h-4 text-status-success" />
               <h4 className="text-xs font-semibold text-gray-950">Tipos de Validação</h4>
@@ -203,7 +203,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
                 { name: 'Microteste', desc: 'Raciocínio técnico', icon: '🧪' },
                 { name: 'Situação contextual', desc: 'Fit comportamental', icon: '🎭' },
               ].map((type, idx) => (
-                <div key={idx} className="flex items-start gap-2 p-2 bg-white rounded-md border border-gray-100">
+                <div key={idx} className="flex items-start gap-2 p-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
                   <span className="text-xs">{type.icon}</span>
                   <div>
                     <span className="text-xs font-medium text-gray-950 block">{type.name}</span>
@@ -215,9 +215,9 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
           </div>
 
           {/* Seção 6: Distribuição e Classificações */}
-          <div className="p-4 bg-gradient-to-r from-gray-50 to-gray-50 dark:to-gray-900 border border-gray-200 rounded-md">
+          <div className="p-4 bg-gradient-to-r from-gray-50 to-gray-50 dark:to-gray-900 border border-lia-border-subtle rounded-md">
             <div className="flex items-center gap-2 mb-3">
-              <Scale className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              <Scale className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
               <h4 className="text-xs font-semibold text-gray-950">Distribuição e Classificações</h4>
             </div>
             <div className="space-y-3">
@@ -238,7 +238,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
                   </div>
                 </div>
               </div>
-              <div className="p-2 bg-white rounded-md border border-gray-100">
+              <div className="p-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
                 <p className="text-micro text-gray-600 mb-1">Fórmula de Cálculo</p>
                 <p className="text-xs font-mono text-gray-950 bg-gray-50 px-2 py-1 rounded-full">WSI = Σ(Peso × Score) / 100</p>
               </div>
@@ -260,7 +260,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
           </div>
 
           {/* Seção 7: Score Mínimo e Quando Ajustar */}
-          <div className="p-4 bg-gray-50 border border-gray-200 rounded-md">
+          <div className="p-4 bg-gray-50 border border-lia-border-subtle rounded-md">
             <div className="flex items-center gap-2 mb-3">
               <Settings2 className="w-4 h-4 text-wedo-orange" />
               <h4 className="text-xs font-semibold text-gray-950">Ajuste de Score Mínimo</h4>
@@ -270,7 +270,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
                 O <strong>Score Mínimo de Aprovação</strong> (ex: 75%) é <strong>configurável pelo recrutador</strong>.
                 O padrão do sistema é <strong>75%</strong> para auto-aprovação.
               </p>
-              <div className="overflow-hidden rounded-md border border-gray-200">
+              <div className="overflow-hidden rounded-md border border-lia-border-subtle">
                 <table className="w-full text-xs">
                   <thead className="bg-gray-100">
                     <tr>
@@ -278,7 +278,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
                       <th className="text-left p-2 font-semibold text-gray-800">Ação Recomendada</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-100">
+                  <tbody className="bg-lia-bg-primary divide-y divide-gray-100">
                     <tr>
                       <td className="p-2 text-gray-800">Taxa de aprovação muito baixa</td>
                       <td className="p-2 text-gray-800">Reduza o score (ex: 82% → 70%)</td>
@@ -308,14 +308,14 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
               <h4 className="text-xs font-semibold text-gray-950">Saturação e Dynamic Cutoff</h4>
             </div>
             <div className="space-y-3">
-              <div className="p-3 bg-white rounded-md border border-wedo-orange/30">
+              <div className="p-3 bg-lia-bg-primary rounded-md border border-wedo-orange/30">
                 <p className="text-micro font-medium text-wedo-orange mb-1">Smart Saturation</p>
                 <p className="text-xs text-gray-800 leading-relaxed">
                   Quando a vaga atinge <strong>20 candidatos aprovados</strong>, a triagem automática é pausada.
                   O sistema sugere ações: agendar entrevistas em lote, revisar candidatos ou desbloquear pipeline.
                 </p>
               </div>
-              <div className="p-3 bg-white rounded-md border border-wedo-orange/30">
+              <div className="p-3 bg-lia-bg-primary rounded-md border border-wedo-orange/30">
                 <p className="text-micro font-medium text-wedo-orange mb-1">Dynamic Cutoff (Top 25%)</p>
                 <p className="text-xs text-gray-800 leading-relaxed">
                   Após <strong>30-50 triagens</strong>, o sistema aplica corte dinâmico selecionando automaticamente
@@ -323,11 +323,11 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <div className="p-2 bg-white rounded-md border border-wedo-orange/30 text-center">
+                <div className="p-2 bg-lia-bg-primary rounded-md border border-wedo-orange/30 text-center">
                   <div className="text-sm font-semibold text-wedo-orange">20</div>
                   <p className="text-micro text-gray-600">Limite saturação</p>
                 </div>
-                <div className="p-2 bg-white rounded-md border border-wedo-orange/30 text-center">
+                <div className="p-2 bg-lia-bg-primary rounded-md border border-wedo-orange/30 text-center">
                   <div className="text-sm font-semibold text-wedo-orange">30-50</div>
                   <p className="text-micro text-gray-600">Triagens p/ cutoff</p>
                 </div>
@@ -336,12 +336,12 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
           </div>
 
           {/* Nota de Calibração */}
-          <div className="p-3 bg-gray-50 dark:bg-gray-900 border border-gray-900 dark:border-gray-50 rounded-md">
+          <div className="p-3 bg-gray-50 dark:bg-lia-bg-primary border border-gray-900 dark:border-gray-50 rounded-md">
             <div className="flex items-start gap-2">
-              <Lightbulb className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400 mt-0.5 shrink-0" />
+              <Lightbulb className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary mt-0.5 shrink-0" />
               <div>
-                <p className="text-micro font-medium text-gray-700 dark:text-gray-300 mb-1">Calibração Automática</p>
-                <p className="text-micro text-gray-700 dark:text-gray-300 leading-relaxed">
+                <p className="text-micro font-medium text-gray-700 dark:text-lia-text-secondary mb-1">Calibração Automática</p>
+                <p className="text-micro text-gray-700 dark:text-lia-text-secondary leading-relaxed">
                   Após atingir volume suficiente, a LIA recalibra automaticamente os cortes por percentil histórico,
                   mantendo a qualidade das contratações.
                 </p>
@@ -351,7 +351,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="shrink-0 p-4 border-t border-gray-200 bg-gray-50">
+        <div className="shrink-0 p-4 border-t border-lia-border-subtle bg-gray-50">
           <div className="flex items-center justify-between">
             <p className="text-micro text-gray-600">
               Metodologia proprietária WeDoTalent • Baseada em 4 modelos científicos validados

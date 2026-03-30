@@ -68,13 +68,13 @@ export function EditQueryModal({
       onClick={handleBackdropClick}
     >
       <div
-        className="bg-white dark:bg-gray-900 rounded-md border border-gray-100 dark:border-gray-700 w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col mx-4"
+        className="bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col mx-4"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex-shrink-0 p-6 pb-4">
-          <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-            <Search className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+          <h2 className="text-sm font-semibold text-gray-800 dark:text-lia-text-primary flex items-center gap-2">
+            <Search className="w-4 h-4 text-gray-700 dark:text-lia-text-secondary" />
             Editar sua busca
           </h2>
           <p className="text-xs text-gray-500 mt-1">
@@ -110,10 +110,10 @@ export function EditQueryModal({
         </div>
 
         {/* Footer */}
-        <div className="flex-shrink-0 border-t border-gray-100 dark:border-gray-700 p-6 pt-4 flex justify-end gap-3">
+        <div className="flex-shrink-0 border-t border-lia-border-subtle dark:border-lia-border-subtle p-6 pt-4 flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors border border-gray-200 dark:border-gray-700"
+            className="px-4 py-2 text-sm text-gray-800 dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors border border-lia-border-subtle dark:border-lia-border-subtle"
           >
             Cancelar
           </button>

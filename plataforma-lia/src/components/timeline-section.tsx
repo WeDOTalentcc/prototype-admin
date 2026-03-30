@@ -65,9 +65,9 @@ const liaActivities = [
 
 export function TimelineSection() {
   return (
-    <Card className="border border-gray-200">
+    <Card className="border border-lia-border-subtle">
       <CardHeader className="pb-4">
-        <CardTitle className="text-base font-semibold text-gray-950 dark:text-gray-50">
+        <CardTitle className="text-base font-semibold text-gray-950">
           Atividades sendo executadas pela LIA
         </CardTitle>
       </CardHeader>
@@ -83,8 +83,8 @@ export function TimelineSection() {
               )}
 
               <div className="flex gap-3">
-                <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center relative z-10 flex-shrink-0">
-                  <item.icon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                <div className="w-8 h-8 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center relative z-10 flex-shrink-0">
+                  <item.icon className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
                 </div>
 
                 <div className="flex-1 min-w-0 pb-4">
@@ -92,12 +92,12 @@ export function TimelineSection() {
                     <h4 className="font-medium text-gray-950 text-sm">
                       {item.activity}
                     </h4>
-                    <div className="text-xs text-gray-600 flex-shrink-0 ml-2">
+                    <div className="text-xs lia-text-base flex-shrink-0 ml-2">
                       {item.date} • {item.time}
                     </div>
                   </div>
 
-                  <p className="text-sm text-gray-600 leading-relaxed">
+                  <p className="text-sm lia-text-base leading-relaxed">
                     {item.details}
                   </p>
 
@@ -105,11 +105,11 @@ export function TimelineSection() {
                     <Badge
                       variant="outline"
                       className={`text-xs ${
-                        item.type === 'feedback' ? 'border-status-success/30 text-status-success' :
-                        item.type === 'evaluation' ? 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400' :
+ item.type === 'feedback' ? 'border-status-success/30 text-status-success' :
+                        item.type === 'evaluation' ? 'border-lia-border-default dark:border-lia-border-default text-gray-600 dark:text-lia-text-tertiary' :
                         item.type === 'screening' ? 'border-wedo-purple/30 text-wedo-purple' :
                         item.type === 'analysis' ? 'border-wedo-orange/30 text-wedo-orange' :
-                        item.type === 'status_update' ? 'border-gray-200 text-gray-800 dark:text-gray-200' :
+                        item.type === 'status_update' ? 'border-lia-border-subtle text-gray-800 dark:text-lia-text-primary' :
                         'border-status-warning/30 text-status-warning'
                       }`}
                     >
@@ -128,12 +128,12 @@ export function TimelineSection() {
         </div>
 
         {/* Footer */}
-        <div className="pt-4 border-t border-gray-200">
+        <div className="pt-4 border-t border-lia-border-subtle">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-800 dark:text-gray-200">
+            <span className="text-sm text-gray-800 dark:text-lia-text-primary">
               Mostrando atividades das últimas 2 horas
             </span>
-            <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-950 dark:text-gray-400 dark:hover:text-gray-50 text-xs">
+            <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-950 dark:text-lia-text-tertiary dark:hover:text-gray-50 text-xs">
               Ver histórico completo
             </Button>
           </div>

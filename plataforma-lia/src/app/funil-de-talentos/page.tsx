@@ -134,7 +134,7 @@ export default function FunilDeTalentosPage() {
   const SENIORITY_OPTIONS = ["Júnior", "Pleno", "Sênior", "Especialista"]
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-gray-50 dark:lia-bg-950">
       {/* Bulk selection bar — fixa no topo quando há seleção */}
       {selectedCount > 0 && (
         <BulkSelectionBar
@@ -166,7 +166,7 @@ export default function FunilDeTalentosPage() {
           <Button
             variant="outline"
             size="sm"
-            className="rounded-md border-gray-300 dark:border-gray-700 self-start sm:self-auto"
+            className="rounded-md border-lia-border-default dark:border-lia-border-subtle self-start sm:self-auto"
             onClick={() => setShareModalOpen(true)}
             disabled={candidates.length === 0}
           >
@@ -177,11 +177,11 @@ export default function FunilDeTalentosPage() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md">
+          <TabsList className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:lia-border-800 rounded-md">
             <TabsTrigger value="todos" className="rounded-md text-xs">
               Todos
               {activeTab === "todos" && total > 0 && (
-                <Badge className="ml-1.5 h-4 px-1.5 text-micro bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900">
+                <Badge className="ml-1.5 h-4 px-1.5 text-micro bg-gray-900 dark:lia-bg-100 text-white dark:lia-text-900">
                   {total}
                 </Badge>
               )}
@@ -194,16 +194,16 @@ export default function FunilDeTalentosPage() {
           {/* Tab: Todos */}
           <TabsContent value="todos" className="mt-4 space-y-3">
             {/* SearchBar + filtros rápidos */}
-            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md p-3 space-y-3">
+            <div className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:lia-border-800 rounded-md p-3 space-y-3">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" aria-hidden="true" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 lia-text-400" aria-hidden="true" />
                 <Input
                   id="funil-search"
                   aria-label="Buscar candidatos"
                   placeholder="Buscar por nome, cargo, empresa ou habilidade..."
                   value={filters.search ?? ""}
                   onChange={e => updateFilter("search", e.target.value)}
-                  className="pl-9 text-xs rounded-md border-gray-200 dark:border-gray-700 bg-transparent"
+                  className="pl-9 text-xs rounded-md border-lia-border-subtle dark:border-lia-border-subtle bg-transparent"
                 />
               </div>
               <div className="flex flex-wrap gap-2">
@@ -214,14 +214,14 @@ export default function FunilDeTalentosPage() {
                     className={cn(
                       "px-2.5 py-1 text-xs rounded-md border transition-colors",
                       filters.status === s
-                        ? "bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900 border-gray-900 dark:border-gray-50"
-                        : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-gray-400"
+                        ? "bg-gray-900 dark:lia-bg-50 text-white dark:lia-text-900 border-gray-900 dark:lia-border-50"
+                        : "bg-white dark:bg-lia-bg-primary lia-text-600 dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400"
                     )}
                   >
                     {s}
                   </button>
                 ))}
-                <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 self-center" />
+                <div className="w-px h-5 bg-gray-200 dark:bg-lia-bg-elevated self-center" />
                 {SENIORITY_OPTIONS.map(s => (
                   <button
                     key={s}
@@ -229,8 +229,8 @@ export default function FunilDeTalentosPage() {
                     className={cn(
                       "px-2.5 py-1 text-xs rounded-md border transition-colors",
                       filters.seniority === s
-                        ? "bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900 border-gray-900 dark:border-gray-50"
-                        : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-gray-400"
+                        ? "bg-gray-900 dark:lia-bg-50 text-white dark:lia-text-900 border-gray-900 dark:lia-border-50"
+                        : "bg-white dark:bg-lia-bg-primary lia-text-600 dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400"
                     )}
                   >
                     {s}
@@ -248,11 +248,11 @@ export default function FunilDeTalentosPage() {
             )}
 
             {/* Table */}
-            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md overflow-hidden">
+            <div className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:lia-border-800 rounded-md overflow-hidden">
               {!loading && candidates.length === 0 && !error ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-                  <Users className="h-10 w-10 text-gray-300 dark:text-gray-600 mb-3" />
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  <Users className="h-10 w-10 lia-text-300 dark:lia-text-600 mb-3" />
+                  <p className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary">
                     {filters.search || filters.status || filters.seniority
                       ? "Nenhum candidato encontrado. Tente outros filtros."
                       : "Busque candidatos por nome, habilidade ou cargo"}
@@ -274,8 +274,8 @@ export default function FunilDeTalentosPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md px-4 py-2.5">
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+              <div className="flex items-center justify-between bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:lia-border-800 rounded-md px-4 py-2.5">
+                <span className="text-xs lia-text-500 dark:text-lia-text-tertiary">
                   Página {currentPage} de {totalPages}
                 </span>
                 <div className="flex items-center gap-1">
@@ -285,7 +285,7 @@ export default function FunilDeTalentosPage() {
                     onClick={() => goToPage(currentPage - 1)}
                     disabled={currentPage <= 1}
                     aria-label="Página anterior"
-                    className="h-7 w-7 p-0 rounded-md border-gray-200 dark:border-gray-700"
+                    className="h-7 w-7 p-0 rounded-md border-lia-border-subtle dark:border-lia-border-subtle"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
@@ -302,8 +302,8 @@ export default function FunilDeTalentosPage() {
                         className={cn(
                           "h-7 w-7 p-0 rounded-md text-xs",
                           page === currentPage
-                            ? "bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900"
-                            : "border-gray-200 dark:border-gray-700"
+                            ? "bg-gray-900 dark:lia-bg-50 text-white dark:lia-text-900"
+                            : "border-lia-border-subtle dark:border-lia-border-subtle"
                         )}
                       >
                         {page}
@@ -316,7 +316,7 @@ export default function FunilDeTalentosPage() {
                     onClick={() => goToPage(currentPage + 1)}
                     disabled={currentPage >= totalPages}
                     aria-label="Próxima página"
-                    className="h-7 w-7 p-0 rounded-md border-gray-200 dark:border-gray-700"
+                    className="h-7 w-7 p-0 rounded-md border-lia-border-subtle dark:border-lia-border-subtle"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>

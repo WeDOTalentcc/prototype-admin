@@ -232,11 +232,11 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
   }
 
   const getFileIcon = (fileType: string, mimeType?: string) => {
-    if (fileType === 'cv') return <FileText className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
+    if (fileType === 'cv') return <FileText className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
     if (fileType === 'video' || mimeType?.startsWith('video/')) return <FileVideo className="w-3.5 h-3.5 text-status-error" />
     if (fileType === 'certificate') return <Award className="w-3.5 h-3.5 text-status-warning" />
     if (mimeType?.startsWith('image/')) return <Image className="w-3.5 h-3.5 text-status-success" />
-    return <File className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+    return <File className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
   }
 
   const getCategoryColor = (fileType: string) => {
@@ -254,10 +254,10 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Header com botão de adicionar */}
-      <div className="p-3 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-900">
+      <div className="p-3 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary">
         <div className="flex items-center justify-between mb-2">
-          <h4 className="text-xs font-medium text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
-            <FileText className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
+          <h4 className="text-xs font-medium text-gray-800 dark:text-lia-text-primary flex items-center gap-1.5">
+            <FileText className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
             Arquivos e Documentos
             <Badge className="text-xs px-1 py-0">{candidateFiles.length}</Badge>
             {isLoadingFiles && (
@@ -266,7 +266,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
           </h4>
           <Button
             size="sm"
-            className="gap-1 px-2 py-1 text-xs h-6 bg-gray-100 hover:bg-gray-200 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700"
+            className="gap-1 px-2 py-1 text-xs h-6 bg-gray-100 hover:bg-gray-200 text-gray-700 dark:text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-subtle"
             onClick={() => {
               const input = document.createElement('input')
               input.type = 'file'
@@ -311,10 +311,10 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
       <div className="flex-1 overflow-y-auto p-3 space-y-2">
         {/* Drag and Drop Area */}
         <div
-          className={`border-2 border-dashed rounded-md p-4 text-center transition-all cursor-pointer group ${
-            isDragging
+          className={`border-2 border-dashed rounded-md p-4 text-center transition-colors cursor-pointer group ${
+ isDragging
               ? 'border-gray-400 bg-gray-100'
-              : 'border-gray-300 hover:border-gray-400'
+              : 'border-lia-border-default hover:border-gray-400'
           }`}
           onDragOver={(e) => {
             e.preventDefault()
@@ -346,12 +346,12 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                 <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mb-2">
                   <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-400 border-t-gray-700"></div>
                 </div>
-                <p className="text-xs text-gray-800 dark:text-gray-200 font-medium mb-1">
+                <p className="text-xs text-gray-800 dark:text-lia-text-primary font-medium mb-1">
                   Enviando... {uploadProgress}%
                 </p>
                 <div className="w-32 h-1.5 bg-gray-200 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gray-600 rounded-full transition-all duration-300"
+                    className="h-full bg-gray-600 rounded-full transition-[width,height] duration-300"
                     style={{width: `${uploadProgress}%`}}
                   />
                 </div>
@@ -359,11 +359,11 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
             ) : (
               <>
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-colors ${
-                  isDragging
+ isDragging
                     ? 'bg-gray-200'
                     : 'bg-gray-100 group-hover:bg-gray-200'
                 }`}>
-                  <Upload className={`w-5 h-5 ${isDragging ? 'text-gray-700' : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-700'}`} />
+                  <Upload className={`w-5 h-5 ${isDragging ? 'text-gray-700' : 'text-gray-600 dark:text-lia-text-tertiary group-hover:text-gray-700'}`} />
                 </div>
                 <p className={`${textStyles.bodySmall} mb-1`}>
                   {isDragging ? 'Solte os arquivos aqui' : 'Arraste arquivos ou clique para selecionar'}
@@ -382,10 +382,10 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
           .map((file) => {
             const colors = getCategoryColor(file.file_type)
             return (
-              <div key={file.id} className="border border-gray-100 dark:border-gray-700 rounded-md hover:transition-all">
+              <div key={file.id} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors">
                 <div className="p-2.5">
                   <div className="flex items-start gap-2">
-                    <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+                    <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
                       {getFileIcon(file.file_type, file.mime_type)}
                     </div>
 
@@ -452,22 +452,22 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
 
         {/* Empty state when no files */}
         {candidateFiles.length === 0 && !isLoadingFiles && (
-          <div className="text-center py-6 text-gray-500 dark:text-gray-400">
-            <FileText className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+          <div className="text-center py-6 text-gray-500 dark:text-lia-text-tertiary">
+            <FileText className="w-8 h-8 mx-auto mb-2 lia-text-muted" />
             <p className="text-xs">Nenhum arquivo enviado</p>
             <p className={textStyles.description}>Arraste arquivos ou clique acima para enviar</p>
           </div>
         )}
 
         {/* Currículo com Preview PDF */}
-        <div className="border border-gray-100 dark:border-gray-700 rounded-md hover:transition-all">
+        <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors">
           <div
-            className="p-2.5 cursor-pointer hover:bg-white dark:hover:bg-gray-800 transition-colors"
+            className="p-2.5 cursor-pointer hover:bg-lia-bg-primary dark:hover:bg-gray-800 transition-colors"
             onClick={() => setExpandedActivity(expandedActivity === 'cv' ? null : 'cv')}
           >
             <div className="flex items-start gap-2">
-              <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
-                <FileText className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
+              <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
+                <FileText className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
               </div>
 
               <div className="flex-1 min-w-0">
@@ -511,8 +511,8 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <Download className="w-3 h-3" />
                     </Button>
                     <ChevronDown
-                      className={`w-3.5 h-3.5 text-gray-600 dark:text-gray-400 transition-transform ${
-                        expandedActivity === 'cv' ? 'rotate-180' : ''
+                      className={`w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary transition-transform ${
+ expandedActivity === 'cv' ? 'rotate-180' : ''
                       }`}
                     />
                   </div>
@@ -522,14 +522,14 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
           </div>
 
           {expandedActivity === 'cv' && (
-            <div className="px-3 pb-3 border-t border-gray-100 dark:border-gray-700 bg-white/50 dark:bg-gray-900/50">
+            <div className="px-3 pb-3 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-white/50 dark:bg-lia-bg-primary/50">
               <div className="mt-2 space-y-2">
                 {/* Mini Preview do PDF */}
-                <div className="bg-white dark:bg-gray-900 p-2 rounded-md">
-                  <p className="text-xs text-gray-800 dark:text-gray-200 mb-2">Preview do documento</p>
-                  <div className="bg-gray-100 dark:bg-gray-800 rounded-md h-32 flex items-center justify-center">
+                <div className="bg-white dark:bg-lia-bg-primary p-2 rounded-md">
+                  <p className="text-xs text-gray-800 dark:text-lia-text-primary mb-2">Preview do documento</p>
+                  <div className="bg-gray-100 dark:bg-lia-bg-secondary rounded-md h-32 flex items-center justify-center">
                     <div className="text-center">
-                      <FileText className="w-8 h-8 text-gray-600 dark:text-gray-400 mx-auto mb-1" />
+                      <FileText className="w-8 h-8 text-gray-600 dark:text-lia-text-tertiary mx-auto mb-1" />
                       <p className={textStyles.bodySmall}>PDF • 5 páginas</p>
                       <Button
                         size="sm"
@@ -547,7 +547,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-900 p-2 rounded-md">
+                <div className="bg-white dark:bg-lia-bg-primary p-2 rounded-md">
                   <p className={`${textStyles.bodySmall} mb-1`}>Análise da LIA</p>
                   <p className={textStyles.bodySmall}>
                     ✓ CV bem estruturado • Match 92% com a vaga • Experiência relevante
@@ -559,11 +559,11 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
         </div>
 
         {/* Foto do Candidato com Preview de Imagem */}
-        <div className="border border-gray-100 dark:border-gray-700 rounded-md hover:transition-all">
+        <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors">
           <div className="p-2.5">
             <div className="flex items-start gap-2">
-              <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
-                <Image className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
+              <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
+                <Image className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
               </div>
 
               <div className="flex-1 min-w-0">
@@ -626,9 +626,9 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
         </div>
 
         {/* Vídeo de Apresentação */}
-        <div className="border border-gray-100 dark:border-gray-700 rounded-md hover:transition-all">
+        <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors">
           <div
-            className="p-2.5 cursor-pointer hover:bg-white dark:hover:bg-gray-800 transition-colors"
+            className="p-2.5 cursor-pointer hover:bg-lia-bg-primary dark:hover:bg-gray-800 transition-colors"
             onClick={() => setExpandedActivity(expandedActivity === 'video1' ? null : 'video1')}
           >
             <div className="flex items-start gap-2">
@@ -646,7 +646,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <span className={textStyles.bodySmall}>
                         25.4 MB • MP4 • 3:45
                       </span>
-                      <Badge className="text-xs px-1 py-0 h-3.5 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-100 dark:border-gray-700">
+                      <Badge className="text-xs px-1 py-0 h-3.5 bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary border-lia-border-subtle dark:border-lia-border-subtle">
                         <Tag className="w-2.5 h-2.5 mr-0.5" />
                         Triagem
                       </Badge>
@@ -657,7 +657,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <Badge className="text-xs px-1.5 py-0 h-4 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
+                    <Badge className="text-xs px-1.5 py-0 h-4 bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary">
                       Analisado
                     </Badge>
                     <Button
@@ -679,8 +679,8 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <Play className="w-3 h-3" />
                     </Button>
                     <ChevronDown
-                      className={`w-3.5 h-3.5 text-gray-600 dark:text-gray-400 transition-transform ${
-                        expandedActivity === 'video1' ? 'rotate-180' : ''
+                      className={`w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary transition-transform ${
+ expandedActivity === 'video1' ? 'rotate-180' : ''
                       }`}
                     />
                   </div>
@@ -690,11 +690,11 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
           </div>
 
           {expandedActivity === 'video1' && (
-            <div className="px-3 pb-3 border-t border-gray-100 dark:border-gray-700 bg-white/50 dark:bg-gray-900/50">
+            <div className="px-3 pb-3 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-white/50 dark:bg-lia-bg-primary/50">
               <div className="mt-2 space-y-2">
                 {/* Preview do vídeo com thumbnail */}
-                <div className="bg-white dark:bg-gray-900 p-2 rounded-md">
-                  <p className="text-xs text-gray-800 dark:text-gray-200 mb-2">Preview do vídeo de triagem</p>
+                <div className="bg-white dark:bg-lia-bg-primary p-2 rounded-md">
+                  <p className="text-xs text-gray-800 dark:text-lia-text-primary mb-2">Preview do vídeo de triagem</p>
                   <div className="relative bg-gray-900 rounded-md h-24 flex items-center justify-center group cursor-pointer"
                        onClick={() => {
                          setSelectedFile({
@@ -719,31 +719,31 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                 </div>
 
                 {/* Análise de IA do vídeo */}
-                <div className="bg-white dark:bg-gray-900 p-2 rounded-md">
+                <div className="bg-white dark:bg-lia-bg-primary p-2 rounded-md">
                   <p className={`${textStyles.bodySmall} mb-1`}>Análise da LIA</p>
                   <div className="grid grid-cols-2 gap-1 text-xs">
                     <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">Confiança:</span>
-                      <span className="font-medium text-gray-800 dark:text-gray-200">92%</span>
+                      <span className="text-gray-600 dark:text-lia-text-tertiary">Confiança:</span>
+                      <span className="font-medium text-gray-800 dark:text-lia-text-primary">92%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">Comunicação:</span>
-                      <span className="font-medium text-gray-800 dark:text-gray-200">95%</span>
+                      <span className="text-gray-600 dark:text-lia-text-tertiary">Comunicação:</span>
+                      <span className="font-medium text-gray-800 dark:text-lia-text-primary">95%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">Clareza:</span>
-                      <span className="font-medium text-gray-800 dark:text-gray-200">88%</span>
+                      <span className="text-gray-600 dark:text-lia-text-tertiary">Clareza:</span>
+                      <span className="font-medium text-gray-800 dark:text-lia-text-primary">88%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">Entusiasmo:</span>
-                      <span className="font-medium text-gray-800 dark:text-gray-200">90%</span>
+                      <span className="text-gray-600 dark:text-lia-text-tertiary">Entusiasmo:</span>
+                      <span className="font-medium text-gray-800 dark:text-lia-text-primary">90%</span>
                     </div>
                   </div>
 
                   {/* Mini parecer */}
-                  <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+                  <div className="mt-2 pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                     <p className={textStyles.bodySmall}>
-                      <span className="font-semibold text-gray-800 dark:text-gray-200">Score Geral: 91%</span> - Candidato demonstra excelente comunicação e fit cultural.
+                      <span className="font-semibold text-gray-800 dark:text-lia-text-primary">Score Geral: 91%</span> - Candidato demonstra excelente comunicação e fit cultural.
                     </p>
                   </div>
                 </div>
@@ -753,11 +753,11 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
         </div>
 
         {/* Vídeo de Case Técnico */}
-        <div className="border border-gray-100 dark:border-gray-700 rounded-md hover:transition-all">
+        <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors">
           <div className="p-2.5">
             <div className="flex items-start gap-2">
-              <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
-                <Video className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
+              <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
+                <Video className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
               </div>
 
               <div className="flex-1 min-w-0">
@@ -770,7 +770,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <span className={textStyles.bodySmall}>
                         45.2 MB • MP4 • 8:20
                       </span>
-                      <Badge className="text-xs px-1 py-0 h-3.5 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-100 dark:border-gray-700">
+                      <Badge className="text-xs px-1 py-0 h-3.5 bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary border-lia-border-subtle dark:border-lia-border-subtle">
                         <Tag className="w-2.5 h-2.5 mr-0.5" />
                         Entrevista
                       </Badge>
@@ -781,7 +781,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <Badge className="text-xs px-1.5 py-0 h-4 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
+                    <Badge className="text-xs px-1.5 py-0 h-4 bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary">
                       Destaque
                     </Badge>
                     <Button
@@ -809,11 +809,11 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
         </div>
 
         {/* Vídeo de Entrevista com Gestor - Novo */}
-        <div className="border border-gray-100 dark:border-gray-700 rounded-md hover:transition-all">
+        <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors">
           <div className="p-2.5">
             <div className="flex items-start gap-2">
-              <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
-                <Video className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
+              <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
+                <Video className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
               </div>
 
               <div className="flex-1 min-w-0">
@@ -826,7 +826,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <span className={textStyles.bodySmall}>
                         120.5 MB • MP4 • 30:15
                       </span>
-                      <Badge className="text-xs px-1 py-0 h-3.5 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
+                      <Badge className="text-xs px-1 py-0 h-3.5 bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary border-lia-border-default dark:border-lia-border-default">
                         <Tag className="w-2.5 h-2.5 mr-0.5" />
                         Entrevista
                       </Badge>
@@ -837,7 +837,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <Badge className="text-xs px-1.5 py-0 h-4 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
+                    <Badge className="text-xs px-1.5 py-0 h-4 bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary">
                       Completa
                     </Badge>
                     <Button
@@ -865,7 +865,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
         </div>
 
         {/* Áudio de Triagem por Voz - Card Compacto */}
-        <div className="border border-gray-100 dark:border-gray-700 rounded-md hover:transition-all">
+        <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors">
           <div className="p-2.5">
             <div className="flex items-start gap-2">
               <div className="w-7 h-7 rounded-full bg-wedo-purple/15 flex items-center justify-center flex-shrink-0">
@@ -921,7 +921,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
         </div>
 
         {/* Áudio de Entrevista Gravada - Card Compacto */}
-        <div className="border border-gray-100 dark:border-gray-700 rounded-md hover:transition-all">
+        <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors">
           <div className="p-2.5">
             <div className="flex items-start gap-2">
               <div className="w-7 h-7 rounded-full bg-wedo-purple/15 flex items-center justify-center flex-shrink-0">

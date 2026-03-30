@@ -92,7 +92,7 @@ export function ChatMessageList({
                     src="https://randomuser.me/api/portraits/women/44.jpg"
                     alt="Ana Silva"
                   />
-                  <AvatarFallback className="bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900 text-sm font-medium">
+                  <AvatarFallback className="bg-gray-900 dark:lia-bg-50 text-white dark:lia-text-900 text-sm font-medium">
                     AS
                   </AvatarFallback>
                 </Avatar>
@@ -100,18 +100,18 @@ export function ChatMessageList({
 
               {/* Message content */}
               <div
-                className={`rounded-md p-5 flex-1 text-gray-800 dark:text-gray-100 ${message.sender === "user" ? "bg-white dark:bg-gray-950" : "bg-gray-100 dark:bg-gray-800"}`}
+                className={`rounded-md p-5 flex-1 lia-text-800 dark:text-lia-text-primary ${message.sender === "user" ? "bg-white dark:lia-bg-950" : "bg-gray-100 dark:bg-lia-bg-secondary"}`}
               >
                 <div className="flex items-center space-x-2 mb-2">
                   <span
-                    className={`text-sm font-medium text-gray-800 dark:text-gray-100 ${
+                    className={`text-sm font-medium lia-text-800 dark:text-lia-text-primary ${
                       message.sender === "lia" ? "lia-name -ml-1" : ""
                     }`}
                   >
                     {message.sender === "lia" ? "Lia" : "Ana Silva"}
                   </span>
                   <span
-                    className="text-xs text-gray-400 dark:text-gray-500"
+                    className="text-xs lia-text-400 dark:lia-text-500"
                   >
                     {getRelativeTime(message.timestamp)}
                   </span>
@@ -127,7 +127,7 @@ export function ChatMessageList({
                   message.type !== "command" &&
                   message.type !== "file-creation" && (
                     <div
-                      className={`text-sm leading-relaxed text-gray-800 dark:text-gray-100 ${
+                      className={`text-sm leading-relaxed lia-text-800 dark:text-lia-text-primary ${
                         message.sender === "user"
                           ? "font-open-sans"
                           : "font-['Open_Sans',sans-serif] lia-markdown-content"
@@ -168,15 +168,15 @@ export function ChatMessageList({
                   ((message.data as Record<string, unknown>)
                     ?.workflow_data as Record<string, unknown>)
                     ?.search_results && (
-                    <Card className="border border-gray-900 dark:border-gray-200 bg-gray-50 dark:bg-gray-900 mt-4">
+                    <Card className="border border-gray-900 dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary mt-4">
                       <CardContent className="p-4">
                         <div className="flex items-start gap-3">
-                          <Globe className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-0.5 shrink-0" />
+                          <Globe className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary mt-0.5 shrink-0" />
                           <div className="flex-1">
                             <h4 className="font-semibold text-sm mb-1 text-wedo-cyan-dark dark:text-wedo-cyan-dark">
                               Expandir para Banco de Dados Global
                             </h4>
-                            <p className="text-xs text-wedo-cyan-dark dark:text-gray-300 mb-3">
+                            <p className="text-xs text-wedo-cyan-dark dark:text-lia-text-secondary mb-3">
                               {(
                                 (
                                   (message.data as Record<string, unknown>)
@@ -224,20 +224,20 @@ export function ChatMessageList({
                               candidatos qualificados.
                             </p>
 
-                            <div className="bg-white/60 dark:bg-gray-800/40 rounded-md p-3 mb-3 space-y-1.5">
+                            <div className="bg-white/60 dark:bg-lia-bg-secondary/40 rounded-md p-3 mb-3 space-y-1.5">
                               <div className="flex items-center justify-between text-xs">
-                                <span className="text-gray-600 dark:text-gray-400">
+                                <span className="lia-text-600 dark:text-lia-text-tertiary">
                                   Créditos disponíveis:
                                 </span>
-                                <span className="font-semibold text-gray-950 dark:text-gray-50">
+                                <span className="font-semibold lia-text-950 dark:lia-text-50">
                                   {availableCredits} créditos
                                 </span>
                               </div>
                               <div className="flex items-center justify-between text-xs">
-                                <span className="text-gray-600 dark:text-gray-400">
+                                <span className="lia-text-600 dark:text-lia-text-tertiary">
                                   Esta busca consumirá:
                                 </span>
-                                <span className="font-semibold text-gray-900 dark:text-gray-50">
+                                <span className="font-semibold lia-text-900 dark:lia-text-50">
                                   ~
                                   {((
                                     (
@@ -251,8 +251,8 @@ export function ChatMessageList({
                                   créditos
                                 </span>
                               </div>
-                              <div className="border-t border-gray-200 dark:border-gray-700 pt-1.5 flex items-center justify-between text-xs">
-                                <span className="text-gray-600 dark:text-gray-400">
+                              <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-1.5 flex items-center justify-between text-xs">
+                                <span className="lia-text-600 dark:text-lia-text-tertiary">
                                   Saldo após busca:
                                 </span>
                                 <span className="font-semibold text-status-success dark:text-status-success">
@@ -285,7 +285,7 @@ export function ChatMessageList({
                             <div className="flex gap-2">
                               <Button
                                 size="sm"
-                                className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                                className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
                                 onClick={() =>
                                   onLoadMoreCandidates(
                                     (
@@ -339,7 +339,7 @@ export function ChatMessageList({
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="border-gray-300 text-gray-800 dark:text-gray-200"
+                                className="border-lia-border-default lia-text-800 dark:text-lia-text-primary"
                                 onClick={() =>
                                   onSendMessage(
                                     "Não obrigado, vou trabalhar com os resultados locais"
@@ -403,7 +403,7 @@ export function ChatMessageList({
                 {message.type === "completion" && message.completion && (
                   <>
                     <div
-                      className="text-sm text-gray-950 dark:text-gray-50 mb-4"
+                      className="text-sm lia-text-950 dark:lia-text-50 mb-4"
                       dangerouslySetInnerHTML={{
                         __html: onHighlightSearchTerm(
                           message.content,
@@ -431,17 +431,17 @@ export function ChatMessageList({
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center space-x-2">
                         <Clock
-                          className="w-4 h-4 text-gray-500 dark:text-gray-400"
+                          className="w-4 h-4 lia-text-500 dark:text-lia-text-tertiary"
                         />
                         <h4
-                          className="font-medium text-base text-gray-800 dark:text-gray-100"
+                          className="font-medium text-base lia-text-800 dark:text-lia-text-primary"
                         >
                           {message.approvalRequest.title}
                         </h4>
                       </div>
                       <Badge
                         variant="secondary"
-                        className="text-xs border-0 bg-white dark:bg-gray-950 text-gray-500 dark:text-gray-400"
+                        className="text-xs border-0 bg-white dark:lia-bg-950 lia-text-500 dark:text-lia-text-tertiary"
                       >
                         {message.approvalStatus === "pending"
                           ? "Aguardando"
@@ -449,12 +449,12 @@ export function ChatMessageList({
                       </Badge>
                     </div>
                     <p
-                      className="text-sm mb-3 text-gray-500 dark:text-gray-400"
+                      className="text-sm mb-3 lia-text-500 dark:text-lia-text-tertiary"
                     >
                       {message.approvalRequest.description}
                     </p>
                     <p
-                      className="text-xs mb-4 text-gray-400 dark:text-gray-500"
+                      className="text-xs mb-4 lia-text-400 dark:lia-text-500"
                     >
                       👤 {message.approvalRequest.manager}
                     </p>
@@ -465,11 +465,11 @@ export function ChatMessageList({
                           key={idx}
                           className="flex justify-between text-sm py-1.5"
                         >
-                          <span className="text-gray-500 dark:text-gray-400">
+                          <span className="lia-text-500 dark:text-lia-text-tertiary">
                             {item.label}:
                           </span>
                           <span
-                            className="font-medium text-gray-800 dark:text-gray-100"
+                            className="font-medium lia-text-800 dark:text-lia-text-primary"
                           >
                             {item.value}
                           </span>
@@ -530,7 +530,7 @@ export function ChatMessageList({
                           key={idx}
                           variant="ghost"
                           size="sm"
-                          className="text-xs transition-all duration-200 hover:scale-105 font-medium"
+                          className="text-xs transition-transform duration-200 hover:scale-105 font-medium"
                           style={{backgroundColor: buttonStyle.backgroundColor,
                             color: buttonStyle.color,
                             border: `1px solid ${buttonStyle.borderColor}`}}
@@ -561,12 +561,12 @@ export function ChatMessageList({
               <LIAIcon size="md" />
             </div>
             <div
-              className="rounded-md p-5 flex-1 bg-gray-100 dark:bg-gray-800"
+              className="rounded-md p-5 flex-1 bg-gray-100 dark:bg-lia-bg-secondary"
             >
               <div className="flex items-center space-x-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 <span
-                  className="text-sm text-gray-500 dark:text-gray-400"
+                  className="text-sm lia-text-500 dark:text-lia-text-tertiary"
                 >
                   LIA está digitando...
                 </span>

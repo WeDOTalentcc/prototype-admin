@@ -16,6 +16,7 @@ import {
 import type { useSmartSearchCore } from "./hooks/useSmartSearchCore"
 import { SSISimilarMode } from "./SSISimilarMode"
 
+// [OPT-043] TODO: revisar inline styles dinâmicos (16 ocorrências)
 const SEARCH_SUGGESTIONS = [
   'Backend Sênior em São Paulo, 5+ anos em fintechs, Node.js e Python',
   'Product Manager Pleno remoto, experiência em B2B SaaS, metodologias ágeis'
@@ -54,7 +55,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
           aria-hidden="true"
         >
           <span className="text-transparent">{value}</span>
-          <span className="text-gray-400">{ghostTextSuffix}</span>
+          <span className="lia-text-400">{ghostTextSuffix}</span>
         </div>
       )}
       {/* Actual textarea - fully functional for editing */}
@@ -69,7 +70,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
           }
         }}
         placeholder={getPlaceholder()}
-        className={cn("w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-14 transition-all border relative text-gray-950 caret-gray-950 z-[2]", ghostTextSuffix && !showAutocomplete ? "bg-transparent" : "bg-white")}
+        className={cn("w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-14 transition-colors border relative lia-text-950 caret-gray-950 z-[2]", ghostTextSuffix && !showAutocomplete ? "bg-transparent" : "bg-lia-bg-primary")}
         onFocus={(e) => {
           e.currentTarget.style.borderColor = "var(--gray-300)"
           e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)"
@@ -93,11 +94,11 @@ export function SSIModeContent(props: SSIModeContentProps) {
                   type="button"
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSearchSourceChange('local'); }}
                   className={cn(
-                    "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                    "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                     searchSource === 'local' 
                       ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                       : "hover:bg-gray-100"
-                  , searchSource === 'local' ? "text-wedo-green" : "text-gray-400"
+                  , searchSource === 'local' ? "text-wedo-green" : "lia-text-400"
                   )}
                 >
                   <Home className="w-4 h-4" />
@@ -105,7 +106,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
               </TooltipTrigger>
               <TooltipContent side="bottom" className="!animate-none !duration-0">
                 <p className="text-xs font-medium">Seu banco de talentos</p>
-                <p className="text-xs text-gray-300">Gratuito • Local</p>
+                <p className="text-xs lia-text-300">Gratuito • Local</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -118,11 +119,11 @@ export function SSIModeContent(props: SSIModeContentProps) {
                     type="button"
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSourceChange('hybrid'); }}
                     className={cn(
-                      "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                      "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                       searchSource === 'hybrid' 
                         ? "bg-wedo-orange/15 ring-1 ring-wedo-orange" 
                         : "hover:bg-gray-100"
-                    , searchSource === 'hybrid' ? "text-wedo-orange" : "text-gray-400"
+                    , searchSource === 'hybrid' ? "text-wedo-orange" : "lia-text-400"
                     )}
                   >
                     <Zap className="w-4 h-4" />
@@ -130,7 +131,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="!animate-none !duration-0">
                   <p className="text-xs font-medium">Expanda sua busca</p>
-                  <p className="text-xs text-gray-300">Local + Global • 1 crédito/candidato</p>
+                  <p className="text-xs lia-text-300">Local + Global • 1 crédito/candidato</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -144,11 +145,11 @@ export function SSIModeContent(props: SSIModeContentProps) {
                     type="button"
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSourceChange('global'); }}
                     className={cn(
-                      "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                      "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                       searchSource === 'global' 
                         ? "bg-wedo-cyan/15 ring-1 ring-gray-900/20" 
                         : "hover:bg-gray-100"
-                    , searchSource === 'global' ? "text-gray-950" : "text-gray-400"
+                    , searchSource === 'global' ? "lia-text-950" : "lia-text-400"
                     )}
                   >
                     <Globe className="w-4 h-4" />
@@ -156,7 +157,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="!animate-none !duration-0">
                   <p className="text-xs font-medium">Alcance global</p>
-                  <p className="text-xs text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
+                  <p className="text-xs lia-text-300">800M+ candidatos • 1 crédito/candidato</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -173,11 +174,11 @@ export function SSIModeContent(props: SSIModeContentProps) {
                       type="button"
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRequireEmailsChange(!requireEmails); }}
                       className={cn(
-                        "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                        "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                         requireEmails 
                           ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                           : "hover:bg-gray-100"
-                      , requireEmails ? "text-wedo-green" : "text-gray-400"
+                      , requireEmails ? "text-wedo-green" : "lia-text-400"
                       )}
                     >
                       <Mail className="w-3.5 h-3.5" />
@@ -185,7 +186,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="!animate-none !duration-0">
                     <p className="text-xs font-medium">Apenas com Email</p>
-                    <p className="text-xs text-gray-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                    <p className="text-xs lia-text-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -197,11 +198,11 @@ export function SSIModeContent(props: SSIModeContentProps) {
                       type="button"
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRequirePhoneNumbersChange(!requirePhoneNumbers); }}
                       className={cn(
-                        "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                        "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                         requirePhoneNumbers 
                           ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                           : "hover:bg-gray-100"
-                      , requirePhoneNumbers ? "text-wedo-green" : "text-gray-400"
+                      , requirePhoneNumbers ? "text-wedo-green" : "lia-text-400"
                       )}
                     >
                       <Phone className="w-3.5 h-3.5" />
@@ -209,7 +210,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="!animate-none !duration-0">
                     <p className="text-xs font-medium">Apenas com Telefone</p>
-                    <p className="text-xs text-gray-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                    <p className="text-xs lia-text-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -241,7 +242,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
         onClick={handleSubmit}
         disabled={!canSubmit()}
         size="sm"
-        className={cn("absolute right-2.5 bottom-2.5 h-8 w-8 p-0 rounded-md transition-all hover:scale-105 z-10", canSubmit() ? "bg-gray-950 text-white" : "bg-gray-100 text-gray-500")}
+        className={cn("absolute right-2.5 bottom-2.5 h-8 w-8 p-0 rounded-md transition-transform hover:scale-105 z-10", canSubmit() ? "bg-gray-950 text-white" : "bg-gray-100 lia-text-500")}
       >
         <Search className="w-4 h-4" />
       </Button>
@@ -249,18 +250,18 @@ export function SSIModeContent(props: SSIModeContentProps) {
       {/* Autocomplete inline - lista vertical compacta */}
       {showAutocomplete && autocompleteItems.length > 0 && (
       <div 
-        className="absolute top-full left-0 right-0 mt-0.5 rounded-md border border-gray-200 flex flex-col gap-0 z-10 max-h-52 overflow-hidden bg-[var(--lia-bg-primary)]"
+        className="absolute top-full left-0 right-0 mt-0.5 rounded-md border border-lia-border-subtle flex flex-col gap-0 z-10 max-h-52 overflow-hidden bg-[var(--lia-bg-primary)]"
       >
         {/* Header com toggle e botão fechar */}
-        <div className="flex items-center justify-between px-3 py-1.5 border-b border-gray-100">
+        <div className="flex items-center justify-between px-3 py-1.5 border-b border-lia-border-subtle">
           <div className="flex items-center gap-2">
             <Brain className="w-3 h-3 text-wedo-cyan" />
-            <span className="text-micro font-medium text-gray-500">Sugestões</span>
+            <span className="text-micro font-medium lia-text-500">Sugestões</span>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setAutocompleteEnabled(false)}
-              className="text-micro text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-micro lia-text-400 hover:lia-text-600 transition-colors"
               title="Desativar sugestões"
             >
               Desativar
@@ -273,7 +274,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
               className="p-0.5 rounded-md hover:bg-gray-100 transition-colors"
               title="Fechar lista"
             >
-              <X className="w-3 h-3 text-gray-400" />
+              <X className="w-3 h-3 lia-text-400" />
             </button>
           </div>
         </div>
@@ -341,12 +342,12 @@ export function SSIModeContent(props: SSIModeContentProps) {
                 style={{color: catColor.accent}}
               />
               <span 
-                className="text-xs font-medium flex-1 truncate text-gray-950 dark:text-gray-50"
+                className="text-xs font-medium flex-1 truncate lia-text-950 dark:lia-text-50"
               >
                 {item.text}
               </span>
               <span 
-                className="text-micro text-gray-500 flex-shrink-0"
+                className="text-micro lia-text-500 flex-shrink-0"
               >
                 {item.category}
               </span>
@@ -360,7 +361,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
       {/* Ghost Text Tab hint */}
       {ghostTextSuffix && !showAutocomplete && (
         <div 
-          className="absolute -bottom-5 right-3 flex items-center gap-1 text-micro text-gray-400"
+          className="absolute -bottom-5 right-3 flex items-center gap-1 text-micro lia-text-400"
         >
           <kbd className="px-1 py-0.5 rounded-full bg-gray-100 text-micro font-mono">Tab</kbd>
           <span>para aceitar</span>
@@ -374,22 +375,22 @@ export function SSIModeContent(props: SSIModeContentProps) {
       <div 
         className="rounded-md border px-3 py-2 flex items-center gap-2 bg-gray-200/20" style={{ borderColor: 'var(--wedo-cyan-border)' }}
       >
-        <Wand2 className="w-3.5 h-3.5 flex-shrink-0 text-gray-700" />
+        <Wand2 className="w-3.5 h-3.5 flex-shrink-0 lia-text-700" />
         <div className="flex-1 min-w-0">
           <span className={textStyles.description}>Sugestão: </span>
-          <span className="text-xs text-gray-800">{ghostTextInfo.fullEnhancement}</span>
+          <span className="text-xs lia-text-800">{ghostTextInfo.fullEnhancement}</span>
         </div>
         <div className="flex items-center gap-1 flex-shrink-0">
           <button
             onClick={handleAcceptEnhancement}
-            className="flex items-center gap-1 px-2 py-1 rounded-full text-micro font-medium hover:bg-wedo-cyan/15 transition-colors text-gray-700"
+            className="flex items-center gap-1 px-2 py-1 rounded-full text-micro font-medium hover:bg-wedo-cyan/15 transition-colors lia-text-700"
           >
             <kbd className="px-1 py-0.5 rounded-full bg-gray-100 text-micro font-mono">Tab</kbd>
             <span>Aceitar</span>
           </button>
           <button
             onClick={handleDismissEnhancement}
-            className="flex items-center justify-center w-5 h-5 rounded-md hover:bg-gray-100 transition-colors text-gray-400"
+            className="flex items-center justify-center w-5 h-5 rounded-md hover:bg-gray-100 transition-colors lia-text-400"
           >
             <X className="w-3 h-3" />
           </button>
@@ -397,7 +398,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
       </div>
     )}
 
-    {/* Tags de critérios extraídos - Cores ElevenLabs/WedoTalent */}
+    {/* Tags de critérios extraídos - Cores WeDo DS */}
     <div className="flex flex-wrap items-center gap-1.5">
       {tags.map((tag) => {
         const getTagColors = (key: string, filled: boolean) => {
@@ -422,7 +423,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
         return (
           <div
             key={tag.key}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs transition-all"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs transition-[width,height]"
             style={{backgroundColor: colors.bg,
               color: colors.text}}
             title={tag.value}
@@ -437,7 +438,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
             {tag.filled && tag.value && (
               <>
                 <span className="opacity-50">·</span>
-                <span className="max-w-20 truncate font-normal opacity-[0.85]">{tag.value}</span>
+                <span className="max-w-20 truncate font-normal opacity-85">{tag.value}</span>
               </>
             )}
           </div>
@@ -451,14 +452,14 @@ export function SSIModeContent(props: SSIModeContentProps) {
             <button
               onClick={() => setAutocompleteEnabled(!autocompleteEnabled)}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all hover:opacity-90",
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-[width,height] hover:opacity-90",
                 autocompleteEnabled 
                   ? "bg-gray-900 text-white" 
-                  : "bg-gray-100 text-gray-500"
+                  : "bg-gray-100 lia-text-500"
               )}
 
             >
-              <Brain className={`w-3.5 h-3.5 ${autocompleteEnabled ? 'text-wedo-cyan' : 'text-gray-400'}`} />
+              <Brain className={`w-3.5 h-3.5 ${autocompleteEnabled ? 'text-wedo-cyan' : 'lia-text-400'}`} />
               <span className="font-medium text-xs">
                 Assistente de Busca
               </span>
@@ -466,7 +467,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
           </TooltipTrigger>
           <TooltipContent 
             side="bottom" 
-            className="max-w-panel-sm p-3 bg-white border-gray-300 dark:border-gray-600"
+            className="max-w-panel-sm p-3 bg-lia-bg-primary border-lia-border-default dark:border-lia-border-default"
           >
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -482,28 +483,28 @@ export function SSIModeContent(props: SSIModeContentProps) {
                 </span>
               </div>
               <div>
-                <span className="font-medium text-sm text-gray-800 dark:text-gray-100">
+                <span className="font-medium text-sm lia-text-800 dark:text-lia-text-primary">
                   Assistente de Busca Inteligente
                 </span>
               </div>
-              <p className="text-xs text-gray-800 dark:text-gray-200">
+              <p className="text-xs lia-text-800 dark:text-lia-text-primary">
                 Enquanto você descreve o perfil, a LIA analisa e sugere melhorias:
               </p>
-              <ul className="text-xs space-y-1 text-gray-800 dark:text-gray-200">
+              <ul className="text-xs space-y-1 lia-text-800 dark:text-lia-text-primary">
                 <li className="flex items-start gap-1.5">
-                  <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 text-gray-700" />
+                  <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 lia-text-700" />
                   <span>Indica critérios faltantes</span>
                 </li>
                 <li className="flex items-start gap-1.5">
-                  <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 text-gray-700" />
+                  <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 lia-text-700" />
                   <span>Sugere sinônimos e termos relacionados</span>
                 </li>
                 <li className="flex items-start gap-1.5">
-                  <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 text-gray-700" />
+                  <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 lia-text-700" />
                   <span>Alerta sobre buscas muito amplas ou restritivas</span>
                 </li>
               </ul>
-              <p className="text-micro pt-1 border-t text-gray-500 border-gray-300 dark:border-gray-600">
+              <p className="text-micro pt-1 border-t lia-text-500 border-lia-border-default dark:border-lia-border-default">
                 {autocompleteEnabled ? 'Clique para desativar' : 'Clique para ativar'}
               </p>
             </div>
@@ -526,12 +527,12 @@ export function SSIModeContent(props: SSIModeContentProps) {
 
     {/* Assistente de Busca - Barra de completude e alertas */}
     {value && searchAnalysis && (
-      <div className="space-y-2 pt-2 border-t border-gray-300 dark:border-gray-600">
+      <div className="space-y-2 pt-2 border-t border-lia-border-default dark:border-lia-border-default">
         {/* Barra de completude */}
         <div className="flex items-center gap-3">
           <div className="flex-1">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-medium text-gray-800 dark:text-gray-200">
+              <span className="text-xs font-medium lia-text-800 dark:text-lia-text-primary">
                 Qualidade da busca
               </span>
               <span 
@@ -546,10 +547,10 @@ export function SSIModeContent(props: SSIModeContentProps) {
               </span>
             </div>
             <div 
-              className="h-1.5 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800"
+              className="h-1.5 rounded-full overflow-hidden bg-gray-100 dark:bg-lia-bg-secondary"
             >
               <div 
-                className="h-full rounded-full transition-all duration-500"
+                className="h-full rounded-full transition-[width,height] duration-500"
                 style={{width: `${searchAnalysis.completeness_score}%`,
                   backgroundColor: searchAnalysis.completeness_score >= 60 
                     ? "var(--status-success)" 
@@ -584,7 +585,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
                 {alert.severity === "warning" ? (
                   <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-status-warning" />
                 ) : (
-                  <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-700" />
+                  <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 lia-text-700" />
                 )}
                 <div className="flex-1 min-w-0">
                   <span>{alert.message}</span>
@@ -595,7 +596,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
                           onChange(value + ", " + alert.action_value)
                         }
                       }}
-                      className="ml-1 font-medium hover:underline text-gray-700"
+                      className="ml-1 font-medium hover:underline lia-text-700"
                     >
                       {alert.suggestion}
                     </button>
@@ -609,7 +610,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
         {/* Sugestões de enriquecimento - Inline scroll se necessário */}
         {Object.keys(searchAnalysis.enrichment_suggestions).length > 0 && (
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-            <span className="text-xs text-gray-950 dark:text-gray-50 font-medium whitespace-nowrap">
+            <span className="text-xs lia-text-950 dark:lia-text-50 font-medium whitespace-nowrap">
               Adicionar:
             </span>
             <div className="flex gap-1.5 flex-nowrap">
@@ -618,7 +619,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
                   <button
                     key={`${category}-${item}`}
                     onClick={() => onChange(value + ", " + item)}
-                    className="px-2 py-0.5 rounded-full text-xs font-medium transition-all hover:scale-105 border border-gray-200 whitespace-nowrap flex-shrink-0 bg-[var(--lia-bg-primary)]"
+                    className="px-2 py-0.5 rounded-full text-xs font-medium transition-[width,height] hover:scale-105 border border-lia-border-subtle whitespace-nowrap flex-shrink-0 bg-[var(--lia-bg-primary)]"
                   >
                     + {item}
                   </button>
@@ -633,7 +634,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
     {/* Sugestões de busca - Horizontal lado a lado */}
     {!value && (
       <div className="pt-1 w-full flex items-start gap-2">
-        <span className="text-xs text-gray-800 dark:text-gray-200 font-medium whitespace-nowrap mt-0.5">
+        <span className="text-xs lia-text-800 dark:text-lia-text-primary font-medium whitespace-nowrap mt-0.5">
           Sugestões:
         </span>
         <div className="flex items-center gap-2 flex-nowrap overflow-x-auto">
@@ -641,7 +642,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
             <button
               key={suggestion}
               onClick={() => onChange(suggestion)}
-              className="px-2.5 py-0.5 text-xs text-gray-800 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-50 bg-gray-50 hover:bg-gray-100 rounded-full border border-gray-200 transition-all whitespace-nowrap flex-shrink-0"
+              className="px-2.5 py-0.5 text-xs lia-text-800 dark:text-lia-text-primary hover:lia-text-900 dark:hover:lia-text-50 bg-gray-50 hover:bg-gray-100 rounded-full border border-lia-border-subtle transition-[width,height] whitespace-nowrap flex-shrink-0"
 
               title={suggestion}
             >
@@ -686,7 +687,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
         >
           Buscar vaga existente
         </span>
-        <span className="text-micro text-gray-400">opcional</span>
+        <span className="text-micro lia-text-400">opcional</span>
       </div>
 
       {selectedVacancy ? (
@@ -697,12 +698,12 @@ export function SSIModeContent(props: SSIModeContentProps) {
             <div 
               className="w-6 h-6 rounded-full flex items-center justify-center bg-gray-200"
             >
-              <Briefcase className="w-3 h-3 text-gray-600" />
+              <Briefcase className="w-3 h-3 lia-text-600" />
             </div>
             <div>
-              <p className="text-base-ui font-medium text-gray-800">{selectedVacancy.title}</p>
+              <p className="text-base-ui font-medium lia-text-800">{selectedVacancy.title}</p>
               {selectedVacancy.job_id && (
-                <p className="text-micro text-gray-500">ID: {selectedVacancy.job_id}</p>
+                <p className="text-micro lia-text-500">ID: {selectedVacancy.job_id}</p>
               )}
             </div>
           </div>
@@ -710,16 +711,16 @@ export function SSIModeContent(props: SSIModeContentProps) {
             onClick={clearSelectedVacancy}
             className="p-1 rounded-md hover:bg-gray-100 transition-colors"
           >
-            <X className="w-3.5 h-3.5 text-gray-400" />
+            <X className="w-3.5 h-3.5 lia-text-400" />
           </button>
         </div>
       ) : (
         <div className="relative">
           <div className="absolute left-3 top-1/2 -translate-y-1/2">
             {isSearchingVacancies ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-gray-400" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin lia-text-400" />
             ) : (
-              <Search className="w-3.5 h-3.5 text-gray-400" />
+              <Search className="w-3.5 h-3.5 lia-text-400" />
             )}
           </div>
           <input
@@ -727,7 +728,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
             value={jdVacancySearch}
             onChange={(e) => setJdVacancySearch(e.target.value)}
             placeholder="Digite o nome ou ID da vaga..."
-            className="w-full pl-9 pr-4 py-2.5 text-base-ui rounded-md border focus:outline-none transition-all bg-gray-50 text-gray-950"
+            className="w-full pl-9 pr-4 py-2.5 text-base-ui rounded-md border focus:outline-none transition-colors bg-gray-50 lia-text-950"
             onFocus={(e) => {
               e.currentTarget.style.borderColor = "var(--gray-300)"
               e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)"
@@ -748,12 +749,12 @@ export function SSIModeContent(props: SSIModeContentProps) {
                 <button
                   key={vacancy.id}
                   onClick={() => handleSelectVacancy(vacancy)}
-                  className="w-full p-2.5 text-left hover:bg-gray-50 transition-colors border-b last:border-b-0 border border-gray-200"
+                  className="w-full p-2.5 text-left hover:bg-gray-50 transition-colors border-b last:border-b-0 border border-lia-border-subtle"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="text-base-ui font-medium text-gray-800 truncate">{vacancy.title}</p>
+                        <p className="text-base-ui font-medium lia-text-800 truncate">{vacancy.title}</p>
                         <Badge 
                           variant="outline" 
                           className="text-micro px-1.5 py-0 h-4 flex-shrink-0"
@@ -765,17 +766,17 @@ export function SSIModeContent(props: SSIModeContentProps) {
                       </div>
                       <div className="flex items-center gap-2 mt-0.5">
                         {vacancy.job_id && (
-                          <span className="text-micro text-gray-500">ID: {vacancy.job_id}</span>
+                          <span className="text-micro lia-text-500">ID: {vacancy.job_id}</span>
                         )}
-                        <span className="text-micro text-gray-400">{formatDate(vacancy.created_at)}</span>
+                        <span className="text-micro lia-text-400">{formatDate(vacancy.created_at)}</span>
                       </div>
                       {vacancy.description_preview && (
-                        <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                        <p className="text-xs lia-text-500 mt-1 line-clamp-2">
                           {vacancy.description_preview}
                         </p>
                       )}
                     </div>
-                    <ChevronRight className="w-3.5 h-3.5 text-gray-300 flex-shrink-0 mt-0.5" />
+                    <ChevronRight className="w-3.5 h-3.5 lia-text-300 flex-shrink-0 mt-0.5" />
                   </div>
                 </button>
               ))}
@@ -787,7 +788,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
               className="absolute z-50 top-full left-0 right-0 mt-1 p-2.5 rounded-md border text-center"
               style={{backgroundColor: 'var(--gray-50)'}}
             >
-              <p className="text-base-ui text-gray-500">Nenhuma vaga encontrada</p>
+              <p className="text-base-ui lia-text-500">Nenhuma vaga encontrada</p>
             </div>
           )}
         </div>
@@ -797,7 +798,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
     {/* Divisor */}
     <div className="flex items-center gap-3">
       <div className="flex-1 h-px bg-gray-200" />
-      <span className="text-micro text-gray-400 uppercase tracking-wider">ou</span>
+      <span className="text-micro lia-text-400 uppercase tracking-wider">ou</span>
       <div className="flex-1 h-px bg-gray-200" />
     </div>
 
@@ -839,7 +840,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
           }
         }}
         placeholder={getPlaceholder()}
-        className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[100px] transition-all border bg-lia-bg-primary"
+        className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[100px] transition-colors border bg-lia-bg-primary"
         style={{color: "var(--gray-950)"}}
         onFocus={(e) => {
           e.currentTarget.style.borderColor = "var(--gray-300)"
@@ -862,11 +863,11 @@ export function SSIModeContent(props: SSIModeContentProps) {
                     type="button"
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSearchSourceChange('local'); }}
                     className={cn(
-                      "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                      "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                       searchSource === 'local' 
                         ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                         : "hover:bg-gray-100"
-                    , searchSource === 'local' ? "text-wedo-green" : "text-gray-400"
+                    , searchSource === 'local' ? "text-wedo-green" : "lia-text-400"
                     )}
                   >
                     <Home className="w-4 h-4" />
@@ -874,7 +875,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="!animate-none !duration-0">
                   <p className="text-xs font-medium">Seu banco de talentos</p>
-                  <p className="text-xs text-gray-300">Gratuito • Local</p>
+                  <p className="text-xs lia-text-300">Gratuito • Local</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -887,11 +888,11 @@ export function SSIModeContent(props: SSIModeContentProps) {
                       type="button"
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSourceChange('hybrid'); }}
                       className={cn(
-                        "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                        "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                         searchSource === 'hybrid' 
                           ? "bg-wedo-orange/15 ring-1 ring-wedo-orange" 
                           : "hover:bg-gray-100"
-                      , searchSource === 'hybrid' ? "text-wedo-orange" : "text-gray-400"
+                      , searchSource === 'hybrid' ? "text-wedo-orange" : "lia-text-400"
                       )}
                     >
                       <Zap className="w-4 h-4" />
@@ -899,7 +900,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="!animate-none !duration-0">
                     <p className="text-xs font-medium">Expanda sua busca</p>
-                    <p className="text-xs text-gray-300">Local + Global • 1 crédito/candidato</p>
+                    <p className="text-xs lia-text-300">Local + Global • 1 crédito/candidato</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -913,11 +914,11 @@ export function SSIModeContent(props: SSIModeContentProps) {
                       type="button"
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSourceChange('global'); }}
                       className={cn(
-                        "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                        "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                         searchSource === 'global' 
                           ? "bg-wedo-cyan/15 ring-1 ring-gray-900/20" 
                           : "hover:bg-gray-100"
-                      , searchSource === 'global' ? "text-gray-950" : "text-gray-400"
+                      , searchSource === 'global' ? "lia-text-950" : "lia-text-400"
                       )}
                     >
                       <Globe className="w-4 h-4" />
@@ -925,7 +926,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="!animate-none !duration-0">
                     <p className="text-xs font-medium">Alcance global</p>
-                    <p className="text-xs text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
+                    <p className="text-xs lia-text-300">800M+ candidatos • 1 crédito/candidato</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -941,11 +942,11 @@ export function SSIModeContent(props: SSIModeContentProps) {
                         type="button"
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRequireEmailsChange(!requireEmails); }}
                         className={cn(
-                          "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                          "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                           requireEmails 
                             ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                             : "hover:bg-gray-100"
-                        , requireEmails ? "text-wedo-green" : "text-gray-400"
+                        , requireEmails ? "text-wedo-green" : "lia-text-400"
                         )}
                       >
                         <Mail className="w-3.5 h-3.5" />
@@ -953,7 +954,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="!animate-none !duration-0">
                       <p className="text-xs font-medium">Apenas com Email</p>
-                      <p className="text-xs text-gray-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                      <p className="text-xs lia-text-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -965,11 +966,11 @@ export function SSIModeContent(props: SSIModeContentProps) {
                         type="button"
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRequirePhoneNumbersChange(!requirePhoneNumbers); }}
                         className={cn(
-                          "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                          "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                           requirePhoneNumbers 
                             ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                             : "hover:bg-gray-100"
-                        , requirePhoneNumbers ? "text-wedo-green" : "text-gray-400"
+                        , requirePhoneNumbers ? "text-wedo-green" : "lia-text-400"
                         )}
                       >
                         <Phone className="w-3.5 h-3.5" />
@@ -977,7 +978,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="!animate-none !duration-0">
                       <p className="text-xs font-medium">Apenas com Telefone</p>
-                      <p className="text-xs text-gray-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                      <p className="text-xs lia-text-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -993,9 +994,9 @@ export function SSIModeContent(props: SSIModeContentProps) {
                     onClick={handleSubmit}
                     disabled={!canSubmit() || isLoading}
                     className={cn(
-                      "flex items-center justify-center p-1.5 rounded-md transition-all",
+                      "flex items-center justify-center p-1.5 rounded-md transition-colors",
                       canSubmit() ? "hover:bg-gray-100" : "opacity-50 cursor-not-allowed"
-                    , canSubmit() ? "text-gray-400" : "text-gray-200"
+                    , canSubmit() ? "lia-text-400" : "lia-text-200"
                     )}
                   >
                     {isLoading ? (
@@ -1007,13 +1008,13 @@ export function SSIModeContent(props: SSIModeContentProps) {
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="!animate-none !duration-0">
                   <p className="text-xs font-medium">Extrair e Buscar</p>
-                  <p className="text-xs text-gray-300">Extrai requisitos e busca candidatos</p>
+                  <p className="text-xs lia-text-300">Extrai requisitos e busca candidatos</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </div>
           {/* Hint abaixo dos ícones */}
-          <span className="text-micro text-gray-400 italic">extrair e buscar</span>
+          <span className="text-micro lia-text-400 italic">extrair e buscar</span>
         </div>
       )}
     </div>
@@ -1023,12 +1024,12 @@ export function SSIModeContent(props: SSIModeContentProps) {
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <FileText className="w-3.5 h-3.5 text-gray-700" />
-            <span className="text-xs font-medium text-gray-800 dark:text-gray-100">
+            <FileText className="w-3.5 h-3.5 lia-text-700" />
+            <span className="text-xs font-medium lia-text-800 dark:text-lia-text-primary">
               Preview do prompt de busca
             </span>
           </div>
-          <span className="text-micro text-gray-400">editável</span>
+          <span className="text-micro lia-text-400">editável</span>
         </div>
         <textarea
           value={jdSearchPrompt}
@@ -1044,10 +1045,10 @@ export function SSIModeContent(props: SSIModeContentProps) {
     )}
 
     {/* Dica contextual padronizada */}
-    <div className="p-2.5 rounded-md bg-gray-50 border border-gray-200">
+    <div className="p-2.5 rounded-md bg-gray-50 border border-lia-border-subtle">
       <div className="flex items-start gap-2">
-        <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-700" />
-        <p className="text-xs text-gray-800 dark:text-gray-200">
+        <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 lia-text-700" />
+        <p className="text-xs lia-text-800 dark:text-lia-text-primary">
           <strong>Dica:</strong> Selecione uma vaga existente ou cole a JD completa para extrair automaticamente requisitos técnicos e comportamentais.
         </p>
       </div>
@@ -1061,7 +1062,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
     {/* Container principal com textarea e controles posicionados absolutamente (como Natural) */}
     <div className="relative">
       <div className="absolute left-3 top-3">
-        <Binary className="w-4 h-4 text-gray-700" />
+        <Binary className="w-4 h-4 lia-text-700" />
       </div>
       <textarea
         ref={textareaRef}
@@ -1070,7 +1071,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
         onKeyDown={handleKeyDown}
         placeholder={getPlaceholder()}
         className={cn(
-          "w-full resize-none rounded-md pl-10 pr-28 py-3 text-sm font-mono focus:outline-none min-h-14 transition-all border bg-lia-bg-primary",
+          "w-full resize-none rounded-md pl-10 pr-28 py-3 text-sm font-mono focus:outline-none min-h-14 transition-colors border bg-lia-bg-primary",
           booleanError && "ring-2 ring-red-300"
         )}
         style={{borderColor: booleanError ? "var(--status-error)" : "var(--gray-200)",
@@ -1096,11 +1097,11 @@ export function SSIModeContent(props: SSIModeContentProps) {
                   type="button"
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSearchSourceChange('local'); }}
                   className={cn(
-                    "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                    "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                     searchSource === 'local' 
                       ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                       : "hover:bg-gray-100"
-                  , searchSource === 'local' ? "text-wedo-green" : "text-gray-400"
+                  , searchSource === 'local' ? "text-wedo-green" : "lia-text-400"
                   )}
                 >
                   <Home className="w-4 h-4" />
@@ -1108,7 +1109,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
               </TooltipTrigger>
               <TooltipContent side="bottom" className="!animate-none !duration-0">
                 <p className="text-xs font-medium">Seu banco de talentos</p>
-                <p className="text-xs text-gray-300">Gratuito • Local</p>
+                <p className="text-xs lia-text-300">Gratuito • Local</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -1121,11 +1122,11 @@ export function SSIModeContent(props: SSIModeContentProps) {
                     type="button"
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSourceChange('hybrid'); }}
                     className={cn(
-                      "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                      "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                       searchSource === 'hybrid' 
                         ? "bg-wedo-orange/15 ring-1 ring-wedo-orange" 
                         : "hover:bg-gray-100"
-                    , searchSource === 'hybrid' ? "text-wedo-orange" : "text-gray-400"
+                    , searchSource === 'hybrid' ? "text-wedo-orange" : "lia-text-400"
                     )}
                   >
                     <Zap className="w-4 h-4" />
@@ -1133,7 +1134,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="!animate-none !duration-0">
                   <p className="text-xs font-medium">Expanda sua busca</p>
-                  <p className="text-xs text-gray-300">Local + Global • 1 crédito/candidato</p>
+                  <p className="text-xs lia-text-300">Local + Global • 1 crédito/candidato</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -1147,11 +1148,11 @@ export function SSIModeContent(props: SSIModeContentProps) {
                     type="button"
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSourceChange('global'); }}
                     className={cn(
-                      "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                      "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                       searchSource === 'global' 
                         ? "bg-wedo-cyan/15 ring-1 ring-gray-900/20" 
                         : "hover:bg-gray-100"
-                    , searchSource === 'global' ? "text-gray-950" : "text-gray-400"
+                    , searchSource === 'global' ? "lia-text-950" : "lia-text-400"
                     )}
                   >
                     <Globe className="w-4 h-4" />
@@ -1159,7 +1160,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="!animate-none !duration-0">
                   <p className="text-xs font-medium">Alcance global</p>
-                  <p className="text-xs text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
+                  <p className="text-xs lia-text-300">800M+ candidatos • 1 crédito/candidato</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -1175,11 +1176,11 @@ export function SSIModeContent(props: SSIModeContentProps) {
                       type="button"
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRequireEmailsChange(!requireEmails); }}
                       className={cn(
-                        "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                        "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                         requireEmails 
                           ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                           : "hover:bg-gray-100"
-                      , requireEmails ? "text-wedo-green" : "text-gray-400"
+                      , requireEmails ? "text-wedo-green" : "lia-text-400"
                       )}
                     >
                       <Mail className="w-3.5 h-3.5" />
@@ -1187,7 +1188,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="!animate-none !duration-0">
                     <p className="text-xs font-medium">Apenas com Email</p>
-                    <p className="text-xs text-gray-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                    <p className="text-xs lia-text-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -1199,11 +1200,11 @@ export function SSIModeContent(props: SSIModeContentProps) {
                       type="button"
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRequirePhoneNumbersChange(!requirePhoneNumbers); }}
                       className={cn(
-                        "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                        "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                         requirePhoneNumbers 
                           ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                           : "hover:bg-gray-100"
-                      , requirePhoneNumbers ? "text-wedo-green" : "text-gray-400"
+                      , requirePhoneNumbers ? "text-wedo-green" : "lia-text-400"
                       )}
                     >
                       <Phone className="w-3.5 h-3.5" />
@@ -1211,7 +1212,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="!animate-none !duration-0">
                     <p className="text-xs font-medium">Apenas com Telefone</p>
-                    <p className="text-xs text-gray-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                    <p className="text-xs lia-text-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -1224,9 +1225,9 @@ export function SSIModeContent(props: SSIModeContentProps) {
             onClick={handleSubmit}
             disabled={!canSubmit() || isLoading}
             className={cn(
-              "flex items-center justify-center p-1.5 rounded-md transition-all",
+              "flex items-center justify-center p-1.5 rounded-md transition-colors",
               canSubmit() ? "hover:bg-gray-100" : "opacity-50 cursor-not-allowed"
-            , canSubmit() ? "text-gray-400" : "text-gray-200"
+            , canSubmit() ? "lia-text-400" : "lia-text-200"
             )}
           >
             {isLoading ? (
@@ -1247,7 +1248,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
     )}
 
     <div className="flex flex-wrap gap-2">
-      <span className="text-xs text-gray-500 dark:text-gray-400">Operadores:</span>
+      <span className="text-xs lia-text-500 dark:text-lia-text-tertiary">Operadores:</span>
       {["AND", "OR", "NOT", "(", ")"].map((op) => (
         <button
           key={op}
@@ -1262,10 +1263,10 @@ export function SSIModeContent(props: SSIModeContentProps) {
     </div>
 
     {/* Dica contextual padronizada */}
-    <div className="p-2.5 rounded-md bg-gray-50 border border-gray-200">
+    <div className="p-2.5 rounded-md bg-gray-50 border border-lia-border-subtle">
       <div className="flex items-start gap-2">
-        <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-700" />
-        <p className="text-xs text-gray-800 dark:text-gray-200">
+        <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 lia-text-700" />
+        <p className="text-xs lia-text-800 dark:text-lia-text-primary">
           <strong>Dica:</strong> Use aspas para termos exatos e parênteses para agrupar condições. Ex: (Python OR Java) AND "São Paulo"
         </p>
       </div>

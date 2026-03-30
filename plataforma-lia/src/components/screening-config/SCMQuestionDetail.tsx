@@ -60,28 +60,28 @@ export function SCMQuestionDetailView({ item, isDetailsExpanded, onToggleDetails
           </Badge>
         )}
       </div>
-      <p className="text-xs text-gray-950 dark:text-gray-50 leading-relaxed">{item.question || item.text}</p>
-      <div className="flex items-center gap-3 mt-2 text-micro text-gray-500 dark:text-gray-400">
+      <p className="text-xs text-gray-950 leading-relaxed">{item.question || item.text}</p>
+      <div className="flex items-center gap-3 mt-2 text-micro text-gray-500 dark:text-lia-text-tertiary">
         <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{estTime}</span>
         {item.bloom_label && !item.bloom_level && <span className="flex items-center gap-1"><GraduationCap className="w-3 h-3" />Bloom: {item.bloom_label}</span>}
         {(item.trait || item.skill) && <span className="flex items-center gap-1"><Target className="w-3 h-3" />Avalia: {item.trait || item.skill}</span>}
         <span className="flex items-center gap-1"><Scale className="w-3 h-3" />Peso: {((item.weight || 1) * 100).toFixed(0)}%</span>
       </div>
-      <button className="mt-1.5 text-micro text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" onClick={() => onToggleDetails(item.id)}>
+      <button className="mt-1.5 text-micro lia-text-secondary hover:lia-text-base dark:hover:lia-text-muted transition-colors" onClick={() => onToggleDetails(item.id)}>
         {isDetailsExpanded ? '▲ Ocultar detalhes' : '▼ Ver detalhes'}
       </button>
       {isDetailsExpanded && (
-        <div className="mt-2 p-2.5 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-lg space-y-1.5 text-micro">
+        <div className="mt-2 p-2.5 bg-gray-50 dark:bg-lia-bg-primary/50 border border-lia-border-subtle dark:border-lia-border-subtle rounded-lg space-y-1.5 text-micro">
           <div className="flex gap-4 flex-wrap">
-            <div><span className="text-gray-400">Framework:</span><span className="ml-1 text-gray-700 dark:text-gray-300 font-medium">{item.framework === 'Company' ? 'Empresa' : (item.block_id === 2 ? 'Empresa' : (item.framework || 'CBI'))}</span></div>
-            <div><span className="text-gray-400">Dreyfus:</span><span className="ml-1 text-gray-700 dark:text-gray-300 font-medium">{item.block_id === 2 ? 'Padrão' : (item.dreyfus_label || '—')}</span></div>
-            <div><span className="text-gray-400">Tipo:</span><span className="ml-1 text-gray-700 dark:text-gray-300 font-medium">{item.question_type === 'yes_no' ? 'Sim/Não' : item.question_type === 'open' ? 'Aberta' : item.question_type || 'Aberta'}</span></div>
+            <div><span className="text-gray-400">Framework:</span><span className="ml-1 text-gray-700 dark:text-lia-text-secondary font-medium">{item.framework === 'Company' ? 'Empresa' : (item.block_id === 2 ? 'Empresa' : (item.framework || 'CBI'))}</span></div>
+            <div><span className="text-gray-400">Dreyfus:</span><span className="ml-1 text-gray-700 dark:text-lia-text-secondary font-medium">{item.block_id === 2 ? 'Padrão' : (item.dreyfus_label || '—')}</span></div>
+            <div><span className="text-gray-400">Tipo:</span><span className="ml-1 text-gray-700 dark:text-lia-text-secondary font-medium">{item.question_type === 'yes_no' ? 'Sim/Não' : item.question_type === 'open' ? 'Aberta' : item.question_type || 'Aberta'}</span></div>
           </div>
           {(item.expected_answer || (item.expected_signals && item.expected_signals.length > 0)) && (
-            <div><span className="text-gray-400">Resposta esperada:</span><p className="text-gray-700 dark:text-gray-300 mt-0.5">{item.expected_answer || item.expected_signals?.join(', ')}</p></div>
+            <div><span className="text-gray-400">Resposta esperada:</span><p className="text-gray-700 dark:text-lia-text-secondary mt-0.5">{item.expected_answer || item.expected_signals?.join(', ')}</p></div>
           )}
           {(item.scoring_criteria || item.scoring_rubric) && Object.keys(item.scoring_criteria || item.scoring_rubric || {}).length > 0 && (
-            <div><span className="text-gray-400">Critérios de pontuação:</span><div className="mt-0.5 space-y-0.5">{Object.entries(item.scoring_criteria || item.scoring_rubric || {}).map(([level, desc]: [string, unknown]) => (<div key={level} className="flex gap-1"><span className="text-gray-500 font-medium shrink-0">{level}:</span><span className="text-gray-700 dark:text-gray-300">{String(desc)}</span></div>))}</div></div>
+            <div><span className="lia-text-secondary">Critérios de pontuação:</span><div className="mt-0.5 space-y-0.5">{Object.entries(item.scoring_criteria || item.scoring_rubric || {}).map(([level, desc]: [string, unknown]) => (<div key={level} className="flex gap-1"><span className="text-gray-500 font-medium shrink-0">{level}:</span><span className="text-gray-700 dark:text-lia-text-secondary">{String(desc)}</span></div>))}</div></div>
           )}
         </div>
       )}

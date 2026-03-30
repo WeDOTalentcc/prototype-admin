@@ -55,7 +55,7 @@ export function UnsavedPearchWarningModal({
   
   return (
     <AlertDialog open={isOpen} onOpenChange={(open: boolean) => !open && onClose()}>
-      <AlertDialogContent className="max-w-md rounded-md dark:bg-gray-800 dark:border-gray-700">
+      <AlertDialogContent className="max-w-md rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
         <AlertDialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2.5 rounded-md bg-status-warning/15 text-status-warning">
@@ -67,21 +67,21 @@ export function UnsavedPearchWarningModal({
           </div>
           <AlertDialogDescription asChild>
             <div className="space-y-4">
-              <p className="text-gray-800 dark:text-gray-200">
+              <p className="text-gray-800 dark:text-lia-text-primary">
                 Você tem <strong className="text-gray-950 dark:text-gray-50">{unsavedCount} candidato{unsavedCount > 1 ? 's' : ''}</strong> de busca global que ainda não foram salvos na base local.
               </p>
               
               {unsavedCandidates.length > 0 && (
-                <div className="flex items-center gap-4 p-3 rounded-md bg-gray-50 border border-gray-200 dark:bg-gray-700 dark:border-gray-600">
+                <div className="flex items-center gap-4 p-3 rounded-md bg-gray-50 border border-lia-border-subtle dark:bg-lia-bg-elevated dark:border-lia-border-default">
                   <div className="flex items-center gap-1.5">
-                    <Mail className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                    <span className="text-xs text-gray-800 dark:text-gray-200">
+                    <Mail className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                    <span className="text-xs text-gray-800 dark:text-lia-text-primary">
                       <strong>{candidatesWithEmail}</strong> com email
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <Phone className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                    <span className="text-xs text-gray-800 dark:text-gray-200">
+                    <Phone className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                    <span className="text-xs text-gray-800 dark:text-lia-text-primary">
                       <strong>{candidatesWithPhone}</strong> com telefone
                     </span>
                   </div>
@@ -108,7 +108,7 @@ export function UnsavedPearchWarningModal({
                 </div>
               </div>
 
-              <p className="text-xs text-gray-600 dark:text-gray-400">
+              <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
                 LIA recomenda salvar os candidatos relevantes antes de sair.
               </p>
             </div>
@@ -118,7 +118,7 @@ export function UnsavedPearchWarningModal({
           <Button 
             variant="outline" 
             onClick={onExitWithoutSaving}
-            className="gap-2 order-3 sm:order-1 bg-white border border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700"
+            className="gap-2 order-3 sm:order-1 bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700"
             disabled={isSaving}
           >
             <X className="w-4 h-4" />

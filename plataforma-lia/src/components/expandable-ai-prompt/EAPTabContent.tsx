@@ -39,6 +39,7 @@ type EAPTabContentProps = Pick<
   'addSimilarUrl'
 >
 
+// [OPT-043] TODO: revisar inline styles dinâmicos (21 ocorrências)
 export function EAPTabContent(props: EAPTabContentProps) {
   const {
     activeSearchTab, naturalSearchValue, setNaturalSearchValue, searchTags,
@@ -107,7 +108,8 @@ export function EAPTabContent(props: EAPTabContentProps) {
           setShowPremiumAutocomplete(false)
         }, 200)}
         placeholder="Descreva o candidato ideal em linguagem natural..."
-        className="lia-input w-full px-4 py-2.5 text-sm pr-[180px]"
+        // [OPT-024] pr-[180px] px arbitrário — sem canônico Tailwind
+        className="border border-input bg-background rounded-lg text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring w-full px-4 py-2.5 text-sm pr-[180px]"
       />
 
       {/* Ícones de Fonte e Contato dentro do input */}
@@ -119,18 +121,18 @@ export function EAPTabContent(props: EAPTabContentProps) {
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); setSearchSource('local'); }}
-                className={`p-1.5 rounded-md transition-all ${
-                  searchSource === 'local' 
+                className={`p-1.5 rounded-md transition-colors ${
+ searchSource === 'local' 
                     ? 'bg-gray-200' 
                     : 'hover:bg-gray-100'
                 }`}
               >
-                <Home className={`w-3.5 h-3.5 ${searchSource === 'local' ? 'text-gray-700' : 'text-gray-500'}`} />
+                <Home className={`w-3.5 h-3.5 ${searchSource === 'local' ? 'lia-text-base' : 'lia-text-secondary'}`} />
               </button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
               <p className="text-xs font-medium">Base Local</p>
-              <p className="text-micro text-gray-400">Gratuito</p>
+              <p className="text-micro lia-text-secondary">Gratuito</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -142,18 +144,18 @@ export function EAPTabContent(props: EAPTabContentProps) {
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); handleSourceChange('hybrid'); }}
-                  className={`p-1.5 rounded-md transition-all ${
-                    searchSource === 'hybrid' 
+                  className={`p-1.5 rounded-md transition-colors ${
+ searchSource === 'hybrid' 
                       ? 'bg-gray-200' 
                       : 'hover:bg-gray-100'
                   }`}
                 >
-                  <Zap className={`w-3.5 h-3.5 ${searchSource === 'hybrid' ? 'text-gray-700' : 'text-gray-500'}`} />
+                  <Zap className={`w-3.5 h-3.5 ${searchSource === 'hybrid' ? 'lia-text-base' : 'lia-text-secondary'}`} />
                 </button>
               </TooltipTrigger>
               <TooltipContent side="bottom">
                 <p className="text-xs font-medium">Híbrido (Local + Global)</p>
-                <p className="text-micro text-gray-400">1 crédito/candidato</p>
+                <p className="text-micro lia-text-secondary">1 crédito/candidato</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -166,18 +168,18 @@ export function EAPTabContent(props: EAPTabContentProps) {
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); handleSourceChange('global'); }}
-                  className={`p-1.5 rounded-md transition-all ${
-                    searchSource === 'global' 
+                  className={`p-1.5 rounded-md transition-colors ${
+ searchSource === 'global' 
                       ? 'bg-gray-200' 
                       : 'hover:bg-gray-100'
                   }`}
                 >
-                  <Globe className={`w-3.5 h-3.5 ${searchSource === 'global' ? 'text-gray-700' : 'text-gray-500'}`} />
+                  <Globe className={`w-3.5 h-3.5 ${searchSource === 'global' ? 'lia-text-base' : 'lia-text-secondary'}`} />
                 </button>
               </TooltipTrigger>
               <TooltipContent side="bottom">
                 <p className="text-xs font-medium">Base Global</p>
-                <p className="text-micro text-gray-400">1 crédito/candidato</p>
+                <p className="text-micro lia-text-secondary">1 crédito/candidato</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -193,18 +195,18 @@ export function EAPTabContent(props: EAPTabContentProps) {
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); setRequireEmails(!requireEmails); }}
-                className={`p-1.5 rounded-md transition-all ${
-                  requireEmails 
+                className={`p-1.5 rounded-md transition-colors ${
+ requireEmails 
                     ? 'bg-wedo-green-light/15 ring-1 ring-wedo-green-light' 
                     : 'hover:bg-gray-100'
                 }`}
               >
-                <Mail className={`w-3.5 h-3.5 ${requireEmails ? 'text-wedo-green-light' : 'text-gray-400'}`} />
+                <Mail className={`w-3.5 h-3.5 ${requireEmails ? 'text-wedo-green-light' : 'lia-text-secondary'}`} />
               </button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
               <p className="text-xs font-medium">Apenas com Email</p>
-              <p className="text-micro text-gray-400">{requireEmails ? 'Ativo' : '+1 crédito se ativo'}</p>
+              <p className="text-micro lia-text-secondary">{requireEmails ? 'Ativo' : '+1 crédito se ativo'}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -215,18 +217,18 @@ export function EAPTabContent(props: EAPTabContentProps) {
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); setRequirePhoneNumbers(!requirePhoneNumbers); }}
-                className={`p-1.5 rounded-md transition-all ${
-                  requirePhoneNumbers 
+                className={`p-1.5 rounded-md transition-colors ${
+ requirePhoneNumbers 
                     ? 'bg-wedo-green-light/15 ring-1 ring-wedo-green-light' 
                     : 'hover:bg-gray-100'
                 }`}
               >
-                <Phone className={`w-3.5 h-3.5 ${requirePhoneNumbers ? 'text-wedo-green-light' : 'text-gray-400'}`} />
+                <Phone className={`w-3.5 h-3.5 ${requirePhoneNumbers ? 'text-wedo-green-light' : 'lia-text-secondary'}`} />
               </button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
               <p className="text-xs font-medium">Apenas com Telefone</p>
-              <p className="text-micro text-gray-400">{requirePhoneNumbers ? 'Ativo' : '+1 crédito se ativo'}</p>
+              <p className="text-micro lia-text-secondary">{requirePhoneNumbers ? 'Ativo' : '+1 crédito se ativo'}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -245,7 +247,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
 
       {/* Autocomplete Dropdown */}
       {showAutocomplete && autocompleteSuggestions.length > 0 && (
-        <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-100 rounded-md z-50 max-h-48 overflow-y-auto">
+        <div className="absolute left-0 right-0 top-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-md z-50 max-h-48 overflow-y-auto">
           {autocompleteSuggestions.map((suggestion, index) => (
             <button
               key={index}
@@ -259,16 +261,16 @@ export function EAPTabContent(props: EAPTabContentProps) {
                 setShowAutocomplete(false)
               }}
               className={`w-full px-3 py-2 text-left text-sm flex items-center justify-between transition-colors ${
-                selectedAutocompleteIndex === index 
+ selectedAutocompleteIndex === index 
                   ? 'bg-gray-100' 
                   : 'hover:bg-gray-50'
               }`}
             >
               <span style={{color: 'var(--gray-950)'}}>{suggestion.text}</span>
-              <span className="text-xs text-gray-400">{suggestion.category}</span>
+              <span className="text-xs lia-text-secondary">{suggestion.category}</span>
             </button>
           ))}
-          <div className="px-3 py-1.5 text-xs flex items-center justify-between text-gray-400" style={{borderTop: '1px solid var(--overlay-05)'}}>
+          <div className="px-3 py-1.5 text-xs flex items-center justify-between lia-text-secondary" style={{borderTop: '1px solid var(--overlay-05)'}}>
             <span>Use ↑↓ para navegar, Tab para selecionar</span>
             <span>Esc para fechar</span>
           </div>
@@ -287,20 +289,20 @@ export function EAPTabContent(props: EAPTabContentProps) {
     {/* Prompt Enhancement Card */}
     {promptEnhancement && !showAutocomplete && (
       <div 
-        className="mt-2 p-3 rounded-md border transition-all bg-gray-200/20" style={{ borderColor: 'var(--wedo-cyan-border)' }}
+        className="mt-2 p-3 rounded-md border transition-colors bg-gray-200/20" style={{ borderColor: 'var(--wedo-cyan-border)' }}
       >
         <div className="flex items-start gap-2">
-          <Wand2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-700" />
+          <Wand2 className="w-4 h-4 mt-0.5 flex-shrink-0 lia-text-base" />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 mb-1">
-              <span className="text-xs font-medium text-gray-700">Sugestão da LIA</span>
+              <span className="text-xs font-medium lia-text-base">Sugestão da LIA</span>
               {isEnhancingPrompt && (
-                <div className="w-3 h-3 border-2 border-gray-900 dark:border-gray-50 border-t-transparent rounded-full animate-spin" />
+                <div className="w-3 h-3 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
               )}
             </div>
-            <p className="text-sm text-gray-800 dark:text-gray-200 mb-2">{promptEnhancement.enhanced_query}</p>
+            <p className="text-sm text-gray-800 dark:text-lia-text-primary mb-2">{promptEnhancement.enhanced_query}</p>
             {promptEnhancement.explanation && (
-              <p className="text-xs text-gray-500 mb-2">{promptEnhancement.explanation}</p>
+              <p className="text-xs lia-text-secondary mb-2">{promptEnhancement.explanation}</p>
             )}
             <div className="flex items-center gap-2">
               <button
@@ -312,7 +314,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
               </button>
               <button
                 onClick={handleDismissEnhancement}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium lia-text-secondary hover:lia-text-base hover:bg-gray-100 transition-colors"
               >
                 <X className="w-3 h-3" />
                 Ignorar
@@ -334,7 +336,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
           <Home className="w-3 h-3" />
           <span>Base Local</span>
         </div>
-        <span className="text-xs text-gray-400">
+        <span className="text-xs lia-text-secondary">
           Busca apenas na sua base de dados
         </span>
       </div>
@@ -349,7 +351,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
         return (
           <div
             key={tag.key}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs transition-all"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs transition-colors"
             style={{backgroundColor: colors.bg,
               color: colors.text}}
             title={tag.value}
@@ -364,7 +366,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
             {tag.filled && tag.value && (
               <>
                 <span className="opacity-50">·</span>
-                <span className="max-w-20 truncate font-normal" style={{opacity: 0.85}}>{tag.value}</span>
+                <span className="max-w-20 truncate font-normal opacity-85">{tag.value}</span>
               </>
             )}
           </div>
@@ -372,7 +374,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
       })}
 
       {isParsingEntities && (
-        <div className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-gray-400">
+        <div className="flex items-center gap-1 px-2.5 py-1.5 text-xs lia-text-secondary">
           <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
           Analisando...
         </div>
@@ -385,20 +387,20 @@ export function EAPTabContent(props: EAPTabContentProps) {
             <button
               onClick={() => setAutocompleteEnabled(!autocompleteEnabled)}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all hover:opacity-90",
+ "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-[width,height] hover:opacity-90",
                 autocompleteEnabled 
                   ? "bg-gray-900 text-white" 
-                  : "bg-gray-100 text-gray-500"
+                  : "bg-gray-100 lia-text-secondary"
               )}
 
             >
-              <Brain className={`w-3.5 h-3.5 ${autocompleteEnabled ? 'text-wedo-cyan' : 'text-gray-400'}`} />
+              <Brain className={`w-3.5 h-3.5 ${autocompleteEnabled ? 'text-wedo-cyan' : 'lia-text-secondary'}`} />
               <span className="font-medium text-xs">
                 Assistente de Busca
               </span>
             </button>
           </TooltipTrigger>
-          <TooltipContent side="bottom" className="max-w-panel-sm p-3 max-w-panel-sm p-3 border-gray-300 dark:border-gray-600">
+          <TooltipContent side="bottom" className="max-w-panel-sm p-3 max-w-panel-sm p-3 border-lia-border-default dark:border-lia-border-default">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -413,28 +415,28 @@ export function EAPTabContent(props: EAPTabContentProps) {
                 </span>
               </div>
               <div>
-                <span className="font-medium text-sm text-gray-800 dark:text-gray-100">
+                <span className="font-medium text-sm text-gray-800 dark:text-lia-text-primary">
                   Assistente de Busca Inteligente
                 </span>
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
                 Enquanto você descreve o perfil, a LIA analisa e sugere melhorias:
               </p>
-              <ul className="text-xs space-y-1 text-gray-500 dark:text-gray-400">
+              <ul className="text-xs space-y-1 text-gray-500 dark:text-lia-text-tertiary">
                 <li className="flex items-start gap-1.5">
-                  <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 text-gray-600" />
+                  <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 lia-text-base" />
                   <span>Indica critérios faltantes</span>
                 </li>
                 <li className="flex items-start gap-1.5">
-                  <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 text-gray-600" />
+                  <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 lia-text-base" />
                   <span>Sugere sinônimos e termos relacionados</span>
                 </li>
                 <li className="flex items-start gap-1.5">
-                  <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 text-gray-600" />
+                  <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 lia-text-base" />
                   <span>Alerta sobre buscas muito amplas ou restritivas</span>
                 </li>
               </ul>
-              <p className="text-micro pt-1 border-t text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-600">
+              <p className="text-micro pt-1 border-t text-gray-500 dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default">
                 {autocompleteEnabled ? 'Clique para desativar' : 'Clique para ativar'}
               </p>
             </div>
@@ -449,7 +451,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
             <TooltipTrigger asChild>
               <button
                 onClick={() => setShowSaveArchetypeModal(true)}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium transition-all hover:opacity-90 bg-gray-200/30" style={{ border: '1px solid var(--wedo-cyan-border)' }}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium transition-[width,height] hover:opacity-90 bg-gray-200/30" style={{ border: '1px solid var(--wedo-cyan-border)' }}
               >
                 <Target className="w-3 h-3" />
                 <span className="font-medium">Salvar Arquétipo</span>
@@ -457,7 +459,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
             </TooltipTrigger>
             <TooltipContent side="bottom" className="!animate-none !duration-0">
               <p className="text-xs font-medium">Salvar busca como arquétipo</p>
-              <p className="text-xs text-gray-300">Reutilize esta busca no futuro</p>
+              <p className="text-xs lia-text-muted">Reutilize esta busca no futuro</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -466,12 +468,12 @@ export function EAPTabContent(props: EAPTabContentProps) {
 
     {/* Análise de Qualidade da Busca */}
     {naturalSearchValue && searchAnalysis && (
-      <div className="space-y-2 pt-2 mt-2 border-t border-gray-300 dark:border-gray-600">
+      <div className="space-y-2 pt-2 mt-2 border-t border-lia-border-default dark:border-lia-border-default">
         {/* Barra de completude */}
         <div className="flex items-center gap-3">
           <div className="flex-1">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+              <span className="text-xs font-medium text-gray-500 dark:text-lia-text-tertiary">
                 Qualidade da busca
               </span>
               <span 
@@ -485,9 +487,9 @@ export function EAPTabContent(props: EAPTabContentProps) {
                 {searchAnalysis.completeness_score}%
               </span>
             </div>
-            <div className="h-1.5 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800">
+            <div className="h-1.5 rounded-full overflow-hidden bg-gray-100 dark:bg-lia-bg-secondary">
               <div 
-                className="h-full rounded-full transition-all duration-500"
+                className="h-full rounded-full transition-[width,height] duration-500"
                 style={{width: `${searchAnalysis.completeness_score}%`,
                   backgroundColor: searchAnalysis.completeness_score >= 60 
                     ? 'var(--status-success)' 
@@ -513,7 +515,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
             {searchAnalysis.alerts.slice(0, 2).map((alert, index) => (
               <div 
                 key={index}
-                className="flex items-start gap-2 px-2.5 py-2 rounded-full text-xs text-gray-500 dark:text-gray-400"
+                className="flex items-start gap-2 px-2.5 py-2 rounded-full text-xs text-gray-500 dark:text-lia-text-tertiary"
                 style={{backgroundColor: alert.severity === 'warning'
                     ? 'var(--status-warning-bg-08)'
                     : 'var(--wedo-cyan-bg-08)'}}
@@ -521,7 +523,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
                 {alert.severity === 'warning' ? (
                   <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-status-warning" />
                 ) : (
-                  <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-600" />
+                  <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 lia-text-base" />
                 )}
                 <div className="flex-1 min-w-0">
                   <span>{alert.message}</span>
@@ -532,7 +534,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
                           setNaturalSearchValue(naturalSearchValue + ', ' + alert.action_value)
                         }
                       }}
-                      className="ml-1 font-medium hover:underline text-gray-700"
+                      className="ml-1 font-medium hover:underline lia-text-base"
                     >
                       {alert.suggestion}
                     </button>
@@ -547,7 +549,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
 
     {/* Sugestões (cobrindo: Location, Job Title, Experience, Industry, Skills) */}
     <div className="mt-3">
-      <p className="text-xs text-gray-800 mb-1.5">Sugestões:</p>
+      <p className="text-xs lia-text-strong mb-1.5">Sugestões:</p>
       <div className="flex flex-wrap gap-1.5">
         {[
           'Backend Sênior em São Paulo, 5+ anos em fintechs, Node.js e Python',
@@ -561,7 +563,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
               setNaturalSearchValue(suggestion)
               parseEntitiesFromQuery(suggestion)
             }}
-            className="px-2.5 py-1.5 text-xs rounded-full border border-gray-100 bg-white text-gray-600 hover:border-gray-400 hover:text-gray-800 hover:transition-all text-left"
+            className="px-2.5 py-1.5 text-xs rounded-full border border-lia-border-subtle bg-lia-bg-primary lia-text-base hover:border-gray-400 hover:lia-text-strong transition-colors text-left"
           >
             {suggestion}
           </button>
@@ -578,14 +580,14 @@ export function EAPTabContent(props: EAPTabContentProps) {
     {similarUrls.map((url, index) => (
       <div key={index} className="relative">
         <div className="absolute left-3 top-1/2 -translate-y-1/2">
-          <Linkedin className="w-4 h-4 text-gray-600" />
+          <Linkedin className="w-4 h-4 lia-text-base" />
         </div>
         <input
           type="text"
           value={url}
           onChange={(e) => updateSimilarUrl(index, e.target.value)}
           placeholder={index === 0 ? "Cole a URL do LinkedIn ou ID do candidato..." : "Cole outra URL para combinar perfis..."}
-          className="lia-input w-full pl-10 pr-20 py-2.5 text-sm"
+          className="border border-input bg-background rounded-lg text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring w-full pl-10 pr-20 py-2.5 text-sm"
         />
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
           {index > 0 && (
@@ -602,7 +604,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
                 <TooltipTrigger asChild>
                   <button
                     onClick={addSimilarUrl}
-                    className="h-8 px-3 rounded-md text-sm font-bold hover:bg-gray-800 hover:text-white transition-colors text-gray-700 bg-gray-100"
+                    className="h-8 px-3 rounded-md text-sm font-bold hover:bg-gray-800 hover:text-white transition-colors lia-text-base bg-gray-100"
                   >
                     + URL
                   </button>
@@ -620,7 +622,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
     {/* CV Upload section with separator */}
     <div className="flex items-center gap-2">
       <div className="flex-1 h-px bg-gray-200" />
-      <span className="text-xs text-gray-600 px-2">ou</span>
+      <span className="text-xs lia-text-base px-2">ou</span>
       <div className="flex-1 h-px bg-gray-200" />
     </div>
 
@@ -641,7 +643,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
               className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs"
               style={{backgroundColor: 'var(--gray-100)'}}
             >
-              <FileText className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
+              <FileText className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
               <span className="max-w-[150px] truncate">{file.name}</span>
               <button onClick={() => removeCvFile(index)} className="hover:text-status-error">
                 <X className="w-3 h-3" />
@@ -651,7 +653,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
           {similarCvFiles.length < MAX_CV_FILES && (
             <button
               onClick={() => cvFileInputRef.current?.click()}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium hover:bg-gray-100 transition-colors border border-gray-200"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium hover:bg-gray-100 transition-colors border border-lia-border-subtle"
               style={{backgroundColor: 'var(--gray-100)'}}
             >
               <Upload className="w-3 h-3" />
@@ -662,7 +664,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
       ) : (
         <button
           onClick={() => cvFileInputRef.current?.click()}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-100 transition-colors border border-gray-200"
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md text-xs text-gray-800 dark:text-lia-text-primary hover:bg-gray-100 transition-colors border border-lia-border-subtle"
           style={{backgroundColor: 'var(--gray-100)'}}
         >
           <Upload className="w-3.5 h-3.5" />
@@ -694,18 +696,18 @@ export function EAPTabContent(props: EAPTabContentProps) {
 
     {/* Combined Suggestions Box */}
     {showCombinedSuggestions && combinedSuggestions.length > 0 && (
-      <div className="p-3 rounded-md space-y-2 border border-gray-200" style={{backgroundColor: "var(--gray-50)"}}>
+      <div className="p-3 rounded-md space-y-2 border border-lia-border-subtle" style={{backgroundColor: "var(--gray-50)"}}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-            <span className="text-xs font-medium text-gray-800">
+            <span className="text-xs font-medium lia-text-strong">
               Perfil Ideal sugerido pela LIA
             </span>
           </div>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>
-                <Info className="w-3.5 h-3.5 text-gray-600" />
+                <Info className="w-3.5 h-3.5 lia-text-base" />
               </TooltipTrigger>
               <TooltipContent side="top" className="text-xs max-w-[280px]">
                 A LIA analisou os perfis e combinou skills, experiências e senioridade em comum. Edite ou remova tags antes de buscar.
@@ -717,9 +719,9 @@ export function EAPTabContent(props: EAPTabContentProps) {
           {combinedSuggestions.map((keyword) => (
             <div
               key={keyword}
-              className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium group border border-gray-200 bg-white"
+              className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium group border border-lia-border-subtle bg-lia-bg-primary"
             >
-              <span className="text-gray-700">{keyword}</span>
+              <span className="lia-text-base">{keyword}</span>
               <button
                 onClick={() => removeSuggestion(keyword)}
                 className="opacity-50 group-hover:opacity-100 hover:text-status-error transition-opacity"
@@ -729,7 +731,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
             </div>
           ))}
         </div>
-        <p className="text-xs text-gray-800 dark:text-gray-200">
+        <p className="text-xs text-gray-800 dark:text-lia-text-primary">
           Baseado em {similarUrls.filter(u => u.trim()).length + similarCvFiles.length} perfis: skills em comum e pontos fortes combinados.
         </p>
       </div>
@@ -754,10 +756,10 @@ export function EAPTabContent(props: EAPTabContentProps) {
     </button>
 
     {/* Dica contextual padronizada */}
-    <div className="p-2.5 rounded-md bg-gray-50 border border-gray-200">
+    <div className="p-2.5 rounded-md bg-gray-50 border border-lia-border-subtle">
       <div className="flex items-start gap-2">
-        <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-600" />
-        <p className="text-xs text-gray-800 dark:text-gray-200">
+        <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 lia-text-base" />
+        <p className="text-xs text-gray-800 dark:text-lia-text-primary">
           <strong>Dica:</strong> Cole 1 a 2 links do LinkedIn ou faça upload de até 2 CVs. Com 2+ perfis, a LIA combina as melhores características e sugere palavras-chave para encontrar candidatos similares.
         </p>
       </div>
@@ -768,18 +770,18 @@ export function EAPTabContent(props: EAPTabContentProps) {
 {/* Aba: Job Description */}
 {activeSearchTab === 'job-description' && (
   <div className="space-y-3">
-    <p className="text-xs text-gray-800 dark:text-gray-200">Cole a descrição da vaga para extrair requisitos automaticamente</p>
+    <p className="text-xs text-gray-800 dark:text-lia-text-primary">Cole a descrição da vaga para extrair requisitos automaticamente</p>
     <textarea
       value={jobDescriptionText}
       onChange={(e) => setJobDescriptionText(e.target.value)}
       placeholder="Cole aqui a descrição completa da vaga..."
-      className="lia-input w-full px-4 py-2.5 text-sm resize-none"
+      className="border border-input bg-background rounded-lg text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring w-full px-4 py-2.5 text-sm resize-none"
       rows={3}
     />
     <div className="flex justify-between items-center">
       {/* Dica contextual */}
       <div className="flex items-start gap-2 flex-1">
-        <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-600" />
+        <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 lia-text-base" />
         <p className="text-xs lia-body">
           <strong>Dica:</strong> Cole a descrição do cargo completa para extrair automaticamente requisitos técnicos e comportamentais.
         </p>
@@ -802,14 +804,14 @@ export function EAPTabContent(props: EAPTabContentProps) {
     <p className="text-xs lia-body">Use operadores booleanos para buscas precisas</p>
     <div className="relative">
       <div className="absolute left-3 top-1/2 -translate-y-1/2">
-        <Code className="w-4 h-4 text-gray-600" />
+        <Code className="w-4 h-4 lia-text-base" />
       </div>
       <input
         type="text"
         value={booleanSearchValue}
         onChange={(e) => setBooleanSearchValue(e.target.value)}
         placeholder='(Python OR Java) AND "São Paulo" NOT junior'
-        className="lia-input w-full pl-10 pr-[180px] py-2.5 text-sm font-mono"
+        className="border border-input bg-background rounded-lg text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring w-full pl-10 pr-[180px] py-2.5 text-sm font-mono"
       />
 
       {/* Ícones de Fonte e Contato dentro do input */}
@@ -821,18 +823,18 @@ export function EAPTabContent(props: EAPTabContentProps) {
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); setSearchSource('local'); }}
-                className={`p-1.5 rounded-md transition-all ${
-                  searchSource === 'local' 
+                className={`p-1.5 rounded-md transition-colors ${
+ searchSource === 'local' 
                     ? 'bg-gray-200' 
                     : 'hover:bg-gray-100'
                 }`}
               >
-                <Home className={`w-3.5 h-3.5 ${searchSource === 'local' ? 'text-gray-700' : 'text-gray-500'}`} />
+                <Home className={`w-3.5 h-3.5 ${searchSource === 'local' ? 'lia-text-base' : 'lia-text-secondary'}`} />
               </button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
               <p className="text-xs font-medium">Base Local</p>
-              <p className="text-micro text-gray-400">Gratuito</p>
+              <p className="text-micro lia-text-secondary">Gratuito</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -844,18 +846,18 @@ export function EAPTabContent(props: EAPTabContentProps) {
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); handleSourceChange('hybrid'); }}
-                  className={`p-1.5 rounded-md transition-all ${
-                    searchSource === 'hybrid' 
+                  className={`p-1.5 rounded-md transition-colors ${
+ searchSource === 'hybrid' 
                       ? 'bg-gray-200' 
                       : 'hover:bg-gray-100'
                   }`}
                 >
-                  <Zap className={`w-3.5 h-3.5 ${searchSource === 'hybrid' ? 'text-gray-700' : 'text-gray-500'}`} />
+                  <Zap className={`w-3.5 h-3.5 ${searchSource === 'hybrid' ? 'lia-text-base' : 'lia-text-secondary'}`} />
                 </button>
               </TooltipTrigger>
               <TooltipContent side="bottom">
                 <p className="text-xs font-medium">Híbrido (Local + Global)</p>
-                <p className="text-micro text-gray-400">1 crédito/candidato</p>
+                <p className="text-micro lia-text-secondary">1 crédito/candidato</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -868,18 +870,18 @@ export function EAPTabContent(props: EAPTabContentProps) {
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); handleSourceChange('global'); }}
-                  className={`p-1.5 rounded-md transition-all ${
-                    searchSource === 'global' 
+                  className={`p-1.5 rounded-md transition-colors ${
+ searchSource === 'global' 
                       ? 'bg-gray-200' 
                       : 'hover:bg-gray-100'
                   }`}
                 >
-                  <Globe className={`w-3.5 h-3.5 ${searchSource === 'global' ? 'text-gray-700' : 'text-gray-500'}`} />
+                  <Globe className={`w-3.5 h-3.5 ${searchSource === 'global' ? 'lia-text-base' : 'lia-text-secondary'}`} />
                 </button>
               </TooltipTrigger>
               <TooltipContent side="bottom">
                 <p className="text-xs font-medium">Base Global</p>
-                <p className="text-micro text-gray-400">1 crédito/candidato</p>
+                <p className="text-micro lia-text-secondary">1 crédito/candidato</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -895,18 +897,18 @@ export function EAPTabContent(props: EAPTabContentProps) {
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); setRequireEmails(!requireEmails); }}
-                className={`p-1.5 rounded-md transition-all ${
-                  requireEmails 
+                className={`p-1.5 rounded-md transition-colors ${
+ requireEmails 
                     ? 'bg-wedo-green-light/15 ring-1 ring-wedo-green-light' 
                     : 'hover:bg-gray-100'
                 }`}
               >
-                <Mail className={`w-3.5 h-3.5 ${requireEmails ? 'text-wedo-green-light' : 'text-gray-400'}`} />
+                <Mail className={`w-3.5 h-3.5 ${requireEmails ? 'text-wedo-green-light' : 'lia-text-secondary'}`} />
               </button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
               <p className="text-xs font-medium">Apenas com Email</p>
-              <p className="text-micro text-gray-400">{requireEmails ? 'Ativo' : '+1 crédito se ativo'}</p>
+              <p className="text-micro lia-text-secondary">{requireEmails ? 'Ativo' : '+1 crédito se ativo'}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -917,18 +919,18 @@ export function EAPTabContent(props: EAPTabContentProps) {
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); setRequirePhoneNumbers(!requirePhoneNumbers); }}
-                className={`p-1.5 rounded-md transition-all ${
-                  requirePhoneNumbers 
+                className={`p-1.5 rounded-md transition-colors ${
+ requirePhoneNumbers 
                     ? 'bg-wedo-green-light/15 ring-1 ring-wedo-green-light' 
                     : 'hover:bg-gray-100'
                 }`}
               >
-                <Phone className={`w-3.5 h-3.5 ${requirePhoneNumbers ? 'text-wedo-green-light' : 'text-gray-400'}`} />
+                <Phone className={`w-3.5 h-3.5 ${requirePhoneNumbers ? 'text-wedo-green-light' : 'lia-text-secondary'}`} />
               </button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
               <p className="text-xs font-medium">Apenas com Telefone</p>
-              <p className="text-micro text-gray-400">{requirePhoneNumbers ? 'Ativo' : '+1 crédito se ativo'}</p>
+              <p className="text-micro lia-text-secondary">{requirePhoneNumbers ? 'Ativo' : '+1 crédito se ativo'}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -962,8 +964,8 @@ export function EAPTabContent(props: EAPTabContentProps) {
     {/* Dica contextual */}
     <div className="p-2.5 rounded-md" style={{backgroundColor: 'var(--wedo-cyan-bg-06)'}}>
       <div className="flex items-start gap-2">
-        <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-600" />
-        <p className="text-xs text-gray-800 dark:text-gray-200">
+        <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 lia-text-base" />
+        <p className="text-xs text-gray-800 dark:text-lia-text-primary">
           <strong>Dica:</strong> Use aspas para termos exatos e parênteses para agrupar condições. Ex: (Python OR Java) AND "São Paulo"
         </p>
       </div>
@@ -991,9 +993,9 @@ export function EAPTabContent(props: EAPTabContentProps) {
       ].reduce((a, b) => a + b, 0)
 
       return activeCount > 0 ? (
-        <div className="p-2.5 rounded-md bg-gray-50 border border-gray-100">
+        <div className="p-2.5 rounded-md bg-gray-50 border border-lia-border-subtle">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+            <span className="text-xs font-medium text-gray-600 dark:text-lia-text-tertiary">
               {activeCount} filtro{activeCount > 1 ? 's' : ''} ativo{activeCount > 1 ? 's' : ''}
             </span>
             <button
@@ -1007,7 +1009,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
                 education: {},
                 languages: {}
               })}
-              className="text-xs text-gray-800 dark:text-gray-200 hover:text-status-error"
+              className="text-xs text-gray-800 dark:text-lia-text-primary hover:text-status-error"
             >
               Limpar
             </button>
@@ -1018,16 +1020,16 @@ export function EAPTabContent(props: EAPTabContentProps) {
 
     {/* Botão para abrir modal completo */}
     <button 
-      className="w-full px-4 py-3 bg-white border-2 border-dashed border-gray-100 rounded-md hover:border-gray-300 hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
+      className="w-full px-4 py-3 bg-lia-bg-primary border-2 border-dashed border-lia-border-subtle rounded-md hover:border-lia-border-default hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
       onClick={() => setShowAdvancedFiltersModal(true)}
     >
-      <Filter className="w-4 h-4 text-gray-800" />
-      <span className="text-xs text-gray-800">Abrir Filtros Avançados</span>
+      <Filter className="w-4 h-4 lia-text-strong" />
+      <span className="text-xs lia-text-strong">Abrir Filtros Avançados</span>
     </button>
 
     {/* Botão de aplicar filtros */}
     <button 
-      className="w-full px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 text-xs rounded-md transition-colors flex items-center justify-center gap-2"
+      className="w-full px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 text-xs rounded-md transition-colors flex items-center justify-center gap-2"
       onClick={() => {
         onCommand(JSON.stringify(advancedFilters), 'apply_filters')
       }}
@@ -1044,9 +1046,9 @@ export function EAPTabContent(props: EAPTabContentProps) {
     {/* Seção: Criar Arquétipo com contexto de busca */}
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-gray-800 dark:text-gray-200">Criar Novo Arquétipo</span>
+        <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Criar Novo Arquétipo</span>
         {naturalSearchValue && (
-          <Badge variant="outline" className="text-micro bg-wedo-cyan/10 text-gray-600 dark:text-gray-400 border-gray-900 dark:border-gray-50">
+          <Badge variant="outline" className="text-micro bg-wedo-cyan/10 text-gray-600 dark:text-lia-text-tertiary border-gray-900">
             Busca ativa detectada
           </Badge>
         )}
@@ -1057,37 +1059,37 @@ export function EAPTabContent(props: EAPTabContentProps) {
         <div className="p-3 rounded-md border border-wedo-cyan/30 bg-wedo-cyan/5">
           <div className="flex items-start gap-2 mb-2">
             <Brain className="w-3.5 h-3.5 text-wedo-cyan mt-0.5" />
-            <span className="text-xs text-gray-600">Contexto da busca atual:</span>
+            <span className="text-xs lia-text-base">Contexto da busca atual:</span>
           </div>
-          <p className="text-sm text-gray-800 mb-2">{naturalSearchValue}</p>
+          <p className="text-sm lia-text-strong mb-2">{naturalSearchValue}</p>
 
           {/* Tags de entidades extraídas */}
           {Object.keys(parsedEntities).length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-2">
               {parsedEntities.job_title && (
-                <Badge variant="secondary" className="text-micro bg-wedo-cyan/10 text-wedo-cyan-dark border-gray-300 dark:border-gray-600">
+                <Badge variant="secondary" className="text-micro bg-wedo-cyan/10 text-wedo-cyan-dark border-lia-border-default dark:border-lia-border-default">
                   {parsedEntities.job_title}
                 </Badge>
               )}
               {parsedEntities.location && (
-                <Badge variant="secondary" className="text-micro bg-gray-50 text-gray-700 border-gray-200">
+                <Badge variant="secondary" className="text-micro bg-gray-50 lia-text-base border-lia-border-subtle">
                   <MapPin className="w-2.5 h-2.5 mr-0.5" />
                   {parsedEntities.location}
                 </Badge>
               )}
               {parsedEntities.seniority && (
-                <Badge variant="secondary" className="text-micro bg-gray-50 text-gray-700 border-gray-200">
+                <Badge variant="secondary" className="text-micro bg-gray-50 lia-text-base border-lia-border-subtle">
                   {parsedEntities.seniority}
                 </Badge>
               )}
               {parsedEntities.industry && (
-                <Badge variant="secondary" className="text-micro bg-gray-50 text-gray-700 border-gray-200">
+                <Badge variant="secondary" className="text-micro bg-gray-50 lia-text-base border-lia-border-subtle">
                   <Building2 className="w-2.5 h-2.5 mr-0.5" />
                   {parsedEntities.industry}
                 </Badge>
               )}
               {parsedEntities.skills && parsedEntities.skills.map((skill, idx) => (
-                <Badge key={idx} variant="secondary" className="text-micro bg-gray-50 text-gray-700 border-gray-200">
+                <Badge key={idx} variant="secondary" className="text-micro bg-gray-50 lia-text-base border-lia-border-subtle">
                   {skill}
                 </Badge>
               ))}
@@ -1099,7 +1101,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
             <button
               onClick={createArchetypeFromActiveSearch}
               disabled={isCreatingFromSearch}
-              className="mt-3 w-full px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 text-xs rounded-md transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="mt-3 w-full px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 text-xs rounded-md transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isCreatingFromSearch ? (
                 <>
@@ -1118,7 +1120,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
               onClick={() => {
                 setNewArchetypeDescription(naturalSearchValue)
               }}
-              className="mt-3 w-full px-3 py-1.5 bg-gray-100 text-gray-800 dark:text-gray-200 text-xs rounded-md hover:bg-gray-200 transition-colors flex items-center justify-center gap-1.5"
+              className="mt-3 w-full px-3 py-1.5 bg-gray-100 text-gray-800 dark:text-lia-text-primary text-xs rounded-md hover:bg-gray-200 transition-colors flex items-center justify-center gap-1.5"
             >
               <Plus className="w-3 h-3" />
               Usar como base para novo arquétipo
@@ -1131,7 +1133,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
       {naturalSearchValue && hasParsedEntities() && (
         <div className="flex items-center gap-2">
           <div className="flex-1 h-px bg-gray-200" />
-          <span className="text-micro text-gray-400">ou crie do zero com LIA</span>
+          <span className="text-micro lia-text-secondary">ou crie do zero com LIA</span>
           <div className="flex-1 h-px bg-gray-200" />
         </div>
       )}
@@ -1142,7 +1144,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
           value={newArchetypeDescription}
           onChange={(e) => setNewArchetypeDescription(e.target.value)}
           placeholder="Descreva o perfil ideal: cargo, habilidades, experiência..."
-          className="lia-input w-full px-3 py-2.5 text-sm resize-none"
+          className="border border-input bg-background rounded-lg text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring w-full px-3 py-2.5 text-sm resize-none"
           rows={2}
         />
       </div>
@@ -1169,14 +1171,14 @@ export function EAPTabContent(props: EAPTabContentProps) {
     {/* Divisor */}
     <div className="flex items-center gap-2">
       <div className="flex-1 h-px bg-gray-200" />
-      <span className="text-xs text-gray-500">ou selecione um existente</span>
+      <span className="text-xs lia-text-secondary">ou selecione um existente</span>
       <div className="flex-1 h-px bg-gray-200" />
     </div>
 
     {/* Lista de Arquétipos Existentes */}
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-gray-800 dark:text-gray-200">Meus Arquétipos</span>
+        <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Meus Arquétipos</span>
         <Badge variant="outline" className="text-micro">
           {filteredArchetypes.length} {filteredArchetypes.length === 1 ? 'arquétipo' : 'arquétipos'}
         </Badge>
@@ -1185,13 +1187,13 @@ export function EAPTabContent(props: EAPTabContentProps) {
       {/* Campo de busca */}
       {archetypes.length > 3 && (
         <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 lia-text-secondary" />
           <input
             type="text"
             value={archetypeSearchFilter}
             onChange={(e) => setArchetypeSearchFilter(e.target.value)}
             placeholder="Buscar arquétipos..."
-            className="w-full pl-8 pr-3 py-1.5 text-xs rounded-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+            className="w-full pl-8 pr-3 py-1.5 text-xs rounded-md border border-lia-border-subtle focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
           />
         </div>
       )}
@@ -1199,16 +1201,16 @@ export function EAPTabContent(props: EAPTabContentProps) {
       {/* Cards de Arquétipos */}
       <div className="space-y-2 max-h-[200px] overflow-y-auto">
         {filteredArchetypes.length === 0 ? (
-          <div className="text-center py-6 text-gray-500">
+          <div className="text-center py-6 lia-text-secondary">
             <Target className="w-8 h-8 mx-auto mb-2 opacity-30" />
             <p className="text-xs">Nenhum arquétipo encontrado</p>
-            <p className="text-micro text-gray-400 mt-1">Crie um novo acima para começar</p>
+            <p className="text-micro lia-text-secondary mt-1">Crie um novo acima para começar</p>
           </div>
         ) : (
           filteredArchetypes.map((arch) => (
             <div
               key={arch.id}
-              className="group relative p-3 rounded-md border border-gray-100 bg-white hover:border-gray-400 hover:transition-all cursor-pointer"
+              className="group relative p-3 rounded-md border border-lia-border-subtle bg-lia-bg-primary hover:border-gray-400 transition-colors cursor-pointer"
               onClick={() => {
                 setSelectedArquetipo(arch.id)
                 const query = arch.query || arch.criteria?.query || arch.description || ""
@@ -1224,7 +1226,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
                   className="p-1 rounded-md hover:bg-gray-100 transition-colors"
                   title="Editar arquétipo"
                 >
-                  <Pencil className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600" />
+                  <Pencil className="w-3.5 h-3.5 lia-text-secondary hover:lia-text-base" />
                 </button>
                 <button
                   onClick={(e) => openDeleteArchetypeDialog(arch, e)}
@@ -1233,9 +1235,9 @@ export function EAPTabContent(props: EAPTabContentProps) {
                   title="Excluir arquétipo"
                 >
                   {isDeletingArchetype === arch.id ? (
-                    <Loader2 className="w-3.5 h-3.5 text-gray-400 animate-spin" />
+                    <Loader2 className="w-3.5 h-3.5 lia-text-secondary animate-spin" />
                   ) : (
-                    <Trash2 className="w-3.5 h-3.5 text-gray-400 hover:text-status-error" />
+                    <Trash2 className="w-3.5 h-3.5 lia-text-secondary hover:text-status-error" />
                   )}
                 </button>
               </div>
@@ -1245,11 +1247,11 @@ export function EAPTabContent(props: EAPTabContentProps) {
                   {arch.emoji || "🎯"}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-gray-800 truncate">
+                  <div className="text-sm font-medium lia-text-strong truncate">
                     {arch.name}
                   </div>
                   {arch.description && (
-                    <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
+                    <p className="text-xs lia-text-secondary mt-0.5 line-clamp-2">
                       {arch.description}
                     </p>
                   )}

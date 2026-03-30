@@ -62,8 +62,8 @@ const STATUS_CONFIG: Record<'hired' | 'cancelled', {
 const WORK_MODEL_CONFIG: Record<string, { label: string; className: string }> = {
   'remote': { label: 'Remoto', className: 'bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30 dark:text-wedo-cyan-dark dark:border-wedo-cyan/30' },
   'hybrid': { label: 'Híbrido', className: 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30 dark:text-wedo-purple dark:border-wedo-purple/30' },
-  'onsite': { label: 'Presencial', className: 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-900 dark:text-gray-400 dark:border-gray-700' },
-  'presencial': { label: 'Presencial', className: 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-900 dark:text-gray-400 dark:border-gray-700' },
+  'onsite': { label: 'Presencial', className: 'bg-gray-50 text-gray-700 border-lia-border-subtle dark:bg-lia-bg-primary dark:text-lia-text-tertiary dark:border-lia-border-subtle' },
+  'presencial': { label: 'Presencial', className: 'bg-gray-50 text-gray-700 border-lia-border-subtle dark:bg-lia-bg-primary dark:text-lia-text-tertiary dark:border-lia-border-subtle' },
   'remoto': { label: 'Remoto', className: 'bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30 dark:text-wedo-cyan-dark dark:border-wedo-cyan/30' },
   'híbrido': { label: 'Híbrido', className: 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30 dark:text-wedo-purple dark:border-wedo-purple/30' },
 }
@@ -100,7 +100,7 @@ function VacancyCard({
 
   return (
     <div 
-      className="p-3 rounded-md bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all cursor-pointer group"
+      className="p-3 rounded-md bg-gray-50 dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer group"
       onClick={onClick}
     >
       <div className="flex items-start gap-3">
@@ -121,19 +121,19 @@ function VacancyCard({
           
           <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-1.5">
-              <Building2 className="h-3 w-3 text-gray-600 dark:text-gray-400" />
+              <Building2 className="h-3 w-3 text-gray-600 dark:text-lia-text-tertiary" />
               <span className="truncate">{vacancy.department}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <User className="h-3 w-3 text-gray-600 dark:text-gray-400" />
+              <User className="h-3 w-3 text-gray-600 dark:text-lia-text-tertiary" />
               <span className="truncate">{vacancy.manager}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <Calendar className="h-3 w-3 text-gray-600 dark:text-gray-400" />
+              <Calendar className="h-3 w-3 text-gray-600 dark:text-lia-text-tertiary" />
               <span>{formatDate(vacancy.date_closed)}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <DollarSign className="h-3 w-3 text-gray-600 dark:text-gray-400" />
+              <DollarSign className="h-3 w-3 text-gray-600 dark:text-lia-text-tertiary" />
               <span>{formatCurrency(vacancy.salary_range.min)} - {formatCurrency(vacancy.salary_range.max)}</span>
             </div>
           </div>
@@ -166,15 +166,15 @@ export function VacancySearchResults({
   if (isLoading) {
     return (
       <div className="flex items-start gap-3 max-w-[85%]">
-        <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-gray-300 dark:border-gray-600">
+        <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-lia-border-default dark:border-lia-border-default">
           <AvatarImage src="/images/lia-avatar.png" alt="LIA" />
           <AvatarFallback className="bg-gradient-to-br from-gray-100 dark:from-gray-800 to-wedo-cyan-dark text-white text-xs font-medium">
             LIA
           </AvatarFallback>
         </Avatar>
-        <div className="rounded-2xl rounded-tl-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4">
+        <div className="rounded-xl rounded-tl-sm bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle p-4">
           <div className="flex items-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin text-gray-600 dark:text-gray-400" />
+            <Loader2 className="h-4 w-4 animate-spin text-gray-600 dark:text-lia-text-tertiary" />
             <span className="text-sm text-muted-foreground">Buscando vagas anteriores...</span>
           </div>
         </div>
@@ -185,13 +185,13 @@ export function VacancySearchResults({
   if (vacancies.length === 0) {
     return (
       <div className="flex items-start gap-3 max-w-[85%]">
-        <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-gray-300 dark:border-gray-600">
+        <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-lia-border-default dark:border-lia-border-default">
           <AvatarImage src="/images/lia-avatar.png" alt="LIA" />
           <AvatarFallback className="bg-gradient-to-br from-gray-100 dark:from-gray-800 to-wedo-cyan-dark text-white text-xs font-medium">
             LIA
           </AvatarFallback>
         </Avatar>
-        <div className="rounded-2xl rounded-tl-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4">
+        <div className="rounded-xl rounded-tl-sm bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle p-4">
           <p className="text-sm text-muted-foreground">
             Não encontrei vagas anteriores com esses critérios. Podemos criar uma vaga do zero! Me diga o cargo e vou te ajudar.
           </p>
@@ -202,7 +202,7 @@ export function VacancySearchResults({
 
   return (
     <div className="flex items-start gap-3 max-w-[90%]">
-      <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-gray-300 dark:border-gray-600">
+      <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-lia-border-default dark:border-lia-border-default">
         <AvatarImage src="/images/lia-avatar.png" alt="LIA" />
         <AvatarFallback className="bg-gradient-to-br from-gray-100 dark:from-gray-800 to-wedo-cyan-dark text-white text-xs font-medium">
           LIA
@@ -210,9 +210,9 @@ export function VacancySearchResults({
       </Avatar>
 
       <div className="flex-1 space-y-3">
-        <div className="rounded-2xl rounded-tl-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 space-y-4">
+        <div className="rounded-xl rounded-tl-sm bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle p-4 space-y-4">
           <p className="text-xs text-muted-foreground">
-            Encontrei <span className="font-semibold text-gray-900 dark:text-gray-50">{vacancies.length}</span> vaga{vacancies.length > 1 ? 's' : ''} que pode{vacancies.length > 1 ? 'm' : ''} servir como base:
+            Encontrei <span className="font-semibold text-gray-900">{vacancies.length}</span> vaga{vacancies.length > 1 ? 's' : ''} que pode{vacancies.length > 1 ? 'm' : ''} servir como base:
           </p>
 
           <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
@@ -226,7 +226,7 @@ export function VacancySearchResults({
             ))}
           </div>
 
-          <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+          <div className="pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
             <p className="text-xs text-muted-foreground italic">
               Digite o número (ex: "1" ou "2") ou parte do título para selecionar uma vaga. 
               Se preferir criar do zero, digite "criar nova".

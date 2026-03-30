@@ -38,11 +38,11 @@ function ScoreBar({ value, color }: { value: number; color: string }) {
     <div className="flex items-center gap-2">
       <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
         <div
-          className={`h-full ${color} rounded-full transition-all duration-500`}
+          className={`h-full ${color} rounded-full transition-[width,height] duration-500`}
           style={{width: `${Math.min(100, Math.max(0, value))}%`}}
         />
       </div>
-      <span className="text-xs text-gray-500 w-8 text-right tabular-nums">
+      <span className="text-xs lia-text-secondary w-8 text-right tabular-nums">
         {Math.round(value)}%
       </span>
     </div>
@@ -60,11 +60,11 @@ export function LIAScoreCard({
 
   const hasBreakdown = breakdown && Object.keys(breakdown).length > 0
   const scoreColor =
-    score >= 80 ? "text-gray-900" : score >= 60 ? "text-gray-600" : "text-gray-400"
+    score >= 80 ? "lia-text-strong" : score >= 60 ? "lia-text-base" : "lia-text-secondary"
 
   return (
     <div
-      className={`border border-gray-200 rounded-md bg-white ${className}`}
+      className={`border border-lia-border-subtle rounded-md bg-lia-bg-primary ${className}`}
       role="region"
       aria-label={`LIA Score${candidateName ? ` para ${candidateName}` : ""}`}
     >
@@ -75,9 +75,9 @@ export function LIAScoreCard({
             className="w-4 h-4 text-wedo-cyan"
             aria-hidden="true"
           />
-          <span className="text-xs font-medium text-gray-700">LIA Score</span>
+          <span className="text-xs font-medium lia-text-base">LIA Score</span>
           {jobTitle && (
-            <span className="text-xs text-gray-400 truncate max-w-[120px]">
+            <span className="text-xs lia-text-secondary truncate max-w-[120px]">
               — {jobTitle}
             </span>
           )}
@@ -88,7 +88,7 @@ export function LIAScoreCard({
             aria-label={`Score: ${score} de 100`}
           >
             {score}
-            <span className="text-xs font-normal text-gray-400">/100</span>
+            <span className="text-xs font-normal lia-text-secondary">/100</span>
           </span>
           {hasBreakdown && (
             <button
@@ -98,9 +98,9 @@ export function LIAScoreCard({
               aria-label={expanded ? "Recolher detalhes do score" : "Ver detalhes do score"}
             >
               {expanded ? (
-                <ChevronUp className="w-3.5 h-3.5 text-gray-400" aria-hidden="true" />
+                <ChevronUp className="w-3.5 h-3.5 lia-text-secondary" aria-hidden="true" />
               ) : (
-                <ChevronDown className="w-3.5 h-3.5 text-gray-400" aria-hidden="true" />
+                <ChevronDown className="w-3.5 h-3.5 lia-text-secondary" aria-hidden="true" />
               )}
             </button>
           )}
@@ -110,7 +110,7 @@ export function LIAScoreCard({
       {/* Breakdown expandido */}
       {expanded && hasBreakdown && (
         <div
-          className="px-3 pb-3 border-t border-gray-100 pt-2 space-y-2"
+          className="px-3 pb-3 border-t border-lia-border-subtle pt-2 space-y-2"
           role="list"
           aria-label="Detalhamento do score por dimensão"
         >
@@ -121,13 +121,13 @@ export function LIAScoreCard({
             return (
               <div key={key} role="listitem">
                 <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-xs text-gray-600">{label}</span>
+                  <span className="text-xs lia-text-base">{label}</span>
                 </div>
                 <ScoreBar value={value} color={color} />
               </div>
             )
           })}
-          <p className="text-micro text-gray-400 pt-1 flex items-center gap-1">
+          <p className="text-micro lia-text-secondary pt-1 flex items-center gap-1">
             <Info className="w-3 h-3" aria-hidden="true" />
             Score calculado pela IA — EU AI Act Art. 13
           </p>

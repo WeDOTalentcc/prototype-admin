@@ -319,10 +319,10 @@ export const hideViewedPeriodOptions: { value: HideViewedPeriod; label: string }
 
 export const SectionHeader = ({ icon: Icon, title, description }: { icon: React.ElementType; title: string; description?: string }) => (
   <div className="flex items-center gap-2 mb-4">
-    <Icon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+    <Icon className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
     <div>
-      <h3 className="text-sm font-semibold text-gray-800">{title}</h3>
-      {description && <p className="text-xs text-gray-500">{description}</p>}
+      <h3 className="text-sm font-semibold lia-text-800">{title}</h3>
+      {description && <p className="text-xs lia-text-500">{description}</p>}
     </div>
   </div>
 )

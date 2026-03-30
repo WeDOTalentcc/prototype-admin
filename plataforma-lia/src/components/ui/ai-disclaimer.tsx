@@ -56,10 +56,10 @@ export function AIDisclaimer({ variant = "icon", className = "" }: AIDisclaimerP
         <div className="flex items-start gap-2">
           <Brain className="h-4 w-4 text-wedo-cyan mt-0.5 flex-shrink-0" />
           <div className="space-y-1">
-            <p className="font-medium text-gray-800 dark:text-gray-200">
+            <p className="font-medium text-gray-800 dark:text-lia-text-primary">
               Dados gerados por IA
             </p>
-            <p className="text-xs text-gray-600 dark:text-gray-400">
+            <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
               Estas informações foram geradas a partir de análises e inferências. 
               Podem faltar precisão ou necessitar de ajustes.
             </p>

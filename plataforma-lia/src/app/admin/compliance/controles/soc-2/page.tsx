@@ -65,31 +65,31 @@ function getStatusBadge(status: string) {
 
 function ExpandedControl({ control, companyControl }: ExpandedControlProps) {
   return (
-    <div className="p-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700">
+    <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 border-t border-lia-border-subtle dark:border-lia-border-subtle">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <h4 className="text-xs font-semibold mb-2 text-gray-400 dark:text-gray-500">
+          <h4 className="text-xs font-semibold mb-2 lia-text-400 dark:lia-text-500">
             DESCRIÇÃO
           </h4>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm lia-text-500 dark:text-lia-text-tertiary">
             {control.controlDescription || 'Sem descrição disponível.'}
           </p>
         </div>
         <div>
-          <h4 className="text-xs font-semibold mb-2 text-gray-400 dark:text-gray-500">
+          <h4 className="text-xs font-semibold mb-2 lia-text-400 dark:lia-text-500">
             ORIENTAÇÃO DE IMPLEMENTAÇÃO
           </h4>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm lia-text-500 dark:text-lia-text-tertiary">
             {control.implementationGuidance || 'Sem orientação disponível.'}
           </p>
         </div>
       </div>
       {control.evidenceRequirements && control.evidenceRequirements.length > 0 && (
         <div className="mt-4">
-          <h4 className="text-xs font-semibold mb-2 text-gray-400 dark:text-gray-500">
+          <h4 className="text-xs font-semibold mb-2 lia-text-400 dark:lia-text-500">
             REQUISITOS DE EVIDÊNCIA
           </h4>
-          <ul className="list-disc list-inside text-sm space-y-1 text-gray-500 dark:text-gray-400">
+          <ul className="list-disc list-inside text-sm space-y-1 lia-text-500 dark:text-lia-text-tertiary">
             {control.evidenceRequirements.map((req, idx) => (
               <li key={idx}>{req}</li>
             ))}
@@ -97,22 +97,22 @@ function ExpandedControl({ control, companyControl }: ExpandedControlProps) {
         </div>
       )}
       {companyControl && (
-        <div className="mt-4 p-3 rounded-md bg-gray-100 dark:bg-gray-800">
+        <div className="mt-4 p-3 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-xs font-medium text-gray-400 dark:text-gray-500">
+              <span className="text-xs font-medium lia-text-400 dark:lia-text-500">
                 Responsável:
               </span>
-              <span className="text-sm ml-2 text-gray-800 dark:text-gray-100">
+              <span className="text-sm ml-2 lia-text-800 dark:text-lia-text-primary">
                 {companyControl.ownerName || 'Não atribuído'}
               </span>
             </div>
             {companyControl.nextReviewDate && (
               <div>
-                <span className="text-xs font-medium text-gray-400 dark:text-gray-500">
+                <span className="text-xs font-medium lia-text-400 dark:lia-text-500">
                   Próxima Revisão:
                 </span>
-                <span className="text-sm ml-2 text-gray-800 dark:text-gray-100">
+                <span className="text-sm ml-2 lia-text-800 dark:text-lia-text-primary">
                   {new Date(companyControl.nextReviewDate).toLocaleDateString('pt-BR')}
                 </span>
               </div>
@@ -120,10 +120,10 @@ function ExpandedControl({ control, companyControl }: ExpandedControlProps) {
           </div>
           {companyControl.notes && (
             <div className="mt-2">
-              <span className="text-xs font-medium text-gray-400 dark:text-gray-500">
+              <span className="text-xs font-medium lia-text-400 dark:lia-text-500">
                 Notas:
               </span>
-              <p className="text-sm mt-1 text-gray-500 dark:text-gray-400">
+              <p className="text-sm mt-1 lia-text-500 dark:text-lia-text-tertiary">
                 {companyControl.notes}
               </p>
             </div>
@@ -213,8 +213,8 @@ export default function SOC2Page() {
     return (
       <div className="p-6">
         <div className="max-w-7xl mx-auto flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-gray-600 dark:text-gray-400" />
-          <span className="ml-3 text-sm text-gray-400 dark:text-gray-500">
+          <Loader2 className="w-8 h-8 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+          <span className="ml-3 text-sm lia-text-400 dark:lia-text-500">
             Carregando controles SOC 2...
           </span>
         </div>
@@ -236,15 +236,15 @@ export default function SOC2Page() {
             <div 
               className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
             >
-              <Shield className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <Shield className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+                className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary"
               >
                 Controles SOC 2 Type II
               </h1>
-              <p className="text-sm text-gray-400 dark:text-gray-500">
+              <p className="text-sm lia-text-400 dark:lia-text-500">
                 Trust Service Criteria - Segurança, Disponibilidade, Confidencialidade
               </p>
             </div>
@@ -261,11 +261,11 @@ export default function SOC2Page() {
               <CardContent className="p-3">
                 <div className="flex items-center gap-2 mb-1">
                   <Badge variant="info" className="text-micro">{tsc.id}</Badge>
-                  <span className="text-xs font-medium truncate text-gray-800 dark:text-gray-100">
+                  <span className="text-xs font-medium truncate lia-text-800 dark:text-lia-text-primary">
                     {tsc.name}
                   </span>
                 </div>
-                <p className="text-micro text-gray-400 dark:text-gray-500">
+                <p className="text-micro lia-text-400 dark:lia-text-500">
                   {tsc.description}
                 </p>
               </CardContent>
@@ -277,10 +277,10 @@ export default function SOC2Page() {
           <Card >
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-medium text-gray-800 dark:text-gray-100">
+                <span className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
                   Progresso de Conformidade
                 </span>
-                <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+                <span className="text-sm font-semibold lia-text-800 dark:text-lia-text-primary">
                   {Math.round(stats.compliancePercentage)}%
                 </span>
               </div>
@@ -288,30 +288,30 @@ export default function SOC2Page() {
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-status-success" />
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                  <span className="text-xs lia-text-500 dark:text-lia-text-tertiary">
                     {stats.implemented + stats.verified} Implementados
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-status-warning" />
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                  <span className="text-xs lia-text-500 dark:text-lia-text-tertiary">
                     {stats.inProgress} Em Progresso
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-wedo-orange" />
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                  <span className="text-xs lia-text-500 dark:text-lia-text-tertiary">
                     {stats.notStarted} Não Iniciados
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <XCircle className="w-4 h-4 text-gray-400" />
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                  <XCircle className="w-4 h-4 lia-text-400" />
+                  <span className="text-xs lia-text-500 dark:text-lia-text-tertiary">
                     {stats.notApplicable} N/A
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-medium text-gray-400 dark:text-gray-500">
+                  <span className="text-xs font-medium lia-text-400 dark:lia-text-500">
                     Total: {stats.totalControls} controles
                   </span>
                 </div>
@@ -324,7 +324,7 @@ export default function SOC2Page() {
           <CardContent className="p-4">
             <div className="flex flex-col md:flex-row gap-3 mb-4">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-400" />
                 <Input
                   placeholder="Buscar por ID ou nome do controle..."
                   value={searchTerm}
@@ -359,10 +359,10 @@ export default function SOC2Page() {
               </Select>
             </div>
 
-            <div className="rounded-md border overflow-hidden border-gray-200 dark:border-gray-700">
+            <div className="rounded-md border overflow-hidden border-lia-border-subtle dark:border-lia-border-subtle">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-gray-50 dark:bg-gray-800/50">
+                  <TableRow className="bg-gray-50 dark:bg-lia-bg-secondary/50">
                     <TableHead className="w-10"></TableHead>
                     <TableHead className="w-28">ID</TableHead>
                     <TableHead>Nome do Controle</TableHead>
@@ -383,15 +383,15 @@ export default function SOC2Page() {
                           >
                             <TableCell>
                               {isExpanded ? (
-                                <ChevronDown className="w-4 h-4 text-gray-400" />
+                                <ChevronDown className="w-4 h-4 lia-text-400" />
                               ) : (
-                                <ChevronRight className="w-4 h-4 text-gray-400" />
+                                <ChevronRight className="w-4 h-4 lia-text-400" />
                               )}
                             </TableCell>
-                            <TableCell className="font-mono text-xs text-gray-400 dark:text-gray-500">
+                            <TableCell className="font-mono text-xs lia-text-400 dark:lia-text-500">
                               {control.controlId}
                             </TableCell>
-                            <TableCell className="text-gray-800 dark:text-gray-100">
+                            <TableCell className="lia-text-800 dark:text-lia-text-primary">
                               {control.controlName}
                             </TableCell>
                             <TableCell>
@@ -416,7 +416,7 @@ export default function SOC2Page() {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={5} className="text-center py-8">
-                        <p className="text-gray-400 dark:text-gray-500">
+                        <p className="lia-text-400 dark:lia-text-500">
                           {controls.length === 0 
                             ? 'Nenhum controle SOC 2 configurado.' 
                             : 'Nenhum controle encontrado com os filtros aplicados.'
@@ -429,7 +429,7 @@ export default function SOC2Page() {
               </Table>
             </div>
 
-            <div className="mt-3 text-xs text-right text-gray-400 dark:text-gray-500">
+            <div className="mt-3 text-xs text-right lia-text-400 dark:lia-text-500">
               Exibindo {filteredControls.length} de {controls.length} controles
             </div>
           </CardContent>

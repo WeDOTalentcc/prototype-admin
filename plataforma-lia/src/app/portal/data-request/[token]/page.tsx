@@ -551,18 +551,18 @@ export default function CandidatePortalPage() {
     if (field.field_type === "file" || field.field_type === "photo") {
       return (
         <div key={field.name} className="space-y-2">
-          <Label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+          <Label className="flex items-center gap-2 text-sm font-medium lia-text-700 dark:lia-text-200">
             {icon}
             {field.label}
             {field.required && <span className="text-status-error">*</span>}
           </Label>
           {field.description && (
-            <p className="text-xs text-gray-500">{field.description}</p>
+            <p className="text-xs lia-text-500 dark:lia-text-400">{field.description}</p>
           )}
           
           <div className="relative">
             {upload?.preview ? (
-              <div className="relative rounded-md overflow-hidden border border-gray-200">
+              <div className="relative rounded-md overflow-hidden border border-lia-border-subtle">
                 <img
                   src={upload.preview}
                   alt="Preview"
@@ -580,20 +580,20 @@ export default function CandidatePortalPage() {
                 </div>
               </div>
             ) : upload?.file ? (
-              <div className="flex items-center gap-3 p-4 border border-gray-200 rounded-md">
-                <FileText className="w-8 h-8 text-gray-400" />
+              <div className="flex items-center gap-3 p-4 border border-lia-border-subtle rounded-md">
+                <FileText className="w-8 h-8 lia-text-400 dark:lia-text-500" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-700 truncate">
+                  <p className="text-sm font-medium lia-text-700 dark:lia-text-200 truncate">
                     {upload.file.name}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs lia-text-500 dark:lia-text-400">
                     {(upload.file.size / 1024 / 1024).toFixed(2)} MB
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => handleFileChange(field.name, null)}
-                  className="p-1 text-gray-400 hover:text-status-error"
+                   className="p-1 lia-text-400 dark:lia-text-500 hover:text-status-error"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -602,7 +602,7 @@ export default function CandidatePortalPage() {
               <div className="flex items-center gap-3 p-4 border border-status-success/30 bg-status-success/10 rounded-md">
                 <CheckCircle2 className="w-6 h-6 text-status-success" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-700 truncate">
+                  <p className="text-sm font-medium lia-text-700 dark:lia-text-200 truncate">
                     {completedFile.file_name || "Arquivo enviado"}
                   </p>
                   <p className="text-xs text-status-success">Arquivo já enviado</p>
@@ -613,7 +613,7 @@ export default function CandidatePortalPage() {
                     const input = document.getElementById(`file-${field.name}`) as HTMLInputElement
                     input?.click()
                   }}
-                  className="text-xs text-gray-500 hover:text-gray-700 underline"
+                   className="text-xs lia-text-500 dark:lia-text-400 hover:lia-text-700 dark:hover:lia-text-200 underline"
                 >
                   Substituir
                 </button>
@@ -621,13 +621,13 @@ export default function CandidatePortalPage() {
             ) : (
               <label
                 htmlFor={`file-${field.name}`}
-                className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-md cursor-pointer hover:border-gray-400 hover:bg-gray-50 transition-colors"
+                className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-lia-border-default rounded-md cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 dark:lia-border-600 transition-colors"
               >
-                <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                <span className="text-sm text-gray-500">
+                <Upload className="w-8 h-8 lia-text-400 dark:lia-text-500 mb-2" />
+                <span className="text-sm lia-text-500 dark:lia-text-400">
                   {field.field_type === "photo" ? "Toque para tirar foto ou selecionar" : "Toque para selecionar arquivo"}
                 </span>
-                <span className="text-xs text-gray-400 mt-1">
+                <span className="text-xs lia-text-400 dark:lia-text-500 mt-1">
                   Máx: {field.max_file_size_mb || 10}MB
                 </span>
               </label>
@@ -650,7 +650,7 @@ export default function CandidatePortalPage() {
           {uploadProgress[field.name] !== undefined && uploadProgress[field.name] < 100 && (
             <div className="mt-2">
               <Progress value={uploadProgress[field.name]} className="h-1" />
-              <p className="text-xs text-gray-500 mt-1">Enviando... {uploadProgress[field.name]}%</p>
+              <p className="text-xs lia-text-500 dark:lia-text-400 mt-1">Enviando... {uploadProgress[field.name]}%</p>
             </div>
           )}
 
@@ -667,18 +667,18 @@ export default function CandidatePortalPage() {
     if (field.field_type === "select" && field.options) {
       return (
         <div key={field.name} className="space-y-2">
-          <Label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+           <Label className="flex items-center gap-2 text-sm font-medium lia-text-700 dark:lia-text-200">
             {icon}
             {field.label}
             {field.required && <span className="text-status-error">*</span>}
           </Label>
           {field.description && (
-            <p className="text-xs text-gray-500">{field.description}</p>
+            <p className="text-xs lia-text-500 dark:lia-text-400">{field.description}</p>
           )}
           <select
             value={value}
             onChange={(e) => handleFieldChange(field.name, e.target.value, field.field_type)}
-            className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-200"
+            className="flex h-10 w-full rounded-md border border-lia-border-default bg-white dark:lia-bg-800 dark:lia-text-100 dark:lia-border-600 px-3 py-2 text-sm focus:outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-200"
           >
             <option value="">Selecione...</option>
             {field.options.map((opt) => (
@@ -700,20 +700,20 @@ export default function CandidatePortalPage() {
     if (field.field_type === "textarea") {
       return (
         <div key={field.name} className="space-y-2">
-          <Label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+           <Label className="flex items-center gap-2 text-sm font-medium lia-text-700 dark:lia-text-200">
             {icon}
             {field.label}
             {field.required && <span className="text-status-error">*</span>}
           </Label>
           {field.description && (
-            <p className="text-xs text-gray-500">{field.description}</p>
+             <p className="text-xs lia-text-500 dark:lia-text-400">{field.description}</p>
           )}
           <textarea
             value={value}
             onChange={(e) => handleFieldChange(field.name, e.target.value, field.field_type)}
             placeholder={field.placeholder}
             rows={4}
-            className="flex w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-200 resize-none"
+            className="flex w-full rounded-md border border-lia-border-default bg-white dark:lia-bg-800 dark:lia-text-100 dark:lia-border-600 px-3 py-2 text-sm focus:outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-200 resize-none"
           />
           {error && (
             <p className="text-xs text-status-error flex items-center gap-1">
@@ -727,13 +727,13 @@ export default function CandidatePortalPage() {
 
     return (
       <div key={field.name} className="space-y-2">
-        <Label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+         <Label className="flex items-center gap-2 text-sm font-medium lia-text-700 dark:lia-text-200">
           {icon}
           {field.label}
           {field.required && <span className="text-status-error">*</span>}
         </Label>
         {field.description && (
-          <p className="text-xs text-gray-500">{field.description}</p>
+           <p className="text-xs lia-text-500 dark:lia-text-400">{field.description}</p>
         )}
         <Input
           type={field.field_type === "date" ? "date" : "text"}
@@ -759,10 +759,10 @@ export default function CandidatePortalPage() {
 
   if (step === "loading") {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gray-50 dark:lia-bg-900 flex items-center justify-center p-4">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-500">Carregando...</p>
+          <Loader2 className="w-12 h-12 animate-spin lia-text-400 dark:lia-text-500 mx-auto mb-4" />
+          <p className="lia-text-500 dark:lia-text-400">Carregando...</p>
         </div>
       </div>
     )
@@ -770,12 +770,12 @@ export default function CandidatePortalPage() {
 
   if (step === "error") {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gray-50 dark:lia-bg-900 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center">
             <AlertCircle className="w-16 h-16 text-status-error mx-auto mb-4" />
-            <h1 className="text-xl font-semibold text-gray-900 mb-2">Ops!</h1>
-            <p className="text-gray-600">{errorMessage}</p>
+            <h1 className="text-xl font-semibold lia-text-900 dark:lia-text-100 mb-2">Ops!</h1>
+            <p className="lia-text-600 dark:lia-text-300">{errorMessage}</p>
           </CardContent>
         </Card>
       </div>
@@ -784,13 +784,13 @@ export default function CandidatePortalPage() {
 
   if (step === "expired") {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gray-50 dark:lia-bg-900 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center">
             <AlertCircle className="w-16 h-16 text-status-warning mx-auto mb-4" />
-            <h1 className="text-xl font-semibold text-gray-900 mb-2">Link Expirado</h1>
-            <p className="text-gray-600">{errorMessage}</p>
-            <p className="text-sm text-gray-500 mt-4">
+            <h1 className="text-xl font-semibold lia-text-900 dark:lia-text-100 mb-2">Link Expirado</h1>
+            <p className="lia-text-600 dark:lia-text-300">{errorMessage}</p>
+            <p className="text-sm lia-text-500 dark:lia-text-400 mt-4">
               Entre em contato com o recrutador para solicitar um novo link.
             </p>
           </CardContent>
@@ -801,7 +801,7 @@ export default function CandidatePortalPage() {
 
   if (step === "otp") {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="min-h-screen bg-gray-50 dark:lia-bg-900 flex flex-col">
         {portalData?.branding.logo_url && (
           <div className="p-4 flex justify-center">
             <img
@@ -829,7 +829,7 @@ export default function CandidatePortalPage() {
             <CardContent className="space-y-6">
               {!otpSent ? (
                 <>
-                  <p className="text-sm text-gray-600 text-center">
+                  <p className="text-sm lia-text-600 dark:lia-text-300 text-center">
                     Enviaremos um código de 6 dígitos para você.
                   </p>
                   
@@ -838,14 +838,14 @@ export default function CandidatePortalPage() {
                       onClick={() => setOtpChannel("email")}
                       className={`w-full p-4 rounded-md border-2 flex items-center gap-3 transition-colors ${
                         otpChannel === "email"
-                          ? "border-gray-900 bg-gray-50"
-                          : "border-gray-200 hover:border-gray-300"
+                          ? "border-gray-900 dark:lia-border-500 bg-gray-50 dark:lia-bg-700"
+                          : "border-lia-border-subtle hover:border-lia-border-default"
                       }`}
                     >
-                      <Mail className="w-5 h-5 text-gray-600" />
+                      <Mail className="w-5 h-5 lia-text-600 dark:lia-text-300" />
                       <div className="text-left">
                         <p className="text-sm font-medium">E-mail</p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs lia-text-500 dark:lia-text-400">
                           {portalData?.candidate_info.email_masked}
                         </p>
                       </div>
@@ -867,7 +867,7 @@ export default function CandidatePortalPage() {
                 </>
               ) : (
                 <>
-                  <p className="text-sm text-gray-600 text-center">
+                  <p className="text-sm lia-text-600 dark:lia-text-300 text-center">
                     Digite o código de 6 dígitos enviado para{" "}
                     <span className="font-medium">
                       {portalData?.candidate_info.email_masked}
@@ -886,7 +886,7 @@ export default function CandidatePortalPage() {
                         onChange={(e) => handleOtpChange(index, e.target.value)}
                         onKeyDown={(e) => handleOtpKeyDown(index, e)}
                         onPaste={index === 0 ? handleOtpPaste : undefined}
-                        className="w-12 h-14 text-center text-2xl font-semibold border-2 border-gray-300 rounded-md focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                        className="w-12 h-14 text-center text-2xl font-semibold border-2 border-lia-border-default dark:lia-border-600 rounded-md focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:lia-bg-800 dark:lia-text-100"
                       />
                     ))}
                   </div>
@@ -913,7 +913,7 @@ export default function CandidatePortalPage() {
 
                   <div className="text-center">
                     {otpResendTimer > 0 ? (
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm lia-text-500 dark:lia-text-400">
                         Reenviar código em {otpResendTimer}s
                       </p>
                     ) : (
@@ -938,7 +938,7 @@ export default function CandidatePortalPage() {
 
   if (step === "completed") {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="min-h-screen bg-gray-50 dark:lia-bg-900 flex flex-col">
         {portalData?.branding.logo_url && (
           <div className="p-4 flex justify-center">
             <img
@@ -958,23 +958,23 @@ export default function CandidatePortalPage() {
               >
                 <CheckCircle2 className="w-10 h-10" style={{color: primaryColor}} />
               </div>
-              <h1 className="text-2xl font-semibold text-gray-900 mb-3">
+              <h1 className="text-2xl font-semibold lia-text-900 dark:lia-text-100 mb-3">
                 Obrigado!
               </h1>
-              <p className="text-gray-600 mb-6">
+              <p className="lia-text-600 dark:lia-text-300 mb-6">
                 {portalData?.branding.thank_you_message ||
                   "Seus dados foram enviados com sucesso. Entraremos em contato em breve."}
               </p>
               {portalData?.vacancy_info && (
-                <div className="bg-gray-50 rounded-md p-4 text-left">
-                  <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">
+                <div className="bg-gray-50 dark:lia-bg-800 rounded-md p-4 text-left">
+                  <p className="text-xs lia-text-500 dark:lia-text-400 uppercase tracking-wider mb-1">
                     Vaga
                   </p>
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-sm font-medium lia-text-900 dark:lia-text-100">
                     {portalData.vacancy_info.title}
                   </p>
                   {portalData.vacancy_info.department && (
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs lia-text-500 dark:lia-text-400">
                       {portalData.vacancy_info.department}
                     </p>
                   )}
@@ -988,9 +988,9 @@ export default function CandidatePortalPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50 dark:lia-bg-900 flex flex-col">
       {portalData?.branding.logo_url && (
-        <div className="p-4 flex justify-center bg-white border-b">
+        <div className="p-4 flex justify-center bg-white dark:lia-bg-800 border-b dark:lia-border-700">
           <img
             src={portalData.branding.logo_url}
             alt="Logo"
@@ -999,17 +999,17 @@ export default function CandidatePortalPage() {
         </div>
       )}
 
-      <div className="sticky top-0 z-10 bg-white border-b px-4 py-3">
+      <div className="sticky top-0 z-10 bg-white dark:lia-bg-800 border-b dark:lia-border-700 px-4 py-3">
         <div className="max-w-lg mx-auto">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-gray-500">Progresso</span>
+            <span className="text-xs font-medium lia-text-500 dark:lia-text-400">Progresso</span>
             <span className="text-xs font-semibold" style={{color: primaryColor}}>
               {Math.round(portalData?.completion_percentage || 0)}%
             </span>
           </div>
-          <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div className="relative h-2 bg-gray-200 dark:lia-bg-700 rounded-full overflow-hidden">
             <div
-              className="absolute left-0 top-0 h-full transition-all duration-500 rounded-full"
+              className="absolute left-0 top-0 h-full transition-[width,height] duration-500 rounded-full"
               style={{width: `${portalData?.completion_percentage || 0}%`,
                 backgroundColor: primaryColor}}
             />
@@ -1020,21 +1020,21 @@ export default function CandidatePortalPage() {
       <div className="flex-1 p-4">
         <div className="max-w-lg mx-auto">
           {portalData?.branding.welcome_message && (
-            <div className="mb-6 p-4 bg-white rounded-md border">
-              <p className="text-sm text-gray-600">{portalData.branding.welcome_message}</p>
+            <div className="mb-6 p-4 bg-white dark:lia-bg-800 rounded-md border dark:lia-border-700">
+              <p className="text-sm lia-text-600 dark:lia-text-300">{portalData.branding.welcome_message}</p>
             </div>
           )}
 
           {portalData?.vacancy_info && (
-            <div className="mb-6 p-4 bg-white rounded-md border">
-              <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">
+            <div className="mb-6 p-4 bg-white dark:lia-bg-800 rounded-md border dark:lia-border-700">
+              <p className="text-xs lia-text-500 dark:lia-text-400 uppercase tracking-wider mb-1">
                 Preenchendo dados para
               </p>
-              <p className="text-base font-medium text-gray-900">
+              <p className="text-base font-medium lia-text-900 dark:lia-text-100">
                 {portalData.vacancy_info.title}
               </p>
               {portalData.vacancy_info.department && (
-                <p className="text-sm text-gray-500">{portalData.vacancy_info.department}</p>
+                <p className="text-sm lia-text-500 dark:lia-text-400">{portalData.vacancy_info.department}</p>
               )}
             </div>
           )}
@@ -1079,13 +1079,13 @@ export default function CandidatePortalPage() {
             </Button>
 
             {portalData?.branding.privacy_policy_url && (
-              <p className="text-xs text-center text-gray-500">
+              <p className="text-xs text-center lia-text-500 dark:lia-text-400">
                 Ao enviar, você concorda com nossa{" "}
                 <a
                   href={portalData.branding.privacy_policy_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="underline hover:text-gray-700"
+                  className="underline hover:lia-text-700 dark:hover:lia-text-200"
                 >
                   Política de Privacidade
                 </a>
@@ -1096,7 +1096,7 @@ export default function CandidatePortalPage() {
                       href={portalData.branding.terms_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="underline hover:text-gray-700"
+                      className="underline hover:lia-text-700 dark:hover:lia-text-200"
                     >
                       Termos de Uso
                     </a>

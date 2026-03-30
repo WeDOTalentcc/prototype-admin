@@ -17,7 +17,7 @@ function SoundWaveBars({ size }: { size: string }) {
         <span
           key={i}
           className={cn(
-            "inline-block w-0.5 rounded-full bg-chat-cyan lia-sound-wave-bar",
+ "inline-block w-0.5 rounded-full bg-chat-cyan lia-sound-wave-bar",
             barHeight
           )}
           style={{animationDelay: `${i * 0.15}s`}}
@@ -38,7 +38,7 @@ export function LIAIcon({ className, size = "md", animate = false, speaking = fa
 
   return (
     <div className={cn(
-      "relative inline-flex items-center justify-center rounded-full",
+ "relative inline-flex items-center justify-center rounded-full",
       animate && "animate-pulse",
       speaking && "lia-speaking-glow",
       sizeClasses[size],
@@ -46,7 +46,7 @@ export function LIAIcon({ className, size = "md", animate = false, speaking = fa
     )}>
       <Brain 
         className={cn(
-          "transition-opacity duration-200",
+ "transition-opacity duration-200",
           useChatCyan ? "text-chat-cyan" : "text-wedo-cyan",
           speaking && "opacity-30",
           size === "xs" && "w-3.5 h-3.5",

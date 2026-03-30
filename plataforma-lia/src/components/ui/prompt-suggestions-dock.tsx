@@ -211,7 +211,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
               <button
                 key={suggestion.id}
                 onClick={() => onSelect(suggestion.command)}
-                className="p-4 rounded-md transition-all text-left group"
+                className="p-4 rounded-md transition-colors text-left group"
                 style={{border: `1px solid ${colors.bg}`,
                   backgroundColor: 'var(--gray-50)'}}
                 onMouseEnter={(e) => {
@@ -264,7 +264,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
           size="sm"
           onClick={() => setIsExpanded(true)}
           onMouseDown={handleMouseDown}
-          className="fixed h-9 px-4 rounded-md transition-all hover:scale-105 z-50 select-none opacity-80 hover:opacity-100"
+          className="fixed h-9 px-4 rounded-md transition-transform hover:scale-105 z-50 select-none opacity-80 hover:opacity-100 dark:text-lia-text-secondary"
           style={{top: `${position.top}px`,
             right: `${position.right}px`,
             backgroundColor: 'var(--gray-50)',
@@ -275,7 +275,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           </div>
           <span 
-            className="text-xs font-medium"
+            className="text-xs font-medium dark:text-lia-text-secondary"
             style={{color: 'var(--gray-500)'}}
           >
             Sugestões
@@ -286,7 +286,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
       {isExpanded && (
         <Card
           ref={cardRef}
-          className="fixed w-80 max-h-[480px] overflow-hidden z-50 select-none rounded-md border border-gray-200 bg-gray-50"
+          className="fixed w-80 max-h-[480px] overflow-hidden z-50 select-none rounded-md border border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-subtle"
           style={{top: `${position.top}px`,
             right: `${position.right}px`}}
         >
@@ -299,12 +299,12 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
               cursor: isDragging ? 'grabbing' : 'grab'}}
           >
             <div className="flex items-center gap-2">
-              <Move className="w-3 h-3 text-gray-300" />
+              <Move className="w-3 h-3 lia-text-muted" />
               <div className="p-1.5 rounded-md bg-gray-900/[0.08]">
                 <Brain className="w-4 h-4 text-wedo-cyan" />
               </div>
               <h3
-                className="text-sm font-semibold"
+                className="text-sm font-semibold dark:text-lia-text-primary"
                 style={{color: 'var(--gray-800)'}}
               >
                 Tarefas Sugeridas
@@ -314,9 +314,9 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
               variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(false)}
-              className="h-7 w-7 p-0 rounded-md hover:bg-gray-200"
+              className="h-7 w-7 p-0 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700"
             >
-              <X className="w-4 h-4 text-gray-400" />
+              <X className="w-4 h-4 lia-text-secondary" />
             </Button>
           </div>
 
@@ -332,7 +332,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                     onSelect(suggestion.command)
                     setIsExpanded(false)
                   }}
-                  className="w-full p-3 rounded-md transition-all text-left group"
+                  className="w-full p-3 rounded-md transition-colors text-left group"
                   style={{backgroundColor: 'var(--gray-50)',
                     border: `1px solid ${colors.bg}`}}
                   onMouseEnter={(e) => {

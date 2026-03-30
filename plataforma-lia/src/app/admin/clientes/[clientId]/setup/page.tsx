@@ -141,7 +141,7 @@ export default function ClientSetupPage({
       case 'partial':
         return <Clock className="w-5 h-5 text-status-warning" />
       case 'pending':
-        return <Clock className="w-5 h-5 text-gray-400" />
+        return <Clock className="w-5 h-5 lia-text-400" />
       default:
         return null
     }
@@ -151,8 +151,8 @@ export default function ClientSetupPage({
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 animate-spin text-gray-600 dark:text-gray-400" />
-          <p className="text-sm text-gray-400 dark:text-gray-500">
+          <Loader2 className="w-8 h-8 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+          <p className="text-sm lia-text-400 dark:lia-text-500">
             Carregando setup...
           </p>
         </div>
@@ -190,14 +190,14 @@ export default function ClientSetupPage({
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <Settings className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+            <Settings className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />
             <h2 
-              className="text-lg font-semibold text-gray-800 dark:text-gray-100"
+              className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary"
             >
               Setup da Empresa
             </h2>
           </div>
-          <p className="text-sm text-gray-400 dark:text-gray-500">
+          <p className="text-sm lia-text-400 dark:lia-text-500">
             Configuração inicial e perfil do cliente
           </p>
         </div>
@@ -229,16 +229,16 @@ export default function ClientSetupPage({
       <Card>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base text-gray-800 dark:text-gray-100">
+            <CardTitle className="text-base lia-text-800 dark:text-lia-text-primary">
               Progresso Geral do Setup
             </CardTitle>
-            <span className="text-sm font-medium text-gray-900 dark:text-gray-50">{overallProgress}%</span>
+            <span className="text-sm font-medium lia-text-900 dark:lia-text-50">{overallProgress}%</span>
           </div>
         </CardHeader>
         <CardContent>
           <Progress value={overallProgress} className="h-2" />
           <div className="flex items-center justify-between mt-2">
-            <span className="text-xs text-gray-400 dark:text-gray-500">
+            <span className="text-xs lia-text-400 dark:lia-text-500">
               {completedSections} de {sections.length} seções completas
             </span>
           </div>
@@ -255,26 +255,26 @@ export default function ClientSetupPage({
             >
               <CardContent className="p-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0">
-                    <Icon className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+                  <div className="w-12 h-12 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center shrink-0">
+                    <Icon className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
                       <h3 
-                        className="font-medium text-gray-800 dark:text-gray-100"
+                        className="font-medium lia-text-800 dark:text-lia-text-primary"
                       >
                         {section.title}
                       </h3>
                       {getStatusBadge(section.status)}
                     </div>
                     <p 
-                      className="text-sm mb-2 text-gray-400 dark:text-gray-500"
+                      className="text-sm mb-2 lia-text-400 dark:lia-text-500"
                     >
                       {section.description}
                     </p>
                     <div className="flex items-center gap-3">
                       <Progress value={section.progress} className="h-1.5 flex-1" />
-                      <span className="text-xs tabular-nums text-gray-400 dark:text-gray-500">
+                      <span className="text-xs tabular-nums lia-text-400 dark:lia-text-500">
                         {section.progress}%
                       </span>
                     </div>

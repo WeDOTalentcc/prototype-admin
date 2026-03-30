@@ -86,7 +86,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
-        className="w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col border border-gray-100 bg-gray-50 rounded-md"
+        className="w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col border border-lia-border-subtle bg-gray-50 rounded-md"
       >
         <div 
           className="flex items-center justify-between px-4 py-3 border-b border-b-gray-100"
@@ -95,7 +95,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
             <div
               className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 bg-wedo-cyan/12"
             >
-              <Code className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              <Code className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
             </div>
             <div>
               <h2 
@@ -151,10 +151,10 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
             <>
               <div className="grid grid-cols-2 gap-3 mb-4">
                 <div 
-                  className="p-3 rounded-md border border-gray-100"
+                  className="p-3 rounded-md border border-lia-border-subtle"
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    <Trophy className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                    <Trophy className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                     <span 
                       className="text-micro text-gray-600"
                      
@@ -177,10 +177,10 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                 </div>
 
                 <div 
-                  className="p-3 rounded-md border border-gray-100"
+                  className="p-3 rounded-md border border-lia-border-subtle"
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    <Clock className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                    <Clock className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                     <span 
                       className="text-micro text-gray-600"
                      
@@ -204,9 +204,9 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
               </div>
 
               <div className="flex items-center gap-2 p-3 rounded-md mb-4 bg-wedo-cyan/[.08] border border-wedo-cyan/20">
-                <Users className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                <Users className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
                 <span 
-                  className="text-xs text-gray-600 dark:text-gray-400"
+                  className="text-xs text-gray-600 dark:text-lia-text-tertiary"
                  
                 >
                   Comparação com outros candidatos:
@@ -231,7 +231,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                   {testData.categories?.map((category: any, index: number) => (
                     <div 
                       key={index}
-                      className="p-3 rounded-md border border-gray-100"
+                      className="p-3 rounded-md border border-lia-border-subtle"
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span 

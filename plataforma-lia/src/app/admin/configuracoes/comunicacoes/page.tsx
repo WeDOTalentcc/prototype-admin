@@ -692,17 +692,17 @@ export default function AdminComunicacoesPage() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-semibold mb-2 text-gray-800 dark:text-gray-100" >
+        <h1 className="text-3xl font-semibold mb-2 lia-text-800 dark:text-lia-text-primary" >
           Comunicações
         </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400" >
+        <p className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
           Gerenciamento global de templates, webhooks e políticas de comunicação
         </p>
       </div>
 
       {successMessage && (
         <div className="mb-4 px-3 py-2 rounded-md flex items-center gap-2 bg-gray-200/30" style={{ borderColor: 'var(--wedo-cyan-border)', color: 'var(--wedo-cyan-dark)', border: '1px solid' }}>
-          <CheckCircle className="w-4 h-4 text-gray-700" />
+          <CheckCircle className="w-4 h-4 lia-text-700" />
           <span className="text-sm">{successMessage}</span>
         </div>
       )}
@@ -714,18 +714,18 @@ export default function AdminComunicacoesPage() {
         </div>
       )}
 
-      <div className="flex gap-2 mb-6 border-b border-gray-200 dark:border-gray-700" >
+      <div className="flex gap-2 mb-6 border-b border-lia-border-subtle dark:border-lia-border-subtle" >
         {tabs.map(tab => {
           const isActive = activeTab === tab.id
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors relative ${isActive ? 'text-gray-700 dark:text-gray-300' : 'text-gray-500 dark:text-gray-400'}`}
+              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors relative ${isActive ? 'lia-text-700 dark:text-lia-text-secondary' : 'lia-text-500 dark:text-lia-text-tertiary'}`}
             >
               <tab.icon className="w-4 h-4" />
               {tab.label}
-              {isActive && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900 dark:bg-gray-50" />}
+              {isActive && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900 dark:lia-bg-50" />}
             </button>
           )
         })}

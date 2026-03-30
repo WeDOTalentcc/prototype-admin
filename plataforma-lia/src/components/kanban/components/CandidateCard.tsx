@@ -164,11 +164,11 @@ export function CandidateCard({
       draggable
       onDragStart={handleDragStartInternal}
       onDragEnd={onDragEnd}
-      className={`bg-white dark:bg-gray-900 rounded-md border relative overflow-hidden ${
-        candidate.needsAction ? 'border-l-4 border-l-gray-800 border-gray-200 dark:border-gray-700' : 
-        (candidate.status === 'triado_aprovado' || candidate.status === 'triado') && stageId === 'screening' ? 'border-l-4 border-l-gray-300 dark:border-l-gray-600 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800' : 
-        'border-gray-200 dark:border-gray-700'
-      } ${isDragging ? 'opacity-50 cursor-grabbing' : 'cursor-move'} hover:transition-all duration-300 group`}
+      className={`bg-white dark:bg-lia-bg-primary rounded-md border relative overflow-hidden ${
+        candidate.needsAction ? 'border-l-4 border-l-gray-800 border-lia-border-subtle dark:border-lia-border-subtle' : 
+        (candidate.status === 'triado_aprovado' || candidate.status === 'triado') && stageId === 'screening' ? 'border-l-4 border-l-gray-300 dark:lia-border-l-600 border-lia-border-subtle dark:border-lia-border-subtle bg-gray-100 dark:bg-lia-bg-secondary' : 
+        'border-lia-border-subtle dark:border-lia-border-subtle'
+      } ${isDragging ? 'opacity-50 cursor-grabbing' : 'cursor-move'} transition-colors duration-300 group`}
       style={{animationDelay: `${index * 50}ms`,
         minHeight: '110px',
         transition: 'all 0.3s ease',
@@ -192,8 +192,8 @@ export function CandidateCard({
           className="px-2 py-0.5 border-b bg-gray-100"
         >
           <div className="flex items-center gap-1">
-            <Zap className="w-2 h-2 animate-pulse text-gray-500" />
-            <span className="text-micro font-bold text-gray-500">
+            <Zap className="w-2 h-2 animate-pulse lia-text-500" />
+            <span className="text-micro font-bold lia-text-500">
               Ação Necessária
             </span>
           </div>
@@ -205,80 +205,80 @@ export function CandidateCard({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-opacity bg-white/80 dark:bg-gray-900/80"
+                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-opacity bg-white/80 dark:bg-lia-bg-primary/80"
                 onClick={(e) => e.stopPropagation()}
                 title="Mais opções"
               >
-                <MoreVertical className="w-3 h-3 text-gray-600 dark:text-gray-400" />
+                <MoreVertical className="w-3 h-3 lia-text-600 dark:text-lia-text-tertiary" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent side="right" align="start" sideOffset={8} className="w-48">
               <DropdownMenuItem 
                 onClick={handleQuickAction('email')} 
-                className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer" 
+                className="text-xs lia-text-800 dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer" 
                
               >
-                <Mail className="w-3.5 h-3.5 mr-2 text-gray-500" />
+                <Mail className="w-3.5 h-3.5 mr-2 lia-text-500" />
                 Enviar Email
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={handleQuickAction('whatsapp')} 
-                className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer" 
+                className="text-xs lia-text-800 dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer" 
                
               >
-                <MessageCircle className="w-3.5 h-3.5 mr-2 text-gray-500" />
+                <MessageCircle className="w-3.5 h-3.5 mr-2 lia-text-500" />
                 Enviar WhatsApp
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={handleQuickAction('schedule_interview')} 
-                className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer" 
+                className="text-xs lia-text-800 dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer" 
                
               >
-                <Calendar className="w-3.5 h-3.5 mr-2 text-gray-500" />
+                <Calendar className="w-3.5 h-3.5 mr-2 lia-text-500" />
                 Agendar Entrevista
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={handleQuickAction('wsi_screening')} 
-                className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer" 
+                className="text-xs lia-text-800 dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer" 
                
               >
-                <ClipboardList className="w-3.5 h-3.5 mr-2 text-gray-500" />
+                <ClipboardList className="w-3.5 h-3.5 mr-2 lia-text-500" />
                 Triagem WSI
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={handleQuickAction('feedback')} 
-                className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer" 
+                className="text-xs lia-text-800 dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer" 
                
               >
-                <MessageSquareText className="w-3.5 h-3.5 mr-2 text-gray-500" />
+                <MessageSquareText className="w-3.5 h-3.5 mr-2 lia-text-500" />
                 Enviar Feedback
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 
                 onClick={handleQuickAction('toggle_favorite')} 
-                className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer" 
+                className="text-xs lia-text-800 dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer" 
                
               >
-                <Heart className={`w-3.5 h-3.5 mr-2 ${isFavorite ? 'fill-red-500 text-status-error' : 'text-gray-500'}`} />
+                <Heart className={`w-3.5 h-3.5 mr-2 ${isFavorite ? 'fill-red-500 text-status-error' : 'lia-text-500'}`} />
                 {isFavorite ? 'Remover dos Favoritos' : 'Adicionar a Favoritos'}
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={handleQuickAction('hide')} 
-                className="text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-50 cursor-pointer" 
+                className="text-xs lia-text-800 dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer" 
                
               >
-                <EyeOff className="w-3.5 h-3.5 mr-2 text-gray-500" />
+                <EyeOff className="w-3.5 h-3.5 mr-2 lia-text-500" />
                 Ocultar Candidato
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
           <button
-            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors bg-white/80 dark:bg-gray-900/80"
+            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors bg-white/80 dark:bg-lia-bg-primary/80"
             onClick={handleQuickAction('view_details')}
             title="Ver detalhes do candidato"
           >
-            <Eye className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
+            <Eye className="w-3.5 h-3.5 lia-text-800 dark:text-lia-text-primary" />
           </button>
         </div>
 
@@ -286,7 +286,7 @@ export function CandidateCard({
           <input
             type="checkbox"
             checked={isSelected}
-            className="w-3 h-3 rounded-md cursor-pointer flex-shrink-0 border border-gray-200"
+            className="w-3 h-3 rounded-md cursor-pointer flex-shrink-0 border border-lia-border-subtle"
             onClick={handleCheckboxClick}
             onChange={() => {}}
           />
@@ -294,7 +294,7 @@ export function CandidateCard({
           <div className="relative flex-shrink-0">
             <Avatar className="w-7 h-7">
               <AvatarImage src={avatarUrl} alt={candidate.name} />
-              <AvatarFallback className="text-micro font-medium text-gray-600">
+              <AvatarFallback className="text-micro font-medium lia-text-600">
                 {candidate.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2)}
               </AvatarFallback>
             </Avatar>
@@ -306,7 +306,7 @@ export function CandidateCard({
           </div>
 
           <div className="flex items-center gap-1 flex-1 min-w-0">
-            <h4 className="font-medium text-xs truncate text-gray-950 dark:text-gray-50">
+            <h4 className="font-medium text-xs truncate lia-text-950 dark:lia-text-50">
               {candidate.name}
             </h4>
           </div>
@@ -383,14 +383,14 @@ export function CandidateCard({
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-44">
-                <DropdownMenuLabel className="text-micro text-gray-500">Alterar Sub-status</DropdownMenuLabel>
+                <DropdownMenuLabel className="text-micro lia-text-500">Alterar Sub-status</DropdownMenuLabel>
                 {subStatusOptions.map((opt) => {
                   const display = SUB_STATUS_DISPLAY_MAP[opt.code]
                   const isCurrent = opt.code === (candidate.subStatus || candidate.sub_status)
                   return (
                     <DropdownMenuItem
                       key={opt.code}
-                      className={`text-xs cursor-pointer ${isCurrent ? 'bg-gray-100 dark:bg-gray-800' : ''}`}
+                      className={`text-xs cursor-pointer ${isCurrent ? 'bg-gray-100 dark:bg-lia-bg-secondary' : ''}`}
                       onClick={(e) => {
                         e.stopPropagation()
                         onSubStatusChange(candidate.id, opt.code, stageId)

@@ -1,0 +1,41 @@
+/* =============================================
+   WeDo DS — Dark Mode Overrides
+   Extracted from globals.css — Sprint 7
+   ============================================= */
+
+.dark {
+  --background: var(--deep-tech);
+  --foreground: var(--neutral-warm);
+  --card: 240 2% 15%;
+  --card-foreground: var(--neutral-warm);
+  --popover: var(--deep-tech);
+  --popover-foreground: var(--neutral-warm);
+  --primary: var(--neutral-warm);
+  --primary-foreground: var(--deep-tech);
+  --secondary: 240 2% 15%;
+  --secondary-foreground: var(--neutral-warm);
+  --muted: 240 2% 15%;
+  --muted-foreground: var(--neutral-cool);
+  --accent: 240 2% 15%;
+  --accent-foreground: var(--neutral-warm);
+  --destructive: var(--electric-red);
+  --destructive-foreground: var(--neutral-warm);
+  --border: 240 2% 20%;
+  --input: 240 2% 20%;
+  --ring: var(--neutral-warm);
+
+  --wedo-bg: var(--deep-tech);
+  --wedo-surface: 240 2% 15%;
+  --wedo-gray-25: 240 2% 15%;
+  --wedo-gray-50: 240 2% 18%;
+  --wedo-gray-100: 240 2% 20%;
+  --wedo-gray-200: 240 2% 25%;
+  --wedo-gray-300: 240 2% 35%;
+  --wedo-gray-400: var(--neutral-dark);
+  --wedo-gray-500: var(--neutral-cool);
+  --wedo-gray-600: 220 9% 84%;
+  --wedo-gray-700: 48 15% 94%;
+  --wedo-gray-800: var(--neutral-warm);
+  --wedo-gray-900: 0 0% 100%;
+  /* --eleven-text-secondary removido 2026-03-29 — use var(--lia-text-secondary) no dark mode */
+}

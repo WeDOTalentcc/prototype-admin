@@ -140,7 +140,7 @@ export function DashboardApp({ initialPage = "Funil de Talentos" }: DashboardApp
   }
 
   return (
-    <div className="h-screen bg-gray-50 dark:bg-gray-900 flex overflow-hidden">
+    <div className="h-screen bg-gray-50 dark:bg-lia-bg-primary flex overflow-hidden">
       <Sidebar
         currentPage={currentPage}
         onNavigate={handleNavigate}

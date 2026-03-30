@@ -359,10 +359,10 @@ export function BigFiveDashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-950 dark:text-gray-50 flex items-center gap-3">
-            <BarChart3 className="w-8 h-8 text-[var(--gray-400)]" />
+            <BarChart3 className="w-8 h-8 text-gray-400" />
             Dashboard Analytics Big Five
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-gray-600 dark:text-lia-text-tertiary mt-1">
             Análise científica de personalidades e predição de sucesso organizacional
           </p>
         </div>
@@ -379,15 +379,15 @@ export function BigFiveDashboardPage() {
       </div>
 
       {/* Filtros */}
-      <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-md">
+      <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
         <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-gray-800 dark:text-gray-200" />
-          <span className="text-sm font-medium text-gray-800 dark:text-gray-200">Filtros:</span>
+          <Filter className="w-4 h-4 text-gray-800 dark:text-lia-text-primary" />
+          <span className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">Filtros:</span>
         </div>
         <select
           value={selectedDepartment}
           onChange={(e) => setSelectedDepartment(e.target.value)}
-          className="px-3 py-1 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm"
+          className="px-3 py-1 rounded-md border border-lia-border-default dark:border-lia-border-default bg-white dark:bg-lia-bg-elevated text-sm"
         >
           <option value="Todos">Todos os Departamentos</option>
           {departmentData.map(dept => (
@@ -397,7 +397,7 @@ export function BigFiveDashboardPage() {
         <select
           value={selectedTimeRange}
           onChange={(e) => setSelectedTimeRange(e.target.value)}
-          className="px-3 py-1 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm"
+          className="px-3 py-1 rounded-md border border-lia-border-default dark:border-lia-border-default bg-white dark:bg-lia-bg-elevated text-sm"
         >
           <option value="3 meses">Últimos 3 meses</option>
           <option value="6 meses">Últimos 6 meses</option>
@@ -407,98 +407,98 @@ export function BigFiveDashboardPage() {
 
       {/* KPIs Principais */}
       <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
-        <Card style={{borderColor: 'var(--gray-400)'}} className="dark:border-gray-600">
+        <Card style={{borderColor: 'var(--gray-400)'}} className="dark:border-lia-border-default">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-gray-600 dark:text-gray-400">Contratações</p>
+                <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">Contratações</p>
                 <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">{kpis.totalHired}</p>
                 <p className="text-xs text-status-success flex items-center gap-1">
                   <ArrowUpRight className="w-3 h-3" />
                   +15% vs anterior
                 </p>
               </div>
-              <UserCheck className="w-8 h-8 text-[var(--gray-400)]" />
+              <UserCheck className="w-8 h-8 text-gray-400" />
             </div>
           </CardContent>
         </Card>
 
-        <Card style={{borderColor: 'var(--wedo-green-pastel)'}} className="dark:border-gray-600">
+        <Card style={{borderColor: 'var(--wedo-green-pastel)'}} className="dark:border-lia-border-default">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-gray-600 dark:text-gray-400">Performance Média</p>
+                <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">Performance Média</p>
                 <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">{kpis.avgPerformance}</p>
                 <p className="text-xs text-status-success flex items-center gap-1">
                   <ArrowUpRight className="w-3 h-3" />
                   +0.8 vs tradicional
                 </p>
               </div>
-              <Star className="w-8 h-8 text-[var(--wedo-green-pastel)]" />
+              <Star className="w-8 h-8 text-wedo-green-pastel" />
             </div>
           </CardContent>
         </Card>
 
-        <Card style={{borderColor: 'var(--status-warning)'}} className="dark:border-gray-600">
+        <Card style={{borderColor: 'var(--status-warning)'}} className="dark:border-lia-border-default">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-gray-600 dark:text-gray-400">Fit Cultural</p>
+                <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">Fit Cultural</p>
                 <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">{kpis.avgFit}%</p>
                 <p className="text-xs text-status-success flex items-center gap-1">
                   <ArrowUpRight className="w-3 h-3" />
                   +{kpis.accuracyGain}% precisão
                 </p>
               </div>
-              <Target className="w-8 h-8 text-[var(--status-warning)]" />
+              <Target className="w-8 h-8 text-status-warning" />
             </div>
           </CardContent>
         </Card>
 
-        <Card style={{borderColor: 'var(--gray-300)'}} className="dark:border-gray-600">
+        <Card style={{borderColor: 'var(--gray-300)'}} className="dark:border-lia-border-default">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-gray-600 dark:text-gray-400">Turnover</p>
+                <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">Turnover</p>
                 <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">{kpis.avgTurnover}%</p>
                 <p className="text-xs text-status-success flex items-center gap-1">
                   <ArrowDownRight className="w-3 h-3" />
                   -67% vs tradicional
                 </p>
               </div>
-              <UserX className="w-8 h-8 text-[var(--gray-300)]" />
+              <UserX className="w-8 h-8 text-gray-300" />
             </div>
           </CardContent>
         </Card>
 
-        <Card style={{borderColor: 'var(--status-error)'}} className="dark:border-gray-600">
+        <Card style={{borderColor: 'var(--status-error)'}} className="dark:border-lia-border-default">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-gray-600 dark:text-gray-400">ROI Melhoria</p>
+                <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">ROI Melhoria</p>
                 <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">{kpis.roiImprovement}%</p>
                 <p className="text-xs text-status-success flex items-center gap-1">
                   <DollarSign className="w-3 h-3" />
                   vs métodos tradicionais
                 </p>
               </div>
-              <TrendingUp className="w-8 h-8 text-[var(--status-error)]" />
+              <TrendingUp className="w-8 h-8 text-status-error" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-gray-300 dark:border-gray-600">
+        <Card className="border-lia-border-default dark:border-lia-border-default">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-gray-600 dark:text-gray-400">Tempo p/ Contratar</p>
+                <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">Tempo p/ Contratar</p>
                 <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">{mockCompanyData.averageTimeToHire}d</p>
                 <p className="text-xs text-status-success flex items-center gap-1">
                   <ArrowDownRight className="w-3 h-3" />
                   -23% vs anterior
                 </p>
               </div>
-              <Clock className="w-8 h-8 text-gray-800 dark:text-gray-200" />
+              <Clock className="w-8 h-8 text-gray-800 dark:text-lia-text-primary" />
             </div>
           </CardContent>
         </Card>
@@ -507,10 +507,10 @@ export function BigFiveDashboardPage() {
       {/* Gráficos Principais */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Distribuição Big Five da Empresa */}
-        <Card className="dark:border-gray-600">
+        <Card className="dark:border-lia-border-default">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <PieChart className="w-5 h-5 text-[var(--gray-400)]" />
+              <PieChart className="w-5 h-5 text-gray-400" />
               Distribuição Big Five - Empresa
             </CardTitle>
           </CardHeader>
@@ -522,10 +522,10 @@ export function BigFiveDashboardPage() {
         </Card>
 
         {/* Performance vs Big Five */}
-        <Card className="dark:border-gray-600">
+        <Card className="dark:border-lia-border-default">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-[var(--wedo-green-pastel)]" />
+              <BarChart3 className="w-5 h-5 text-wedo-green-pastel" />
               Correlação Performance x Big Five
             </CardTitle>
           </CardHeader>
@@ -540,10 +540,10 @@ export function BigFiveDashboardPage() {
       {/* Análises Avançadas */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Evolução Temporal */}
-        <Card className="dark:border-gray-600">
+        <Card className="dark:border-lia-border-default">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Activity className="w-5 h-5 text-[var(--status-warning)]" />
+              <Activity className="w-5 h-5 text-status-warning" />
               Evolução de Resultados (6 meses)
             </CardTitle>
           </CardHeader>
@@ -555,10 +555,10 @@ export function BigFiveDashboardPage() {
         </Card>
 
         {/* Predição vs Métodos Tradicionais */}
-        <Card className="dark:border-gray-600">
+        <Card className="dark:border-lia-border-default">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Target className="w-5 h-5 text-[var(--gray-300)]" />
+              <Target className="w-5 h-5 text-gray-300" />
               Precisão: Big Five vs Métodos Tradicionais
             </CardTitle>
           </CardHeader>
@@ -571,10 +571,10 @@ export function BigFiveDashboardPage() {
       </div>
 
       {/* Análise por Departamento */}
-      <Card className="dark:border-gray-600">
+      <Card className="dark:border-lia-border-default">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Building className="w-5 h-5 text-[var(--status-error)]" />
+            <Building className="w-5 h-5 text-status-error" />
             Perfil Big Five por Departamento
           </CardTitle>
         </CardHeader>
@@ -587,15 +587,15 @@ export function BigFiveDashboardPage() {
 
       {/* Insights Executivos */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card style={{borderColor: 'var(--gray-400)'}} className="dark:border-gray-600">
+        <Card style={{borderColor: 'var(--gray-400)'}} className="dark:border-lia-border-default">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <CheckCircle className="w-5 h-5 mt-1 text-[var(--wedo-green-pastel)]" />
+              <CheckCircle className="w-5 h-5 mt-1 text-wedo-green-pastel" />
               <div>
                 <h4 className="font-semibold text-gray-950 dark:text-gray-50 mb-1">
                   💡 Insight Principal
                 </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">
                   Candidatos com alta Conscienciosidade têm <strong>84% mais probabilidade</strong> de sucesso nos primeiros 6 meses.
                 </p>
               </div>
@@ -603,15 +603,15 @@ export function BigFiveDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card style={{borderColor: 'var(--status-warning)'}} className="dark:border-gray-600">
+        <Card style={{borderColor: 'var(--status-warning)'}} className="dark:border-lia-border-default">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <TrendingUp className="w-5 h-5 mt-1 text-[var(--wedo-green-pastel)]" />
+              <TrendingUp className="w-5 h-5 mt-1 text-wedo-green-pastel" />
               <div>
                 <h4 className="font-semibold text-gray-950 dark:text-gray-50 mb-1">
                   📈 Tendência Detectada
                 </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">
                   Departamento de <strong>Tecnologia</strong> precisa de candidatos com maior Abertura para inovação.
                 </p>
               </div>
@@ -619,15 +619,15 @@ export function BigFiveDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card style={{borderColor: 'var(--status-error)'}} className="dark:border-gray-600">
+        <Card style={{borderColor: 'var(--status-error)'}} className="dark:border-lia-border-default">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 mt-1 text-[var(--status-warning)]" />
+              <AlertTriangle className="w-5 h-5 mt-1 text-status-warning" />
               <div>
                 <h4 className="font-semibold text-gray-950 dark:text-gray-50 mb-1">
                   ⚠️ Recomendação
                 </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">
                   Implementar filtros Big Five nas vagas de <strong>Vendas</strong> pode reduzir turnover em 45%.
                 </p>
               </div>

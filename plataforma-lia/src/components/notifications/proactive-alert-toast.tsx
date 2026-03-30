@@ -32,7 +32,7 @@ const categoryConfig = {
   pipeline: {
     icon: TrendingDown,
     label: 'Pipeline',
-    color: 'text-gray-600 dark:text-gray-400'
+    color: 'text-gray-600 dark:text-lia-text-tertiary'
   },
   productivity: {
     icon: Clock,
@@ -52,16 +52,16 @@ const categoryConfig = {
   system: {
     icon: Settings,
     label: 'Sistema',
-    color: 'text-gray-600 dark:text-gray-400'
+    color: 'text-gray-600 dark:text-lia-text-tertiary'
   }
 }
 
 const severityConfig = {
   info: {
-    bg: 'bg-gray-100 dark:bg-gray-800',
-    border: 'border-gray-300 dark:border-gray-600',
-    icon: 'text-gray-600 dark:text-gray-400',
-    progressBg: 'bg-gray-700 dark:bg-gray-300'
+    bg: 'bg-gray-100 dark:bg-lia-bg-secondary',
+    border: 'border-lia-border-default dark:border-lia-border-default',
+    icon: 'text-gray-600 dark:text-lia-text-tertiary',
+    progressBg: 'bg-gray-700'
   },
   warning: {
     bg: 'bg-status-warning/10',
@@ -130,19 +130,19 @@ export function ProactiveAlertToast({
   return (
     <div
       className={cn(
-        "relative w-full max-w-md p-4 rounded-md border backdrop-blur-md",
+ "relative w-full max-w-md p-4 rounded-md border backdrop-blur-md",
         severity.bg,
         severity.border,
-        "transform transition-all duration-300 ease-out"
+        "transform transition-colors duration-300 ease-out"
       )}
       style={{animation: 'slideInFromRight 0.4s ease-out'}}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {autoDismiss && duration > 0 && (
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200 dark:bg-gray-700 rounded-b-xl overflow-hidden">
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200 dark:bg-lia-bg-elevated rounded-b-xl overflow-hidden">
           <div 
-            className={cn("h-full transition-all duration-100", severity.progressBg)}
+            className={cn("h-full transition-[width,height] duration-100", severity.progressBg)}
             style={{width: `${progress}%`}}
           />
         </div>
@@ -160,9 +160,9 @@ export function ProactiveAlertToast({
       <div className="flex items-start gap-3">
         <div className="flex-shrink-0">
           <div className={cn("w-10 h-10 rounded-full flex items-center justify-center", 
-            alert.severity === 'success' ? 'bg-status-success/15' :
+ alert.severity === 'success' ? 'bg-status-success/15' :
             alert.severity === 'urgent' ? 'bg-status-error/15 dark:bg-status-error/50' :
-            'bg-gray-100 dark:bg-gray-800')}>
+            'bg-gray-100 dark:bg-lia-bg-secondary')}>
             <LIAIcon size="sm" className="w-6 h-6" />
           </div>
         </div>
@@ -170,19 +170,19 @@ export function ProactiveAlertToast({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <CategoryIcon className={cn("w-3.5 h-3.5", category.color)} />
-            <span className="text-xs font-medium text-gray-800 dark:text-gray-200">
+            <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">
               {category.label}
             </span>
-            <span className="text-xs text-gray-600">
+            <span className="text-xs lia-text-base">
               {formatTime(alert.timestamp)}
             </span>
           </div>
           
-          <h4 className="font-sans text-sm font-semibold text-gray-950 dark:text-gray-50 mb-1">
+          <h4 className="font-sans text-sm font-semibold text-gray-950 mb-1">
             {alert.title}
           </h4>
           
-          <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+          <p className="text-sm text-gray-600 dark:text-lia-text-secondary leading-relaxed">
             {alert.message}
           </p>
 
@@ -216,9 +216,9 @@ export function ProactiveAlertToast({
           variant="ghost"
           size="sm"
           onClick={() => onDismiss(alert.id)}
-          className="h-6 w-6 p-0 hover:bg-black/5 dark:hover:bg-white/5 flex-shrink-0"
+          className="h-6 w-6 p-0 hover:bg-black/5 dark:hover:bg-lia-bg-primary/5 flex-shrink-0"
         >
-          <X className="w-4 h-4 text-gray-600" />
+          <X className="w-4 h-4 lia-text-base" />
         </Button>
       </div>
     </div>
@@ -255,7 +255,7 @@ export function ProactiveAlertContainer({
       
       {alerts.length > 3 && (
         <div className="pointer-events-auto text-center">
-          <span className="text-xs text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 px-2 py-1 rounded-full border">
+          <span className="text-xs text-gray-800 dark:text-lia-text-primary bg-white dark:bg-lia-bg-secondary px-2 py-1 rounded-full border">
             +{alerts.length - 3} alertas adicionais
           </span>
         </div>

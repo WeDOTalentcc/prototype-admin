@@ -61,12 +61,12 @@ import { useCompanyLiaInstructions } from "@/hooks/use-company-lia-instructions"
 const BENEFIT_CATEGORIES = [
   { id: "health", name: "Saúde & Bem-estar", icon: Stethoscope, color: "text-status-error", bgColor: "bg-status-error/10 dark:bg-status-error/20" },
   { id: "food", name: "Alimentação", icon: Utensils, color: "text-wedo-orange", bgColor: "bg-wedo-orange/10 dark:bg-wedo-orange/20" },
-  { id: "transport", name: "Transporte", icon: Car, color: "text-gray-700 dark:text-gray-300", bgColor: "bg-gray-100 dark:bg-gray-800" },
+  { id: "transport", name: "Transporte", icon: Car, color: "lia-text-700 dark:text-lia-text-secondary", bgColor: "bg-gray-100 dark:bg-lia-bg-secondary" },
   { id: "education", name: "Educação & Desenvolvimento", icon: GraduationCap, color: "text-wedo-purple", bgColor: "bg-wedo-purple/10 dark:bg-wedo-purple/20" },
   { id: "financial", name: "Financeiro", icon: Wallet, color: "text-status-success", bgColor: "bg-status-success/10 dark:bg-status-success/20" },
-  { id: "quality_life", name: "Qualidade de Vida", icon: Home, color: "text-gray-600 dark:text-gray-400", bgColor: "bg-gray-100 dark:bg-gray-800" },
+  { id: "quality_life", name: "Qualidade de Vida", icon: Home, color: "lia-text-600 dark:text-lia-text-tertiary", bgColor: "bg-gray-100 dark:bg-lia-bg-secondary" },
   { id: "family", name: "Família", icon: Baby, color: "text-wedo-magenta", bgColor: "bg-wedo-magenta/10 dark:bg-wedo-magenta/20" },
-  { id: "security", name: "Segurança", icon: Shield, color: "text-gray-800 dark:text-gray-200", bgColor: "bg-gray-50 dark:bg-gray-800/50" },
+  { id: "security", name: "Segurança", icon: Shield, color: "lia-text-800 dark:text-lia-text-primary", bgColor: "bg-gray-50 dark:bg-lia-bg-secondary/50" },
 ]
 
 const SENIORITY_LEVELS = [
@@ -500,7 +500,7 @@ export function BenefitsTab() {
       <div className="space-y-3">
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
-            <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2 text-gray-600 dark:text-gray-400" />
+            <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2 lia-text-600 dark:text-lia-text-tertiary" />
             <p className={`${textStyles.description}`}>Carregando benefícios...</p>
           </div>
         </div>
@@ -526,7 +526,7 @@ export function BenefitsTab() {
 
       <div className="flex items-center justify-between">
         <div>
-          <h2 className={`${textStyles.titleLarge} dark:text-gray-100`}>
+          <h2 className={`${textStyles.titleLarge} dark:text-lia-text-primary`}>
             Benefícios da Empresa
           </h2>
           <p className={`${textStyles.body} mt-1`}>
@@ -544,7 +544,7 @@ export function BenefitsTab() {
               onInstructionSave={handleLiaInstructionSave}
               compact
             />
-            <span className="text-xs text-gray-500 dark:text-gray-400">Consumido pela LIA</span>
+            <span className="text-xs lia-text-500 dark:text-lia-text-tertiary">Consumido pela LIA</span>
           </div>
           {!isEditingBenefits ? (
             <button
@@ -584,7 +584,7 @@ export function BenefitsTab() {
             size="sm"
             onClick={() => setShowTemplateModal(true)}
             disabled={!isEditingBenefits}
-            className="gap-1.5 rounded-md text-xs border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+            className="gap-1.5 rounded-md text-xs border-lia-border-default lia-text-700 dark:border-lia-border-default dark:text-lia-text-secondary hover:bg-gray-50 dark:hover:bg-gray-800"
           >
             <Library className="w-3.5 h-3.5" />
             Adicionar da Lista
@@ -596,7 +596,7 @@ export function BenefitsTab() {
               setShowBenefitModal(true)
             }}
             disabled={!isEditingBenefits}
-            className="gap-1.5 rounded-md text-xs bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+            className="gap-1.5 rounded-md text-xs bg-gray-900 text-white hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
           >
             <Plus className="w-3.5 h-3.5" />
             Novo Benefício
@@ -621,17 +621,17 @@ export function BenefitsTab() {
           const CategoryIcon = category.icon
 
           return (
-            <Card key={category.id} className={`${cardStyles.default} dark:border-gray-700/50 dark:bg-gray-800/80 backdrop-blur-sm rounded-md overflow-hidden`}>
+            <Card key={category.id} className={`${cardStyles.default} dark:border-lia-border-subtle/50 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md overflow-hidden`}>
               <div
                 className={`flex items-center justify-between p-3 cursor-pointer transition-colors ${category.bgColor}`}
                 onClick={() => toggleCategory(category.id)}
               >
                 <div className="flex items-center gap-2">
-                  <div className={`p-1.5 rounded-md bg-white dark:bg-gray-800`}>
+                  <div className={`p-1.5 rounded-md bg-white dark:bg-lia-bg-secondary`}>
                     <CategoryIcon className={`w-4 h-4 ${category.color}`} />
                   </div>
                   <div>
-                    <h3 className={`${textStyles.title} dark:text-gray-100`}>
+                    <h3 className={`${textStyles.title} dark:text-lia-text-primary`}>
                       {category.name}
                     </h3>
                     <p className={textStyles.caption}>
@@ -644,9 +644,9 @@ export function BenefitsTab() {
                     {categoryBenefits.filter(b => b.is_active).length} ativos
                   </Badge>
                   {isExpanded ? (
-                    <ChevronDown className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                    <ChevronDown className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                   ) : (
-                    <ChevronRight className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                    <ChevronRight className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                   )}
                 </div>
               </div>
@@ -655,14 +655,14 @@ export function BenefitsTab() {
                 <CardContent className="p-0">
                   {categoryBenefits.length === 0 ? (
                     <div className="p-3 text-center">
-                      <Gift className="w-4 h-4 mx-auto text-gray-300 dark:text-gray-600 mb-2" />
+                      <Gift className="w-4 h-4 mx-auto lia-text-300 dark:lia-text-600 mb-2" />
                       <p className={textStyles.bodySmall}>
                         Nenhum benefício nesta categoria
                       </p>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="mt-2 text-xs text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-50"
+                        className="mt-2 text-xs lia-text-700 hover:lia-text-900 dark:text-lia-text-secondary dark:hover:lia-text-50"
                         onClick={() => {
                           setEditingBenefit({ ...defaultBenefit, category: category.id })
                           setShowBenefitModal(true)
@@ -674,7 +674,7 @@ export function BenefitsTab() {
                       </Button>
                     </div>
                   ) : (
-                    <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                    <div className="divide-y divide-gray-100 dark:lia-divide-700">
                       {categoryBenefits.map((benefit) => (
                         <div
                           key={benefit.id}
@@ -684,7 +684,7 @@ export function BenefitsTab() {
                         >
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              <h4 className={`${textStyles.subtitle} dark:text-gray-100 truncate`}>
+                              <h4 className={`${textStyles.subtitle} dark:text-lia-text-primary truncate`}>
                                 {benefit.name}
                               </h4>
                               {benefit.is_highlighted && (
@@ -700,7 +700,7 @@ export function BenefitsTab() {
                             <p className={`${textStyles.description} truncate mb-1.5`}>
                               {benefit.description || 'Sem descrição'}
                             </p>
-                            <div className="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
+                            <div className="flex items-center gap-3 text-xs lia-text-600 dark:text-lia-text-tertiary">
                               <span className="flex items-center gap-1">
                                 <DollarSign className="w-3.5 h-3.5" />
                                 {formatBenefitValue(benefit)}
@@ -714,7 +714,7 @@ export function BenefitsTab() {
                                 {getWaitingPeriodLabel(benefit.waiting_period_days)}
                               </span>
                               {benefit.provider && (
-                                <span className="text-gray-600 dark:text-gray-400">
+                                <span className="lia-text-600 dark:text-lia-text-tertiary">
                                   {benefit.provider}
                                 </span>
                               )}
@@ -738,7 +738,7 @@ export function BenefitsTab() {
                                     setShowBenefitModal(true)
                                   }}
                                 >
-                                  <Pencil className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                                  <Pencil className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
                                 </Button>
                                 <Button
                                   variant="ghost"
@@ -936,12 +936,12 @@ export function BenefitsTab() {
                 </div>
               </div>
 
-              <div className="border-t border-gray-100 dark:border-gray-800 pt-3 space-y-2">
+              <div className="border-t border-lia-border-subtle dark:lia-border-800 pt-3 space-y-2">
                 <h4 className={`${textStyles.labelSmall} uppercase tracking-wider`}>
                   Configurações
                 </h4>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="flex items-center justify-between p-2.5 rounded-md bg-gray-50 dark:bg-gray-800">
+                  <div className="flex items-center justify-between p-2.5 rounded-md bg-gray-50 dark:bg-lia-bg-secondary">
                     <div>
                       <Label className={textStyles.label}>Ativo</Label>
                       <p className={textStyles.caption}>Disponível para colaboradores</p>
@@ -952,7 +952,7 @@ export function BenefitsTab() {
                     />
                   </div>
 
-                  <div className="flex items-center justify-between p-2.5 rounded-md bg-gray-50 dark:bg-gray-800">
+                  <div className="flex items-center justify-between p-2.5 rounded-md bg-gray-50 dark:bg-lia-bg-secondary">
                     <div>
                       <Label className={textStyles.label}>Destaque</Label>
                       <p className={textStyles.caption}>Exibir com destaque</p>
@@ -963,7 +963,7 @@ export function BenefitsTab() {
                     />
                   </div>
 
-                  <div className="flex items-center justify-between p-2.5 rounded-md bg-gray-50 dark:bg-gray-800">
+                  <div className="flex items-center justify-between p-2.5 rounded-md bg-gray-50 dark:bg-lia-bg-secondary">
                     <div>
                       <Label className={textStyles.label}>Obrigatório</Label>
                       <p className={textStyles.caption}>Adesão obrigatória</p>
@@ -974,7 +974,7 @@ export function BenefitsTab() {
                     />
                   </div>
 
-                  <div className="flex items-center justify-between p-2.5 rounded-md bg-gray-50 dark:bg-gray-800">
+                  <div className="flex items-center justify-between p-2.5 rounded-md bg-gray-50 dark:bg-lia-bg-secondary">
                     <div>
                       <Label className={textStyles.label}>Desconto em Folha</Label>
                       <p className={textStyles.caption}>Valor descontado do salário</p>
@@ -1003,7 +1003,7 @@ export function BenefitsTab() {
             <Button
               onClick={() => editingBenefit && handleSaveBenefit(editingBenefit)}
               disabled={isSaving || !editingBenefit?.name}
-              className="rounded-md text-xs bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+              className="rounded-md text-xs bg-gray-900 text-white hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
             >
               {isSaving ? (
                 <>
@@ -1022,7 +1022,7 @@ export function BenefitsTab() {
         <DraggableDialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-hidden flex flex-col p-3">
           <DialogHeader className="flex-shrink-0 pb-2">
             <DialogTitle className={`flex items-center gap-2 ${textStyles.h3}`}>
-              <Library className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+              <Library className="w-4 h-4 lia-text-700 dark:text-lia-text-secondary" />
               Biblioteca de Benefícios
             </DialogTitle>
             <DialogDescription className={`${textStyles.description}`}>
@@ -1033,7 +1033,7 @@ export function BenefitsTab() {
           <div className="flex-shrink-0 space-y-2 py-1.5">
             <div className="flex gap-2">
               <div className="relative flex-1">
-                <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+                <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 lia-text-500 dark:text-lia-text-tertiary" />
                 <Input
                   placeholder="Buscar benefício..."
                   value={templateSearch}
@@ -1081,20 +1081,20 @@ export function BenefitsTab() {
             {isLoadingTemplates ? (
               <div className="flex items-center justify-center py-6">
                 <div className="text-center">
-                  <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2 text-gray-600 dark:text-gray-400" />
+                  <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2 lia-text-600 dark:text-lia-text-tertiary" />
                   <p className={`${textStyles.description}`}>Carregando...</p>
                 </div>
               </div>
             ) : filteredTemplates.length === 0 ? (
               <div className="text-center py-6">
-                <Gift className="w-4 h-4 mx-auto text-gray-300 dark:text-gray-600 mb-2" />
+                <Gift className="w-4 h-4 mx-auto lia-text-300 dark:lia-text-600 mb-2" />
                 <p className={`${textStyles.description}`}>
                   Nenhum benefício encontrado
                 </p>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="mt-1 h-6 text-xs text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-50"
+                  className="mt-1 h-6 text-xs lia-text-700 hover:lia-text-900 dark:text-lia-text-secondary dark:hover:lia-text-50"
                   onClick={() => { setTemplateSearch(""); setTemplateCategoryFilter("all"); }}
                 >
                   Limpar filtros
@@ -1124,10 +1124,10 @@ export function BenefitsTab() {
                         return (
                           <div
                             key={template.id}
-                            className={`p-2 border rounded-md cursor-pointer transition-all ${
+                            className={`p-2 border rounded-md cursor-pointer transition-colors ${
                               alreadyAdded 
                                 ? 'bg-status-success/10 dark:bg-status-success/20 border-status-success/30 dark:border-status-success/30' 
-                                : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-600 hover:'
+                                : 'bg-white dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-600 hover:'
                             }`}
                             onClick={() => !alreadyAdded && handleSelectTemplate(template)}
                           >
@@ -1150,7 +1150,7 @@ export function BenefitsTab() {
                                   <Check className="w-3.5 h-3.5" />
                                 </div>
                               ) : (
-                                <Plus className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+                                <Plus className="w-3.5 h-3.5 lia-text-400 dark:lia-text-500 flex-shrink-0" />
                               )}
                             </div>
                           </div>

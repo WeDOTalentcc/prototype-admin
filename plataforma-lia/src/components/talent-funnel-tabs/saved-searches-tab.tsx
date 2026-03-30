@@ -205,20 +205,20 @@ export function SavedSearchesTab({
     const isAIMode = search.mode === 'natural' || search.mode === 'similar'
 
     return (
-      <Card className="group hover:transition-all border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500">
+      <Card className="group transition-colors border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500">
         <CardContent className="p-4">
           <div className="flex items-start gap-4">
             <div 
               className={`flex-shrink-0 w-10 h-10 rounded-md flex items-center justify-center ${
- isAIMode ? 'bg-white border border-gray-200 dark:border-gray-700' : 'bg-gray-100 dark:bg-gray-800'
-              }`}
+ isAIMode ? 'bg-white border border-lia-border-subtle dark:border-lia-border-subtle' : 'bg-gray-100 dark:bg-lia-bg-secondary'
+ }`}
             >
- <ModeIcon className={`w-5 h-5 ${isAIMode ? 'text-gray-600' : 'text-gray-700 dark:text-gray-300'}`} />
+ <ModeIcon className={`w-5 h-5 ${isAIMode ? 'text-gray-600' : 'text-gray-700 dark:text-lia-text-secondary'}`} />
             </div>
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-medium text-gray-950 dark:text-gray-50 truncate">
+                <h3 className="font-medium text-gray-950 truncate">
                   {search.name}
                 </h3>
                 {search.isFavorite && (
@@ -227,23 +227,23 @@ export function SavedSearchesTab({
               </div>
 
               {search.description && (
-                <p className="text-sm text-gray-800 dark:text-gray-200 mb-2 line-clamp-1">
+                <p className="text-sm text-gray-800 dark:text-lia-text-primary mb-2 line-clamp-1">
                   {search.description}
                 </p>
               )}
 
-              <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded-md mb-3">
-                <code className="text-xs text-gray-600 dark:text-gray-300 line-clamp-2">
+              <div className="p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md mb-3">
+                <code className="text-xs text-gray-600 dark:text-lia-text-secondary line-clamp-2">
                   {search.query}
                 </code>
               </div>
 
-              <div className="flex items-center gap-4 text-xs text-gray-800 dark:text-gray-200">
+              <div className="flex items-center gap-4 text-xs text-gray-800 dark:text-lia-text-primary">
                 <Badge variant="outline" className="h-5 text-xs px-1.5">
                   {getModeLabel(search.mode)}
                 </Badge>
                 <span className="flex items-center gap-1">
-                  <SourceIcon className={`w-3 h-3 ${search.source === 'hybrid' ? 'text-gray-600 dark:text-gray-400' : ''}`} />
+                  <SourceIcon className={`w-3 h-3 ${search.source === 'hybrid' ? 'text-gray-600 dark:text-lia-text-tertiary' : ''}`} />
                   {getSourceLabel(search.source)}
                 </span>
                 <span className="flex items-center gap-1">
@@ -311,11 +311,11 @@ export function SavedSearchesTab({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-gray-950 dark:text-gray-50 font-['Open_Sans',sans-serif] flex items-center gap-2">
-            <Bookmark className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+          <h2 className="text-lg font-semibold text-gray-950 font-['Open_Sans',sans-serif] flex items-center gap-2">
+            <Bookmark className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
             Buscas Salvas
           </h2>
-          <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+          <p className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-0.5">
             {savedSearches.length} {savedSearches.length === 1 ? 'busca salva' : 'buscas salvas'} • {totalUsage} {totalUsage === 1 ? 'execução' : 'execuções'} no total
           </p>
         </div>
@@ -323,7 +323,7 @@ export function SavedSearchesTab({
 
       {savedSearches.length > 3 && (
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 dark:text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
           <Input
             placeholder="Filtrar buscas salvas..."
             value={searchFilter}
@@ -337,12 +337,12 @@ export function SavedSearchesTab({
         <div className="grid grid-cols-3 gap-4">
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-100 dark:bg-gray-800">
-                <Bookmark className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-100 dark:bg-lia-bg-secondary">
+                <Bookmark className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">{savedSearches.length}</p>
-                <p className="text-xs text-gray-800 dark:text-gray-200">Buscas Salvas</p>
+                <p className="text-2xl font-bold text-gray-950">{savedSearches.length}</p>
+                <p className="text-xs text-gray-800 dark:text-lia-text-primary">Buscas Salvas</p>
               </div>
             </CardContent>
           </Card>
@@ -353,8 +353,8 @@ export function SavedSearchesTab({
                 <TrendingUp className="w-5 h-5 text-status-success" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">{totalUsage}</p>
-                <p className="text-xs text-gray-800 dark:text-gray-200">Execuções</p>
+                <p className="text-2xl font-bold text-gray-950">{totalUsage}</p>
+                <p className="text-xs text-gray-800 dark:text-lia-text-primary">Execuções</p>
               </div>
             </CardContent>
           </Card>
@@ -365,8 +365,8 @@ export function SavedSearchesTab({
                 <Star className="w-5 h-5 text-wedo-orange" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">{favoriteSearches.length}</p>
-                <p className="text-xs text-gray-800 dark:text-gray-200">Favoritas</p>
+                <p className="text-2xl font-bold text-gray-950">{favoriteSearches.length}</p>
+                <p className="text-xs text-gray-800 dark:text-lia-text-primary">Favoritas</p>
               </div>
             </CardContent>
           </Card>
@@ -377,7 +377,7 @@ export function SavedSearchesTab({
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <Star className="w-4 h-4 text-wedo-orange fill-current" />
-            <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+            <span className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
               Favoritas ({favoriteSearches.length})
             </span>
           </div>
@@ -393,8 +393,8 @@ export function SavedSearchesTab({
         <div className="space-y-3">
           {favoriteSearches.length > 0 && (
             <div className="flex items-center gap-2">
-              <Bookmark className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-              <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+              <Bookmark className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+              <span className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
                 Outras ({regularSearches.length})
               </span>
             </div>
@@ -408,14 +408,14 @@ export function SavedSearchesTab({
       )}
 
       {savedSearches.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-center bg-[var(--lia-bg-secondary)] dark:bg-gray-900/50 rounded-md border border-[var(--lia-border-subtle)] dark:border-gray-800">
-          <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3 bg-[var(--lia-bg-tertiary)] dark:bg-gray-800">
-            <Bookmark className="w-5 h-5 text-[var(--lia-text-tertiary)]" />
+        <div className="flex flex-col items-center justify-center py-12 text-center bg-[var(--lia-bg-secondary)] dark:bg-lia-bg-primary/50 rounded-md border border-[var(--lia-border-subtle)]">
+          <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3 bg-[var(--lia-bg-tertiary)] dark:bg-lia-bg-secondary">
+            <Bookmark className="w-5 h-5 text-lia-text-tertiary" />
           </div>
-          <h3 className="text-sm font-medium text-[var(--lia-text-primary)] dark:text-gray-200 mb-1">
+          <h3 className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-1">
             Nenhuma busca salva
           </h3>
-          <p className="text-xs text-[var(--lia-text-tertiary)] dark:text-gray-500 max-w-sm mb-3 leading-relaxed">
+          <p className="text-xs text-lia-text-tertiary max-w-sm mb-3 leading-relaxed">
             Faça uma busca e clique em "Salvar" para guardar suas pesquisas.
           </p>
           <Button 
@@ -431,8 +431,8 @@ export function SavedSearchesTab({
 
       {filteredSearches.length === 0 && savedSearches.length > 0 && (
         <div className="flex flex-col items-center justify-center py-10 text-center">
-          <AlertCircle className="w-8 h-8 text-[var(--lia-text-disabled)] mb-2" />
-          <p className="text-xs text-[var(--lia-text-tertiary)]">
+          <AlertCircle className="w-8 h-8 text-lia-text-disabled mb-2" />
+          <p className="text-xs text-lia-text-tertiary">
             Nenhuma busca encontrada para "{searchFilter}"
           </p>
         </div>
@@ -452,7 +452,7 @@ export function SavedSearchesTab({
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-800 dark:text-gray-200">
+              <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
                 Nome da Busca *
               </label>
               <Input
@@ -463,7 +463,7 @@ export function SavedSearchesTab({
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-800 dark:text-gray-200">
+              <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
                 Descrição (opcional)
               </label>
               <Input
@@ -474,7 +474,7 @@ export function SavedSearchesTab({
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-800 dark:text-gray-200">
+              <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
                 Query de Busca *
               </label>
               <Textarea
@@ -487,7 +487,7 @@ export function SavedSearchesTab({
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
                   Modo de Busca
                 </label>
                 <div className="flex flex-wrap gap-1">
@@ -510,7 +510,7 @@ export function SavedSearchesTab({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
                   Fonte
                 </label>
                 <div className="flex flex-wrap gap-1">
@@ -554,14 +554,14 @@ export function SavedSearchesTab({
         <DialogContent className="sm:max-w-panel-xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Edit className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <Edit className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
               Editar Busca
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-800 dark:text-gray-200">
+              <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
                 Nome da Busca *
               </label>
               <Input
@@ -571,7 +571,7 @@ export function SavedSearchesTab({
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-800 dark:text-gray-200">
+              <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
                 Descrição (opcional)
               </label>
               <Input
@@ -581,7 +581,7 @@ export function SavedSearchesTab({
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-800 dark:text-gray-200">
+              <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
                 Query de Busca *
               </label>
               <Textarea

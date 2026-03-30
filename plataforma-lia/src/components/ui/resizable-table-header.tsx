@@ -60,11 +60,11 @@ export function ResizableTableHeader({
   return (
     <th
       className={cn(
-        "relative py-1.5 px-3 font-medium text-gray-800 dark:text-gray-200 text-xs uppercase tracking-wide select-none transition-colors",
+ "relative py-1.5 px-3 font-medium text-gray-800 dark:text-lia-text-primary text-xs uppercase tracking-wide select-none transition-colors",
         alignClass,
-        isDragging && !isFixed && "opacity-50 bg-gray-100 dark:bg-gray-800",
-        isDragOver && !isFixed && "bg-gray-100 dark:bg-gray-800 border-l-2 border-gray-400",
-        isResizing && "bg-gray-100 dark:bg-gray-800",
+        isDragging && !isFixed && "opacity-50 bg-gray-100 dark:bg-lia-bg-secondary",
+        isDragOver && !isFixed && "bg-gray-100 dark:bg-lia-bg-secondary border-l-2 border-gray-400",
+        isResizing && "bg-gray-100 dark:bg-lia-bg-secondary",
         className
       )}
       style={{width: `${safeWidth}px`, 
@@ -79,7 +79,7 @@ export function ResizableTableHeader({
       <div className="flex items-center gap-1 group">
         {!isFixed && onDragStart && (
           <GripVertical 
-            className="w-3 h-3 text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing flex-shrink-0" 
+            className="w-3 h-3 lia-text-base opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing flex-shrink-0" 
           />
         )}
         
@@ -87,8 +87,8 @@ export function ResizableTableHeader({
           <button
             onClick={sortable ? onSort : undefined}
             className={cn(
-              "flex items-center gap-1 flex-1 min-w-0",
-              sortable && "cursor-pointer hover:text-gray-950 dark:hover:text-gray-50"
+ "flex items-center gap-1 flex-1 min-w-0",
+              sortable && "cursor-pointer hover:text-gray-950 dark:hover:lia-text-subtle"
             )}
             title={sortable ? `Ordenar por ${label}` : undefined}
           >
@@ -97,8 +97,8 @@ export function ResizableTableHeader({
             </span>
             {sortable && isSorted ? (
               sortDirection === "asc" 
-                ? <ArrowUp className="w-3 h-3 flex-shrink-0 text-gray-700 dark:text-gray-300" />
-                : <ArrowDown className="w-3 h-3 flex-shrink-0 text-gray-700 dark:text-gray-300" />
+                ? <ArrowUp className="w-3 h-3 flex-shrink-0 text-gray-700 dark:text-lia-text-secondary" />
+                : <ArrowDown className="w-3 h-3 flex-shrink-0 text-gray-700 dark:text-lia-text-secondary" />
             ) : sortable && (
               <ChevronsUpDown className="w-3 h-3 flex-shrink-0 opacity-0 group-hover:opacity-50 transition-opacity" />
             )}
@@ -113,7 +113,7 @@ export function ResizableTableHeader({
           onClick={(e) => e.stopPropagation()}
           title="Arraste para redimensionar"
         >
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 transition-colors" />
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-gray-300 hover:bg-gray-400 transition-colors" />
         </div>
       )}
     </th>
@@ -127,7 +127,7 @@ interface TableHeaderRowProps {
 
 export function TableHeaderRow({ children, className }: TableHeaderRowProps) {
   return (
-    <thead className={cn("bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10", className)}>
+    <thead className={cn("bg-white dark:bg-lia-bg-primary border-b border-lia-border-subtle dark:border-lia-border-subtle sticky top-0 z-10", className)}>
       <tr>{children}</tr>
     </thead>
   )

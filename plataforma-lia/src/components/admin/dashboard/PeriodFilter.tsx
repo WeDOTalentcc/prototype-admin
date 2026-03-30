@@ -205,14 +205,14 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
 
   return (
     <div className={`relative inline-flex items-center gap-2 ${className}`}>
-      <div className="flex items-center gap-1.5 text-sm text-gray-500">
-        <Calendar className="w-4 h-4 text-gray-700" />
+      <div className="flex items-center gap-1.5 text-sm lia-text-secondary">
+        <Calendar className="w-4 h-4 lia-text-base" />
         <span className="font-medium">Período:</span>
       </div>
 
       <Select value={selectedPeriod} onValueChange={(v) => handlePeriodChange(v as PeriodOption)}>
         <SelectTrigger 
-          className="w-[160px] h-9 text-sm border-gray-200 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+          className="w-[160px] h-9 text-sm border-lia-border-subtle focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
           
         >
           <SelectValue placeholder="Selecionar período" />
@@ -232,22 +232,22 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
 
       {showCustomPicker && (
         <div ref={pickerRef} className="absolute top-full left-0 mt-2 z-50">
-          <Card className="p-4 bg-white min-w-[320px]">
+          <Card className="p-4 bg-lia-bg-primary min-w-[320px]">
             <div className="flex items-center justify-between mb-4">
               <button
                 onClick={prevMonth}
                 className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
               >
-                <ChevronLeft className="w-4 h-4 text-gray-600" />
+                <ChevronLeft className="w-4 h-4 lia-text-base" />
               </button>
-              <span className="text-sm font-medium text-gray-950 dark:text-gray-50">
+              <span className="text-sm font-medium text-gray-950">
                 {MONTHS_PT[currentMonth.getMonth()]} {currentMonth.getFullYear()}
               </span>
               <button
                 onClick={nextMonth}
                 className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
               >
-                <ChevronRight className="w-4 h-4 text-gray-600" />
+                <ChevronRight className="w-4 h-4 lia-text-base" />
               </button>
             </div>
 
@@ -255,7 +255,7 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
               {DAYS_PT.map((day) => (
                 <div
                   key={day}
-                  className="text-center text-xs text-gray-500 py-1"
+                  className="text-center text-xs lia-text-secondary py-1"
                  
                 >
                   {day}
@@ -278,12 +278,12 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
                     key={formatDateISO(date)}
                     onClick={() => handleDateClick(date)}
                     className={`
-                      h-8 text-xs rounded-md transition-colors
+ h-8 text-xs rounded-md transition-colors
                       ${isSelected
-                        ? "bg-gray-900 dark:bg-gray-50 text-white font-medium"
+                        ? "bg-gray-900 text-white font-medium"
                         : isInRange
-                          ? "bg-gray-100 dark:bg-gray-800 text-gray-950 dark:text-gray-50"
-                          : "hover:bg-gray-100 text-gray-800 dark:text-gray-200"
+                          ? "bg-gray-100 dark:bg-lia-bg-secondary text-gray-950"
+                          : "hover:bg-gray-100 text-gray-800 dark:text-lia-text-primary"
                       }
                       ${isToday && !isSelected ? "ring-1 ring-gray-900/20" : ""}
                     `}
@@ -296,9 +296,9 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
             </div>
 
             {tempStart && tempEnd && (
-              <div className="mt-3 pt-3 border-t border-gray-100">
-                <p className="text-xs text-gray-600 mb-2">
-                  Selecionado: <span className="font-medium text-gray-950 dark:text-gray-50">
+              <div className="mt-3 pt-3 border-t border-lia-border-subtle">
+                <p className="text-xs lia-text-base mb-2">
+                  Selecionado: <span className="font-medium text-gray-950">
                     {formatDateFull(tempStart)} - {formatDateFull(tempEnd)}
                   </span>
                 </p>

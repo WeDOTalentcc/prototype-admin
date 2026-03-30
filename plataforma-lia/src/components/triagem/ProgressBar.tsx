@@ -15,7 +15,7 @@ export function ProgressBar({ progress, className }: ProgressBarProps) {
   return (
     <div
       className={cn(
-        "sticky top-0 z-20 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3",
+ "sticky top-0 z-20 bg-white dark:bg-lia-bg-secondary border-b border-lia-border-subtle dark:border-lia-border-subtle px-4 py-3",
         className
       )}
       role="progressbar"
@@ -25,7 +25,7 @@ export function ProgressBar({ progress, className }: ProgressBarProps) {
       aria-label={`Etapa ${progress.currentBlock} de ${progress.totalBlocks}: ${progress.currentBlockName}`}
     >
       <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-medium font-['Open_Sans',sans-serif] text-gray-700 dark:text-gray-300">
+        <span className="text-xs font-medium font-['Open_Sans',sans-serif] text-gray-700 dark:text-lia-text-secondary">
           Etapa{" "}
           <span className="font-['Inter',sans-serif]">{progress.currentBlock}</span>
           {" "}de{" "}
@@ -33,13 +33,13 @@ export function ProgressBar({ progress, className }: ProgressBarProps) {
           {" · "}
           {progress.currentBlockName}
         </span>
-        <span className="text-micro font-['Inter',sans-serif] text-gray-400 dark:text-gray-500">
+        <span className="text-micro font-['Inter',sans-serif] text-gray-400">
           {percentage}%
         </span>
       </div>
-      <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+      <div className="w-full h-1.5 bg-gray-200 dark:bg-lia-bg-elevated rounded-full overflow-hidden">
         <div
-          className="h-full bg-gray-900 dark:bg-gray-100 rounded-full transition-all duration-500 ease-out"
+          className="h-full bg-gray-900 rounded-full transition-[width,height] duration-500 ease-out"
           style={{width: `${percentage}%`}}
         />
       </div>

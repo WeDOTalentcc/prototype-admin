@@ -30,24 +30,24 @@ export function MetricCard({
       case "down":
         return "text-status-error"
       default:
-        return "text-gray-500"
+        return "lia-text-secondary"
     }
   }
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
+        <CardTitle className="text-sm font-medium text-gray-500 dark:text-lia-text-tertiary">
           {title}
         </CardTitle>
-        <Icon className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+        <Icon className="w-4 h-4 text-gray-400" />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+        <div className="text-2xl font-bold text-gray-800 dark:text-lia-text-primary">
           {value}
         </div>
         {(trend || subtitle) && (
-          <p className="text-xs mt-1 text-gray-400 dark:text-gray-500">
+          <p className="text-xs mt-1 text-gray-400">
             {trend && <span className={getTrendColor()}>{trend}</span>}
             {trend && trendLabel && " "}
             {trendLabel || subtitle}

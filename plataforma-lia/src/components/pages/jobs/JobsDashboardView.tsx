@@ -29,7 +29,7 @@ export function JobsDashboardView({
     <div className="min-h-[60vh] flex flex-col items-center justify-center py-8">
       <div className="w-full max-w-[780px] mx-auto px-4 flex flex-col">
         <LiaPromptHeader title="Posso te ajudar com análises de vagas?" />
-        <div className="rounded-xl overflow-hidden bg-white border border-gray-200">
+        <div className="rounded-xl overflow-hidden bg-lia-bg-primary border border-lia-border-subtle">
           <div className="px-4 pt-4 pb-4 border-b border-b-gray-200">
             <div className="flex flex-wrap items-center gap-2">
               <button
@@ -37,21 +37,21 @@ export function JobsDashboardView({
                   onSetActiveFilter('todas')
                   setTimeout(() => onOpenJobCreationChat('Criar nova vaga'), 100)
                 }}
-                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-all bg-gray-100 text-gray-950 hover:bg-gray-900 hover:text-white font-open-sans"
+                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-gray-950 hover:bg-gray-900 hover:text-white font-open-sans"
               >
                 <Plus className="w-3.5 h-3.5 text-gray-800 group-hover:text-white transition-colors" />
                 Criar nova vaga
               </button>
               <button
                 onClick={() => onSetActiveFilter('ativas')}
-                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-all bg-gray-100 text-gray-950 hover:bg-gray-900 hover:text-white font-open-sans"
+                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-gray-950 hover:bg-gray-900 hover:text-white font-open-sans"
               >
                 <Briefcase className="w-3.5 h-3.5 text-gray-800 group-hover:text-white transition-colors" />
                 Ver minhas vagas
               </button>
               <button
                 onClick={() => onSetActiveFilter('todas')}
-                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-all bg-gray-100 text-gray-950 hover:bg-gray-900 hover:text-white font-open-sans"
+                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-gray-950 hover:bg-gray-900 hover:text-white font-open-sans"
               >
                 <Building2 className="w-3.5 h-3.5 text-gray-800 group-hover:text-white transition-colors" />
                 Ver todas as vagas
@@ -61,7 +61,7 @@ export function JobsDashboardView({
                   onSetActiveFilter('todas')
                   setTimeout(() => onOpenGeneralChat('Resumo das minhas vagas ativas'), 100)
                 }}
-                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-all bg-gray-100 text-gray-950 hover:bg-gray-900 hover:text-white font-open-sans"
+                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-gray-950 hover:bg-gray-900 hover:text-white font-open-sans"
               >
                 <BarChart3 className="w-3.5 h-3.5 text-gray-800 group-hover:text-white transition-colors" />
                 Resumo das vagas
@@ -76,7 +76,7 @@ export function JobsDashboardView({
           </div>
 
           <div className="px-4 pt-4 pb-4">
-            <div className="flex items-center gap-3 px-4 py-3 bg-white rounded-md border border-gray-200 transition-colors focus-within:border-gray-400 focus-within:ring-1 focus-within:ring-gray-900/20">
+            <div className="flex items-center gap-3 px-4 py-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle transition-colors focus-within:border-gray-400 focus-within:ring-1 focus-within:ring-gray-900/20">
               <input
                 type="text"
                 placeholder="Como posso te ajudar com suas vagas hoje?"
@@ -133,7 +133,7 @@ export function JobsDashboardView({
                     onSetActiveFilter('todas')
                     setTimeout(() => onOpenGeneralChat(suggestion), 100)
                   }}
-                  className="inline-flex items-center px-2.5 py-0.5 text-xs rounded-full transition-all bg-gray-50 text-gray-800 border border-gray-200 hover:text-gray-900 hover:bg-gray-100"
+                  className="inline-flex items-center px-2.5 py-0.5 text-xs rounded-full transition-[width,height] bg-gray-50 text-gray-800 border border-lia-border-subtle hover:text-gray-900 hover:bg-gray-100"
                  
                 >
                   {suggestion}

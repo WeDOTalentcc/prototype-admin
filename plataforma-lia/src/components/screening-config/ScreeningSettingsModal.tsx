@@ -68,17 +68,17 @@ export function ScreeningSettingsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md rounded-md bg-white border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-        <DialogHeader className="pb-4 border-b border-gray-200 dark:border-gray-700">
+      <DialogContent className="max-w-md rounded-md bg-white border border-lia-border-subtle dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <DialogHeader className="pb-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-100 dark:bg-gray-800">
-              <Settings className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+            <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-100 dark:bg-lia-bg-secondary">
+              <Settings className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
             </div>
             <div>
               <DialogTitle className="text-sm font-semibold text-gray-950 font-['Open_Sans',sans-serif]">
                 Configurações de Triagem
               </DialogTitle>
-              <p className="text-xs text-gray-600 mt-0.5">
+              <p className="text-xs lia-text-base mt-0.5">
                 Defina os parâmetros para aprovação e timeout
               </p>
             </div>
@@ -89,10 +89,10 @@ export function ScreeningSettingsModal({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Target className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                <Target className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
                 <Label className="text-xs font-medium text-gray-950">Score Mínimo para Aprovação</Label>
               </div>
-              <span className="text-xs font-semibold text-gray-900 dark:text-gray-50 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">
+              <span className="text-xs font-semibold text-gray-900 bg-gray-100 dark:bg-lia-bg-secondary px-2 py-0.5 rounded-full">
                 {minScore}%
               </span>
             </div>
@@ -104,14 +104,14 @@ export function ScreeningSettingsModal({
               step={5}
               className="w-full"
             />
-            <p className="text-micro text-gray-500">
+            <p className="text-micro lia-text-secondary">
               Candidatos com score abaixo de {minScore}% serão reprovados automaticamente
             </p>
           </div>
 
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              <Clock className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
               <Label className="text-xs font-medium text-gray-950">Tempo de Resposta</Label>
             </div>
             <div className="flex items-center gap-2">
@@ -124,19 +124,19 @@ export function ScreeningSettingsModal({
                 }}
                 min={1}
                 max={168}
-                className="w-24 h-9 text-xs border-gray-200 dark:border-gray-600"
+                className="w-24 h-9 text-xs border-lia-border-subtle dark:border-lia-border-default"
               />
-              <span className="text-xs text-gray-500 dark:text-gray-400">horas</span>
+              <span className="text-xs text-gray-500 dark:text-lia-text-tertiary">horas</span>
             </div>
-            <p className="text-micro text-gray-500 dark:text-gray-400">
+            <p className="text-micro text-gray-500 dark:text-lia-text-tertiary">
               Tempo máximo de espera para resposta do candidato (1-168h)
             </p>
           </div>
 
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <RefreshCw className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-              <Label className="text-xs font-medium text-gray-950 dark:text-gray-50">Máximo de Retentativas</Label>
+              <RefreshCw className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+              <Label className="text-xs font-medium text-gray-950">Máximo de Retentativas</Label>
             </div>
             <div className="flex items-center gap-2">
               <Input
@@ -148,29 +148,29 @@ export function ScreeningSettingsModal({
                 }}
                 min={0}
                 max={5}
-                className="w-24 h-9 text-xs border-gray-200 dark:border-gray-600"
+                className="w-24 h-9 text-xs border-lia-border-subtle dark:border-lia-border-default"
               />
-              <span className="text-xs text-gray-500">tentativas</span>
+              <span className="text-xs lia-text-secondary">tentativas</span>
             </div>
-            <p className="text-micro text-gray-500">
+            <p className="text-micro lia-text-secondary">
               Número de tentativas de recontato antes de descartar (0-5)
             </p>
           </div>
         </div>
 
-        <DialogFooter className="pt-4 border-t border-gray-200 bg-gray-50 dark:bg-gray-900 dark:border-gray-700 gap-2">
+        <DialogFooter className="pt-4 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle gap-2">
           <Button
             variant="outline"
             onClick={onClose}
             disabled={isSaving}
-            className="h-9 px-4 text-xs font-medium bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 dark:text-gray-200"
+            className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default hover:bg-gray-50 lia-text-base dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 dark:text-lia-text-primary"
           >
             Cancelar
           </Button>
           <Button
             onClick={handleSave}
             disabled={isSaving}
-            className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+            className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
           >
             {isSaving ? (
               <>

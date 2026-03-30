@@ -108,26 +108,26 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
         <div className="space-y-2">
 
             {/* Cards de Status de Tarefas - LINHA HORIZONTAL ULTRA COMPACTA */}
-            <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md">
+            <div className="flex items-center gap-2 bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md">
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
                 <Briefcase className="w-3 h-3 text-gray-950 dark:text-gray-50" />
                 <span className="text-sm font-inter font-medium text-gray-950 dark:text-gray-50">{metrics.total}</span>
                 <span className={`${textStyles.description} dark:text-gray-500`}>Total</span>
               </div>
-              <div className="w-px h-6 bg-gray-300 dark:bg-gray-700"></div>
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md">
+              <div className="w-px h-6 bg-gray-300 dark:bg-lia-bg-elevated"></div>
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
                 <CheckCircle2 className="w-3 h-3 text-gray-950 dark:text-gray-50 font-semibold" />
                 <span className="text-sm font-inter font-medium text-gray-950 dark:text-gray-50">{metrics.completed}</span>
                 <span className={`${textStyles.description} dark:text-gray-500`}>Concluídas</span>
               </div>
-              <div className="w-px h-6 bg-gray-300 dark:bg-gray-700"></div>
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md">
+              <div className="w-px h-6 bg-gray-300 dark:bg-lia-bg-elevated"></div>
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
                 <Clock className="w-3 h-3 text-gray-950 dark:text-gray-50" />
                 <span className="text-sm font-inter font-medium text-gray-950 dark:text-gray-50">{metrics.pending}</span>
                 <span className={`${textStyles.description} dark:text-gray-500`}>Pendentes</span>
               </div>
-              <div className="w-px h-6 bg-gray-300 dark:bg-gray-700"></div>
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md">
+              <div className="w-px h-6 bg-gray-300 dark:bg-lia-bg-elevated"></div>
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
                 <Brain className="w-3 h-3 text-wedo-cyan" />
                 <span className="text-sm font-inter font-medium text-gray-950 dark:text-gray-50">{metrics.iaTasks}</span>
                 <span className={`${textStyles.description} dark:text-gray-500`}>IA</span>
@@ -138,7 +138,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
               
               {/* Card: Minhas Tarefas */}
-              <Card className="border-gray-200 dark:border-gray-800">
+              <Card className="border-lia-border-subtle dark:border-gray-800">
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -152,11 +152,11 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                 </CardHeader>
                 <CardContent className="pt-0 pb-2">
                   <Tabs defaultValue="tarefas" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 h-8 mb-3 bg-gray-100 dark:bg-gray-800 p-0.5">
-                      <TabsTrigger value="tarefas" className="text-xs font-open-sans h-7 data-[state=active]:font-semibold data-[state=active]:bg-white data-[state=active]:text-gray-950 dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-gray-50">
+                    <TabsList className="grid w-full grid-cols-2 h-8 mb-3 bg-gray-100 dark:bg-lia-bg-secondary p-0.5">
+                      <TabsTrigger value="tarefas" className="text-xs font-open-sans h-7 data-[state=active]:font-semibold data-[state=active]:bg-lia-bg-primary data-[state=active]:text-gray-950 dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-gray-50">
                         Tarefas ({filteredPendingTasks.length})
                       </TabsTrigger>
-                      <TabsTrigger value="historico" className="text-xs font-open-sans h-7 data-[state=active]:font-semibold data-[state=active]:bg-white data-[state=active]:text-gray-950 dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-gray-50">
+                      <TabsTrigger value="historico" className="text-xs font-open-sans h-7 data-[state=active]:font-semibold data-[state=active]:bg-lia-bg-primary data-[state=active]:text-gray-950 dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-gray-50">
                         Histórico
                       </TabsTrigger>
                     </TabsList>
@@ -169,7 +169,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           className={`px-2 py-1 text-xs font-open-sans rounded-full transition-colors ${
                             pendingTaskFilter === 'all'
                               ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-950 font-medium'
-                              : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'
+                              : 'bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary hover:bg-gray-200 dark:hover:bg-gray-700'
                           }`}
                         >
                           Todos ({pendingTasks.length})
@@ -179,7 +179,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           className={`px-2 py-1 text-xs font-open-sans rounded-full transition-colors flex items-center gap-1 ${
                             pendingTaskFilter === 'feedback'
                               ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-950 font-medium'
-                              : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'
+                              : 'bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary hover:bg-gray-200 dark:hover:bg-gray-700'
                           }`}
                         >
                           <MessageSquare className="w-2.5 h-2.5" />
@@ -190,7 +190,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           className={`px-2 py-1 text-xs font-open-sans rounded-full transition-colors flex items-center gap-1 ${
                             pendingTaskFilter === 'entrevista'
                               ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-950 font-medium'
-                              : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'
+                              : 'bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary hover:bg-gray-200 dark:hover:bg-gray-700'
                           }`}
                         >
                           <Calendar className="w-2.5 h-2.5" />
@@ -201,7 +201,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           className={`px-2 py-1 text-xs font-open-sans rounded-full transition-colors flex items-center gap-1 ${
                             pendingTaskFilter === 'sourcing'
                               ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-950 font-medium'
-                              : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'
+                              : 'bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary hover:bg-gray-200 dark:hover:bg-gray-700'
                           }`}
                         >
                           <Search className="w-2.5 h-2.5" />
@@ -218,18 +218,18 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                             <div>
                               <div className="flex items-center gap-1.5 mb-1.5">
                                 <div className="w-1.5 h-1.5 rounded-full" style={{backgroundColor: 'var(--yellow-50, #fefce8)'}}></div>
-                                <h3 className="text-xs font-open-sans font-semibold text-gray-800 dark:text-gray-200">Sessão Manhã</h3>
-                                <span className="text-xs font-open-sans text-gray-800 dark:text-gray-400">{morningTasks.length} atividades</span>
+                                <h3 className="text-xs font-open-sans font-semibold text-gray-800 dark:text-lia-text-primary">Sessão Manhã</h3>
+                                <span className="text-xs font-open-sans text-gray-800 dark:text-lia-text-tertiary">{morningTasks.length} atividades</span>
                               </div>
                               <div className="space-y-1.5">
                                 {morningTasks.map((task) => (
                                   <div
                                     key={task.id}
-                                    className="border border-gray-200 dark:border-gray-700 rounded-md p-2.5 hover:transition-all bg-white dark:bg-gray-900"
+                                    className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-2.5 transition-colors bg-white dark:bg-lia-bg-primary"
                                   >
                                     <div className="flex items-start justify-between gap-2">
                                       <div className="flex items-start gap-2 flex-1">
-                                        <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 bg-gray-100 dark:bg-gray-800">
+                                        <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 bg-gray-100 dark:bg-lia-bg-secondary">
                                           {getTaskTypeIcon(task.type)}
                                         </div>
                                         <div className="flex-1 min-w-0">
@@ -344,7 +344,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                             size="sm"
                                             variant="ghost"
                                             onClick={() => handleRejectTask(task)}
-                                            className="h-5 px-1.5 text-xs gap-0.5 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+                                            className="h-5 px-1.5 text-xs gap-0.5 text-gray-600 hover:text-gray-900 dark:text-lia-text-tertiary dark:hover:text-gray-200"
                                           >
                                             <XCircle className="w-2.5 h-2.5" />
                                             Rejeitar
@@ -367,18 +367,18 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                             <div>
                               <div className="flex items-center gap-1.5 mb-1.5">
                                 <div className="w-1.5 h-1.5 rounded-full" style={{backgroundColor: 'var(--blue-50, #eff6ff)'}}></div>
-                                <h3 className="text-xs font-open-sans font-semibold text-gray-800 dark:text-gray-200">Sessão Tarde</h3>
-                                <span className="text-xs font-open-sans text-gray-800 dark:text-gray-400">{afternoonTasks.length} atividades</span>
+                                <h3 className="text-xs font-open-sans font-semibold text-gray-800 dark:text-lia-text-primary">Sessão Tarde</h3>
+                                <span className="text-xs font-open-sans text-gray-800 dark:text-lia-text-tertiary">{afternoonTasks.length} atividades</span>
                               </div>
                               <div className="space-y-1.5">
                                 {afternoonTasks.map((task) => (
                                   <div
                                     key={task.id}
-                                    className="border border-gray-200 dark:border-gray-700 rounded-md p-2.5 hover:transition-all bg-white dark:bg-gray-900"
+                                    className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-2.5 transition-colors bg-white dark:bg-lia-bg-primary"
                                   >
                                     <div className="flex items-start justify-between gap-2">
                                       <div className="flex items-start gap-2 flex-1">
-                                        <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 bg-gray-100 dark:bg-gray-800">
+                                        <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 bg-gray-100 dark:bg-lia-bg-secondary">
                                           {getTaskTypeIcon(task.type)}
                                         </div>
                                         <div className="flex-1 min-w-0">
@@ -493,7 +493,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                             size="sm"
                                             variant="ghost"
                                             onClick={() => handleRejectTask(task)}
-                                            className="h-5 px-1.5 text-xs gap-0.5 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+                                            className="h-5 px-1.5 text-xs gap-0.5 text-gray-600 hover:text-gray-900 dark:text-lia-text-tertiary dark:hover:text-gray-200"
                                           >
                                             <XCircle className="w-2.5 h-2.5" />
                                             Rejeitar
@@ -512,7 +512,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           <div className="text-center py-8">
                             <CheckCircle2 className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-3" />
                             <p className="text-sm font-medium text-gray-900 dark:text-gray-50 mb-1">Nenhuma tarefa pendente</p>
-                            <p className="text-xs text-gray-600 dark:text-gray-400">Todas as tarefas foram concluídas</p>
+                            <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">Todas as tarefas foram concluídas</p>
                           </div>
                         )}
                       </div>
@@ -526,7 +526,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
               </Card>
 
               {/* Card: Alertas Ativos */}
-              <Card className="border-gray-200 dark:border-gray-800">
+              <Card className="border-lia-border-subtle dark:border-gray-800">
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -563,7 +563,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                     {activeAlerts.map((alert) => (
                       <div
                         key={alert.id}
-                        className="border border-gray-200 dark:border-gray-700 rounded-md p-2.5 hover:transition-all"
+                        className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-2.5 transition-colors"
                         style={{backgroundColor: getAlertSeverityStyle(alert.severity).backgroundColor + '40'}}
                       >
                         <div className="flex items-start justify-between gap-2">
@@ -624,7 +624,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                       <div className="text-center py-8">
                         <Bell className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-3" />
                         <p className="text-sm font-medium text-gray-900 dark:text-gray-50 mb-1">Nenhum alerta ativo</p>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">Sem alertas no momento</p>
+                        <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">Sem alertas no momento</p>
                       </div>
                     )}
                   </div>
@@ -633,7 +633,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
             </div>
 
             {/* Tabela de Vagas Ativas - COM BUSCA E FILTROS */}
-            <Card className="border-gray-200 dark:border-gray-800">
+            <Card className="border-lia-border-subtle dark:border-gray-800">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm font-open-sans font-semibold wedo-text-black">Minhas Vagas Ativas</CardTitle>
@@ -650,7 +650,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                   <div className="flex items-center gap-2">
                     {/* Input de Busca */}
                     <div className="flex-1 relative">
-                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 dark:text-lia-text-tertiary" />
                       <Input
                         placeholder="Buscar vagas por título, ID, gestor ou departamento..."
                         value={jobSearchTerm}
@@ -660,7 +660,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                       {jobSearchTerm && (
                         <button
                           onClick={() => setJobSearchTerm("")}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-900 dark:text-lia-text-tertiary dark:hover:text-gray-200"
                           aria-label="Limpar busca"
                         >
                           <X className="w-3 h-3" />
@@ -678,7 +678,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                       <SlidersHorizontal className="w-3.5 h-3.5" />
                       Filtros
                       {activeJobFiltersCount > 0 && (
-                        <Badge className="ml-1 bg-white text-gray-950 dark:bg-gray-800 dark:text-gray-50 text-xs h-4 px-1 font-semibold">
+                        <Badge className="ml-1 bg-white text-gray-950 dark:bg-lia-bg-secondary dark:text-gray-50 text-xs h-4 px-1 font-semibold">
                           {activeJobFiltersCount}
                         </Badge>
                       )}
@@ -696,12 +696,12 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                       </Button>
 
                       {/* Menu de Ordenação */}
-                      <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+                      <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-200 z-10">
                         <div className="py-1">
                           <button
                             onClick={() => setJobSortBy('urgency')}
                             className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                              jobSortBy === 'urgency' ? 'bg-gray-200 text-gray-950 dark:bg-gray-700 dark:text-gray-50 font-semibold' : ''
+                              jobSortBy === 'urgency' ? 'bg-gray-200 text-gray-950 dark:bg-lia-bg-elevated dark:text-gray-50 font-semibold' : ''
                             }`}
                           >
                             Por Urgência
@@ -709,7 +709,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           <button
                             onClick={() => setJobSortBy('daysOpen')}
                             className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                              jobSortBy === 'daysOpen' ? 'bg-gray-200 text-gray-950 dark:bg-gray-700 dark:text-gray-50 font-semibold' : ''
+                              jobSortBy === 'daysOpen' ? 'bg-gray-200 text-gray-950 dark:bg-lia-bg-elevated dark:text-gray-50 font-semibold' : ''
                             }`}
                           >
                             Por Dias em Aberto
@@ -717,7 +717,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           <button
                             onClick={() => setJobSortBy('candidates')}
                             className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                              jobSortBy === 'candidates' ? 'bg-gray-200 text-gray-950 dark:bg-gray-700 dark:text-gray-50 font-semibold' : ''
+                              jobSortBy === 'candidates' ? 'bg-gray-200 text-gray-950 dark:bg-lia-bg-elevated dark:text-gray-50 font-semibold' : ''
                             }`}
                           >
                             Por Nº Candidatos
@@ -729,13 +729,13 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
 
                   {/* Painel de Filtros Expandido */}
                   {showJobFilters && (
-                    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-md p-3 space-y-3 border border-gray-200 dark:border-gray-700">
+                    <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-3 space-y-3 border border-lia-border-subtle dark:border-lia-border-subtle">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-open-sans font-semibold text-gray-800 dark:text-gray-200">Filtros Avançados</span>
+                        <span className="text-xs font-open-sans font-semibold text-gray-800 dark:text-lia-text-primary">Filtros Avançados</span>
                         {activeJobFiltersCount > 0 && (
                           <button
                             onClick={clearJobFilters}
-                            className="text-xs text-gray-800 hover:text-gray-950 dark:text-gray-200 dark:hover:text-gray-100 flex items-center gap-1 "
+                            className="text-xs text-gray-800 hover:text-gray-950 dark:text-lia-text-primary dark:hover:text-gray-100 flex items-center gap-1 "
                           >
                             <X className="w-3 h-3" />
                             Limpar filtros
@@ -762,9 +762,9 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                       setSelectedDepartments(selectedDepartments.filter(d => d !== dept))
                                     }
                                   }}
-                                  className="w-4 h-4 rounded-sm border-gray-300 accent-gray-900 focus:ring-2 focus:ring-gray-900/20"
+                                  className="w-4 h-4 rounded-sm border-lia-border-default accent-gray-900 focus:ring-2 focus:ring-gray-900/20"
                                 />
-                                <span className="text-xs text-gray-800 dark:text-gray-200">{dept}</span>
+                                <span className="text-xs text-gray-800 dark:text-lia-text-primary">{dept}</span>
                               </label>
                             ))}
                           </div>
@@ -788,9 +788,9 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                       setSelectedUrgencies(selectedUrgencies.filter(u => u !== urgency))
                                     }
                                   }}
-                                  className="w-4 h-4 rounded-sm border-gray-300 accent-gray-900 focus:ring-2 focus:ring-gray-900/20"
+                                  className="w-4 h-4 rounded-sm border-lia-border-default accent-gray-900 focus:ring-2 focus:ring-gray-900/20"
                                 />
-                                <span className="text-xs text-gray-800 dark:text-gray-200 capitalize">
+                                <span className="text-xs text-gray-800 dark:text-lia-text-primary capitalize">
                                   {urgency === 'critical' ? 'Crítico' : urgency === 'urgent' ? 'Urgente' : 'Normal'}
                                 </span>
                               </label>
@@ -820,9 +820,9 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                       setSelectedPublications(selectedPublications.filter(p => p !== pub.id))
                                     }
                                   }}
-                                  className="w-4 h-4 rounded-sm border-gray-300 accent-gray-900 focus:ring-2 focus:ring-gray-900/20"
+                                  className="w-4 h-4 rounded-sm border-lia-border-default accent-gray-900 focus:ring-2 focus:ring-gray-900/20"
                                 />
-                                <span className="text-xs text-gray-800 dark:text-gray-200">{pub.label}</span>
+                                <span className="text-xs text-gray-800 dark:text-lia-text-primary">{pub.label}</span>
                               </label>
                             ))}
                           </div>
@@ -891,7 +891,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                   <div className="text-center py-8">
                     <Search className="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
                     <p className="text-base font-medium text-gray-900 dark:text-gray-50 mb-1">Nenhuma vaga encontrada</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">
                       Tente ajustar os filtros ou buscar por outros termos
                     </p>
                     {activeJobFiltersCount > 0 && (
@@ -908,7 +908,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                 ) : (
                   <div className="space-y-3">
                     {filteredAndSortedJobs.map((job) => (
-                      <div key={job.id} className="border border-gray-200 dark:border-gray-700 rounded-md p-3 hover:border-gray-400 hover:border-gray-400 dark:hover:border-gray-500 hover:scale-[1.01] transition-all duration-200 bg-white dark:bg-gray-900 cursor-pointer">
+                      <div key={job.id} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3 hover:border-gray-400 hover:border-gray-400 dark:hover:border-gray-500 hover:scale-[1.01] transition-[color,background-color,border-color,transform] duration-200 bg-white dark:bg-lia-bg-primary cursor-pointer">
                         {/* Header da Vaga - Compacto com publicação inline */}
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex-1 space-y-1">
@@ -918,19 +918,19 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                               <Badge variant="outline" className="text-xs">{job.jobId}</Badge>
                               {getUrgencyBadge(job.urgencyLevel, job.daysOpen)}
                               {job.publishedLinkedIn && (
-                                <Badge className="bg-gray-100 text-gray-950 border-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 text-xs flex items-center gap-1 font-medium">
+                                <Badge className="bg-gray-100 text-gray-950 border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:border-lia-border-subtle text-xs flex items-center gap-1 font-medium">
                                   <Linkedin className="w-2.5 h-2.5" />
                                   LI
                                 </Badge>
                               )}
                               {job.publishedWebsite && (
-                                <Badge className="bg-gray-100 text-gray-950 border-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 text-xs flex items-center gap-1 font-medium">
+                                <Badge className="bg-gray-100 text-gray-950 border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:border-lia-border-subtle text-xs flex items-center gap-1 font-medium">
                                   <Globe className="w-2.5 h-2.5" />
                                   Site
                                 </Badge>
                               )}
                               {job.publishedIndeed && (
-                                <Badge className="bg-gray-100 text-gray-950 border-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 text-xs flex items-center gap-1 font-medium">
+                                <Badge className="bg-gray-100 text-gray-950 border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:border-lia-border-subtle text-xs flex items-center gap-1 font-medium">
                                   <Briefcase className="w-2.5 h-2.5" />
                                   Indeed
                                 </Badge>
@@ -965,7 +965,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                               <MoreVertical className="w-3.5 h-3.5" />
                             </Button>
                             {/* Dropdown Menu */}
-                            <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+                            <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-200 z-10">
                               <div className="py-1">
                                 <button
                                   onClick={() => handleLIAAction('kanban', job)}
@@ -1002,7 +1002,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                   <Copy className="w-3 h-3" />
                                   Duplicar Vaga
                                 </button>
-                                <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                                <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle my-1"></div>
                                 <button
                                   onClick={() => handleLIAAction('cancel', job)}
                                   className="w-full px-3 py-2 text-left text-xs hover:bg-status-error/10 dark:hover:bg-status-error/20 text-status-error hover:text-status-error dark:hover:text-status-error transition-colors flex items-center gap-2"
@@ -1016,7 +1016,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                         </div>
 
                         {/* Funil Horizontal Unificado - Ultra Compacto */}
-                        <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-1.5 mb-1.5">
+                        <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-1.5 mb-1.5">
                           <div className="flex items-center justify-between gap-1">
                             {/* Novos */}
                             <div className="flex flex-col items-center">
@@ -1027,7 +1027,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                               <span className={`text-xs font-medium ${getConversionColor(getConversionRate(job.stages.new, job.stages.uncontacted))}`}>
                                 {getConversionRate(job.stages.new, job.stages.uncontacted)}%
                               </span>
-                              <span className="text-xs text-gray-800 dark:text-gray-400">→</span>
+                              <span className="text-xs text-gray-800 dark:text-lia-text-tertiary">→</span>
                             </div>
 
                             {/* Não Contactados */}
@@ -1039,7 +1039,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                               <span className={`text-xs font-medium ${getConversionColor(getConversionRate(job.stages.uncontacted, job.stages.contacted))}`}>
                                 {getConversionRate(job.stages.uncontacted, job.stages.contacted)}%
                               </span>
-                              <span className="text-xs text-gray-800 dark:text-gray-400">→</span>
+                              <span className="text-xs text-gray-800 dark:text-lia-text-tertiary">→</span>
                             </div>
 
                             {/* Contactados */}
@@ -1051,7 +1051,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                               <span className={`text-xs font-medium ${getConversionColor(getConversionRate(job.stages.contacted, job.stages.replied))}`}>
                                 {getConversionRate(job.stages.contacted, job.stages.replied)}%
                               </span>
-                              <span className="text-xs text-gray-800 dark:text-gray-400">→</span>
+                              <span className="text-xs text-gray-800 dark:text-lia-text-tertiary">→</span>
                             </div>
 
                             {/* Respondidos */}
@@ -1063,7 +1063,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                               <span className={`text-xs font-medium ${getConversionColor(getConversionRate(job.stages.replied, job.stages.phoneScreen))}`}>
                                 {getConversionRate(job.stages.replied, job.stages.phoneScreen)}%
                               </span>
-                              <span className="text-xs text-gray-800 dark:text-gray-400">→</span>
+                              <span className="text-xs text-gray-800 dark:text-lia-text-tertiary">→</span>
                             </div>
 
                             {/* Telefone */}
@@ -1075,7 +1075,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                               <span className={`text-xs font-medium ${getConversionColor(getConversionRate(job.stages.phoneScreen, job.stages.onsite))}`}>
                                 {getConversionRate(job.stages.phoneScreen, job.stages.onsite)}%
                               </span>
-                              <span className="text-xs text-gray-800 dark:text-gray-400">→</span>
+                              <span className="text-xs text-gray-800 dark:text-lia-text-tertiary">→</span>
                             </div>
 
                             {/* Entrevista */}
@@ -1087,7 +1087,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                               <span className={`text-xs font-medium ${getConversionColor(getConversionRate(job.stages.onsite, job.stages.makeOffer))}`}>
                                 {getConversionRate(job.stages.onsite, job.stages.makeOffer)}%
                               </span>
-                              <span className="text-xs text-gray-800 dark:text-gray-400">→</span>
+                              <span className="text-xs text-gray-800 dark:text-lia-text-tertiary">→</span>
                             </div>
 
                             {/* Oferta */}
@@ -1099,7 +1099,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                               <span className={`text-xs font-medium ${getConversionColor(getConversionRate(job.stages.makeOffer, job.stages.hired))}`}>
                                 {getConversionRate(job.stages.makeOffer, job.stages.hired)}%
                               </span>
-                              <span className="text-xs text-gray-800 dark:text-gray-400">→</span>
+                              <span className="text-xs text-gray-800 dark:text-lia-text-tertiary">→</span>
                             </div>
 
                             {/* Contratados */}
@@ -1114,9 +1114,9 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                         <div className="flex items-center gap-1.5">
                           {/* Pendências LIA */}
                           {job.liaPendencies.length > 0 && (
-                            <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md px-1.5 py-1 flex-1">
+                            <div className="flex items-center gap-1 bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-subtle rounded-md px-1.5 py-1 flex-1">
                               <Brain className="w-2.5 h-2.5 text-wedo-cyan flex-shrink-0" />
-                              <span className="text-xs text-gray-950 dark:text-gray-200 truncate font-medium">
+                              <span className="text-xs text-gray-950 dark:text-lia-text-primary truncate font-medium">
                                 {job.liaPendencies.length} pendência{job.liaPendencies.length > 1 ? 's' : ''}
                               </span>
                             </div>

@@ -45,11 +45,11 @@ export function SearchSourceSelector({
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onLocalClick() }}
-              className={`p-1.5 rounded-md transition-all ${
+              className={`p-1.5 rounded-md transition-colors ${
                 searchSource === 'local' ? 'bg-gray-200' : 'hover:bg-gray-100'
               }`}
             >
-              <Home className={`w-3.5 h-3.5 ${searchSource === 'local' ? 'text-gray-700' : 'text-gray-600'}`} />
+              <Home className={`w-3.5 h-3.5 ${searchSource === 'local' ? 'lia-text-700' : 'lia-text-600'}`} />
             </button>
           </TooltipTrigger>
           <TooltipContent side="bottom">
@@ -66,11 +66,11 @@ export function SearchSourceSelector({
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); onHybridClick() }}
-                className={`p-1.5 rounded-md transition-all ${
+                className={`p-1.5 rounded-md transition-colors ${
                   searchSource === 'hybrid' ? 'bg-gray-200' : 'hover:bg-gray-100'
                 }`}
               >
-                <Zap className={`w-3.5 h-3.5 ${searchSource === 'hybrid' ? 'text-gray-700' : 'text-gray-600'}`} />
+                <Zap className={`w-3.5 h-3.5 ${searchSource === 'hybrid' ? 'lia-text-700' : 'lia-text-600'}`} />
               </button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
@@ -88,11 +88,11 @@ export function SearchSourceSelector({
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); onGlobalClick() }}
-                className={`p-1.5 rounded-md transition-all ${
+                className={`p-1.5 rounded-md transition-colors ${
                   searchSource === 'global' ? 'bg-gray-200' : 'hover:bg-gray-100'
                 }`}
               >
-                <Globe className={`w-3.5 h-3.5 ${searchSource === 'global' ? 'text-gray-700' : 'text-gray-600'}`} />
+                <Globe className={`w-3.5 h-3.5 ${searchSource === 'global' ? 'lia-text-700' : 'lia-text-600'}`} />
               </button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
@@ -112,18 +112,18 @@ export function SearchSourceSelector({
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onToggleEmails() }}
-              className={`p-1.5 rounded-md transition-all ${
+              className={`p-1.5 rounded-md transition-colors ${
                 requireEmails
                   ? 'bg-wedo-green-light/15 ring-1 ring-wedo-green-light'
                   : 'hover:bg-gray-100'
               }`}
             >
-              <Mail className={`w-3.5 h-3.5 ${requireEmails ? 'text-wedo-green-light' : 'text-gray-400'}`} />
+              <Mail className={`w-3.5 h-3.5 ${requireEmails ? 'text-wedo-green-light' : 'lia-text-400'}`} />
             </button>
           </TooltipTrigger>
           <TooltipContent side="bottom">
             <p className="text-xs font-medium">Apenas com Email</p>
-            <p className="text-micro text-gray-400">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+            <p className="text-micro lia-text-400">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -135,18 +135,18 @@ export function SearchSourceSelector({
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onTogglePhones() }}
-              className={`p-1.5 rounded-md transition-all ${
+              className={`p-1.5 rounded-md transition-colors ${
                 requirePhoneNumbers
                   ? 'bg-wedo-green-light/15 ring-1 ring-wedo-green-light'
                   : 'hover:bg-gray-100'
               }`}
             >
-              <Phone className={`w-3.5 h-3.5 ${requirePhoneNumbers ? 'text-wedo-green-light' : 'text-gray-400'}`} />
+              <Phone className={`w-3.5 h-3.5 ${requirePhoneNumbers ? 'text-wedo-green-light' : 'lia-text-400'}`} />
             </button>
           </TooltipTrigger>
           <TooltipContent side="bottom">
             <p className="text-xs font-medium">Apenas com Telefone</p>
-            <p className="text-micro text-gray-400">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+            <p className="text-micro lia-text-400">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

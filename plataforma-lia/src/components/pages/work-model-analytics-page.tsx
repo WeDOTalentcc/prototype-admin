@@ -140,21 +140,21 @@ export function WorkModelAnalyticsPage() {
       <div className="flex flex-col h-full">
 
         {/* Header */}
-        <div className="p-6 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+        <div className="p-6 bg-white dark:bg-lia-bg-primary border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-semibold text-gray-950 dark:text-gray-50 mb-2 flex items-center gap-3">
-                <BarChart3 className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+                <BarChart3 className="w-6 h-6 text-gray-600 dark:text-lia-text-tertiary" />
                 Analytics: Modelos de Trabalho
               </h1>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">
                 Análise completa da distribuição e preferências de modelos de trabalho
               </p>
             </div>
 
             <div className="flex items-center gap-3">
               {/* Filtros de período */}
-              <div className="flex bg-gray-100 dark:bg-gray-800 rounded-md p-1">
+              <div className="flex bg-gray-100 dark:bg-lia-bg-secondary rounded-md p-1">
                 {(['30d', '90d', '6m', '1y'] as const).map((period) => (
                   <button
                     key={period}
@@ -162,7 +162,7 @@ export function WorkModelAnalyticsPage() {
                     className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
                       selectedPeriod === period
                         ? 'bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900'
-                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                        : 'text-gray-600 dark:text-lia-text-tertiary hover:text-gray-900 dark:hover:text-gray-200'
                     }`}
                   >
                     {period === '30d' ? '30 dias' : period === '90d' ? '90 dias' : period === '6m' ? '6 meses' : '1 ano'}
@@ -214,9 +214,9 @@ export function WorkModelAnalyticsPage() {
                 <Card key={item.modelo} className="border-l-4 border-l-gray-400 dark:border-l-gray-500">
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 capitalize flex items-center gap-2">
+                      <CardTitle className="text-sm font-medium text-gray-600 dark:text-lia-text-tertiary capitalize flex items-center gap-2">
                         {item.modelo === 'remoto' && <Home className="w-4 h-4 text-status-success" />}
-                        {item.modelo === 'híbrido' && <Globe className="w-4 h-4 text-gray-600 dark:text-gray-400" />}
+                        {item.modelo === 'híbrido' && <Globe className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />}
                         {item.modelo === 'presencial' && <Building className="w-4 h-4 text-gray-600" />}
                         {item.modelo}
                       </CardTitle>
@@ -233,7 +233,7 @@ export function WorkModelAnalyticsPage() {
                       <div className="text-2xl font-bold text-gray-950 dark:text-gray-50">
                         {item.candidatos}
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                      <div className="text-sm text-gray-600 dark:text-lia-text-tertiary">
                         {item.percentual}% do total
                       </div>
                       <div className="text-sm font-medium text-gray-950 dark:text-gray-50">
@@ -247,7 +247,7 @@ export function WorkModelAnalyticsPage() {
               {/* Card de total */}
               <Card className="border-l-4 border-l-purple-500">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                  <CardTitle className="text-sm font-medium text-gray-600 dark:text-lia-text-tertiary flex items-center gap-2">
                     <Users className="w-4 h-4 text-wedo-purple" />
                     Total Geral
                   </CardTitle>
@@ -257,7 +257,7 @@ export function WorkModelAnalyticsPage() {
                     <div className="text-2xl font-bold text-gray-950 dark:text-gray-50">
                       {totalCandidatos}
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                    <div className="text-sm text-gray-600 dark:text-lia-text-tertiary">
                       Candidatos analisados
                     </div>
                     <div className="text-sm font-medium text-gray-950 dark:text-gray-50">
@@ -287,11 +287,11 @@ export function WorkModelAnalyticsPage() {
                           <span className="text-sm font-medium text-gray-950 dark:text-gray-50">
                             {cargo.cargo}
                           </span>
-                          <span className="text-xs text-gray-800 dark:text-gray-200">
+                          <span className="text-xs text-gray-800 dark:text-lia-text-primary">
                             {cargo.total} candidatos
                           </span>
                         </div>
-                        <div className="flex rounded-full overflow-hidden h-2 bg-gray-200 dark:bg-gray-700">
+                        <div className="flex rounded-full overflow-hidden h-2 bg-gray-200 dark:bg-lia-bg-elevated">
                           <div
                             className="bg-status-success"
                             style={{width: `${(cargo.remoto / cargo.total) * 100}%`}}
@@ -308,7 +308,7 @@ export function WorkModelAnalyticsPage() {
                             title={`Presencial: ${cargo.presencial}`}
                           />
                         </div>
-                        <div className="flex items-center gap-4 text-xs text-gray-600 dark:text-gray-400">
+                        <div className="flex items-center gap-4 text-xs text-gray-600 dark:text-lia-text-tertiary">
                           <div className="flex items-center gap-1">
                             <div className="w-2 h-2 bg-status-success rounded-full"></div>
                             Remoto: {cargo.remoto}
@@ -345,12 +345,12 @@ export function WorkModelAnalyticsPage() {
                             <span className="text-sm font-medium text-gray-950 dark:text-gray-50">
                               {level.nivel}
                             </span>
-                            <span className="text-xs text-gray-800 dark:text-gray-200 ml-2">
+                            <span className="text-xs text-gray-800 dark:text-lia-text-primary ml-2">
                               ({level.experiencia})
                             </span>
                           </div>
                           <div className="text-right">
-                            <div className="text-xs text-gray-800 dark:text-gray-200">
+                            <div className="text-xs text-gray-800 dark:text-lia-text-primary">
                               {level.total} candidatos
                             </div>
                             <div className="text-xs font-medium text-status-success">
@@ -358,7 +358,7 @@ export function WorkModelAnalyticsPage() {
                             </div>
                           </div>
                         </div>
-                        <div className="flex rounded-full overflow-hidden h-3 bg-gray-200 dark:bg-gray-700">
+                        <div className="flex rounded-full overflow-hidden h-3 bg-gray-200 dark:bg-lia-bg-elevated">
                           <div
                             className="bg-status-success"
                             style={{width: `${(level.remoto / level.total) * 100}%`}}
@@ -375,7 +375,7 @@ export function WorkModelAnalyticsPage() {
                             title={`Presencial: ${level.presencial}`}
                           />
                         </div>
-                        <div className="flex items-center gap-4 text-xs text-gray-600 dark:text-gray-400">
+                        <div className="flex items-center gap-4 text-xs text-gray-600 dark:text-lia-text-tertiary">
                           <div className="flex items-center gap-1">
                             <div className="w-2 h-2 bg-status-success rounded-full"></div>
                             {level.remoto} ({Math.round((level.remoto / level.total) * 100)}%)
@@ -413,7 +413,7 @@ export function WorkModelAnalyticsPage() {
                           <h4 className="font-medium text-gray-950 dark:text-gray-50">
                             {region.estado}
                           </h4>
-                          <p className="text-xs text-gray-800 dark:text-gray-200">{region.regiao}</p>
+                          <p className="text-xs text-gray-800 dark:text-lia-text-primary">{region.regiao}</p>
                         </div>
                         <Badge variant="outline" className="text-xs">
                           {region.total} candidatos
@@ -421,7 +421,7 @@ export function WorkModelAnalyticsPage() {
                       </div>
 
                       <div className="space-y-2">
-                        <div className="flex rounded-full overflow-hidden h-2 bg-gray-200 dark:bg-gray-700">
+                        <div className="flex rounded-full overflow-hidden h-2 bg-gray-200 dark:bg-lia-bg-elevated">
                           <div
                             className="bg-status-success"
                             style={{width: `${(region.remoto / region.total) * 100}%`}}
@@ -439,15 +439,15 @@ export function WorkModelAnalyticsPage() {
                         <div className="grid grid-cols-3 gap-2 text-xs">
                           <div className="text-center">
                             <div className="font-medium text-status-success">{region.remoto}</div>
-                            <div className="text-gray-800 dark:text-gray-200">Remoto</div>
+                            <div className="text-gray-800 dark:text-lia-text-primary">Remoto</div>
                           </div>
                           <div className="text-center">
-                            <div className="font-medium text-gray-600 dark:text-gray-400">{region.hibrido}</div>
-                            <div className="text-gray-800 dark:text-gray-200">Híbrido</div>
+                            <div className="font-medium text-gray-600 dark:text-lia-text-tertiary">{region.hibrido}</div>
+                            <div className="text-gray-800 dark:text-lia-text-primary">Híbrido</div>
                           </div>
                           <div className="text-center">
                             <div className="font-medium text-gray-600">{region.presencial}</div>
-                            <div className="text-gray-800 dark:text-gray-200">Presencial</div>
+                            <div className="text-gray-800 dark:text-lia-text-primary">Presencial</div>
                           </div>
                         </div>
                       </div>
@@ -479,11 +479,11 @@ export function WorkModelAnalyticsPage() {
                       </p>
                     </div>
 
-                    <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-md">
-                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-400 mb-1">
+                    <div className="p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+                      <h4 className="text-sm font-medium text-gray-700 dark:text-lia-text-secondary dark:text-lia-text-tertiary mb-1">
                         💰 Salário Remoto vs Híbrido
                       </h4>
-                      <p className="text-xs text-gray-700 dark:text-gray-300 dark:text-gray-400/80">
+                      <p className="text-xs text-gray-700 dark:text-lia-text-secondary dark:text-lia-text-tertiary/80">
                         Trabalho híbrido oferece salário médio 8.2% maior que remoto
                       </p>
                     </div>
@@ -519,38 +519,38 @@ export function WorkModelAnalyticsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                    <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                       <h4 className="text-sm font-medium text-gray-950 dark:text-gray-50 mb-1">
                         🎯 Focar em Modelo Híbrido
                       </h4>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">
+                      <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
                         Priorizar vagas híbridas para atrair 48.9% dos candidatos disponíveis
                       </p>
                     </div>
 
-                    <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                    <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                       <h4 className="text-sm font-medium text-gray-950 dark:text-gray-50 mb-1">
                         💎 Expandir para Regiões
                       </h4>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">
+                      <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
                         Oportunidade de crescimento em Sul e Nordeste com trabalho remoto
                       </p>
                     </div>
 
-                    <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                    <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                       <h4 className="text-sm font-medium text-gray-950 dark:text-gray-50 mb-1">
                         📈 Ajustar Estratégia Salarial
                       </h4>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">
+                      <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
                         Modelo híbrido justifica salários 8% maiores pela produtividade
                       </p>
                     </div>
 
-                    <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                    <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                       <h4 className="text-sm font-medium text-gray-950 dark:text-gray-50 mb-1">
                         🔄 Revisar Políticas Presenciais
                       </h4>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">
+                      <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
                         Apenas 16.9% preferem presencial - considerar flexibilização
                       </p>
                     </div>

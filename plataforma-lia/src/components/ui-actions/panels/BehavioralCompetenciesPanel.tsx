@@ -79,9 +79,9 @@ export function BehavioralCompetenciesPanel({
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-md dark:bg-gray-800 dark:border-gray-700">
-        <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
-          <CardTitle className="text-sm flex items-center justify-between font-sans dark:text-gray-100">
+      <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+          <CardTitle className="text-sm flex items-center justify-between font-sans dark:text-lia-text-primary">
             <span className="flex items-center gap-2">
               🧠 Competências Comportamentais
             </span>
@@ -103,14 +103,14 @@ export function BehavioralCompetenciesPanel({
         </CardContent>
       </Card>
 
-      <Card className="rounded-md dark:bg-gray-800 dark:border-gray-700">
-        <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
-          <CardTitle className="text-sm font-sans dark:text-gray-100">📊 Perfil de Competências</CardTitle>
+      <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+          <CardTitle className="text-sm font-sans dark:text-lia-text-primary">📊 Perfil de Competências</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-2">
             {competencies.map((c) => (
-              <div key={c.id} className="flex items-center justify-between text-xs dark:text-gray-300">
+              <div key={c.id} className="flex items-center justify-between text-xs dark:text-lia-text-secondary">
                 <span className="truncate flex-1">{c.name}</span>
                 <div className="flex gap-0.5 ml-2">
                   {[1, 2, 3, 4, 5].map((level) => (
@@ -132,7 +132,7 @@ export function BehavioralCompetenciesPanel({
       <Button
         onClick={handleSubmit}
         disabled={isLoading}
-        className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+        className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
         size="lg"
       >
         {isLoading ? (
@@ -160,7 +160,7 @@ function CompetencyCard({
   onLevelChange: (level: number) => void
 }) {
   return (
-    <div className="border rounded-md overflow-hidden dark:border-gray-700 dark:bg-gray-800">
+    <div className="border rounded-md overflow-hidden dark:border-lia-border-subtle dark:bg-lia-bg-secondary">
       <button
         type="button"
         className="w-full text-left p-3 hover:bg-muted/50 dark:hover:bg-gray-700/50 transition-colors"
@@ -169,13 +169,13 @@ function CompetencyCard({
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-2 flex-1 min-w-0">
             {isExpanded ? (
-              <ChevronDown className="h-4 w-4 mt-0.5 text-muted-foreground dark:text-gray-400 shrink-0" />
+              <ChevronDown className="h-4 w-4 mt-0.5 text-muted-foreground dark:text-lia-text-tertiary shrink-0" />
             ) : (
-              <ChevronRight className="h-4 w-4 mt-0.5 text-muted-foreground dark:text-gray-400 shrink-0" />
+              <ChevronRight className="h-4 w-4 mt-0.5 text-muted-foreground dark:text-lia-text-tertiary shrink-0" />
             )}
             <div className="min-w-0">
-              <div className="font-medium text-sm dark:text-gray-100">{competency.name}</div>
-              <div className="text-xs text-muted-foreground dark:text-gray-400 line-clamp-1">
+              <div className="font-medium text-sm dark:text-lia-text-primary">{competency.name}</div>
+              <div className="text-xs text-muted-foreground dark:text-lia-text-tertiary line-clamp-1">
                 {competency.description}
               </div>
             </div>
@@ -191,7 +191,7 @@ function CompetencyCard({
 
       <div className="px-3 pb-3">
         <div className="flex items-center gap-2">
-          <Label className="text-xs text-muted-foreground dark:text-gray-400 shrink-0">Nível:</Label>
+          <Label className="text-xs text-muted-foreground dark:text-lia-text-tertiary shrink-0">Nível:</Label>
           <div className="flex gap-1 flex-1">
             {[1, 2, 3, 4, 5].map((level) => (
               <button
@@ -201,7 +201,7 @@ function CompetencyCard({
                   e.stopPropagation()
                   onLevelChange(level)
                 }}
-                className="flex-1 h-8 rounded-md text-xs font-medium transition-all"
+                className="flex-1 h-8 rounded-md text-xs font-medium transition-colors"
                 style={
                   level === competency.level
                     ? { backgroundColor: 'var(--lia-btn-primary-bg)', color: 'var(--lia-btn-primary-text)', boxShadow: 'var(--lia-)' }
@@ -218,16 +218,16 @@ function CompetencyCard({
       </div>
 
       {isExpanded && (
-        <div className="px-3 pb-3 pt-2 border-t border-gray-200 dark:border-gray-700 bg-muted/30 dark:bg-gray-900/30 space-y-3">
+        <div className="px-3 pb-3 pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-muted/30 dark:bg-lia-bg-primary/30 space-y-3">
           {competency.behaviors && competency.behaviors.length > 0 && (
             <div>
-              <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground dark:text-gray-400 mb-2">
+              <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground dark:text-lia-text-tertiary mb-2">
                 <Target className="h-3 w-3" />
                 Comportamentos Esperados
               </div>
               <ul className="space-y-1">
                 {competency.behaviors.map((behavior, index) => (
-                  <li key={index} className="text-xs flex items-start gap-2 dark:text-gray-300">
+                  <li key={index} className="text-xs flex items-start gap-2 dark:text-lia-text-secondary">
                     <span className="mt-1 text-lia-text-secondary">•</span>
                     <span>{behavior}</span>
                   </li>
@@ -238,7 +238,7 @@ function CompetencyCard({
 
           {competency.questions && competency.questions.length > 0 && (
             <div>
-              <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground dark:text-gray-400 mb-2">
+              <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground dark:text-lia-text-tertiary mb-2">
                 <MessageCircle className="h-3 w-3" />
                 Perguntas de Exemplo
               </div>
@@ -246,7 +246,7 @@ function CompetencyCard({
                 {competency.questions.map((question, index) => (
                   <li
                     key={index}
-                    className="text-xs p-2 rounded-md border italic dark:text-gray-300 dark:border-gray-700 dark:bg-gray-800 bg-lia-bg-primary border-lia-border-subtle"
+                    className="text-xs p-2 rounded-md border italic dark:text-lia-text-secondary dark:border-lia-border-subtle dark:bg-lia-bg-secondary bg-lia-bg-primary border-lia-border-subtle"
                   >
                     "{question}"
                   </li>

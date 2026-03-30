@@ -91,15 +91,15 @@ export function LiaChatModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-md max-w-2xl w-full max-h-[85vh] overflow-hidden">
+      <div className="bg-white dark:bg-lia-bg-primary rounded-md max-w-2xl w-full max-h-[85vh] overflow-hidden">
 
         {/* Header */}
-        <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700">
+        <div className="bg-white dark:bg-lia-bg-primary border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="p-3">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Avatar className="w-6 h-6">
-                  <AvatarFallback className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 text-xs font-bold">
+                  <AvatarFallback className="bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary text-xs font-bold">
                     LIA
                   </AvatarFallback>
                 </Avatar>
@@ -120,21 +120,21 @@ export function LiaChatModal({
             </div>
 
             {/* Candidate info */}
-            <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-md px-3 py-2">
+            <div className="flex items-center gap-2 bg-white dark:bg-lia-bg-secondary rounded-md px-3 py-2">
               <Avatar className="w-6 h-6">
-                <AvatarFallback className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 text-xs">
+                <AvatarFallback className="bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary text-xs">
                   {candidate.name?.split(' ').map((n: string) => n[0]).join('')}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <div className="font-medium text-gray-800 dark:text-gray-200 text-xs">
+                <div className="font-medium text-gray-800 dark:text-lia-text-primary text-xs">
                   {candidate.candidateId || candidate.id} • {candidate.name}
                 </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400">
+                <div className="text-xs text-gray-600 dark:text-lia-text-tertiary">
                   {candidate.position} • Score: {formatScorePercent(candidate.score ?? 0)}
                 </div>
               </div>
-              <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-100 dark:border-gray-700 text-xs px-2 py-0.5">
+              <Badge className="bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary border-lia-border-subtle dark:border-lia-border-subtle text-xs px-2 py-0.5">
                 Foco Individual
               </Badge>
             </div>
@@ -142,33 +142,33 @@ export function LiaChatModal({
         </div>
 
         {/* Ações rápidas */}
-        <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700 bg-white/50 dark:bg-gray-900/50">
+        <div className="px-4 py-2 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white/50 dark:bg-lia-bg-primary/50">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Ações rápidas sugeridas</span>
-            <Badge className="bg-status-success/15 text-gray-800 dark:bg-status-success text-xs px-1.5 py-0.5">
+            <span className="text-xs font-medium text-gray-600 dark:text-lia-text-tertiary">Ações rápidas sugeridas</span>
+            <Badge className="bg-status-success/15 lia-text-strong dark:bg-status-success text-xs px-1.5 py-0.5">
               Score {formatScorePercent(candidate.score ?? 0)}
             </Badge>
           </div>
           <div className="flex gap-1">
             <button
               onClick={handleContact}
-              className="flex-1 flex items-center justify-center gap-1 py-2 bg-white rounded-md text-xs hover:bg-gray-100 transition-colors border border-gray-100 dark:border-gray-700"
+              className="flex-1 flex items-center justify-center gap-1 py-2 bg-lia-bg-primary rounded-md text-xs hover:bg-gray-100 transition-colors border border-lia-border-subtle dark:border-lia-border-subtle"
             >
-              <MessageSquare className="w-3 h-3 text-gray-800 dark:text-gray-200" />
+              <MessageSquare className="w-3 h-3 text-gray-800 dark:text-lia-text-primary" />
               Contatar
             </button>
             <button
               onClick={handleSchedule}
-              className="flex-1 flex items-center justify-center gap-1 py-2 bg-white rounded-md text-xs hover:bg-gray-100 transition-colors border border-gray-100 dark:border-gray-700"
+              className="flex-1 flex items-center justify-center gap-1 py-2 bg-lia-bg-primary rounded-md text-xs hover:bg-gray-100 transition-colors border border-lia-border-subtle dark:border-lia-border-subtle"
             >
-              <CalendarIcon className="w-3 h-3 text-gray-800 dark:text-gray-200" />
+              <CalendarIcon className="w-3 h-3 text-gray-800 dark:text-lia-text-primary" />
               Agendar
             </button>
             <button
               onClick={handleAddTo}
-              className="flex-1 flex items-center justify-center gap-1 py-2 bg-white rounded-md text-xs hover:bg-gray-100 transition-colors border border-gray-100 dark:border-gray-700"
+              className="flex-1 flex items-center justify-center gap-1 py-2 bg-lia-bg-primary rounded-md text-xs hover:bg-gray-100 transition-colors border border-lia-border-subtle dark:border-lia-border-subtle"
             >
-              <UserPlus className="w-3 h-3 text-gray-800 dark:text-gray-200" />
+              <UserPlus className="w-3 h-3 text-gray-800 dark:text-lia-text-primary" />
               Adicionar
             </button>
           </div>
@@ -180,38 +180,38 @@ export function LiaChatModal({
             {liaActions.slice(0, 4).map((action) => (
               <div
                 key={action.id}
-                className="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 cursor-pointer group"
+                className="flex items-center gap-2 p-2 bg-white dark:bg-lia-bg-secondary rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 cursor-pointer group"
                 onClick={() => onConversationChange(action.title)}
               >
                 <span className="text-base flex-shrink-0">{action.icon}</span>
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-xs font-medium text-gray-800 group-hover:text-gray-800">
+                  <h4 className="text-xs font-medium lia-text-strong group-hover:lia-text-strong">
                     {action.title}
                   </h4>
-                  <p className="text-xs text-gray-800 dark:text-gray-200 truncate">
+                  <p className="text-xs text-gray-800 dark:text-lia-text-primary truncate">
                     {action.buttonText}
                   </p>
                 </div>
-                <ChevronRight className="w-3 h-3 text-gray-600 group-hover:text-gray-700 dark:text-gray-300" />
+                <ChevronRight className="w-3 h-3 text-gray-600 group-hover:text-gray-700 dark:text-lia-text-secondary" />
               </div>
             ))}
           </div>
 
           {/* Chat Messages */}
           {chatMessages.length > 0 && (
-            <div className="p-3 border-t border-gray-100 dark:border-gray-700 max-h-48 overflow-y-auto">
+            <div className="p-3 border-t border-lia-border-subtle dark:border-lia-border-subtle max-h-48 overflow-y-auto">
               <div className="space-y-2">
                 {chatMessages.map((msg, idx) => (
                   <div key={idx} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                     {msg.role === 'lia' && (
                       <Avatar className="w-6 h-6 flex-shrink-0">
-                        <AvatarFallback className="bg-gray-900 dark:bg-gray-50 text-white text-micro font-medium">LIA</AvatarFallback>
+                        <AvatarFallback className="bg-gray-900 text-white text-micro font-medium">LIA</AvatarFallback>
                       </Avatar>
                     )}
                     <div className={`max-w-[80%] rounded-md px-3 py-2 ${
-                      msg.role === 'user'
+ msg.role === 'user'
                         ? 'bg-gray-800 text-white'
-                        : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200'
+                        : 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-800 dark:text-lia-text-primary'
                     }`}>
                       <p className="text-xs whitespace-pre-wrap">{msg.content}</p>
                     </div>
@@ -220,9 +220,9 @@ export function LiaChatModal({
                 {isLiaChatLoading && (
                   <div className="flex gap-2 justify-start">
                     <Avatar className="w-6 h-6 flex-shrink-0">
-                      <AvatarFallback className="bg-gray-900 dark:bg-gray-50 text-white text-micro font-medium">LIA</AvatarFallback>
+                      <AvatarFallback className="bg-gray-900 text-white text-micro font-medium">LIA</AvatarFallback>
                     </Avatar>
-                    <div className="bg-gray-100 dark:bg-gray-800 rounded-md px-3 py-2">
+                    <div className="bg-gray-100 dark:bg-lia-bg-secondary rounded-md px-3 py-2">
                       <div className="flex items-center gap-1">
                         <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0ms'}} />
                         <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '150ms'}} />
@@ -236,11 +236,11 @@ export function LiaChatModal({
           )}
 
           {/* Prompt Input */}
-          <div className="p-4 border-t border-gray-100 dark:border-gray-700">
-            <div className="bg-white rounded-md border border-gray-100 dark:border-gray-700 p-3">
+          <div className="p-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle p-3">
               <form onSubmit={handleSubmit} className="flex items-center gap-2">
                 <Avatar className="w-8 h-8 flex-shrink-0">
-                  <AvatarFallback className="bg-gray-900 dark:bg-gray-50 text-white text-xs font-bold">
+                  <AvatarFallback className="bg-gray-900 text-white text-xs font-bold">
                     LIA
                   </AvatarFallback>
                 </Avatar>
@@ -250,11 +250,11 @@ export function LiaChatModal({
                   value={liaConversation}
                   onChange={(e) => onConversationChange(e.target.value)}
                   placeholder={`Peça à LIA para analisar ${candidate.name}, agendar entrevista, enviar email...`}
-                  className="flex-1 bg-transparent text-gray-800 dark:text-gray-200 placeholder-gray-500 text-xs focus:outline-none"
+                  className="flex-1 bg-transparent text-gray-800 dark:text-lia-text-primary placeholder-gray-500 text-xs focus:outline-none"
                   disabled={isLiaChatLoading}
                 />
 
-                <div className="text-xs text-gray-800 dark:text-gray-200 flex items-center gap-1">
+                <div className="text-xs text-gray-800 dark:text-lia-text-primary flex items-center gap-1">
                   {isLiaChatLoading ? (
                     <><span className="animate-pulse">●</span>Processando...</>
                   ) : (
@@ -267,16 +267,16 @@ export function LiaChatModal({
                   className="w-6 h-6 rounded-md flex items-center justify-center hover:bg-gray-200 transition-colors"
                   disabled={isLiaChatLoading}
                 >
-                  <Mic className="w-3 h-3 text-gray-800 dark:text-gray-200" />
+                  <Mic className="w-3 h-3 text-gray-800 dark:text-lia-text-primary" />
                 </button>
 
                 <button
                   type="submit"
                   disabled={!liaConversation.trim() || isLiaChatLoading}
                   className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors ${
-                    liaConversation.trim() && !isLiaChatLoading
+ liaConversation.trim() && !isLiaChatLoading
                       ? 'bg-gray-800 text-white hover:bg-gray-700'
-                      : 'bg-gray-200 text-gray-600 dark:text-gray-400 cursor-not-allowed'
+                      : 'bg-gray-200 text-gray-600 dark:text-lia-text-tertiary cursor-not-allowed'
                   }`}
                 >
                   <Send className="w-3 h-3" />
@@ -287,21 +287,21 @@ export function LiaChatModal({
               <div className="flex flex-wrap gap-1 mt-2">
                 <button
                   onClick={() => onConversationChange(`Agendar entrevista com ${candidate.name}`)}
-                  className="text-xs px-2 py-1 bg-white rounded-full border border-gray-100 dark:border-gray-700 hover:bg-gray-100 transition-colors"
+                  className="text-xs px-2 py-1 bg-lia-bg-primary rounded-full border border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-100 transition-colors"
                   disabled={isLiaChatLoading}
                 >
                   📅 Agendar entrevista
                 </button>
                 <button
                   onClick={() => onConversationChange(`Enviar email de follow-up para ${candidate.name}`)}
-                  className="text-xs px-2 py-1 bg-white rounded-full border border-gray-100 dark:border-gray-700 hover:bg-gray-100 transition-colors"
+                  className="text-xs px-2 py-1 bg-lia-bg-primary rounded-full border border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-100 transition-colors"
                   disabled={isLiaChatLoading}
                 >
                   📧 Enviar email
                 </button>
                 <button
                   onClick={() => onConversationChange(`Fazer análise completa de ${candidate.name}`)}
-                  className="text-xs px-2 py-1 bg-white rounded-full border border-gray-100 dark:border-gray-700 hover:bg-gray-100 transition-colors"
+                  className="text-xs px-2 py-1 bg-lia-bg-primary rounded-full border border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-100 transition-colors"
                   disabled={isLiaChatLoading}
                 >
                   🔍 Análise completa

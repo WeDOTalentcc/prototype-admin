@@ -27,11 +27,11 @@ export function KanbanColumn({
 }: KanbanColumnProps) {
   return (
     <div 
-      className="flex flex-col w-panel-sm min-w-panel-sm bg-gray-50 dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700"
+      className="flex flex-col w-panel-sm min-w-panel-sm bg-gray-50 dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle"
       data-testid="kanban-column"
       data-stage-id={stage.id}
     >
-      <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between p-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
         <div className="flex items-center gap-2">
           <div 
             className="w-3 h-3 rounded-full" 
@@ -40,7 +40,7 @@ export function KanbanColumn({
           <span className="font-medium text-gray-900 dark:text-gray-50">{stage.name}</span>
           <Badge 
             variant="outline" 
-            className="ml-1 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 text-xs"
+            className="ml-1 border-lia-border-default dark:border-lia-border-default text-gray-600 dark:text-lia-text-tertiary text-xs"
           >
             {candidates.length}
           </Badge>
@@ -51,7 +51,7 @@ export function KanbanColumn({
             <Button 
               variant="ghost" 
               size="icon" 
-              className="h-7 w-7 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-50"
+              className="h-7 w-7 text-gray-500 dark:text-lia-text-tertiary hover:text-gray-900 dark:hover:text-gray-50"
               onClick={onAddCandidate}
             >
               <Plus className="h-4 w-4" />
@@ -60,7 +60,7 @@ export function KanbanColumn({
           <Button 
             variant="ghost" 
             size="icon" 
-            className="h-7 w-7 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-50"
+            className="h-7 w-7 text-gray-500 dark:text-lia-text-tertiary hover:text-gray-900 dark:hover:text-gray-50"
           >
             <MoreVertical className="h-4 w-4" />
           </Button>

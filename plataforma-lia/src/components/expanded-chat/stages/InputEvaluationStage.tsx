@@ -54,9 +54,9 @@ export function InputEvaluationStage({
     <>
       {/* Banner when using company config */}
       {configLoaded && hasConfigData && (
-        <div className="mb-3 px-3 py-2 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md flex items-center gap-2">
-          <Settings className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-          <span className="text-xs text-gray-600 dark:text-gray-400">
+        <div className="mb-3 px-3 py-2 bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md flex items-center gap-2">
+          <Settings className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+          <span className="text-xs text-gray-600 dark:text-lia-text-tertiary">
             Usando dados das Configurações da sua empresa
           </span>
         </div>
@@ -65,7 +65,7 @@ export function InputEvaluationStage({
       {/* Seção: Critérios Detectados */}
       <div className="mb-4">
         <h4
-          className="text-micro font-semibold text-gray-500 uppercase tracking-wider mb-2 px-1"
+          className="text-micro font-semibold lia-text-secondary uppercase tracking-wider mb-2 px-1"
          
         >
           Critérios Detectados
@@ -90,15 +90,15 @@ export function InputEvaluationStage({
               <div
                 key={item.key}
                 className={cn(
-                  "flex items-center gap-2.5 py-2 px-3 rounded-md transition-all duration-300",
-                  isDetected ? "bg-gray-50" : "bg-white",
+ "flex items-center gap-2.5 py-2 px-3 rounded-md transition-colors duration-300",
+                  isDetected ? "bg-gray-50" : "bg-lia-bg-primary",
                   isItemHighlighted && "field-highlight field-pulse"
                 )}
               >
                 <div
                   className={cn(
-                    "w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300",
-                    isDetected ? "bg-wedo-green" : "border border-gray-300"
+ "w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition-[width,height] duration-300",
+                    isDetected ? "bg-wedo-green" : "border border-lia-border-default"
                   )}
                 >
                   {isDetected && (
@@ -107,14 +107,14 @@ export function InputEvaluationStage({
                 </div>
                 <div className="flex-1 min-w-0">
                   <p
-                    className="text-xs font-medium text-gray-800 transition-colors duration-300"
+                    className="text-xs font-medium lia-text-strong transition-colors duration-300"
                    
                   >
                     {item.label}
                   </p>
                   {isDetected && displayValue && (
                     <p
-                      className="text-micro mt-0.5 truncate text-gray-600 dark:text-gray-400 font-medium"
+                      className="text-micro mt-0.5 truncate text-gray-600 dark:text-lia-text-tertiary font-medium"
                      
                     >
                       {displayValue}
@@ -128,13 +128,13 @@ export function InputEvaluationStage({
       </div>
 
       {/* Progress Summary */}
-      <div className="mt-3 p-2.5 rounded-md bg-white">
+      <div className="mt-3 p-2.5 rounded-md bg-lia-bg-primary">
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-micro text-gray-600">
+          <span className="text-micro lia-text-base">
             Detectando critérios...
           </span>
           <span
-            className="text-micro font-semibold text-gray-900 dark:text-gray-50"
+            className="text-micro font-semibold text-gray-900"
            
           >
             {criteriaItems.filter(item => getCriteriaStatus(item.value)).length} / {criteriaItems.length}
@@ -142,7 +142,7 @@ export function InputEvaluationStage({
         </div>
         <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
           <div
-            className="h-full rounded-full transition-all duration-500 bg-gray-900 dark:bg-gray-50"
+            className="h-full rounded-full transition-[width,height] duration-500 bg-gray-900"
             style={{width: `${(criteriaItems.filter(item => getCriteriaStatus(item.value)).length / criteriaItems.length) * 100}%`}}
           />
         </div>

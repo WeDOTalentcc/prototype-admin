@@ -109,11 +109,11 @@ export function NextStepModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md rounded-md">
         <DialogHeader>
-          <DialogTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50">
+          <DialogTitle className="text-sm font-semibold text-gray-950">
             Próxima Etapa
           </DialogTitle>
-          <DialogDescription className="text-xs text-gray-600 dark:text-gray-400">
-            <span className="font-medium text-gray-800">{candidateName}</span>
+          <DialogDescription className="text-xs text-gray-600 dark:text-lia-text-tertiary">
+            <span className="font-medium lia-text-strong">{candidateName}</span>
             <span className="mx-1.5">•</span>
             <span>{jobTitle}</span>
           </DialogDescription>
@@ -121,7 +121,7 @@ export function NextStepModal({
 
         <div className="space-y-5 py-4">
           <div className="space-y-3">
-            <Label className="text-xs font-medium text-gray-800 dark:text-gray-200">
+            <Label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">
               Qual é a sua decisão?
             </Label>
             <RadioGroup
@@ -131,26 +131,26 @@ export function NextStepModal({
             >
               <label
                 className={cn(
-                  "flex items-center gap-3 rounded-md border p-3 cursor-pointer transition-all",
+ "flex items-center gap-3 rounded-md border p-3 cursor-pointer transition-colors",
                   decisionType === "approve"
-                    ? "border-gray-900 dark:border-gray-50 bg-gray-50 dark:bg-gray-800/50 ring-1 ring-gray-900/20"
-                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                    ? "border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50 ring-1 ring-gray-900/20"
+                    : "border-lia-border-subtle hover:border-lia-border-default hover:bg-gray-50"
                 )}
               >
                 <RadioGroupItem value="approve" id="approve" className="sr-only" />
                 <div
                   className={cn(
-                    "flex h-8 w-8 items-center justify-center rounded-full",
+ "flex h-8 w-8 items-center justify-center rounded-full",
                     decisionType === "approve"
-                      ? "bg-gray-200 text-gray-800 dark:text-gray-200"
-                      : "bg-gray-100 text-gray-500"
+                      ? "bg-gray-200 text-gray-800 dark:text-lia-text-primary"
+                      : "bg-gray-100 lia-text-secondary"
                   )}
                 >
                   <CheckCircle className="h-4 w-4" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-950 dark:text-gray-50">Aprovar</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-sm font-medium text-gray-950">Aprovar</p>
+                  <p className="text-xs lia-text-secondary">
                     Avançar para próxima etapa
                   </p>
                 </div>
@@ -158,26 +158,26 @@ export function NextStepModal({
 
               <label
                 className={cn(
-                  "flex items-center gap-3 rounded-md border p-3 cursor-pointer transition-all",
+ "flex items-center gap-3 rounded-md border p-3 cursor-pointer transition-colors",
                   decisionType === "reject"
-                    ? "border-gray-900 dark:border-gray-50 bg-gray-50 dark:bg-gray-800/50 ring-1 ring-gray-900/20"
-                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                    ? "border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50 ring-1 ring-gray-900/20"
+                    : "border-lia-border-subtle hover:border-lia-border-default hover:bg-gray-50"
                 )}
               >
                 <RadioGroupItem value="reject" id="reject" className="sr-only" />
                 <div
                   className={cn(
-                    "flex h-8 w-8 items-center justify-center rounded-full",
+ "flex h-8 w-8 items-center justify-center rounded-full",
                     decisionType === "reject"
-                      ? "bg-gray-200 text-gray-800 dark:text-gray-200"
-                      : "bg-gray-100 text-gray-500"
+                      ? "bg-gray-200 text-gray-800 dark:text-lia-text-primary"
+                      : "bg-gray-100 lia-text-secondary"
                   )}
                 >
                   <XCircle className="h-4 w-4" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-950 dark:text-gray-50">Reprovar</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-sm font-medium text-gray-950">Reprovar</p>
+                  <p className="text-xs lia-text-secondary">
                     Encerrar participação no processo
                   </p>
                 </div>
@@ -185,26 +185,26 @@ export function NextStepModal({
 
               <label
                 className={cn(
-                  "flex items-center gap-3 rounded-md border p-3 cursor-pointer transition-all",
+ "flex items-center gap-3 rounded-md border p-3 cursor-pointer transition-colors",
                   decisionType === "pending"
-                    ? "border-gray-900 dark:border-gray-50 bg-gray-50 dark:bg-gray-800/50 ring-1 ring-gray-900/20"
-                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                    ? "border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50 ring-1 ring-gray-900/20"
+                    : "border-lia-border-subtle hover:border-lia-border-default hover:bg-gray-50"
                 )}
               >
                 <RadioGroupItem value="pending" id="pending" className="sr-only" />
                 <div
                   className={cn(
-                    "flex h-8 w-8 items-center justify-center rounded-full",
+ "flex h-8 w-8 items-center justify-center rounded-full",
                     decisionType === "pending"
-                      ? "bg-gray-200 text-gray-800 dark:text-gray-200"
-                      : "bg-gray-100 text-gray-500"
+                      ? "bg-gray-200 text-gray-800 dark:text-lia-text-primary"
+                      : "bg-gray-100 lia-text-secondary"
                   )}
                 >
                   <Clock className="h-4 w-4" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-950 dark:text-gray-50">Pendente</p>
-                  <p className="text-xs text-gray-500">Decidir depois</p>
+                  <p className="text-sm font-medium text-gray-950">Pendente</p>
+                  <p className="text-xs lia-text-secondary">Decidir depois</p>
                 </div>
               </label>
             </RadioGroup>
@@ -212,7 +212,7 @@ export function NextStepModal({
 
           {decisionType === "approve" && (
             <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
-              <Label className="text-xs font-medium text-gray-800 dark:text-gray-200">
+              <Label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">
                 Próxima etapa
               </Label>
               <Select value={selectedStage} onValueChange={setSelectedStage}>
@@ -225,7 +225,7 @@ export function NextStepModal({
                       <div className="flex items-center gap-2">
                         <span>{stage}</span>
                         {suggestedNextStage === stage && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 text-micro font-medium text-gray-600 dark:text-gray-400">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 dark:bg-lia-bg-secondary px-1.5 py-0.5 text-micro font-medium text-gray-600 dark:text-lia-text-tertiary">
                             <Brain className="h-3 w-3 text-wedo-cyan" />
                             Sugestão LIA
                           </span>
@@ -236,7 +236,7 @@ export function NextStepModal({
                 </SelectContent>
               </Select>
               {suggestedNextStage && selectedStage !== suggestedNextStage && (
-                <p className="text-xs text-gray-500 flex items-center gap-1">
+                <p className="text-xs lia-text-secondary flex items-center gap-1">
                   <Brain className="h-3 w-3 text-wedo-cyan" />
                   A LIA sugeriu: <span className="font-medium">{suggestedNextStage}</span>
                 </p>
@@ -246,7 +246,7 @@ export function NextStepModal({
 
           {decisionType === "reject" && (
             <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
-              <Label className="text-xs font-medium text-gray-800 dark:text-gray-200">
+              <Label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">
                 Enviar feedback ao candidato?
               </Label>
               <RadioGroup
@@ -258,10 +258,10 @@ export function NextStepModal({
               >
                 <label
                   className={cn(
-                    "flex items-center gap-3 rounded-md border p-3 cursor-pointer transition-all",
+ "flex items-center gap-3 rounded-md border p-3 cursor-pointer transition-colors",
                     feedbackAction === "send_now"
-                      ? "border-gray-900 dark:border-gray-50 bg-gray-50 dark:bg-gray-800/50 ring-1 ring-gray-900/20"
-                      : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                      ? "border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50 ring-1 ring-gray-900/20"
+                      : "border-lia-border-subtle hover:border-lia-border-default hover:bg-gray-50"
                   )}
                 >
                   <RadioGroupItem
@@ -271,16 +271,16 @@ export function NextStepModal({
                   />
                   <div
                     className={cn(
-                      "flex h-7 w-7 items-center justify-center rounded-full",
+ "flex h-7 w-7 items-center justify-center rounded-full",
                       feedbackAction === "send_now"
-                        ? "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
-                        : "bg-gray-100 text-gray-500"
+                        ? "bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary"
+                        : "bg-gray-100 lia-text-secondary"
                     )}
                   >
                     <Mail className="h-3.5 w-3.5" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-950 dark:text-gray-50">
+                    <p className="text-sm font-medium text-gray-950">
                       Enviar agora
                     </p>
                   </div>
@@ -288,10 +288,10 @@ export function NextStepModal({
 
                 <label
                   className={cn(
-                    "flex items-center gap-3 rounded-md border p-3 cursor-pointer transition-all",
+ "flex items-center gap-3 rounded-md border p-3 cursor-pointer transition-colors",
                     feedbackAction === "schedule"
-                      ? "border-gray-900 dark:border-gray-50 bg-gray-50 dark:bg-gray-800/50 ring-1 ring-gray-900/20"
-                      : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                      ? "border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50 ring-1 ring-gray-900/20"
+                      : "border-lia-border-subtle hover:border-lia-border-default hover:bg-gray-50"
                   )}
                 >
                   <RadioGroupItem
@@ -301,16 +301,16 @@ export function NextStepModal({
                   />
                   <div
                     className={cn(
-                      "flex h-7 w-7 items-center justify-center rounded-full",
+ "flex h-7 w-7 items-center justify-center rounded-full",
                       feedbackAction === "schedule"
-                        ? "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
-                        : "bg-gray-100 text-gray-500"
+                        ? "bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary"
+                        : "bg-gray-100 lia-text-secondary"
                     )}
                   >
                     <Calendar className="h-3.5 w-3.5" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-950 dark:text-gray-50">
+                    <p className="text-sm font-medium text-gray-950">
                       Agendar para depois
                     </p>
                   </div>
@@ -318,25 +318,25 @@ export function NextStepModal({
 
                 <label
                   className={cn(
-                    "flex items-center gap-3 rounded-md border p-3 cursor-pointer transition-all",
+ "flex items-center gap-3 rounded-md border p-3 cursor-pointer transition-colors",
                     feedbackAction === "none"
-                      ? "border-gray-900 dark:border-gray-50 bg-gray-50 dark:bg-gray-800/50 ring-1 ring-gray-900/20"
-                      : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                      ? "border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50 ring-1 ring-gray-900/20"
+                      : "border-lia-border-subtle hover:border-lia-border-default hover:bg-gray-50"
                   )}
                 >
                   <RadioGroupItem value="none" id="none" className="sr-only" />
                   <div
                     className={cn(
-                      "flex h-7 w-7 items-center justify-center rounded-full",
+ "flex h-7 w-7 items-center justify-center rounded-full",
                       feedbackAction === "none"
-                        ? "bg-gray-200 text-gray-600"
-                        : "bg-gray-100 text-gray-500"
+                        ? "bg-gray-200 lia-text-base"
+                        : "bg-gray-100 lia-text-secondary"
                     )}
                   >
                     <XCircle className="h-3.5 w-3.5" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-950 dark:text-gray-50">
+                    <p className="text-sm font-medium text-gray-950">
                       Não enviar
                     </p>
                   </div>
@@ -347,7 +347,7 @@ export function NextStepModal({
                 <div className="pt-2 animate-in fade-in slide-in-from-top-2 duration-200">
                   <Label
                     htmlFor="scheduled-date"
-                    className="text-xs font-medium text-gray-800 dark:text-gray-200"
+                    className="text-xs font-medium text-gray-800 dark:text-lia-text-primary"
                   >
                     Data de envio
                   </Label>
@@ -365,18 +365,18 @@ export function NextStepModal({
           )}
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-0 border-t border-gray-200 bg-gray-50 dark:bg-gray-900 dark:border-gray-700 pt-4">
+        <DialogFooter className="gap-2 sm:gap-0 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle pt-4">
           <Button 
             variant="outline" 
             onClick={onClose}
-            className="h-9 px-4 text-xs font-medium border-gray-200 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+            className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-gray-700 hover:bg-gray-50 dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-700"
           >
             Cancelar
           </Button>
           <Button
             onClick={handleConfirm}
             disabled={isConfirmDisabled()}
-            className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+            className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
           >
             Confirmar
           </Button>

@@ -82,7 +82,7 @@ export function InputBar({
   return (
     <div
       className={cn(
-        "sticky bottom-0 z-10 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-4 py-3",
+ "sticky bottom-0 z-10 bg-white dark:bg-lia-bg-secondary border-t border-lia-border-subtle dark:border-lia-border-subtle px-4 py-3",
         className
       )}
     >
@@ -95,9 +95,9 @@ export function InputBar({
                 onClick={onToggleMute}
                 aria-label={isMuted ? "Ativar áudio da LIA" : "Silenciar áudio da LIA"}
                 className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors font-['Open_Sans',sans-serif]",
+ "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors font-['Open_Sans',sans-serif]",
                   isMuted
-                    ? "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+                    ? "bg-gray-200 dark:bg-lia-bg-elevated text-gray-600 dark:text-lia-text-secondary hover:bg-gray-300 dark:hover:bg-gray-600"
                     : "bg-wedo-cyan/10 text-wedo-cyan hover:bg-wedo-cyan/20"
                 )}
               >
@@ -130,7 +130,7 @@ export function InputBar({
           disabled={isDisabled}
           rows={1}
           aria-label="Campo de resposta"
-          className="flex-1 resize-none w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:border-gray-900 dark:focus:border-gray-100 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-100/20 focus:outline-none disabled:opacity-50 font-['Open_Sans',sans-serif]"
+          className="flex-1 resize-none w-full px-3 py-2 text-sm border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-primary text-gray-900 dark:text-lia-text-primary placeholder-gray-400 dark:placeholder-gray-500 focus:border-gray-900 dark:focus:border-lia-border-subtle focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-100/20 focus:outline-none disabled:opacity-50 font-['Open_Sans',sans-serif]"
         />
 
         {audioEnabled && (
@@ -145,7 +145,7 @@ export function InputBar({
           onClick={handleSend}
           disabled={isDisabled || !text.trim()}
           aria-label="Enviar mensagem"
-          className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-md bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:outline-none"
+          className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-md bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:outline-none"
         >
           <Send className="w-4 h-4" />
         </button>

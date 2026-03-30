@@ -94,8 +94,8 @@ function AcceptInvitationContent() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 font-open-sans">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-gray-600 mx-auto mb-4" />
-          <p className="text-gray-600">Carregando informações do convite...</p>
+          <Loader2 className="w-8 h-8 animate-spin lia-text-600 mx-auto mb-4" />
+          <p className="lia-text-600">Carregando informações do convite...</p>
         </div>
       </div>
     )
@@ -104,12 +104,12 @@ function AcceptInvitationContent() {
   if (!token || (!invitationInfo && !isLoadingInfo)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 font-open-sans p-4">
-        <div className="w-full max-w-md bg-white rounded-xl p-10 text-center">
+        <div className="w-full max-w-md bg-lia-bg-primary rounded-xl p-10 text-center">
           <div className="w-16 h-16 bg-status-error/15 rounded-full flex items-center justify-center mx-auto mb-6">
             <AlertCircle className="w-8 h-8 text-status-error" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-950 dark:text-gray-50 mb-3">Convite Inválido</h2>
-          <p className="text-gray-600 mb-6">
+          <h2 className="text-2xl font-bold lia-text-950 dark:lia-text-50 mb-3">Convite Inválido</h2>
+          <p className="lia-text-600 mb-6">
             {error || "O link de convite é inválido ou expirou. Por favor, solicite um novo convite ao administrador."}
           </p>
           <Link href="/login">
@@ -125,12 +125,12 @@ function AcceptInvitationContent() {
   if (success) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 font-open-sans p-4">
-        <div className="w-full max-w-md bg-white rounded-xl p-10 text-center">
+        <div className="w-full max-w-md bg-lia-bg-primary rounded-xl p-10 text-center">
           <div className="w-16 h-16 bg-status-success/15 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-8 h-8 text-status-success" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-950 dark:text-gray-50 mb-3">Conta Ativada!</h2>
-          <p className="text-gray-600 mb-6">
+          <h2 className="text-2xl font-bold lia-text-950 dark:lia-text-50 mb-3">Conta Ativada!</h2>
+          <p className="lia-text-600 mb-6">
             Sua conta foi ativada com sucesso. Agora você pode fazer login e começar a usar a plataforma.
           </p>
           <Link href="/login">
@@ -146,7 +146,7 @@ function AcceptInvitationContent() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 font-open-sans p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-xl p-10">
+        <div className="bg-lia-bg-primary rounded-xl p-10">
           <div className="flex items-center justify-center mb-6">
             <div className="w-10 h-10 bg-black rounded-md flex items-center justify-center">
               <WeDOLogo className="h-5 text-white" />
@@ -154,20 +154,20 @@ function AcceptInvitationContent() {
           </div>
 
           <div className="text-center mb-6">
-            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-              <UserPlus className="w-8 h-8 text-gray-600 dark:text-gray-400" />
+            <div className="w-16 h-16 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center mx-auto mb-4">
+              <UserPlus className="w-8 h-8 lia-text-600 dark:text-lia-text-tertiary" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-950 dark:text-gray-50 mb-3">Bem-vindo(a)!</h2>
-            <p className="text-gray-600 text-base leading-relaxed">
+            <h2 className="text-2xl font-bold lia-text-950 dark:lia-text-50 mb-3">Bem-vindo(a)!</h2>
+            <p className="lia-text-600 text-base leading-relaxed">
               Você foi convidado(a) para participar da plataforma LIA.
             </p>
             {invitationInfo && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-md border border-gray-100">
-                <p className="text-sm text-gray-600">
-                  <span className="font-medium text-gray-950 dark:text-gray-50">{invitationInfo.name}</span>
+              <div className="mt-4 p-4 bg-gray-50 rounded-md border border-lia-border-subtle">
+                <p className="text-sm lia-text-600">
+                  <span className="font-medium lia-text-950 dark:lia-text-50">{invitationInfo.name}</span>
                 </p>
-                <p className="text-sm text-gray-500">{invitationInfo.email}</p>
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-sm lia-text-500">{invitationInfo.email}</p>
+                <p className="text-xs lia-text-400 mt-1">
                   Empresa: {invitationInfo.company_name}
                 </p>
               </div>
@@ -176,7 +176,7 @@ function AcceptInvitationContent() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+              <label className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2">
                 Criar Senha
               </label>
               <div className="relative">
@@ -185,13 +185,13 @@ function AcceptInvitationContent() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Mínimo 8 caracteres"
-                  className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all"
+                  className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-700"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 lia-text-600 hover:lia-text-700"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -199,7 +199,7 @@ function AcceptInvitationContent() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+              <label className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2">
                 Confirmar Senha
               </label>
               <div className="relative">
@@ -208,13 +208,13 @@ function AcceptInvitationContent() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Digite a senha novamente"
-                  className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all"
+                  className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-700"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 lia-text-600 hover:lia-text-700"
                 >
                   {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -230,7 +230,7 @@ function AcceptInvitationContent() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-md transition-all font-medium"
+              className="w-full py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-md transition-colors font-medium"
             >
               {isLoading ? (
                 <>
@@ -252,7 +252,7 @@ export default function AcceptInvitationPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center bg-gray-50 font-open-sans">
-        <Loader2 className="w-8 h-8 animate-spin text-gray-600" />
+        <Loader2 className="w-8 h-8 animate-spin lia-text-600" />
       </div>
     }>
       <AcceptInvitationContent />

@@ -147,14 +147,14 @@ export function CultureProfilePreview({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-gray-900">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gray-900">
             <Brain className="w-5 h-5 text-white" />
           </div>
           <div>
             <h3 className={textStyles.h3}>
               Perfil Cultural Identificado
             </h3>
-            <p className="text-xs text-gray-600 dark:text-gray-400">
+            <p className="text-xs lia-text-600 dark:text-lia-text-tertiary">
               Confiança: {confidencePercent}% • Fonte: {profile.source === 'auto' ? 'IA' : 'Manual'}
             </p>
           </div>
@@ -185,9 +185,9 @@ export function CultureProfilePreview({
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="rounded-xl border border-gray-200 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/20 backdrop-blur-sm">
+        <Card className="rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle/50 bg-gray-50/50 dark:bg-lia-bg-secondary/20 backdrop-blur-sm">
           <CardHeader className="pb-2 pt-4 px-4">
-            <CardTitle className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+            <CardTitle className="text-xs font-semibold lia-text-700 dark:text-lia-text-secondary flex items-center gap-2">
               <Target className="w-4 h-4" />
               Missão
             </CardTitle>
@@ -198,20 +198,20 @@ export function CultureProfilePreview({
                 value={editedProfile.mission || ""}
                 onChange={(e) => updateField("mission", e.target.value)}
                 rows={3}
-                className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 resize-none"
+                className="w-full px-3 py-2 text-sm rounded-md border border-lia-border-default dark:border-lia-border-default bg-white dark:bg-lia-bg-primary focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 resize-none"
                 placeholder="Descreva a missão da empresa..."
               />
             ) : (
-              <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">
+              <p className="text-sm lia-text-800 dark:text-lia-text-primary leading-relaxed">
                 {editedProfile.mission || "Não identificada"}
               </p>
             )}
           </CardContent>
         </Card>
 
-        <Card className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 backdrop-blur-sm">
+        <Card className="rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50/50 dark:bg-lia-bg-secondary/50 backdrop-blur-sm">
           <CardHeader className="pb-2 pt-4 px-4">
-            <CardTitle className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+            <CardTitle className="text-xs font-semibold lia-text-700 dark:text-lia-text-secondary flex items-center gap-2">
               <Eye className="w-4 h-4" />
               Visão
             </CardTitle>
@@ -222,11 +222,11 @@ export function CultureProfilePreview({
                 value={editedProfile.vision || ""}
                 onChange={(e) => updateField("vision", e.target.value)}
                 rows={3}
-                className="w-full px-3 py-2 text-sm rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-gray-500/20 focus:border-gray-500 resize-none"
+                className="w-full px-3 py-2 text-sm rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary focus:ring-2 focus:ring-gray-500/20 focus:border-gray-500 resize-none"
                 placeholder="Descreva a visão da empresa..."
               />
             ) : (
-              <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">
+              <p className="text-sm lia-text-800 dark:text-lia-text-primary leading-relaxed">
                 {editedProfile.vision || "Não identificada"}
               </p>
             )}
@@ -235,9 +235,9 @@ export function CultureProfilePreview({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 backdrop-blur-sm">
+        <Card className="rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50/50 dark:bg-lia-bg-secondary/50 backdrop-blur-sm">
           <CardHeader className="pb-2 pt-4 px-4">
-            <CardTitle className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+            <CardTitle className="text-xs font-semibold lia-text-700 dark:text-lia-text-secondary flex items-center gap-2">
               <Heart className="w-4 h-4" />
               Valores ({editedProfile.values.length})
             </CardTitle>
@@ -249,8 +249,8 @@ export function CultureProfilePreview({
                   key={index}
                   className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium 
                     ${isEditing 
-                      ? "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 pr-1" 
-                      : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                      ? "bg-gray-200 lia-text-700 dark:bg-lia-bg-elevated dark:text-lia-text-secondary pr-1" 
+                      : "bg-gray-200 lia-text-700 dark:bg-lia-bg-elevated dark:text-lia-text-secondary"
                     }`}
                 >
                   {value}
@@ -265,7 +265,7 @@ export function CultureProfilePreview({
                 </span>
               ))}
               {editedProfile.values.length === 0 && (
-                <span className="text-xs text-gray-600 italic">Nenhum valor identificado</span>
+                <span className="text-xs lia-text-600 italic">Nenhum valor identificado</span>
               )}
             </div>
             {isEditing && (
@@ -276,7 +276,7 @@ export function CultureProfilePreview({
                   onChange={(e) => setNewValue(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && addValue()}
                   placeholder="Novo valor..."
-                  className="flex-1 px-3 py-1.5 text-xs rounded-md border border-status-success/30 dark:border-status-success/30 bg-white dark:bg-gray-900"
+                  className="flex-1 px-3 py-1.5 text-xs rounded-md border border-status-success/30 dark:border-status-success/30 bg-white dark:bg-lia-bg-primary"
                 />
                 <Button size="sm" variant="ghost" onClick={addValue} className="h-8 px-2">
                   <Plus className="w-4 h-4" />
@@ -298,7 +298,7 @@ export function CultureProfilePreview({
               {editedProfile.evp_bullets.map((evp, index) => (
                 <li
                   key={index}
-                  className="flex items-start gap-2 text-xs text-gray-800 dark:text-gray-200"
+                  className="flex items-start gap-2 text-xs lia-text-800 dark:text-lia-text-primary"
                 >
                   <Lightbulb className="w-3.5 h-3.5 text-status-warning mt-0.5 flex-shrink-0" />
                   <span className="flex-1">{evp}</span>
@@ -313,7 +313,7 @@ export function CultureProfilePreview({
                 </li>
               ))}
               {editedProfile.evp_bullets.length === 0 && (
-                <li className="text-xs text-gray-600 italic">Nenhum diferencial identificado</li>
+                <li className="text-xs lia-text-600 italic">Nenhum diferencial identificado</li>
               )}
             </ul>
             {isEditing && (
@@ -324,7 +324,7 @@ export function CultureProfilePreview({
                   onChange={(e) => setNewEvp(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && addEvp()}
                   placeholder="Novo diferencial..."
-                  className="flex-1 px-3 py-1.5 text-xs rounded-md border border-status-warning/30 dark:border-status-warning/30 bg-white dark:bg-gray-900"
+                  className="flex-1 px-3 py-1.5 text-xs rounded-md border border-status-warning/30 dark:border-status-warning/30 bg-white dark:bg-lia-bg-primary"
                 />
                 <Button size="sm" variant="ghost" onClick={addEvp} className="h-8 px-2">
                   <Plus className="w-4 h-4" />
@@ -335,9 +335,9 @@ export function CultureProfilePreview({
         </Card>
       </div>
 
-      <Card className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/20 backdrop-blur-sm">
+      <Card className="rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50/50 dark:bg-lia-bg-secondary/20 backdrop-blur-sm">
         <CardHeader className="pb-2 pt-4 px-4">
-          <CardTitle className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+          <CardTitle className="text-xs font-semibold lia-text-700 dark:text-lia-text-secondary flex items-center gap-2">
             <Users className="w-4 h-4" />
             Competências Comportamentais ({(editedProfile.core_competencies || []).length})
           </CardTitle>
@@ -349,8 +349,8 @@ export function CultureProfilePreview({
                 key={index}
                 className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium 
                   ${isEditing 
-                    ? "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 pr-1" 
-                    : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                    ? "bg-gray-100 lia-text-700 dark:bg-lia-bg-secondary dark:text-lia-text-secondary pr-1" 
+                    : "bg-gray-100 lia-text-700 dark:bg-lia-bg-secondary dark:text-lia-text-secondary"
                   }`}
               >
                 {competency}
@@ -365,7 +365,7 @@ export function CultureProfilePreview({
               </span>
             ))}
             {(editedProfile.core_competencies || []).length === 0 && (
-              <span className="text-xs text-gray-600 italic">Nenhuma competência identificada</span>
+              <span className="text-xs lia-text-600 italic">Nenhuma competência identificada</span>
             )}
           </div>
           {isEditing && (
@@ -376,7 +376,7 @@ export function CultureProfilePreview({
                 onChange={(e) => setNewCompetency(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && addCompetency()}
                 placeholder="Nova competência... Ex: Liderança, Comunicação"
-                className="flex-1 px-3 py-1.5 text-xs rounded-md border border-wedo-purple/30 dark:border-wedo-purple/30 bg-white dark:bg-gray-900"
+                className="flex-1 px-3 py-1.5 text-xs rounded-md border border-wedo-purple/30 dark:border-wedo-purple/30 bg-white dark:bg-lia-bg-primary"
               />
               <Button size="sm" variant="ghost" onClick={addCompetency} className="h-8 px-2">
                 <Plus className="w-4 h-4" />
@@ -386,33 +386,33 @@ export function CultureProfilePreview({
         </CardContent>
       </Card>
 
-      <Card className="rounded-xl bg-gray-50/50 dark:bg-gray-800/20 backdrop-blur-sm border border-gray-200 dark:border-gray-700/50">
+      <Card className="rounded-xl bg-gray-50/50 dark:bg-lia-bg-secondary/20 backdrop-blur-sm border border-lia-border-subtle dark:border-lia-border-subtle/50">
         <CardHeader className="pb-2 pt-4 px-4">
-          <CardTitle className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+          <CardTitle className="text-xs font-semibold lia-text-700 dark:text-lia-text-secondary flex items-center gap-2">
             <Compass className="w-4 h-4" />
             Perfil Organizacional (Big Five)
             <Popover>
               <PopoverTrigger asChild>
                 <button className="ml-1 p-0.5 rounded-full hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors">
-                  <HelpCircle className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+                  <HelpCircle className="w-3.5 h-3.5 lia-text-500 dark:text-lia-text-tertiary" />
                 </button>
               </PopoverTrigger>
               <PopoverContent className="w-96 p-4 text-xs" side="top" align="start">
                 <div className="space-y-3">
-                  <h4 className="font-semibold text-gray-950 dark:text-gray-50">Metodologia Big Five (OCEAN)</h4>
-                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                  <h4 className="font-semibold lia-text-950 dark:lia-text-50">Metodologia Big Five (OCEAN)</h4>
+                  <p className="lia-text-600 dark:text-lia-text-tertiary leading-relaxed">
                     O modelo Big Five é a metodologia científica mais validada para análise de personalidade, 
                     amplamente utilizada em psicologia organizacional.
                   </p>
                   
-                  <div className="border-t border-gray-200 dark:border-gray-700 pt-2">
-                    <h5 className="font-medium text-gray-800 dark:text-gray-200 mb-1.5">Como definimos os scores (0-100):</h5>
-                    <ul className="space-y-1.5 text-gray-600 dark:text-gray-400">
-                      <li><strong className="text-gray-700 dark:text-gray-300">Abertura (0-100):</strong> Baixo = tradicional, processos rígidos. Alto = inovadora, experimental, criativa.</li>
-                      <li><strong className="text-gray-700 dark:text-gray-300">Conscienciosidade (0-100):</strong> Baixo = informal, flexível. Alto = estruturada, organizada, focada em qualidade.</li>
-                      <li><strong className="text-gray-700 dark:text-gray-300">Extroversão (0-100):</strong> Baixo = trabalho individual, introspecção. Alto = colaborativa, comunicativa, trabalho em equipe.</li>
-                      <li><strong className="text-gray-700 dark:text-gray-300">Amabilidade (0-100):</strong> Baixo = competitiva, foco em resultados. Alto = empática, foco em pessoas, diversidade.</li>
-                      <li><strong className="text-gray-700 dark:text-gray-300">Estabilidade (0-100):</strong> Baixo = dinâmica, alta pressão, mudanças frequentes. Alto = ambiente calmo, previsível, baixo estresse.</li>
+                  <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-2">
+                    <h5 className="font-medium lia-text-800 dark:text-lia-text-primary mb-1.5">Como definimos os scores (0-100):</h5>
+                    <ul className="space-y-1.5 lia-text-600 dark:text-lia-text-tertiary">
+                      <li><strong className="lia-text-700 dark:text-lia-text-secondary">Abertura (0-100):</strong> Baixo = tradicional, processos rígidos. Alto = inovadora, experimental, criativa.</li>
+                      <li><strong className="lia-text-700 dark:text-lia-text-secondary">Conscienciosidade (0-100):</strong> Baixo = informal, flexível. Alto = estruturada, organizada, focada em qualidade.</li>
+                      <li><strong className="lia-text-700 dark:text-lia-text-secondary">Extroversão (0-100):</strong> Baixo = trabalho individual, introspecção. Alto = colaborativa, comunicativa, trabalho em equipe.</li>
+                      <li><strong className="lia-text-700 dark:text-lia-text-secondary">Amabilidade (0-100):</strong> Baixo = competitiva, foco em resultados. Alto = empática, foco em pessoas, diversidade.</li>
+                      <li><strong className="lia-text-700 dark:text-lia-text-secondary">Estabilidade (0-100):</strong> Baixo = dinâmica, alta pressão, mudanças frequentes. Alto = ambiente calmo, previsível, baixo estresse.</li>
                     </ul>
                   </div>
                   
@@ -424,7 +424,7 @@ export function CultureProfilePreview({
                     </p>
                   </div>
                   
-                  <p className="text-gray-500 dark:text-gray-500 italic text-micro pt-1">
+                  <p className="lia-text-500 dark:lia-text-500 italic text-micro pt-1">
                     Fonte: Goldberg (1990), Costa & McCrae (1992)
                   </p>
                 </div>
@@ -449,9 +449,9 @@ export function CultureProfilePreview({
       </Card>
 
       {(editedProfile.industry || editedProfile.employee_count || editedProfile.headquarters || editedProfile.founded_year) && (
-        <Card className="rounded-xl border border-gray-200 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/20 backdrop-blur-sm">
+        <Card className="rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle/50 bg-gray-50/50 dark:bg-lia-bg-secondary/20 backdrop-blur-sm">
           <CardHeader className="pb-2 pt-4 px-4">
-            <CardTitle className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+            <CardTitle className="text-xs font-semibold lia-text-700 dark:text-lia-text-secondary flex items-center gap-2">
               <Building2 className="w-4 h-4" />
               Informações da Empresa
             </CardTitle>
@@ -460,19 +460,19 @@ export function CultureProfilePreview({
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {editedProfile.industry && (
                 <div className="flex items-start gap-2">
-                  <Briefcase className="w-3.5 h-3.5 text-gray-500 mt-0.5 flex-shrink-0" />
+                  <Briefcase className="w-3.5 h-3.5 lia-text-500 mt-0.5 flex-shrink-0" />
                   <div>
-                    <span className="text-micro text-gray-500 dark:text-gray-400 block">Indústria</span>
-                    <span className="text-xs text-gray-800 dark:text-gray-200">{editedProfile.industry}</span>
+                    <span className="text-micro lia-text-500 dark:text-lia-text-tertiary block">Indústria</span>
+                    <span className="text-xs lia-text-800 dark:text-lia-text-primary">{editedProfile.industry}</span>
                   </div>
                 </div>
               )}
               {(editedProfile.employee_count || editedProfile.company_size) && (
                 <div className="flex items-start gap-2">
-                  <Users className="w-3.5 h-3.5 text-gray-500 mt-0.5 flex-shrink-0" />
+                  <Users className="w-3.5 h-3.5 lia-text-500 mt-0.5 flex-shrink-0" />
                   <div>
-                    <span className="text-micro text-gray-500 dark:text-gray-400 block">Tamanho</span>
-                    <span className="text-xs text-gray-800 dark:text-gray-200">
+                    <span className="text-micro lia-text-500 dark:text-lia-text-tertiary block">Tamanho</span>
+                    <span className="text-xs lia-text-800 dark:text-lia-text-primary">
                       {editedProfile.employee_count ? `${editedProfile.employee_count.toLocaleString()} funcionários` : editedProfile.company_size}
                     </span>
                   </div>
@@ -480,28 +480,28 @@ export function CultureProfilePreview({
               )}
               {editedProfile.headquarters && (
                 <div className="flex items-start gap-2">
-                  <MapPin className="w-3.5 h-3.5 text-gray-500 mt-0.5 flex-shrink-0" />
+                  <MapPin className="w-3.5 h-3.5 lia-text-500 mt-0.5 flex-shrink-0" />
                   <div>
-                    <span className="text-micro text-gray-500 dark:text-gray-400 block">Sede</span>
-                    <span className="text-xs text-gray-800 dark:text-gray-200">{editedProfile.headquarters}</span>
+                    <span className="text-micro lia-text-500 dark:text-lia-text-tertiary block">Sede</span>
+                    <span className="text-xs lia-text-800 dark:text-lia-text-primary">{editedProfile.headquarters}</span>
                   </div>
                 </div>
               )}
               {editedProfile.founded_year && (
                 <div className="flex items-start gap-2">
-                  <Calendar className="w-3.5 h-3.5 text-gray-500 mt-0.5 flex-shrink-0" />
+                  <Calendar className="w-3.5 h-3.5 lia-text-500 mt-0.5 flex-shrink-0" />
                   <div>
-                    <span className="text-micro text-gray-500 dark:text-gray-400 block">Fundação</span>
-                    <span className="text-xs text-gray-800 dark:text-gray-200">{editedProfile.founded_year}</span>
+                    <span className="text-micro lia-text-500 dark:text-lia-text-tertiary block">Fundação</span>
+                    <span className="text-xs lia-text-800 dark:text-lia-text-primary">{editedProfile.founded_year}</span>
                   </div>
                 </div>
               )}
               {editedProfile.locations && editedProfile.locations.length > 0 && (
                 <div className="flex items-start gap-2 col-span-2">
-                  <Globe className="w-3.5 h-3.5 text-gray-500 mt-0.5 flex-shrink-0" />
+                  <Globe className="w-3.5 h-3.5 lia-text-500 mt-0.5 flex-shrink-0" />
                   <div>
-                    <span className="text-micro text-gray-500 dark:text-gray-400 block">Localidades</span>
-                    <span className="text-xs text-gray-800 dark:text-gray-200">{editedProfile.locations.join(", ")}</span>
+                    <span className="text-micro lia-text-500 dark:text-lia-text-tertiary block">Localidades</span>
+                    <span className="text-xs lia-text-800 dark:text-lia-text-primary">{editedProfile.locations.join(", ")}</span>
                   </div>
                 </div>
               )}
@@ -511,9 +511,9 @@ export function CultureProfilePreview({
       )}
 
       {(editedProfile.work_model || editedProfile.growth_opportunities || editedProfile.team_dynamics || editedProfile.leadership_style) && (
-        <Card className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/20 backdrop-blur-sm">
+        <Card className="rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50/50 dark:bg-lia-bg-secondary/20 backdrop-blur-sm">
           <CardHeader className="pb-2 pt-4 px-4">
-            <CardTitle className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+            <CardTitle className="text-xs font-semibold lia-text-700 dark:text-lia-text-secondary flex items-center gap-2">
               <TrendingUp className="w-4 h-4" />
               Modelo de Trabalho e Crescimento
             </CardTitle>
@@ -521,26 +521,26 @@ export function CultureProfilePreview({
           <CardContent className="px-4 pb-4 space-y-3">
             {editedProfile.work_model && (
               <div>
-                <span className="text-micro text-gray-600 dark:text-gray-400 font-medium block mb-1">Modelo de Trabalho</span>
-                <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{editedProfile.work_model}</p>
+                <span className="text-micro lia-text-600 dark:text-lia-text-tertiary font-medium block mb-1">Modelo de Trabalho</span>
+                <p className="text-xs lia-text-800 dark:text-lia-text-primary leading-relaxed">{editedProfile.work_model}</p>
               </div>
             )}
             {editedProfile.growth_opportunities && (
               <div>
-                <span className="text-micro text-gray-600 dark:text-gray-400 font-medium block mb-1">Oportunidades de Crescimento</span>
-                <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{editedProfile.growth_opportunities}</p>
+                <span className="text-micro lia-text-600 dark:text-lia-text-tertiary font-medium block mb-1">Oportunidades de Crescimento</span>
+                <p className="text-xs lia-text-800 dark:text-lia-text-primary leading-relaxed">{editedProfile.growth_opportunities}</p>
               </div>
             )}
             {editedProfile.team_dynamics && (
               <div>
-                <span className="text-micro text-gray-600 dark:text-gray-400 font-medium block mb-1">Dinâmica de Equipe</span>
-                <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{editedProfile.team_dynamics}</p>
+                <span className="text-micro lia-text-600 dark:text-lia-text-tertiary font-medium block mb-1">Dinâmica de Equipe</span>
+                <p className="text-xs lia-text-800 dark:text-lia-text-primary leading-relaxed">{editedProfile.team_dynamics}</p>
               </div>
             )}
             {editedProfile.leadership_style && (
               <div>
-                <span className="text-micro text-gray-600 dark:text-gray-400 font-medium block mb-1">Estilo de Liderança</span>
-                <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{editedProfile.leadership_style}</p>
+                <span className="text-micro lia-text-600 dark:text-lia-text-tertiary font-medium block mb-1">Estilo de Liderança</span>
+                <p className="text-xs lia-text-800 dark:text-lia-text-primary leading-relaxed">{editedProfile.leadership_style}</p>
               </div>
             )}
           </CardContent>
@@ -559,19 +559,19 @@ export function CultureProfilePreview({
             {editedProfile.dei_initiatives && (
               <div>
                 <span className="text-micro text-status-success dark:text-status-success font-medium block mb-1">Diversidade, Equidade e Inclusão</span>
-                <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{editedProfile.dei_initiatives}</p>
+                <p className="text-xs lia-text-800 dark:text-lia-text-primary leading-relaxed">{editedProfile.dei_initiatives}</p>
               </div>
             )}
             {editedProfile.sustainability && (
               <div>
                 <span className="text-micro text-status-success dark:text-status-success font-medium block mb-1">Sustentabilidade</span>
-                <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{editedProfile.sustainability}</p>
+                <p className="text-xs lia-text-800 dark:text-lia-text-primary leading-relaxed">{editedProfile.sustainability}</p>
               </div>
             )}
             {editedProfile.social_impact && (
               <div>
                 <span className="text-micro text-status-success dark:text-status-success font-medium block mb-1">Impacto Social</span>
-                <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{editedProfile.social_impact}</p>
+                <p className="text-xs lia-text-800 dark:text-lia-text-primary leading-relaxed">{editedProfile.social_impact}</p>
               </div>
             )}
           </CardContent>
@@ -605,7 +605,7 @@ export function CultureProfilePreview({
             {editedProfile.engineering_culture && (
               <div>
                 <span className="text-micro text-slate-600 dark:text-slate-400 font-medium block mb-1">Cultura de Engenharia</span>
-                <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{editedProfile.engineering_culture}</p>
+                <p className="text-xs lia-text-800 dark:text-lia-text-primary leading-relaxed">{editedProfile.engineering_culture}</p>
               </div>
             )}
           </CardContent>
@@ -618,7 +618,7 @@ export function CultureProfilePreview({
           size="sm"
           onClick={onReanalyze}
           disabled={isLoading}
-          className="gap-2 text-gray-600 hover:text-gray-900"
+          className="gap-2 lia-text-600 hover:lia-text-900"
         >
           <RotateCcw className="w-4 h-4" />
           Refazer Análise
@@ -631,7 +631,7 @@ export function CultureProfilePreview({
               size="sm"
               onClick={() => onSaveAdjustments(editedProfile)}
               disabled={isLoading}
-              className="gap-2 border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
+              className="gap-2 border-lia-border-default lia-text-700 hover:bg-gray-50 dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-800"
             >
               <Save className="w-4 h-4" />
               Salvar Ajustes
@@ -646,16 +646,16 @@ export function CultureProfilePreview({
               }, 800)
             }}
             disabled={isLoading || acceptedAll}
-            className={`gap-2 bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 transition-all duration-300 ease-in-out ${
-              acceptedAll ? 'scale-105 ring-2 ring-gray-900/50 ring-offset-2 dark:ring-gray-50/50' : 'hover:scale-[1.02]'
+            className={`gap-2 bg-gray-900 text-white hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 transition-colors duration-300 ease-in-out ${
+              acceptedAll ? 'scale-105 ring-2 ring-gray-900/50 ring-offset-2 dark:lia-ring-50/50' : 'hover:scale-[1.02]'
             }`}
           >
             <CheckCircle2 
-              className={`w-4 h-4 transition-all duration-300 ${
+              className={`w-4 h-4 transition-colors duration-300 ${
                 acceptedAll ? 'scale-125' : ''
               }`} 
             />
-            <span className="transition-all duration-300">
+            <span className="transition-colors duration-300">
               {acceptedAll 
                 ? "Aceito! ✓" 
                 : hasChanges 

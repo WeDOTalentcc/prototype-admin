@@ -311,9 +311,9 @@ export function AddCandidatesToVacancyModal({
           }
         }}
         className={cn(
-          "p-3 rounded-md cursor-pointer transition-all outline-none",
+          "p-3 rounded-md cursor-pointer transition-colors outline-none",
           selectedVacancyId === vacancy.id
-            ? "bg-gray-100 dark:bg-gray-700 border-2 border-gray-500"
+            ? "bg-gray-100 dark:bg-lia-bg-elevated border-2 border-gray-500"
             : "hover:bg-gray-50 border-2 border-transparent focus:ring-2 focus:ring-gray-400/50"
         )}
       >
@@ -324,7 +324,7 @@ export function AddCandidatesToVacancyModal({
                 {vacancy.title}
               </span>
               {selectedVacancyId === vacancy.id && (
-                <Check className="w-4 h-4 text-gray-700 dark:text-gray-300 flex-shrink-0" />
+                <Check className="w-4 h-4 text-gray-700 dark:text-lia-text-secondary flex-shrink-0" />
               )}
               {isOwn && (
                 <Star className="w-3 h-3 text-status-warning flex-shrink-0" fill="var(--status-warning)" />
@@ -381,10 +381,10 @@ export function AddCandidatesToVacancyModal({
         ref={modalRef}
         className={`relative ${cardStyles.default} w-full max-w-md mx-4 max-h-[90vh] overflow-hidden flex flex-col`}
       >
-        <div className="border-b border-gray-200 dark:border-gray-700 p-5">
+        <div className="border-b border-lia-border-subtle dark:border-lia-border-subtle p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Briefcase className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <Briefcase className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
               <h2 id="add-vacancy-modal-title" className={textStyles.title}>
                 Adicionar à Vaga
               </h2>
@@ -404,7 +404,7 @@ export function AddCandidatesToVacancyModal({
 
         <div className="p-4 space-y-4 flex-1 overflow-hidden flex flex-col">
           <div className={`flex items-center gap-2 p-2 ${cardStyles.flat}`}>
-            <Users className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+            <Users className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
             <span className={textStyles.bodySmall}>
               {candidateNames.slice(0, 2).join(', ')}
               {candidateNames.length > 2 && ` e mais ${candidateNames.length - 2}`}
@@ -418,12 +418,12 @@ export function AddCandidatesToVacancyModal({
               placeholder="Buscar vagas por título, departamento ou local..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 border-gray-200 text-xs placeholder:text-gray-400 focus:ring-1 focus:ring-gray-400 focus:border-gray-500"
+              className="pl-9 border-lia-border-subtle text-xs placeholder:text-gray-400 focus:ring-1 focus:ring-gray-400 focus:border-gray-500"
               aria-label="Buscar vagas"
             />
           </div>
 
-          <ScrollArea className="flex-1 border border-gray-100 rounded-md min-h-[250px]">
+          <ScrollArea className="flex-1 border border-lia-border-subtle rounded-md min-h-[250px]">
             {isLoading ? (
               <div className="flex flex-col items-center justify-center h-[250px] text-gray-600">
                 <Loader2 className="w-6 h-6 animate-spin text-gray-500 mb-2" />
@@ -492,12 +492,12 @@ export function AddCandidatesToVacancyModal({
           </ScrollArea>
         </div>
 
-        <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-end gap-2">
+        <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary p-4 flex items-center justify-end gap-2">
           <Button 
             variant="outline" 
             onClick={onClose} 
             disabled={isSubmitting}
-            className="bg-white border border-gray-300 text-gray-800 hover:bg-gray-50 text-xs dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 dark:text-gray-200"
+            className="bg-white border border-lia-border-default text-gray-800 hover:bg-gray-50 text-xs dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 dark:text-lia-text-primary"
           >
             Cancelar
           </Button>

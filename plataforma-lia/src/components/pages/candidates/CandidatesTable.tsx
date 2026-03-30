@@ -46,45 +46,45 @@ function formatRelativeDate(dateStr?: string): string {
 
 function SkeletonRow() {
   return (
-    <tr className="border-b border-gray-200 dark:border-gray-700 animate-pulse">
+    <tr className="border-b border-lia-border-subtle dark:border-lia-border-subtle animate-pulse">
       <td className="w-12 p-4">
-        <div className="h-4 w-4 bg-gray-200 dark:bg-gray-700 rounded-md" />
+        <div className="h-4 w-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md" />
       </td>
       <td className="p-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 bg-gray-200 dark:bg-gray-700 rounded-full" />
+          <div className="h-10 w-10 bg-gray-200 dark:bg-lia-bg-elevated rounded-full" />
           <div className="space-y-2">
-            <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded-md" />
-            <div className="h-3 w-40 bg-gray-100 dark:bg-gray-800 rounded-md" />
+            <div className="h-4 w-32 bg-gray-200 dark:bg-lia-bg-elevated rounded-md" />
+            <div className="h-3 w-40 bg-gray-100 dark:bg-lia-bg-secondary rounded-md" />
           </div>
         </div>
       </td>
       <td className="p-4">
         <div className="space-y-2">
-          <div className="h-4 w-28 bg-gray-200 dark:bg-gray-700 rounded-md" />
-          <div className="h-3 w-20 bg-gray-100 dark:bg-gray-800 rounded-md" />
+          <div className="h-4 w-28 bg-gray-200 dark:bg-lia-bg-elevated rounded-md" />
+          <div className="h-3 w-20 bg-gray-100 dark:bg-lia-bg-secondary rounded-md" />
         </div>
       </td>
       <td className="p-4">
-        <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded-md" />
+        <div className="h-4 w-24 bg-gray-200 dark:bg-lia-bg-elevated rounded-md" />
       </td>
       <td className="p-4 text-center">
-        <div className="h-6 w-8 bg-gray-200 dark:bg-gray-700 rounded-md mx-auto" />
+        <div className="h-6 w-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-md mx-auto" />
       </td>
       <td className="p-4">
         <div className="flex gap-1">
-          <div className="h-5 w-14 bg-gray-200 dark:bg-gray-700 rounded-full" />
-          <div className="h-5 w-12 bg-gray-200 dark:bg-gray-700 rounded-full" />
-          <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded-full" />
+          <div className="h-5 w-14 bg-gray-200 dark:bg-lia-bg-elevated rounded-full" />
+          <div className="h-5 w-12 bg-gray-200 dark:bg-lia-bg-elevated rounded-full" />
+          <div className="h-5 w-16 bg-gray-200 dark:bg-lia-bg-elevated rounded-full" />
         </div>
       </td>
       <td className="p-4">
-        <div className="h-4 w-16 bg-gray-200 dark:bg-gray-700 rounded-md" />
+        <div className="h-4 w-16 bg-gray-200 dark:bg-lia-bg-elevated rounded-md" />
       </td>
       <td className="p-4">
         <div className="flex justify-end gap-1">
-          <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-md" />
-          <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-md" />
+          <div className="h-8 w-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-md" />
+          <div className="h-8 w-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-md" />
         </div>
       </td>
     </tr>
@@ -127,11 +127,11 @@ export function CandidatesTable({
 
   if (isLoading) {
     return (
-      <div className="overflow-x-auto bg-white dark:bg-gray-900">
+      <div className="overflow-x-auto bg-white dark:bg-lia-bg-primary">
         <table className="w-full">
-          <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+          <thead className="bg-gray-50 dark:bg-lia-bg-secondary border-b border-lia-border-subtle dark:border-lia-border-subtle">
             <tr>
-              <th className="w-12 p-4"><div className="h-4 w-4 bg-gray-200 dark:bg-gray-700 rounded-md" /></th>
+              <th className="w-12 p-4"><div className="h-4 w-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md" /></th>
               <th className="text-left p-4"><span className="text-sm font-medium text-gray-400">Candidato</span></th>
               <th className="text-left p-4"><span className="text-sm font-medium text-gray-400">Cargo Atual</span></th>
               <th className="text-left p-4"><span className="text-sm font-medium text-gray-400">Localização</span></th>
@@ -153,7 +153,7 @@ export function CandidatesTable({
 
   if (candidates.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-900">
+      <div className="flex flex-col items-center justify-center py-20 text-gray-600 dark:text-lia-text-tertiary bg-white dark:bg-lia-bg-primary">
         <p className="text-lg">Nenhum candidato encontrado</p>
         <p className="text-sm mt-2">Tente ajustar os filtros ou fazer uma nova busca</p>
       </div>
@@ -161,21 +161,21 @@ export function CandidatesTable({
   }
 
   return (
-    <div className="overflow-x-auto bg-white dark:bg-gray-900">
+    <div className="overflow-x-auto bg-white dark:bg-lia-bg-primary">
       <table className="w-full">
-        <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <thead className="bg-gray-50 dark:bg-lia-bg-secondary border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <tr>
             <th className="w-12 p-4">
               <Checkbox
                 checked={allSelected}
                 onCheckedChange={onSelectAll}
-                className="border-gray-300 dark:border-gray-600"
+                className="border-lia-border-default dark:border-lia-border-default"
               />
             </th>
             <th className="text-left p-4">
               <button 
                 onClick={() => onSort("name")}
-                className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-lia-text-tertiary hover:text-gray-900 dark:hover:text-gray-200"
               >
                 Candidato
                 {getSortIcon("name")}
@@ -184,7 +184,7 @@ export function CandidatesTable({
             <th className="text-left p-4">
               <button 
                 onClick={() => onSort("current_title")}
-                className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-lia-text-tertiary hover:text-gray-900 dark:hover:text-gray-200"
               >
                 Cargo Atual
                 {getSortIcon("current_title")}
@@ -193,7 +193,7 @@ export function CandidatesTable({
             <th className="text-left p-4">
               <button 
                 onClick={() => onSort("location")}
-                className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-lia-text-tertiary hover:text-gray-900 dark:hover:text-gray-200"
               >
                 Localização
                 {getSortIcon("location")}
@@ -202,26 +202,26 @@ export function CandidatesTable({
             <th className="text-center p-4">
               <button 
                 onClick={() => onSort("lia_score")}
-                className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-lia-text-tertiary hover:text-gray-900 dark:hover:text-gray-200"
               >
                 Score LIA
                 {getSortIcon("lia_score")}
               </button>
             </th>
             <th className="text-left p-4">
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Skills</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-lia-text-tertiary">Skills</span>
             </th>
             <th className="text-center p-4">
               <button 
                 onClick={() => onSort("last_activity_at")}
-                className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-lia-text-tertiary hover:text-gray-900 dark:hover:text-gray-200"
               >
                 Atividade
                 {getSortIcon("last_activity_at")}
               </button>
             </th>
             <th className="text-right p-4">
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Ações</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-lia-text-tertiary">Ações</span>
             </th>
           </tr>
         </thead>
@@ -229,49 +229,49 @@ export function CandidatesTable({
           {candidates.map((candidate) => (
             <tr
               key={candidate.id}
-              className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors"
+              className="border-b border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors"
               onClick={() => onCandidateClick(candidate)}
             >
               <td className="w-12 p-4" onClick={(e) => e.stopPropagation()}>
                 <Checkbox
                   checked={selectedIds.has(candidate.id)}
                   onCheckedChange={() => onToggleSelect(candidate.id)}
-                  className="border-gray-300 dark:border-gray-600"
+                  className="border-lia-border-default dark:border-lia-border-default"
                 />
               </td>
               <td className="p-4">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={candidate.avatar_url} alt={candidate.name} />
-                    <AvatarFallback className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                    <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-elevated text-gray-700 dark:text-lia-text-secondary">
                       {candidate.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
                     </AvatarFallback>
                   </Avatar>
                   <div>
                     <div className="font-medium text-gray-900 dark:text-gray-50">{candidate.name}</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">{candidate.email}</div>
+                    <div className="text-sm text-gray-500 dark:text-lia-text-tertiary">{candidate.email}</div>
                   </div>
                 </div>
               </td>
               <td className="p-4">
                 <div className="flex items-center gap-2">
                   <Briefcase className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                  <span className="text-gray-800 dark:text-gray-200">{candidate.current_title || "Não informado"}</span>
+                  <span className="text-gray-800 dark:text-lia-text-primary">{candidate.current_title || "Não informado"}</span>
                 </div>
                 {candidate.current_company && (
                   <div className="flex items-center gap-2 mt-1">
                     <Building className="h-3 w-3 text-gray-400 dark:text-gray-500" />
-                    <span className="text-sm text-gray-500 dark:text-gray-400">{candidate.current_company}</span>
+                    <span className="text-sm text-gray-500 dark:text-lia-text-tertiary">{candidate.current_company}</span>
                   </div>
                 )}
               </td>
               <td className="p-4">
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                  <span className="text-gray-800 dark:text-gray-200">{candidate.location || "Não informado"}</span>
+                  <span className="text-gray-800 dark:text-lia-text-primary">{candidate.location || "Não informado"}</span>
                 </div>
                 {candidate.is_remote && (
-                  <Badge variant="outline" className="mt-1 text-xs border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400">
+                  <Badge variant="outline" className="mt-1 text-xs border-lia-border-default dark:border-lia-border-default text-gray-600 dark:text-lia-text-tertiary">
                     Remoto
                   </Badge>
                 )}
@@ -291,13 +291,13 @@ export function CandidatesTable({
                     <Badge 
                       key={skill} 
                       variant="outline" 
-                      className="text-xs border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300"
+                      className="text-xs border-lia-border-default dark:border-lia-border-default text-gray-700 dark:text-lia-text-secondary"
                     >
                       {skill}
                     </Badge>
                   ))}
                   {(candidate.technical_skills?.length || 0) > 3 && (
-                    <Badge variant="outline" className="text-xs border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400">
+                    <Badge variant="outline" className="text-xs border-lia-border-default dark:border-lia-border-default text-gray-500 dark:text-lia-text-tertiary">
                       +{(candidate.technical_skills?.length || 0) - 3}
                     </Badge>
                   )}
@@ -307,7 +307,7 @@ export function CandidatesTable({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className="flex items-center justify-center gap-1 text-sm text-gray-500 dark:text-gray-400">
+                      <div className="flex items-center justify-center gap-1 text-sm text-gray-500 dark:text-lia-text-tertiary">
                         <Clock className="h-3.5 w-3.5" />
                         <span>{formatRelativeDate(candidate.last_activity_at || candidate.updated_at)}</span>
                       </div>
@@ -330,11 +330,11 @@ export function CandidatesTable({
                     onFeedbackChange={onSearchFeedback}
                     size="sm"
                   />
-                  <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />
+                  <div className="w-px h-5 bg-gray-200 dark:bg-lia-bg-elevated mx-1" />
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-50">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500 dark:text-lia-text-tertiary hover:text-gray-900 dark:hover:text-gray-50">
                           <Eye className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>
@@ -343,7 +343,7 @@ export function CandidatesTable({
                     
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-50">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500 dark:text-lia-text-tertiary hover:text-gray-900 dark:hover:text-gray-50">
                           <Mail className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>
@@ -356,7 +356,7 @@ export function CandidatesTable({
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            className="h-8 w-8 text-gray-500 dark:text-gray-400 hover:text-gray-600"
+                            className="h-8 w-8 text-gray-500 dark:text-lia-text-tertiary hover:text-gray-600"
                             onClick={() => window.open(candidate.linkedin_url, "_blank")}
                           >
                             <Linkedin className="h-4 w-4" />
@@ -368,7 +368,7 @@ export function CandidatesTable({
                     
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500 dark:text-gray-400 hover:text-status-warning">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500 dark:text-lia-text-tertiary hover:text-status-warning">
                           <Star className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>

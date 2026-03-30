@@ -315,9 +315,9 @@ export function ShareSearchModal({
         className={`max-w-4xl h-[80vh] flex flex-col p-0 gap-0 ${cardStyles.default}`} 
        
       >
-        <DialogHeader className="px-6 pt-5 pb-3 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
+        <DialogHeader className="px-6 pt-5 pb-3 border-b border-lia-border-subtle dark:border-gray-800 flex-shrink-0">
           <DialogTitle className={`${textStyles.title} flex items-center gap-2`}>
-            <Share2 className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <Share2 className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
             Compartilhar com Gestor
           </DialogTitle>
           <DialogDescription className={textStyles.bodySmall} asChild>
@@ -326,16 +326,16 @@ export function ShareSearchModal({
         </DialogHeader>
 
         <div className="flex-1 flex overflow-hidden">
-          <div className="w-[55%] border-r border-gray-100 dark:border-gray-800 overflow-y-auto">
+          <div className="w-[55%] border-r border-lia-border-subtle dark:border-gray-800 overflow-y-auto">
             <ScrollArea className="h-full">
               <div className="p-5 space-y-5">
                 <div className={`p-3 rounded-md ${cardStyles.flat}`}>
                   <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-9 h-9 rounded-md flex items-center justify-center bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
+                    <div className="flex-shrink-0 w-9 h-9 rounded-md flex items-center justify-center bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
                       {currentShareType === 'search' ? (
-                        <Search className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                        <Search className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
                       ) : (
-                        <List className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                        <List className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -362,10 +362,10 @@ export function ShareSearchModal({
                       type="button"
                       onClick={() => { setChannel('email'); setSelectedTemplateId('') }}
                       className={cn(
-                        "flex items-center gap-2 p-2.5 rounded-md border transition-all text-left",
+                        "flex items-center gap-2 p-2.5 rounded-md border transition-colors text-left",
                         channel === 'email'
-                          ? "border-gray-900 dark:border-gray-100 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                          : "border-gray-200 dark:border-gray-700 hover:border-gray-300 text-gray-600 dark:text-gray-400"
+                          ? "border-gray-900 dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary text-gray-900 dark:text-lia-text-primary"
+                          : "border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default text-gray-600 dark:text-lia-text-tertiary"
                       )}
                     >
                       <Mail className="w-4 h-4 flex-shrink-0" />
@@ -378,10 +378,10 @@ export function ShareSearchModal({
                       type="button"
                       onClick={() => { setChannel('whatsapp'); setSelectedTemplateId('') }}
                       className={cn(
-                        "flex items-center gap-2 p-2.5 rounded-md border transition-all text-left",
+                        "flex items-center gap-2 p-2.5 rounded-md border transition-colors text-left",
                         channel === 'whatsapp'
                           ? "border-status-success/30 bg-status-success/10 dark:bg-status-success/20 text-status-success dark:text-status-success"
-                          : "border-gray-200 dark:border-gray-700 hover:border-gray-300 text-gray-600 dark:text-gray-400"
+                          : "border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default text-gray-600 dark:text-lia-text-tertiary"
                       )}
                     >
                       <MessageSquare className="w-4 h-4 flex-shrink-0" />
@@ -394,10 +394,10 @@ export function ShareSearchModal({
                       type="button"
                       onClick={() => { setChannel('both'); setSelectedTemplateId('') }}
                       className={cn(
-                        "flex items-center gap-2 p-2.5 rounded-md border transition-all text-left",
+                        "flex items-center gap-2 p-2.5 rounded-md border transition-colors text-left",
                         channel === 'both'
-                          ? "border-gray-900 dark:border-gray-100 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                          : "border-gray-200 dark:border-gray-700 hover:border-gray-300 text-gray-600 dark:text-gray-400"
+                          ? "border-gray-900 dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary text-gray-900 dark:text-lia-text-primary"
+                          : "border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default text-gray-600 dark:text-lia-text-tertiary"
                       )}
                     >
                       <Send className="w-4 h-4 flex-shrink-0" />
@@ -449,10 +449,10 @@ export function ShareSearchModal({
                       {recipients.map((recipient) => (
                         <div 
                           key={recipient.id} 
-                          className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700"
+                          className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-gray-50 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle"
                         >
                           <Mail className="w-3 h-3 text-gray-400 flex-shrink-0" />
-                          <span className="text-xs text-gray-700 dark:text-gray-300 truncate flex-1">
+                          <span className="text-xs text-gray-700 dark:text-lia-text-secondary truncate flex-1">
                             {recipient.email}
                           </span>
                           {recipient.phone && (
@@ -492,10 +492,10 @@ export function ShareSearchModal({
                           type="button"
                           onClick={() => handleSelectTemplate(tpl)}
                           className={cn(
-                            "flex-shrink-0 px-3 py-1.5 rounded-md border text-xs transition-all whitespace-nowrap",
+                            "flex-shrink-0 px-3 py-1.5 rounded-md border text-xs transition-colors whitespace-nowrap",
                             selectedTemplateId === tpl.id
-                              ? "border-gray-900 dark:border-gray-100 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900"
-                              : "border-gray-200 dark:border-gray-700 hover:border-gray-400 text-gray-700 dark:text-gray-300"
+                              ? "border-gray-900 dark:border-lia-border-subtle bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900"
+                              : "border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 text-gray-700 dark:text-lia-text-secondary"
                           )}
                         >
                           {tpl.name}
@@ -529,7 +529,7 @@ export function ShareSearchModal({
                   />
                 </div>
 
-                <div className="space-y-3 p-3 rounded-md bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700">
+                <div className="space-y-3 p-3 rounded-md bg-gray-50 dark:bg-lia-bg-secondary/50 border border-lia-border-subtle dark:border-lia-border-subtle">
                   <Label className={`${textStyles.label} text-xs`}>Configurações de acesso</Label>
                   
                   <div className="space-y-1.5">
@@ -599,7 +599,7 @@ export function ShareSearchModal({
             </ScrollArea>
           </div>
 
-          <div className="flex-1 bg-gray-50/50 dark:bg-gray-900/50 overflow-hidden flex flex-col">
+          <div className="flex-1 bg-gray-50/50 dark:bg-lia-bg-primary/50 overflow-hidden flex flex-col">
             <div className="px-5 pt-4 pb-3 flex items-center justify-between flex-shrink-0">
               <h4 className={`${textStyles.label} flex items-center gap-2 text-xs`}>
                 <Eye className="w-3.5 h-3.5 text-gray-500" />
@@ -613,10 +613,10 @@ export function ShareSearchModal({
             <ScrollArea className="flex-1 px-5 pb-4">
               {(channel === 'email' || channel === 'both') ? (
                 <div className="space-y-3">
-                <div className="rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden">
+                <div className="rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary overflow-hidden">
                   <div className="bg-gradient-to-r from-gray-800 to-gray-900 px-5 py-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <div className="w-8 h-8 rounded-md bg-white/10 flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-md bg-lia-bg-primary/10 flex items-center justify-center">
                         <Users className="w-4 h-4 text-white" />
                       </div>
                       <div>
@@ -627,14 +627,14 @@ export function ShareSearchModal({
                   </div>
 
                   <div className="px-5 py-4 space-y-3">
-                    <div className="border-b border-gray-100 dark:border-gray-700 pb-2">
+                    <div className="border-b border-lia-border-subtle dark:border-lia-border-subtle pb-2">
                       <p className="text-micro text-gray-500">Assunto</p>
-                      <p className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                      <p className="text-xs font-medium text-gray-900 dark:text-lia-text-primary">
                         {renderPreview(subject) || 'Candidatos para sua avaliação'}
                       </p>
                     </div>
 
-                    <div className="space-y-2 text-xs text-gray-700 dark:text-gray-300">
+                    <div className="space-y-2 text-xs text-gray-700 dark:text-lia-text-secondary">
                       <p>Olá,</p>
                       {message ? (
                         <p className="whitespace-pre-wrap">{renderPreview(message)}</p>
@@ -645,10 +645,10 @@ export function ShareSearchModal({
                       )}
                     </div>
 
-                    <div className="bg-gray-50 dark:bg-gray-700/30 rounded-md p-3 space-y-2">
+                    <div className="bg-gray-50 dark:bg-lia-bg-elevated/30 rounded-md p-3 space-y-2">
                       <div className="flex items-center gap-2">
                         <Users className="w-3.5 h-3.5 text-gray-500" />
-                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                        <span className="text-xs font-medium text-gray-700 dark:text-lia-text-secondary">
                           {candidateCount} candidato{candidateCount !== 1 ? 's' : ''} para avaliar
                         </span>
                       </div>
@@ -669,9 +669,9 @@ export function ShareSearchModal({
                     </div>
 
                     <div className="pt-1">
-                      <div className="bg-gray-100 dark:bg-gray-700 rounded-md p-2.5 text-center">
+                      <div className="bg-gray-100 dark:bg-lia-bg-elevated rounded-md p-2.5 text-center">
                         <p className="text-micro text-gray-500 mb-1">Código de acesso</p>
-                        <p className="text-sm font-mono font-bold tracking-widest text-gray-900 dark:text-gray-100">
+                        <p className="text-sm font-mono font-bold tracking-widest text-gray-900 dark:text-lia-text-primary">
                           A1B2C3
                         </p>
                       </div>
@@ -685,7 +685,7 @@ export function ShareSearchModal({
                     </div>
                   </div>
 
-                  <div className="border-t border-gray-100 dark:border-gray-700 px-5 py-3">
+                  <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle px-5 py-3">
                     <p className="text-micro text-gray-400 text-center">
                       Powered by WeDoTalent · Política de Privacidade
                     </p>
@@ -700,13 +700,13 @@ export function ShareSearchModal({
                     </div>
                     <div className="flex justify-end">
                       <div className="max-w-[85%]">
-                        <div className="bg-whatsapp-bubble dark:bg-status-success/40 rounded-xl rounded-tr-sm px-3 py-2 shadow-sm">
-                          <p className="text-xs text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
+                        <div className="bg-whatsapp-bubble dark:bg-status-success/40 rounded-xl rounded-tr-sm px-3 py-2 shadow-lia-sm">
+                          <p className="text-xs text-gray-800 dark:text-lia-text-primary whitespace-pre-wrap">
                             {message ? renderPreview(message) : (
                               <span className="italic text-gray-500 text-micro">Mensagem...</span>
                             )}
                           </p>
-                          <div className="mt-1.5 pt-1.5 border-t border-status-success/30 dark:border-status-success/30 text-micro text-gray-600 dark:text-gray-400 space-y-0.5">
+                          <div className="mt-1.5 pt-1.5 border-t border-status-success/30 dark:border-status-success/30 text-micro text-gray-600 dark:text-lia-text-tertiary space-y-0.5">
                             <p>📋 {candidateCount} candidato{candidateCount !== 1 ? 's' : ''} · 🔗 Link · 🔑 OTP</p>
                           </div>
                         </div>
@@ -719,8 +719,8 @@ export function ShareSearchModal({
                 <div className="space-y-3">
                   <div className="flex justify-end">
                     <div className="max-w-[85%]">
-                      <div className="bg-whatsapp-bubble dark:bg-status-success/40 rounded-xl rounded-tr-sm px-3 py-2 shadow-sm">
-                        <p className="text-xs text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
+                      <div className="bg-whatsapp-bubble dark:bg-status-success/40 rounded-xl rounded-tr-sm px-3 py-2 shadow-lia-sm">
+                        <p className="text-xs text-gray-800 dark:text-lia-text-primary whitespace-pre-wrap">
                           {message ? renderPreview(message) : (
                             <span className="italic text-gray-500">
                               Sua mensagem aparecerá aqui...
@@ -730,16 +730,16 @@ export function ShareSearchModal({
                         {message && (
                           <>
                             <div className="mt-2 pt-2 border-t border-status-success/30 dark:border-status-success/30">
-                              <p className="text-micro text-gray-600 dark:text-gray-400">
+                              <p className="text-micro text-gray-600 dark:text-lia-text-tertiary">
                                 📋 {candidateCount} candidato{candidateCount !== 1 ? 's' : ''} para avaliar
                               </p>
-                              <p className="text-micro text-gray-600 dark:text-gray-400">
+                              <p className="text-micro text-gray-600 dark:text-lia-text-tertiary">
                                 🔗 Link: app.wedotalent.com/shared/...
                               </p>
-                              <p className="text-micro text-gray-600 dark:text-gray-400">
+                              <p className="text-micro text-gray-600 dark:text-lia-text-tertiary">
                                 🔑 Código: A1B2C3
                               </p>
-                              <p className="text-micro text-gray-600 dark:text-gray-400">
+                              <p className="text-micro text-gray-600 dark:text-lia-text-tertiary">
                                 ⏰ Válido por {getExpiryLabel().toLowerCase()}
                               </p>
                             </div>
@@ -759,7 +759,7 @@ export function ShareSearchModal({
           </div>
         </div>
 
-        <div className="px-6 py-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between flex-shrink-0">
+        <div className="px-6 py-3 border-t border-lia-border-subtle dark:border-gray-800 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-2 text-micro text-gray-500">
             <Shield className="w-3 h-3" />
             Acesso protegido por OTP
@@ -770,7 +770,7 @@ export function ShareSearchModal({
               variant="outline"
               onClick={handleClose}
               disabled={isSubmitting}
-              className="h-9 px-4 text-xs font-medium border-gray-200 text-gray-700 hover:bg-gray-50"
+              className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-gray-700 hover:bg-gray-50"
             >
               Cancelar
             </Button>

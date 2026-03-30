@@ -178,32 +178,32 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
   return (
     <div
       className={cn(
-        "flex flex-col flex-shrink-0",
+ "flex flex-col flex-shrink-0",
         "w-[360px] h-full",
-        "bg-white dark:bg-gray-900",
-        "border-l border-gray-200 dark:border-gray-800",
+        "bg-white dark:bg-lia-bg-primary",
+        "border-l border-lia-border-subtle",
         "overflow-hidden"
       )}
       role="complementary"
       aria-label="LIA — painel lateral"
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-lia-border-subtle flex-shrink-0">
         <div className="flex items-center gap-2">
           <Brain className="w-4 h-4 text-wedo-cyan" />
           <div>
-            <span className="text-base-ui font-semibold text-gray-900 dark:text-gray-50 block leading-tight">
+            <span className="text-base-ui font-semibold text-gray-900 block leading-tight">
               LIA
             </span>
             {splitView.page && (
-              <span className="text-xs text-gray-400 dark:text-gray-500 leading-tight">
+              <span className="text-xs text-gray-400 leading-tight">
                 {splitView.page}
               </span>
             )}
           </div>
           {isConnected && (
             <span
-              className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 ml-1"
+              className="w-1.5 h-1.5 rounded-full bg-gray-400 ml-1"
               title="Conectado"
               aria-label="WebSocket conectado"
             />
@@ -213,7 +213,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
           {splitView.page && onNavigate && (
             <button
               onClick={handleNavigatePage}
-              className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="p-1.5 rounded-md lia-text-secondary hover:lia-text-base dark:hover:lia-text-muted hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               title={`Ir para ${splitView.page}`}
               aria-label={`Navegar para ${splitView.page}`}
             >
@@ -222,7 +222,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
           )}
           <button
             onClick={handleClose}
-            className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-1.5 rounded-md lia-text-secondary hover:lia-text-base dark:hover:lia-text-muted hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             title="Fechar painel lateral"
             aria-label="Fechar painel lateral"
           >
@@ -233,10 +233,10 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
 
       {/* Page hint banner */}
       {splitView.page && (
-        <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 flex-shrink-0">
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+        <div className="px-4 py-2 bg-gray-50 dark:bg-lia-bg-secondary border-b border-lia-border-subtle dark:border-lia-border-subtle flex-shrink-0">
+          <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
             Contexto atual:{" "}
-            <span className="font-medium text-gray-700 dark:text-gray-300">
+            <span className="font-medium text-gray-700 dark:text-lia-text-secondary">
               {splitView.page}
             </span>
           </p>
@@ -247,7 +247,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {isFetchingHistory ? (
           <div className="flex justify-center items-center h-full">
-            <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+            <Loader2 className="w-5 h-5 animate-spin lia-text-secondary" />
           </div>
         ) : isEmpty ? (
           <SplitEmptyState page={splitView.page} />
@@ -265,8 +265,8 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
       </div>
 
       {/* Input */}
-      <div className="px-4 pb-4 pt-2 flex-shrink-0 border-t border-gray-100 dark:border-gray-800">
-        <div className="flex items-end gap-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-2">
+      <div className="px-4 pb-4 pt-2 flex-shrink-0 border-t border-lia-border-subtle">
+        <div className="flex items-end gap-2 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary p-2">
           <textarea
             ref={textareaRef}
             value={inputText}
@@ -278,8 +278,8 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
             maxLength={MAX_INPUT_CHARS}
             aria-label="Mensagem para a LIA"
             className={cn(
-              "flex-1 resize-none bg-transparent text-base-ui",
-              "text-gray-900 dark:text-gray-50 placeholder:text-gray-400 dark:placeholder:text-gray-500",
+ "flex-1 resize-none bg-transparent text-base-ui",
+              "text-gray-900 placeholder:text-gray-400 dark:placeholder:text-gray-500",
               "focus:outline-none py-1.5 px-1 max-h-[120px] leading-relaxed"
             )}
           />
@@ -289,10 +289,10 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
             disabled={!canSend}
             aria-label="Enviar mensagem"
             className={cn(
-              "flex-shrink-0 p-2 rounded-md transition-colors",
+ "flex-shrink-0 p-2 rounded-md transition-colors",
               canSend
-                ? "bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200"
-                : "bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"
+                ? "bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200"
+                : "bg-gray-100 dark:bg-lia-bg-elevated text-gray-400 cursor-not-allowed"
             )}
           >
             {isCreating || isStreaming ? (
@@ -303,7 +303,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
           </button>
         </div>
         {inputText.length > MAX_INPUT_CHARS * 0.9 && (
-          <p className="text-xs text-gray-400 mt-1 text-right">
+          <p className="text-xs lia-text-secondary mt-1 text-right">
             {inputText.length}/{MAX_INPUT_CHARS}
           </p>
         )}
@@ -317,14 +317,14 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
 function SplitEmptyState({ page }: { page: string | null }) {
   return (
     <div className="flex flex-col items-center justify-center h-full gap-3 text-center">
-      <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+      <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
         <Brain className="w-5 h-5 text-wedo-cyan" />
       </div>
       <div>
-        <p className="text-base-ui font-medium text-gray-700 dark:text-gray-300">
+        <p className="text-base-ui font-medium text-gray-700 dark:text-lia-text-secondary">
           {page ? `Explorando ${page}` : "Como posso ajudar?"}
         </p>
-        <p className="text-sm-ui text-gray-400 dark:text-gray-500 mt-1">
+        <p className="text-sm-ui text-gray-400 mt-1">
           Continue a conversa enquanto navega pela página.
         </p>
       </div>
@@ -337,16 +337,16 @@ function SplitMessageBubble({ msg }: { msg: FloatMessage }) {
   return (
     <div className={cn("flex gap-2", isUser ? "flex-row-reverse" : "flex-row")}>
       {!isUser && (
-        <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0 mt-0.5">
+        <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0 mt-0.5">
           <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
         </div>
       )}
       <div
         className={cn(
-          "max-w-[85%] px-3 py-2 rounded-md text-base-ui leading-relaxed",
+ "max-w-[85%] px-3 py-2 rounded-md text-base-ui leading-relaxed",
           isUser
-            ? "bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900"
-            : "bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-50"
+            ? "bg-gray-900 text-white"
+            : "bg-gray-50 dark:bg-lia-bg-secondary text-gray-900"
         )}
       >
         <p className="whitespace-pre-wrap">{msg.content}</p>
@@ -359,10 +359,10 @@ function SplitMessageBubble({ msg }: { msg: FloatMessage }) {
 function SplitStreamingBubble({ content }: { content: string }) {
   return (
     <div className="flex gap-2">
-      <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0 mt-0.5">
+      <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0 mt-0.5">
         <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
       </div>
-      <div className="max-w-[85%] px-3 py-2 rounded-md text-base-ui leading-relaxed bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-50">
+      <div className="max-w-[85%] px-3 py-2 rounded-md text-base-ui leading-relaxed bg-gray-50 dark:bg-lia-bg-secondary text-gray-900">
         {content === "..." ? (
           <span className="flex gap-1 items-center h-5">
             <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{animationDelay: "0ms"}} />

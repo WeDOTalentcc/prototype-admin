@@ -60,7 +60,7 @@ export function CreditCostDisplay({
   if (compact) {
     return (
       <div className={`flex items-center gap-2 ${className}`}>
-        <Coins className="w-4 h-4 text-gray-700" />
+        <Coins className="w-4 h-4 lia-text-700" />
         <span className={`text-sm font-medium ${costColor}`}>
           {formatCreditCost(estimate.total_estimated)}
         </span>
@@ -72,10 +72,10 @@ export function CreditCostDisplay({
   }
 
   return (
-    <div className={`rounded-md border p-4 ${costBgColor} ${className}`} className="border-gray-300 dark:border-gray-600">
+    <div className={`rounded-md border p-4 ${costBgColor} ${className}`} className="border-lia-border-default dark:border-lia-border-default">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Coins className="w-5 h-5 text-gray-700" />
+          <Coins className="w-5 h-5 lia-text-700" />
           <span className="font-semibold text-sm">Estimativa de Custos</span>
         </div>
         <Badge 
@@ -88,7 +88,7 @@ export function CreditCostDisplay({
 
       {showBreakdown && (
         <div className="space-y-2 text-sm">
-          <div className="flex items-center justify-between text-gray-600">
+          <div className="flex items-center justify-between lia-text-600">
             <span className="flex items-center gap-1">
               <Zap className="w-3 h-3" />
               Tipo de Busca
@@ -99,21 +99,21 @@ export function CreditCostDisplay({
           </div>
 
           {estimate.insights_cost > 0 && (
-            <div className="flex items-center justify-between text-gray-600">
+            <div className="flex items-center justify-between lia-text-600">
               <span>Insights + Scoring</span>
               <span className="font-medium">+{estimate.insights_cost}/cand.</span>
             </div>
           )}
 
           {estimate.freshness_cost > 0 && (
-            <div className="flex items-center justify-between text-gray-600">
+            <div className="flex items-center justify-between lia-text-600">
               <span>Dados Atualizados</span>
               <span className="font-medium">+{estimate.freshness_cost}/cand.</span>
             </div>
           )}
 
           {estimate.email_cost > 0 && (
-            <div className="flex items-center justify-between text-gray-600">
+            <div className="flex items-center justify-between lia-text-600">
               <span>Opcoes de Email</span>
               <span className="font-medium">+{estimate.email_cost}/cand.</span>
             </div>
@@ -129,7 +129,7 @@ export function CreditCostDisplay({
             </div>
           )}
 
-          <div className="border-t pt-2 mt-2 border-gray-300 dark:border-gray-600">
+          <div className="border-t pt-2 mt-2 border-lia-border-default dark:border-lia-border-default">
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-1">
                 <TrendingUp className="w-3 h-3" />

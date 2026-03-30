@@ -120,7 +120,7 @@ export function ExecutiveDashboardPage() {
               <h1 className="text-xl font-sans font-semibold text-gray-950 dark:text-gray-50 mb-1">
                 Dashboard Executivo
               </h1>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">
                 Visão consolidada de métricas e performance de recrutamento
               </p>
             </div>
@@ -128,7 +128,7 @@ export function ExecutiveDashboardPage() {
               <select
                 value={selectedPeriod}
                 onChange={(e) => setSelectedPeriod(e.target.value)}
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-950 dark:text-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:ring-gray-50/20/50"
+                className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-gray-950 dark:text-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:ring-gray-50/20/50"
               >
                 <option value="week">Esta Semana</option>
                 <option value="month">Este Mês</option>
@@ -139,7 +139,7 @@ export function ExecutiveDashboardPage() {
               <select
                 value={selectedDepartment}
                 onChange={(e) => setSelectedDepartment(e.target.value)}
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-950 dark:text-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:ring-gray-50/20/50"
+                className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-gray-950 dark:text-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:ring-gray-50/20/50"
               >
                 <option value="all">Todos Departamentos</option>
                 <option value="tecnologia">Tecnologia</option>
@@ -169,20 +169,20 @@ export function ExecutiveDashboardPage() {
         </div>
 
         <Tabs defaultValue="funnel" className="w-full">
-          <TabsList className="mb-6 bg-gray-100 dark:bg-gray-800 p-1 rounded-md">
-            <TabsTrigger value="funnel" className="gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
+          <TabsList className="mb-6 bg-gray-100 dark:bg-lia-bg-secondary p-1 rounded-md">
+            <TabsTrigger value="funnel" className="gap-2 data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-gray-700">
               <BarChart3 className="w-4 h-4" />
               Funil & Performance
             </TabsTrigger>
-            <TabsTrigger value="strategic" className="gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
+            <TabsTrigger value="strategic" className="gap-2 data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-gray-700">
               <Award className="w-4 h-4" />
               Visão Estratégica
             </TabsTrigger>
-            <TabsTrigger value="agents" className="gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
+            <TabsTrigger value="agents" className="gap-2 data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-gray-700">
               <Activity className="w-4 h-4" />
               Atividades dos Agentes
             </TabsTrigger>
-            <TabsTrigger value="intelligence" className="gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
+            <TabsTrigger value="intelligence" className="gap-2 data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-gray-700">
               <Brain className="w-4 h-4 text-wedo-cyan" />
               Inteligência LIA
             </TabsTrigger>
@@ -213,7 +213,7 @@ export function ExecutiveDashboardPage() {
                               ? 'bg-status-error/10 dark:bg-status-error/20'
                               : action.priority === 'alta'
                               ? 'bg-status-warning/10 dark:bg-status-warning/20'
-                              : 'bg-gray-50 dark:bg-gray-800'
+                              : 'bg-gray-50 dark:bg-lia-bg-secondary'
                           }`}
                         >
                           <div className="flex items-center justify-between mb-1">
@@ -227,7 +227,7 @@ export function ExecutiveDashboardPage() {
                               {action.priority}
                             </Badge>
                           </div>
-                          <p className="text-xs text-gray-600 dark:text-gray-400">{action.message}</p>
+                          <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">{action.message}</p>
                         </div>
                       ))}
                     </div>
@@ -237,7 +237,7 @@ export function ExecutiveDashboardPage() {
 
               {/* KPIs Principais */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card className="bg-gray-100 dark:bg-gray-800">
+                <Card className="bg-gray-100 dark:bg-lia-bg-secondary">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
                       <Briefcase className="w-8 h-8 text-gray-600" />
@@ -247,7 +247,7 @@ export function ExecutiveDashboardPage() {
                       </div>
                     </div>
                     <div className="text-2xl font-bold text-gray-950 dark:text-gray-50">{data.summary.activeJobs}</div>
-                    <div className="text-xs text-gray-800 dark:text-gray-200">Vagas Ativas</div>
+                    <div className="text-xs text-gray-800 dark:text-lia-text-primary">Vagas Ativas</div>
                     <div className="text-xs text-gray-600 mt-1">
                       <span className="text-status-warning font-medium">{data.summary.urgentJobs}</span> urgentes,{" "}
                       <span className="text-status-error font-medium">{data.summary.criticalJobs}</span> críticas
@@ -265,7 +265,7 @@ export function ExecutiveDashboardPage() {
                       </div>
                     </div>
                     <div className="text-2xl font-bold text-gray-950 dark:text-gray-50">{data.summary.totalCandidates.toLocaleString()}</div>
-                    <div className="text-xs text-gray-800 dark:text-gray-200">Candidatos no Período</div>
+                    <div className="text-xs text-gray-800 dark:text-lia-text-primary">Candidatos no Período</div>
                   </CardContent>
                 </Card>
 
@@ -279,7 +279,7 @@ export function ExecutiveDashboardPage() {
                       </div>
                     </div>
                     <div className="text-2xl font-bold text-gray-950 dark:text-gray-50">{data.summary.totalHires}</div>
-                    <div className="text-xs text-gray-800 dark:text-gray-200">Contratações</div>
+                    <div className="text-xs text-gray-800 dark:text-lia-text-primary">Contratações</div>
                     <div className="text-xs text-gray-600 mt-1">
                       <span className="text-status-success font-medium">{data.summary.conversionRate}%</span> taxa de conversão
                     </div>
@@ -296,7 +296,7 @@ export function ExecutiveDashboardPage() {
                       </div>
                     </div>
                     <div className="text-2xl font-bold text-gray-950 dark:text-gray-50">{data.summary.averageTimeToHire}d</div>
-                    <div className="text-xs text-gray-800 dark:text-gray-200">Tempo Médio de Contratação</div>
+                    <div className="text-xs text-gray-800 dark:text-lia-text-primary">Tempo Médio de Contratação</div>
                     <div className="text-xs text-gray-600 mt-1">
                       Mercado: <span className="font-medium">{data.benchmarks.industryAverages.timeToHire}d</span>
                     </div>
@@ -310,7 +310,7 @@ export function ExecutiveDashboardPage() {
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base font-sans flex items-center gap-2">
-                      <BarChart3 className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                      <BarChart3 className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
                       Funil de Recrutamento
                     </CardTitle>
                   </CardHeader>
@@ -318,14 +318,14 @@ export function ExecutiveDashboardPage() {
                     <div className="space-y-3">
                       {[
                         { stage: "Candidatos", count: data.recruitmentFunnel.total, color: "bg-gray-700 dark:bg-gray-300", pct: 100 },
-                        { stage: "Triagem", count: data.recruitmentFunnel.screening, color: "bg-gray-50 dark:bg-gray-9000", pct: Math.round((data.recruitmentFunnel.screening / data.recruitmentFunnel.total) * 100) },
+                        { stage: "Triagem", count: data.recruitmentFunnel.screening, color: "bg-gray-50 dark:bg-lia-bg-primary0", pct: Math.round((data.recruitmentFunnel.screening / data.recruitmentFunnel.total) * 100) },
                         { stage: "Entrevistas", count: data.recruitmentFunnel.interview, color: "bg-status-warning", pct: Math.round((data.recruitmentFunnel.interview / data.recruitmentFunnel.total) * 100) },
                         { stage: "Fase Final", count: data.recruitmentFunnel.final, color: "bg-wedo-orange", pct: Math.round((data.recruitmentFunnel.final / data.recruitmentFunnel.total) * 100) },
                         { stage: "Contratados", count: data.recruitmentFunnel.hired, color: "bg-status-success", pct: Math.round((data.recruitmentFunnel.hired / data.recruitmentFunnel.total) * 100) }
                       ].map((stage, index) => (
                         <div key={index} className="flex items-center gap-3">
-                          <div className="w-20 text-xs font-medium text-gray-600 dark:text-gray-400 text-right">{stage.stage}</div>
-                          <div className="flex-1 relative h-7 bg-gray-100 dark:bg-gray-700 rounded-md overflow-hidden">
+                          <div className="w-20 text-xs font-medium text-gray-600 dark:text-lia-text-tertiary text-right">{stage.stage}</div>
+                          <div className="flex-1 relative h-7 bg-gray-100 dark:bg-lia-bg-elevated rounded-md overflow-hidden">
                             <div
                               className={`h-full ${stage.color} flex items-center px-2`}
                               style={{width: `${Math.max(stage.pct, 8)}%`}}
@@ -338,7 +338,7 @@ export function ExecutiveDashboardPage() {
                       ))}
                     </div>
                     <div className="mt-4 pt-3 flex justify-between text-sm">
-                      <span className="text-gray-800 dark:text-gray-200">Taxa de Conversão:</span>
+                      <span className="text-gray-800 dark:text-lia-text-primary">Taxa de Conversão:</span>
                       <span className="font-bold text-status-success">
                         {Math.round((data.recruitmentFunnel.hired / data.recruitmentFunnel.total) * 100)}%
                       </span>
@@ -350,7 +350,7 @@ export function ExecutiveDashboardPage() {
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base font-sans flex items-center gap-2">
-                      <Building className="w-5 h-5 text-gray-800 dark:text-gray-200" />
+                      <Building className="w-5 h-5 text-gray-800 dark:text-lia-text-primary" />
                       Performance por Departamento
                     </CardTitle>
                   </CardHeader>
@@ -399,7 +399,7 @@ export function ExecutiveDashboardPage() {
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {data.topPerformingJobs.map((job, index) => (
-                      <div key={job.id} className="p-4 bg-gray-50 dark:bg-gray-800 rounded-md">
+                      <div key={job.id} className="p-4 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                         <div className="flex items-start justify-between mb-2">
                           <div>
                             <div className="font-medium text-gray-950 dark:text-gray-50 text-sm">{job.title}</div>
@@ -437,10 +437,10 @@ export function ExecutiveDashboardPage() {
             <div className="space-y-6">
               {/* Métricas Estratégicas + Financeiro */}
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <Card className="bg-gray-100 dark:bg-gray-800">
+                <Card className="bg-gray-100 dark:bg-lia-bg-secondary">
                   <CardContent className="p-4 text-center">
-                    <div className="text-2xl font-bold text-gray-700 dark:text-gray-300">{data.strategicMetrics.employeeSatisfaction}</div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">Satisfação</div>
+                    <div className="text-2xl font-bold text-gray-700 dark:text-lia-text-secondary">{data.strategicMetrics.employeeSatisfaction}</div>
+                    <div className="text-xs text-gray-600 dark:text-lia-text-tertiary">Satisfação</div>
                     <div className="text-xs text-gray-600 mt-1">de 5.0</div>
                   </CardContent>
                 </Card>
@@ -465,7 +465,7 @@ export function ExecutiveDashboardPage() {
                     <div className="text-xs text-gray-600 mt-1">mercado: {data.benchmarks.industryAverages.nps}</div>
                   </CardContent>
                 </Card>
- <Card className="bg-gray-50 dark:bg-gray-800">
+ <Card className="bg-gray-50 dark:bg-lia-bg-secondary">
                   <CardContent className="p-4 text-center">
                     <div className="text-2xl font-bold text-gray-900 dark:text-gray-50">{data.strategicMetrics.marketCompetitiveness}%</div>
                     <div className="text-xs text-gray-900 dark:text-gray-50">Competitividade</div>
@@ -486,9 +486,9 @@ export function ExecutiveDashboardPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                      <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                         <div className="flex items-center gap-3">
-                          <Clock className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                          <Clock className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
                           <span className="text-sm font-medium">Time to Hire</span>
                         </div>
                         <div className="text-right">
@@ -500,7 +500,7 @@ export function ExecutiveDashboardPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                      <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                         <div className="flex items-center gap-3">
                           <DollarSign className="w-5 h-5 text-status-success" />
                           <span className="text-sm font-medium">Custo por Hire</span>
@@ -514,7 +514,7 @@ export function ExecutiveDashboardPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                      <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                         <div className="flex items-center gap-3">
                           <Percent className="w-5 h-5 text-wedo-purple" />
                           <span className="text-sm font-medium">Taxa de Conversão</span>
@@ -547,15 +547,15 @@ export function ExecutiveDashboardPage() {
                   <CardContent>
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
-                        <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                        <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                           <div className="text-xs text-gray-600 mb-1">Orçamento Total</div>
                           <div className="text-lg font-bold text-gray-950 dark:text-gray-50">
                             R$ {data.financialMetrics.totalBudget.toLocaleString()}
                           </div>
                         </div>
-                        <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-md">
-                          <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Utilizado</div>
-                          <div className="text-lg font-bold text-gray-700 dark:text-gray-300">
+                        <div className="p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+                          <div className="text-xs text-gray-600 dark:text-lia-text-tertiary mb-1">Utilizado</div>
+                          <div className="text-lg font-bold text-gray-700 dark:text-lia-text-secondary">
                             R$ {data.financialMetrics.spentToDate.toLocaleString()}
                           </div>
                         </div>
@@ -570,7 +570,7 @@ export function ExecutiveDashboardPage() {
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-3">
                           <div
-                            className={`h-3 rounded-full transition-all ${
+                            className={`h-3 rounded-full transition-[width,height] ${
                               data.financialMetrics.budgetUtilization > 90 ? 'bg-status-error' :
                               data.financialMetrics.budgetUtilization > 75 ? 'bg-status-warning' : 'bg-status-success'
                             }`}
@@ -610,7 +610,7 @@ export function ExecutiveDashboardPage() {
                         className={`p-4 rounded-md ${
                           risk.impact === 'High' ? 'bg-status-error/10 dark:bg-status-error/20' :
                           risk.impact === 'Medium' ? 'bg-status-warning/10 dark:bg-status-warning/20' :
-                          'bg-gray-100 dark:bg-gray-800'
+                          'bg-gray-100 dark:bg-lia-bg-secondary'
                         }`}
                       >
                         <div className="flex items-center justify-between mb-2">
@@ -618,7 +618,7 @@ export function ExecutiveDashboardPage() {
                           <Badge className={`text-xs ${
                             risk.impact === 'High' ? 'bg-status-error/15 text-status-error' :
                             risk.impact === 'Medium' ? 'bg-status-warning/15 text-status-warning' :
-                            'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                            'bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary'
                           }`}>
                             {risk.probability}%
                           </Badge>
@@ -632,7 +632,7 @@ export function ExecutiveDashboardPage() {
                             style={{width: `${risk.probability}%`}}
                           />
                         </div>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                        <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
                           <strong>Mitigação:</strong> {risk.mitigation}
                         </p>
                       </div>
@@ -652,7 +652,7 @@ export function ExecutiveDashboardPage() {
           <TabsContent value="intelligence">
             <div className="space-y-6">
               <Tabs defaultValue="predictive" className="w-full">
-                <TabsList className="mb-4 bg-gray-100 dark:bg-gray-800">
+                <TabsList className="mb-4 bg-gray-100 dark:bg-lia-bg-secondary">
                   <TabsTrigger value="predictive" className="gap-2">
                     <Brain className="w-4 h-4 text-wedo-cyan" />
                     Analytics Preditivo

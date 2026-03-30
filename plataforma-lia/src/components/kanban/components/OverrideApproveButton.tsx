@@ -59,7 +59,7 @@ export function OverrideApproveButton({
         className="flex items-center gap-1 mt-1"
         onClick={(e) => e.stopPropagation()}
       >
-        <span className="text-micro text-gray-600 dark:text-gray-400">
+        <span className="text-micro lia-text-600 dark:text-lia-text-tertiary">
           Aprovar {candidateName.split(' ')[0]}?
         </span>
         <button
@@ -68,8 +68,8 @@ export function OverrideApproveButton({
           className={
             'inline-flex items-center gap-0.5 px-2 py-0.5 text-micro font-medium rounded-md ' +
             'bg-gray-900 text-white hover:bg-gray-800 active:bg-gray-700 ' +
-            'dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 ' +
-            'disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed ' +
+            'dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 ' +
+            'disabled:bg-gray-300 disabled:lia-text-500 disabled:cursor-not-allowed ' +
             'transition-colors duration-150'
           }
           aria-label={`Confirmar aprovação de ${candidateName}`}
@@ -85,8 +85,8 @@ export function OverrideApproveButton({
           disabled={isLoading}
           className={
             'inline-flex items-center px-2 py-0.5 text-micro font-medium rounded-md ' +
-            'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 ' +
-            'dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 ' +
+            'bg-lia-bg-primary lia-text-700 border border-lia-border-default hover:bg-gray-50 ' +
+            'dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-default dark:hover:bg-gray-700 ' +
             'transition-colors duration-150'
           }
           aria-label="Cancelar aprovação"
@@ -104,8 +104,8 @@ export function OverrideApproveButton({
       className={
         'inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium rounded-md ' +
         'bg-gray-900 text-white hover:bg-gray-800 active:bg-gray-700 ' +
-        'dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 ' +
-        'disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed ' +
+        'dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 ' +
+        'disabled:bg-gray-300 disabled:lia-text-500 disabled:cursor-not-allowed ' +
         'transition-colors duration-150 mt-1'
       }
       aria-label={`Aprovar ${candidateName} da fila de espera`}

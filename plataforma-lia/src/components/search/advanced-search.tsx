@@ -25,7 +25,7 @@ interface AdvancedSearchProps {
 }
 
 const filterCategories = [
-  { id: 'recrutamento', label: 'Recrutamento', color: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300' },
+  { id: 'recrutamento', label: 'Recrutamento', color: 'bg-gray-100 lia-text-700 dark:bg-lia-bg-secondary dark:text-lia-text-secondary' },
   { id: 'triagem', label: 'Triagem', color: 'bg-status-success/15 text-status-success dark:bg-status-success/20 dark:text-status-success' },
   { id: 'entrevistas', label: 'Entrevistas', color: 'bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple' },
   { id: 'onboarding', label: 'Onboarding', color: 'bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/20 dark:text-wedo-orange' },
@@ -92,9 +92,9 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
     <div className={cn("space-y-4", className)}>
       {/* Search Input Principal */}
       <div className="relative">
-        <div className="relative rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-shadow duration-200 focus-within:shadow-[0_0_0_2px_black/10]">
+        <div className="relative rounded-md bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle transition-shadow duration-200 focus-within:shadow-lia-focus">
           <div className="flex items-center">
-            <Search className="absolute left-3 w-4 h-4 text-gray-600" />
+            <Search className="absolute left-3 w-4 h-4 lia-text-600" />
             <input
               type="text"
               placeholder="Buscar comandos, templates, workflows..."
@@ -102,7 +102,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
               onChange={(e) => updateFilter('query', e.target.value)}
               onFocus={() => setSearchFocused(true)}
               onBlur={() => setSearchFocused(false)}
-              className="w-full pl-10 pr-12 py-3 bg-transparent border-0 focus:outline-none text-gray-950 dark:text-gray-50 placeholder-gray-500"
+              className="w-full pl-10 pr-12 py-3 bg-transparent border-0 focus:outline-none lia-text-950 dark:lia-text-50 placeholder-gray-500"
             />
             <div className="absolute right-2 flex items-center gap-1">
               {activeFiltersCount > 0 && (
@@ -118,7 +118,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
                 onClick={() => setShowAdvanced(!showAdvanced)}
                 className={cn(
                   "h-8 w-8 p-0",
- showAdvanced && "bg-gray-100 dark:bg-gray-800 text-gray-600"
+ showAdvanced && "bg-gray-100 dark:bg-lia-bg-secondary lia-text-600"
                 )}
               >
                 <SlidersHorizontal className="w-4 h-4" />
@@ -130,11 +130,11 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
         {/* Search Suggestions */}
         {searchFocused && suggestions.length > 0 && (
           <div
-            className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md z-10"
+            className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md z-10"
             style={{animation: 'fadeInUp 0.2s ease-out'}}
           >
             <div className="p-2">
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Sugestões:</p>
+              <p className="text-xs lia-text-500 dark:text-lia-text-tertiary mb-2">Sugestões:</p>
               <div className="space-y-1">
                 {suggestions.slice(0, 5).map((suggestion, index) => (
                   <button
@@ -205,10 +205,10 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
           className="overflow-hidden"
           style={{animation: 'slideInUp 0.3s ease-out'}}
         >
-          <div className="border border-gray-200 dark:border-gray-700 rounded-md p-4 bg-gray-50 dark:bg-gray-800/50 space-y-4">
+          <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 space-y-4">
             {/* Categorias */}
             <div>
-              <h4 className="text-sm font-medium text-gray-950 dark:text-gray-50 mb-2 flex items-center gap-2">
+              <h4 className="text-sm font-medium lia-text-950 dark:lia-text-50 mb-2 flex items-center gap-2">
                 <Hash className="w-4 h-4" />
                 Categorias
               </h4>
@@ -218,11 +218,11 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
                     key={category.id}
                     onClick={() => toggleArrayFilter('categories', category.id)}
                     className={cn(
-                      "px-3 py-1 rounded-full text-xs font-medium transition-all",
+                      "px-3 py-1 rounded-full text-xs font-medium transition-[width,height]",
                       "hover:scale-[1.05] active:scale-[0.95]",
                       filters.categories.includes(category.id)
                         ? category.color
- : "text-gray-800 hover:dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+ : "lia-text-800 hover:dark:bg-lia-bg-elevated dark:text-lia-text-secondary dark:hover:bg-gray-600"
                     )}
                   >
                     {category.label}
@@ -233,7 +233,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
 
             {/* Tipos */}
             <div>
-              <h4 className="text-sm font-medium text-gray-950 dark:text-gray-50 mb-2 flex items-center gap-2">
+              <h4 className="text-sm font-medium lia-text-950 dark:lia-text-50 mb-2 flex items-center gap-2">
                 <Filter className="w-4 h-4" />
                 Tipos
               </h4>
@@ -243,11 +243,11 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
                     key={type.id}
                     onClick={() => toggleArrayFilter('types', type.id)}
                     className={cn(
-                      "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all border",
+                      "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors border",
                       "hover:scale-[1.02] active:scale-[0.98]",
                       filters.types.includes(type.id)
-                        ? "bg-gray-100 text-gray-900 border-gray-300 dark:bg-gray-800 dark:text-gray-50 dark:border-gray-600"
- : "bg-white text-gray-800 border-gray-200 hover:dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-700"
+                        ? "bg-gray-100 lia-text-900 border-lia-border-default dark:bg-lia-bg-secondary dark:lia-text-50 dark:border-lia-border-default"
+ : "bg-white lia-text-800 border-lia-border-subtle hover:dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-subtle dark:hover:bg-gray-700"
                     )}
                   >
                     <span>{type.icon}</span>
@@ -259,7 +259,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
 
             {/* Tags Populares */}
             <div>
-              <h4 className="text-sm font-medium text-gray-950 dark:text-gray-50 mb-2">
+              <h4 className="text-sm font-medium lia-text-950 dark:lia-text-50 mb-2">
                 Tags Populares
               </h4>
               <div className="flex flex-wrap gap-1">
@@ -268,11 +268,11 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
                     key={tag}
                     onClick={() => toggleArrayFilter('tags', tag)}
                     className={cn(
-                      "px-2 py-1 rounded-md text-xs font-medium transition-all",
+                      "px-2 py-1 rounded-md text-xs font-medium transition-colors",
                       "hover:scale-[1.05] active:scale-[0.95]",
                       filters.tags.includes(tag)
                         ? "bg-status-success/15 text-status-success dark:bg-status-success/20 dark:text-status-success"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
+                        : "bg-gray-100 lia-text-600 hover:bg-gray-200 dark:bg-lia-bg-elevated dark:text-lia-text-tertiary dark:hover:bg-gray-600"
                     )}
                   >
                     #{tag}
@@ -290,7 +290,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
           className="flex flex-wrap items-center gap-2"
           style={{animation: 'fadeIn 0.3s ease-out'}}
         >
-          <span className="text-xs text-gray-500 dark:text-gray-400">Filtros ativos:</span>
+          <span className="text-xs lia-text-500 dark:text-lia-text-tertiary">Filtros ativos:</span>
           {filters.categories.map((category) => (
             <Badge key={category} variant="secondary" className="text-xs">
               {filterCategories.find(c => c.id === category)?.label}

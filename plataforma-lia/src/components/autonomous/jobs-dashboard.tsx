@@ -104,7 +104,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
       running: 'bg-wedo-cyan/10 text-wedo-cyan-dark dark:text-wedo-cyan-dark',
       completed: 'bg-status-success/10 text-status-success dark:text-status-success',
       failed: 'bg-status-error/10 text-status-error dark:text-status-error',
-      cancelled: 'bg-gray-500/10 text-gray-600 dark:text-gray-400'
+      cancelled: 'bg-gray-500/10 text-gray-600 dark:text-lia-text-tertiary'
     }
     return styles[status] || styles.pending
   }
@@ -145,10 +145,10 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
     <div className={cn("space-y-4", className)}>
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-lia-text-primary">
             Jobs Autônomos
           </h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+          <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
             Gerencie tarefas de background executadas pela LIA
           </p>
         </div>
@@ -165,7 +165,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
           <Button
             size="sm"
             onClick={() => setShowCreateModal(true)}
-            className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+            className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
           >
             <Plus className="h-4 w-4 mr-1" />
             Novo Job
@@ -175,7 +175,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 lia-text-secondary" />
           <Input
             placeholder="Buscar jobs..."
             value={searchTerm}
@@ -200,18 +200,18 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-600 dark:text-gray-400" />
+          <Loader2 className="h-8 w-8 animate-spin text-gray-600 dark:text-lia-text-tertiary" />
         </div>
       ) : filteredJobs.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
-              <Calendar className="h-6 w-6 text-gray-400" />
+            <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center mb-4">
+              <Calendar className="h-6 w-6 lia-text-secondary" />
             </div>
-            <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
+            <h3 className="text-sm font-medium text-gray-900 dark:text-lia-text-primary mb-1">
               Nenhum job encontrado
             </h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 text-center max-w-sm">
+            <p className="text-xs text-gray-500 dark:text-lia-text-tertiary text-center max-w-sm">
               {searchTerm || statusFilter !== 'all'
                 ? 'Tente ajustar os filtros de busca'
                 : 'Crie seu primeiro job autônomo para a LIA executar tarefas em background'}
@@ -219,7 +219,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
             {!searchTerm && statusFilter === 'all' && (
               <Button
                 size="sm"
-                className="mt-4 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                className="mt-4 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
                 onClick={() => setShowCreateModal(true)}
               >
                 <Plus className="h-4 w-4 mr-1" />
@@ -238,14 +238,14 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
             return (
               <Card
                 key={job.id}
-                className="rounded-md hover:border-gray-400 dark:hover:border-gray-500 transition-colors cursor-pointer dark:bg-gray-800 dark:border-gray-700"
+                className="rounded-md hover:border-gray-400 dark:hover:border-gray-500 transition-colors cursor-pointer dark:bg-lia-bg-secondary dark:border-lia-border-subtle"
                 onClick={() => onJobSelect?.(job)}
               >
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                        <TypeIcon className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                      <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
+                        <TypeIcon className="h-4 w-4 text-gray-600 dark:text-lia-text-tertiary" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <CardTitle className="truncate">{job.name}</CardTitle>
@@ -256,7 +256,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
                     </div>
                     <Badge className={cn("shrink-0", getStatusBadge(job.status))}>
                       <StatusIcon className={cn(
-                        "h-3 w-3 mr-1",
+ "h-3 w-3 mr-1",
                         job.status === 'running' && "animate-spin"
                       )} />
                       {STATUS_LABELS[job.status] || job.status}
@@ -266,7 +266,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
                 <CardContent className="space-y-3">
                   {job.status === 'running' && job.progress !== undefined && (
                     <div className="space-y-1">
-                      <div className="flex justify-between text-micro text-gray-500">
+                      <div className="flex justify-between text-micro lia-text-secondary">
                         <span>Progresso</span>
                         <span>{Math.round(job.progress)}%</span>
                       </div>
@@ -275,7 +275,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
                   )}
 
                   {job.result_summary && job.status === 'completed' && (
-                    <p className="text-micro text-gray-600 dark:text-gray-400 line-clamp-2">
+                    <p className="text-micro text-gray-600 dark:text-lia-text-tertiary line-clamp-2">
                       {job.result_summary}
                     </p>
                   )}
@@ -286,8 +286,8 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
                     </p>
                   )}
 
-                  <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-800">
-                    <span className="text-micro text-gray-400">
+                  <div className="flex items-center justify-between pt-2 border-t border-lia-border-subtle">
+                    <span className="text-micro lia-text-secondary">
                       {formatDate(job.created_at)}
                     </span>
                     <div className="flex items-center gap-1">

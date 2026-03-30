@@ -45,10 +45,10 @@ interface InterviewNoteCardProps {
 }
 
 const categoryColors: Record<InterviewNoteQuestion["category"], string> = {
-  vaga: "bg-gray-100 text-gray-800 dark:text-gray-200",
-  gap_analysis: "bg-gray-100 text-gray-800 dark:text-gray-200",
-  fit_cultural: "bg-gray-100 text-gray-800 dark:text-gray-200",
-  custom: "bg-gray-100 text-gray-800 dark:text-gray-200",
+  vaga: "bg-gray-100 text-gray-800 dark:text-lia-text-primary",
+  gap_analysis: "bg-gray-100 text-gray-800 dark:text-lia-text-primary",
+  fit_cultural: "bg-gray-100 text-gray-800 dark:text-lia-text-primary",
+  custom: "bg-gray-100 text-gray-800 dark:text-lia-text-primary",
 }
 
 const categoryLabels: Record<InterviewNoteQuestion["category"], string> = {
@@ -88,8 +88,8 @@ function QuestionItem({
   return (
     <div
       className={cn(
-        "border rounded-md p-4 space-y-3",
-        question.skipped ? "bg-gray-50 opacity-60" : "bg-white"
+ "border rounded-md p-4 space-y-3",
+        question.skipped ? "bg-gray-50 opacity-60" : "bg-lia-bg-primary"
       )}
     >
       <div className="flex items-start justify-between gap-4">
@@ -97,19 +97,19 @@ function QuestionItem({
           <div className="flex items-center gap-2 flex-wrap">
             <span
               className={cn(
-                "px-2 py-0.5 rounded-full text-micro font-medium",
+ "px-2 py-0.5 rounded-full text-micro font-medium",
                 categoryColors[question.category]
               )}
             >
               {categoryLabels[question.category]}
             </span>
             {question.source && (
-              <span className="text-micro text-gray-500">
+              <span className="text-micro lia-text-secondary">
                 Fonte: {question.source}
               </span>
             )}
           </div>
-          <p className="text-sm font-medium text-gray-950 dark:text-gray-50">{question.text}</p>
+          <p className="text-sm font-medium text-gray-950">{question.text}</p>
         </div>
         <div className="flex items-center gap-2">
           <Checkbox
@@ -119,7 +119,7 @@ function QuestionItem({
             }
             disabled={disabled}
           />
-          <label className="text-xs text-gray-600 whitespace-nowrap">
+          <label className="text-xs lia-text-base whitespace-nowrap">
             Não perguntei
           </label>
         </div>
@@ -129,7 +129,7 @@ function QuestionItem({
         <>
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-600">Avaliação:</span>
+              <span className="text-xs lia-text-base">Avaliação:</span>
               <StarRating
                 value={question.starRating}
                 onChange={handleStarChange}
@@ -137,7 +137,7 @@ function QuestionItem({
               />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-600">Nível:</span>
+              <span className="text-xs lia-text-base">Nível:</span>
               <LikertRating
                 value={question.likertRating || null}
                 onChange={handleLikertChange}
@@ -266,10 +266,10 @@ export function InterviewNoteCard({
       <CardHeader className="pb-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="space-y-1">
-            <h2 className="text-lg font-semibold text-gray-950 dark:text-gray-50">
+            <h2 className="text-lg font-semibold text-gray-950">
               {note.candidateName}
             </h2>
-            <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600">
+            <div className="flex flex-wrap items-center gap-3 text-xs lia-text-base">
               {note.jobTitle && (
                 <div className="flex items-center gap-1">
                   <Briefcase className="h-3.5 w-3.5" />
@@ -293,10 +293,10 @@ export function InterviewNoteCard({
                   type="button"
                   onClick={() => setShowScoreCard(false)}
                   className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
+ "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
                     !showScoreCard
                       ? "bg-gray-900 text-white"
-                      : "bg-white text-gray-600 hover:bg-gray-50"
+                      : "bg-lia-bg-primary lia-text-base hover:bg-gray-50"
                   )}
                 >
                   <List className="h-3.5 w-3.5" />
@@ -306,10 +306,10 @@ export function InterviewNoteCard({
                   type="button"
                   onClick={() => setShowScoreCard(true)}
                   className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
+ "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
                     showScoreCard
                       ? "bg-gray-900 text-white"
-                      : "bg-white text-gray-600 hover:bg-gray-50"
+                      : "bg-lia-bg-primary lia-text-base hover:bg-gray-50"
                   )}
                 >
                   <LayoutGrid className="h-3.5 w-3.5" />
@@ -346,11 +346,11 @@ export function InterviewNoteCard({
           <>
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4 text-gray-600" />
-            <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50">
+            <MessageSquare className="h-4 w-4 lia-text-base" />
+            <h3 className="text-sm font-semibold text-gray-950">
               Perguntas da Entrevista
             </h3>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs lia-text-secondary">
               ({note.questions.length} perguntas)
             </span>
           </div>
@@ -367,7 +367,7 @@ export function InterviewNoteCard({
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-gray-950 dark:text-gray-50">
+          <label className="text-sm font-semibold text-gray-950">
             Observações Gerais
           </label>
           <Textarea
@@ -384,7 +384,7 @@ export function InterviewNoteCard({
             <button
               type="button"
               onClick={() => setIsTranscriptionOpen(!isTranscriptionOpen)}
-              className="flex items-center gap-2 text-sm font-semibold text-gray-950 dark:text-gray-50 hover:text-gray-600"
+              className="flex items-center gap-2 text-sm font-semibold text-gray-950 hover:text-gray-600"
             >
               {isTranscriptionOpen ? (
                 <ChevronUp className="h-4 w-4" />
@@ -393,14 +393,14 @@ export function InterviewNoteCard({
               )}
               Transcrição da Entrevista
               {note.transcriptionSource && (
-                <span className="text-micro font-normal text-gray-500">
+                <span className="text-micro font-normal lia-text-secondary">
                   (via {note.transcriptionSource})
                 </span>
               )}
             </button>
             {isTranscriptionOpen && (
               <div className="bg-gray-50 rounded-md p-4 max-h-[300px] overflow-y-auto">
-                <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
+                <p className="text-sm text-gray-800 dark:text-lia-text-primary whitespace-pre-wrap">
                   {note.transcription}
                 </p>
               </div>
@@ -411,7 +411,7 @@ export function InterviewNoteCard({
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <Bot className="h-4 w-4 text-wedo-cyan" />
-            <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50">Parecer LIA</h3>
+            <h3 className="text-sm font-semibold text-gray-950">Parecer LIA</h3>
             {note.liaParecerEditado && (
               <span className="text-micro text-status-warning">(editado)</span>
             )}
@@ -424,9 +424,9 @@ export function InterviewNoteCard({
               className="min-h-[120px]"
             />
           ) : (
-            <div className="bg-gray-50 border border-gray-200 rounded-md p-6 text-center">
-              <Bot className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm text-gray-500">
+            <div className="bg-gray-50 border border-lia-border-subtle rounded-md p-6 text-center">
+              <Bot className="h-8 w-8 lia-text-secondary mx-auto mb-2" />
+              <p className="text-sm lia-text-secondary">
                 Clique em &quot;Gerar Parecer com LIA&quot; para obter uma
                 análise automática da entrevista.
               </p>
@@ -444,7 +444,7 @@ export function InterviewNoteCard({
           />
         )}
 
-        <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-gray-200">
+        <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-lia-border-subtle">
           <Button
             onClick={handleGenerateParecer}
             disabled={isLoading || isGeneratingParecer}

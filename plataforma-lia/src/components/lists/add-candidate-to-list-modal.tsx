@@ -297,35 +297,35 @@ export function AddCandidateToListModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg bg-white dark:bg-gray-900 border-0 rounded-md">
-        <DialogHeader className="border-b border-gray-200 dark:border-gray-700 pb-4">
-          <DialogTitle className="font-['Open_Sans',sans-serif] text-lg text-gray-950 dark:text-gray-50">
+      <DialogContent className="sm:max-w-lg bg-white dark:bg-lia-bg-primary border-0 rounded-md">
+        <DialogHeader className="border-b border-lia-border-subtle dark:border-lia-border-subtle pb-4">
+          <DialogTitle className="font-['Open_Sans',sans-serif] text-lg text-gray-950">
             Adicionar Candidatos à Lista "{listName}"
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6 py-2">
           <div className="space-y-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-gray-800 dark:text-gray-200">
-              <Search className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+            <div className="flex items-center gap-2 text-sm font-medium text-gray-800 dark:text-lia-text-primary">
+              <Search className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
               Buscar na Base
             </div>
             
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 lia-text-secondary" />
               <Input
                 placeholder="Buscar por nome, email ou ID..."
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
-                className="pl-10 bg-gray-50 dark:bg-gray-800 border-0 focus:ring-1 focus:ring-gray-300"
+                className="pl-10 bg-gray-50 dark:bg-lia-bg-secondary border-0 focus:ring-1 focus:ring-gray-300"
               />
               {searching && (
-                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-gray-400" />
+                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin lia-text-secondary" />
               )}
             </div>
 
             {searchResults.length > 0 && (
-              <div className="max-h-48 overflow-y-auto space-y-1 bg-gray-50 dark:bg-gray-800 rounded-md p-2">
+              <div className="max-h-48 overflow-y-auto space-y-1 bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-2">
                 {searchResults.map((candidate) => {
                   const candidateId = candidate.id || ""
                   const isSelected = selectedCandidates.has(candidateId)
@@ -336,37 +336,37 @@ export function AddCandidateToListModal({
                       type="button"
                       onClick={() => candidateId && toggleCandidate(candidateId)}
                       className={`w-full flex items-center gap-3 p-2 rounded-md transition-colors text-left ${
-                        isSelected 
+ isSelected 
                           ? 'bg-gray-50' 
                           : 'hover:bg-gray-100 dark:hover:bg-gray-700'
                       }`}
                     >
                       <div className={`flex-shrink-0 w-5 h-5 rounded-md flex items-center justify-center transition-colors ${
-                        isSelected 
+ isSelected 
                           ? 'bg-gray-800' 
-                          : 'bg-gray-200 dark:bg-gray-600'
+                          : 'bg-gray-200'
                       }`}>
                         {isSelected && <Check className="w-3 h-3 text-white" />}
                       </div>
                       
                       <Avatar className="w-8 h-8">
                         <AvatarImage src={undefined} />
-                        <AvatarFallback className="bg-gray-200 dark:bg-gray-600 text-xs text-gray-600 dark:text-gray-300">
+                        <AvatarFallback className="bg-gray-200 text-xs text-gray-600 dark:text-lia-text-secondary">
                           {getInitials(candidate.name)}
                         </AvatarFallback>
                       </Avatar>
                       
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-950 dark:text-gray-50 truncate">
+                        <p className="text-sm font-medium text-gray-950 truncate">
                           {candidate.name || "Nome não disponível"}
                         </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                        <p className="text-xs text-gray-500 dark:text-lia-text-tertiary truncate">
                           {candidate.contact?.email || candidate.current_title || candidate.headline || ""}
                         </p>
                       </div>
 
                       {candidate.match_score && (
-                        <span className="flex-shrink-0 text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                        <span className="flex-shrink-0 text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 dark:bg-lia-bg-elevated text-gray-600 dark:text-lia-text-secondary">
                           {Math.round(candidate.match_score)}%
                         </span>
                       )}
@@ -377,21 +377,21 @@ export function AddCandidateToListModal({
             )}
 
             {searchQuery.length >= 2 && !searching && searchResults.length === 0 && (
-              <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-3">
+              <p className="text-sm text-gray-500 dark:text-lia-text-tertiary text-center py-3">
                 Nenhum candidato encontrado para "{searchQuery}"
               </p>
             )}
 
             {selectedCandidates.size > 0 && (
               <div className="flex items-center justify-between pt-2">
-                <span className="text-sm text-gray-600 dark:text-gray-400">
+                <span className="text-sm text-gray-600 dark:text-lia-text-tertiary">
                   {selectedCandidates.size} candidato(s) selecionado(s)
                 </span>
                 <Button
                   onClick={handleAddCandidates}
                   disabled={adding}
                   size="sm"
-                  className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 gap-1.5"
+                  className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 gap-1.5"
                 >
                   {adding ? (
                     <>
@@ -411,28 +411,28 @@ export function AddCandidateToListModal({
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-gray-200 dark:border-gray-700" />
+              <span className="w-full border-t border-lia-border-subtle dark:border-lia-border-subtle" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white dark:bg-gray-900 px-2 text-gray-500">ou</span>
+              <span className="bg-white dark:bg-lia-bg-primary px-2 lia-text-secondary">ou</span>
             </div>
           </div>
 
           <div className="space-y-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-gray-800 dark:text-gray-200">
-              <Upload className="w-4 h-4 text-gray-700" />
+            <div className="flex items-center gap-2 text-sm font-medium text-gray-800 dark:text-lia-text-primary">
+              <Upload className="w-4 h-4 lia-text-base" />
               Importar Novo Candidato
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <div className="relative">
-                  <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 lia-text-secondary" />
                   <Input
                     placeholder="Colar URL LinkedIn"
                     value={linkedinUrl}
                     onChange={(e) => setLinkedinUrl(e.target.value)}
-                    className="pl-10 pr-10 text-xs bg-gray-50 dark:bg-gray-800 border-0"
+                    className="pl-10 pr-10 text-xs bg-gray-50 dark:bg-lia-bg-secondary border-0"
                     disabled={importingLinkedin}
                   />
                   {linkedinUrl && (
@@ -442,9 +442,9 @@ export function AddCandidateToListModal({
                       className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                     >
                       {importingLinkedin ? (
-                        <Loader2 className="w-4 h-4 animate-spin text-gray-500" />
+                        <Loader2 className="w-4 h-4 animate-spin lia-text-secondary" />
                       ) : (
-                        <ArrowRight className="w-4 h-4 text-gray-500" />
+                        <ArrowRight className="w-4 h-4 lia-text-secondary" />
                       )}
                     </button>
                   )}
@@ -463,7 +463,7 @@ export function AddCandidateToListModal({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full h-10 text-xs border-0 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="w-full h-10 text-xs border-0 bg-gray-50 dark:bg-lia-bg-secondary hover:bg-gray-100 dark:hover:bg-gray-700"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploadingCV}
                 >
@@ -485,31 +485,31 @@ export function AddCandidateToListModal({
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-gray-200 dark:border-gray-700" />
+              <span className="w-full border-t border-lia-border-subtle dark:border-lia-border-subtle" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white dark:bg-gray-900 px-2 text-gray-500">ou</span>
+              <span className="bg-white dark:bg-lia-bg-primary px-2 lia-text-secondary">ou</span>
             </div>
           </div>
 
           <button
             onClick={handleGoToSearch}
-            className="w-full flex items-center justify-between p-4 rounded-md bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+            className="w-full flex items-center justify-between p-4 rounded-md bg-gray-50 dark:bg-lia-bg-secondary hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-100 dark:bg-gray-700">
-                <Search className="w-5 h-5 text-gray-700" />
+              <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-100 dark:bg-lia-bg-elevated">
+                <Search className="w-5 h-5 lia-text-base" />
               </div>
               <div className="text-left">
-                <p className="text-sm font-medium text-gray-950 dark:text-gray-50">
+                <p className="text-sm font-medium text-gray-950">
                   Ir para Busca Avançada
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
                   Usar filtros e busca inteligente
                 </p>
               </div>
             </div>
-            <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-50 transition-colors" />
+            <ArrowRight className="w-5 h-5 lia-text-secondary group-hover:lia-text-strong dark:group-hover:lia-text-subtle transition-colors" />
           </button>
         </div>
       </DialogContent>

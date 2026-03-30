@@ -169,7 +169,7 @@ export function DepartmentsTab({
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="flex items-center gap-2 text-base-ui font-semibold text-gray-950 dark:text-gray-50">
+            <h3 className="flex items-center gap-2 text-base-ui font-semibold lia-text-950 dark:lia-text-50">
               Departamentos
               <LiaFieldToggle
                 fieldKey="departments"
@@ -181,7 +181,7 @@ export function DepartmentsTab({
                 compact
               />
             </h3>
-            <p className="text-xs text-gray-600">
+            <p className="text-xs lia-text-600">
               Gerencie a estrutura organizacional da empresa
             </p>
           </div>
@@ -234,7 +234,7 @@ export function DepartmentsTab({
                 <Button
                   onClick={() => setShowDepartmentForm(true)}
                   size="sm"
-                  className="gap-1.5 py-1.5 px-2 text-xs rounded-full bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                  className="gap-1.5 py-1.5 px-2 text-xs rounded-full bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   Novo Departamento
@@ -266,10 +266,10 @@ export function DepartmentsTab({
         />
 
         {showDepartmentForm && isEditingDepartments && (
-          <Card className="border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 rounded-md">
+          <Card className="border border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
             <CardContent className="p-3 space-y-2">
               <div className="flex items-center justify-between mb-2">
-                <h4 className="text-xs font-semibold text-gray-950 dark:text-gray-50">
+                <h4 className="text-xs font-semibold lia-text-950 dark:lia-text-50">
                   {editingDepartment ? "Editar Departamento" : "Novo Departamento"}
                 </h4>
                 <Button
@@ -283,7 +283,7 @@ export function DepartmentsTab({
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1">
+                  <label className="block text-micro font-medium lia-text-600 dark:text-lia-text-tertiary mb-1">
                     Nome
                   </label>
                   <input
@@ -292,12 +292,12 @@ export function DepartmentsTab({
                     onChange={(e) =>
                       setNewDepartment((prev) => ({ ...prev, name: e.target.value }))
                     }
-                    className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
+                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
                     placeholder="Ex: Engenharia"
                   />
                 </div>
                 <div>
-                  <label className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1">
+                  <label className="block text-micro font-medium lia-text-600 dark:text-lia-text-tertiary mb-1">
                     Gestor
                   </label>
                   <input
@@ -306,14 +306,14 @@ export function DepartmentsTab({
                     onChange={(e) =>
                       setNewDepartment((prev) => ({ ...prev, manager: e.target.value }))
                     }
-                    className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
+                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
                     placeholder="Nome do gestor"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1">
+                  <label className="block text-micro font-medium lia-text-600 dark:text-lia-text-tertiary mb-1">
                     Cargo do Gestor
                   </label>
                   <input
@@ -322,12 +322,12 @@ export function DepartmentsTab({
                     onChange={(e) =>
                       setNewDepartment((prev) => ({ ...prev, manager_title: e.target.value }))
                     }
-                    className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
+                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
                     placeholder="Ex: Diretor de Engenharia"
                   />
                 </div>
                 <div>
-                  <label className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1">
+                  <label className="block text-micro font-medium lia-text-600 dark:text-lia-text-tertiary mb-1">
                     Email do Gestor
                   </label>
                   <input
@@ -336,12 +336,12 @@ export function DepartmentsTab({
                     onChange={(e) =>
                       setNewDepartment((prev) => ({ ...prev, manager_email: e.target.value }))
                     }
-                    className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
+                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
                     placeholder="gestor@empresa.com"
                   />
                 </div>
                 <div>
-                  <label className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1">
+                  <label className="block text-micro font-medium lia-text-600 dark:text-lia-text-tertiary mb-1">
                     Telefone/WhatsApp
                   </label>
                   <input
@@ -350,13 +350,13 @@ export function DepartmentsTab({
                     onChange={(e) =>
                       setNewDepartment((prev) => ({ ...prev, manager_phone: e.target.value }))
                     }
-                    className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
+                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
                     placeholder="+55 11 99999-0000"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1">
+                <label className="block text-micro font-medium lia-text-600 dark:text-lia-text-tertiary mb-1">
                   Descrição
                 </label>
                 <textarea
@@ -364,13 +364,13 @@ export function DepartmentsTab({
                   onChange={(e) =>
                     setNewDepartment((prev) => ({ ...prev, description: e.target.value }))
                   }
-                  className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
+                  className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
                   rows={2}
                   placeholder="Descrição do departamento"
                 />
               </div>
               <div>
-                <label className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1">
+                <label className="block text-micro font-medium lia-text-600 dark:text-lia-text-tertiary mb-1">
                   Cor
                 </label>
                 <div className="flex gap-2">
@@ -381,16 +381,16 @@ export function DepartmentsTab({
                       onClick={() =>
                         setNewDepartment((prev) => ({ ...prev, color }))
                       }
-                      className={`w-4 h-4 rounded-full ${color.split(" ")[0]} ${newDepartment.color === color ? "ring-2 ring-offset-2 ring-gray-900 dark:ring-gray-50" : ""}`}
+                      className={`w-4 h-4 rounded-full ${color.split(" ")[0]} ${newDepartment.color === color ? "ring-2 ring-offset-2 ring-gray-900 dark:lia-ring-50" : ""}`}
                     />
                   ))}
                 </div>
               </div>
 
               {editingDepartment && (
-                <div className="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
+                <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-3 mt-3">
                   <div className="flex items-center justify-between mb-2">
-                    <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200">
+                    <h5 className="text-xs font-semibold lia-text-800 dark:text-lia-text-primary">
                       Colaboradores do Departamento
                     </h5>
                     <Button
@@ -402,7 +402,7 @@ export function DepartmentsTab({
                         setNewMember({ ...DEFAULT_NEW_MEMBER });
                       }}
                       disabled={!isEditingDepartments}
-                      className={`py-1 px-2 text-micro rounded-full border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 ${!isEditingDepartments ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`py-1 px-2 text-micro rounded-full border-lia-border-subtle dark:border-lia-border-subtle lia-text-700 dark:text-lia-text-secondary hover:bg-gray-100 dark:hover:bg-gray-700 ${!isEditingDepartments ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       <Plus className="w-3 h-3 mr-1" />
                       Adicionar
@@ -411,7 +411,7 @@ export function DepartmentsTab({
 
                   <div className="space-y-2 max-h-[200px] overflow-y-auto">
                     {departmentMembers.length === 0 ? (
-                      <p className="text-micro text-gray-500 text-center py-3">
+                      <p className="text-micro lia-text-500 text-center py-3">
                         Nenhum colaborador cadastrado
                       </p>
                     ) : (
@@ -422,15 +422,15 @@ export function DepartmentsTab({
                         >
                           <div className="flex items-center gap-2">
                             <Avatar className="w-7 h-7">
-                              <AvatarFallback className="text-micro bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                              <AvatarFallback className="text-micro bg-gray-100 dark:bg-lia-bg-elevated lia-text-700 dark:text-lia-text-secondary">
                                 {member.name.charAt(0).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <p className="text-xs font-medium text-gray-950 dark:text-gray-50">
+                              <p className="text-xs font-medium lia-text-950 dark:lia-text-50">
                                 {member.name}
                               </p>
-                              <p className="text-micro text-gray-500">
+                              <p className="text-micro lia-text-500">
                                 {member.title || "Sem cargo"} • {member.level}
                               </p>
                             </div>
@@ -461,8 +461,8 @@ export function DepartmentsTab({
                   </div>
 
                   {showMemberForm && (
-                    <div className="mt-2 p-2 border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800">
-                      <h6 className="text-micro font-medium text-gray-600 mb-2">
+                    <div className="mt-2 p-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-secondary">
+                      <h6 className="text-micro font-medium lia-text-600 mb-2">
                         {editingMember ? "Editar Colaborador" : "Novo Colaborador"}
                       </h6>
                       <div className="grid grid-cols-2 gap-2 mb-2">
@@ -473,7 +473,7 @@ export function DepartmentsTab({
                           onChange={(e) =>
                             setNewMember((prev) => ({ ...prev, name: e.target.value }))
                           }
-                          className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
+                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
                         />
                         <input
                           type="text"
@@ -482,7 +482,7 @@ export function DepartmentsTab({
                           onChange={(e) =>
                             setNewMember((prev) => ({ ...prev, title: e.target.value }))
                           }
-                          className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
+                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
                         />
                         <input
                           type="email"
@@ -491,7 +491,7 @@ export function DepartmentsTab({
                           onChange={(e) =>
                             setNewMember((prev) => ({ ...prev, email: e.target.value }))
                           }
-                          className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
+                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
                         />
                         <input
                           type="text"
@@ -500,7 +500,7 @@ export function DepartmentsTab({
                           onChange={(e) =>
                             setNewMember((prev) => ({ ...prev, phone: e.target.value }))
                           }
-                          className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
+                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
                         />
                         <input
                           type="url"
@@ -509,14 +509,14 @@ export function DepartmentsTab({
                           onChange={(e) =>
                             setNewMember((prev) => ({ ...prev, linkedin_url: e.target.value }))
                           }
-                          className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors col-span-2"
+                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors col-span-2"
                         />
                         <select
                           value={newMember.level}
                           onChange={(e) =>
                             setNewMember((prev) => ({ ...prev, level: e.target.value }))
                           }
-                          className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors col-span-2"
+                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors col-span-2"
                         >
                           <option value="ceo">CEO</option>
                           <option value="vp">VP</option>
@@ -561,7 +561,7 @@ export function DepartmentsTab({
                         <Button
                           size="sm"
                           onClick={handleSaveMember}
-                          className="py-1 px-2 text-micro rounded-full bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                          className="py-1 px-2 text-micro rounded-full bg-gray-900 text-white hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
                           disabled={savingMember}
                         >
                           {savingMember ? (
@@ -591,7 +591,7 @@ export function DepartmentsTab({
                 <Button
                   size="sm"
                   onClick={handleSaveDepartment}
-                  className="py-1.5 px-2 text-xs rounded-full bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                  className="py-1.5 px-2 text-xs rounded-full bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
                 >
                   <Save className="w-3.5 h-3.5 mr-1" />
                   {editingDepartment ? "Atualizar" : "Salvar"}
@@ -616,12 +616,12 @@ export function DepartmentsTab({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {departments.length === 0 && !showDepartmentForm ? (
-            <div className="col-span-2 text-center py-8 text-gray-600">
+            <div className="col-span-2 text-center py-8 lia-text-600">
               <Network className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p className="text-xs font-medium text-gray-700 dark:text-gray-300">
+              <p className="text-xs font-medium lia-text-700 dark:text-lia-text-secondary">
                 Nenhum departamento cadastrado
               </p>
-              <p className="text-xs mt-1 text-gray-500 dark:text-gray-500">
+              <p className="text-xs mt-1 lia-text-500 dark:lia-text-500">
                 Clique em "Novo Departamento" ou importe uma planilha para começar
               </p>
             </div>
@@ -629,7 +629,7 @@ export function DepartmentsTab({
             departments.map((dept) => (
               <Card
                 key={dept.id}
-                className="border border-gray-200/50 dark:border-gray-700/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-md hover:transition-shadow"
+                className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-white/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md hover:transition-shadow"
               >
                 <CardContent className="p-3">
                   <div className="flex items-start justify-between">
@@ -640,10 +640,10 @@ export function DepartmentsTab({
                         <Building2 className="w-4 h-4" />
                       </div>
                       <div>
-                        <h4 className="text-xs font-semibold text-gray-950 dark:text-gray-50">
+                        <h4 className="text-xs font-semibold lia-text-950 dark:lia-text-50">
                           {dept.name}
                         </h4>
-                        <p className="text-micro text-gray-600">
+                        <p className="text-micro lia-text-600">
                           {dept.description}
                         </p>
                       </div>
@@ -656,7 +656,7 @@ export function DepartmentsTab({
                         onClick={() => handleOpenOrgChart(dept)}
                         title="Ver organograma"
                       >
-                        <Maximize2 className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                        <Maximize2 className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -678,15 +678,15 @@ export function DepartmentsTab({
                       </Button>
                     </div>
                   </div>
-                  <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-micro text-gray-600">
+                  <div className="mt-2 pt-2 border-t border-lia-border-subtle dark:lia-border-800 flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-micro lia-text-600">
                       <Users className="w-3 h-3" />
                       <span>{dept.headcount} colaboradores</span>
                     </div>
                     {dept.manager && (
                       <Badge
                         variant="outline"
-                        className="text-micro rounded-md border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
+                        className="text-micro rounded-md border-lia-border-subtle dark:border-lia-border-subtle lia-text-700 dark:text-lia-text-secondary"
                       >
                         {dept.manager}
                       </Badge>
@@ -704,7 +704,7 @@ export function DepartmentsTab({
         >
           <AlertDialogContent className="rounded-md">
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-sm font-semibold text-gray-900 dark:text-gray-50">
+              <AlertDialogTitle className="text-sm font-semibold lia-text-900 dark:lia-text-50">
                 Excluir Departamento
               </AlertDialogTitle>
               <AlertDialogDescription>
@@ -755,12 +755,12 @@ export function DepartmentsTab({
             <div className="overflow-y-auto max-h-[60vh] mt-4">
               {loadingOrgChart ? (
                 <div className="flex items-center justify-center py-12">
-                  <Loader2 className="w-6 h-6 animate-spin text-gray-500 dark:text-gray-400" />
+                  <Loader2 className="w-6 h-6 animate-spin lia-text-500 dark:text-lia-text-tertiary" />
                 </div>
               ) : orgChartMembers.length === 0 ? (
                 <div className="text-center py-12">
-                  <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                  <p className="text-xs font-medium text-gray-600">
+                  <Users className="w-12 h-12 mx-auto mb-3 lia-text-300" />
+                  <p className="text-xs font-medium lia-text-600">
                     Nenhum colaborador cadastrado
                   </p>
                   <p className={`${textStyles.description} mt-1`}>
@@ -794,7 +794,7 @@ export function DepartmentsTab({
                             {getLevelLabel(level)}
                           </Badge>
                           <div className="flex-1 h-px bg-gray-200"></div>
-                          <span className="text-micro text-gray-400">
+                          <span className="text-micro lia-text-400">
                             {members.length}{" "}
                             {members.length === 1 ? "pessoa" : "pessoas"}
                           </span>
@@ -803,7 +803,7 @@ export function DepartmentsTab({
                           {members.map((member) => (
                             <div
                               key={member.id}
-                              className="flex items-center gap-3 p-3 bg-white border border-gray-100 rounded-md hover:transition-shadow"
+                              className="flex items-center gap-3 p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md hover:transition-shadow"
                             >
                               <Avatar className="w-10 h-10">
                                 {member.avatar_url ? (
@@ -813,7 +813,7 @@ export function DepartmentsTab({
                                     className="w-full h-full object-cover rounded-full"
                                   />
                                 ) : (
-                                  <AvatarFallback className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                                  <AvatarFallback className="text-xs bg-gray-100 dark:bg-lia-bg-elevated lia-text-700 dark:text-lia-text-secondary">
                                     {member.name
                                       .split(" ")
                                       .map((n) => n[0])
@@ -825,7 +825,7 @@ export function DepartmentsTab({
                               </Avatar>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-1.5">
-                                  <p className="text-xs font-medium text-gray-950 dark:text-gray-50 truncate">
+                                  <p className="text-xs font-medium lia-text-950 dark:lia-text-50 truncate">
                                     {member.name}
                                   </p>
                                   {member.linkedin_url && (
@@ -833,17 +833,17 @@ export function DepartmentsTab({
                                       href={member.linkedin_url}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="text-[#0A66C2] hover:opacity-80 flex-shrink-0"
+                                      className="text-brand-linkedin hover:opacity-80 flex-shrink-0"
                                     >
                                       <Linkedin className="w-3 h-3" />
                                     </a>
                                   )}
                                 </div>
-                                <p className="text-micro text-gray-500 truncate">
+                                <p className="text-micro lia-text-500 truncate">
                                   {member.title || "Sem cargo"}
                                 </p>
                                 {member.email && (
-                                  <p className="text-micro text-gray-400 truncate">
+                                  <p className="text-micro lia-text-400 truncate">
                                     {member.email}
                                   </p>
                                 )}
@@ -919,22 +919,22 @@ function ApproverSection({
         </div>
       )}
 
-      <Card className="border border-gray-200/50 dark:border-gray-700/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-md">
+      <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-white/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-base-ui font-semibold flex items-center gap-2">
-                <Crown className="w-3.5 h-3.5 text-gray-500" />
+                <Crown className="w-3.5 h-3.5 lia-text-500" />
                 Fluxo de Aprovação de Vagas
               </CardTitle>
-              <p className="text-xs text-gray-600 mt-1">
+              <p className="text-xs lia-text-600 mt-1">
                 Configure os níveis de aprovação para abertura de vagas
               </p>
             </div>
             <Button
               size="sm"
               variant="outline"
-              className="gap-1.5 py-1.5 px-2 text-xs rounded-full border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="gap-1.5 py-1.5 px-2 text-xs rounded-full border-lia-border-subtle dark:border-lia-border-subtle lia-text-700 dark:text-lia-text-secondary hover:bg-gray-100 dark:hover:bg-gray-700"
               onClick={() => {
                 setNewApprover({
                   userName: "",
@@ -952,19 +952,19 @@ function ApproverSection({
         </CardHeader>
         <CardContent className="p-3 space-y-3">
           {(showApproverForm || editingApprover) && (
-            <Card className="border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 rounded-md mb-3">
+            <Card className="border border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md mb-3">
               <CardContent className="p-3 space-y-2">
                 <h4 className="text-xs font-semibold">
                   {editingApprover ? "Editar Aprovador" : "Novo Aprovador"}
                 </h4>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    <label className="block text-micro font-medium lia-text-600 dark:text-lia-text-tertiary mb-1">
                       Nome
                     </label>
                     <input
                       type="text"
-                      className="w-full px-2 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs dark:text-gray-100"
+                      className="w-full px-2 py-1.5 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary text-xs dark:text-lia-text-primary"
                       placeholder="Nome do aprovador"
                       value={editingApprover ? editingApprover.userName : newApprover.userName}
                       onChange={(e) =>
@@ -975,12 +975,12 @@ function ApproverSection({
                     />
                   </div>
                   <div>
-                    <label className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    <label className="block text-micro font-medium lia-text-600 dark:text-lia-text-tertiary mb-1">
                       Email
                     </label>
                     <input
                       type="email"
-                      className="w-full px-2 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs dark:text-gray-100"
+                      className="w-full px-2 py-1.5 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary text-xs dark:text-lia-text-primary"
                       placeholder="email@empresa.com"
                       value={editingApprover ? editingApprover.email : newApprover.email}
                       onChange={(e) =>
@@ -991,12 +991,12 @@ function ApproverSection({
                     />
                   </div>
                   <div>
-                    <label className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    <label className="block text-micro font-medium lia-text-600 dark:text-lia-text-tertiary mb-1">
                       Cargo
                     </label>
                     <input
                       type="text"
-                      className="w-full px-2 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs dark:text-gray-100"
+                      className="w-full px-2 py-1.5 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary text-xs dark:text-lia-text-primary"
                       placeholder="Ex: Gerente de RH"
                       value={editingApprover ? editingApprover.role : newApprover.role}
                       onChange={(e) =>
@@ -1007,13 +1007,13 @@ function ApproverSection({
                     />
                   </div>
                   <div>
-                    <label className="block text-micro font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    <label className="block text-micro font-medium lia-text-600 dark:text-lia-text-tertiary mb-1">
                       Nível de Aprovação
                     </label>
                     <input
                       type="number"
                       min="1"
-                      className="w-full px-2 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs dark:text-gray-100"
+                      className="w-full px-2 py-1.5 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary text-xs dark:text-lia-text-primary"
                       value={editingApprover ? editingApprover.level : newApprover.level}
                       onChange={(e) =>
                         editingApprover
@@ -1038,7 +1038,7 @@ function ApproverSection({
                   <Button
                     size="sm"
                     onClick={handleSaveApprover}
-                    className="py-1.5 px-2 text-xs rounded-full bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                    className="py-1.5 px-2 text-xs rounded-full bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
                   >
                     <Save className="w-3.5 h-3.5 mr-1" />
                     Salvar
@@ -1049,7 +1049,7 @@ function ApproverSection({
           )}
 
           {approvers.length === 0 && !showApproverForm ? (
-            <div className="text-center py-6 text-gray-600">
+            <div className="text-center py-6 lia-text-600">
               <Crown className="w-10 h-10 mx-auto mb-2 opacity-30" />
               <p className="text-xs">
                 Nenhum aprovador configurado
@@ -1060,7 +1060,7 @@ function ApproverSection({
             </div>
           ) : (
             <div className="relative">
-              <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700" />
+              <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-lia-bg-elevated" />
               {approvers
                 .sort((a, b) => a.level - b.level)
                 .map((approver) => (
@@ -1069,15 +1069,15 @@ function ApproverSection({
                     className="relative flex items-center gap-3 pb-4 last:pb-0"
                   >
                     <div
-                      className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center text-xs font-semibold ${approver.isActive ? "text-white" : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"}`}
+                      className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center text-xs font-semibold ${approver.isActive ? "text-white" : "bg-gray-100 lia-text-600 dark:bg-lia-bg-secondary dark:text-lia-text-tertiary"}`}
                     >
                       {approver.level}
                     </div>
-                    <Card className="flex-1 border border-gray-200/50 dark:border-gray-700/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-md">
+                    <Card className="flex-1 border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-white/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
                       <CardContent className="p-2 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Avatar className="h-8 w-8">
-                            <AvatarFallback className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-micro">
+                            <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-elevated lia-text-700 dark:text-lia-text-secondary text-micro">
                               {approver.userName
                                 .split(" ")
                                 .map((n) => n[0])
@@ -1085,10 +1085,10 @@ function ApproverSection({
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="text-xs font-semibold text-gray-950 dark:text-gray-50">
+                            <p className="text-xs font-semibold lia-text-950 dark:lia-text-50">
                               {approver.userName}
                             </p>
-                            <p className="text-micro text-gray-600">
+                            <p className="text-micro lia-text-600">
                               {approver.role} • {approver.email}
                             </p>
                           </div>
@@ -1099,7 +1099,7 @@ function ApproverSection({
                             className={`text-micro rounded-md ${
                               approver.isActive
                                 ? "bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success"
-                                : "border-gray-200 dark:border-gray-700"
+                                : "border-lia-border-subtle dark:border-lia-border-subtle"
                             }`}
                           >
                             {approver.isActive ? "Ativo" : "Inativo"}
@@ -1128,14 +1128,14 @@ function ApproverSection({
             </div>
           )}
 
-          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-md p-2 border border-gray-200 dark:border-gray-700">
+          <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-2 border border-lia-border-subtle dark:border-lia-border-subtle">
             <div className="flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-gray-500" />
+              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 lia-text-500" />
               <div>
-                <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                <p className="text-xs font-semibold lia-text-700 dark:text-lia-text-secondary">
                   Fluxo de Aprovação
                 </p>
-                <p className="text-micro mt-0.5 text-gray-600 dark:text-gray-400">
+                <p className="text-micro mt-0.5 lia-text-600 dark:text-lia-text-tertiary">
                   Vagas serão enviadas para aprovação sequencial, do nível 1 ao
                   nível final. Cada aprovador receberá notificação por email e
                   pode aprovar diretamente na plataforma.

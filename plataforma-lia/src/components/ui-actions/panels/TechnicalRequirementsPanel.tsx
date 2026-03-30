@@ -104,9 +104,9 @@ export function TechnicalRequirementsPanel({
 
         {(Object.keys(CATEGORY_LABELS) as TechCategory[]).map((category) => (
           <TabsContent key={category} value={category} className="mt-4">
-            <Card className="rounded-md dark:bg-gray-800 dark:border-gray-700">
-              <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
-                <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-gray-100">
+            <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+              <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+                <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-lia-text-primary">
                   {CATEGORY_LABELS[category].icon} {CATEGORY_LABELS[category].label}
                 </CardTitle>
               </CardHeader>
@@ -118,23 +118,23 @@ export function TechnicalRequirementsPanel({
                 />
 
                 {getRequirementsByCategory(category).length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground dark:text-gray-400 text-sm">
+                  <div className="text-center py-8 text-muted-foreground dark:text-lia-text-tertiary text-sm">
                     Nenhuma tecnologia adicionada.
                     <br />
                     Use o campo acima para adicionar.
                   </div>
                 ) : (
-                  <div className="border rounded-md overflow-hidden dark:border-gray-700">
+                  <div className="border rounded-md overflow-hidden dark:border-lia-border-subtle">
                     <table className="w-full">
-                      <thead className="bg-muted/50 dark:bg-gray-900/50">
+                      <thead className="bg-muted/50 dark:bg-lia-bg-primary/50">
                         <tr>
-                          <th className="text-left px-3 py-2 text-xs font-medium dark:text-gray-400">
+                          <th className="text-left px-3 py-2 text-xs font-medium dark:text-lia-text-tertiary">
                             Tecnologia
                           </th>
-                          <th className="text-left px-3 py-2 text-xs font-medium w-36 dark:text-gray-400">
+                          <th className="text-left px-3 py-2 text-xs font-medium w-36 dark:text-lia-text-tertiary">
                             Nível
                           </th>
-                          <th className="text-center px-3 py-2 text-xs font-medium w-24 dark:text-gray-400">
+                          <th className="text-center px-3 py-2 text-xs font-medium w-24 dark:text-lia-text-tertiary">
                             Obrigatória?
                           </th>
                           <th className="w-10"></th>
@@ -145,7 +145,7 @@ export function TechnicalRequirementsPanel({
                           <tr key={req.id} className="hover:bg-muted/30 dark:hover:bg-gray-700/30">
                             <td className="px-3 py-2">
                               <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium dark:text-gray-100">{req.name}</span>
+                                <span className="text-sm font-medium dark:text-lia-text-primary">{req.name}</span>
                                 {req.required && (
                                   <Badge variant="secondary" className="text-xs">
                                     Obrigatória
@@ -160,7 +160,7 @@ export function TechnicalRequirementsPanel({
                                   handleUpdateLevel(req.id, value as TechLevel)
                                 }
                               >
-                                <SelectTrigger className="h-8 text-xs dark:bg-gray-900 dark:border-gray-700">
+                                <SelectTrigger className="h-8 text-xs dark:bg-lia-bg-primary dark:border-lia-border-subtle">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -182,7 +182,7 @@ export function TechnicalRequirementsPanel({
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-7 w-7 dark:text-gray-400 dark:hover:bg-gray-700"
+                                className="h-7 w-7 dark:text-lia-text-tertiary dark:hover:bg-gray-700"
                                 onClick={() => handleRemoveRequirement(req.id)}
                               >
                                 <X className="h-4 w-4" />
@@ -200,14 +200,14 @@ export function TechnicalRequirementsPanel({
         ))}
       </Tabs>
 
-      <Card className="rounded-md dark:bg-gray-800 dark:border-gray-700">
-        <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
-          <CardTitle className="text-sm font-sans dark:text-gray-100">📊 Resumo</CardTitle>
+      <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+          <CardTitle className="text-sm font-sans dark:text-lia-text-primary">📊 Resumo</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
             {requirements.length === 0 ? (
-              <span className="text-sm text-muted-foreground dark:text-gray-400">
+              <span className="text-sm text-muted-foreground dark:text-lia-text-tertiary">
                 Nenhum requisito técnico adicionado ainda.
               </span>
             ) : (
@@ -215,14 +215,14 @@ export function TechnicalRequirementsPanel({
                 <Badge
                   key={req.id}
                   variant={req.required ? "secondary" : "outline"}
-                  className="text-xs dark:border-gray-600 dark:text-gray-300"
+                  className="text-xs dark:border-lia-border-default dark:text-lia-text-secondary"
                 >
                   {req.name} ({req.level.charAt(0)})
                 </Badge>
               ))
             )}
           </div>
-          <div className="mt-3 text-xs text-muted-foreground dark:text-gray-400">
+          <div className="mt-3 text-xs text-muted-foreground dark:text-lia-text-tertiary">
             {requirements.filter((r) => r.required).length} obrigatórias,{" "}
             {requirements.filter((r) => !r.required).length} desejáveis
           </div>
@@ -232,7 +232,7 @@ export function TechnicalRequirementsPanel({
       <Button
         onClick={handleSubmit}
         disabled={isLoading}
-        className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+        className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
         size="lg"
       >
         {isLoading ? (
@@ -318,7 +318,7 @@ function TechAutocomplete({
     <div className="relative">
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground dark:text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground dark:text-lia-text-tertiary" />
           <Input
             ref={inputRef}
             value={search}
@@ -330,14 +330,14 @@ function TechAutocomplete({
             onFocus={() => setShowSuggestions(true)}
             onKeyDown={handleKeyDown}
             placeholder={`Buscar ou adicionar ${CATEGORY_LABELS[category].label.toLowerCase()}...`}
-            className="pl-9 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
+            className="pl-9 dark:bg-lia-bg-primary dark:border-lia-border-subtle dark:text-lia-text-primary"
           />
         </div>
         <Button
           type="button"
           variant="outline"
           size="icon"
-          className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+          className="dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-700"
           onClick={() => {
             if (search.trim()) {
               handleAdd(search.trim())
@@ -352,15 +352,15 @@ function TechAutocomplete({
       {showSuggestions && (search || availableTechs.length > 0) && (
         <div
           ref={suggestionsRef}
-          className="absolute z-50 top-full left-0 right-0 mt-1 border rounded-md max-h-48 overflow-auto dark:bg-gray-800 dark:border-gray-700 bg-lia-bg-primary border-lia-border-default"
+          className="absolute z-50 top-full left-0 right-0 mt-1 border rounded-md max-h-48 overflow-auto dark:bg-lia-bg-secondary dark:border-lia-border-subtle bg-lia-bg-primary border-lia-border-default"
         >
           {availableTechs.length > 0 ? (
             availableTechs.slice(0, 10).map((tech, index) => (
               <button
                 key={tech}
                 type="button"
-                className={`w-full text-left px-3 py-2 text-sm hover:bg-muted/50 dark:hover:bg-gray-700 dark:text-gray-100 ${
-                  index === selectedIndex ? "bg-muted dark:bg-gray-700" : ""
+                className={`w-full text-left px-3 py-2 text-sm hover:bg-muted/50 dark:hover:bg-gray-700 dark:text-lia-text-primary ${
+ index === selectedIndex ? "bg-muted dark:bg-lia-bg-elevated" : ""
                 }`}
                 onClick={() => handleAdd(tech)}
                 onMouseEnter={() => setSelectedIndex(index)}
@@ -371,7 +371,7 @@ function TechAutocomplete({
           ) : search.trim() ? (
             <button
               type="button"
-              className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 bg-muted dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-100"
+              className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 bg-muted dark:bg-lia-bg-elevated dark:hover:bg-gray-600 dark:text-lia-text-primary"
               onClick={() => handleAdd(search.trim())}
             >
               Adicionar "{search.trim()}"

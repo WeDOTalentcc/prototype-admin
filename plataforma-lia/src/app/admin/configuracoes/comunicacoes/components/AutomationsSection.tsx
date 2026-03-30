@@ -24,10 +24,10 @@ const getAutomationIcon = (trigger: string) => {
 
 const getActionLabel = (action: string) => {
   switch (action) {
-    case 'send_email': return { label: 'Email', color: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400' }
+    case 'send_email': return { label: 'Email', color: 'bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary' }
     case 'send_whatsapp': return { label: 'WhatsApp', color: 'bg-status-success/10 text-status-success dark:bg-status-success/20 dark:text-status-success' }
     case 'notify_recruiter': return { label: 'Notificação', color: 'bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple' }
-    default: return { label: action, color: 'bg-gray-50 text-gray-600 dark:bg-gray-800 dark:text-gray-400' }
+    default: return { label: action, color: 'bg-gray-50 lia-text-600 dark:bg-lia-bg-secondary dark:text-lia-text-tertiary' }
   }
 }
 
@@ -68,10 +68,10 @@ export function AutomationsSection({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400" >
+          <h3 className="text-sm font-medium lia-text-500 dark:text-lia-text-tertiary" >
             Catálogo de Automações ({automations.length})
           </h3>
-          <p className="text-xs mt-1 text-gray-400 dark:text-gray-500" >
+          <p className="text-xs mt-1 lia-text-400 dark:lia-text-500" >
             Configure automações para disparar comunicações automaticamente
           </p>
         </div>
@@ -93,24 +93,24 @@ export function AutomationsSection({
 
       {automationsLoading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-gray-700 dark:text-gray-300" />
-          <span className="ml-3 text-sm text-gray-500 dark:text-gray-400" >
+          <Loader2 className="w-8 h-8 animate-spin lia-text-700 dark:text-lia-text-secondary" />
+          <span className="ml-3 text-sm lia-text-500 dark:text-lia-text-tertiary" >
             Carregando automações...
           </span>
         </div>
       ) : automations.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
-          <Zap className="w-12 h-12 text-gray-300 mb-4" />
-          <p className="text-sm text-gray-400 dark:text-gray-500" >
+          <Zap className="w-12 h-12 lia-text-300 mb-4" />
+          <p className="text-sm lia-text-400 dark:lia-text-500" >
             Nenhuma automação encontrada
           </p>
-          <p className="text-xs mt-1 mb-4 text-gray-400 dark:text-gray-500" >
+          <p className="text-xs mt-1 mb-4 lia-text-400 dark:lia-text-500" >
             Crie automações padrão para começar
           </p>
           <Button
             onClick={handleSeedDefaultAutomations}
             disabled={automationsLoading}
-            className="bg-gray-900 dark:bg-gray-50 hover:bg-gray-800 dark:hover:bg-gray-200"
+            className="bg-gray-900 dark:lia-bg-50 hover:bg-gray-800 dark:hover:bg-gray-200"
           >
             <Plus className="w-4 h-4 mr-2" />
             Criar Automações Padrão
@@ -125,7 +125,7 @@ export function AutomationsSection({
           return (
             <Card
               key={automation.id}
-              className={`cursor-pointer transition-all ${selectedAutomation?.id === automation.id ? 'ring-2 ring-gray-900/20 dark:ring-gray-50/20' : 'hover:border-gray-300'}`}
+              className={`cursor-pointer transition-colors ${selectedAutomation?.id === automation.id ? 'ring-2 ring-gray-900/20 dark:lia-ring-50/20' : 'hover:border-lia-border-default'}`}
               onClick={() => setSelectedAutomation(selectedAutomation?.id === automation.id ? null : automation)}
             >
               <CardContent className="p-4">
@@ -137,17 +137,17 @@ export function AutomationsSection({
                         style={{backgroundColor: automation.isActive ? 'var(--status-warning-bg)' : 'var(--gray-bg-10)'}}
                       >
                         <IconComponent
-                          className={`w-4 h-4 ${automation.isActive ? 'text-status-warning' : 'text-gray-400 dark:text-gray-500'}`}
+                          className={`w-4 h-4 ${automation.isActive ? 'text-status-warning' : 'lia-text-400 dark:lia-text-500'}`}
                         />
                       </div>
                       <div>
-                        <h4 className="font-medium text-sm text-gray-800 dark:text-gray-100" >
+                        <h4 className="font-medium text-sm lia-text-800 dark:text-lia-text-primary" >
                           {automation.name}
                         </h4>
                       </div>
                     </div>
                     
-                    <p className="text-xs mb-3 text-gray-400 dark:text-gray-500" >
+                    <p className="text-xs mb-3 lia-text-400 dark:lia-text-500" >
                       {automation.description}
                     </p>
                     
@@ -161,7 +161,7 @@ export function AutomationsSection({
                       </Badge>
                     </div>
 
-                    <div className="flex items-center gap-4 text-xs text-gray-400 dark:text-gray-500" >
+                    <div className="flex items-center gap-4 text-xs lia-text-400 dark:lia-text-500" >
                       <span className="flex items-center gap-1">
                         <Play className="w-3 h-3" />
                         {automation.triggerCount.toLocaleString('pt-BR')} disparos
@@ -194,10 +194,10 @@ export function AutomationsSection({
                 </div>
 
                 {selectedAutomation?.id === automation.id && (
-                  <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700" >
+                  <div className="mt-4 pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle" >
                     <div className="space-y-3">
                       <div>
-                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400" >
+                        <label className="text-xs font-medium lia-text-500 dark:text-lia-text-tertiary" >
                           Condições de Disparo
                         </label>
                         <div className="flex flex-wrap gap-1 mt-1">
@@ -206,7 +206,7 @@ export function AutomationsSection({
                               {condition}
                             </Badge>
                           )) || (
-                            <span className="text-xs text-gray-400 dark:text-gray-500" >
+                            <span className="text-xs lia-text-400 dark:lia-text-500" >
                               Nenhuma condição definida
                             </span>
                           )}
@@ -215,7 +215,7 @@ export function AutomationsSection({
                       
                       {automation.templateId && (
                         <div>
-                          <label className="text-xs font-medium text-gray-500 dark:text-gray-400" >
+                          <label className="text-xs font-medium lia-text-500 dark:text-lia-text-tertiary" >
                             Template Vinculado
                           </label>
                           <Badge variant="outline" className="text-xs mt-1">

@@ -103,7 +103,7 @@ export function ColumnContextMenu({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button className="p-0.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors opacity-0 group-hover:opacity-100">
-            <Settings className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
+            <Settings className="w-3.5 h-3.5 lia-text-400 dark:lia-text-500" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-48">
@@ -165,14 +165,14 @@ export function ColumnContextMenu({
       </DropdownMenu>
 
       <Dialog open={renameOpen} onOpenChange={setRenameOpen}>
-        <DialogContent className="sm:max-w-panel-lg bg-white rounded-md dark:bg-gray-800">
+        <DialogContent className="sm:max-w-panel-lg bg-white rounded-md dark:bg-lia-bg-secondary">
           <DialogHeader>
             <DialogTitle className="text-sm font-semibold">
               Renomear Etapa
             </DialogTitle>
           </DialogHeader>
           <div className="py-3">
-            <Label className="text-xs text-gray-600 dark:text-gray-400">
+            <Label className="text-xs lia-text-600 dark:text-lia-text-tertiary">
               Nome da etapa
             </Label>
             <Input
@@ -188,7 +188,7 @@ export function ColumnContextMenu({
             <Button variant="outline" onClick={() => setRenameOpen(false)} className="text-xs h-8">
               Cancelar
             </Button>
-            <Button onClick={handleRename} className="bg-gray-900 hover:bg-gray-800 text-white text-xs h-8 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200">
+            <Button onClick={handleRename} className="bg-gray-900 hover:bg-gray-800 text-white text-xs h-8 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200">
               Salvar
             </Button>
           </DialogFooter>
@@ -196,14 +196,14 @@ export function ColumnContextMenu({
       </Dialog>
 
       <Dialog open={slaOpen} onOpenChange={setSlaOpen}>
-        <DialogContent className="sm:max-w-panel-lg bg-white rounded-md dark:bg-gray-800">
+        <DialogContent className="sm:max-w-panel-lg bg-white rounded-md dark:bg-lia-bg-secondary">
           <DialogHeader>
             <DialogTitle className="text-sm font-semibold">
               Configurar SLA
             </DialogTitle>
           </DialogHeader>
           <div className="py-3">
-            <Label className="text-xs text-gray-600 dark:text-gray-400">
+            <Label className="text-xs lia-text-600 dark:text-lia-text-tertiary">
               Prazo em horas
             </Label>
             <Input
@@ -215,7 +215,7 @@ export function ColumnContextMenu({
               min={0}
               autoFocus
             />
-            <p className="mt-1 text-xs text-gray-400">
+            <p className="mt-1 text-xs lia-text-400">
               Tempo maximo de permanencia nesta etapa
             </p>
           </div>
@@ -223,7 +223,7 @@ export function ColumnContextMenu({
             <Button variant="outline" onClick={() => setSlaOpen(false)} className="text-xs h-8">
               Cancelar
             </Button>
-            <Button onClick={handleSLAUpdate} className="bg-gray-900 hover:bg-gray-800 text-white text-xs h-8 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200">
+            <Button onClick={handleSLAUpdate} className="bg-gray-900 hover:bg-gray-800 text-white text-xs h-8 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200">
               Salvar
             </Button>
           </DialogFooter>
@@ -231,17 +231,17 @@ export function ColumnContextMenu({
       </Dialog>
 
       <Dialog open={confirmRemoveOpen} onOpenChange={setConfirmRemoveOpen}>
-        <DialogContent className="sm:max-w-panel-lg bg-white rounded-md dark:bg-gray-800">
+        <DialogContent className="sm:max-w-panel-lg bg-white rounded-md dark:bg-lia-bg-secondary">
           <DialogHeader>
             <DialogTitle className="text-sm font-semibold">
               Remover Coluna
             </DialogTitle>
           </DialogHeader>
           <div className="py-3">
-            <p className="text-base-ui text-gray-700 dark:text-gray-300">
+            <p className="text-base-ui lia-text-700 dark:text-lia-text-secondary">
               Tem certeza que deseja remover a coluna <strong>{stage.displayName}</strong>?
             </p>
-            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+            <p className="mt-2 text-xs lia-text-500 dark:text-lia-text-tertiary">
               Candidatos nesta etapa serao movidos para a etapa anterior.
             </p>
           </div>

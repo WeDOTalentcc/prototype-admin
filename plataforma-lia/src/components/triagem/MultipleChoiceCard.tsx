@@ -33,13 +33,13 @@ export function MultipleChoiceCard({
   return (
     <div
       className={cn(
-        "mx-4 my-2 space-y-3",
+ "mx-4 my-2 space-y-3",
         className
       )}
       role="group"
       aria-label={question}
     >
-      <p className="text-sm text-gray-700 dark:text-gray-300 font-['Open_Sans',sans-serif]">
+      <p className="text-sm text-gray-700 dark:text-lia-text-secondary font-['Open_Sans',sans-serif]">
         {question}
       </p>
       <div className="flex flex-col gap-2">
@@ -54,10 +54,10 @@ export function MultipleChoiceCard({
               aria-pressed={isSelected}
               aria-label={option.label}
               className={cn(
-                "w-full min-h-[44px] px-4 py-3 text-sm text-left rounded-md font-medium transition-all duration-200 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:outline-none font-['Open_Sans',sans-serif]",
+ "w-full min-h-[44px] px-4 py-3 text-sm text-left rounded-md font-medium transition-colors duration-200 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:outline-none font-['Open_Sans',sans-serif]",
                 isSelected
-                  ? "bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900 border border-gray-900 dark:border-gray-50"
-                  : "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700",
+                  ? "bg-gray-900 text-white border border-gray-900"
+                  : "bg-white dark:bg-lia-bg-secondary text-gray-900 dark:text-lia-text-primary border border-lia-border-default dark:border-lia-border-default hover:bg-gray-50 dark:hover:bg-gray-700",
                 (disabled || (!!selectedId && !isSelected)) && "opacity-50 cursor-not-allowed"
               )}
             >

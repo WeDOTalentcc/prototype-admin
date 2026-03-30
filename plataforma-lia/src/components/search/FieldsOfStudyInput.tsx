@@ -411,10 +411,10 @@ export function FieldsOfStudyInput({
           <button
             onClick={() => setIsModeDropdownOpen(!isModeDropdownOpen)}
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all",
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-[width,height]",
               mode === 'regular'
-                ? "border-gray-300 bg-white text-gray-800 dark:text-gray-200"
-                : "border-gray-900 dark:border-gray-50 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50"
+                ? "border-lia-border-default bg-lia-bg-primary lia-text-800 dark:text-lia-text-primary"
+                : "border-gray-900 dark:lia-border-50 bg-gray-100 dark:bg-lia-bg-secondary lia-text-900 dark:lia-text-50"
             )}
           >
             {mode === 'regular' ? 'Regular' : 'Nested'}
@@ -422,7 +422,7 @@ export function FieldsOfStudyInput({
           </button>
 
           {isModeDropdownOpen && (
-            <div className="absolute z-50 mt-1 w-72 bg-white border border-gray-200 rounded-md">
+            <div className="absolute z-50 mt-1 w-72 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
               <button
                 onClick={() => {
                   onModeChange('regular')
@@ -438,15 +438,15 @@ export function FieldsOfStudyInput({
                     "w-3 h-3 rounded-full border-2",
                     mode === 'regular' 
                       ? "border-gray-700 bg-gray-700" 
-                      : "border-gray-300"
+                      : "border-lia-border-default"
                   )}>
                     {mode === 'regular' && (
-                      <div className="w-full h-full rounded-full bg-white scale-50" />
+                      <div className="w-full h-full rounded-full bg-lia-bg-primary scale-50" />
                     )}
                   </div>
-                  <span className="font-medium text-sm text-gray-800">Regular</span>
+                  <span className="font-medium text-sm lia-text-800">Regular</span>
                 </div>
-                <p className="text-xs text-gray-500 mt-1 ml-5">
+                <p className="text-xs lia-text-500 mt-1 ml-5">
                   Find people who studied this field from any university
                 </p>
               </button>
@@ -457,24 +457,24 @@ export function FieldsOfStudyInput({
                   setIsModeDropdownOpen(false)
                 }}
                 className={cn(
-                  "w-full text-left px-4 py-3 transition-colors hover:bg-gray-50 rounded-b-lg border-t border-gray-100",
-                  mode === 'nested' && "bg-gray-50 dark:bg-gray-800/50"
+                  "w-full text-left px-4 py-3 transition-colors hover:bg-gray-50 rounded-b-lg border-t border-lia-border-subtle",
+                  mode === 'nested' && "bg-gray-50 dark:bg-lia-bg-secondary/50"
                 )}
               >
                 <div className="flex items-center gap-2">
                   <div className={cn(
                     "w-3 h-3 rounded-full border-2",
                     mode === 'nested' 
-                      ? "border-gray-900 bg-gray-900 dark:border-gray-50 dark:bg-gray-50" 
-                      : "border-gray-300"
+                      ? "border-gray-900 bg-gray-900 dark:lia-border-50 dark:lia-bg-50" 
+                      : "border-lia-border-default"
                   )}>
                     {mode === 'nested' && (
-                      <div className="w-full h-full rounded-full bg-white scale-50" />
+                      <div className="w-full h-full rounded-full bg-lia-bg-primary scale-50" />
                     )}
                   </div>
-                  <span className="font-medium text-sm text-gray-800">Nested</span>
+                  <span className="font-medium text-sm lia-text-800">Nested</span>
                 </div>
-                <p className="text-xs text-gray-500 mt-1 ml-5">
+                <p className="text-xs lia-text-500 mt-1 ml-5">
                   Find people who studied this field from selected universities
                 </p>
               </button>
@@ -484,15 +484,15 @@ export function FieldsOfStudyInput({
 
         <Popover>
           <PopoverTrigger asChild>
-            <button className="text-gray-400 hover:text-gray-600 transition-colors">
+            <button className="lia-text-400 hover:lia-text-600 transition-colors">
               <Info className="w-3.5 h-3.5" />
             </button>
           </PopoverTrigger>
-          <PopoverContent className="w-64 p-3 text-xs bg-white" side="right">
-            <p className="text-gray-600 leading-relaxed">
+          <PopoverContent className="w-64 p-3 text-xs bg-lia-bg-elevated" side="right">
+            <p className="lia-text-600 leading-relaxed">
               <strong>Regular:</strong> Matches candidates who studied this field at any university.
             </p>
-            <p className="text-gray-600 leading-relaxed mt-2">
+            <p className="lia-text-600 leading-relaxed mt-2">
               <strong>Nested:</strong> Only matches candidates who studied this field at the universities you've selected above.
             </p>
           </PopoverContent>
@@ -501,7 +501,7 @@ export function FieldsOfStudyInput({
         {value.length > 0 && (
           <button
             onClick={clearAll}
-            className="text-xs text-gray-900 dark:text-gray-50 hover:text-gray-700 dark:hover:text-gray-300 font-medium ml-auto"
+            className="text-xs lia-text-900 dark:lia-text-50 hover:lia-text-700 dark:hover:lia-text-300 font-medium ml-auto"
           >
             Clear all
           </button>
@@ -510,7 +510,7 @@ export function FieldsOfStudyInput({
 
       <div className="relative">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-400" />
           <Input
             ref={inputRef}
             value={inputValue}
@@ -518,12 +518,12 @@ export function FieldsOfStudyInput({
             onKeyDown={handleKeyDown}
             onFocus={() => inputValue.length > 0 && setIsDropdownOpen(true)}
             placeholder={placeholder}
-            className="pl-9 pr-3 border-gray-200 focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+            className="pl-9 pr-3 border-lia-border-subtle focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
             disabled={isLoadingAI}
           />
           {isLoadingAI && (
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <Loader2 className="w-4 h-4 animate-spin text-gray-600" />
+              <Loader2 className="w-4 h-4 animate-spin lia-text-600" />
             </div>
           )}
         </div>
@@ -531,7 +531,7 @@ export function FieldsOfStudyInput({
         {isDropdownOpen && dropdownItems.length > 0 && (
           <div 
             ref={dropdownRef}
-            className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md max-h-64 overflow-y-auto"
+            className="absolute z-50 w-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-md max-h-64 overflow-y-auto"
           >
             {dropdownItems.map((item, index) => (
               <button
@@ -546,7 +546,7 @@ export function FieldsOfStudyInput({
                 className={cn(
                   "w-full text-left px-3 py-2 text-sm transition-colors",
                   focusedIndex === index ? "bg-gray-100" : "hover:bg-gray-50",
-                  item.type === 'ai' && "border-b border-gray-100"
+                  item.type === 'ai' && "border-b border-lia-border-subtle"
                 )}
               >
                 {item.type === 'ai' ? (
@@ -555,7 +555,7 @@ export function FieldsOfStudyInput({
                     <span>{item.label}</span>
                   </div>
                 ) : (
-                  <span className="text-gray-800 dark:text-gray-200">{item.label}</span>
+                  <span className="lia-text-800 dark:text-lia-text-primary">{item.label}</span>
                 )}
               </button>
             ))}
@@ -568,7 +568,7 @@ export function FieldsOfStudyInput({
           {value.map(field => (
             <Badge
               key={field}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:text-gray-200 border border-gray-200"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle"
             >
               <span>{field}</span>
               <button

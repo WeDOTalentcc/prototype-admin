@@ -32,9 +32,9 @@ export function AddBenefitModal({
 
   return (
     <div className="fixed inset-0 z-overlay flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-xl w-panel-lg p-6">
+      <div className="bg-lia-bg-primary rounded-xl w-panel-lg p-6">
         <h3
-          className="text-lg font-semibold text-gray-800 mb-4"
+          className="text-lg font-semibold lia-text-strong mb-4"
          
         >
           Adicionar Benefício
@@ -45,7 +45,7 @@ export function AddBenefitModal({
             value={benefitName}
             onChange={(e) => onBenefitNameChange(e.target.value)}
             placeholder="Nome do benefício (ex: Auxílio Creche)"
-            className="w-full px-4 py-3 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400"
+            className="w-full px-4 py-3 border border-lia-border-subtle rounded-md text-sm focus:outline-none focus:border-gray-400"
            
             autoFocus
           />
@@ -54,7 +54,7 @@ export function AddBenefitModal({
             value={benefitValue}
             onChange={(e) => onBenefitValueChange(e.target.value)}
             placeholder="Valor (opcional, ex: R$ 500/mês)"
-            className="w-full px-4 py-3 border border-gray-200 rounded-md text-sm focus:outline-none focus:border-gray-400"
+            className="w-full px-4 py-3 border border-lia-border-subtle rounded-md text-sm focus:outline-none focus:border-gray-400"
            
           />
         </div>
@@ -62,7 +62,7 @@ export function AddBenefitModal({
           <Button
             variant="outline"
             onClick={onCancel}
-            className="flex-1 h-10 rounded-md border-gray-200"
+            className="flex-1 h-10 rounded-md border-lia-border-subtle"
           >
             Cancelar
           </Button>

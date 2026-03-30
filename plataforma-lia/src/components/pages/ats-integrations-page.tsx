@@ -242,7 +242,7 @@ export function ATSIntegrationsPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'connected': return <CheckCircle className="w-4 h-4 text-status-success" />
-      case 'connecting': return <RotateCw className="w-4 h-4 text-gray-600 dark:text-gray-400 animate-spin" />
+      case 'connecting': return <RotateCw className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary animate-spin" />
       case 'error': return <XCircle className="w-4 h-4 text-status-error" />
       case 'disabled': return <Minus className="w-4 h-4 text-gray-600" />
       default: return <AlertTriangle className="w-4 h-4 text-status-warning" />
@@ -252,9 +252,9 @@ export function ATSIntegrationsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'connected': return 'bg-status-success/10 text-status-success border-status-success/30'
-      case 'connecting': return 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
+      case 'connecting': return 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary border-lia-border-default dark:border-lia-border-default'
       case 'error': return 'bg-status-error/10 text-status-error border-status-error/30'
-      case 'disabled': return 'bg-gray-50 text-gray-800 dark:text-gray-200 border-gray-200'
+      case 'disabled': return 'bg-gray-50 text-gray-800 dark:text-lia-text-primary border-lia-border-subtle'
       default: return 'bg-status-warning/10 text-status-warning border-status-warning/30'
     }
   }
@@ -264,7 +264,7 @@ export function ATSIntegrationsPage() {
       case 'success': return <CheckCircle2 className="w-4 h-4 text-status-success" />
       case 'warning': return <AlertTriangle className="w-4 h-4 text-status-warning" />
       case 'error': return <XCircle className="w-4 h-4 text-status-error" />
-      default: return <Info className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+      default: return <Info className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
     }
   }
 
@@ -294,13 +294,13 @@ export function ATSIntegrationsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className={textStyles.label}>Registros Sincronizados</p>
-                <p className={`${textStyles.titleXl} text-2xl text-gray-700 dark:text-gray-300`}>
+                <p className={`${textStyles.titleXl} text-2xl text-gray-700 dark:text-lia-text-secondary`}>
                   {atsystems.reduce((acc, sys) => acc + sys.syncedRecords, 0).toLocaleString()}
                 </p>
                 <p className={`${textStyles.caption} text-status-success`}>+47 hoje</p>
               </div>
-              <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center">
-                <Database className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+              <div className="w-12 h-12 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+                <Database className="w-6 h-6 text-gray-600 dark:text-lia-text-tertiary" />
               </div>
             </div>
           </CardContent>
@@ -351,7 +351,7 @@ export function ATSIntegrationsPage() {
               className="h-auto p-4 justify-start gap-3"
               onClick={() => setSelectedView('systems')}
             >
-              <Plus className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <Plus className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
               <div className="text-left">
                 <div className="font-medium">Adicionar Sistema</div>
                 <div className="text-sm text-gray-600">Conectar novo ATS</div>
@@ -393,7 +393,7 @@ export function ATSIntegrationsPage() {
         <CardContent>
           <div className="space-y-4">
             {atsystems.map(system => (
-              <div key={system.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-md">
+              <div key={system.id} className="flex items-center justify-between p-4 border border-lia-border-subtle rounded-md">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center">
                     <Server className="w-6 h-6 text-gray-600" />
@@ -537,7 +537,7 @@ export function ATSIntegrationsPage() {
 
                 {/* Features */}
                 <div>
-                  <p className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">Funcionalidades:</p>
+                  <p className="text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">Funcionalidades:</p>
                   <div className="flex flex-wrap gap-1">
                     {system.features.map(feature => (
                       <Badge key={feature} variant="outline" className="text-xs">
@@ -753,7 +753,7 @@ export function ATSIntegrationsPage() {
               </thead>
               <tbody>
                 {syncLogs.map(log => (
-                  <tr key={log.id} className="border-t border-gray-200">
+                  <tr key={log.id} className="border-t border-lia-border-subtle">
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
                         {getSyncStatusIcon(log.status)}
@@ -761,7 +761,7 @@ export function ATSIntegrationsPage() {
                           log.status === 'success' ? 'bg-status-success/15 text-status-success' :
                           log.status === 'warning' ? 'bg-status-warning/15 text-status-warning' :
                           log.status === 'error' ? 'bg-status-error/15 text-status-error' :
-                          'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                          'bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary'
                         }`}>
                           {log.status === 'success' ? 'Sucesso' :
                            log.status === 'warning' ? 'Aviso' :
@@ -812,7 +812,7 @@ export function ATSIntegrationsPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className={`${textStyles.titleLarge} flex items-center gap-1.5`}>
-                <Link2 className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+                <Link2 className="w-6 h-6 text-gray-600 dark:text-lia-text-tertiary" />
                 Integrações ATS Enterprise
               </h1>
               <p className={textStyles.body}>
@@ -848,7 +848,7 @@ export function ATSIntegrationsPage() {
                 onClick={() => setSelectedView(tab.id as any)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   selectedView === tab.id
-                    ? 'bg-white text-gray-950 dark:text-gray-50'
+                    ? 'bg-lia-bg-primary text-gray-950 dark:text-gray-50'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
@@ -1082,55 +1082,55 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
             <h4 className="text-xs font-medium text-gray-950 dark:text-gray-50 mb-4">Configuração SAP SuccessFactors</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
                   URL do Servidor
                 </label>
                 <input
                   type="url"
                   placeholder="https://api.successfactors.com/v2"
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
                   Company ID
                 </label>
                 <input
                   type="text"
                   placeholder="SODEXO_BRASIL"
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
                   Client ID
                 </label>
                 <input
                   type="text"
                   placeholder="sua-client-id"
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
                   Client Secret
                 </label>
                 <input
                   type="password"
                   placeholder="••••••••••••••••"
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
                 />
               </div>
             </div>
           </div>
 
-          <div className="border border-gray-200 rounded-md p-4">
+          <div className="border border-lia-border-subtle rounded-md p-4">
             <h5 className="font-medium text-gray-950 dark:text-gray-50 mb-3">Módulos para Sincronização</h5>
             <div className="grid grid-cols-2 gap-2">
               {['Recruiting', 'Candidate Profile', 'Job Requisition', 'Interview', 'Offer Letter'].map(module => (
                 <label key={module} className="flex items-center gap-2">
-                  <input type="checkbox" defaultChecked className="rounded-md border-gray-300" />
-                  <span className="text-sm text-gray-800 dark:text-gray-200">{module}</span>
+                  <input type="checkbox" defaultChecked className="rounded-md border-lia-border-default" />
+                  <span className="text-sm text-gray-800 dark:text-lia-text-primary">{module}</span>
                 </label>
               ))}
             </div>
@@ -1144,33 +1144,33 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
             <h4 className="text-xs font-medium text-gray-950 dark:text-gray-50 mb-4">Configuração Workday HCM</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
                   Tenant URL
                 </label>
                 <input
                   type="url"
                   placeholder="https://wd2-impl-services1.workday.com"
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
                   Username
                 </label>
                 <input
                   type="text"
                   placeholder="integration.user@tenant"
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
                   Password
                 </label>
                 <input
                   type="password"
                   placeholder="••••••••••••••••"
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
                 />
               </div>
             </div>
@@ -1184,23 +1184,23 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
             <h4 className="text-xs font-medium text-gray-950 dark:text-gray-50 mb-4">Configuração BambooHR</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
                   Subdomain
                 </label>
                 <input
                   type="text"
                   placeholder="sua-empresa"
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
                   API Key
                 </label>
                 <input
                   type="password"
                   placeholder="••••••••••••••••"
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
                 />
               </div>
             </div>
@@ -1211,7 +1211,7 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
       <div className="flex items-center justify-between p-4 bg-gray-50 rounded-md">
         <div className="flex items-center gap-3">
           {connectionStatus === 'idle' && <Wifi className="w-5 h-5 text-gray-600" />}
-          {connectionStatus === 'testing' && <RefreshCw className="w-5 h-5 text-gray-600 dark:text-gray-400 animate-spin" />}
+          {connectionStatus === 'testing' && <RefreshCw className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary animate-spin" />}
           {connectionStatus === 'success' && <CheckCircle className="w-5 h-5 text-status-success" />}
           {connectionStatus === 'error' && <XCircle className="w-5 h-5 text-status-error" />}
 
@@ -1263,8 +1263,8 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
               key={template.id}
               className={`p-4 border rounded-md cursor-pointer transition-colors ${
                 selectedTemplate === template.id
-                  ? 'border-gray-900 dark:border-gray-50 bg-gray-100 dark:bg-gray-800'
-                  : 'border-gray-200 hover:border-gray-300'
+                  ? 'border-gray-900 dark:border-gray-50 bg-gray-100 dark:bg-lia-bg-secondary'
+                  : 'border-lia-border-subtle hover:border-lia-border-default'
               }`}
               onClick={() => applyTemplate(template.id)}
             >
@@ -1282,11 +1282,11 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Source Fields */}
           <div>
-            <h5 className="font-medium text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
+            <h5 className="font-medium text-gray-800 dark:text-lia-text-primary mb-3 flex items-center gap-2">
               <Server className="w-4 h-4" />
               {system.name} (Origem)
             </h5>
-            <div className="space-y-2 max-h-96 overflow-y-auto border border-gray-200 rounded-md p-3">
+            <div className="space-y-2 max-h-96 overflow-y-auto border border-lia-border-subtle rounded-md p-3">
               {systemFields.map(field => {
                 const isMapped = mappings.some(m => m.sourceField === field.id)
                 return (
@@ -1294,10 +1294,10 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
                     key={field.id}
                     draggable
                     onDragStart={() => handleDragStart(field)}
-                    className={`p-3 border rounded-md cursor-move transition-all ${
+                    className={`p-3 border rounded-md cursor-move transition-colors ${
                       isMapped
                         ? 'border-status-success/30 bg-status-success/10'
-                        : 'border-gray-200 bg-white hover:border-gray-900 dark:hover:border-gray-50 hover:'
+                        : 'border-lia-border-subtle bg-lia-bg-primary hover:border-gray-900 dark:hover:border-gray-50 hover:'
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -1327,11 +1327,11 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
 
           {/* Target Fields */}
           <div>
-            <h5 className="font-medium text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
+            <h5 className="font-medium text-gray-800 dark:text-lia-text-primary mb-3 flex items-center gap-2">
               <Database className="w-4 h-4" />
               Plataforma LIA (Destino)
             </h5>
-            <div className="space-y-2 max-h-96 overflow-y-auto border border-gray-200 rounded-md p-3">
+            <div className="space-y-2 max-h-96 overflow-y-auto border border-lia-border-subtle rounded-md p-3">
               {liaFields.map(field => {
                 const mapping = mappings.find(m => m.targetField === field.id)
                 return (
@@ -1339,10 +1339,10 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
                     key={field.id}
                     onDragOver={handleDragOver}
                     onDrop={(e) => handleDrop(e, field)}
-                    className={`p-3 border rounded-md transition-all min-h-[60px] ${
+                    className={`p-3 border rounded-md transition-colors min-h-[60px] ${
                       mapping
-                        ? 'border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800'
-                        : 'border-dashed border-gray-300 bg-gray-50 hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-100 dark:bg-gray-800'
+                        ? 'border-lia-border-default dark:border-lia-border-default bg-gray-100 dark:bg-lia-bg-secondary'
+                        : 'border-dashed border-lia-border-default bg-gray-50 hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-100 dark:bg-lia-bg-secondary'
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -1352,7 +1352,7 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
                           <p className="font-medium text-gray-950 dark:text-gray-50 text-sm">{field.name}</p>
                           <p className="text-xs text-gray-600">{field.description}</p>
                           {mapping && (
-                            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                            <p className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-1">
                               ← Mapeado de: {mapping.sourceFieldName}
                             </p>
                           )}
@@ -1391,7 +1391,7 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
 
       {/* Mapping Summary */}
       {mappings.length > 0 && (
-        <div className="border border-gray-200 rounded-md p-4">
+        <div className="border border-lia-border-subtle rounded-md p-4">
           <h5 className="font-medium text-gray-950 dark:text-gray-50 mb-3">Resumo do Mapeamento</h5>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div className="text-center">
@@ -1440,9 +1440,9 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
       )}
 
       {/* Instructions */}
-      <div className="bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md p-4">
-        <h5 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Como usar o mapeamento:</h5>
-        <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+      <div className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md p-4">
+        <h5 className="font-medium text-gray-700 dark:text-lia-text-secondary mb-2">Como usar o mapeamento:</h5>
+        <ul className="text-sm text-gray-700 dark:text-lia-text-secondary space-y-1">
           <li>• Arraste campos da origem para os campos de destino correspondentes</li>
           <li>• Use templates pré-configurados para mapeamentos comuns</li>
           <li>• Verifique a porcentagem de confiança de cada mapeamento</li>
@@ -1471,7 +1471,7 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-md w-full max-w-4xl max-h-[90vh] flex flex-col">
+      <div className="bg-lia-bg-primary rounded-md w-full max-w-4xl max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between p-6 border-b">
           <div>
             <h2 className="text-xl font-semibold text-gray-950 dark:text-gray-50">{system.name}</h2>
@@ -1493,7 +1493,7 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
               onClick={() => setSelectedTab(tab.id as any)}
               className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                 selectedTab === tab.id
-                  ? 'border-gray-900 dark:border-gray-50 text-gray-600 dark:text-gray-400 bg-white'
+                  ? 'border-gray-900 dark:border-gray-50 text-gray-600 dark:text-lia-text-tertiary bg-lia-bg-primary'
                   : 'border-transparent text-gray-600 hover:text-gray-900'
               }`}
             >

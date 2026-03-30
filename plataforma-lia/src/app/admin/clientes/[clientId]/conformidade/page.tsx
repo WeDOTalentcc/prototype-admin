@@ -43,7 +43,7 @@ const internalTabs: TabLink[] = [
 
 function LoadingSpinner({ size = 'sm' }: { size?: 'sm' | 'md' | 'lg' }) {
   const sizeClass = size === 'lg' ? 'w-8 h-8' : size === 'md' ? 'w-6 h-6' : 'w-4 h-4'
-  return <Loader2 className={`${sizeClass} animate-spin text-gray-600`} />
+  return <Loader2 className={`${sizeClass} animate-spin lia-text-600`} />
 }
 
 export default function ConformidadePage({ params }: { params: Promise<{ clientId: string }> }) {
@@ -90,7 +90,7 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-1 border-b pb-px -mb-px border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-1 border-b pb-px -mb-px border-lia-border-subtle dark:border-lia-border-subtle">
           {internalTabs.map((tab) => {
             const Icon = tab.icon
             return (
@@ -101,7 +101,7 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
                   "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
                   "border-transparent"
                 )}
-                className="text-gray-500 dark:text-gray-400"
+                className="lia-text-500 dark:text-lia-text-tertiary"
               >
                 <Icon className="w-4 h-4" />
                 {tab.name}
@@ -111,7 +111,7 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
         </div>
         <div className="flex items-center justify-center py-12">
           <LoadingSpinner size="lg" />
-          <span className="ml-3 text-sm text-gray-400 dark:text-gray-500">Carregando dados de conformidade...</span>
+          <span className="ml-3 text-sm lia-text-400 dark:lia-text-500">Carregando dados de conformidade...</span>
         </div>
       </div>
     )
@@ -120,7 +120,7 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
   if (error) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-1 border-b pb-px -mb-px border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-1 border-b pb-px -mb-px border-lia-border-subtle dark:border-lia-border-subtle">
           {internalTabs.map((tab) => {
             const Icon = tab.icon
             return (
@@ -131,7 +131,7 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
                   "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
                   "border-transparent"
                 )}
-                className="text-gray-500 dark:text-gray-400"
+                className="lia-text-500 dark:text-lia-text-tertiary"
               >
                 <Icon className="w-4 h-4" />
                 {tab.name}
@@ -153,7 +153,7 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-1 border-b pb-px -mb-px border-gray-200 dark:border-gray-700">
+      <div className="flex items-center gap-1 border-b pb-px -mb-px border-lia-border-subtle dark:border-lia-border-subtle">
         {internalTabs.map((tab) => {
           const isActive = isTabActive(tab.href)
           const Icon = tab.icon
@@ -164,8 +164,8 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
               className={cn(
                 "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
                 isActive
-                  ? "border-gray-900 dark:border-gray-50 text-gray-900 dark:text-gray-50"
-                  : "border-transparent hover:border-gray-300 dark:hover:border-gray-600 text-gray-500 dark:text-gray-400"
+                  ? "border-gray-900 dark:lia-border-50 lia-text-900 dark:lia-text-50"
+                  : "border-transparent hover:border-lia-border-default dark:hover:border-gray-600 lia-text-500 dark:text-lia-text-tertiary"
               )}
             >
               <Icon className="w-4 h-4" />
@@ -180,8 +180,8 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-gray-400 dark:text-gray-500">Conformidade Geral</p>
-                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">{overallCompliance.toFixed(0)}%</p>
+                <p className="text-sm lia-text-400 dark:lia-text-500">Conformidade Geral</p>
+                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">{overallCompliance.toFixed(0)}%</p>
                 <Progress value={overallCompliance} className="h-2 mt-2 w-24" />
               </div>
               <div className="w-10 h-10 rounded-md bg-status-success/10 dark:bg-status-success/20 flex items-center justify-center">
@@ -195,15 +195,15 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-gray-400 dark:text-gray-500">Controles Ativos</p>
-                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">{implementedControls}/{totalControls}</p>
+                <p className="text-sm lia-text-400 dark:lia-text-500">Controles Ativos</p>
+                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">{implementedControls}/{totalControls}</p>
                 <div className="flex items-center gap-1 mt-1">
                   <TrendingUp className="w-3 h-3 text-status-success" />
                   <span className="text-xs text-status-success">{pendingControls} pendentes</span>
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-md bg-gray-50 dark:bg-gray-800/50 flex items-center justify-center">
-                <CheckCircle2 className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <div className="w-10 h-10 rounded-md bg-gray-50 dark:bg-lia-bg-secondary/50 flex items-center justify-center">
+                <CheckCircle2 className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
               </div>
             </div>
           </CardContent>
@@ -213,11 +213,11 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-gray-400 dark:text-gray-500">Taxa de Consentimento</p>
-                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">{consentRate.toFixed(0)}%</p>
+                <p className="text-sm lia-text-400 dark:lia-text-500">Taxa de Consentimento</p>
+                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">{consentRate.toFixed(0)}%</p>
                 <div className="flex items-center gap-1 mt-1">
-                  <Users className="w-3 h-3 text-gray-600 dark:text-gray-400" />
-                  <span className="text-xs text-gray-400 dark:text-gray-500">{dsrPending} DSRs pendentes</span>
+                  <Users className="w-3 h-3 lia-text-600 dark:text-lia-text-tertiary" />
+                  <span className="text-xs lia-text-400 dark:lia-text-500">{dsrPending} DSRs pendentes</span>
                 </div>
               </div>
               <div className="w-10 h-10 rounded-md bg-wedo-purple/10 dark:bg-wedo-purple/20 flex items-center justify-center">
@@ -231,8 +231,8 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-gray-400 dark:text-gray-500">Incidentes Abertos</p>
-                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">{openIncidents}</p>
+                <p className="text-sm lia-text-400 dark:lia-text-500">Incidentes Abertos</p>
+                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">{openIncidents}</p>
                 <div className="flex items-center gap-1 mt-1">
                   {openIncidents > 0 ? (
                     <>
@@ -265,7 +265,7 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
+              <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
                 Frameworks de Conformidade
               </CardTitle>
               <Link href={`${basePath}/controles`}>
@@ -284,17 +284,17 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
                   return (
                     <div key={key}>
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-800 dark:text-gray-100">{frameworkName}</span>
+                        <span className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">{frameworkName}</span>
                         <Badge variant={stats.compliancePercentage >= 80 ? 'success' : stats.compliancePercentage >= 50 ? 'warning' : 'destructive'}>
                           {stats.compliancePercentage.toFixed(0)}%
                         </Badge>
                       </div>
                       <Progress value={stats.compliancePercentage} className="h-2" />
                       <div className="flex items-center gap-4 mt-1">
-                        <span className="text-xs text-gray-400 dark:text-gray-500">
+                        <span className="text-xs lia-text-400 dark:lia-text-500">
                           {stats.implemented + stats.verified} implementados
                         </span>
-                        <span className="text-xs text-gray-400 dark:text-gray-500">
+                        <span className="text-xs lia-text-400 dark:lia-text-500">
                           {stats.inProgress} em progresso
                         </span>
                       </div>
@@ -304,8 +304,8 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
               </div>
             ) : (
               <div className="text-center py-6">
-                <Shield className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm text-gray-400 dark:text-gray-500">Nenhum framework configurado</p>
+                <Shield className="w-8 h-8 lia-text-400 mx-auto mb-2" />
+                <p className="text-sm lia-text-400 dark:lia-text-500">Nenhum framework configurado</p>
               </div>
             )}
           </CardContent>
@@ -314,7 +314,7 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
+              <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
                 LGPD - Resumo
               </CardTitle>
               <Link href={`${basePath}/lgpd`}>
@@ -339,16 +339,16 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
                   </div>
                 </div>
                 
-                <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+                <div className="pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">Taxa de Retenção de Dados</span>
-                    <span className="text-sm font-medium text-gray-800 dark:text-gray-100">{lgpdStats.dataRetentionCompliance?.toFixed(0) || 0}%</span>
+                    <span className="text-sm lia-text-500 dark:text-lia-text-tertiary">Taxa de Retenção de Dados</span>
+                    <span className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">{lgpdStats.dataRetentionCompliance?.toFixed(0) || 0}%</span>
                   </div>
                   <Progress value={lgpdStats.dataRetentionCompliance || 0} className="h-2" />
                 </div>
 
                 {lgpdStats.lastAuditDate && (
-                  <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
+                  <div className="flex items-center gap-2 text-xs lia-text-400 dark:lia-text-500">
                     <Calendar className="w-3 h-3" />
                     Última auditoria: {formatDate(lgpdStats.lastAuditDate)}
                   </div>
@@ -356,8 +356,8 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
               </div>
             ) : (
               <div className="text-center py-6">
-                <Lock className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm text-gray-400 dark:text-gray-500">Dados LGPD não disponíveis</p>
+                <Lock className="w-8 h-8 lia-text-400 mx-auto mb-2" />
+                <p className="text-sm lia-text-400 dark:lia-text-500">Dados LGPD não disponíveis</p>
               </div>
             )}
           </CardContent>
@@ -367,7 +367,7 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
       {(upcomingReviews > 0 || overdueReviews > 0) && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
+            <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
               Revisões Agendadas
             </CardTitle>
           </CardHeader>
@@ -387,14 +387,14 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
                 </div>
               )}
               {upcomingReviews > 0 && (
-                <div className="p-4 rounded-md bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-600 flex-1">
+                <div className="p-4 rounded-md bg-gray-50 dark:bg-lia-bg-secondary/50 border border-lia-border-default dark:border-lia-border-default flex-1">
                   <div className="flex items-center gap-3">
-                    <Calendar className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                    <Calendar className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                     <div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-50">
+                      <p className="text-sm font-medium lia-text-900 dark:lia-text-50">
                         {upcomingReviews} revisões agendadas
                       </p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Próximos 30 dias</p>
+                      <p className="text-xs lia-text-600 dark:text-lia-text-tertiary mt-1">Próximos 30 dias</p>
                     </div>
                   </div>
                 </div>
@@ -407,36 +407,36 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
       {biasSummary && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
+            <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
               Auditoria de Bias - IA
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 rounded-md bg-gray-50 dark:bg-gray-900">
+              <div className="p-4 rounded-md bg-gray-50 dark:bg-lia-bg-primary">
                 <div className="flex items-center gap-3">
-                  <Activity className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  <Activity className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                   <div>
-                    <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{biasSummary.totalAudits || 0}</p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500">Auditorias Realizadas</p>
+                    <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">{biasSummary.totalAudits || 0}</p>
+                    <p className="text-xs lia-text-400 dark:lia-text-500">Auditorias Realizadas</p>
                   </div>
                 </div>
               </div>
-              <div className="p-4 rounded-md bg-gray-50 dark:bg-gray-900">
+              <div className="p-4 rounded-md bg-gray-50 dark:bg-lia-bg-primary">
                 <div className="flex items-center gap-3">
                   <CheckCircle2 className="w-5 h-5 text-status-success" />
                   <div>
-                    <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{biasSummary.passedAudits || 0}</p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500">Aprovadas</p>
+                    <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">{biasSummary.passedAudits || 0}</p>
+                    <p className="text-xs lia-text-400 dark:lia-text-500">Aprovadas</p>
                   </div>
                 </div>
               </div>
-              <div className="p-4 rounded-md bg-gray-50 dark:bg-gray-900">
+              <div className="p-4 rounded-md bg-gray-50 dark:bg-lia-bg-primary">
                 <div className="flex items-center gap-3">
                   <AlertTriangle className="w-5 h-5 text-status-warning" />
                   <div>
-                    <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{biasSummary.concernAudits || 0}</p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500">Com Alertas</p>
+                    <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">{biasSummary.concernAudits || 0}</p>
+                    <p className="text-xs lia-text-400 dark:lia-text-500">Com Alertas</p>
                   </div>
                 </div>
               </div>

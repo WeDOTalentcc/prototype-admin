@@ -100,20 +100,20 @@ interface StageTransitionActionsModalProps {
 
 const COLOR_CLASSES = {
   cyan: {
-    bg: 'bg-gray-50 dark:bg-gray-800',
-    border: 'border-gray-200 dark:border-gray-700',
-    text: 'text-gray-700 dark:text-gray-300',
-    icon: 'text-gray-600 dark:text-gray-400',
-    selectedBg: 'bg-gray-100 dark:bg-gray-800',
+    bg: 'bg-gray-50 dark:bg-lia-bg-secondary',
+    border: 'border-lia-border-subtle dark:border-lia-border-subtle',
+    text: 'text-gray-700 dark:text-lia-text-secondary',
+    icon: 'text-gray-600 dark:text-lia-text-tertiary',
+    selectedBg: 'bg-gray-100 dark:bg-lia-bg-secondary',
     selectedBorder: 'border-gray-900 dark:border-gray-50',
   },
   blue: {
-    bg: 'bg-gray-50 dark:bg-gray-800',
-    border: 'border-gray-200 dark:border-gray-700',
-    text: 'text-gray-700 dark:text-gray-300',
-    icon: 'text-gray-600 dark:text-gray-400',
-    selectedBg: 'bg-gray-50 dark:bg-gray-700',
-    selectedBorder: 'border-gray-900 dark:border-gray-300',
+    bg: 'bg-gray-50 dark:bg-lia-bg-secondary',
+    border: 'border-lia-border-subtle dark:border-lia-border-subtle',
+    text: 'text-gray-700 dark:text-lia-text-secondary',
+    icon: 'text-gray-600 dark:text-lia-text-tertiary',
+    selectedBg: 'bg-gray-50 dark:bg-lia-bg-elevated',
+    selectedBorder: 'border-gray-900 dark:border-lia-border-default',
   },
   green: {
     bg: 'bg-status-success/10',
@@ -141,7 +141,7 @@ const COLOR_CLASSES = {
   },
   gray: {
     bg: 'bg-gray-50',
-    border: 'border-gray-200',
+    border: 'border-lia-border-subtle',
     text: 'text-gray-800',
     icon: 'text-gray-600',
     selectedBg: 'bg-gray-50',
@@ -558,7 +558,7 @@ export function StageTransitionActionsModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col p-0">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle bg-gray-50/50">
           <div className="flex items-center gap-3">
             <div className={cn(
               "w-8 h-8 rounded-full flex items-center justify-center",
@@ -578,7 +578,7 @@ export function StageTransitionActionsModal({
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-md text-gray-600 hover:text-gray-800 hover:bg-gray-100 transition-all">
+          <button onClick={onClose} className="p-2 rounded-md text-gray-600 hover:text-gray-800 hover:bg-gray-100 transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -586,10 +586,10 @@ export function StageTransitionActionsModal({
         {/* Main Content - 2 Column Layout */}
         <div className="flex-1 flex overflow-hidden">
           {/* Left Panel - Form */}
-          <div className="w-1/2 border-r border-gray-100 overflow-y-auto">
+          <div className="w-1/2 border-r border-lia-border-subtle overflow-y-auto">
             <div className="p-5 space-y-5">
               {/* Candidate Info */}
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md border border-gray-100">
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md border border-lia-border-subtle">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={candidate.avatar} />
@@ -654,10 +654,10 @@ export function StageTransitionActionsModal({
                         key={action.id}
                         onClick={() => setSelectedAction(action.id)}
                         className={cn(
-                          "flex items-center gap-3 p-3 rounded-md border transition-all text-left",
+                          "flex items-center gap-3 p-3 rounded-md border transition-colors text-left",
                           isSelected
                             ? cn(colors.selectedBg, colors.selectedBorder, "ring-1", action.color === 'cyan' ? "ring-gray-900/20" : action.color === 'red' ? "ring-red-300" : action.color === 'green' ? "ring-emerald-300" : "ring-gray-300")
-                            : cn(colors.bg, colors.border, "hover:border-gray-300")
+                            : cn(colors.bg, colors.border, "hover:border-lia-border-default")
                         )}
                       >
                         <div className={cn(
@@ -672,7 +672,7 @@ export function StageTransitionActionsModal({
                               {action.name}
                             </span>
                             {action.recommended && (
-                              <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50 text-micro px-1.5 py-0">
+                              <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-900 dark:text-gray-50 text-micro px-1.5 py-0">
                                 <Brain className="h-3 w-3 mr-0.5 text-wedo-cyan" />
                                 Recomendado
                               </Badge>
@@ -697,10 +697,10 @@ export function StageTransitionActionsModal({
                     <button
                       onClick={() => setChannel('email')}
                       className={cn(
-                        "flex items-center gap-2 p-3 rounded-md border transition-all",
+                        "flex items-center gap-2 p-3 rounded-md border transition-colors",
                         channel === 'email'
                           ? 'border-gray-900 bg-gray-50 text-gray-900'
-                          : 'border-gray-200 hover:border-gray-300 text-gray-800'
+                          : 'border-lia-border-subtle hover:border-lia-border-default text-gray-800'
                       )}
                     >
                       <Mail className="w-4 h-4" />
@@ -712,10 +712,10 @@ export function StageTransitionActionsModal({
                     <button
                       onClick={() => setChannel('whatsapp')}
                       className={cn(
-                        "flex items-center gap-2 p-3 rounded-md border transition-all",
+                        "flex items-center gap-2 p-3 rounded-md border transition-colors",
                         channel === 'whatsapp'
                           ? 'border-status-success/30 bg-status-success/10 text-status-success'
-                          : 'border-gray-200 hover:border-gray-300 text-gray-800'
+                          : 'border-lia-border-subtle hover:border-lia-border-default text-gray-800'
                       )}
                     >
                       <MessageSquare className="w-4 h-4" />
@@ -727,10 +727,10 @@ export function StageTransitionActionsModal({
                     <button
                       onClick={() => setChannel('both')}
                       className={cn(
-                        "flex items-center gap-2 p-3 rounded-md border transition-all",
+                        "flex items-center gap-2 p-3 rounded-md border transition-colors",
                         channel === 'both'
                           ? 'border-gray-900 bg-gray-50 text-gray-900'
-                          : 'border-gray-200 hover:border-gray-300 text-gray-800'
+                          : 'border-lia-border-subtle hover:border-lia-border-default text-gray-800'
                       )}
                     >
                       <div className="flex items-center -space-x-1">
@@ -795,7 +795,7 @@ export function StageTransitionActionsModal({
               {needsMessageComposition ? (
                 <>
                   {/* LIA Info Card */}
-                  <div className="flex items-start gap-2 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-md border border-gray-300 dark:border-gray-600">
+                  <div className="flex items-start gap-2 p-3 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md border border-lia-border-default dark:border-lia-border-default">
                     <Brain className="w-4 h-4 text-wedo-cyan mt-0.5 shrink-0" />
                     <div>
                       <p className="text-xs text-gray-900 dark:text-gray-50 font-medium">
@@ -843,7 +843,7 @@ export function StageTransitionActionsModal({
                     <div className="relative">
                       {/* Regenerating Overlay */}
                       {isRegenerating && (
-                        <div className="absolute inset-0 bg-white/80 rounded-md flex items-center justify-center z-10">
+                        <div className="absolute inset-0 bg-lia-bg-primary/80 rounded-md flex items-center justify-center z-10">
                           <div className="flex items-center gap-2">
                             <Loader2 className="h-4 w-4 animate-spin text-gray-600" />
                             <span className="text-xs text-gray-600 font-medium">LIA regenerando mensagem...</span>
@@ -852,7 +852,7 @@ export function StageTransitionActionsModal({
                       )}
 
                       <div className={cn(
-                        "space-y-3 transition-all",
+                        "space-y-3 transition-colors",
                         showPulse && "animate-pulse"
                       )}>
                         {(channel === 'email' || channel === 'both' || selectedAction === 'triagem_wsi' || selectedAction === 'agendar_entrevista') && (
@@ -895,12 +895,12 @@ export function StageTransitionActionsModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-white">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-lia-border-subtle bg-lia-bg-primary">
           <Button 
             variant="outline" 
             onClick={onClose} 
             disabled={isLoading}
-            className="h-9 px-4 text-xs font-medium border border-gray-300 text-gray-700 hover:bg-gray-50"
+            className="h-9 px-4 text-xs font-medium border border-lia-border-default text-gray-700 hover:bg-gray-50"
           >
             Cancelar
           </Button>

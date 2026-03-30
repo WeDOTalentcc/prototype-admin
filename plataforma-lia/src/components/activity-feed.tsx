@@ -109,11 +109,11 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
       case 'urgent':
         return 'bg-status-error/10 text-status-error border-status-error/30 dark:bg-status-error/20 dark:text-status-error dark:border-status-error/30'
       case 'normal':
-        return 'bg-gray-100 text-gray-700 border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600'
+        return 'bg-gray-100 text-gray-700 border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-default'
       case 'low':
-        return 'bg-gray-50 text-gray-800 dark:text-gray-200 border-gray-200 dark:bg-gray-900/20 dark:border-gray-800'
+        return 'bg-gray-50 text-gray-800 dark:text-lia-text-primary border-lia-border-subtle dark:bg-lia-bg-primary/20'
       default:
-        return 'bg-gray-50 text-gray-800 dark:text-gray-200 border-gray-200'
+        return 'bg-gray-50 text-gray-800 dark:text-lia-text-primary border-lia-border-subtle'
     }
   }
 
@@ -182,7 +182,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
 
   const getScoreBadge = (score: number) => {
     if (score >= 80) return { label: 'Forte', className: 'bg-status-success/15 text-status-success border-status-success/30' }
-    if (score >= 60) return { label: 'Bom', className: 'bg-gray-100 text-gray-700 border-gray-300' }
+    if (score >= 60) return { label: 'Bom', className: 'bg-gray-100 lia-text-base border-lia-border-default' }
     if (score >= 40) return { label: 'Moderado', className: 'bg-status-warning/15 text-status-warning border-status-warning/30' }
     return { label: 'Fraco', className: 'bg-status-error/15 text-status-error border-status-error/30' }
   }
@@ -197,7 +197,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
       case 'missing':
         return <X className="w-3 h-3 text-status-error" />
       default:
-        return <AlertCircle className="w-3 h-3 text-gray-400" />
+        return <AlertCircle className="w-3 h-3 lia-text-secondary" />
     }
   }
 
@@ -212,7 +212,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
       case 'missing':
         return 'text-status-error'
       default:
-        return 'text-gray-600'
+        return 'lia-text-base'
     }
   }
 
@@ -251,7 +251,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
     return (
       <div className={`flex items-center justify-center py-8 ${className}`}>
         <div className="flex flex-col items-center gap-2">
-          <Loader2 className="w-5 h-5 animate-spin text-gray-600" />
+          <Loader2 className="w-5 h-5 animate-spin lia-text-base" />
           <p className={textStyles.bodySmall}>Carregando atividades...</p>
         </div>
       </div>
@@ -262,7 +262,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
     return (
       <div className={`flex items-center justify-center py-8 ${className}`}>
         <div className="text-center">
-          <AlertCircle className="w-5 h-5 text-gray-600 mx-auto mb-2" />
+          <AlertCircle className="w-5 h-5 lia-text-base mx-auto mb-2" />
           <p className={textStyles.bodySmall}>{error}</p>
         </div>
       </div>
@@ -273,7 +273,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
     return (
       <div className={`flex items-center justify-center py-8 ${className}`}>
         <div className="text-center">
-          <Clock className="w-5 h-5 text-gray-600 mx-auto mb-2" />
+          <Clock className="w-5 h-5 lia-text-base mx-auto mb-2" />
           <p className={textStyles.bodySmall}>Nenhuma atividade registrada ainda</p>
           {candidateId && (
             <p className={`${textStyles.description} mt-1`}>
@@ -290,7 +290,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
       {activities.map((activity, index) => (
         <div
           key={activity.id}
-          className="rounded-md p-2 border border-gray-200 dark:border-gray-700 transition-all cursor-pointer"
+          className="rounded-md p-2 border border-lia-border-subtle dark:border-lia-border-subtle transition-colors cursor-pointer"
           style={{backgroundColor: getActivityCardBackground(activity.activity_type)}}
         >
           <div className="flex items-start gap-2">
@@ -306,10 +306,10 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
             <div className="flex-1 min-w-0">
               {/* Header */}
               <div className="flex items-start justify-between gap-2 mb-1">
-                <h4 className={`${textStyles.title} dark:text-gray-100`}>
+                <h4 className={`${textStyles.title} dark:text-lia-text-primary`}>
                   {activity.title}
                 </h4>
-                <span className={`${textStyles.description} dark:text-gray-500 flex-shrink-0`}>
+                <span className={`${textStyles.description} flex-shrink-0`}>
                   {formatRelativeTime(activity.created_at)}
                 </span>
               </div>
@@ -318,7 +318,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
               {activity.activity_type === 'voice_screening' && activity.extra_data && (
                 <div className="space-y-1.5">
                   {/* Candidate + Job */}
-                  <p className={`${textStyles.bodySmall} dark:text-gray-400`}>
+                  <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>
                     {activity.target?.name} • {activity.extra_data.screening_id ? 'Backend Sênior' : 'Vaga'}
                   </p>
 
@@ -338,19 +338,19 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
                       {activity.extra_data.overall_score !== undefined && (
                         <div className="flex items-center gap-1">
                           <span className={textStyles.label}>Geral:</span>
-                          <span className={`${textStyles.label} text-gray-950 dark:text-gray-50`}>{activity.extra_data.overall_score}/100</span>
+                          <span className={`${textStyles.label} text-gray-950`}>{activity.extra_data.overall_score}/100</span>
                         </div>
                       )}
                       {activity.extra_data.tech_score !== undefined && (
                         <div className="flex items-center gap-1">
                           <span className={textStyles.label}>Técnico:</span>
-                          <span className={`${textStyles.label} text-gray-950 dark:text-gray-50`}>{activity.extra_data.tech_score}/100</span>
+                          <span className={`${textStyles.label} text-gray-950`}>{activity.extra_data.tech_score}/100</span>
                         </div>
                       )}
                       {activity.extra_data.comm_score !== undefined && (
                         <div className="flex items-center gap-1">
                           <span className={textStyles.label}>Comunicação:</span>
-                          <span className={`${textStyles.label} text-gray-950 dark:text-gray-50`}>{activity.extra_data.comm_score}/100</span>
+                          <span className={`${textStyles.label} text-gray-950`}>{activity.extra_data.comm_score}/100</span>
                         </div>
                       )}
                     </div>
@@ -358,7 +358,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
 
                   {/* Summary */}
                   {activity.summary && (
-                    <p className={`${textStyles.bodySmall} dark:text-gray-400 line-clamp-2`}>
+                    <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary line-clamp-2`}>
                       {activity.summary}
                     </p>
                   )}
@@ -368,7 +368,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
                     <div className="flex items-center gap-1 flex-wrap">
                       <span className={textStyles.label}>Pontos fortes:</span>
                       {activity.extra_data.key_strengths.slice(0, 3).map((strength: string, idx: number) => (
-                        <Badge key={idx} variant="secondary" className={`${badgeStyles.default} dark:bg-gray-800 dark:text-gray-300`}>
+                        <Badge key={idx} variant="secondary" className={`${badgeStyles.default} dark:bg-lia-bg-secondary dark:text-lia-text-secondary`}>
                           {strength}
                         </Badge>
                       ))}
@@ -398,7 +398,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
                       const score = Number(activity.extra_data.overall_score) || 0
                       return (
                         <Badge className={`${
-                          score >= 70 ? badgeStyles.success :
+ score >= 70 ? badgeStyles.success :
                           score >= 55 ? badgeStyles.warning :
                           badgeStyles.error
                         } border-0`}>
@@ -416,7 +416,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
 
                   {/* Summary */}
                   {activity.summary && (
-                    <p className={`${textStyles.bodySmall} dark:text-gray-400`}>
+                    <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>
                       {activity.summary}
                     </p>
                   )}
@@ -461,12 +461,12 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
               {activity.activity_type !== 'voice_screening' && activity.activity_type !== 'rubric_evaluation' && activity.activity_type !== 'screening_analysis' && (
                 <div className="space-y-1">
                   {activity.summary && (
-                    <p className={`${textStyles.bodySmall} dark:text-gray-400`}>
+                    <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>
                       {activity.summary}
                     </p>
                   )}
                   {activity.description && (
-                    <p className={`${textStyles.bodySmall} text-gray-800 dark:text-gray-200 line-clamp-2`}>
+                    <p className={`${textStyles.bodySmall} text-gray-800 dark:text-lia-text-primary line-clamp-2`}>
                       {activity.description}
                     </p>
                   )}

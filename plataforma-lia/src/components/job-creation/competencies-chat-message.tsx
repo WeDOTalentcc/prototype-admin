@@ -61,7 +61,7 @@ const SOURCE_CONFIG: Record<'market_benchmark' | 'company_history' | 'platform_c
   platform_config: {
     icon: Settings,
     label: '⚙️ configurações da plataforma',
-    className: 'text-gray-600 dark:text-gray-400'
+    className: 'text-gray-600 dark:text-lia-text-tertiary'
   }
 }
 
@@ -94,10 +94,10 @@ function WeightStars({ weight }: { weight: number }) {
         <Star
           key={i}
           className={cn(
-            "h-3 w-3",
+ "h-3 w-3",
             i <= weight 
               ? "fill-amber-400 text-status-warning" 
-              : "text-gray-300 dark:text-gray-600"
+              : "text-gray-300"
           )}
         />
       ))}
@@ -110,10 +110,10 @@ function TechnicalSkillCard({ skill }: { skill: TechnicalSkillSuggestion }) {
   const sourceConfig = SOURCE_CONFIG[skill.source]
 
   return (
-    <div className="p-2.5 rounded-md bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 space-y-2">
+    <div className="p-2.5 rounded-md bg-gray-50 dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle space-y-2">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          <Code className="h-3.5 w-3.5 text-gray-600 dark:text-gray-400 flex-shrink-0" />
+          <Code className="h-3.5 w-3.5 text-gray-600 dark:text-lia-text-tertiary flex-shrink-0" />
           <span className="text-xs font-medium truncate">{skill.name}</span>
           {skill.required && (
             <Badge variant="outline" className="text-micro h-4 px-1.5 border-status-error/30 bg-status-error/10 text-status-error dark:border-status-error/30 dark:bg-status-error/30 dark:text-status-error">
@@ -140,7 +140,7 @@ function TechnicalSkillCard({ skill }: { skill: TechnicalSkillSuggestion }) {
       </div>
       
       {skill.weightJustification && (
-        <p className="text-micro text-muted-foreground italic pl-1 border-l-2 border-gray-300 dark:border-gray-600">
+        <p className="text-micro text-muted-foreground italic pl-1 border-l-2 border-lia-border-default dark:border-lia-border-default">
           {skill.weightJustification}
         </p>
       )}
@@ -152,7 +152,7 @@ function BehavioralCompetencyCard({ competency }: { competency: BehavioralCompet
   const sourceConfig = SOURCE_CONFIG[competency.source]
 
   return (
-    <div className="p-2.5 rounded-md bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 space-y-2">
+    <div className="p-2.5 rounded-md bg-gray-50 dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle space-y-2">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <Brain className="h-3.5 w-3.5 text-wedo-purple flex-shrink-0" />
@@ -194,15 +194,15 @@ export function CompetenciesChatMessage({
   if (isLoading) {
     return (
       <div className="flex items-start gap-3 max-w-[85%]">
-        <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-gray-300 dark:border-gray-600">
+        <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-lia-border-default dark:border-lia-border-default">
           <AvatarImage src="/images/lia-avatar.png" alt="LIA" />
           <AvatarFallback className="bg-gradient-to-br from-gray-100 dark:from-gray-800 to-wedo-cyan-dark text-white text-xs font-medium">
             LIA
           </AvatarFallback>
         </Avatar>
-        <div className="rounded-2xl rounded-tl-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4">
+        <div className="rounded-xl rounded-tl-sm bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle p-4">
           <div className="flex items-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin text-gray-600 dark:text-gray-400" />
+            <Loader2 className="h-4 w-4 animate-spin text-gray-600 dark:text-lia-text-tertiary" />
             <span className="text-sm text-muted-foreground">Analisando competências...</span>
           </div>
         </div>
@@ -216,7 +216,7 @@ export function CompetenciesChatMessage({
 
   return (
     <div className="flex items-start gap-3 max-w-[90%]">
-      <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-gray-300 dark:border-gray-600">
+      <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-lia-border-default dark:border-lia-border-default">
         <AvatarImage src="/images/lia-avatar.png" alt="LIA" />
         <AvatarFallback className="bg-gradient-to-br from-gray-100 dark:from-gray-800 to-wedo-cyan-dark text-white text-xs font-medium">
           LIA
@@ -224,7 +224,7 @@ export function CompetenciesChatMessage({
       </Avatar>
 
       <div className="flex-1 space-y-3">
-        <div className="rounded-2xl rounded-tl-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 space-y-4">
+        <div className="rounded-xl rounded-tl-sm bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle p-4 space-y-4">
           <p className="text-xs text-muted-foreground">
             Com base em benchmark de mercado, histórico da empresa e configurações de competências, sugiro as seguintes competências com pesos atribuídos:
           </p>
@@ -232,7 +232,7 @@ export function CompetenciesChatMessage({
           {technicalSkills.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center gap-1.5 text-xs font-medium">
-                <Code className="h-3.5 w-3.5 text-gray-600 dark:text-gray-400" />
+                <Code className="h-3.5 w-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                 <span>Competências Técnicas</span>
                 <Badge variant="secondary" className="text-micro h-4 px-1.5">
                   {technicalSkills.length}

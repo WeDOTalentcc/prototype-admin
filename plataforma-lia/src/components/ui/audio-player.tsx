@@ -114,7 +114,7 @@ export function AudioPlayer({
   return (
     <div
       className={cn(
-        "flex items-center gap-2 px-3 py-2 rounded-md bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 min-w-sidebar-content max-w-[280px] font-['Open_Sans',sans-serif]",
+ "flex items-center gap-2 px-3 py-2 rounded-md bg-gray-50 dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle min-w-sidebar-content max-w-[280px] font-['Open_Sans',sans-serif]",
         className
       )}
     >
@@ -123,10 +123,10 @@ export function AudioPlayer({
         onClick={togglePlayPause}
         disabled={!isLoaded}
         className={cn(
-          "flex-shrink-0 w-8 h-8 rounded-md flex items-center justify-center transition-colors",
+ "flex-shrink-0 w-8 h-8 rounded-md flex items-center justify-center transition-colors",
           isLoaded
-            ? "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-300"
-            : "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+            ? "bg-gray-900 text-white hover:bg-gray-700 dark:hover:bg-gray-300"
+            : "bg-gray-300 text-gray-500 dark:text-lia-text-tertiary cursor-not-allowed"
         )}
         aria-label={isPlaying ? "Pausar áudio" : "Reproduzir áudio"}
       >
@@ -141,18 +141,18 @@ export function AudioPlayer({
         <div
           ref={progressBarRef}
           onClick={handleProgressClick}
-          className="h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full cursor-pointer relative overflow-hidden"
+          className="h-1.5 bg-gray-200 dark:bg-lia-bg-elevated rounded-full cursor-pointer relative overflow-hidden"
           role="progressbar"
           aria-valuenow={currentTime}
           aria-valuemin={0}
           aria-valuemax={duration}
         >
           <div
-            className="absolute inset-y-0 left-0 bg-gray-900 dark:bg-gray-100 rounded-full transition-[width] duration-100"
+            className="absolute inset-y-0 left-0 bg-gray-900 rounded-full transition-[width] duration-100"
             style={{width: `${progress}%`}}
           />
         </div>
-        <div className="flex justify-between text-micro font-['Inter',sans-serif] text-gray-400 dark:text-gray-500 tabular-nums">
+        <div className="flex justify-between text-micro font-['Inter',sans-serif] text-gray-400 tabular-nums">
           <span>{formatTime(currentTime)}</span>
           <span>{formatTime(duration)}</span>
         </div>

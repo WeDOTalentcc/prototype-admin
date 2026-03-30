@@ -173,21 +173,21 @@ export function EventsSection() {
   // Funções utilitárias
   const getTypeIcon = (type: string) => {
     const icons = {
-      interview: <Video className="w-4 h-4 text-gray-600 dark:text-gray-400" />,
-      feedback: <MessageSquare className="w-4 h-4 text-gray-600 dark:text-gray-400" />,
-      publication: <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400" />,
-      offer: <Send className="w-4 h-4 text-gray-600 dark:text-gray-400" />,
-      review: <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400" />,
-      reminder: <Bell className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+      interview: <Video className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />,
+      feedback: <MessageSquare className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />,
+      publication: <FileText className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />,
+      offer: <Send className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />,
+      review: <FileText className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />,
+      reminder: <Bell className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
     }
-    return icons[type as keyof typeof icons] || <Calendar className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+    return icons[type as keyof typeof icons] || <Calendar className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
   }
 
   const getPriorityBadge = (priority: string) => {
     const badges = {
       high: <Badge variant="outline" className="text-xs border-status-error/30 text-status-error dark:border-status-error/30 dark:text-status-error">Urgente</Badge>,
       medium: <Badge variant="outline" className="text-xs border-status-warning/30 text-status-warning dark:border-status-warning/30 dark:text-status-warning">Média</Badge>,
-      low: <Badge variant="outline" className="text-xs border-gray-200 text-gray-800 dark:border-gray-700 dark:text-gray-200">Baixa</Badge>
+      low: <Badge variant="outline" className="text-xs border-lia-border-subtle text-gray-800 dark:border-lia-border-subtle dark:text-lia-text-primary">Baixa</Badge>
     }
     return badges[priority as keyof typeof badges]
   }
@@ -195,20 +195,20 @@ export function EventsSection() {
   const renderEventCard = (event: typeof morningEvents[number], index: number) => (
     <div
       key={event.id}
-      className={`flex items-start gap-3 p-4 rounded-md hover:transition-all duration-200 cursor-pointer border ${
-        event.isSuggested
- ? 'bg-gray-100 dark:bg-gray-800 border-gray-300'
-          : 'bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600'
+      className={`flex items-start gap-3 p-4 rounded-md transition-colors duration-200 cursor-pointer border ${
+ event.isSuggested
+ ? 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-default'
+          : 'bg-gray-50 dark:bg-lia-bg-elevated border-lia-border-subtle dark:border-lia-border-default'
       }`}
       onClick={() => setSelectedEvent(selectedEvent === event.id ? null : event.id)}
     >
       <div className={`w-10 h-10 rounded-md flex items-center justify-center border ${
-        event.isSuggested
- ? 'bg-gray-100 dark:bg-gray-800 border-gray-300'
-          : 'bg-white dark:bg-gray-600 border-gray-200 dark:border-gray-500'
+ event.isSuggested
+ ? 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-default'
+          : 'bg-white border-lia-border-subtle dark:border-lia-border-medium'
       }`}>
         {event.isSuggested ? (
-          <BrainCircuit className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+          <BrainCircuit className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
         ) : (
           getTypeIcon(event.type)
         )}
@@ -217,37 +217,37 @@ export function EventsSection() {
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between mb-1">
           <div className="flex items-center gap-2">
-            <h4 className="font-medium text-gray-950 dark:text-gray-50 text-sm leading-tight">
+            <h4 className="font-medium text-gray-950 text-sm leading-tight">
               {event.title}
             </h4>
             {event.isSuggested && (
- <Badge variant="outline" className="text-xs border-gray-300 text-gray-600">
+ <Badge variant="outline" className="text-xs border-lia-border-default lia-text-base">
                 LIA
               </Badge>
             )}
             {getPriorityBadge(event.priority)}
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0 font-mono">
+            <span className="text-xs text-gray-500 dark:text-lia-text-tertiary flex-shrink-0 font-mono">
               {event.time}
             </span>
             {isExpanded && (
-              <ChevronRight className={`w-3 h-3 text-gray-600 transition-transform ${selectedEvent === event.id ? 'rotate-90' : ''}`} />
+              <ChevronRight className={`w-3 h-3 lia-text-base transition-transform ${selectedEvent === event.id ? 'rotate-90' : ''}`} />
             )}
           </div>
         </div>
 
-        <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 leading-relaxed">
+        <p className="text-xs text-gray-600 dark:text-lia-text-tertiary mb-2 leading-relaxed">
           {event.subtitle}
         </p>
 
         <div className="flex items-center justify-between mb-2">
-          <div className="text-xs text-gray-500 dark:text-gray-400">
+          <div className="text-xs text-gray-500 dark:text-lia-text-tertiary">
             {event.details.split('•')[1]?.trim()}
           </div>
 
           {event.hasReminder && (
- <div className="flex items-center gap-1 text-gray-600 text-xs">
+ <div className="flex items-center gap-1 lia-text-base text-xs">
               <Bell className="w-3 h-3" />
               <span>Lembrete</span>
             </div>
@@ -261,7 +261,7 @@ export function EventsSection() {
               key={actionIndex}
               size="sm"
               variant="outline"
-              className="h-7 px-2 text-xs border-gray-300 dark:border-gray-500 hover:border-gray-400 dark:hover:border-gray-400 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 transition-all duration-200"
+              className="h-7 px-2 text-xs border-lia-border-default dark:border-lia-border-medium hover:border-gray-400 dark:hover:border-gray-400 text-gray-800 dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
             >
               <action.icon className="w-3 h-3 mr-1" />
               {action.label}
@@ -273,20 +273,20 @@ export function EventsSection() {
   )
 
   return (
-    <div className="w-full transition-all duration-300">
-      <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+    <div className="w-full transition-colors duration-300">
+      <Card className="border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-xl font-semibold text-gray-950 dark:text-gray-50">
+              <CardTitle className="text-xl font-semibold text-gray-950">
                 Próximas Atividades e Tarefas
               </CardTitle>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-sm text-gray-500 dark:text-lia-text-tertiary mt-1">
                 {totalTasks} tarefas • {urgentTasks} urgentes • {suggestedTasks} sugeridas pela LIA
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-xs border-gray-200 dark:border-gray-600 px-2 py-1">
+              <Badge variant="outline" className="text-xs border-lia-border-subtle dark:border-lia-border-default px-2 py-1">
                 <Clock className="w-3 h-3 mr-1" />
                 Hoje
               </Badge>
@@ -294,7 +294,7 @@ export function EventsSection() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 w-7 p-0 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                className="h-7 w-7 p-0 text-gray-500 hover:text-gray-700 dark:text-lia-text-tertiary dark:hover:text-gray-200"
                 onClick={() => setIsExpanded(!isExpanded)}
               >
                 {isExpanded ? (
@@ -304,7 +304,7 @@ export function EventsSection() {
                 )}
               </Button>
 
-              <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+              <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-gray-700 dark:text-lia-text-tertiary dark:hover:text-gray-200">
                 <Calendar className="w-3 h-3" />
               </Button>
             </div>
@@ -315,12 +315,12 @@ export function EventsSection() {
           {/* Sessão Manhã */}
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-md flex items-center justify-center">
+              <div className="w-8 h-8 bg-gray-100 dark:bg-lia-bg-elevated rounded-md flex items-center justify-center">
                 <span className="text-sm">🌅</span>
               </div>
               <div>
-                <h3 className="font-medium text-gray-950 dark:text-gray-50 text-sm">Sessão Manhã</h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <h3 className="font-medium text-gray-950 text-sm">Sessão Manhã</h3>
+                <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
                   Organizado pela LIA • {morningEvents.length} atividades • {morningEvents.filter(e => e.isSuggested).length} sugeridas
                 </p>
               </div>
@@ -333,12 +333,12 @@ export function EventsSection() {
           {/* Sessão Tarde */}
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-md flex items-center justify-center">
+              <div className="w-8 h-8 bg-gray-100 dark:bg-lia-bg-elevated rounded-md flex items-center justify-center">
                 <span className="text-sm">☀️</span>
               </div>
               <div>
-                <h3 className="font-medium text-gray-950 dark:text-gray-50 text-sm">Sessão Tarde</h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <h3 className="font-medium text-gray-950 text-sm">Sessão Tarde</h3>
+                <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
                   Organizado pela LIA • {afternoonEvents.length} atividades • {afternoonEvents.filter(e => e.isSuggested).length} sugeridas
                 </p>
               </div>
@@ -351,7 +351,7 @@ export function EventsSection() {
           {/* Detalhes do evento selecionado */}
           {selectedEvent && isExpanded && (
             <div
-              className="border-t border-gray-200 dark:border-gray-700 pt-4 overflow-hidden"
+              className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-4 overflow-hidden"
               style={{animation: 'slideInUp 0.3s ease-out'}}
             >
                 {(() => {
@@ -359,56 +359,56 @@ export function EventsSection() {
                   if (!event) return null
 
                   return (
-                    <div className="bg-gray-50 dark:bg-gray-700 rounded-md p-4 border border-gray-200 dark:border-gray-600">
+                    <div className="bg-gray-50 dark:bg-lia-bg-elevated rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-default">
                       <div className="flex items-start gap-3 mb-3">
                         <div className={`w-10 h-10 rounded-md flex items-center justify-center border ${
-                          event.isSuggested
- ? 'bg-gray-100 dark:bg-gray-800 border-gray-300'
-                            : 'bg-white dark:bg-gray-600 border-gray-200 dark:border-gray-500'
+ event.isSuggested
+ ? 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-default'
+                            : 'bg-white border-lia-border-subtle dark:border-lia-border-medium'
                         }`}>
                           {event.isSuggested ? (
- <BrainCircuit className="w-4 h-4 text-gray-600" />
+ <BrainCircuit className="w-4 h-4 lia-text-base" />
                           ) : (
                             getTypeIcon(event.type)
                           )}
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-semibold text-gray-950 dark:text-gray-50">
+                            <h3 className="font-semibold text-gray-950">
                               {event.title}
                             </h3>
                             {event.isSuggested && (
- <Badge variant="outline" className="text-xs border-gray-300 text-gray-600">
+ <Badge variant="outline" className="text-xs border-lia-border-default lia-text-base">
                                 Sugerido pela LIA
                               </Badge>
                             )}
                             {getPriorityBadge(event.priority)}
                           </div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                          <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">
                             {event.subtitle}
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          <p className="text-xs text-gray-500 dark:text-lia-text-tertiary mt-1">
                             {event.details}
                           </p>
                         </div>
                       </div>
 
                       {event.candidateInfo && (
-                        <div className="bg-white dark:bg-gray-600 rounded-md p-3 mb-3 border border-gray-200 dark:border-gray-500">
-                          <h4 className="font-medium text-gray-950 dark:text-gray-50 mb-2 flex items-center gap-2">
+                        <div className="bg-white rounded-md p-3 mb-3 border border-lia-border-subtle dark:border-lia-border-medium">
+                          <h4 className="font-medium text-gray-950 mb-2 flex items-center gap-2">
                             <User className="w-4 h-4" />
                             Candidato
                           </h4>
                           <div className="text-sm space-y-1">
                             <div>
-                              <span className="text-gray-500 dark:text-gray-400">Nome:</span>
-                              <p className="font-medium text-gray-950 dark:text-gray-50">
+                              <span className="text-gray-500 dark:text-lia-text-tertiary">Nome:</span>
+                              <p className="font-medium text-gray-950">
                                 {event.candidateInfo.name}
                               </p>
                             </div>
                             <div>
-                              <span className="text-gray-500 dark:text-gray-400">Experiência:</span>
-                              <p className="font-medium text-gray-950 dark:text-gray-50">
+                              <span className="text-gray-500 dark:text-lia-text-tertiary">Experiência:</span>
+                              <p className="font-medium text-gray-950">
                                 {event.candidateInfo.experience}
                               </p>
                             </div>
@@ -421,7 +421,7 @@ export function EventsSection() {
                           <Button
                             key={actionIndex}
                             size="sm"
-                            className="gap-2 bg-gray-900 hover:bg-gray-800 text-white border-0 dark:bg-gray-100 dark:hover:bg-gray-200 dark:text-gray-900"
+                            className="gap-2 bg-gray-900 hover:bg-gray-800 text-white border-0 dark:hover:bg-gray-200"
                           >
                             <action.icon className="w-4 h-4" />
                             {action.label}

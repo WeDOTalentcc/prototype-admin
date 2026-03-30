@@ -95,7 +95,7 @@ export function WSIScoreCard({
           <Badge
             className="border border-lia-border-default bg-lia-bg-primary text-lia-text-secondary"
           >
-            <Minus className="h-3 w-3 mr-1 text-gray-700 dark:text-gray-300" />
+            <Minus className="h-3 w-3 mr-1 text-gray-700 dark:text-lia-text-secondary" />
             Aguardando
           </Badge>
         )
@@ -129,8 +129,8 @@ export function WSIScoreCard({
               <Brain className="h-6 w-6 text-wedo-purple" />
             </div>
             <div>
-              <div className="text-sm text-[var(--lia-text-tertiary)]">Avaliação WSI</div>
-              <h4 className="font-semibold text-[var(--lia-text-primary)]">
+              <div className="text-sm text-lia-text-tertiary">Avaliação WSI</div>
+              <h4 className="font-semibold text-lia-text-primary">
                 {data.candidate_name}
               </h4>
               <span className={`inline-flex items-center px-1.5 py-0.5 text-micro font-medium rounded-full ${classification.bg} ${classification.color}`}>
@@ -143,7 +143,7 @@ export function WSIScoreCard({
             <div className={`text-2xl font-bold ${scoreDisplay.text}`}>
               {percentage}%
             </div>
-            <div className="text-xs text-[var(--lia-text-tertiary)]">
+            <div className="text-xs text-lia-text-tertiary">
               {data.overall_score}/{data.max_score} pts
             </div>
           </div>
@@ -151,14 +151,14 @@ export function WSIScoreCard({
 
         <div className="mt-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-[var(--lia-text-secondary)]">Score Geral</span>
+            <span className="text-sm text-lia-text-secondary">Score Geral</span>
             {getRecommendationBadge(data.recommendation)}
           </div>
           <div
             className="relative h-2 rounded-full overflow-hidden bg-lia-bg-tertiary"
           >
             <div
-              className="absolute inset-y-0 left-0 rounded-full transition-all duration-500 bg-lia-text-primary"
+              className="absolute inset-y-0 left-0 rounded-full transition-[width,height] duration-500 bg-lia-text-primary"
               style={{width: `${percentage}%`}}
             />
           </div>
@@ -166,7 +166,7 @@ export function WSIScoreCard({
 
         {!compact && data.dimensions && data.dimensions.length > 0 && (
           <div className="mt-4 space-y-2">
-            <div className="text-sm font-medium text-[var(--lia-text-primary)]">
+            <div className="text-sm font-medium text-lia-text-primary">
               Dimensões Avaliadas
             </div>
             {data.dimensions.slice(0, 4).map((dimension, index) => {
@@ -200,7 +200,7 @@ export function WSIScoreCard({
 
         {!compact && data.strengths && data.strengths.length > 0 && (
           <div className="mt-4">
-            <div className="text-sm font-medium mb-2 text-[var(--lia-text-primary)]">
+            <div className="text-sm font-medium mb-2 text-lia-text-primary">
               Pontos Fortes
             </div>
             <div className="space-y-1">
@@ -219,7 +219,7 @@ export function WSIScoreCard({
 
         {!compact && data.development_areas && data.development_areas.length > 0 && (
           <div className="mt-3">
-            <div className="text-sm font-medium mb-2 text-[var(--lia-text-primary)]">
+            <div className="text-sm font-medium mb-2 text-lia-text-primary">
               Áreas de Desenvolvimento
             </div>
             <div className="space-y-1">
@@ -228,7 +228,7 @@ export function WSIScoreCard({
                   key={index}
                   className="flex items-start gap-2 text-xs px-2 py-1 rounded-md bg-lia-bg-tertiary text-lia-text-secondary"
                 >
-                  <TrendingUp className="h-3 w-3 mt-0.5 shrink-0 text-gray-700 dark:text-gray-300" />
+                  <TrendingUp className="h-3 w-3 mt-0.5 shrink-0 text-gray-700 dark:text-lia-text-secondary" />
                   <span>{area}</span>
                 </div>
               ))}
@@ -240,10 +240,10 @@ export function WSIScoreCard({
           <div
             className="mt-4 p-3 rounded-md bg-lia-bg-tertiary"
           >
-            <div className="text-xs mb-1 text-[var(--lia-text-tertiary)]">
+            <div className="text-xs mb-1 text-lia-text-tertiary">
               Resumo da Avaliação
             </div>
-            <p className="text-sm line-clamp-3 text-[var(--lia-text-secondary)]">
+            <p className="text-sm line-clamp-3 text-lia-text-secondary">
               {data.summary}
             </p>
           </div>

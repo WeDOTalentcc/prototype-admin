@@ -211,7 +211,7 @@ export function MessageComposer({
     <div className={className}>
       {successMessage && (
         <div className="mb-3 px-3 py-2 rounded-md flex items-center gap-2 bg-gray-200/30 border border-wedo-cyan/30 text-wedo-cyan-dark">
-          <Check className="w-4 h-4 text-gray-700" />
+          <Check className="w-4 h-4 lia-text-base" />
           <span className="text-xs">{successMessage}</span>
         </div>
       )}
@@ -226,10 +226,10 @@ export function MessageComposer({
       {showTemplateSelector && (
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
-            <label className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+            <label className="text-xs font-medium lia-text-base uppercase tracking-wide">
               Templates
             </label>
-            <span className="text-micro flex items-center gap-1 text-gray-700">
+            <span className="text-micro flex items-center gap-1 lia-text-base">
               <Brain className="w-3 h-3 text-wedo-cyan" />
               LIA disponível
             </span>
@@ -237,29 +237,29 @@ export function MessageComposer({
           <div className="space-y-1.5 max-h-[150px] overflow-y-auto">
             {templatesLoading ? (
               <div className="flex items-center justify-center py-4">
-                <Loader2 className="w-4 h-4 animate-spin text-gray-700" />
-                <span className="text-xs text-gray-500 ml-2">Carregando templates...</span>
+                <Loader2 className="w-4 h-4 animate-spin lia-text-base" />
+                <span className="text-xs lia-text-secondary ml-2">Carregando templates...</span>
               </div>
             ) : filteredTemplates.length === 0 ? (
               <div className="py-3 text-center">
-                <span className="text-xs text-gray-500">Nenhum template disponível</span>
+                <span className="text-xs lia-text-secondary">Nenhum template disponível</span>
               </div>
             ) : (
               filteredTemplates.slice(0, 5).map((template) => (
                 <button
                   key={template.id}
                   onClick={() => handleTemplateSelect(template)}
-                  className={`w-full p-2.5 rounded-md border text-left transition-all ${
-                    selectedTemplateId === template.id
+                  className={`w-full p-2.5 rounded-md border text-left transition-colors ${
+ selectedTemplateId === template.id
                       ? 'border-gray-500 bg-gray-50'
-                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      : 'border-lia-border-subtle hover:border-lia-border-default hover:bg-gray-50'
                   }`}
                 >
-                  <div className="text-xs font-medium text-gray-800">
+                  <div className="text-xs font-medium lia-text-strong">
                     {template.name}
                   </div>
                   {template.subject && channel === 'email' && (
-                    <div className="text-micro text-gray-500 mt-0.5 truncate">
+                    <div className="text-micro lia-text-secondary mt-0.5 truncate">
                       Assunto: {template.subject}
                     </div>
                   )}
@@ -274,7 +274,7 @@ export function MessageComposer({
         {channel === 'email' && (
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+              <label className="text-xs font-medium lia-text-base uppercase tracking-wide">
                 Assunto
               </label>
               {showVariableSelector && (
@@ -282,7 +282,7 @@ export function MessageComposer({
                   onSelect={insertVariableAtCursor}
                   trigger={
                     <button 
-                      className="text-micro flex items-center gap-1 px-2 py-1 rounded-full hover:bg-gray-100 transition-colors text-gray-600"
+                      className="text-micro flex items-center gap-1 px-2 py-1 rounded-full hover:bg-gray-100 transition-colors lia-text-base"
                       onFocus={() => setFocusedField('subject')}
                     >
                       <span>Inserir Variável</span>
@@ -297,7 +297,7 @@ export function MessageComposer({
               value={subject}
               onChange={(e) => handleSubjectChange(e.target.value)}
               onFocus={() => setFocusedField('subject')}
-              className="w-full px-3 py-2 text-xs border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 focus:outline-none"
+              className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 focus:outline-none"
              
               placeholder="Assunto do email..."
             />
@@ -306,7 +306,7 @@ export function MessageComposer({
 
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+            <label className="text-xs font-medium lia-text-base uppercase tracking-wide">
               {channel === 'email' ? 'Mensagem' : 'Mensagem WhatsApp'}
             </label>
             {showVariableSelector && (
@@ -314,7 +314,7 @@ export function MessageComposer({
                 onSelect={insertVariableAtCursor}
                 trigger={
                   <button 
-                    className="text-micro flex items-center gap-1 px-2 py-1 rounded-full hover:bg-gray-100 transition-colors text-gray-600"
+                    className="text-micro flex items-center gap-1 px-2 py-1 rounded-full hover:bg-gray-100 transition-colors lia-text-base"
                     onFocus={() => setFocusedField('message')}
                   >
                     <span>Inserir Variável</span>
@@ -329,7 +329,7 @@ export function MessageComposer({
             onChange={(e) => handleMessageChange(e.target.value)}
             onFocus={() => setFocusedField('message')}
             rows={8}
-            className="w-full px-3 py-2 text-xs border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 focus:outline-none resize-none"
+            className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 focus:outline-none resize-none"
            
             placeholder={channel === 'email' ? 'Escreva sua mensagem...' : 'Escreva sua mensagem WhatsApp...'}
           />
@@ -337,24 +337,24 @@ export function MessageComposer({
       </div>
 
       {showLiaAdjust && (
-        <Card className="mt-4 rounded-md border border-gray-200 bg-white">
+        <Card className="mt-4 rounded-md border border-lia-border-subtle bg-lia-bg-primary">
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-200/30">
                 <Brain className="w-4 h-4 text-wedo-cyan" />
               </div>
               <div className="flex-1">
-                <span className="text-base-ui font-semibold text-gray-900">
+                <span className="text-base-ui font-semibold lia-text-strong">
                   Ajustar com a LIA
                 </span>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs lia-text-secondary">
                   Ajustes são aplicados apenas neste envio
                 </p>
               </div>
               <select
                 value={toneStyle}
                 onChange={(e) => setToneStyle(e.target.value as ToneStyle)}
-                className="text-xs border border-gray-200 rounded-md px-2 py-1.5 bg-white focus:outline-none focus:ring-1 focus:ring-gray-400"
+                className="text-xs border border-lia-border-subtle rounded-md px-2 py-1.5 bg-lia-bg-primary focus:outline-none focus:ring-1 focus:ring-gray-400"
                
               >
                 {TONE_OPTIONS.map(opt => (
@@ -371,7 +371,7 @@ export function MessageComposer({
                 onKeyDown={(e) => e.key === 'Enter' && !isGenerating && handleAdjustWithLIA()}
                 placeholder="Ex: Torne mais formal e adicione urgência..."
                 disabled={isGenerating}
-                className="flex-1 px-3 py-2 text-xs border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 focus:outline-none disabled:bg-gray-50 disabled:text-gray-400"
+                className="flex-1 px-3 py-2 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 focus:outline-none disabled:bg-gray-50 disabled:lia-text-secondary"
                
               />
               <Button
@@ -412,18 +412,18 @@ export function MessageComposer({
 
       {aiResultModal?.show && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-md bg-white">
-            <div className="border-b border-gray-100 p-4">
+          <Card className="w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-md bg-lia-bg-primary">
+            <div className="border-b border-lia-border-subtle p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
                     <Brain className="w-5 h-5 text-wedo-cyan" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-gray-900">
+                    <h3 className="text-sm font-semibold lia-text-strong">
                       Ajustes da LIA
                     </h3>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs lia-text-secondary">
                       Revise as alterações sugeridas
                     </p>
                   </div>
@@ -435,7 +435,7 @@ export function MessageComposer({
             </div>
             <CardContent className="p-4 space-y-4 overflow-y-auto" style={{maxHeight: 'calc(90vh - 180px)'}}>
               <div>
-                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+                <label className="block text-xs font-medium lia-text-secondary uppercase tracking-wide mb-2">
                   Alterações Realizadas
                 </label>
                 <div className="flex flex-wrap gap-1.5">
@@ -450,20 +450,20 @@ export function MessageComposer({
               
               {channel === 'email' && aiResultModal.newSubject && (
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+                  <label className="block text-xs font-medium lia-text-secondary uppercase tracking-wide mb-2">
                     Novo Assunto
                   </label>
-                  <div className="p-3 bg-gray-50 rounded-md text-xs text-gray-900">
+                  <div className="p-3 bg-gray-50 rounded-md text-xs lia-text-strong">
                     {aiResultModal.newSubject}
                   </div>
                 </div>
               )}
 
               <div>
-                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+                <label className="block text-xs font-medium lia-text-secondary uppercase tracking-wide mb-2">
                   Nova Mensagem
                 </label>
-                <div className="p-3 bg-gray-50 rounded-md text-xs text-gray-900 whitespace-pre-wrap max-h-[300px] overflow-y-auto">
+                <div className="p-3 bg-gray-50 rounded-md text-xs lia-text-strong whitespace-pre-wrap max-h-[300px] overflow-y-auto">
                   {aiResultModal.newBody}
                 </div>
               </div>
@@ -477,13 +477,13 @@ export function MessageComposer({
                 </div>
               </div>
             </CardContent>
-            <div className="border-t border-gray-100 p-4 flex items-center justify-end gap-3">
+            <div className="border-t border-lia-border-subtle p-4 flex items-center justify-end gap-3">
               <Button variant="outline" onClick={handleCancelAIAdjustment} className="rounded-md px-4 py-2 text-xs">
                 Cancelar
               </Button>
               <Button 
                 onClick={handleConfirmAIAdjustment}
-                className="rounded-md px-4 py-2 text-xs gap-1.5 bg-gray-900" style={{color: 'white'}}
+                className="rounded-md px-4 py-2 text-xs gap-1.5 bg-gray-900 text-white"
               >
                 <Check className="w-3.5 h-3.5" />
                 Aplicar Ajustes

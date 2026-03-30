@@ -210,11 +210,11 @@ export function EmailTemplateFormModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col rounded-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 dark:text-gray-50">
-            <Mail className="w-5 h-5 text-gray-900 dark:text-gray-50" />
+          <DialogTitle className="flex items-center gap-2">
+            <Mail className="w-5 h-5 text-gray-900" />
             {isEditing ? "Editar Template" : "Novo Template de Email"}
           </DialogTitle>
-          <DialogDescription className="dark:text-gray-400">
+          <DialogDescription className="dark:text-lia-text-tertiary">
             {isEditing
               ? "Atualize as informações do template de email"
               : "Crie um novo template de email para comunicação com candidatos"}
@@ -283,8 +283,8 @@ export function EmailTemplateFormModal({
                 <div className="space-y-2 h-full">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="body_html">Corpo do Email (HTML) *</Label>
-                    <div className="flex items-center gap-2 text-xs text-gray-600">
-                      <Info className="w-3 h-3 text-gray-600" />
+                    <div className="flex items-center gap-2 text-xs lia-text-base">
+                      <Info className="w-3 h-3 lia-text-base" />
                       Use {`{{variavel}}`} para inserir variáveis
                     </div>
                   </div>
@@ -304,16 +304,16 @@ export function EmailTemplateFormModal({
                   <CardContent className="pt-4">
                     <div className="space-y-4">
                       <div className="p-3 bg-gray-50 rounded-md">
-                        <span className="text-sm font-medium text-gray-600">Assunto:</span>
-                        <p className="text-gray-950 dark:text-gray-50">{renderPreview(formData.subject)}</p>
+                        <span className="text-sm font-medium lia-text-base">Assunto:</span>
+                        <p className="text-gray-950">{renderPreview(formData.subject)}</p>
                       </div>
                       <div className="border rounded-md overflow-hidden">
-                        <div className="bg-gray-100 px-4 py-2 text-sm font-medium text-gray-600 border-b flex items-center gap-2">
+                        <div className="bg-gray-100 px-4 py-2 text-sm font-medium lia-text-base border-b flex items-center gap-2">
                           <Eye className="w-4 h-4" />
                           Preview com dados de exemplo
                         </div>
                         <div
-                          className="p-4 bg-white prose prose-sm max-w-none"
+                          className="p-4 bg-lia-bg-primary prose prose-sm max-w-none"
                           dangerouslySetInnerHTML={{
                             __html: renderPreview(formData.body_html),
                           }}
@@ -345,7 +345,7 @@ export function EmailTemplateFormModal({
 
                   <Card>
                     <CardContent className="pt-4">
-                      <h4 className="font-medium text-gray-950 dark:text-gray-50 mb-3">
+                      <h4 className="font-medium text-gray-950 mb-3">
                         Variáveis disponíveis (clique para copiar):
                       </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -356,30 +356,30 @@ export function EmailTemplateFormModal({
                             className="flex items-center justify-between p-2 rounded-md border hover:bg-gray-50 transition-colors text-left"
                           >
                             <div>
-                              <code className="text-sm font-mono text-gray-900 dark:text-gray-50">
+                              <code className="text-sm font-mono text-gray-900">
                                 {`{{${variable.name}}}`}
                               </code>
-                              <p className="text-xs text-gray-600 mt-0.5">
+                              <p className="text-xs lia-text-base mt-0.5">
                                 {variable.description}
                               </p>
                             </div>
-                            <Copy className="w-4 h-4 text-gray-600" />
+                            <Copy className="w-4 h-4 lia-text-base" />
                           </button>
                         ))}
                       </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800">
+                  <Card className="border-lia-border-default dark:border-lia-border-default bg-gray-100 dark:bg-lia-bg-secondary">
                     <CardContent className="pt-4">
-                      <h4 className="font-medium text-gray-900 dark:text-gray-50 mb-2">
+                      <h4 className="font-medium text-gray-900 mb-2">
                         Dados de exemplo para preview:
                       </h4>
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         {Object.entries(MOCK_DATA).map(([key, value]) => (
                           <div key={key} className="flex">
-                            <span className="font-mono text-gray-900 dark:text-gray-50">{key}:</span>
-                            <span className="text-gray-800 dark:text-gray-200 ml-2 truncate">{value}</span>
+                            <span className="font-mono text-gray-900">{key}:</span>
+                            <span className="text-gray-800 dark:text-lia-text-primary ml-2 truncate">{value}</span>
                           </div>
                         ))}
                       </div>
@@ -391,12 +391,12 @@ export function EmailTemplateFormModal({
           </Tabs>
         </div>
 
-        <DialogFooter className="mt-4 border-t border-gray-200 bg-gray-50 dark:bg-gray-900 dark:border-gray-700 pt-4">
-          <Button variant="outline" onClick={onClose} disabled={saving} className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
+        <DialogFooter className="mt-4 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle pt-4">
+          <Button variant="outline" onClick={onClose} disabled={saving} className="dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-700">
             <X className="w-4 h-4 mr-2" />
             Cancelar
           </Button>
-          <Button onClick={handleSubmit} disabled={!isValid || saving} className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200">
+          <Button onClick={handleSubmit} disabled={!isValid || saving} className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200">
             {saving ? (
               <>
                 <RefreshCw className="w-4 h-4 mr-2 animate-spin" />

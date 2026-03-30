@@ -98,43 +98,43 @@ export function CandidateActivitiesTab({
 
   const renderExpandedDetails = (activity: ActivityData & { details: NonNullable<ActivityData['details']> }) => {
     return (
-      <div className="px-3 pb-3 border-t border-gray-100 dark:border-gray-700 bg-white/50 dark:bg-gray-900/50">
+      <div className="px-3 pb-3 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-white/50 dark:bg-lia-bg-primary/50">
         {activity.type === 'email-sent' && (
           <div className="mt-3 space-y-3">
-            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden">
-              <div className="bg-gray-50 dark:bg-gray-800 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+            <div className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md overflow-hidden">
+              <div className="bg-gray-50 dark:bg-lia-bg-secondary px-4 py-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
                 <div className="space-y-1.5">
                   <div className="flex items-center gap-2 text-xs">
-                    <span className="text-gray-500 dark:text-gray-400 w-12">De:</span>
-                    <span className="text-gray-800 dark:text-gray-200 font-medium">{activity.details.from}</span>
+                    <span className="text-gray-500 dark:text-lia-text-tertiary w-12">De:</span>
+                    <span className="text-gray-800 dark:text-lia-text-primary font-medium">{activity.details.from}</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs">
-                    <span className="text-gray-500 dark:text-gray-400 w-12">Para:</span>
-                    <span className="text-gray-800 dark:text-gray-200">{activity.details.to}</span>
+                    <span className="text-gray-500 dark:text-lia-text-tertiary w-12">Para:</span>
+                    <span className="text-gray-800 dark:text-lia-text-primary">{activity.details.to}</span>
                   </div>
                   {activity.details.cc && (
                     <div className="flex items-center gap-2 text-xs">
-                      <span className="text-gray-500 dark:text-gray-400 w-12">Cc:</span>
-                      <span className="text-gray-800 dark:text-gray-200">{activity.details.cc}</span>
+                      <span className="text-gray-500 dark:text-lia-text-tertiary w-12">Cc:</span>
+                      <span className="text-gray-800 dark:text-lia-text-primary">{activity.details.cc}</span>
                     </div>
                   )}
                   <div className="flex items-center gap-2 text-xs">
-                    <span className="text-gray-500 dark:text-gray-400 w-12">Assunto:</span>
-                    <span className="text-gray-800 dark:text-gray-200 font-semibold">{activity.details.subject}</span>
+                    <span className="text-gray-500 dark:text-lia-text-tertiary w-12">Assunto:</span>
+                    <span className="text-gray-800 dark:text-lia-text-primary font-semibold">{activity.details.subject}</span>
                   </div>
                 </div>
               </div>
               <div className="px-4 py-3">
-                <div className="text-xs text-gray-800 dark:text-gray-200 whitespace-pre-line leading-relaxed max-h-48 overflow-y-auto">
+                <div className="text-xs text-gray-800 dark:text-lia-text-primary whitespace-pre-line leading-relaxed max-h-48 overflow-y-auto">
                   {activity.details.body}
                 </div>
               </div>
               {activity.details.attachments && activity.details.attachments.length > 0 && (
-                <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-                  <p className="text-micro text-gray-500 dark:text-gray-400 mb-1">Anexos:</p>
+                <div className="px-4 py-2 bg-gray-50 dark:bg-lia-bg-secondary border-t border-lia-border-subtle dark:border-lia-border-subtle">
+                  <p className="text-micro text-gray-500 dark:text-lia-text-tertiary mb-1">Anexos:</p>
                   <div className="flex flex-wrap gap-1">
                     {activity.details.attachments.map((att: string, i: number) => (
-                      <Badge key={i} variant="outline" className="text-micro px-1.5 py-0 bg-white dark:bg-gray-800">
+                      <Badge key={i} variant="outline" className="text-micro px-1.5 py-0 bg-white dark:bg-lia-bg-secondary">
                         📎 {att}
                       </Badge>
                     ))}
@@ -151,7 +151,7 @@ export function CandidateActivitiesTab({
             {activity.details.suggestedTimes && (
               <div className="flex flex-wrap gap-1">
                 {activity.details.suggestedTimes.map((t: string, i: number) => (
-                  <Badge key={i} className="text-micro px-2 py-0.5 bg-gray-100 text-gray-700 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                  <Badge key={i} className="text-micro px-2 py-0.5 bg-gray-100 lia-text-base dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle">
                     📅 {t}
                   </Badge>
                 ))}
@@ -162,8 +162,8 @@ export function CandidateActivitiesTab({
 
         {activity.type === 'interview-scheduled' && (
           <div className="mt-3 space-y-3">
-            <div className="bg-white dark:bg-gray-900 p-3 rounded-md border border-gray-200 dark:border-gray-700">
-              <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
+            <div className="bg-white dark:bg-lia-bg-primary p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+              <h5 className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary mb-2 flex items-center gap-1">
                 <Calendar className="w-3 h-3 text-wedo-purple" />
                 {activity.details.interviewType}
                 {activity.details.stage && (
@@ -171,20 +171,20 @@ export function CandidateActivitiesTab({
                 )}
               </h5>
               <div className="grid grid-cols-2 gap-2 mb-3">
-                <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
+                <div className="bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md">
                   <p className={textStyles.bodySmall}>Data e Hora</p>
-                  <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{activity.details.dateTime}</p>
+                  <p className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary">{activity.details.dateTime}</p>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
+                <div className="bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md">
                   <p className={textStyles.bodySmall}>Duração</p>
-                  <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{activity.details.duration}</p>
+                  <p className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary">{activity.details.duration}</p>
                 </div>
               </div>
-              <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md mb-3">
+              <div className="bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md mb-3">
                 <p className={`${textStyles.bodySmall} mb-1`}>📍 Local</p>
-                <p className="text-xs font-medium text-gray-800 dark:text-gray-200">{activity.details.location}</p>
+                <p className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">{activity.details.location}</p>
                 {activity.details.meetLink && (
-                  <a href={activity.details.meetLink} target="_blank" rel="noopener noreferrer" className="text-xs text-gray-700 dark:text-gray-300 hover:underline flex items-center gap-1 mt-1">
+                  <a href={activity.details.meetLink} target="_blank" rel="noopener noreferrer" className="text-xs text-gray-700 dark:text-lia-text-secondary hover:underline flex items-center gap-1 mt-1">
                     <ExternalLink className="w-3 h-3" />
                     Acessar link da reunião
                   </a>
@@ -192,15 +192,15 @@ export function CandidateActivitiesTab({
               </div>
               {activity.details.interviewers && (
                 <div className="mb-3">
-                  <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">👥 Entrevistadores</p>
+                  <p className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary mb-1">👥 Entrevistadores</p>
                   <div className="space-y-1">
                     {activity.details.interviewers.map((int: Record<string, unknown> | string, i: number) => (
-                      <div key={i} className="flex items-center gap-2 text-xs bg-gray-50 dark:bg-gray-800 p-1.5 rounded-md">
-                        <div className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-micro font-medium text-gray-600 dark:text-gray-400">
+                      <div key={i} className="flex items-center gap-2 text-xs bg-gray-50 dark:bg-lia-bg-secondary p-1.5 rounded-md">
+                        <div className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-micro font-medium text-gray-600 dark:text-lia-text-tertiary">
                           {typeof int === 'string' ? int.charAt(0) : String(int.name ?? '').charAt(0)}
                         </div>
-                        <span className="font-medium text-gray-800 dark:text-gray-200">{typeof int === 'string' ? int : String(int.name ?? '')}</span>
-                        {typeof int !== 'string' && int.role ? <span className="text-gray-500 dark:text-gray-400">- {String(int.role)}</span> : null}
+                        <span className="font-medium text-gray-800 dark:text-lia-text-primary">{typeof int === 'string' ? int : String(int.name ?? '')}</span>
+                        {typeof int !== 'string' && int.role ? <span className="text-gray-500 dark:text-lia-text-tertiary">- {String(int.role)}</span> : null}
                       </div>
                     ))}
                   </div>
@@ -212,32 +212,32 @@ export function CandidateActivitiesTab({
 
         {activity.type === 'lia-evaluation' && (
           <div className="mt-3 space-y-3">
-            <div className="bg-white dark:bg-gray-900 p-3 rounded-md border border-gray-200 dark:border-gray-700">
-              <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
+            <div className="bg-white dark:bg-lia-bg-primary p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+              <h5 className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary mb-2 flex items-center gap-1">
                 <Brain className="w-3 h-3 text-wedo-cyan" />
                 Avaliação Automática da LIA
               </h5>
               <div className="grid grid-cols-4 gap-2 mb-3">
-                <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
-                  <p className="text-base font-bold text-gray-800 dark:text-gray-200">{formatScorePercent(activity.details.technicalScore)}</p>
+                <div className="text-center p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                  <p className="text-base font-bold text-gray-800 dark:text-lia-text-primary">{formatScorePercent(activity.details.technicalScore)}</p>
                   <p className={textStyles.bodySmall}>Técnico</p>
                 </div>
-                <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
-                  <p className="text-base font-bold text-gray-800 dark:text-gray-200">{formatScorePercent(activity.details.culturalFit)}</p>
+                <div className="text-center p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                  <p className="text-base font-bold text-gray-800 dark:text-lia-text-primary">{formatScorePercent(activity.details.culturalFit)}</p>
                   <p className={textStyles.bodySmall}>Fit Cultural</p>
                 </div>
-                <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
-                  <p className="text-base font-bold text-gray-800 dark:text-gray-200">{formatScorePercent(activity.details.experience)}</p>
+                <div className="text-center p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                  <p className="text-base font-bold text-gray-800 dark:text-lia-text-primary">{formatScorePercent(activity.details.experience)}</p>
                   <p className={textStyles.bodySmall}>Experiência</p>
                 </div>
-                <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
-                  <p className="text-base font-bold text-gray-800 dark:text-gray-200">{formatScorePercent(activity.details.softSkills)}</p>
+                <div className="text-center p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                  <p className="text-base font-bold text-gray-800 dark:text-lia-text-primary">{formatScorePercent(activity.details.softSkills)}</p>
                   <p className={textStyles.bodySmall}>Soft Skills</p>
                 </div>
               </div>
               {activity.details.strengths && (
                 <div className="mb-2">
-                  <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">Pontos Fortes</p>
+                  <p className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary mb-1">Pontos Fortes</p>
                   <div className="flex flex-wrap gap-1">
                     {activity.details.strengths.map((s: string, i: number) => (
                       <Badge key={i} className="text-micro px-1.5 py-0 bg-status-success/10 text-status-success border-status-success/30">
@@ -247,9 +247,9 @@ export function CandidateActivitiesTab({
                   </div>
                 </div>
               )}
-              <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
-                <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">Recomendação</p>
-                <p className="text-xs text-gray-600 dark:text-gray-400">{activity.details.recommendation}</p>
+              <div className="bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md">
+                <p className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary mb-1">Recomendação</p>
+                <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">{activity.details.recommendation}</p>
               </div>
             </div>
           </div>
@@ -257,28 +257,28 @@ export function CandidateActivitiesTab({
 
         {activity.type === 'job-application' && (
           <div className="mt-3 space-y-3">
-            <div className="bg-white dark:bg-gray-900 p-3 rounded-md border border-gray-200 dark:border-gray-700">
-              <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
+            <div className="bg-white dark:bg-lia-bg-primary p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+              <h5 className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary mb-2 flex items-center gap-1">
                 <FileText className="w-3 h-3 text-status-success" />
                 Candidatura Recebida
                 <Badge className="ml-2 text-micro px-1.5 py-0 bg-status-success/10 text-status-success">{activity.details.source}</Badge>
               </h5>
               <div className="grid grid-cols-2 gap-2 mb-3">
-                <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
+                <div className="bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md">
                   <p className={textStyles.bodySmall}>ID da Aplicação</p>
-                  <p className="text-xs font-mono font-medium text-gray-800 dark:text-gray-200">{activity.details.applicationId}</p>
+                  <p className="text-xs font-mono font-medium text-gray-800 dark:text-lia-text-primary">{activity.details.applicationId}</p>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
+                <div className="bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md">
                   <p className={textStyles.bodySmall}>Método</p>
-                  <p className="text-xs font-medium text-gray-800 dark:text-gray-200">{activity.details.applicationMethod}</p>
+                  <p className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">{activity.details.applicationMethod}</p>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
+                <div className="bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md">
                   <p className={textStyles.bodySmall}>Recebido em</p>
-                  <p className="text-xs font-medium text-gray-800 dark:text-gray-200">{activity.details.receivedAt}</p>
+                  <p className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">{activity.details.receivedAt}</p>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
+                <div className="bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md">
                   <p className={textStyles.bodySmall}>Dispositivo</p>
-                  <p className="text-xs font-medium text-gray-800 dark:text-gray-200">{activity.details.device}</p>
+                  <p className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">{activity.details.device}</p>
                 </div>
               </div>
               <div className="flex gap-2">
@@ -297,8 +297,8 @@ export function CandidateActivitiesTab({
 
         {activity.type === 'voice-screening' && (
           <div className="mt-3 space-y-3">
-            <div className="bg-white dark:bg-gray-900 p-3 rounded-md border border-gray-200 dark:border-gray-700">
-              <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
+            <div className="bg-white dark:bg-lia-bg-primary p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+              <h5 className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary mb-2 flex items-center gap-1">
                 <Mic className="w-3 h-3 text-status-error" />
                 Triagem por Voz
                 <Badge className="ml-2 text-micro px-1.5 py-0 bg-status-success/10 text-status-success">
@@ -306,16 +306,16 @@ export function CandidateActivitiesTab({
                 </Badge>
               </h5>
               <div className="grid grid-cols-3 gap-2 mb-3">
-                <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
-                  <p className="text-base font-bold text-gray-800 dark:text-gray-200">{activity.details.duration}</p>
+                <div className="text-center p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                  <p className="text-base font-bold text-gray-800 dark:text-lia-text-primary">{activity.details.duration}</p>
                   <p className={textStyles.bodySmall}>Duração</p>
                 </div>
-                <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
-                  <p className="text-base font-bold text-gray-800 dark:text-gray-200">{activity.details.completionRate}%</p>
+                <div className="text-center p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                  <p className="text-base font-bold text-gray-800 dark:text-lia-text-primary">{activity.details.completionRate}%</p>
                   <p className={textStyles.bodySmall}>Completude</p>
                 </div>
-                <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
-                  <p className="text-base font-bold text-gray-800 dark:text-gray-200">{Math.round(activity.details.transcriptionConfidence * 100)}%</p>
+                <div className="text-center p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                  <p className="text-base font-bold text-gray-800 dark:text-lia-text-primary">{Math.round(activity.details.transcriptionConfidence * 100)}%</p>
                   <p className={textStyles.bodySmall}>Confiança</p>
                 </div>
               </div>
@@ -331,14 +331,14 @@ export function CandidateActivitiesTab({
                   </ul>
                 </div>
               )}
-              <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md mb-3">
-                <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">Impressão Geral</p>
-                <p className="text-xs text-gray-600 dark:text-gray-400">{activity.details.overallImpression}</p>
+              <div className="bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md mb-3">
+                <p className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary mb-1">Impressão Geral</p>
+                <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">{activity.details.overallImpression}</p>
               </div>
               <div className="flex gap-2">
                 <Button
                   size="sm"
-                  className="text-xs h-7 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                  className="text-xs h-7 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
                   onClick={() => {
                     const questions: ScreeningQuestion[] = activity.details.questions?.map((q: Record<string, unknown>) => ({
                       id: q.id,
@@ -395,16 +395,16 @@ export function CandidateActivitiesTab({
                 </Badge>
               </h5>
               <div className="grid grid-cols-3 gap-2 mb-3">
-                <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700">
-                  <p className="text-base font-bold text-gray-800 dark:text-gray-200">{activity.details.correctAnswers}/{activity.details.totalQuestions}</p>
+                <div className="text-center p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+                  <p className="text-base font-bold text-gray-800 dark:text-lia-text-primary">{activity.details.correctAnswers}/{activity.details.totalQuestions}</p>
                   <p className={textStyles.caption}>Acertos</p>
                 </div>
-                <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700">
-                  <p className="text-base font-bold text-gray-800 dark:text-gray-200">{activity.details.timeSpent}</p>
+                <div className="text-center p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+                  <p className="text-base font-bold text-gray-800 dark:text-lia-text-primary">{activity.details.timeSpent}</p>
                   <p className={textStyles.caption}>Tempo</p>
                 </div>
-                <div className={`text-center p-2 rounded-md border ${(activity.score ?? 0) >= 80 ? 'bg-status-success/10 border-status-success/30 dark:bg-status-success/20 dark:border-status-success/30' : (activity.score ?? 0) >= 60 ? 'bg-gray-50 dark:bg-gray-800 border-gray-200' : 'bg-gray-100 border-gray-300 dark:border-gray-600'}`}>
-                  <p className={`text-base font-bold ${(activity.score ?? 0) >= 80 ? 'text-status-success dark:text-status-success' : (activity.score ?? 0) >= 60 ? 'text-gray-800 dark:text-gray-200' : 'text-gray-500'}`}>{activity.score}%</p>
+                <div className={`text-center p-2 rounded-md border ${(activity.score ?? 0) >= 80 ? 'bg-status-success/10 border-status-success/30 dark:bg-status-success/20 dark:border-status-success/30' : (activity.score ?? 0) >= 60 ? 'bg-gray-50 dark:bg-lia-bg-secondary border-lia-border-subtle' : 'bg-gray-100 border-lia-border-default dark:border-lia-border-default'}`}>
+                  <p className={`text-base font-bold ${(activity.score ?? 0) >= 80 ? 'text-status-success dark:text-status-success' : (activity.score ?? 0) >= 60 ? 'text-gray-800 dark:text-lia-text-primary' : 'text-gray-500'}`}>{activity.score}%</p>
                   <p className={textStyles.caption}>Score</p>
                 </div>
               </div>
@@ -417,13 +417,13 @@ export function CandidateActivitiesTab({
                       return (
                       <div key={i} className="flex items-center gap-2">
                         <span className={`${textStyles.caption} w-28 truncate`}>{String(cat.name ?? '')}</span>
-                        <div className="flex-1 bg-gray-100 dark:bg-gray-800 h-2 rounded-full overflow-hidden">
+                        <div className="flex-1 bg-gray-100 dark:bg-lia-bg-secondary h-2 rounded-full overflow-hidden">
                           <div
-                            className={`h-full rounded-full ${catScore >= 80 ? 'bg-status-success' : catScore >= 60 ? 'bg-status-success/60' : 'bg-gray-300 dark:bg-gray-600'}`}
+                            className={`h-full rounded-full ${catScore >= 80 ? 'bg-status-success' : catScore >= 60 ? 'bg-status-success/60' : 'bg-gray-300'}`}
                             style={{width: `${catScore}%`}}
                           />
                         </div>
-                        <span className="text-xs font-medium text-gray-800 dark:text-gray-200 w-8 text-right">{catScore}%</span>
+                        <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary w-8 text-right">{catScore}%</span>
                       </div>
                       )
                     })}
@@ -438,26 +438,26 @@ export function CandidateActivitiesTab({
           <div className="mt-3 space-y-3">
             <div className={`${cardStyles.default} p-3`}>
               <h5 className={`${textStyles.label} mb-2 flex items-center gap-1`}>
-                <Gift className="w-3 h-3 text-gray-600 dark:text-gray-400" />
+                <Gift className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
                 Proposta Salarial
                 <Badge className={`ml-2 ${badgeStyles.primary}`}>
                   {activity.statusLabel || 'Enviada'}
                 </Badge>
               </h5>
-              <div className="text-center p-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-md border border-gray-200 dark:border-gray-700 mb-3">
-                <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{activity.details.salary}</p>
+              <div className="text-center p-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle mb-3">
+                <p className="text-2xl font-bold text-gray-800 dark:text-lia-text-primary">{activity.details.salary}</p>
                 {activity.details.annualBonus && (
-                  <p className="text-xs text-gray-600 dark:text-gray-400">+ Bônus: {activity.details.annualBonus}</p>
+                  <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">+ Bônus: {activity.details.annualBonus}</p>
                 )}
               </div>
               <div className="grid grid-cols-2 gap-2 mb-3">
-                <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
+                <div className="bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md">
                   <p className={textStyles.bodySmall}>Data de Início</p>
-                  <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{activity.details.startDate}</p>
+                  <p className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary">{activity.details.startDate}</p>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
+                <div className="bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md">
                   <p className={textStyles.bodySmall}>Contrato</p>
-                  <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{activity.details.contractType}</p>
+                  <p className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary">{activity.details.contractType}</p>
                 </div>
               </div>
               {activity.details.benefits && (
@@ -477,14 +477,14 @@ export function CandidateActivitiesTab({
           <div className="mt-3 space-y-3">
             <div className={`${cardStyles.default} p-3`}>
               <h5 className={`${textStyles.label} mb-2 flex items-center gap-1`}>
-                <ClipboardCheck className="w-3 h-3 text-gray-600 dark:text-gray-400" />
+                <ClipboardCheck className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
                 Avaliação por Rubrica (CV vs Vaga)
                 <Badge className={`ml-2 ${activity.details.overallFit >= 80 ? badgeStyles.success : activity.details.overallFit >= 60 ? badgeStyles.warning : badgeStyles.error}`}>
                   {activity.details.overallFit}% fit
                 </Badge>
               </h5>
-              <div className="text-center p-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-md border border-gray-200 dark:border-gray-700 mb-3">
-                <p className="text-3xl font-bold text-gray-800 dark:text-gray-100">{activity.details.overallFit}%</p>
+              <div className="text-center p-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle mb-3">
+                <p className="text-3xl font-bold text-gray-800 dark:text-lia-text-primary">{activity.details.overallFit}%</p>
                 <p className={textStyles.caption}>Fit Geral</p>
               </div>
               {activity.details.criteriaScores && (
@@ -492,8 +492,8 @@ export function CandidateActivitiesTab({
                   {activity.details.criteriaScores.slice(0, 4).map((c: Record<string, unknown>, i: number) => {
                     const cScore = Number(c.score ?? 0)
                     return (
-                    <div key={i} className="flex justify-between text-xs bg-gray-50 dark:bg-gray-800 p-1.5 rounded-md border border-gray-100 dark:border-gray-700">
-                      <span className="text-gray-800 dark:text-gray-200">{String(c.criteria ?? '')}</span>
+                    <div key={i} className="flex justify-between text-xs bg-gray-50 dark:bg-lia-bg-secondary p-1.5 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+                      <span className="text-gray-800 dark:text-lia-text-primary">{String(c.criteria ?? '')}</span>
                       <Badge className={`text-micro px-1.5 ${cScore >= 80 ? badgeStyles.success : cScore >= 60 ? badgeStyles.warning : badgeStyles.error}`}>
                         {cScore}%
                       </Badge>
@@ -502,9 +502,9 @@ export function CandidateActivitiesTab({
                   })}
                 </div>
               )}
-              <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md border border-gray-100 dark:border-gray-700">
+              <div className="bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
                 <p className={`${textStyles.labelSmall} mb-1`}>💡 Recomendação</p>
-                <p className={`${textStyles.caption} text-gray-600`}>{activity.details.recommendation}</p>
+                <p className={`${textStyles.caption} lia-text-base`}>{activity.details.recommendation}</p>
               </div>
             </div>
           </div>
@@ -520,26 +520,26 @@ export function CandidateActivitiesTab({
                   {activity.details.profile}
                 </Badge>
               </h5>
-              <div className="text-center p-3 bg-gradient-to-r from-gray-100 dark:from-gray-800 to-gray-50 rounded-md border border-gray-300 dark:border-gray-600 mb-3">
-                <p className="text-xl font-bold text-gray-800 dark:text-gray-200">{activity.details.profile}</p>
+              <div className="text-center p-3 bg-gradient-to-r from-gray-100 dark:from-gray-800 to-gray-50 rounded-md border border-lia-border-default dark:border-lia-border-default mb-3">
+                <p className="text-xl font-bold text-gray-800 dark:text-lia-text-primary">{activity.details.profile}</p>
                 <p className={textStyles.caption}>{activity.details.profileDescription}</p>
               </div>
               <div className="grid grid-cols-2 gap-2 mb-3">
-                <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md border border-gray-100 dark:border-gray-700 text-center">
-                  <p className="text-sm font-bold text-gray-800 dark:text-gray-200">{activity.details.culturalFit || activity.details.culturalFitScore}%</p>
+                <div className="bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle text-center">
+                  <p className="text-sm font-bold text-gray-800 dark:text-lia-text-primary">{activity.details.culturalFit || activity.details.culturalFitScore}%</p>
                   <p className={textStyles.caption}>Fit Cultural</p>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md border border-gray-100 dark:border-gray-700 text-center">
-                  <p className="text-sm font-bold text-gray-800 dark:text-gray-200">{activity.details.teamworkScore}%</p>
+                <div className="bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle text-center">
+                  <p className="text-sm font-bold text-gray-800 dark:text-lia-text-primary">{activity.details.teamworkScore}%</p>
                   <p className={textStyles.caption}>Trabalho em Equipe</p>
                 </div>
               </div>
               {activity.details.developmentAreas && activity.details.developmentAreas.length > 0 && (
-                <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md border border-gray-200 dark:border-gray-700">
-                  <p className={`${textStyles.labelSmall} text-gray-800 dark:text-gray-200 mb-1`}>⚠️ Áreas de Desenvolvimento</p>
+                <div className="bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+                  <p className={`${textStyles.labelSmall} text-gray-800 dark:text-lia-text-primary mb-1`}>⚠️ Áreas de Desenvolvimento</p>
                   <div className="flex flex-wrap gap-1">
                     {activity.details.developmentAreas.map((a: string, i: number) => (
-                      <Badge key={i} variant="outline" className="text-micro px-1.5 py-0 bg-gray-100 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600">
+                      <Badge key={i} variant="outline" className="text-micro px-1.5 py-0 bg-gray-100 text-gray-600 dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default">
                         {a}
                       </Badge>
                     ))}
@@ -549,7 +549,7 @@ export function CandidateActivitiesTab({
               <Button
                 size="sm"
                 variant="outline"
-                className="w-full mt-3 text-xs h-7 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-800"
+                className="w-full mt-3 text-xs h-7 border-lia-border-default dark:border-lia-border-default text-gray-700 dark:text-lia-text-secondary hover:bg-gray-50 dark:bg-lia-bg-secondary dark:hover:bg-gray-800"
                 onClick={() => {
                   if (activity.details.discScores) {
                     onSetDiscModalData(activity.details)
@@ -581,29 +581,29 @@ export function CandidateActivitiesTab({
                 </Badge>
               </h5>
               <div className="grid grid-cols-3 gap-2 mb-3">
-                <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700">
-                  <p className="text-sm font-bold text-gray-800 dark:text-gray-200">{activity.details.duration}</p>
+                <div className="text-center p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+                  <p className="text-sm font-bold text-gray-800 dark:text-lia-text-primary">{activity.details.duration}</p>
                   <p className={textStyles.caption}>Duração</p>
                 </div>
-                <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700">
-                  <p className="text-sm font-bold text-gray-800 dark:text-gray-200">{activity.details.completionRate || 100}%</p>
+                <div className="text-center p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+                  <p className="text-sm font-bold text-gray-800 dark:text-lia-text-primary">{activity.details.completionRate || 100}%</p>
                   <p className={textStyles.caption}>Completude</p>
                 </div>
-                <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700">
-                  <p className="text-sm font-bold text-gray-800 dark:text-gray-200">{Math.round((activity.details.transcriptionConfidence || 0.95) * 100)}%</p>
+                <div className="text-center p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+                  <p className="text-sm font-bold text-gray-800 dark:text-lia-text-primary">{Math.round((activity.details.transcriptionConfidence || 0.95) * 100)}%</p>
                   <p className={textStyles.caption}>Confiança</p>
                 </div>
               </div>
               {activity.details.overallImpression && (
-                <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md border border-gray-100 dark:border-gray-700 mb-3">
+                <div className="bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle mb-3">
                   <p className={`${textStyles.labelSmall} mb-1`}>Impressão Geral</p>
-                  <p className={`${textStyles.caption} text-gray-600`}>{activity.details.overallImpression}</p>
+                  <p className={`${textStyles.caption} lia-text-base`}>{activity.details.overallImpression}</p>
                 </div>
               )}
               <div className="flex gap-2">
                 <Button
                   size="sm"
-                  className="text-xs h-7 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                  className="text-xs h-7 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
                   onClick={() => {
                     const questions: ScreeningQuestion[] = activity.details.questions?.map((q: Record<string, unknown>) => ({
                       id: q.id,
@@ -640,7 +640,7 @@ export function CandidateActivitiesTab({
 
         {activity.type === 'technical-test' && (
           <div className="mt-2 space-y-2">
-            <div className="bg-white dark:bg-gray-900 p-2 rounded-md">
+            <div className="bg-white dark:bg-lia-bg-primary p-2 rounded-md">
               <p className={`${textStyles.bodySmall} mb-1`}>Teste Técnico</p>
               <div className="grid grid-cols-2 gap-1">
                 <div>
@@ -666,7 +666,7 @@ export function CandidateActivitiesTab({
 
         {activity.type === 'english-test' && (
           <div className="mt-2 space-y-2">
-            <div className="bg-white dark:bg-gray-900 p-2 rounded-md">
+            <div className="bg-white dark:bg-lia-bg-primary p-2 rounded-md">
               <p className={`${textStyles.bodySmall} mb-1`}>Teste de Inglês</p>
               <div className="grid grid-cols-2 gap-1">
                 <div>
@@ -692,7 +692,7 @@ export function CandidateActivitiesTab({
 
         {activity.type === 'data-collection' && (
           <div className="mt-2 space-y-2">
-            <div className="bg-white dark:bg-gray-900 p-2 rounded-md">
+            <div className="bg-white dark:bg-lia-bg-primary p-2 rounded-md">
               <p className={`${textStyles.bodySmall} mb-1`}>Coleta de Dados</p>
               <div className="grid grid-cols-2 gap-1">
                 <div>
@@ -724,68 +724,68 @@ export function CandidateActivitiesTab({
 
         {activity.type === 'onboarding' && (
           <div className="mt-3 space-y-3">
-            <div className="bg-white dark:bg-gray-900 p-3 rounded-md">
-              <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
-                <UserCheck className="w-3 h-3 text-gray-800 dark:text-gray-200" />
+            <div className="bg-white dark:bg-lia-bg-primary p-3 rounded-md">
+              <h5 className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary mb-2 flex items-center gap-1">
+                <UserCheck className="w-3 h-3 text-gray-800 dark:text-lia-text-primary" />
                 Processo de Onboarding
               </h5>
               <div className="bg-status-success/10 p-2 rounded-md mb-3">
-                <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2">📋 Checklist de Integração</p>
+                <p className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary mb-2">📋 Checklist de Integração</p>
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-xs">
-                    <CheckCircle className="w-3 h-3 text-gray-800 dark:text-gray-200" />
-                    <span className="text-gray-800 dark:text-gray-200">Oferta aceita e assinada</span>
+                    <CheckCircle className="w-3 h-3 text-gray-800 dark:text-lia-text-primary" />
+                    <span className="text-gray-800 dark:text-lia-text-primary">Oferta aceita e assinada</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs">
-                    <CheckCircle className="w-3 h-3 text-gray-800 dark:text-gray-200" />
-                    <span className="text-gray-800 dark:text-gray-200">Documentação enviada</span>
+                    <CheckCircle className="w-3 h-3 text-gray-800 dark:text-lia-text-primary" />
+                    <span className="text-gray-800 dark:text-lia-text-primary">Documentação enviada</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs">
-                    <Clock className="w-3 h-3 text-gray-600 dark:text-gray-400" />
-                    <span className="text-gray-800 dark:text-gray-200">Equipamentos solicitados</span>
+                    <Clock className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
+                    <span className="text-gray-800 dark:text-lia-text-primary">Equipamentos solicitados</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs">
-                    <Clock className="w-3 h-3 text-gray-600 dark:text-gray-400" />
-                    <span className="text-gray-800 dark:text-gray-200">Acessos em configuração</span>
+                    <Clock className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
+                    <span className="text-gray-800 dark:text-lia-text-primary">Acessos em configuração</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs">
-                    <AlertCircle className="w-3 h-3 text-gray-600 dark:text-gray-400" />
-                    <span className="text-gray-800 dark:text-gray-200">Buddy designado (pendente)</span>
+                    <AlertCircle className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
+                    <span className="text-gray-800 dark:text-lia-text-primary">Buddy designado (pendente)</span>
                   </div>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2 mb-3">
-                <div className="bg-white dark:bg-gray-900 p-2 rounded-md">
+                <div className="bg-white dark:bg-lia-bg-primary p-2 rounded-md">
                   <p className={`${textStyles.bodySmall} mb-1`}>Data de Início</p>
-                  <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{activity.details.startDate}</p>
+                  <p className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary">{activity.details.startDate}</p>
                   <p className={textStyles.bodySmall}>Segunda-feira</p>
                 </div>
-                <div className="bg-white dark:bg-gray-900 p-2 rounded-md">
+                <div className="bg-white dark:bg-lia-bg-primary p-2 rounded-md">
                   <p className={`${textStyles.bodySmall} mb-1`}>Gestor Responsável</p>
-                  <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{activity.details.onboardingManager}</p>
+                  <p className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary">{activity.details.onboardingManager}</p>
                   <p className={textStyles.bodySmall}>People & Culture</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-md">
-                  <FileText className="w-4 h-4 mx-auto text-gray-800 dark:text-gray-200 mb-1" />
+                <div className="text-center p-2 bg-white dark:bg-lia-bg-secondary rounded-md">
+                  <FileText className="w-4 h-4 mx-auto text-gray-800 dark:text-lia-text-primary mb-1" />
                   <p className={textStyles.bodySmall}>Documentos</p>
-                  <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{activity.details.documentsStatus}</p>
+                  <p className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary">{activity.details.documentsStatus}</p>
                 </div>
-                <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-md">
-                  <Building className="w-4 h-4 mx-auto text-gray-600 dark:text-gray-400 mb-1" />
+                <div className="text-center p-2 bg-white dark:bg-lia-bg-secondary rounded-md">
+                  <Building className="w-4 h-4 mx-auto text-gray-600 dark:text-lia-text-tertiary mb-1" />
                   <p className={textStyles.bodySmall}>Equipamentos</p>
-                  <p className="text-xs font-semibold text-gray-900 dark:text-gray-50">{activity.details.equipmentStatus}</p>
+                  <p className="text-xs font-semibold text-gray-900">{activity.details.equipmentStatus}</p>
                 </div>
-                <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-md">
-                  <Shield className="w-4 h-4 mx-auto text-gray-800 dark:text-gray-200 mb-1" />
+                <div className="text-center p-2 bg-white dark:bg-lia-bg-secondary rounded-md">
+                  <Shield className="w-4 h-4 mx-auto text-gray-800 dark:text-lia-text-primary mb-1" />
                   <p className={textStyles.bodySmall}>Acessos</p>
-                  <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{activity.details.accessesStatus}</p>
+                  <p className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary">{activity.details.accessesStatus}</p>
                 </div>
-                <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-md">
-                  <Users className="w-4 h-4 mx-auto text-gray-800 dark:text-gray-200 mb-1" />
+                <div className="text-center p-2 bg-white dark:bg-lia-bg-secondary rounded-md">
+                  <Users className="w-4 h-4 mx-auto text-gray-800 dark:text-lia-text-primary mb-1" />
                   <p className={textStyles.bodySmall}>Buddy</p>
-                  <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">A definir</p>
+                  <p className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary">A definir</p>
                 </div>
               </div>
             </div>
@@ -795,7 +795,7 @@ export function CandidateActivitiesTab({
         {activity.type === 'interview-note' && (
           <div className="mt-2 space-y-2">
             {activity.details.technicalQuestions && (
-              <div className="bg-white dark:bg-gray-900 p-2 rounded-md">
+              <div className="bg-white dark:bg-lia-bg-primary p-2 rounded-md">
                 <p className={`${textStyles.bodySmall} mb-1`}>Questões Técnicas</p>
                 <div className="space-y-1">
                   {activity.details.technicalQuestions.map((q: Record<string, unknown>, i: number) => (
@@ -808,10 +808,10 @@ export function CandidateActivitiesTab({
               </div>
             )}
             {activity.details.overallScore && (
-              <div className="bg-white dark:bg-gray-900 p-2 rounded-md">
+              <div className="bg-white dark:bg-lia-bg-primary p-2 rounded-md">
                 <div className="flex items-center justify-between">
                   <span className={textStyles.bodySmall}>Score Geral</span>
-                  <span className="text-xs font-bold text-gray-800 dark:text-gray-200">{activity.details.overallScore}/10</span>
+                  <span className="text-xs font-bold text-gray-800 dark:text-lia-text-primary">{activity.details.overallScore}/10</span>
                 </div>
                 <p className={`${textStyles.bodySmall} mt-1`}>{activity.details.recommendation}</p>
               </div>
@@ -821,12 +821,12 @@ export function CandidateActivitiesTab({
 
         {activity.type === 'lia-screening' && activity.details.conversation && (
           <div className="mt-2 space-y-2">
-            <div className="bg-white dark:bg-gray-800 p-2 rounded-md max-h-48 overflow-y-auto">
-              <p className="text-xs text-gray-800 dark:text-gray-200 mb-2">{activity.platform}</p>
+            <div className="bg-white dark:bg-lia-bg-secondary p-2 rounded-md max-h-48 overflow-y-auto">
+              <p className="text-xs text-gray-800 dark:text-lia-text-primary mb-2">{activity.platform}</p>
               <div className="space-y-2">
                 {activity.details.conversation.map((msg: Record<string, unknown>, i: number) => (
                   <div key={i} className={`flex ${String(msg.sender) === 'LIA' ? 'justify-start' : 'justify-end'}`}>
-                    <div className={`max-w-[70%] px-2 py-1 rounded-md ${String(msg.sender) === 'LIA' ? 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200' : 'bg-gray-50 dark:bg-gray-800 text-gray-800'}`}>
+                    <div className={`max-w-[70%] px-2 py-1 rounded-md ${String(msg.sender) === 'LIA' ? 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-800 dark:text-lia-text-primary' : 'bg-gray-50 dark:bg-lia-bg-secondary text-gray-800'}`}>
                       <p className="text-xs">{String(msg.message ?? '')}</p>
                       <span className="text-xs opacity-70">{String(msg.time ?? '')}</span>
                     </div>
@@ -835,20 +835,20 @@ export function CandidateActivitiesTab({
               </div>
             </div>
             {activity.details.keyPoints && (
-              <div className="bg-white dark:bg-gray-900 p-2 rounded-md">
+              <div className="bg-white dark:bg-lia-bg-primary p-2 rounded-md">
                 <p className={`${textStyles.bodySmall} mb-1`}>Pontos-Chave</p>
                 <div className="space-y-0.5">
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-600 dark:text-gray-400">Disponibilidade:</span>
-                    <span className="text-gray-800 dark:text-gray-200">{activity.details.keyPoints.availability}</span>
+                    <span className="text-gray-600 dark:text-lia-text-tertiary">Disponibilidade:</span>
+                    <span className="text-gray-800 dark:text-lia-text-primary">{activity.details.keyPoints.availability}</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-600 dark:text-gray-400">Pretensão:</span>
-                    <span className="text-gray-800 dark:text-gray-200">{activity.details.keyPoints.salary}</span>
+                    <span className="text-gray-600 dark:text-lia-text-tertiary">Pretensão:</span>
+                    <span className="text-gray-800 dark:text-lia-text-primary">{activity.details.keyPoints.salary}</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-600 dark:text-gray-400">Inglês:</span>
-                    <span className="text-gray-800 dark:text-gray-200">{activity.details.keyPoints.english}</span>
+                    <span className="text-gray-600 dark:text-lia-text-tertiary">Inglês:</span>
+                    <span className="text-gray-800 dark:text-lia-text-primary">{activity.details.keyPoints.english}</span>
                   </div>
                 </div>
               </div>
@@ -858,38 +858,38 @@ export function CandidateActivitiesTab({
 
         {(activity.type === 'email-sent' || activity.type === 'email-received') && activity.details.subject && !activity.details.from?.includes('@') && (
           <div className="mt-3 space-y-3">
-            <div className="bg-white dark:bg-gray-900 p-3 rounded-md">
+            <div className="bg-white dark:bg-lia-bg-primary p-3 rounded-md">
               <div className="flex items-center justify-between mb-2">
-                <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-1">
-                  <Mail className="w-3 h-3 text-gray-800 dark:text-gray-200" />
+                <h5 className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary flex items-center gap-1">
+                  <Mail className="w-3 h-3 text-gray-800 dark:text-lia-text-primary" />
                   {activity.type === 'email-sent' ? 'Email Enviado' : 'Email Recebido'}
                 </h5>
                 {activity.details.opened && (
-                  <Badge className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
+                  <Badge className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary">
                     ✓ Lido
                   </Badge>
                 )}
               </div>
-              <div className="bg-white dark:bg-gray-800 p-2 rounded-md mb-2 text-xs space-y-1">
+              <div className="bg-white dark:bg-lia-bg-secondary p-2 rounded-md mb-2 text-xs space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-gray-800 dark:text-gray-200 font-medium">De:</span>
-                  <span className="text-gray-800 dark:text-gray-200">
+                  <span className="text-gray-800 dark:text-lia-text-primary font-medium">De:</span>
+                  <span className="text-gray-800 dark:text-lia-text-primary">
                     {activity.type === 'email-sent' ? activity.author : activity.details.from}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-gray-800 dark:text-gray-200 font-medium">Para:</span>
-                  <span className="text-gray-800 dark:text-gray-200">
+                  <span className="text-gray-800 dark:text-lia-text-primary font-medium">Para:</span>
+                  <span className="text-gray-800 dark:text-lia-text-primary">
                     {activity.type === 'email-sent' ? activity.details.to : activity.author}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-gray-800 dark:text-gray-200 font-medium">Data:</span>
-                  <span className="text-gray-800 dark:text-gray-200">{activity.date}</span>
+                  <span className="text-gray-800 dark:text-lia-text-primary font-medium">Data:</span>
+                  <span className="text-gray-800 dark:text-lia-text-primary">{activity.date}</span>
                 </div>
               </div>
-              <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2">{activity.details.subject}</p>
-              <div className="text-xs text-gray-800 dark:text-gray-200 space-y-2">
+              <p className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary mb-2">{activity.details.subject}</p>
+              <div className="text-xs text-gray-800 dark:text-lia-text-primary space-y-2">
                 {activity.details.body ? (
                   <>
                     <p>{activity.details.body}</p>
@@ -907,11 +907,11 @@ export function CandidateActivitiesTab({
                     )}
                   </>
                 ) : (
-                  <p className="text-gray-600 dark:text-gray-400 italic">Conteúdo do email não disponível</p>
+                  <p className="text-gray-600 dark:text-lia-text-tertiary italic">Conteúdo do email não disponível</p>
                 )}
               </div>
               {activity.details.opened && (
-                <div className="mt-2 flex items-center gap-2 text-xs text-gray-800 dark:text-gray-200">
+                <div className="mt-2 flex items-center gap-2 text-xs text-gray-800 dark:text-lia-text-primary">
                   <CheckCircle className="w-3 h-3" />
                   <span>Email aberto {activity.details.openedAt}</span>
                 </div>
@@ -934,9 +934,9 @@ export function CandidateActivitiesTab({
             className="absolute -left-6 w-3 h-3 rounded-full border-2 border-white z-10"
             style={{backgroundColor: activity.iconColor, marginTop: '14px'}}
           ></div>
-          <div className="flex-1 border border-gray-100 dark:border-gray-700 rounded-md hover:transition-all">
+          <div className="flex-1 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors">
             <div
-              className="p-3 cursor-pointer hover:bg-white dark:hover:bg-gray-800 transition-colors"
+              className="p-3 cursor-pointer hover:bg-lia-bg-primary dark:hover:bg-gray-800 transition-colors"
               onClick={() => setExpandedActivity(isExpanded ? null : activity.id)}
             >
               <div className="flex items-start gap-3">
@@ -954,7 +954,7 @@ export function CandidateActivitiesTab({
                         {activity.jobId && (
                           <a
                             href={`#vaga-${activity.jobId}`}
-                            className="text-xs text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:underline flex items-center gap-0.5"
+                            className="text-xs text-gray-700 dark:text-lia-text-secondary hover:text-gray-900 hover:underline flex items-center gap-0.5"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <Briefcase className="w-2.5 h-2.5" />
@@ -967,16 +967,16 @@ export function CandidateActivitiesTab({
                     </div>
                     <div className="flex items-center gap-1.5">
                       {activity.score && (
-                        <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.score >= 80 ? 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 font-semibold' : activity.score >= 60 ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-100 dark:border-gray-700 font-medium' : 'bg-status-error/10 text-status-error border-status-error/30 font-medium'}`}>
+                        <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.score >= 80 ? 'bg-gray-100 text-gray-800 dark:text-lia-text-primary border-lia-border-default dark:border-lia-border-default font-semibold' : activity.score >= 60 ? 'bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary border-lia-border-subtle dark:border-lia-border-subtle font-medium' : 'bg-status-error/10 text-status-error border-status-error/30 font-medium'}`}>
                           {formatScorePercent(activity.score)}
                         </Badge>
                       )}
                       {activity.statusLabel && (
-                        <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.status === 'approved' || activity.status === 'completed' ? 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 font-semibold' : activity.status === 'in-progress' ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-100 dark:border-gray-700 font-medium' : activity.status === 'rejected' ? 'bg-status-error/10 text-status-error border-status-error/30 font-medium' : 'bg-white text-gray-600 dark:text-gray-400 border-gray-100'}`}>
+                        <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.status === 'approved' || activity.status === 'completed' ? 'bg-gray-100 text-gray-800 dark:text-lia-text-primary border-lia-border-default dark:border-lia-border-default font-semibold' : activity.status === 'in-progress' ? 'bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary border-lia-border-subtle dark:border-lia-border-subtle font-medium' : activity.status === 'rejected' ? 'bg-status-error/10 text-status-error border-status-error/30 font-medium' : 'bg-white text-gray-600 dark:text-lia-text-tertiary border-lia-border-subtle'}`}>
                           {activity.statusLabel}
                         </Badge>
                       )}
-                      <ChevronDown className={`w-3.5 h-3.5 text-gray-600 dark:text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                      <ChevronDown className={`w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                     </div>
                   </div>
                 </div>
@@ -989,9 +989,9 @@ export function CandidateActivitiesTab({
     }
 
     return (
-      <div key={activity.id} className="border border-gray-100 dark:border-gray-700 rounded-md hover:transition-all">
+      <div key={activity.id} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors">
         <div
-          className="p-2.5 cursor-pointer hover:bg-white dark:hover:bg-gray-800 transition-colors"
+          className="p-2.5 cursor-pointer hover:bg-lia-bg-primary dark:hover:bg-gray-800 transition-colors"
           onClick={() => setExpandedActivity(isExpanded ? null : activity.id)}
         >
           <div className="flex items-start gap-2">
@@ -1009,7 +1009,7 @@ export function CandidateActivitiesTab({
                     {activity.jobId && (
                       <a
                         href={`#vaga-${activity.jobId}`}
-                        className="text-xs text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:underline flex items-center gap-0.5"
+                        className="text-xs text-gray-700 dark:text-lia-text-secondary hover:text-gray-900 hover:underline flex items-center gap-0.5"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <Briefcase className="w-2.5 h-2.5" />
@@ -1023,16 +1023,16 @@ export function CandidateActivitiesTab({
                 </div>
                 <div className="flex items-center gap-1.5">
                   {activity.score && (
-                    <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.score >= 80 ? 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 font-semibold' : activity.score >= 60 ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-100 dark:border-gray-700 font-medium' : 'bg-status-error/10 text-status-error border-status-error/30 font-medium'}`}>
+                    <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.score >= 80 ? 'bg-gray-100 text-gray-800 dark:text-lia-text-primary border-lia-border-default dark:border-lia-border-default font-semibold' : activity.score >= 60 ? 'bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary border-lia-border-subtle dark:border-lia-border-subtle font-medium' : 'bg-status-error/10 text-status-error border-status-error/30 font-medium'}`}>
                       {formatScorePercent(activity.score)}
                     </Badge>
                   )}
                   {activity.statusLabel && (
-                    <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.status === 'approved' || activity.status === 'completed' ? 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 font-semibold' : activity.status === 'in-progress' ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-100 dark:border-gray-700 font-medium' : activity.status === 'rejected' ? 'bg-status-error/10 text-status-error border-status-error/30 font-medium' : 'bg-white text-gray-600 dark:text-gray-400 border-gray-100'}`}>
+                    <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.status === 'approved' || activity.status === 'completed' ? 'bg-gray-100 text-gray-800 dark:text-lia-text-primary border-lia-border-default dark:border-lia-border-default font-semibold' : activity.status === 'in-progress' ? 'bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary border-lia-border-subtle dark:border-lia-border-subtle font-medium' : activity.status === 'rejected' ? 'bg-status-error/10 text-status-error border-status-error/30 font-medium' : 'bg-white text-gray-600 dark:text-lia-text-tertiary border-lia-border-subtle'}`}>
                       {activity.statusLabel}
                     </Badge>
                   )}
-                  <ChevronDown className={`w-3.5 h-3.5 text-gray-600 dark:text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                 </div>
               </div>
             </div>
@@ -1045,10 +1045,10 @@ export function CandidateActivitiesTab({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="p-3 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-900">
+      <div className="p-3 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary">
         <div className="flex items-center justify-between mb-2">
-          <h4 className="text-xs font-medium text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
-            <Activity className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
+          <h4 className="text-xs font-medium text-gray-800 dark:text-lia-text-primary flex items-center gap-1.5">
+            <Activity className="w-3.5 h-3.5 text-gray-800 dark:text-lia-text-primary" />
             Feed de Atividades
             <Badge className="text-xs px-1 py-0">{filteredActivities.length}</Badge>
           </h4>
@@ -1056,24 +1056,24 @@ export function CandidateActivitiesTab({
             <select
               value={periodFilter}
               onChange={(e) => setPeriodFilter((e.target as HTMLSelectElement).value as typeof periodFilter)}
-              className="text-xs px-2 py-1 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400"
+              className="text-xs px-2 py-1 bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400"
             >
               <option value="7days">Últimos 7 dias</option>
               <option value="30days">Últimos 30 dias</option>
               <option value="3months">Últimos 3 meses</option>
               <option value="all">Todo período</option>
             </select>
-            <div className="flex items-center bg-white rounded-md p-0.5 border border-gray-100 dark:border-gray-700">
+            <div className="flex items-center bg-lia-bg-primary rounded-md p-0.5 border border-lia-border-subtle dark:border-lia-border-subtle">
               <button
                 onClick={() => setActivityView('timeline')}
-                className={`p-1 rounded-md transition-colors ${activityView === 'timeline' ? 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200' : 'text-gray-600 dark:text-gray-400 hover:text-gray-800'}`}
+                className={`p-1 rounded-md transition-colors ${activityView === 'timeline' ? 'bg-gray-200 dark:bg-lia-bg-elevated text-gray-800 dark:text-lia-text-primary' : 'text-gray-600 dark:text-lia-text-tertiary hover:text-gray-800'}`}
                 title="Visualização Timeline"
               >
                 <GitBranch className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => setActivityView('list')}
-                className={`p-1 rounded-md transition-colors ${activityView === 'list' ? 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200' : 'text-gray-600 dark:text-gray-400 hover:text-gray-800'}`}
+                className={`p-1 rounded-md transition-colors ${activityView === 'list' ? 'bg-gray-200 dark:bg-lia-bg-elevated text-gray-800 dark:text-lia-text-primary' : 'text-gray-600 dark:text-lia-text-tertiary hover:text-gray-800'}`}
                 title="Visualização Lista"
               >
                 <List className="w-3.5 h-3.5" />
@@ -1082,7 +1082,7 @@ export function CandidateActivitiesTab({
             <Button
               onClick={onShowLiaModal}
               size="sm"
-              className="gap-1 px-2 py-1 text-xs h-6 bg-gray-100 hover:bg-gray-200 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700"
+              className="gap-1 px-2 py-1 text-xs h-6 bg-gray-100 hover:bg-gray-200 text-gray-700 dark:text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-subtle"
             >
               <PlusCircle className="w-3 h-3" />
               Nova Atividade
@@ -1092,25 +1092,25 @@ export function CandidateActivitiesTab({
         <div className="flex gap-1 flex-wrap">
           <button
             onClick={() => setActivityFilter('all')}
-            className={`px-2 py-1 text-xs rounded-full transition-colors ${activityFilter === 'all' ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-600 dark:text-gray-400 hover:bg-gray-200'}`}
+            className={`px-2 py-1 text-xs rounded-full transition-colors ${activityFilter === 'all' ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-600 dark:text-lia-text-tertiary hover:bg-gray-200'}`}
           >
             Todas
           </button>
           <button
             onClick={() => setActivityFilter('emails')}
-            className={`px-2 py-1 text-xs rounded-full transition-colors ${activityFilter === 'emails' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-gray-700 dark:text-gray-300 hover:bg-gray-200'}`}
+            className={`px-2 py-1 text-xs rounded-full transition-colors ${activityFilter === 'emails' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-gray-700 dark:text-lia-text-secondary hover:bg-gray-200'}`}
           >
             📧 Emails
           </button>
           <button
             onClick={() => setActivityFilter('interviews')}
-            className={`px-2 py-1 text-xs rounded-full transition-colors ${activityFilter === 'interviews' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-gray-700 dark:text-gray-300 hover:bg-gray-200'}`}
+            className={`px-2 py-1 text-xs rounded-full transition-colors ${activityFilter === 'interviews' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-gray-700 dark:text-lia-text-secondary hover:bg-gray-200'}`}
           >
             🎤 Entrevistas
           </button>
           <button
             onClick={() => setActivityFilter('tests')}
-            className={`px-2 py-1 text-xs rounded-full transition-colors ${activityFilter === 'tests' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-gray-700 dark:text-gray-300 hover:bg-gray-200'}`}
+            className={`px-2 py-1 text-xs rounded-full transition-colors ${activityFilter === 'tests' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-gray-700 dark:text-lia-text-secondary hover:bg-gray-200'}`}
           >
             📝 Testes
           </button>
@@ -1124,19 +1124,19 @@ export function CandidateActivitiesTab({
           </button>
           <button
             onClick={() => setActivityFilter('offers')}
-            className={`px-2 py-1 text-xs rounded-full transition-colors ${activityFilter === 'offers' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-gray-700 dark:text-gray-300 hover:bg-gray-200'}`}
+            className={`px-2 py-1 text-xs rounded-full transition-colors ${activityFilter === 'offers' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-gray-700 dark:text-lia-text-secondary hover:bg-gray-200'}`}
           >
             💼 Ofertas
           </button>
           <button
             onClick={() => setActivityFilter('applications')}
-            className={`px-2 py-1 text-xs rounded-full transition-colors ${activityFilter === 'applications' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-gray-700 dark:text-gray-300 hover:bg-gray-200'}`}
+            className={`px-2 py-1 text-xs rounded-full transition-colors ${activityFilter === 'applications' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-gray-700 dark:text-lia-text-secondary hover:bg-gray-200'}`}
           >
             📋 Inscrições
           </button>
           <button
             onClick={() => setActivityFilter('evaluations')}
-            className={`px-2 py-1 text-xs rounded-full transition-colors ${activityFilter === 'evaluations' ? 'bg-gray-700 text-white font-semibold' : 'text-gray-700 hover:dark:bg-gray-800 dark:hover:bg-gray-700'}`}
+            className={`px-2 py-1 text-xs rounded-full transition-colors ${activityFilter === 'evaluations' ? 'bg-gray-700 text-white font-semibold' : 'lia-text-base hover:dark:bg-lia-bg-secondary dark:hover:bg-gray-700'}`}
           >
             🎯 Avaliações
           </button>
@@ -1148,11 +1148,11 @@ export function CandidateActivitiesTab({
           <div className="relative">
             {filteredActivities.length === 0 && (
               <div className="flex flex-col items-center justify-center py-12 px-4">
-                <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
-                  <Activity className="w-8 h-8 text-gray-600 dark:text-gray-400" />
+                <div className="w-16 h-16 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center mb-4">
+                  <Activity className="w-8 h-8 text-gray-600 dark:text-lia-text-tertiary" />
                 </div>
-                <h3 className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">Nenhuma atividade registrada ainda</h3>
-                <p className="text-xs text-gray-800 dark:text-gray-200 text-center max-w-xs">As atividades aparecerão aqui conforme o processo avança</p>
+                <h3 className="text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">Nenhuma atividade registrada ainda</h3>
+                <p className="text-xs text-gray-800 dark:text-lia-text-primary text-center max-w-xs">As atividades aparecerão aqui conforme o processo avança</p>
               </div>
             )}
 
@@ -1182,9 +1182,9 @@ export function CandidateActivitiesTab({
                 return (
                   <div key={dateKey} className="mb-6">
                     <div className="relative flex items-center mb-3">
-                      <div className="absolute left-4 w-4 h-4 bg-white dark:bg-gray-900 rounded-full border-2 border-gray-400 dark:border-gray-500 z-10"></div>
-                      <h3 className="ml-12 text-xs font-bold text-gray-800 dark:text-gray-200">{dateKey}</h3>
-                      <div className="ml-3 flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
+                      <div className="absolute left-4 w-4 h-4 bg-white dark:bg-lia-bg-primary rounded-full border-2 border-gray-400 dark:border-lia-border-medium z-10"></div>
+                      <h3 className="ml-12 text-xs font-bold text-gray-800 dark:text-lia-text-primary">{dateKey}</h3>
+                      <div className="ml-3 flex-1 h-px bg-gray-200 dark:bg-lia-bg-elevated"></div>
                     </div>
                     <div className="space-y-3">
                       {groupedActivities[dateKey].map((activity) => renderActivityCard(activity, true))}
@@ -1197,7 +1197,7 @@ export function CandidateActivitiesTab({
             {filteredActivities.length > 0 && (
               <div className="relative flex items-center mt-6">
                 <div className="absolute left-4 w-4 h-4 bg-wedo-green rounded-full z-10"></div>
-                <span className="ml-12 text-xs text-gray-800 dark:text-gray-200">
+                <span className="ml-12 text-xs text-gray-800 dark:text-lia-text-primary">
                   Início do processo • {String(candidate.name ?? '')} adicionado ao banco de talentos
                 </span>
               </div>
@@ -1207,11 +1207,11 @@ export function CandidateActivitiesTab({
           <div className="space-y-2">
             {filteredActivities.length === 0 && (
               <div className="flex flex-col items-center justify-center py-12 px-4">
-                <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
-                  <Activity className="w-8 h-8 text-gray-600 dark:text-gray-400" />
+                <div className="w-16 h-16 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center mb-4">
+                  <Activity className="w-8 h-8 text-gray-600 dark:text-lia-text-tertiary" />
                 </div>
-                <h3 className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">Nenhuma atividade registrada ainda</h3>
-                <p className="text-xs text-gray-800 dark:text-gray-200 text-center max-w-xs">As atividades aparecerão aqui conforme o processo avança</p>
+                <h3 className="text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">Nenhuma atividade registrada ainda</h3>
+                <p className="text-xs text-gray-800 dark:text-lia-text-primary text-center max-w-xs">As atividades aparecerão aqui conforme o processo avança</p>
               </div>
             )}
             {filteredActivities.map((activity) => renderActivityCard(activity, false))}

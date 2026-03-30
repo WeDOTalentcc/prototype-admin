@@ -93,10 +93,10 @@ const getUrgencyStyles = (urgency: string) => {
       }
     default:
       return {
-        bg: "bg-gray-50 dark:bg-gray-800/50",
-        border: "border-gray-200 dark:border-gray-700",
-        badge: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
-        icon: "text-gray-800 dark:text-gray-200"
+        bg: "bg-gray-50 dark:bg-lia-bg-secondary/50",
+        border: "border-lia-border-subtle dark:border-lia-border-subtle",
+        badge: "bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary",
+        icon: "text-gray-800 dark:text-lia-text-primary"
       }
   }
 }
@@ -111,20 +111,20 @@ const CandidateCard = ({
   const styles = getUrgencyStyles(candidate.urgency)
   
   return (
-    <div className={`p-4 rounded-md border ${styles.bg} ${styles.border} transition-all`}>
+    <div className={`p-4 rounded-md border ${styles.bg} ${styles.border} transition-colors`}>
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <h4 className="font-medium text-gray-950 dark:text-gray-50 truncate">
+            <h4 className="font-medium text-gray-950 truncate">
               {candidate.name}
             </h4>
             {candidate.lia_score && (
-              <Badge variant="outline" className="text-xs shrink-0 border-gray-900 dark:border-gray-50 text-gray-600 dark:text-gray-400">
+              <Badge variant="outline" className="text-xs shrink-0 border-gray-900 text-gray-600 dark:text-lia-text-tertiary">
                 LIA {candidate.lia_score}%
               </Badge>
             )}
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+          <p className="text-sm text-gray-600 dark:text-lia-text-tertiary truncate">
             {candidate.current_title || "Cargo não informado"}
             {candidate.current_company && ` • ${candidate.current_company}`}
           </p>
@@ -136,7 +136,7 @@ const CandidateCard = ({
       
       <div className="flex items-center gap-2 mb-3">
         <Clock className={`w-4 h-4 ${styles.icon}`} />
-        <span className="text-sm text-gray-600 dark:text-gray-400">
+        <span className="text-sm text-gray-600 dark:text-lia-text-tertiary">
           {candidate.stale_message}
         </span>
         {candidate.urgency === "critical" && (
@@ -155,9 +155,9 @@ const CandidateCard = ({
               size="sm"
               variant={isDestructive ? "outline" : "default"}
               className={`h-8 text-xs ${
-                isDestructive 
+ isDestructive 
                   ? "border-status-error/30 text-status-error hover:bg-status-error/10 dark:border-status-error/30 dark:text-status-error dark:hover:bg-status-error/30" 
-                  : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border-0"
+                  : "bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary hover:bg-gray-200 dark:hover:bg-gray-700 border-0"
               }`}
               onClick={() => onAction(candidate.id, action.id, candidate.name)}
             >
@@ -183,18 +183,18 @@ const JobGroup = ({
   const [isExpanded, setIsExpanded] = useState(defaultExpanded)
   
   return (
-    <div className="border rounded-md overflow-hidden border-gray-200 dark:border-gray-700">
+    <div className="border rounded-md overflow-hidden border-lia-border-subtle dark:border-lia-border-subtle">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors bg-gray-100 dark:bg-gray-800"
+        className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors bg-gray-100 dark:bg-lia-bg-secondary"
       >
         <div className="flex items-center gap-3">
-          <Briefcase className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+          <Briefcase className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
           <div className="text-left">
-            <h3 className="font-medium text-gray-950 dark:text-gray-50">
+            <h3 className="font-medium text-gray-950">
               {group.job_title}
             </h3>
-            <p className="text-sm text-gray-800 dark:text-gray-200">
+            <p className="text-sm text-gray-800 dark:text-lia-text-primary">
               {group.job_department} • {group.candidates.length} candidato{group.candidates.length !== 1 ? 's' : ''}
             </p>
           </div>
@@ -204,15 +204,15 @@ const JobGroup = ({
             {group.candidates.filter(c => c.urgency === "critical").length} críticos
           </Badge>
           {isExpanded ? (
-            <ChevronUp className="w-5 h-5 text-gray-600" />
+            <ChevronUp className="w-5 h-5 lia-text-base" />
           ) : (
-            <ChevronDown className="w-5 h-5 text-gray-600" />
+            <ChevronDown className="w-5 h-5 lia-text-base" />
           )}
         </div>
       </button>
       
       {isExpanded && (
-        <div className="p-4 space-y-3 border-t border-gray-200 dark:border-gray-700">
+        <div className="p-4 space-y-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
           {group.candidates.map((candidate) => (
             <CandidateCard
               key={candidate.id}
@@ -242,23 +242,23 @@ export function PipelineReport({ data, onAction, onClose }: PipelineReportProps)
     <div className="space-y-4 font-open-sans">
       <div className={`p-4 rounded-md border ${getSummaryStyles()}`}>
         <div className="flex items-center gap-3 mb-2">
-          <Users className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-          <span className="font-medium text-gray-950 dark:text-gray-50">
+          <Users className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+          <span className="font-medium text-gray-950">
             Relatório de Pipeline
           </span>
         </div>
-        <p className="text-sm text-gray-800 dark:text-gray-200">
+        <p className="text-sm text-gray-800 dark:text-lia-text-primary">
           {data.summary.message}
         </p>
         <div className="flex gap-4 mt-3 text-sm">
           <div className="flex items-center gap-1">
-            <span className="text-gray-800 dark:text-gray-200">Total:</span>
-            <span className="font-semibold text-gray-950 dark:text-gray-50">{data.total_stale}</span>
+            <span className="text-gray-800 dark:text-lia-text-primary">Total:</span>
+            <span className="font-semibold text-gray-950">{data.total_stale}</span>
           </div>
           {data.critical_count > 0 && (
             <div className="flex items-center gap-1">
               <AlertTriangle className="w-4 h-4 text-status-error" />
-              <span className="text-gray-800 dark:text-gray-200">Críticos:</span>
+              <span className="text-gray-800 dark:text-lia-text-primary">Críticos:</span>
               <span className="font-semibold text-status-error dark:text-status-error">{data.critical_count}</span>
             </div>
           )}
@@ -279,10 +279,10 @@ export function PipelineReport({ data, onAction, onClose }: PipelineReportProps)
       {data.total_stale === 0 && (
         <div className="text-center py-8">
           <CheckCircle className="w-12 h-12 text-status-success mx-auto mb-3" />
-          <h3 className="font-medium text-gray-950 dark:text-gray-50 mb-1">
+          <h3 className="font-medium text-gray-950 mb-1">
             Pipeline em dia!
           </h3>
-          <p className="text-sm text-gray-800 dark:text-gray-200">
+          <p className="text-sm text-gray-800 dark:text-lia-text-primary">
             Todos os candidatos estão sendo acompanhados ativamente.
           </p>
         </div>

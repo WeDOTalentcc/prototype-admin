@@ -24,22 +24,22 @@ export function GraduationYearInput({
   return (
     <div className="grid grid-cols-2 gap-4">
       <div>
-        <Label className="text-xs mb-1.5 block font-medium text-gray-600">
+        <Label className="text-xs mb-1.5 block font-medium lia-text-600">
           Ano de Formatura (Mín)
         </Label>
         <Select
           value={minYear?.toString() || "not_selected"}
           onValueChange={(val) => onMinYearChange(val === "not_selected" ? null : parseInt(val))}
         >
-          <SelectTrigger className="border-gray-200 focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 bg-white text-xs">
+          <SelectTrigger className="border-lia-border-subtle focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 bg-lia-bg-secondary text-xs">
             <SelectValue placeholder="Não selecionado" />
           </SelectTrigger>
-          <SelectContent className="bg-white max-h-64">
+          <SelectContent className="bg-lia-bg-secondary max-h-64">
             <SelectItem 
               value="not_selected"
               className={cn(
                 "py-2 text-xs",
-                minYear === null && "text-gray-800 dark:text-gray-200"
+                minYear === null && "lia-text-800 dark:text-lia-text-primary"
               )}
             >
               Não selecionado
@@ -59,22 +59,22 @@ export function GraduationYearInput({
       </div>
 
       <div>
-        <Label className="text-xs mb-1.5 block font-medium text-gray-600">
+        <Label className="text-xs mb-1.5 block font-medium lia-text-600">
           Ano de Formatura (Máx)
         </Label>
         <Select
           value={maxYear?.toString() || "not_selected"}
           onValueChange={(val) => onMaxYearChange(val === "not_selected" ? null : parseInt(val))}
         >
-          <SelectTrigger className="border-gray-200 focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 bg-white text-xs">
+          <SelectTrigger className="border-lia-border-subtle focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 bg-lia-bg-secondary text-xs">
             <SelectValue placeholder="Não selecionado" />
           </SelectTrigger>
-          <SelectContent className="bg-white max-h-64">
+          <SelectContent className="bg-lia-bg-secondary max-h-64">
             <SelectItem 
               value="not_selected"
               className={cn(
                 "py-2 text-xs",
-                maxYear === null && "text-gray-800 dark:text-gray-200"
+                maxYear === null && "lia-text-800 dark:text-lia-text-primary"
               )}
             >
               Não selecionado

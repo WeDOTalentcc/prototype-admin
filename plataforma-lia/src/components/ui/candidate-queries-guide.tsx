@@ -132,9 +132,9 @@ export function CandidateQueriesGuide({
       <PopoverTrigger asChild>
         <button
           className={cn(
-            "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full border transition-all font-medium",
-            "hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-gray-800/50",
-            isOpen && "border-gray-900 dark:border-gray-50 bg-gray-50 dark:bg-gray-800/50",
+ "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full border transition-[width,height] font-medium",
+            "hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50",
+            isOpen && "border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50",
             className
           )}
           style={{borderColor: isOpen ? 'var(--gray-950)' : 'var(--gray-200)'}}
@@ -157,13 +157,13 @@ export function CandidateQueriesGuide({
             style={{backgroundColor: 'var(--gray-100)',
               border: '1px solid var(--gray-200)'}}
           >
-            <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
+            <Search className="w-4 h-4 lia-text-secondary flex-shrink-0" />
             <input
               type="text"
               placeholder="Buscar consulta..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
+              className="flex-1 bg-transparent text-sm outline-none placeholder:lia-text-secondary"
               style={{color: 'var(--gray-950)'}}
               autoFocus
             />
@@ -173,7 +173,7 @@ export function CandidateQueriesGuide({
                 className="p-1 rounded-full hover:bg-gray-200 transition-colors"
                 aria-label="Limpar busca"
               >
-                <X className="w-3.5 h-3.5 text-gray-400" />
+                <X className="w-3.5 h-3.5 lia-text-secondary" />
               </button>
             )}
           </div>
@@ -183,10 +183,10 @@ export function CandidateQueriesGuide({
           <button
             onClick={() => setActiveCategory(null)}
             className={cn(
-              "px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap",
+ "px-3 py-1.5 rounded-full text-xs font-medium transition-[width,height] whitespace-nowrap",
               !activeCategory 
-                ? "bg-gray-900 dark:bg-gray-50 text-white" 
-                : "bg-gray-100 text-gray-500 hover:bg-gray-200 border border-gray-200"
+                ? "bg-gray-900 text-white" 
+                : "bg-gray-100 lia-text-secondary hover:bg-gray-200 border border-lia-border-subtle"
             )}
            
           >
@@ -197,10 +197,10 @@ export function CandidateQueriesGuide({
               key={key}
               onClick={() => setActiveCategory(activeCategory === key ? null : key)}
               className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap",
+ "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-[width,height] whitespace-nowrap",
                 activeCategory === key 
-                  ? "bg-gray-900 dark:bg-gray-50 text-white" 
-                  : "bg-gray-100 text-gray-500 hover:bg-gray-200 border border-gray-200"
+                  ? "bg-gray-900 text-white" 
+                  : "bg-gray-100 lia-text-secondary hover:bg-gray-200 border border-lia-border-subtle"
               )}
              
             >
@@ -216,12 +216,12 @@ export function CandidateQueriesGuide({
               <button
                 key={query.id}
                 onClick={() => handleSelectQuery(query.question)}
-                className="w-full px-4 py-3 text-left transition-all rounded-md group flex items-start gap-3"
+                className="w-full px-4 py-3 text-left transition-colors rounded-md group flex items-start gap-3"
                 style={{backgroundColor: 'var(--gray-50)',
                   border: '1px solid var(--gray-100)'}}
               >
                 <div className="p-2 rounded-md flex-shrink-0 bg-gray-900/[0.08]">
-                  <query.icon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                  <query.icon className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
                 </div>
                 <span
                   className="text-sm leading-relaxed pt-1"
@@ -238,7 +238,7 @@ export function CandidateQueriesGuide({
                   className="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center"
                   style={{backgroundColor: 'var(--gray-50)'}}
                 >
-                  <Search className="w-5 h-5 text-gray-300" />
+                  <Search className="w-5 h-5 lia-text-muted" />
                 </div>
                 <p
                   className="text-sm"

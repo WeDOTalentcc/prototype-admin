@@ -144,8 +144,8 @@ export function VoiceScreeningDashboard() {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center space-y-3">
-          <Activity className="w-8 h-8 mx-auto text-gray-600 dark:text-gray-400 animate-spin" />
-          <p className="text-sm font-open-sans text-gray-600 dark:text-gray-400">
+          <Activity className="w-8 h-8 mx-auto text-gray-600 dark:text-lia-text-tertiary animate-spin" />
+          <p className="text-sm font-open-sans text-gray-600 dark:text-lia-text-tertiary">
             Carregando dados de Voice Screening...
           </p>
         </div>
@@ -158,13 +158,13 @@ export function VoiceScreeningDashboard() {
       case 'strong_yes':
         return 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success'
       case 'interview':
- return 'bg-gray-100 text-gray-900 dark:text-gray-300'
+ return 'bg-gray-100 text-gray-900 dark:text-lia-text-secondary'
       case 'maybe':
         return 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning'
       case 'reject':
         return 'bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error'
       default:
- return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
+ return 'bg-gray-100 text-gray-800 dark:bg-lia-bg-primary/30 dark:text-lia-text-tertiary'
     }
   }
 
@@ -188,17 +188,17 @@ export function VoiceScreeningDashboard() {
       {/* Header */}
       <div>
         <h1 className="text-sm leading-tight font-semibold font-['Open_Sans',sans-serif] text-gray-950 dark:text-gray-50 flex items-center gap-2">
-          <Phone className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+          <Phone className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
           Voice Screening Analytics
         </h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1 font-open-sans text-xs">
+        <p className="text-gray-600 dark:text-lia-text-tertiary mt-1 font-open-sans text-xs">
           Análise de triagem por voz com IA - OpenMic.ai + LIA Assistant
         </p>
       </div>
 
       {/* KPIs Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
-        <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-gray-700`}>
+        <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-lia-border-subtle`}>
           <CardContent className="p-4">
             <p className={`${textStyles.description} mb-1`}>Total de Screenings</p>
             <p className="text-xl font-bold font-inter text-gray-950 dark:text-gray-50">
@@ -207,7 +207,7 @@ export function VoiceScreeningDashboard() {
           </CardContent>
         </Card>
 
-        <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-gray-700`}>
+        <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-lia-border-subtle`}>
           <CardContent className="p-4">
             <p className={`${textStyles.description} mb-1`}>Com Análise IA</p>
             <p className="text-xl font-bold font-inter text-gray-950 dark:text-gray-50">
@@ -216,7 +216,7 @@ export function VoiceScreeningDashboard() {
           </CardContent>
         </Card>
 
-        <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-gray-700`}>
+        <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-lia-border-subtle`}>
           <CardContent className="p-4">
             <p className={`${textStyles.description} mb-1`}>Score Médio Geral</p>
             <p className="text-xl font-bold font-inter text-gray-950 dark:text-gray-50">
@@ -225,7 +225,7 @@ export function VoiceScreeningDashboard() {
           </CardContent>
         </Card>
 
-        <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-gray-700`}>
+        <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-lia-border-subtle`}>
           <CardContent className="p-4">
             <p className={`${textStyles.description} mb-1`}>Score Técnico Médio</p>
             <p className="text-xl font-bold font-inter text-gray-950 dark:text-gray-50">
@@ -237,17 +237,17 @@ export function VoiceScreeningDashboard() {
 
       {/* Recommendation Breakdown */}
       {analytics?.recommendation_breakdown && Object.keys(analytics.recommendation_breakdown).length > 0 && (
-        <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-gray-700`}>
+        <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-lia-border-subtle`}>
           <CardHeader className="px-4 py-3">
-            <CardTitle className={`${textStyles.title} dark:text-gray-100 flex items-center gap-2`}>
-              <PieChart className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+            <CardTitle className={`${textStyles.title} dark:text-lia-text-primary flex items-center gap-2`}>
+              <PieChart className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
               Distribuição de Recomendações
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
               {Object.entries(analytics.recommendation_breakdown).map(([rec, count]: [string, any]) => (
-                <div key={rec} className="p-3 bg-gray-50 dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-800">
+                <div key={rec} className="p-3 bg-gray-50 dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-gray-800">
                   <p className={`${textStyles.description} mb-1`}>
                     {getRecommendationLabel(rec)}
                   </p>
@@ -262,21 +262,21 @@ export function VoiceScreeningDashboard() {
       )}
 
       {/* Recent Screenings List */}
-      <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-gray-700`}>
+      <Card className={`${cardStyles.default} dark:bg-gray-950 dark:border-lia-border-subtle`}>
         <CardHeader className="px-4 py-3">
-          <CardTitle className={`${textStyles.title} dark:text-gray-100 flex items-center gap-2`}>
-            <Activity className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+          <CardTitle className={`${textStyles.title} dark:text-lia-text-primary flex items-center gap-2`}>
+            <Activity className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
             Screenings Recentes ({screenings.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
           {screenings.length === 0 ? (
             <div className="text-center py-8">
- <Phone className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-200 mb-3" />
-              <p className="text-sm font-open-sans text-gray-600 dark:text-gray-400">
+ <Phone className="w-12 h-12 mx-auto text-gray-300 dark:text-lia-text-primary mb-3" />
+              <p className="text-sm font-open-sans text-gray-600 dark:text-lia-text-tertiary">
                 Nenhum screening realizado ainda
               </p>
-              <p className="text-xs font-open-sans text-gray-800 dark:text-gray-200 mt-1">
+              <p className="text-xs font-open-sans text-gray-800 dark:text-lia-text-primary mt-1">
                 Use o endpoint /api/v1/openmic/test-call para iniciar um screening
               </p>
             </div>
@@ -285,7 +285,7 @@ export function VoiceScreeningDashboard() {
               {screenings.map((screening) => (
                 <div 
                   key={screening.id}
-                  className="p-3 bg-gray-50 dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-800 hover:border-gray-900 dark:hover:border-gray-50 dark:hover:border-gray-900 dark:hover:border-gray-50 transition-colors"
+                  className="p-3 bg-gray-50 dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-gray-800 hover:border-gray-900 dark:hover:border-gray-50 dark:hover:border-gray-900 dark:hover:border-gray-50 transition-colors"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
@@ -300,7 +300,7 @@ export function VoiceScreeningDashboard() {
                         )}
                       </div>
                       
-                      <p className="text-xs font-open-sans text-gray-600 dark:text-gray-400 mb-2">
+                      <p className="text-xs font-open-sans text-gray-600 dark:text-lia-text-tertiary mb-2">
                         {screening.job_title} • {screening.duration_seconds}s • {screening.candidate_phone}
                       </p>
 
@@ -308,19 +308,19 @@ export function VoiceScreeningDashboard() {
                         <>
                           <div className="flex items-center gap-3 mb-2">
                             <div className="flex items-center gap-1.5">
-                              <span className={`${textStyles.description} dark:text-gray-400`}>Geral:</span>
+                              <span className={`${textStyles.description} dark:text-lia-text-tertiary`}>Geral:</span>
                               <span className="text-xs font-bold font-inter text-gray-950 dark:text-gray-50">
                                 {screening.analysis.overall_score}/100
                               </span>
                             </div>
                             <div className="flex items-center gap-1.5">
-                              <span className={`${textStyles.description} dark:text-gray-400`}>Técnico:</span>
+                              <span className={`${textStyles.description} dark:text-lia-text-tertiary`}>Técnico:</span>
                               <span className="text-xs font-bold font-inter text-gray-950 dark:text-gray-50">
                                 {screening.analysis.tech_score || 'N/A'}
                               </span>
                             </div>
                             <div className="flex items-center gap-1.5">
-                              <span className={`${textStyles.description} dark:text-gray-400`}>Comunicação:</span>
+                              <span className={`${textStyles.description} dark:text-lia-text-tertiary`}>Comunicação:</span>
                               <span className="text-xs font-bold font-inter text-gray-950 dark:text-gray-50">
                                 {screening.analysis.comm_score || 'N/A'}
                               </span>
@@ -328,7 +328,7 @@ export function VoiceScreeningDashboard() {
                           </div>
 
                           {screening.analysis.summary && (
-                            <p className="text-xs font-open-sans text-gray-600 dark:text-gray-400 line-clamp-2">
+                            <p className="text-xs font-open-sans text-gray-600 dark:text-lia-text-tertiary line-clamp-2">
                               {screening.analysis.summary}
                             </p>
                           )}
@@ -350,11 +350,11 @@ export function VoiceScreeningDashboard() {
                     </div>
 
                     <div className="flex flex-col items-end gap-2">
-                      <p className={`${textStyles.description} dark:text-gray-400`}>
+                      <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>
                         {new Date(screening.created_at).toLocaleDateString('pt-BR')}
                       </p>
                       {screening.processing_status && (
- <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400 text-xs tracking-tight">
+ <Badge className="bg-gray-100 text-gray-800 dark:bg-lia-bg-primary/30 dark:text-lia-text-tertiary text-xs tracking-tight">
                           {screening.processing_status}
                         </Badge>
                       )}
@@ -368,7 +368,7 @@ export function VoiceScreeningDashboard() {
       </Card>
 
       {/* Integration Info Card */}
- <Card className="bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-200">
+ <Card className="bg-gray-50 dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-subtle">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
             <Brain className="w-4 h-4 mt-0.5 flex-shrink-0 text-wedo-cyan" />
@@ -376,7 +376,7 @@ export function VoiceScreeningDashboard() {
               <p className="font-semibold font-open-sans text-sm text-gray-950 dark:text-gray-50 mb-1">
                 OpenMic.ai + LIA Integration
               </p>
-              <p className={`${textStyles.bodySmall} dark:text-gray-400`}>
+              <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>
                 Sistema de triagem por voz automática com análise dual: keywords básicos (~100ms) + Claude Sonnet 4.5 deep analysis (~10-15s). 
                 Todas as ligações são gravadas, transcritas e analisadas automaticamente com 4 dimensões: técnica, comunicação, fit cultural e avaliação geral.
               </p>

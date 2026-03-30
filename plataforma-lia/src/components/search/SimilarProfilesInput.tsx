@@ -58,7 +58,7 @@ export function SimilarProfilesInput({
       {similarUrls.map((url, index) => (
         <div key={index} className="relative">
           <div className="absolute left-3 top-1/2 -translate-y-1/2">
-            <Linkedin className="w-4 h-4 text-gray-600" />
+            <Linkedin className="w-4 h-4 lia-text-600" />
           </div>
           <input
             type="text"
@@ -69,7 +69,7 @@ export function SimilarProfilesInput({
                 ? "Cole a URL do LinkedIn ou ID do candidato..."
                 : "Cole outra URL para combinar perfis..."
             }
-            className="lia-input w-full pl-10 pr-20 py-2.5 text-sm"
+            className="bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-lg lia-text-900 dark:text-lia-text-primary focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-400/20 w-full pl-10 pr-20 py-2.5 text-sm"
           />
           <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
             {index > 0 && (
@@ -86,7 +86,7 @@ export function SimilarProfilesInput({
                   <TooltipTrigger asChild>
                     <button
                       onClick={onAddSimilarUrl}
-                      className="h-8 px-3 rounded-md text-sm font-bold hover:bg-gray-800 hover:text-white transition-colors text-gray-700 bg-gray-100"
+                      className="h-8 px-3 rounded-md text-sm font-bold hover:bg-gray-800 hover:text-white transition-colors lia-text-700 bg-gray-100"
                     >
                       + URL
                     </button>
@@ -104,7 +104,7 @@ export function SimilarProfilesInput({
       {/* Separador CV */}
       <div className="flex items-center gap-2">
         <div className="flex-1 h-px bg-gray-200" />
-        <span className="text-xs text-gray-600 px-2">ou</span>
+        <span className="text-xs lia-text-600 px-2">ou</span>
         <div className="flex-1 h-px bg-gray-200" />
       </div>
 
@@ -126,7 +126,7 @@ export function SimilarProfilesInput({
                 className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs"
                 style={{backgroundColor: "var(--gray-100)"}}
               >
-                <FileText className="w-3.5 h-3.5 text-gray-800 dark:text-gray-200" />
+                <FileText className="w-3.5 h-3.5 lia-text-800 dark:text-lia-text-primary" />
                 <span className="max-w-[150px] truncate">{file.name}</span>
                 <button onClick={() => onRemoveCvFile(index)} className="hover:text-status-error">
                   <X className="w-3 h-3" />
@@ -136,7 +136,7 @@ export function SimilarProfilesInput({
             {similarCvFiles.length < MAX_CV_FILES && (
               <button
                 onClick={() => cvFileInputRef.current?.click()}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium hover:bg-gray-100 transition-colors border border-gray-200"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium hover:bg-gray-100 transition-colors border border-lia-border-subtle"
                 style={{backgroundColor: "var(--gray-100)"}}
               >
                 <Upload className="w-3 h-3" />
@@ -147,7 +147,7 @@ export function SimilarProfilesInput({
         ) : (
           <button
             onClick={() => cvFileInputRef.current?.click()}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md text-xs text-gray-800 dark:text-gray-200 hover:bg-gray-100 transition-colors border border-gray-200"
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md text-xs lia-text-800 dark:text-lia-text-primary hover:bg-gray-100 transition-colors border border-lia-border-subtle"
             style={{backgroundColor: "var(--gray-100)"}}
           >
             <Upload className="w-3.5 h-3.5" />
@@ -179,16 +179,16 @@ export function SimilarProfilesInput({
 
       {/* Perfil Ideal Combinado */}
       {showCombinedSuggestions && combinedSuggestions.length > 0 && (
-        <div className="p-3 rounded-md space-y-2 border border-gray-200" style={{backgroundColor: "var(--gray-50)"}}>
+        <div className="p-3 rounded-md space-y-2 border border-lia-border-subtle" style={{backgroundColor: "var(--gray-50)"}}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-              <span className="text-xs font-medium text-gray-800">Perfil Ideal sugerido pela LIA</span>
+              <span className="text-xs font-medium lia-text-800">Perfil Ideal sugerido pela LIA</span>
             </div>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger>
-                  <Info className="w-3.5 h-3.5 text-gray-600" />
+                  <Info className="w-3.5 h-3.5 lia-text-600" />
                 </TooltipTrigger>
                 <TooltipContent side="top" className="text-xs max-w-[280px]">
                   A LIA analisou os perfis e combinou skills, experiências e senioridade em comum. Edite ou remova tags antes de buscar.
@@ -200,9 +200,9 @@ export function SimilarProfilesInput({
             {combinedSuggestions.map((keyword) => (
               <div
                 key={keyword}
-                className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium group border border-gray-200 bg-white"
+                className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium group border border-lia-border-subtle bg-lia-bg-primary"
               >
-                <span className="text-gray-700">{keyword}</span>
+                <span className="lia-text-700">{keyword}</span>
                 <button
                   onClick={() => onRemoveSuggestion(keyword)}
                   className="opacity-50 group-hover:opacity-100 hover:text-status-error transition-opacity"
@@ -212,7 +212,7 @@ export function SimilarProfilesInput({
               </div>
             ))}
           </div>
-          <p className="text-xs text-gray-800 dark:text-gray-200">
+          <p className="text-xs lia-text-800 dark:text-lia-text-primary">
             Baseado em {validUrls.length + similarCvFiles.length} perfis: skills em comum e pontos fortes combinados.
           </p>
         </div>
@@ -231,10 +231,10 @@ export function SimilarProfilesInput({
       </button>
 
       {/* Dica */}
-      <div className="p-2.5 rounded-md bg-gray-50 border border-gray-200">
+      <div className="p-2.5 rounded-md bg-gray-50 border border-lia-border-subtle">
         <div className="flex items-start gap-2">
-          <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-600" />
-          <p className="text-xs text-gray-800 dark:text-gray-200">
+          <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 lia-text-600" />
+          <p className="text-xs lia-text-800 dark:text-lia-text-primary">
             <strong>Dica:</strong> Cole 1 a 2 links do LinkedIn ou faça upload de até 2 CVs. Com 2+ perfis, a LIA combina as melhores características e sugere palavras-chave para encontrar candidatos similares.
           </p>
         </div>

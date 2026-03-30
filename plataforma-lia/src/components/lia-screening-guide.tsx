@@ -219,7 +219,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-md w-full max-w-6xl max-h-[95vh] overflow-y-auto">
+      <div className="bg-white dark:bg-lia-bg-secondary rounded-md w-full max-w-6xl max-h-[95vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 bg-status-success/10 dark:bg-status-success/20">
           <div className="flex items-center gap-3">
@@ -227,11 +227,11 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
               <Brain className="w-6 h-6 text-wedo-cyan" />
             </div>
             <div>
-              <h3 className="text-xl font-semibold font-sans text-gray-950 dark:text-gray-50 flex items-center gap-2">
+              <h3 className="text-xl font-semibold font-sans text-gray-950 flex items-center gap-2">
                 <Brain className="w-5 h-5 text-status-success" />
                 Roteiro de Triagem LIA
               </h3>
-              <p className="text-sm text-gray-800 dark:text-gray-200">
+              <p className="text-sm text-gray-800 dark:text-lia-text-primary">
                 Guia completo para triagem da vaga: {j.str('title')}
               </p>
             </div>
@@ -253,16 +253,16 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
 
         <div className="flex">
           {/* Sidebar Navigation */}
-          <div className="w-64 bg-white dark:bg-gray-800 p-4">
+          <div className="w-64 bg-white dark:bg-lia-bg-secondary p-4">
             <div className="space-y-2">
               {sections.map((section) => (
                 <button
                   key={section.id}
                   onClick={() => setActiveSection(section.id as typeof activeSection)}
                   className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-colors ${
-                    activeSection === section.id
+ activeSection === section.id
                       ? 'bg-status-success/15 dark:bg-status-success/20 text-status-success dark:text-status-success'
-                      : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200'
+                      : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-800 dark:text-lia-text-primary'
                   }`}
                 >
                   <section.icon className="w-4 h-4" />
@@ -272,23 +272,23 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
             </div>
 
             {/* Quick Stats */}
-            <div className="mt-6 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
-              <h4 className="text-sm font-medium font-sans text-gray-950 dark:text-gray-50 mb-2">Informações da Vaga</h4>
+            <div className="mt-6 p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+              <h4 className="text-sm font-medium font-sans text-gray-950 mb-2">Informações da Vaga</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-800 dark:text-gray-200">Nível:</span>
+                  <span className="text-gray-800 dark:text-lia-text-primary">Nível:</span>
                   <Badge variant="outline">{j.str('level')}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-800 dark:text-gray-200">Modalidade:</span>
+                  <span className="text-gray-800 dark:text-lia-text-primary">Modalidade:</span>
                   <Badge variant="outline">{j.str('workModel')}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-800 dark:text-gray-200">Urgência:</span>
+                  <span className="text-gray-800 dark:text-lia-text-primary">Urgência:</span>
                   <div className="flex items-center gap-1">
                     {Array.from({length: 5}).map((_, i) => (
                       <div key={i} className={`w-2 h-2 rounded-full ${
-                        i < (j.num('urgencyLevel', 3)) ? 'bg-status-error' : 'bg-gray-300'
+ i < (j.num('urgencyLevel', 3)) ? 'bg-status-error' : 'bg-gray-300'
                       }`} />
                     ))}
                   </div>
@@ -303,17 +303,17 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
             {activeSection === 'overview' && (
               <div className="space-y-6">
                 <div>
-                  <h4 className="text-lg font-semibold font-sans text-gray-950 dark:text-gray-50 mb-4">Visão Geral do Processo</h4>
+                  <h4 className="text-lg font-semibold font-sans text-gray-950 mb-4">Visão Geral do Processo</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Card className="">
                       <CardHeader className="pb-3">
                         <CardTitle className="text-sm flex items-center gap-2 font-sans">
-                          <Target className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                          <Target className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
                           Objetivo da Triagem
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-sm text-gray-800 dark:text-gray-200">
+                        <p className="text-sm text-gray-800 dark:text-lia-text-primary">
                           Validar fit inicial do candidato com a vaga, avaliar competências básicas e motivação,
                           além de esclarecer expectativas mútuas antes de avançar no processo.
                         </p>
@@ -328,7 +328,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-sm text-gray-800 dark:text-gray-200">
+                        <p className="text-sm text-gray-800 dark:text-lia-text-primary">
                           20-30 minutos para uma conversa completa, incluindo apresentação da empresa,
                           perguntas de triagem e esclarecimento de dúvidas.
                         </p>
@@ -372,7 +372,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-sm text-gray-800 dark:text-gray-200">
+                        <p className="text-sm text-gray-800 dark:text-lia-text-primary">
                           Decisão clara sobre prosseguir com o candidato, com feedback estruturado
                           e próximos passos bem definidos.
                         </p>
@@ -383,15 +383,15 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
 
                 {/* Key Requirements Checklist */}
                 <div>
-                  <h5 className="font-medium font-sans text-gray-950 dark:text-gray-50 mb-3">Checklist de Requisitos Essenciais</h5>
+                  <h5 className="font-medium font-sans text-gray-950 mb-3">Checklist de Requisitos Essenciais</h5>
                   <div className="space-y-2">
                     {j.arr<string>('requirements').length > 0 ? j.arr<string>('requirements').map((requirement: string, index: number) => (
-                      <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                      <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                         <input type="checkbox" className="rounded-md" />
-                        <span className="text-sm text-gray-800 dark:text-gray-200">{requirement}</span>
+                        <span className="text-sm text-gray-800 dark:text-lia-text-primary">{requirement}</span>
                       </div>
                     )) : (
-                      <div className="text-sm text-gray-600">Nenhum requisito específico definido</div>
+                      <div className="text-sm lia-text-base">Nenhum requisito específico definido</div>
                     )}
                   </div>
                 </div>
@@ -402,20 +402,20 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
             {activeSection === 'approach' && (
               <div className="space-y-6">
                 <div>
-                  <h4 className="text-lg font-semibold font-sans text-gray-950 dark:text-gray-50 mb-4">Estratégia de Abordagem</h4>
+                  <h4 className="text-lg font-semibold font-sans text-gray-950 mb-4">Estratégia de Abordagem</h4>
 
                   <Card className="mb-6">
                     <CardHeader>
                       <CardTitle className="text-sm flex items-center gap-2 font-sans">
-                        <MessageSquare className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                        <MessageSquare className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
                         Tom e Postura
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="text-center p-3 bg-gray-100 dark:bg-gray-800 rounded-md">
- <div className="text-sm font-medium text-gray-600">Tom</div>
- <div className="text-xs text-gray-600">{approachStrategy.tone}</div>
+                        <div className="text-center p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+ <div className="text-sm font-medium lia-text-base">Tom</div>
+ <div className="text-xs lia-text-base">{approachStrategy.tone}</div>
                         </div>
                         <div className="text-center p-3 bg-status-success/10 dark:bg-status-success/20 rounded-md">
                           <div className="text-sm font-medium text-status-success dark:text-status-success">Duração</div>
@@ -440,11 +440,11 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                       <CardContent>
                         <div className="space-y-3">
                           {approachStrategy.structure.map((step, index) => (
-                            <div key={index} className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
+                            <div key={index} className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                               <div className="w-6 h-6 bg-status-success/15 dark:bg-status-success/20 rounded-full flex items-center justify-center text-status-success text-xs font-bold">
                                 {index + 1}
                               </div>
-                              <span className="text-sm text-gray-800 dark:text-gray-200">{step}</span>
+                              <span className="text-sm text-gray-800 dark:text-lia-text-primary">{step}</span>
                             </div>
                           ))}
                         </div>
@@ -463,7 +463,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                           {approachStrategy.tips.map((tip, index) => (
                             <div key={index} className="flex items-start gap-2">
                               <Star className="w-3 h-3 text-status-warning mt-1 flex-shrink-0" />
-                              <span className="text-sm text-gray-800 dark:text-gray-200">{tip}</span>
+                              <span className="text-sm text-gray-800 dark:text-lia-text-primary">{tip}</span>
                             </div>
                           ))}
                         </div>
@@ -494,7 +494,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                   </CardHeader>
                   <CardContent>
                     <div className="p-4 bg-status-success/10 dark:bg-status-success/20 rounded-md">
-                      <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">
+                      <p className="text-sm text-gray-800 dark:text-lia-text-primary leading-relaxed">
                         "Olá <strong>{c?.str('name') || '[Nome]'}</strong>! Como está? Muito obrigado pelo interesse na nossa vaga de <strong>{j.str('title')}</strong>.
                         <br /><br />
                         Sou <strong>[SEU NOME]</strong> da equipe de recrutamento. Esta é uma conversa inicial para nos conhecermos melhor e eu te contar mais sobre a oportunidade.
@@ -511,7 +511,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
             {activeSection === 'questions' && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-lg font-semibold text-gray-950 dark:text-gray-50">Perguntas de Triagem</h4>
+                  <h4 className="text-lg font-semibold text-gray-950">Perguntas de Triagem</h4>
                   <Button variant="outline" size="sm" className="gap-2">
                     <Edit className="w-3 h-3" />
                     Personalizar
@@ -523,7 +523,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                     <Card key={sectionIndex}>
                       <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle className="text-sm flex items-center gap-2">
-                          <Target className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                          <Target className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
                           {section.category}
                         </CardTitle>
                         <div className="flex items-center gap-2">
@@ -546,20 +546,20 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-3">
- <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-md text-xs text-gray-600">
+ <div className="p-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-md text-xs lia-text-base">
                             <strong>Objetivo:</strong> {section.purpose}
                           </div>
                           <div className="space-y-2">
                             {section.questions.map((question: unknown, questionIndex: number) => (
-                              <div key={questionIndex} className="flex items-start gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-md">
-                                <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-400 text-xs font-bold flex-shrink-0">
+                              <div key={questionIndex} className="flex items-start gap-3 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
+                                <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center text-gray-600 dark:text-lia-text-tertiary text-xs font-bold flex-shrink-0">
                                   {questionIndex + 1}
                                 </div>
                                 <div className="flex-1">
-                                  <p className="text-sm text-gray-800 dark:text-gray-200">{String(question)}</p>
+                                  <p className="text-sm text-gray-800 dark:text-lia-text-primary">{String(question)}</p>
                                   <textarea
                                     placeholder="Anotações da resposta..."
-                                    className="w-full mt-2 p-2 border border-gray-200 dark:border-gray-600 rounded-md text-xs bg-gray-50 dark:bg-gray-800"
+                                    className="w-full mt-2 p-2 border border-lia-border-subtle dark:border-lia-border-default rounded-md text-xs bg-gray-50 dark:bg-lia-bg-secondary"
                                     rows={2}
                                   />
                                 </div>
@@ -583,10 +583,10 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2 block">
+                        <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2 block">
                           Recomendação Geral
                         </label>
-                        <select className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm">
+                        <select className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md text-sm">
                           <option value="">Selecione...</option>
                           <option value="aprovado">✅ Aprovado - Prosseguir</option>
                           <option value="condicional">⚠️ Aprovado com ressalvas</option>
@@ -594,10 +594,10 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                         </select>
                       </div>
                       <div>
-                        <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2 block">
+                        <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2 block">
                           Nível de Confiança
                         </label>
-                        <select className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm">
+                        <select className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md text-sm">
                           <option value="">Selecione...</option>
                           <option value="alta">🔥 Alta confiança</option>
                           <option value="media">🎯 Média confiança</option>
@@ -606,12 +606,12 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                       </div>
                     </div>
                     <div className="mt-4">
-                      <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2 block">
+                      <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2 block">
                         Observações e Próximos Passos
                       </label>
                       <textarea
                         placeholder="Resumo da conversa, pontos de atenção, recomendações para próximas etapas..."
-                        className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md text-sm"
+                        className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md text-sm"
                         rows={4}
                       />
                     </div>
@@ -624,7 +624,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
             {activeSection === 'presentation' && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-lg font-semibold text-gray-950 dark:text-gray-50">Apresentação da Vaga e Empresa</h4>
+                  <h4 className="text-lg font-semibold text-gray-950">Apresentação da Vaga e Empresa</h4>
                   <Button
                     variant="outline"
                     size="sm"
@@ -643,12 +643,12 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                   <Card>
                     <CardHeader>
                       <CardTitle className="text-sm flex items-center gap-2">
-                        <Building className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                        <Building className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
                         Sobre a Empresa
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                      <p className="text-sm text-gray-600 dark:text-lia-text-tertiary leading-relaxed">
                         {jobPresentation.company}
                       </p>
                     </CardContent>
@@ -662,7 +662,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                      <p className="text-sm text-gray-600 dark:text-lia-text-tertiary leading-relaxed">
                         {jobPresentation.role}
                       </p>
                     </CardContent>
@@ -676,7 +676,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                      <p className="text-sm text-gray-600 dark:text-lia-text-tertiary leading-relaxed">
                         {jobPresentation.team}
                       </p>
                     </CardContent>
@@ -690,7 +690,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                      <p className="text-sm text-gray-600 dark:text-lia-text-tertiary leading-relaxed">
                         {jobPresentation.growth}
                       </p>
                     </CardContent>
@@ -707,10 +707,10 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                      <div className="text-center p-3 bg-gray-100 dark:bg-gray-800 rounded-md">
-                        <MapPin className="w-5 h-5 text-gray-600 dark:text-gray-400 mx-auto mb-1" />
- <div className="text-sm font-medium text-gray-600">Local</div>
- <div className="text-xs text-gray-600">{j.str('location')}</div>
+                      <div className="text-center p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+                        <MapPin className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary mx-auto mb-1" />
+ <div className="text-sm font-medium lia-text-base">Local</div>
+ <div className="text-xs lia-text-base">{j.str('location')}</div>
                       </div>
                       <div className="text-center p-3 bg-status-success/10 dark:bg-status-success/20 rounded-md">
                         <Globe className="w-5 h-5 text-status-success mx-auto mb-1" />
@@ -742,9 +742,9 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {jobPresentation.benefits.map((benefit: string, index: number) => (
-                        <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
+                        <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                           <CheckCircle className="w-4 h-4 text-status-success" />
-                          <span className="text-sm text-gray-800 dark:text-gray-200">{benefit}</span>
+                          <span className="text-sm text-gray-800 dark:text-lia-text-primary">{benefit}</span>
                         </div>
                       ))}
                     </div>
@@ -772,8 +772,8 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                     </Button>
                   </CardHeader>
                   <CardContent>
-                    <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-md border border-gray-300 dark:border-gray-600">
-                      <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">
+                    <div className="p-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default">
+                      <p className="text-sm text-gray-800 dark:text-lia-text-primary leading-relaxed">
                         "Deixe eu te contar um pouco sobre nós e sobre esta oportunidade.
                         <br /><br />
                         <strong>{jobPresentation.company}</strong>
@@ -796,8 +796,8 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
             {activeSection === 'feedback' && (
               <div className="space-y-6">
                 <div>
-                  <h4 className="text-lg font-semibold text-gray-950 dark:text-gray-50 mb-4">Estratégia de Feedback</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                  <h4 className="text-lg font-semibold text-gray-950 mb-4">Estratégia de Feedback</h4>
+                  <p className="text-sm text-gray-600 dark:text-lia-text-tertiary mb-6">
                     Diretrizes para fornecer feedback construtivo e manter relacionamento positivo com todos os candidatos
                   </p>
                 </div>
@@ -806,7 +806,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-sm flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                      <Clock className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
                       Timeline de Feedback
                     </CardTitle>
                   </CardHeader>
@@ -857,13 +857,13 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                   <CardContent>
                     <div className="space-y-3">
                       <div>
-                        <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Assunto:</label>
+                        <label className="text-xs font-medium text-gray-600 dark:text-lia-text-tertiary">Assunto:</label>
                         <div className="p-2 bg-status-success/10 dark:bg-status-success/20 rounded-md text-sm text-status-success dark:text-status-success">
                           {feedbackStrategy.approvedTemplate.subject}
                         </div>
                       </div>
                       <div>
-                        <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Mensagem:</label>
+                        <label className="text-xs font-medium text-gray-600 dark:text-lia-text-tertiary">Mensagem:</label>
                         <div className="p-3 bg-status-success/10 dark:bg-status-success/20 rounded-md text-sm text-status-success dark:text-status-success whitespace-pre-line">
                           {feedbackStrategy.approvedTemplate.message}
                         </div>
@@ -895,13 +895,13 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                   <CardContent>
                     <div className="space-y-3">
                       <div>
-                        <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Assunto:</label>
+                        <label className="text-xs font-medium text-gray-600 dark:text-lia-text-tertiary">Assunto:</label>
                         <div className="p-2 bg-wedo-orange/10 dark:bg-wedo-orange/10/20 rounded-md text-sm text-wedo-orange dark:text-wedo-orange">
                           {feedbackStrategy.rejectedTemplate.subject}
                         </div>
                       </div>
                       <div>
-                        <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Mensagem:</label>
+                        <label className="text-xs font-medium text-gray-600 dark:text-lia-text-tertiary">Mensagem:</label>
                         <div className="p-3 bg-wedo-orange/10 dark:bg-wedo-orange/10/20 rounded-md text-sm text-wedo-orange dark:text-wedo-orange whitespace-pre-line">
                           {feedbackStrategy.rejectedTemplate.message}
                         </div>
@@ -941,27 +941,27 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                   <CardContent>
                     <div className="space-y-4">
                       <div>
-                        <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2 block">
+                        <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2 block">
                           Pontos Fortes Identificados
                         </label>
                         <textarea
                           placeholder="Ex: Excelente comunicação, conhecimento técnico sólido em React..."
-                          className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md text-sm"
+                          className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md text-sm"
                           rows={3}
                         />
                       </div>
                       <div>
-                        <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2 block">
+                        <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2 block">
                           Áreas de Desenvolvimento Sugeridas
                         </label>
                         <textarea
                           placeholder="Ex: Aprofundar conhecimentos em TypeScript, ganhar experiência em liderança..."
-                          className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md text-sm"
+                          className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md text-sm"
                           rows={3}
                         />
                       </div>
                       <div className="flex gap-3">
-                        <Button className="flex-1 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200">
+                        <Button className="flex-1 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200">
                           Gerar Feedback Personalizado
                         </Button>
                         <Button variant="outline" className="gap-2">
@@ -979,8 +979,8 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
             {activeSection === 'timeline' && (
               <div className="space-y-6">
                 <div>
-                  <h4 className="text-lg font-semibold text-gray-950 dark:text-gray-50 mb-4">Timeline do Processo</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                  <h4 className="text-lg font-semibold text-gray-950 mb-4">Timeline do Processo</h4>
+                  <p className="text-sm text-gray-600 dark:text-lia-text-tertiary mb-6">
                     Cronograma sugerido para execução eficiente da triagem e próximos passos
                   </p>
                 </div>
@@ -989,19 +989,19 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-sm flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                      <Clock className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
                       Cronograma de Execução
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       <div className="flex items-start gap-4">
-                        <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-400 text-sm font-bold">
+                        <div className="w-8 h-8 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center text-gray-600 dark:text-lia-text-tertiary text-sm font-bold">
                           1
                         </div>
                         <div className="flex-1">
-                          <div className="font-medium text-gray-950 dark:text-gray-50">Preparação (5 min antes)</div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">Revisar currículo, preparar perguntas específicas, configurar ambiente</p>
+                          <div className="font-medium text-gray-950">Preparação (5 min antes)</div>
+                          <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">Revisar currículo, preparar perguntas específicas, configurar ambiente</p>
                         </div>
                         <Badge variant="outline" className="text-xs">5 min</Badge>
                       </div>
@@ -1011,8 +1011,8 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                           2
                         </div>
                         <div className="flex-1">
-                          <div className="font-medium text-gray-950 dark:text-gray-50">Triagem (20-30 min)</div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">Execução da conversa seguindo roteiro estruturado</p>
+                          <div className="font-medium text-gray-950">Triagem (20-30 min)</div>
+                          <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">Execução da conversa seguindo roteiro estruturado</p>
                         </div>
                         <Badge variant="outline" className="text-xs">25 min</Badge>
                       </div>
@@ -1022,8 +1022,8 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                           3
                         </div>
                         <div className="flex-1">
-                          <div className="font-medium text-gray-950 dark:text-gray-50">Avaliação (5-10 min após)</div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">Análise das respostas, decisão e anotações</p>
+                          <div className="font-medium text-gray-950">Avaliação (5-10 min após)</div>
+                          <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">Análise das respostas, decisão e anotações</p>
                         </div>
                         <Badge variant="outline" className="text-xs">10 min</Badge>
                       </div>
@@ -1033,8 +1033,8 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                           4
                         </div>
                         <div className="flex-1">
-                          <div className="font-medium text-gray-950 dark:text-gray-50">Feedback (24-48h após)</div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">Envio de retorno personalizado ao candidato</p>
+                          <div className="font-medium text-gray-950">Feedback (24-48h após)</div>
+                          <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">Envio de retorno personalizado ao candidato</p>
                         </div>
                         <Badge variant="outline" className="text-xs">1-2 dias</Badge>
                       </div>
@@ -1093,8 +1093,8 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                         "Atualizar pipeline de candidatos"
                       ].map((item, index) => (
                         <div key={index} className="flex items-center gap-3">
-                          <input type="checkbox" className="rounded-md border-gray-300" />
-                          <span className="text-sm text-gray-800 dark:text-gray-200">{item}</span>
+                          <input type="checkbox" className="rounded-md border-lia-border-default" />
+                          <span className="text-sm text-gray-800 dark:text-lia-text-primary">{item}</span>
                         </div>
                       ))}
                     </div>
@@ -1106,7 +1106,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
         </div>
 
         {/* Footer Actions */}
-        <div className="p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+        <div className="p-6 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="bg-status-success/15 text-status-success">
@@ -1121,7 +1121,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                 <FileText className="w-4 h-4" />
                 Salvar Roteiro
               </Button>
-              <Button className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200">
+              <Button className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200">
                 <Brain className="w-4 h-4 text-wedo-cyan" />
                 Iniciar Triagem
               </Button>

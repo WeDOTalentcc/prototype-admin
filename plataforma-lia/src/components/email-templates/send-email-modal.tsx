@@ -139,7 +139,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
-        className="max-w-4xl h-[80vh] p-0 gap-0 overflow-hidden bg-white border border-gray-100 rounded-md dark:bg-gray-800 dark:border-gray-700"
+        className="max-w-4xl h-[80vh] p-0 gap-0 overflow-hidden bg-white border border-lia-border-subtle rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle"
        
       >
         <VisuallyHidden>
@@ -152,27 +152,27 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
               <div className="w-14 h-14 rounded-full bg-status-success/10 flex items-center justify-center mx-auto mb-3">
                 <CheckCircle className="w-7 h-7 text-status-success" />
               </div>
-              <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50 mb-1">
+              <h3 className="text-sm font-semibold text-gray-950 mb-1">
                 Email Enviado!
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">
                 Enviado para {recipientEmail}
               </p>
             </div>
           </div>
         ) : (
           <>
-            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="flex items-center gap-2.5">
                 <div className="w-7 h-7 rounded-md bg-gray-100 flex items-center justify-center">
-                  <Mail className="w-3.5 h-3.5 text-gray-600" />
+                  <Mail className="w-3.5 h-3.5 lia-text-base" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-semibold text-gray-950 dark:text-gray-50">
+                  <h2 className="text-sm font-semibold text-gray-950">
                     Enviar Email
                   </h2>
                   {candidate && (
-                    <p className="text-sm-ui text-gray-600">
+                    <p className="text-sm-ui lia-text-base">
                       para {candidate.name}
                     </p>
                   )}
@@ -183,7 +183,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
                   variant="outline"
                   size="sm"
                   onClick={onClose}
-                  className="h-9 px-4 text-sm-ui font-medium border-gray-200 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                  className="h-9 px-4 text-sm-ui font-medium border-lia-border-subtle text-gray-700 hover:bg-gray-50 dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-700"
                 >
                   Cancelar
                 </Button>
@@ -191,7 +191,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
                   onClick={handleSend}
                   disabled={!isValid || sending}
                   size="sm"
-                  className="h-9 px-4 text-sm-ui font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                  className="h-9 px-4 text-sm-ui font-medium bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
                 >
                   {sending ? (
                     <>
@@ -209,7 +209,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
             </div>
 
             <div className="flex flex-1 overflow-hidden">
-              <div className="w-[55%] flex flex-col border-r border-gray-100 overflow-y-auto">
+              <div className="w-[55%] flex flex-col border-r border-lia-border-subtle overflow-y-auto">
                 <div className="p-4">
                   <MessageComposer
                     channel="email"
@@ -227,35 +227,35 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
               </div>
 
               <div className="w-[45%] flex flex-col bg-gray-50">
-                <div className="px-4 py-3 border-b border-gray-100">
-                  <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-2">
+                <div className="px-4 py-3 border-b border-lia-border-subtle">
+                  <p className="text-xs font-medium lia-text-base uppercase tracking-wider mb-2">
                     Preview
                   </p>
                   
-                  <div className="bg-white rounded-md border border-gray-100 p-2.5">
+                  <div className="bg-lia-bg-primary rounded-md border border-lia-border-subtle p-2.5">
                     <div className="flex items-center justify-between">
-                      <p className="text-xs text-gray-600">
+                      <p className="text-xs lia-text-base">
                         Para:
                       </p>
                       <div className="flex items-center gap-0.5">
                         <button className="p-0.5 hover:bg-gray-50 rounded-md">
-                          <ChevronLeft className="w-3.5 h-3.5 text-gray-500" />
+                          <ChevronLeft className="w-3.5 h-3.5 lia-text-secondary" />
                         </button>
                         <button className="p-0.5 hover:bg-gray-50 rounded-md">
-                          <ChevronRight className="w-3.5 h-3.5 text-gray-500" />
+                          <ChevronRight className="w-3.5 h-3.5 lia-text-secondary" />
                         </button>
                       </div>
                     </div>
                     
                     <div className="flex items-center gap-2 mt-1.5">
                       <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                        <User className="w-4 h-4 text-gray-500" />
+                        <User className="w-4 h-4 lia-text-secondary" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-800 text-xs truncate">
+                        <p className="font-medium lia-text-strong text-xs truncate">
                           {customVariables.candidate_name || "Nome do Candidato"}
                         </p>
-                        <p className="text-xs text-gray-600 truncate">
+                        <p className="text-xs lia-text-base truncate">
                           {recipientEmail || "email@exemplo.com"}
                         </p>
                       </div>
@@ -266,23 +266,23 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
                 <ScrollArea className="flex-1">
                   <div className="p-4 space-y-3">
                     <div>
-                      <p className="text-xs text-gray-600 mb-1">Assunto</p>
-                      <p className="text-xs font-medium text-gray-800">
+                      <p className="text-xs lia-text-base mb-1">Assunto</p>
+                      <p className="text-xs font-medium lia-text-strong">
                         {renderPreview(editedSubject) || "Sem assunto definido"}
                       </p>
                     </div>
 
-                    <div className="border-t border-gray-100 pt-3">
-                      <p className="text-xs text-gray-600 mb-2">Mensagem</p>
+                    <div className="border-t border-lia-border-subtle pt-3">
+                      <p className="text-xs lia-text-base mb-2">Mensagem</p>
                       {editedBody ? (
                         <div
-                          className="prose prose-sm max-w-none text-gray-800 text-xs leading-relaxed"
+                          className="prose prose-sm max-w-none lia-text-strong text-xs leading-relaxed"
                           dangerouslySetInnerHTML={{
                             __html: renderPreview(editedBody).replace(/\n/g, '<br/>'),
                           }}
                         />
                       ) : (
-                        <p className="text-xs text-gray-400 italic">
+                        <p className="text-xs lia-text-secondary italic">
                           Selecione um template ou escreva sua mensagem
                         </p>
                       )}
@@ -291,14 +291,14 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
                 </ScrollArea>
 
                 {!recipientEmail && candidate && !candidate.email && (
-                  <div className="px-4 py-2 border-t border-gray-100">
+                  <div className="px-4 py-2 border-t border-lia-border-subtle">
                     <div className="flex items-start gap-1.5 p-2 rounded-md bg-wedo-orange/10 border border-wedo-orange/20">
                       <AlertCircle className="w-3.5 h-3.5 text-wedo-orange flex-shrink-0 mt-0.5" />
                       <div>
                         <p className="text-xs font-medium text-wedo-orange">
                           Email não disponível
                         </p>
-                        <p className="text-xs text-gray-600">
+                        <p className="text-xs lia-text-base">
                           Candidato sem email cadastrado
                         </p>
                       </div>
@@ -309,7 +309,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
             </div>
 
             {sendStatus === "error" && (
-              <div className="px-4 py-2 border-t border-gray-100 bg-status-error/10">
+              <div className="px-4 py-2 border-t border-lia-border-subtle bg-status-error/10">
                 <div className="flex items-center gap-1.5 text-status-error">
                   <AlertCircle className="w-3.5 h-3.5" />
                   <span className="text-xs">{errorMessage}</span>

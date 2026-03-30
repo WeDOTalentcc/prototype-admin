@@ -39,14 +39,14 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
 
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case 'premium': return 'bg-gray-700 dark:bg-gray-300'
+      case 'premium': return 'bg-gray-700'
       case 'enterprise': return 'bg-wedo-purple/10'
       default: return 'bg-gray-600'
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary flex items-center justify-center p-6">
       <div className="max-w-4xl w-full">
         {/* Main Upsell Card */}
         <Card className="">
@@ -54,7 +54,7 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
             {/* Header with solid color */}
             <div className={`${getCategoryColor(moduleInfo.category)} p-8 text-white rounded-t-lg`}>
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-16 h-16 bg-white/20 rounded-md flex items-center justify-center">
+                <div className="w-16 h-16 bg-lia-bg-primary/20 rounded-md flex items-center justify-center">
                   {getModuleIcon(moduleId)}
                 </div>
                 <div>
@@ -64,11 +64,11 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
               </div>
 
               <div className="flex items-center gap-4">
-                <Badge variant="secondary" className="bg-white/20 text-white">
+                <Badge variant="secondary" className="bg-lia-bg-primary/20 text-white">
                   <Crown className="w-4 h-4 mr-1" />
                   {moduleInfo.category === 'premium' ? 'Premium' : 'Enterprise'}
                 </Badge>
-                <Badge variant="secondary" className="bg-white/20 text-white">
+                <Badge variant="secondary" className="bg-lia-bg-primary/20 text-white">
                   R$ {moduleInfo.price}/mês
                 </Badge>
               </div>
@@ -79,7 +79,7 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Features List */}
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-950 dark:text-gray-50 mb-4">
+                  <h3 className="text-xl font-semibold text-gray-950 mb-4">
                     Funcionalidades Incluídas
                   </h3>
                   <div className="space-y-3">
@@ -88,7 +88,7 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
                         <div className="w-6 h-6 bg-status-success/10 rounded-full flex items-center justify-center">
                           <Check className="w-4 h-4 text-status-success" />
                         </div>
-                        <span className="text-gray-800 dark:text-gray-200">{feature}</span>
+                        <span className="text-gray-800 dark:text-lia-text-primary">{feature}</span>
                       </div>
                     ))}
                   </div>
@@ -96,10 +96,10 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
                   {/* Additional Info for Onboarding */}
                   {moduleId === 'onboarding_automation' && (
                     <div className="mt-6 p-4 bg-wedo-cyan/10 dark:bg-wedo-cyan/15 rounded-md">
-                      <h4 className="font-medium text-gray-800 dark:text-gray-300 mb-2">
+                      <h4 className="font-medium text-gray-800 dark:text-lia-text-secondary mb-2">
                         🚀 Onboarding Automatizado Premium
                       </h4>
-                      <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                      <ul className="text-sm text-gray-600 dark:text-lia-text-tertiary space-y-1">
                         <li>• Kanban visual para novos colaboradores</li>
                         <li>• Templates customizáveis por departamento</li>
                         <li>• Integração WhatsApp Business API</li>
@@ -114,18 +114,18 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
 
                 {/* Pricing and CTA */}
                 <div>
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-6 mb-6">
+                  <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-6 mb-6">
                     <div className="text-center mb-4">
-                      <div className="text-3xl font-bold text-gray-950 dark:text-gray-50">
+                      <div className="text-3xl font-bold text-gray-950">
                         R$ {moduleInfo.price}
-                        <span className="text-lg font-normal text-gray-800 dark:text-gray-200">/mês</span>
+                        <span className="text-lg font-normal text-gray-800 dark:text-lia-text-primary">/mês</span>
                       </div>
-                      <p className="text-gray-800 dark:text-gray-200">por empresa</p>
+                      <p className="text-gray-800 dark:text-lia-text-primary">por empresa</p>
                     </div>
 
                     <div className="space-y-3 mb-6">
                       <Button
-                        className="w-full gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                        className="w-full gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
                         onClick={onUpgrade}
                       >
                         <CreditCard className="w-4 h-4" />
@@ -138,7 +138,7 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
                     </div>
 
                     <div className="text-center">
-                      <p className="text-sm text-gray-800 dark:text-gray-200 mb-2">
+                      <p className="text-sm text-gray-800 dark:text-lia-text-primary mb-2">
                         Precisa de ajuda?
                       </p>
                       <div className="flex justify-center gap-4">
@@ -155,11 +155,11 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
                   </div>
 
                   {/* Enterprise Benefits */}
-                  <div className="rounded-md p-4 bg-gray-50 dark:bg-gray-800">
-                    <h4 className="font-medium text-gray-950 dark:text-gray-50 mb-3">
+                  <div className="rounded-md p-4 bg-gray-50 dark:bg-lia-bg-secondary">
+                    <h4 className="font-medium text-gray-950 mb-3">
                       ✨ Benefícios Enterprise
                     </h4>
-                    <ul className="text-sm text-gray-800 dark:text-gray-200 space-y-2">
+                    <ul className="text-sm text-gray-800 dark:text-lia-text-primary space-y-2">
                       <li className="flex items-center gap-2">
                         <Check className="w-4 h-4 text-status-success" />
                         Implementação dedicada
@@ -197,7 +197,7 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
               <Card className="">
                 <CardHeader>
                   <CardTitle className="text-lg">Starter</CardTitle>
-                  <p className="text-gray-800 dark:text-gray-200">Funcionalidades básicas</p>
+                  <p className="text-gray-800 dark:text-lia-text-primary">Funcionalidades básicas</p>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold mb-4">R$ 99/mês</div>
@@ -220,8 +220,8 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
 
               <Card className="ring-2 ring-gray-900/20 dark:ring-gray-50/20">
                 <CardHeader>
-                  <CardTitle className="text-lg text-gray-600 dark:text-gray-400">Professional</CardTitle>
-                  <p className="text-gray-800 dark:text-gray-200">Recomendado</p>
+                  <CardTitle className="text-lg text-gray-600 dark:text-lia-text-tertiary">Professional</CardTitle>
+                  <p className="text-gray-800 dark:text-lia-text-primary">Recomendado</p>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold mb-4">R$ 299/mês</div>
@@ -245,7 +245,7 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
               <Card className="">
                 <CardHeader>
                   <CardTitle className="text-lg">Enterprise</CardTitle>
-                  <p className="text-gray-800 dark:text-gray-200">Recursos completos</p>
+                  <p className="text-gray-800 dark:text-lia-text-primary">Recursos completos</p>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold mb-4">R$ 699/mês</div>
@@ -276,7 +276,7 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
 // Componente para mostrar aviso de módulo desabilitado
 export function ModuleLockedBanner({ moduleName, onUpgrade }: { moduleName: string, onUpgrade?: () => void }) {
   return (
-    <div className="bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900 p-4 rounded-md mb-6">
+    <div className="bg-gray-900 text-white p-4 rounded-md mb-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Lock className="w-6 h-6" />
@@ -287,7 +287,7 @@ export function ModuleLockedBanner({ moduleName, onUpgrade }: { moduleName: stri
         </div>
         <Button
           variant="secondary"
-          className="gap-2 bg-white text-gray-600 dark:text-gray-400 hover:bg-gray-100"
+          className="gap-2 bg-lia-bg-primary text-gray-600 dark:text-lia-text-tertiary hover:bg-gray-100"
           onClick={onUpgrade}
         >
           <Crown className="w-4 h-4" />

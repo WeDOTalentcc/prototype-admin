@@ -1145,28 +1145,28 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     const fixedStyles: Record<string, { bg: string; border: string; dot: string; header: string; accentColor: string }> = {
       sourcing: {
         bg: 'bg-white dark:bg-gray-900',
-        border: 'border-gray-200 dark:border-gray-700',
+        border: 'border-lia-border-subtle dark:border-gray-700',
         dot: 'bg-gray-700 dark:bg-gray-300',
         header: 'text-gray-800 dark:text-gray-200',
         accentColor: 'var(--gray-600)'
       },
       hired: {
         bg: 'bg-white dark:bg-gray-900',
-        border: 'border-gray-200 dark:border-gray-700',
+        border: 'border-lia-border-subtle dark:border-gray-700',
         dot: 'bg-gray-700 dark:bg-gray-300',
         header: 'text-gray-800 dark:text-gray-200',
         accentColor: 'var(--gray-600)'
       },
       rejected: {
         bg: 'bg-white dark:bg-gray-900',
-        border: 'border-gray-200 dark:border-gray-700',
+        border: 'border-lia-border-subtle dark:border-gray-700',
         dot: 'bg-gray-300 dark:bg-gray-600',
         header: 'text-gray-800 dark:text-gray-200',
         accentColor: 'var(--gray-200)'
       },
       offer_declined: {
         bg: 'bg-white dark:bg-gray-900',
-        border: 'border-gray-200 dark:border-gray-700',
+        border: 'border-lia-border-subtle dark:border-gray-700',
         dot: 'bg-gray-300 dark:bg-gray-600',
         header: 'text-gray-800 dark:text-gray-200',
         accentColor: 'var(--gray-200)'
@@ -1185,7 +1185,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     // Gerar estilo baseado na cor da etapa
     return {
       bg: 'bg-white dark:bg-gray-900',
-      border: 'border-gray-200 dark:border-gray-700',
+      border: 'border-lia-border-subtle dark:border-gray-700',
       dot: 'bg-gray-500 dark:bg-gray-400',
       header: 'text-gray-800 dark:text-gray-200',
       accentColor: stageColor

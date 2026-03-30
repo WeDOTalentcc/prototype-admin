@@ -210,14 +210,14 @@ export function UserCommandsSection({ searchTerm, selectedCategory }: UserComman
           >
             <Star
               className={`w-3 h-3 ${
-                star <= command.rating
+ star <= command.rating
                   ? 'text-status-warning fill-yellow-500'
-                  : 'text-gray-300'
+                  : 'lia-text-muted'
               }`}
             />
           </button>
         ))}
-        <span className="text-xs text-gray-800 dark:text-gray-200 ml-1">
+        <span className="text-xs text-gray-800 dark:text-lia-text-primary ml-1">
           ({command.rating > 0 ? command.rating.toFixed(1) : 'Sem avaliação'})
         </span>
       </div>
@@ -253,10 +253,10 @@ export function UserCommandsSection({ searchTerm, selectedCategory }: UserComman
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-gray-950 dark:text-gray-50">
+          <h2 className="text-lg font-semibold text-gray-950">
             Meus Comandos Personalizados
           </h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">
             {filteredCommands.length} {filteredCommands.length === 1 ? 'comando' : 'comandos'}
             {searchTerm && ` encontrado${filteredCommands.length !== 1 ? 's' : ''} para "${searchTerm}"`}
           </p>
@@ -272,8 +272,8 @@ export function UserCommandsSection({ searchTerm, selectedCategory }: UserComman
 
       {/* Lista de Comandos */}
       {filteredCommands.length === 0 ? (
-        <Card className="bg-white dark:bg-gray-800 p-8 text-center">
-          <div className="text-gray-800 dark:text-gray-200">
+        <Card className="bg-white dark:bg-lia-bg-secondary p-8 text-center">
+          <div className="text-gray-800 dark:text-lia-text-primary">
             <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-50" />
             <h3 className="text-lg font-medium mb-2">
               {searchTerm ? 'Nenhum comando encontrado' : 'Nenhum comando personalizado ainda'}
@@ -289,11 +289,11 @@ export function UserCommandsSection({ searchTerm, selectedCategory }: UserComman
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {filteredCommands.map((command) => (
-            <Card key={command.id} className="hover:transition-shadow bg-white dark:bg-gray-800">
+            <Card key={command.id} className="hover:transition-shadow bg-white dark:bg-lia-bg-secondary">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <CardTitle className="text-base font-semibold text-gray-950 dark:text-gray-50 mb-2">
+                    <CardTitle className="text-base font-semibold text-gray-950 mb-2">
                       {command.title}
                     </CardTitle>
                     <div className="flex flex-wrap gap-1 mb-2">
@@ -340,10 +340,10 @@ export function UserCommandsSection({ searchTerm, selectedCategory }: UserComman
 
               <CardContent className="space-y-4">
                 {/* Comando */}
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-md p-3">
+                <div className="bg-gray-50 dark:bg-lia-bg-elevated rounded-md p-3">
                   <div className="flex items-center gap-2 mb-2">
                     <MessageCircle className="w-4 h-4 text-wedo-purple" />
-                    <span className="text-xs font-medium text-gray-800 dark:text-gray-200">Comando:</span>
+                    <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">Comando:</span>
                   </div>
                   <code className="text-sm text-wedo-purple dark:text-wedo-purple font-mono">
                     {command.command}
@@ -351,12 +351,12 @@ export function UserCommandsSection({ searchTerm, selectedCategory }: UserComman
                 </div>
 
                 {/* Descrição */}
-                <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                <p className="text-xs text-gray-600 dark:text-lia-text-tertiary leading-relaxed">
                   {command.description}
                 </p>
 
                 {/* Estatísticas */}
-                <div className="flex items-center justify-between text-xs text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700 rounded-md p-2">
+                <div className="flex items-center justify-between text-xs text-gray-800 dark:text-lia-text-primary bg-gray-50 dark:bg-lia-bg-elevated rounded-md p-2">
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
@@ -402,18 +402,18 @@ export function UserCommandsSection({ searchTerm, selectedCategory }: UserComman
       {/* Modal de Confirmação de Exclusão */}
       {showDeleteConfirm && commandToDelete && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-md bg-white dark:bg-gray-800">
+          <Card className="w-full max-w-md bg-white dark:bg-lia-bg-secondary">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-2">
+              <CardTitle className="text-lg font-semibold text-gray-950 flex items-center gap-2">
                 <AlertCircle className="w-5 h-5 text-status-error" />
                 Confirmar Exclusão
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">
                 Tem certeza que deseja excluir o comando <strong>"{commandToDelete.title}"</strong>?
               </p>
-              <p className="text-xs text-gray-800 dark:text-gray-200">
+              <p className="text-xs text-gray-800 dark:text-lia-text-primary">
                 Esta ação não pode ser desfeita. O comando foi usado {commandToDelete.usageCount} vezes.
               </p>
 

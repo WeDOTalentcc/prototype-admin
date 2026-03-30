@@ -72,9 +72,9 @@ export function ColumnConfigPanel({
   }
 
   return (
-    <div className="flex-shrink-0 w-80 transition-all duration-300">
-      <Card className="h-full flex flex-col overflow-hidden bg-white dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700">
-        <div className="flex-shrink-0 p-4 border-b border-gray-100 dark:border-gray-800">
+    <div className="flex-shrink-0 w-80 transition-colors duration-300">
+      <Card className="h-full flex flex-col overflow-hidden bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="flex-shrink-0 p-4 border-b border-lia-border-subtle dark:border-gray-800">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-sm text-gray-950 dark:text-gray-50">Configurar Colunas</h3>
             <Button
@@ -86,15 +86,15 @@ export function ColumnConfigPanel({
               <X className="w-4 h-4 text-gray-950 dark:text-gray-50" />
             </Button>
           </div>
-          <p className="text-xs text-gray-800 dark:text-gray-200 mt-1">
+          <p className="text-xs text-gray-800 dark:text-lia-text-primary mt-1">
             Selecione as colunas visíveis na tabela ({visibleColumnIds.length} ativas)
           </p>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4">
           {savedColumnViews.length > 0 && (
-            <div className="mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">
-              <h4 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2">
+            <div className="mb-4 pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+              <h4 className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary mb-2">
                 Visualizações Salvas
               </h4>
               <div className="space-y-1">
@@ -126,7 +126,7 @@ export function ColumnConfigPanel({
               if (categoryColumns.length === 0) return null
               return (
                 <div key={categoryKey}>
-                  <h4 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                  <h4 className="text-xs font-semibold text-gray-800 dark:text-lia-text-primary mb-2">
                     {categoryLabel}
                   </h4>
                   <div className="space-y-1">
@@ -148,7 +148,7 @@ export function ColumnConfigPanel({
           </div>
         </div>
 
-        <div className="flex-shrink-0 p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+        <div className="flex-shrink-0 p-4 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary">
           <div className="grid grid-cols-2 gap-2">
             <Button
               variant="outline"

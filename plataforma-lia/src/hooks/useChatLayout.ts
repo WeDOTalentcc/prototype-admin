@@ -45,11 +45,11 @@ export function useChatLayout({ isEmptyChat, isPanelOpen }: UseChatLayoutProps):
   const inputContainerClass = useMemo(() => {
     switch (mode) {
       case 'empty':
-        return 'w-full max-w-3xl mx-auto transition-all duration-200 ease-in-out'
+        return 'w-full max-w-3xl mx-auto transition-colors duration-200 ease-in-out'
       case 'chat-only':
-        return 'w-full max-w-3xl mx-auto transition-all duration-200 ease-in-out'
+        return 'w-full max-w-3xl mx-auto transition-colors duration-200 ease-in-out'
       case 'chat-with-panel':
-        return 'w-full transition-all duration-200 ease-in-out'
+        return 'w-full transition-colors duration-200 ease-in-out'
       default:
         return ''
     }
@@ -58,11 +58,11 @@ export function useChatLayout({ isEmptyChat, isPanelOpen }: UseChatLayoutProps):
   const messagesContainerClass = useMemo(() => {
     switch (mode) {
       case 'empty':
-        return 'w-full max-w-3xl transition-all duration-200'
+        return 'w-full max-w-3xl transition-colors duration-200'
       case 'chat-only':
-        return 'w-full max-w-4xl transition-all duration-200'
+        return 'w-full max-w-4xl transition-colors duration-200'
       case 'chat-with-panel':
-        return 'w-full transition-all duration-200'
+        return 'w-full transition-colors duration-200'
       default:
         return ''
     }

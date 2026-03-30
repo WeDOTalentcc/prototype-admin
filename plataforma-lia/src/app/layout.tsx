@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import type { Metadata } from "next";
 import { Inter, Open_Sans, Crimson_Text } from "next/font/google";
 import "./globals.css";

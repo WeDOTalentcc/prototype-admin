@@ -288,7 +288,7 @@ export function IndicatorsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'exceeded': return 'text-status-success bg-status-success/15'
-      case 'achieved': return 'text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800'
+      case 'achieved': return 'text-gray-600 dark:text-lia-text-tertiary bg-gray-100 dark:bg-lia-bg-secondary'
       case 'on_track': return 'text-status-warning bg-status-warning/15'
       case 'behind': return 'text-status-error bg-status-error/15'
       default: return 'text-gray-600 bg-gray-100'
@@ -300,7 +300,7 @@ export function IndicatorsPage() {
       case 1: return <Trophy className="w-5 h-5 text-status-warning" />
       case 2: return <Medal className="w-5 h-5 text-gray-600" />
       case 3: return <Medal className="w-5 h-5 text-status-warning" />
-      default: return <div className="w-5 h-5 flex items-center justify-center text-sm font-bold text-gray-800 dark:text-gray-200">{ranking}</div>
+      default: return <div className="w-5 h-5 flex items-center justify-center text-sm font-bold text-gray-800 dark:text-lia-text-primary">{ranking}</div>
     }
   }
 
@@ -346,7 +346,7 @@ export function IndicatorsPage() {
           <h1 className="text-2xl font-bold text-gray-950 dark:text-gray-50">
             Indicadores e Analytics
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-gray-600 dark:text-lia-text-tertiary">
             Dashboard executivo com insights estratégicos e performance de recrutadores
           </p>
         </div>
@@ -375,7 +375,7 @@ export function IndicatorsPage() {
       />
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 dark:border-gray-700">
+      <div className="border-b border-lia-border-subtle dark:border-lia-border-subtle">
         <div className="flex space-x-8">
           {tabs.map(tab => (
             <button
@@ -383,7 +383,7 @@ export function IndicatorsPage() {
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-1 py-4 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === tab.id
-                  ? 'border-gray-900 dark:border-gray-50 text-gray-600 dark:text-gray-400'
+                  ? 'border-gray-900 dark:border-gray-50 text-gray-600 dark:text-lia-text-tertiary'
  : 'border-transparent text-gray-800 hover:text-gray-800 dark:hover:text-gray-300'
               }`}
             >
@@ -402,7 +402,7 @@ export function IndicatorsPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
-                  <Filter className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  <Filter className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
                   Filtros Avançados
                 </CardTitle>
                 <Button
@@ -427,7 +427,7 @@ export function IndicatorsPage() {
                     <select
                       value={selectedPeriod}
                       onChange={(e) => setSelectedPeriod(e.target.value)}
-                      className="w-full p-2 rounded-md text-sm bg-gray-50 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 text-gray-800 dark:text-gray-200"
+                      className="w-full p-2 rounded-md text-sm bg-gray-50 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 text-gray-800 dark:text-lia-text-primary"
                     >
                       <option value="current_month">Este Mês</option>
                       <option value="last_month">Mês Passado</option>
@@ -470,7 +470,7 @@ export function IndicatorsPage() {
                     <select
                       value={sortBy}
                       onChange={(e) => setSortBy(e.target.value)}
-                      className="w-full p-2 rounded-md text-sm mb-2 bg-gray-50 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 text-gray-800 dark:text-gray-200"
+                      className="w-full p-2 rounded-md text-sm mb-2 bg-gray-50 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 text-gray-800 dark:text-lia-text-primary"
                     >
                       <option value="totalScore">Score Total</option>
                       <option value="npsScore">NPS</option>
@@ -481,7 +481,7 @@ export function IndicatorsPage() {
                     <select
                       value={sortOrder}
                       onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
-                      className="w-full p-2 rounded-md text-sm bg-gray-50 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 text-gray-800 dark:text-gray-200"
+                      className="w-full p-2 rounded-md text-sm bg-gray-50 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 text-gray-800 dark:text-lia-text-primary"
                     >
                       <option value="desc">Maior para Menor</option>
                       <option value="asc">Menor para Maior</option>
@@ -539,14 +539,14 @@ export function IndicatorsPage() {
 
           {/* Métricas Consolidadas da Equipe */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="border-gray-300 dark:border-gray-600">
+            <Card className="border-lia-border-default dark:border-lia-border-default">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Total Recrutadores</p>
+                    <p className="text-sm text-gray-600 dark:text-lia-text-tertiary font-medium">Total Recrutadores</p>
                     <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">{teamMetrics.totalRecruiters}</p>
                   </div>
-                  <Users className="w-8 h-8 text-gray-600 dark:text-gray-400" />
+                  <Users className="w-8 h-8 text-gray-600 dark:text-lia-text-tertiary" />
                 </div>
                 <div className="mt-2 flex items-center gap-1 text-xs">
                   <TrendingUp className="w-3 h-3 text-status-success" />
@@ -647,10 +647,10 @@ export function IndicatorsPage() {
                   <div className="text-sm text-status-warning">Avisos</div>
                   <div className="text-xs text-status-warning mt-1">NPS abaixo da meta</div>
                 </div>
-                <div className="text-center p-4 bg-gray-100 dark:bg-gray-800 rounded-md">
+                <div className="text-center p-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
                   <div className="text-2xl font-bold text-gray-900 dark:text-gray-50">12</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Monitoramentos</div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">KPIs em observação</div>
+                  <div className="text-sm text-gray-600 dark:text-lia-text-tertiary">Monitoramentos</div>
+                  <div className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-1">KPIs em observação</div>
                 </div>
               </div>
               <div className="mt-4">
@@ -687,7 +687,7 @@ export function IndicatorsPage() {
                       <div className="flex items-center gap-3">
                         <Avatar className="w-12 h-12">
                           <AvatarImage src={recruiter.avatar} alt={recruiter.name} />
-                          <AvatarFallback className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium">
+                          <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary font-medium">
                             {recruiter.name.split(' ').map(n => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>
@@ -698,7 +698,7 @@ export function IndicatorsPage() {
                             </h3>
                             {getRankingIcon(recruiter.ranking)}
                           </div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">{recruiter.role}</p>
+                          <p className="text-sm text-gray-600 dark:text-lia-text-tertiary">{recruiter.role}</p>
                           <Badge variant="outline" className="mt-1 text-xs">
                             {recruiter.department}
                           </Badge>
@@ -708,36 +708,36 @@ export function IndicatorsPage() {
                         <div className="text-2xl font-bold text-gray-900 dark:text-gray-50">
                           {recruiter.totalScore}
                         </div>
-                        <div className="text-xs text-gray-800 dark:text-gray-200">Score Total</div>
+                        <div className="text-xs text-gray-800 dark:text-lia-text-primary">Score Total</div>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {/* KPIs Principais */}
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                      <div className="text-center p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                         <div className="text-lg font-bold text-gray-950 dark:text-gray-50">
                           {recruiter.totalHires}
                         </div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400">Contratações</div>
+                        <div className="text-xs text-gray-600 dark:text-lia-text-tertiary">Contratações</div>
                       </div>
-                      <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                      <div className="text-center p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                         <div className="text-lg font-bold text-gray-950 dark:text-gray-50">
                           {recruiter.avgTimeToFill}d
                         </div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400">Time to Fill</div>
+                        <div className="text-xs text-gray-600 dark:text-lia-text-tertiary">Time to Fill</div>
                       </div>
-                      <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                      <div className="text-center p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                         <div className="text-lg font-bold text-gray-950 dark:text-gray-50">
                           {recruiter.npsScore}%
                         </div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400">NPS Score</div>
+                        <div className="text-xs text-gray-600 dark:text-lia-text-tertiary">NPS Score</div>
                       </div>
-                      <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                      <div className="text-center p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                         <div className="text-lg font-bold text-gray-950 dark:text-gray-50">
                           {recruiter.conversionRate}%
                         </div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400">Conversão</div>
+                        <div className="text-xs text-gray-600 dark:text-lia-text-tertiary">Conversão</div>
                       </div>
                     </div>
 
@@ -749,7 +749,7 @@ export function IndicatorsPage() {
                       <div className="space-y-2">
                         {Object.entries(recruiter.goals.monthly).map(([key, goal]) => (
                           <div key={key} className="flex items-center justify-between text-sm">
-                            <span className="text-gray-600 dark:text-gray-400 capitalize">
+                            <span className="text-gray-600 dark:text-lia-text-tertiary capitalize">
                               {key === 'hires' ? 'Contratações' :
                                key === 'timeToFill' ? 'Time to Fill' :
                                key === 'nps' ? 'NPS' : 'Entrevistas'}:
@@ -776,20 +776,20 @@ export function IndicatorsPage() {
                       </h4>
                       <div className="grid grid-cols-4 gap-2 text-xs">
                         <div className="text-center">
-                          <div className="font-medium text-gray-600 dark:text-gray-400">{recruiter.sourcing.linkedin}%</div>
-                          <div className="text-gray-800 dark:text-gray-200">LinkedIn</div>
+                          <div className="font-medium text-gray-600 dark:text-lia-text-tertiary">{recruiter.sourcing.linkedin}%</div>
+                          <div className="text-gray-800 dark:text-lia-text-primary">LinkedIn</div>
                         </div>
                         <div className="text-center">
                           <div className="font-medium text-status-success">{recruiter.sourcing.referrals}%</div>
-                          <div className="text-gray-800 dark:text-gray-200">Indicações</div>
+                          <div className="text-gray-800 dark:text-lia-text-primary">Indicações</div>
                         </div>
                         <div className="text-center">
                           <div className="font-medium text-wedo-orange">{recruiter.sourcing.jobBoards}%</div>
-                          <div className="text-gray-800 dark:text-gray-200">Job Boards</div>
+                          <div className="text-gray-800 dark:text-lia-text-primary">Job Boards</div>
                         </div>
                         <div className="text-center">
                           <div className="font-medium text-wedo-purple">{recruiter.sourcing.headhunting}%</div>
-                          <div className="text-gray-800 dark:text-gray-200">Headhunt</div>
+                          <div className="text-gray-800 dark:text-lia-text-primary">Headhunt</div>
                         </div>
                       </div>
                     </div>
@@ -824,15 +824,15 @@ export function IndicatorsPage() {
                   {filteredRecruiters.map((recruiter, index) => (
                     <div key={recruiter.name} className={`flex items-center gap-4 p-4 rounded-md border ${
                       index === 0 ? 'bg-status-warning/10 border-status-warning/30' :
-                      index === 1 ? 'bg-gray-50 border-gray-200' :
+                      index === 1 ? 'bg-gray-50 border-lia-border-subtle' :
                       index === 2 ? 'bg-status-warning/10 border-status-warning/30' :
-                      'bg-white border-gray-100'
+                      'bg-lia-bg-primary border-lia-border-subtle'
                     }`}>
                       <div className="flex items-center gap-3">
                         {getRankingIcon(recruiter.ranking)}
                         <Avatar className="w-10 h-10">
                           <AvatarImage src={recruiter.avatar} alt={recruiter.name} />
-                          <AvatarFallback className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium">
+                          <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary font-medium">
                             {recruiter.name.split(' ').map(n => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>
@@ -845,23 +845,23 @@ export function IndicatorsPage() {
                       <div className="flex-1 grid grid-cols-5 gap-4 text-center">
                         <div>
                           <div className="text-lg font-bold text-gray-900 dark:text-gray-50">{recruiter.totalScore}</div>
-                          <div className="text-xs text-gray-800 dark:text-gray-200">Score Total</div>
+                          <div className="text-xs text-gray-800 dark:text-lia-text-primary">Score Total</div>
                         </div>
                         <div>
                           <div className="text-lg font-bold text-status-success">{recruiter.totalHires}</div>
-                          <div className="text-xs text-gray-800 dark:text-gray-200">Contratações</div>
+                          <div className="text-xs text-gray-800 dark:text-lia-text-primary">Contratações</div>
                         </div>
                         <div>
                           <div className="text-lg font-bold text-wedo-purple">{recruiter.avgTimeToFill}d</div>
-                          <div className="text-xs text-gray-800 dark:text-gray-200">Time to Fill</div>
+                          <div className="text-xs text-gray-800 dark:text-lia-text-primary">Time to Fill</div>
                         </div>
                         <div>
                           <div className="text-lg font-bold text-wedo-orange">{recruiter.npsScore}%</div>
-                          <div className="text-xs text-gray-800 dark:text-gray-200">NPS</div>
+                          <div className="text-xs text-gray-800 dark:text-lia-text-primary">NPS</div>
                         </div>
                         <div>
                           <div className="text-lg font-bold text-status-error">{recruiter.conversionRate}%</div>
-                          <div className="text-xs text-gray-800 dark:text-gray-200">Conversão</div>
+                          <div className="text-xs text-gray-800 dark:text-lia-text-primary">Conversão</div>
                         </div>
                       </div>
 
@@ -891,7 +891,7 @@ export function IndicatorsPage() {
                     <div className="flex items-center gap-3">
                       <Avatar className="w-10 h-10">
                         <AvatarImage src={recruiter.avatar} alt={recruiter.name} />
-                        <AvatarFallback className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium">
+                        <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary font-medium">
                           {recruiter.name.split(' ').map(n => n[0]).join('')}
                         </AvatarFallback>
                       </Avatar>
@@ -906,7 +906,7 @@ export function IndicatorsPage() {
                       {/* Metas Mensais */}
                       <div>
                         <h4 className="font-medium text-gray-950 dark:text-gray-50 mb-4 flex items-center gap-2">
-                          <CalendarIcon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                          <CalendarIcon className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
                           Metas Mensais
                         </h4>
                         <div className="space-y-4">
@@ -929,7 +929,7 @@ export function IndicatorsPage() {
                               </div>
                               <div className="w-full bg-gray-200 rounded-full h-2">
                                 <div
-                                  className={`h-2 rounded-full transition-all duration-300 ${
+                                  className={`h-2 rounded-full transition-[width,height] duration-300 ${
                                     goal.status === 'exceeded' ? 'bg-status-success' :
                                     goal.status === 'achieved' ? 'bg-wedo-cyan' :
                                     goal.status === 'on_track' ? 'bg-status-warning' : 'bg-status-error'
@@ -966,7 +966,7 @@ export function IndicatorsPage() {
                               </div>
                               <div className="w-full bg-gray-200 rounded-full h-2">
                                 <div
-                                  className={`h-2 rounded-full transition-all duration-300 ${
+                                  className={`h-2 rounded-full transition-[width,height] duration-300 ${
                                     goal.status === 'exceeded' ? 'bg-status-success' :
                                     goal.status === 'achieved' ? 'bg-wedo-cyan' :
                                     goal.status === 'on_track' ? 'bg-status-warning' : 'bg-status-error'
@@ -1020,7 +1020,7 @@ export function IndicatorsPage() {
                           <div key={recruiter.name} className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <Avatar className="w-6 h-6">
-                                <AvatarFallback className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs">
+                                <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary text-xs">
                                   {recruiter.name.split(' ').map(n => n[0]).join('')}
                                 </AvatarFallback>
                               </Avatar>
@@ -1047,7 +1047,7 @@ export function IndicatorsPage() {
                           <div key={recruiter.name} className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <Avatar className="w-6 h-6">
-                                <AvatarFallback className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs">
+                                <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary text-xs">
                                   {recruiter.name.split(' ').map(n => n[0]).join('')}
                                 </AvatarFallback>
                               </Avatar>
@@ -1076,7 +1076,7 @@ export function IndicatorsPage() {
                       <p className="text-gray-600 text-sm">
                         Gráfico interativo de tendências seria exibido aqui
                       </p>
-                      <p className="text-xs text-gray-800 dark:text-gray-200 mt-1">
+                      <p className="text-xs text-gray-800 dark:text-lia-text-primary mt-1">
                         Mostrando evolução de KPIs, sazonalidades e comparações
                       </p>
                     </div>
@@ -1119,16 +1119,16 @@ export function IndicatorsPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-gray-300 dark:border-gray-600">
+            <Card className="border-lia-border-default dark:border-lia-border-default">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <Target className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                  <Target className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
                   Eficiência Operacional
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-gray-900 dark:text-gray-50">87.3%</div>
-                <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Metas atingidas</div>
+                <div className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-1">Metas atingidas</div>
                 <div className="mt-3 text-xs text-gray-600">
                   94% das vagas preenchidas dentro do prazo
                 </div>
@@ -1203,7 +1203,7 @@ export function IndicatorsPage() {
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
-                          className={`${item.color} h-2 rounded-full transition-all duration-300`}
+                          className={`${item.color} h-2 rounded-full transition-[width,height] duration-300`}
                           style={{width: `${Math.min((item.days / 70) * 100, 100)}%`}}
                         ></div>
                       </div>
@@ -1278,9 +1278,9 @@ export function IndicatorsPage() {
 
                 <div>
                   <h4 className="font-medium text-gray-950 dark:text-gray-50 mb-3">Inclusão PCD</h4>
-                  <div className="text-center p-4 bg-gray-100 dark:bg-gray-800 rounded-md">
+                  <div className="text-center p-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
                     <div className="text-2xl font-bold text-gray-900 dark:text-gray-50">8.2%</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Pessoas com Deficiência</div>
+                    <div className="text-sm text-gray-600 dark:text-lia-text-tertiary">Pessoas com Deficiência</div>
                     <div className="text-xs text-gray-600 mt-2">
                       Acima da cota legal de 5%
                     </div>
@@ -1303,14 +1303,14 @@ export function IndicatorsPage() {
 
           {/* KPIs de Modelos de Trabalho */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="border-gray-300 dark:border-gray-600">
+            <Card className="border-lia-border-default dark:border-lia-border-default">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Remoto</p>
+                    <p className="text-sm text-gray-600 dark:text-lia-text-tertiary font-medium">Remoto</p>
                     <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">42%</p>
                   </div>
-                  <Home className="w-8 h-8 text-gray-600 dark:text-gray-400" />
+                  <Home className="w-8 h-8 text-gray-600 dark:text-lia-text-tertiary" />
                 </div>
                 <div className="mt-2 flex items-center gap-1 text-xs">
                   <TrendingUp className="w-3 h-3 text-status-success" />
@@ -1373,7 +1373,7 @@ export function IndicatorsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  <BarChart3 className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
                   Modelos por Departamento
                 </CardTitle>
               </CardHeader>
@@ -1390,7 +1390,7 @@ export function IndicatorsPage() {
                       <div className="flex items-center justify-between">
                         <span className="font-medium text-gray-950 dark:text-gray-50">{item.dept}</span>
                         <div className="flex items-center gap-2 text-xs">
-                          <span className="text-gray-600 dark:text-gray-400">{item.remote}% Remoto</span>
+                          <span className="text-gray-600 dark:text-lia-text-tertiary">{item.remote}% Remoto</span>
                           <span className="text-wedo-purple">{item.hybrid}% Híbrido</span>
                           <span className="text-wedo-orange">{item.office}% Presencial</span>
                         </div>
@@ -1428,7 +1428,7 @@ export function IndicatorsPage() {
                       </div>
                       <div className="text-right">
                         <div className="text-sm font-bold">{item.count}</div>
-                        <div className="text-xs text-gray-800 dark:text-gray-200">{item.percentage}%</div>
+                        <div className="text-xs text-gray-800 dark:text-lia-text-primary">{item.percentage}%</div>
                       </div>
                     </div>
                   ))}
@@ -1447,9 +1447,9 @@ export function IndicatorsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-md">
-                  <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">🚀 Tendência Crescente</h4>
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                <div className="p-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+                  <h4 className="font-medium text-gray-700 dark:text-lia-text-secondary mb-2">🚀 Tendência Crescente</h4>
+                  <p className="text-sm text-gray-700 dark:text-lia-text-secondary">
                     Modelo remoto cresceu 8% no trimestre, especialmente em Tech e Design.
                     Considere expandir políticas de trabalho remoto.
                   </p>
@@ -1497,7 +1497,7 @@ export function IndicatorsPage() {
                   <div>
                     <p className="text-sm text-status-success font-medium">Previsão Q4</p>
                     <p className="text-2xl font-bold text-status-success">156</p>
-                    <p className="text-xs text-gray-800 dark:text-gray-200">Contratações</p>
+                    <p className="text-xs text-gray-800 dark:text-lia-text-primary">Contratações</p>
                   </div>
                   <TrendingUp className="w-8 h-8 text-status-success" />
                 </div>
@@ -1507,17 +1507,17 @@ export function IndicatorsPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-gray-300 dark:border-gray-600">
+            <Card className="border-lia-border-default dark:border-lia-border-default">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Time to Fill</p>
+                    <p className="text-sm text-gray-600 dark:text-lia-text-tertiary font-medium">Time to Fill</p>
                     <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">24 dias</p>
-                    <p className="text-xs text-gray-800 dark:text-gray-200">Previsão média</p>
+                    <p className="text-xs text-gray-800 dark:text-lia-text-primary">Previsão média</p>
                   </div>
-                  <Clock className="w-8 h-8 text-gray-600 dark:text-gray-400" />
+                  <Clock className="w-8 h-8 text-gray-600 dark:text-lia-text-tertiary" />
                 </div>
-                <div className="mt-2 text-xs text-gray-600 dark:text-gray-400">
+                <div className="mt-2 text-xs text-gray-600 dark:text-lia-text-tertiary">
                   -8% vs atual (IA: 92% confiança)
                 </div>
               </CardContent>
@@ -1529,7 +1529,7 @@ export function IndicatorsPage() {
                   <div>
                     <p className="text-sm text-wedo-purple font-medium">Turnover Risk</p>
                     <p className="text-2xl font-bold text-wedo-purple">8.2%</p>
-                    <p className="text-xs text-gray-800 dark:text-gray-200">Próximos 6 meses</p>
+                    <p className="text-xs text-gray-800 dark:text-lia-text-primary">Próximos 6 meses</p>
                   </div>
                   <AlertTriangle className="w-8 h-8 text-wedo-purple" />
                 </div>
@@ -1545,7 +1545,7 @@ export function IndicatorsPage() {
                   <div>
                     <p className="text-sm text-wedo-orange font-medium">Budget Impact</p>
                     <p className="text-2xl font-bold text-wedo-orange">R$ 2.8M</p>
-                    <p className="text-xs text-gray-800 dark:text-gray-200">Economia prevista</p>
+                    <p className="text-xs text-gray-800 dark:text-lia-text-primary">Economia prevista</p>
                   </div>
                   <DollarSign className="w-8 h-8 text-wedo-orange" />
                 </div>
@@ -1704,7 +1704,7 @@ export function IndicatorsPage() {
                           💡 Ação recomendada: {alert.action}
                         </p>
                       </div>
-                      <Badge className="ml-4 bg-gray-100 text-gray-800 dark:text-gray-200">
+                      <Badge className="ml-4 bg-gray-100 text-gray-800 dark:text-lia-text-primary">
                         {alert.confidence}% confiança
                       </Badge>
                     </div>

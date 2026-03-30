@@ -111,9 +111,9 @@ export function ChatPage() {
   return (
     <div className="flex overflow-hidden flex-1 bg-gray-50">
       {/* Main Chat Area */}
-      <div className={`flex flex-col transition-all duration-300 overflow-hidden ${isPanelOpen ? 'w-3/5' : 'w-full'}`}>
+      <div className={`flex flex-col transition-colors duration-300 overflow-hidden ${isPanelOpen ? 'w-3/5' : 'w-full'}`}>
         {/* Header */}
-        <div className="py-3 px-6 flex-shrink-0 bg-gray-50 border-b border-gray-200">
+        <div className="py-3 px-6 flex-shrink-0 bg-gray-50 border-b border-lia-border-subtle">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <LIAIcon size="lg" />
@@ -132,7 +132,7 @@ export function ChatPage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowSearch(!showSearch)}
-                className="transition-all duration-200 hover:scale-105"
+                className="transition-transform duration-200 hover:scale-105"
                 title="Buscar na conversa (Ctrl+F)"
               >
                 <Search className="w-4 h-4" />
@@ -149,7 +149,7 @@ export function ChatPage() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Buscar na conversa..."
-                  className="w-full px-3 py-2 rounded-md text-sm focus:outline-none border border-gray-200 bg-white text-gray-800"
+                  className="w-full px-3 py-2 rounded-md text-sm focus:outline-none border border-lia-border-subtle bg-lia-bg-primary text-gray-800"
                   autoFocus
                 />
                 <Search className="absolute right-3 top-2.5 w-4 h-4 text-gray-600" />
@@ -168,10 +168,10 @@ export function ChatPage() {
           {/* Tabs de Navegação */}
           <div className="mt-2">
             <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "conversa" | "controle")}>
-              <TabsList className="bg-transparent p-0 h-auto gap-4 border-b border-gray-200">
+              <TabsList className="bg-transparent p-0 h-auto gap-4 border-b border-lia-border-subtle">
                 <TabsTrigger 
                   value="conversa" 
-                  className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-2 rounded-none border-b-2 border-transparent data-[state=active]:border-gray-900 dark:border-gray-50 transition-all"
+                  className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-2 rounded-none border-b-2 border-transparent data-[state=active]:border-gray-900 dark:border-gray-50 transition-colors"
                   style={{color: activeTab === 'conversa' ? 'var(--gray-950)' : 'var(--gray-500)'}} /* dynamic */
                 >
                   <MessageSquare className="w-4 h-4 mr-2" />
@@ -179,7 +179,7 @@ export function ChatPage() {
                 </TabsTrigger>
                 <TabsTrigger 
                   value="controle" 
-                  className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-2 rounded-none border-b-2 border-transparent data-[state=active]:border-gray-900 dark:border-gray-50 transition-all"
+                  className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-2 rounded-none border-b-2 border-transparent data-[state=active]:border-gray-900 dark:border-gray-50 transition-colors"
                   style={{color: activeTab === 'controle' ? 'var(--gray-950)' : 'var(--gray-500)'}} /* dynamic */
                 >
                   <Cpu className="w-4 h-4 mr-2" />
@@ -201,7 +201,7 @@ export function ChatPage() {
         {/* Messages com altura flexível e scroll */}
         <div
           ref={messagesContainerRef}
-          className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500 relative transition-all duration-300 ${chatContainerClass} ${
+          className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500 relative transition-colors duration-300 ${chatContainerClass} ${
             !isEmptyChat ? 'p-4' : ''
           }`}
           style={{scrollBehavior: 'smooth'}} /* dynamic - scroll-smooth class not fully equivalent */
@@ -345,7 +345,7 @@ export function ChatPage() {
                 activeFiltersCount={getActiveFiltersCount()}
               />
             ) : (
-              <div className="rounded-md p-5 space-y-4 bg-white">
+              <div className="rounded-md p-5 space-y-4 bg-lia-bg-primary">
                 
                 {/* Sugestões Rápidas */}
                 {(getQuickSuggestions().length > 0 || (hasSearchResults && contextData && getQuickActions().length > 0)) && !isLoading && searchFlow.flowState !== "collecting_profile" && (
@@ -357,7 +357,7 @@ export function ChatPage() {
                             key={index}
                             size="sm"
                             onClick={() => setInput(suggestion)}
-                            className="text-xs h-7 px-3 transition-all duration-200 hover:scale-105 text-gray-950 dark:text-gray-50 border border-gray-200 bg-gray-50"
+                            className="text-xs h-7 px-3 transition-transform duration-200 hover:scale-105 text-gray-950 dark:text-gray-50 border border-lia-border-subtle bg-gray-50"
                           >
                             {suggestion}
                           </Button>
@@ -403,9 +403,9 @@ export function ChatPage() {
                       return (
                         <div 
                           key={index}
-                          className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs bg-white border border-gray-300"
+                          className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs bg-lia-bg-primary border border-lia-border-default"
                         >
-                          <FileText className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                          <FileText className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                           <span className="max-w-[150px] truncate text-gray-800">
                             {file.name}
                           </span>
@@ -448,7 +448,7 @@ export function ChatPage() {
                   <div className="flex items-center gap-3 p-3 rounded-md mb-2 animate-in fade-in slide-in-from-bottom-2 duration-300 bg-gray-200/30 border border-wedo-cyan/30"
                   >
                     <div className="flex items-center gap-2">
-                      <Mic className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                      <Mic className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
                       <div className="flex flex-col">
                         <span className="text-sm font-medium text-gray-700">
                           Áudio gravado ({recordingTime}s)
@@ -541,7 +541,7 @@ export function ChatPage() {
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={handleKeyPress}
                       placeholder={getPlaceholderText()}
-                      className="w-full resize-none rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200 bg-gray-50 text-gray-800"
+                      className="w-full resize-none rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-lia-border-subtle bg-gray-50 text-gray-800"
                       rows={1}
                     />
                   </div>
@@ -551,7 +551,7 @@ export function ChatPage() {
                       variant="ghost" 
                       size="sm" 
                       onClick={activateSmartSearch}
-                      className="transition-all duration-200 hover:scale-105"
+                      className="transition-transform duration-200 hover:scale-105"
                       title="Busca avançada de candidatos"
                     >
                       <Search className="w-4 h-4" />
@@ -578,7 +578,7 @@ export function ChatPage() {
                       onClick={() => handleSendMessage()}
                       disabled={!input.trim() || isLoading || emptyFieldNotifications.hasPendingNotifications}
                       size="sm"
-                      className="transition-all duration-200 hover:scale-105 disabled:hover:scale-100 disabled:opacity-50 bg-gray-800 text-white"
+                      className="transition-transform duration-200 hover:scale-105 disabled:hover:scale-100 disabled:opacity-50 bg-gray-800 text-white"
                       title={emptyFieldNotifications.hasPendingNotifications ? "Resolva as pendências acima para continuar" : undefined}
                     >
                       <Send className="w-4 h-4" />

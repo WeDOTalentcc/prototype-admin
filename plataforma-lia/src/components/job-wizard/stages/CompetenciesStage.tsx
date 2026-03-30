@@ -239,18 +239,18 @@ export function CompetenciesStage() {
     const showInferenceIndicator = skill.isWeightInferred || skill.weight === inference.weight
     
     return (
-      <div key={skill.id} className="flex flex-col gap-1.5 p-2 bg-white rounded-md border border-gray-200">
+      <div key={skill.id} className="flex flex-col gap-1.5 p-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
         <div className="flex items-center gap-2">
-          <span className="flex-1 text-xs font-medium text-gray-800 flex items-center gap-1.5">
+          <span className="flex-1 text-xs font-medium lia-text-strong flex items-center gap-1.5">
             {skill.name}
             {isSkillFromConfig(skill.name) && (
-              <span className="w-1.5 h-1.5 rounded-full bg-gray-900 dark:bg-gray-50 flex-shrink-0" title="Pré-preenchido das Configurações" />
+              <span className="w-1.5 h-1.5 rounded-full bg-gray-900 flex-shrink-0" title="Pré-preenchido das Configurações" />
             )}
           </span>
           <select 
             value={skill.level}
             onChange={(e) => updateSkillLevel(skill.id, e.target.value as any)}
-            className="px-1.5 py-0.5 text-micro border border-gray-200 rounded-full bg-white"
+            className="px-1.5 py-0.5 text-micro border border-lia-border-subtle rounded-full bg-lia-bg-primary"
           >
             <option value="Básico">Básico</option>
             <option value="Intermediário">Intermediário</option>
@@ -259,26 +259,26 @@ export function CompetenciesStage() {
           <button
             onClick={() => toggleSkillRequired(skill.id)}
             className={cn(
-              "px-1.5 py-0.5 text-micro rounded-full transition-all",
-              skill.required ? "bg-gray-900 dark:bg-gray-50 text-white" : "bg-gray-200 text-gray-500"
+ "px-1.5 py-0.5 text-micro rounded-full transition-[width,height]",
+              skill.required ? "bg-gray-900 text-white" : "bg-gray-200 lia-text-secondary"
             )}
           >
             {skill.required ? 'Obrig.' : 'Desej.'}
           </button>
           <button 
             onClick={() => removeTechnicalSkill(skill.id)}
-            className="p-0.5 text-gray-400 hover:text-status-error transition-colors"
+            className="p-0.5 lia-text-secondary hover:text-status-error transition-colors"
           >
             <Trash2 className="w-3 h-3" />
           </button>
         </div>
         <div className="flex items-center gap-1 ml-0.5">
-          <span className="text-micro text-gray-400 mr-1">Peso:</span>
+          <span className="text-micro lia-text-secondary mr-1">Peso:</span>
           {[1, 2, 3, 4, 5].map((w) => (
-            <button key={w} onClick={() => updateSkillWeight(skill.id, w)} className="transition-all">
+            <button key={w} onClick={() => updateSkillWeight(skill.id, w)} className="transition-colors">
               <Star className={cn(
-                "w-3.5 h-3.5 transition-colors",
-                w <= skill.weight ? "fill-gray-700 dark:fill-gray-300 text-gray-600 dark:text-gray-400" : "text-gray-200"
+ "w-3.5 h-3.5 transition-colors",
+                w <= skill.weight ? "fill-gray-700 dark:fill-gray-300 text-gray-600 dark:text-lia-text-tertiary" : "text-gray-200"
               )} />
             </button>
           ))}
@@ -290,12 +290,12 @@ export function CompetenciesStage() {
                     <Lightbulb className="w-3.5 h-3.5 fill-amber-100" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="top" className="max-w-sidebar-content text-xs bg-white border">
+                <TooltipContent side="top" className="max-w-sidebar-content text-xs bg-lia-bg-elevated border">
                   <div className="flex items-start gap-1.5">
                     <Brain className="w-3 h-3 text-wedo-cyan flex-shrink-0 mt-0.5" />
                     <div>
-                      <span className="font-medium text-gray-600 dark:text-gray-400">Sugerido por LIA</span>
-                      <p className="text-gray-500 mt-0.5">{skill.weightJustification || inference.justificativa}</p>
+                      <span className="font-medium text-gray-600 dark:text-lia-text-tertiary">Sugerido por LIA</span>
+                      <p className="lia-text-secondary mt-0.5">{skill.weightJustification || inference.justificativa}</p>
                     </div>
                   </div>
                 </TooltipContent>
@@ -309,33 +309,33 @@ export function CompetenciesStage() {
 
   const renderBehavioralCompetency = (comp: BehavioralCompetency) => (
     <div key={comp.id} className={cn(
-      "flex flex-col gap-1.5 p-2 rounded-md border transition-all",
-      comp.enabled ? "bg-white border-gray-200" : "bg-gray-50 border-gray-200 opacity-60"
+ "flex flex-col gap-1.5 p-2 rounded-md border transition-colors",
+      comp.enabled ? "bg-lia-bg-primary border-lia-border-subtle" : "bg-gray-50 border-lia-border-subtle opacity-60"
     )}>
       <div className="flex items-center gap-2">
         <button
           onClick={() => toggleBehavioralCompetency(comp.id)}
           className={cn(
-            "w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition-all",
-            comp.enabled ? "bg-status-success" : "border border-gray-300"
+ "w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition-[width,height]",
+            comp.enabled ? "bg-status-success" : "border border-lia-border-default"
           )}
         >
           {comp.enabled && <CheckCircle2 className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
         </button>
-        <span className="flex-1 text-xs font-medium text-gray-800">
+        <span className="flex-1 text-xs font-medium lia-text-strong">
           {comp.name}
         </span>
       </div>
       {comp.enabled && (
         <>
-          <p className="text-micro text-gray-500 ml-6">{comp.justification}</p>
+          <p className="text-micro lia-text-secondary ml-6">{comp.justification}</p>
           <div className="flex items-center gap-1 ml-6">
-            <span className="text-micro text-gray-400 mr-1">Peso:</span>
+            <span className="text-micro lia-text-secondary mr-1">Peso:</span>
             {[1, 2, 3, 4, 5].map((w) => (
-              <button key={w} onClick={() => updateBehavioralWeight(comp.id, w)} className="transition-all">
+              <button key={w} onClick={() => updateBehavioralWeight(comp.id, w)} className="transition-colors">
                 <Star className={cn(
-                  "w-3.5 h-3.5 transition-colors",
-                  w <= comp.weight ? "fill-gray-700 dark:fill-gray-300 text-gray-600 dark:text-gray-400" : "text-gray-200"
+ "w-3.5 h-3.5 transition-colors",
+                  w <= comp.weight ? "fill-gray-700 dark:fill-gray-300 text-gray-600 dark:text-lia-text-tertiary" : "text-gray-200"
                 )} />
               </button>
             ))}
@@ -348,12 +348,12 @@ export function CompetenciesStage() {
   return (
     <div className="space-y-4">
       {/* Progress Indicator */}
-      <div className="p-2.5 bg-gray-50 rounded-md border border-gray-200 mb-3">
+      <div className="p-2.5 bg-gray-50 rounded-md border border-lia-border-subtle mb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
-              <Code className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-              <span className="text-micro text-gray-500">Técnicas:</span>
+              <Code className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
+              <span className="text-micro lia-text-secondary">Técnicas:</span>
               <span className={`text-xs font-medium ${technicalSkills.length >= 3 ? 'text-status-success' : 'text-status-warning'}`}>
                 {technicalSkills.length}/3
               </span>
@@ -362,7 +362,7 @@ export function CompetenciesStage() {
             <div className="w-px h-4 bg-gray-200" />
             <div className="flex items-center gap-1.5">
               <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-              <span className="text-micro text-gray-500">Comportamentais:</span>
+              <span className="text-micro lia-text-secondary">Comportamentais:</span>
               <span className={`text-xs font-medium ${enabledBehavioralCount >= 3 ? 'text-status-success' : 'text-status-warning'}`}>
                 {enabledBehavioralCount}/3
               </span>
@@ -377,8 +377,8 @@ export function CompetenciesStage() {
         <button
           onClick={() => setCompetenciesTab('technical')}
           className={cn(
-            "flex-1 py-2 px-3 rounded-md text-xs font-medium transition-all flex items-center justify-center gap-1.5",
-            competenciesTab === 'technical' ? "bg-gray-900 dark:bg-gray-50 text-white" : "border border-gray-200 text-gray-500"
+ "flex-1 py-2 px-3 rounded-md text-xs font-medium transition-colors flex items-center justify-center gap-1.5",
+            competenciesTab === 'technical' ? "bg-gray-900 text-white" : "border border-lia-border-subtle lia-text-secondary"
           )}
         >
           <Code className="w-3.5 h-3.5" />
@@ -387,8 +387,8 @@ export function CompetenciesStage() {
         <button
           onClick={() => setCompetenciesTab('behavioral')}
           className={cn(
-            "flex-1 py-2 px-3 rounded-md text-xs font-medium transition-all flex items-center justify-center gap-1.5",
-            competenciesTab === 'behavioral' ? "bg-gray-900 dark:bg-gray-50 text-white" : "border border-gray-200 text-gray-500"
+ "flex-1 py-2 px-3 rounded-md text-xs font-medium transition-colors flex items-center justify-center gap-1.5",
+            competenciesTab === 'behavioral' ? "bg-gray-900 text-white" : "border border-lia-border-subtle lia-text-secondary"
           )}
         >
           <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -404,7 +404,7 @@ export function CompetenciesStage() {
           {/* Add Skill Button */}
           <button
             onClick={() => setShowAddSkillModal(true)}
-            className="w-full py-2 px-3 rounded-md border border-dashed border-gray-900 dark:border-gray-50 text-gray-600 dark:text-gray-400 text-xs font-medium hover:bg-gray-50 dark:bg-gray-800/50 transition-all flex items-center justify-center gap-1.5"
+            className="w-full py-2 px-3 rounded-md border border-dashed border-gray-900 text-gray-600 dark:text-lia-text-tertiary text-xs font-medium hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors flex items-center justify-center gap-1.5"
           >
             <Plus className="w-3.5 h-3.5" />
             Adicionar Competência Técnica
@@ -412,19 +412,19 @@ export function CompetenciesStage() {
           
           {/* Add Skill Modal */}
           {showAddSkillModal && (
-            <div className="p-3 bg-gray-50 rounded-md border border-gray-200 space-y-2">
+            <div className="p-3 bg-gray-50 rounded-md border border-lia-border-subtle space-y-2">
               <input
                 type="text"
                 value={newSkillName}
                 onChange={(e) => setNewSkillName(e.target.value)}
                 placeholder="Nome da competência..."
-                className="w-full px-3 py-1.5 border border-gray-200 rounded-md text-xs"
+                className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs"
                 autoFocus
               />
               <select
                 value={newSkillCategory}
                 onChange={(e) => setNewSkillCategory(e.target.value as any)}
-                className="w-full px-3 py-1.5 border border-gray-200 rounded-md text-xs bg-white"
+                className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs bg-lia-bg-primary"
               >
                 <option value="language">Linguagem</option>
                 <option value="framework">Framework</option>
@@ -434,14 +434,14 @@ export function CompetenciesStage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => setShowAddSkillModal(false)}
-                  className="flex-1 py-1.5 px-3 rounded-md border border-gray-200 text-xs text-gray-500"
+                  className="flex-1 py-1.5 px-3 rounded-md border border-lia-border-subtle text-xs lia-text-secondary"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={addTechnicalSkill}
                   disabled={!newSkillName.trim()}
-                  className="flex-1 py-1.5 px-3 rounded-md bg-gray-900 dark:bg-gray-50 text-white text-xs disabled:opacity-50"
+                  className="flex-1 py-1.5 px-3 rounded-md bg-gray-900 text-white text-xs disabled:opacity-50"
                 >
                   Adicionar
                 </button>

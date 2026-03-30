@@ -125,15 +125,15 @@ const MenuItem = React.memo(({
       <button
         onClick={handleClick}
         className={cn(
-          "w-full flex items-center gap-2 px-2 py-2 rounded-md text-left transition-colors duration-200 text-base-ui leading-tight min-h-10",
+ "w-full flex items-center gap-2 px-2 py-2 rounded-md text-left transition-colors duration-200 text-base-ui leading-tight min-h-10",
           isLocked
-            ? "text-gray-800 dark:text-gray-500 cursor-default opacity-60"
+            ? "text-gray-800 cursor-default opacity-60"
             : "hover:bg-gray-50 dark:hover:bg-gray-800",
           isActive && canAccess
-            ? "bg-gray-100 dark:bg-gray-800 text-gray-950 dark:text-gray-50 font-semibold"
+            ? "bg-gray-100 dark:bg-lia-bg-secondary text-gray-950 font-semibold"
             : canAccess
-            ? "text-gray-800 dark:text-gray-200 font-normal"
-            : "text-gray-800 dark:text-gray-200 font-normal",
+            ? "text-gray-800 dark:text-lia-text-primary font-normal"
+            : "text-gray-800 dark:text-lia-text-primary font-normal",
           isCollapsed && !shouldShowContent ? "justify-center px-1.5" : ""
         )}
         title={isCollapsed && !shouldShowContent ? item.label : undefined}
@@ -148,10 +148,10 @@ const MenuItem = React.memo(({
             <span className="text-base-ui">{item.label}</span>
             <div className="flex items-center gap-1">
               {item.isPremium && !isLocked && (
-                <Crown className="w-2 h-2 text-gray-800 dark:text-gray-200" />
+                <Crown className="w-2 h-2 text-gray-800 dark:text-lia-text-primary" />
               )}
               {isLocked && (
-                <span className="text-xs bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded-full">
+                <span className="text-xs bg-gray-200 dark:bg-lia-bg-elevated px-1.5 py-0.5 rounded-full">
                   Premium
                 </span>
               )}
@@ -181,15 +181,15 @@ const MenuItem = React.memo(({
                   }
                 }}
                 className={cn(
-                  "w-full flex items-center gap-2 px-2 py-2 rounded-md text-left transition-colors duration-200 text-base-ui leading-tight min-h-10",
+ "w-full flex items-center gap-2 px-2 py-2 rounded-md text-left transition-colors duration-200 text-base-ui leading-tight min-h-10",
                   subIsLocked
-                    ? "text-gray-800 dark:text-gray-500 cursor-default opacity-60"
+                    ? "text-gray-800 cursor-default opacity-60"
                     : "hover:bg-gray-50 dark:hover:bg-gray-800",
                   currentPage === subItem.label && subCanAccess
-                    ? "bg-gray-100 dark:bg-gray-800 text-gray-950 dark:text-gray-50 font-semibold"
+                    ? "bg-gray-100 dark:bg-lia-bg-secondary text-gray-950 font-semibold"
                     : subCanAccess
-                    ? "text-gray-800 dark:text-gray-200 font-normal"
-                    : "text-gray-800 dark:text-gray-200 font-normal"
+                    ? "text-gray-800 dark:text-lia-text-primary font-normal"
+                    : "text-gray-800 dark:text-lia-text-primary font-normal"
                 )}
                 disabled={subIsLocked || false}
               >
@@ -200,10 +200,10 @@ const MenuItem = React.memo(({
                 <div className="flex items-center justify-between flex-1">
                   <span className="text-base-ui">{subItem.label}</span>
                   {subItem.isPremium && !subIsLocked && (
-                    <Crown className="w-2 h-2 text-gray-800 dark:text-gray-200" />
+                    <Crown className="w-2 h-2 text-gray-800 dark:text-lia-text-primary" />
                   )}
                   {subIsLocked && (
-                    <span className="text-xs bg-gray-200 dark:bg-gray-700 px-1 py-0.5 rounded-full">
+                    <span className="text-xs bg-gray-200 dark:bg-lia-bg-elevated px-1 py-0.5 rounded-full">
                       Premium
                     </span>
                   )}
@@ -241,11 +241,11 @@ const JobFilterItem = React.memo(({
     <button
       onClick={handleClick}
       className={cn(
-        "w-full flex items-center gap-2 px-2 py-1.5 rounded-full text-left transition-colors duration-200 text-xs leading-tight min-h-[36px]",
+ "w-full flex items-center gap-2 px-2 py-1.5 rounded-full text-left transition-colors duration-200 text-xs leading-tight min-h-[36px]",
         "hover:bg-gray-50 dark:hover:bg-gray-800",
         isActive
-          ? "bg-gray-100 dark:bg-gray-800 text-gray-950 dark:text-gray-50 font-semibold"
-          : "text-gray-800 dark:text-gray-200 font-normal",
+          ? "bg-gray-100 dark:bg-lia-bg-secondary text-gray-950 font-semibold"
+          : "text-gray-800 dark:text-lia-text-primary font-normal",
         isCollapsed && !shouldShowContent ? "justify-center px-1.5" : ""
       )}
       title={isCollapsed && !shouldShowContent ? item.label : undefined}
@@ -257,7 +257,7 @@ const JobFilterItem = React.memo(({
         <div className="flex items-center justify-between flex-1">
           <span className="text-base-ui">{item.label}</span>
           {item.count !== undefined && item.count > 0 && (
-            <span className="text-xs bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded-full h-5 flex items-center">
+            <span className="text-xs bg-gray-200 dark:bg-lia-bg-elevated px-1.5 py-0.5 rounded-full h-5 flex items-center">
               {item.count}
             </span>
           )}
@@ -270,9 +270,9 @@ const JobFilterItem = React.memo(({
 JobFilterItem.displayName = 'JobFilterItem'
 
 const RECENT_TYPE_CONFIG = {
-  vaga: { icon: Briefcase, color: 'text-gray-600 dark:text-gray-400' },
+  vaga: { icon: Briefcase, color: 'text-gray-600 dark:text-lia-text-tertiary' },
   chat: { icon: Brain, color: 'text-wedo-cyan' },
-  candidato: { icon: User, color: 'text-gray-600 dark:text-gray-400' },
+  candidato: { icon: User, color: 'text-gray-600 dark:text-lia-text-tertiary' },
 } as const
 
 const RecentItemRow = React.memo(({
@@ -291,7 +291,7 @@ const RecentItemRow = React.memo(({
     <div className="group relative flex items-center">
       <button
         onClick={() => onClick(item)}
-        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 text-sm-ui leading-tight min-h-8 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
+        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 text-sm-ui leading-tight min-h-8 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-lia-text-secondary"
         title={item.title}
       >
         <Icon className={cn("w-3.5 h-3.5 flex-shrink-0", config.color)} />
@@ -305,7 +305,7 @@ const RecentItemRow = React.memo(({
         className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-0.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700"
         title="Remover dos recentes"
       >
-        <X className="w-3 h-3 text-gray-400 dark:text-gray-500" />
+        <X className="w-3 h-3 text-gray-400" />
       </button>
     </div>
   )
@@ -432,7 +432,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
     <div
       data-sidebar="true"
       className={cn(
-        "bg-white dark:bg-gray-900 min-h-screen flex flex-col border-r border-gray-100 dark:border-gray-800 relative font-sans",
+ "bg-white dark:bg-lia-bg-primary min-h-screen flex flex-col border-r border-lia-border-subtle relative font-sans",
         isTemporaryExpanded && "z-50"
       )}
       style={{width: dynamicWidth}}
@@ -441,7 +441,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
     >
       {/* Logo and Toggle */}
       <div className={cn(
-        "flex items-center justify-between",
+ "flex items-center justify-between",
         shouldShowContent ? "p-4" : "p-2 flex-col gap-2"
       )}>
         <div className="flex items-center justify-center">
@@ -471,7 +471,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
           variant="ghost"
           size="sm"
           onClick={toggleCollapse}
-          className="h-7 w-7 p-0 text-gray-800 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+          className="h-7 w-7 p-0 text-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800"
           title={`${isCollapsed ? "Expandir" : "Retrair"} menu (Ctrl+B)`}
         >
           {isCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
@@ -482,7 +482,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
       <div className={`py-4 flex-1 overflow-y-auto ${shouldShowContent ? 'px-4' : 'px-2'}`}>
         <div className="mb-4">
           {shouldShowContent && (
-            <h3 className="text-xs font-semibold text-gray-800 dark:text-gray-500 mb-2 tracking-[0.2em] uppercase">
+            <h3 className="text-xs font-semibold text-gray-800 mb-2 tracking-[0.2em] uppercase">
               MENU
             </h3>
           )}
@@ -503,7 +503,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
 
         {shouldShowContent && recentItems && recentItems.length > 0 && onRecentItemClick && onRecentItemRemove && (
           <div className="mt-5">
-            <h3 className="text-xs font-semibold text-gray-800 dark:text-gray-500 mb-2 tracking-[0.2em] uppercase">
+            <h3 className="text-xs font-semibold text-gray-800 mb-2 tracking-[0.2em] uppercase">
               RECENTES
             </h3>
             <div className="space-y-0.5 max-h-[280px] overflow-y-auto">
@@ -519,7 +519,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             {recentItems.length >= 2 && onRecentItemsClear && (
               <button
                 onClick={onRecentItemsClear}
-                className="flex items-center gap-1.5 mt-2 px-2 py-1 text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
+                className="flex items-center gap-1.5 mt-2 px-2 py-1 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
               >
                 <Trash2 className="w-3 h-3" />
                 Limpar recentes
@@ -531,16 +531,16 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
       </div>
 
       {/* Tools Section - Fixed at Bottom */}
-      <div className="px-3 py-2 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
+      <div className="px-3 py-2 border-t border-lia-border-subtle bg-white dark:bg-lia-bg-primary">
         <div className={cn(
-          "flex items-center gap-1",
+ "flex items-center gap-1",
           isCollapsed && !isTemporaryExpanded ? "flex-col gap-0.5" : "justify-center"
         )}>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => onShowSearch?.()}
-            className="h-6 w-6 p-0 text-gray-800 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="h-6 w-6 p-0 text-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800"
             title="Busca Global"
           >
             <Search className="w-3 h-3" />
@@ -550,7 +550,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             variant="ghost"
             size="sm"
             onClick={() => onNavigate("Configurações")}
-            className="h-6 w-6 p-0 text-gray-800 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="h-6 w-6 p-0 text-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800"
             title="Configurações"
           >
             <Settings className="w-3 h-3" />
@@ -564,7 +564,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             variant="ghost"
             size="sm"
             onClick={handleShowTipsModal}
-            className="h-6 w-6 p-0 text-gray-800 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="h-6 w-6 p-0 text-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800"
             title="Ajuda e Dicas LIA"
           >
             <HelpCircle className="w-3 h-3" />
@@ -576,15 +576,15 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
       {shouldShowContent && !isTemporaryExpanded && (
         <div
           className={cn(
-            "absolute top-0 right-0 w-1 h-full cursor-col-resize group z-10",
-            "hover:w-1.5 transition-all duration-200",
-            isResizing ? "bg-gray-700 dark:bg-gray-300 w-1.5" : "bg-transparent hover:bg-gray-600 dark:hover:bg-gray-400"
+ "absolute top-0 right-0 w-1 h-full cursor-col-resize group z-10",
+            "hover:w-1.5 transition-colors duration-200",
+            isResizing ? "bg-gray-700 w-1.5" : "bg-transparent hover:bg-gray-600 dark:hover:bg-gray-400"
           )}
           onMouseDown={startResize}
           title="Arrastar para redimensionar sidebar"
         >
           {/* Indicador visual mais sutil */}
-          <div className="absolute inset-y-0 right-0 w-px bg-gray-200 dark:bg-gray-700 group-hover:bg-gray-500 dark:group-hover:bg-gray-400 transition-colors duration-200" />
+          <div className="absolute inset-y-0 right-0 w-px bg-gray-200 dark:bg-lia-bg-elevated group-hover:bg-gray-500 dark:group-hover:bg-gray-400 transition-colors duration-200" />
 
           {/* Área de hover expandida para facilitar o clique */}
           <div className="absolute top-0 -right-2 w-4 h-full" />
@@ -593,7 +593,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
 
       {/* Indicador visual de atalho */}
       {isCollapsed && !isTemporaryExpanded && (
-        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-950 text-xs px-2 py-1 rounded-md opacity-0 hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded-md opacity-0 hover:opacity-100 transition-opacity duration-200 pointer-events-none">
           Ctrl+B
         </div>
       )}

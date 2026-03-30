@@ -114,11 +114,11 @@ export function SearchModeArchetypes({
         <button
           onClick={() => onArchetypeTabChange("list")}
           className={cn(
-            "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
+            "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
             archetypeTab === "list"
               ? "bg-gray-100 ring-1 ring-gray-400"
-              : "bg-white ring-1 ring-gray-200 hover:bg-gray-50"
-          , archetypeTab === "list" ? "text-gray-950" : "text-gray-400"
+              : "bg-lia-bg-primary ring-1 ring-gray-200 hover:bg-gray-50"
+          , archetypeTab === "list" ? "lia-text-950" : "lia-text-400"
           )}
         >
           <Target className="w-3 h-3" />
@@ -126,7 +126,7 @@ export function SearchModeArchetypes({
         </button>
         <button
           onClick={() => onArchetypeTabChange("create")}
-          className="flex items-center gap-1 h-7 px-3 rounded-md text-xs font-medium transition-all ring-1 ring-gray-300 hover:ring-gray-400 hover:bg-gray-50 bg-white"
+          className="flex items-center gap-1 h-7 px-3 rounded-md text-xs font-medium transition-colors ring-1 ring-gray-300 hover:ring-gray-400 hover:bg-gray-50 bg-lia-bg-primary"
         >
           <Plus className="w-3 h-3" />
           Criar Novo
@@ -139,7 +139,7 @@ export function SearchModeArchetypes({
           <div className="relative">
             <div className="absolute left-2.5 top-1/2 -translate-y-1/2">
               <Search
-                className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400"
+                className="w-3.5 h-3.5 lia-text-500 dark:text-lia-text-tertiary"
               />
             </div>
             <input
@@ -147,21 +147,21 @@ export function SearchModeArchetypes({
               value={archetypeSearch}
               onChange={(e) => onArchetypeSearchChange(e.target.value)}
               placeholder="Buscar arquétipos..."
-              className="w-full rounded-md pl-8 pr-3 py-2 text-xs focus:outline-none focus:ring-2 border border-gray-300 bg-gray-50 text-gray-800"
+              className="w-full rounded-md pl-8 pr-3 py-2 text-xs focus:outline-none focus:ring-2 border border-lia-border-default bg-gray-50 lia-text-800"
             />
           </div>
 
           {isLoadingArchetypes ? (
             <div className="flex items-center justify-center py-6">
-              <Loader2 className="w-5 h-5 animate-spin text-gray-700" />
-              <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
+              <Loader2 className="w-5 h-5 animate-spin lia-text-700" />
+              <span className="ml-2 text-sm lia-text-500 dark:text-lia-text-tertiary">
                 Carregando arquétipos...
               </span>
             </div>
           ) : filteredArchetypes.length === 0 ? (
             <div className="text-center py-6">
-              <Target className="w-8 h-8 mx-auto mb-2 text-gray-500 dark:text-gray-400" />
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <Target className="w-8 h-8 mx-auto mb-2 lia-text-500 dark:text-lia-text-tertiary" />
+              <p className="text-sm lia-text-500 dark:text-lia-text-tertiary">
                 {archetypeVacancies.length === 0
                   ? "Nenhum arquétipo encontrado"
                   : "Nenhum arquétipo corresponde à busca"}
@@ -184,12 +184,12 @@ export function SearchModeArchetypes({
                   <div
                     key={arch.id}
                     className={cn(
-                      "group relative w-full rounded-md text-left transition-all cursor-pointer border",
+                      "group relative w-full rounded-md text-left transition-colors cursor-pointer border",
                       isExpanded
-                        ? "bg-gray-50 ring-1 ring-gray-900/20 border-gray-300"
+                        ? "bg-gray-50 ring-1 ring-gray-900/20 border-lia-border-default"
                         : selectedArchetype?.id === arch.id
-                        ? "bg-gray-50 ring-1 ring-gray-900/20 border-gray-300"
-                        : "bg-white hover:bg-gray-50 border-gray-200"
+                        ? "bg-gray-50 ring-1 ring-gray-900/20 border-lia-border-default"
+                        : "bg-lia-bg-primary hover:bg-gray-50 border-lia-border-subtle"
                     )}
                   >
                     <div
@@ -200,7 +200,7 @@ export function SearchModeArchetypes({
                     >
                       <div className="flex items-center gap-2">
                         <span className="text-base-ui flex-shrink-0">{arch.emoji || "🎯"}</span>
-                        <span className="font-semibold text-xs truncate text-gray-800">
+                        <span className="font-semibold text-xs truncate lia-text-800">
                           {arch.name || arch.title}
                         </span>
                         {arch.is_default && (
@@ -221,7 +221,7 @@ export function SearchModeArchetypes({
                               </span>
                             ))}
                             {arch.tags.length > 2 && (
-                              <span className="text-micro px-1 py-0.5 text-gray-400">
+                              <span className="text-micro px-1 py-0.5 lia-text-400">
                                 +{arch.tags.length - 2}
                               </span>
                             )}
@@ -229,14 +229,14 @@ export function SearchModeArchetypes({
                         )}
                         <div className="ml-auto flex items-center gap-1 flex-shrink-0">
                           {isExpanded ? (
-                            <ChevronUp className="w-3.5 h-3.5 text-gray-700" />
+                            <ChevronUp className="w-3.5 h-3.5 lia-text-700" />
                           ) : (
-                            <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+                            <ChevronDown className="w-3.5 h-3.5 lia-text-400" />
                           )}
                         </div>
                       </div>
                       {!isExpanded && arch.description && (
-                        <p className="mt-1 pl-[21px] text-micro line-clamp-1">
+                        <p className="mt-1 pl-[21px] text-micro line-clamp-1"> {/* [OPT-022] px arbitrário — sem canônico Tailwind */}
                           {arch.description}
                         </p>
                       )}
@@ -251,7 +251,7 @@ export function SearchModeArchetypes({
                         )}
 
                         <div className="space-y-1">
-                          <span className="text-micro font-medium text-gray-400">Query de Busca</span>
+                          <span className="text-micro font-medium lia-text-400">Query de Busca</span>
                           <p className="text-xs p-2 rounded-md">
                             {arch.query || "Sem query definida"}
                           </p>
@@ -259,7 +259,7 @@ export function SearchModeArchetypes({
 
                         {arch.tags && arch.tags.length > 0 && (
                           <div className="space-y-1">
-                            <span className="text-micro font-medium text-gray-400">Tags</span>
+                            <span className="text-micro font-medium lia-text-400">Tags</span>
                             <div className="flex flex-wrap gap-1">
                               {arch.tags.map((tag: string, idx: number) => (
                                 <span
@@ -275,7 +275,7 @@ export function SearchModeArchetypes({
 
                         {arch.filters?.skills && arch.filters.skills.length > 0 && (
                           <div className="space-y-1">
-                            <span className="text-micro font-medium text-gray-400">Skills</span>
+                            <span className="text-micro font-medium lia-text-400">Skills</span>
                             <div className="flex flex-wrap gap-1">
                               {arch.filters.skills.map((skill: string, idx: number) => (
                                 <span
@@ -292,38 +292,38 @@ export function SearchModeArchetypes({
                         <div className="flex flex-wrap gap-2 text-micro">
                           {arch.seniority && (
                             <div className="flex items-center gap-1">
-                              <span className="text-gray-400">Senioridade:</span>
-                              <span className="font-medium capitalize text-gray-700">
+                              <span className="lia-text-400">Senioridade:</span>
+                              <span className="font-medium capitalize lia-text-700">
                                 {arch.seniority}
                               </span>
                             </div>
                           )}
                           {arch.industry && (
                             <div className="flex items-center gap-1">
-                              <span className="text-gray-400">Indústria:</span>
-                              <span className="font-medium capitalize text-gray-700">
+                              <span className="lia-text-400">Indústria:</span>
+                              <span className="font-medium capitalize lia-text-700">
                                 {arch.industry}
                               </span>
                             </div>
                           )}
                           {arch.filters?.experience_years_min && (
                             <div className="flex items-center gap-1">
-                              <span className="text-gray-400">Experiência:</span>
-                              <span className="font-medium text-gray-700">
+                              <span className="lia-text-400">Experiência:</span>
+                              <span className="font-medium lia-text-700">
                                 {arch.filters.experience_years_min}+ anos
                               </span>
                             </div>
                           )}
                           {arch.filters?.location && (
                             <div className="flex items-center gap-1">
-                              <span className="text-gray-400">Localização:</span>
-                              <span className="font-medium text-gray-700">{arch.filters.location}</span>
+                              <span className="lia-text-400">Localização:</span>
+                              <span className="font-medium lia-text-700">{arch.filters.location}</span>
                             </div>
                           )}
                           {arch.filters?.work_model && (
                             <div className="flex items-center gap-1">
-                              <span className="text-gray-400">Modelo:</span>
-                              <span className="font-medium text-gray-700">
+                              <span className="lia-text-400">Modelo:</span>
+                              <span className="font-medium lia-text-700">
                                 {arch.filters.work_model === "remote"
                                   ? "Remoto"
                                   : arch.filters.work_model === "hybrid"
@@ -336,8 +336,8 @@ export function SearchModeArchetypes({
                           )}
                           {arch.filters?.employment_type && (
                             <div className="flex items-center gap-1">
-                              <span className="text-gray-400">Contrato:</span>
-                              <span className="font-medium text-gray-700">
+                              <span className="lia-text-400">Contrato:</span>
+                              <span className="font-medium lia-text-700">
                                 {arch.filters.employment_type === "clt"
                                   ? "CLT"
                                   : arch.filters.employment_type === "pj"
@@ -356,7 +356,7 @@ export function SearchModeArchetypes({
 
                         {arch.filters?.languages && arch.filters.languages.length > 0 && (
                           <div className="space-y-1">
-                            <span className="text-micro font-medium text-gray-400">Idiomas</span>
+                            <span className="text-micro font-medium lia-text-400">Idiomas</span>
                             <div className="flex flex-wrap gap-1">
                               {arch.filters.languages.map((lang: string, idx: number) => (
                                 <span
@@ -422,17 +422,17 @@ export function SearchModeArchetypes({
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
-                  <FileText className="w-3.5 h-3.5 text-gray-700" />
+                  <FileText className="w-3.5 h-3.5 lia-text-700" />
                   <span className="text-xs font-medium">Preview do prompt de busca</span>
                 </div>
-                <span className="text-micro text-gray-400">editável</span>
+                <span className="text-micro lia-text-400">editável</span>
               </div>
               <div className="relative">
                 <textarea
                   value={archetypeSearchPrompt}
                   onChange={(e) => onArchetypeSearchPromptChange(e.target.value)}
                   placeholder="Descreva o perfil do arquétipo..."
-                  className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[60px] transition-all border bg-[var(--lia-bg-primary)] text-gray-950"
+                  className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[60px] transition-colors border bg-[var(--lia-bg-primary)] lia-text-950"
                   rows={2}
                 />
                 {onSearchSourceChange && (
@@ -469,7 +469,7 @@ export function SearchModeArchetypes({
                     ? `Buscar perfis similares a "${selectedArchetype.title}"...`
                     : "Selecione um arquétipo acima para buscar..."
                 }
-                className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-14 transition-all border bg-[var(--lia-bg-primary)] text-gray-950"
+                className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-14 transition-colors border bg-[var(--lia-bg-primary)] lia-text-950"
                 rows={2}
                 disabled={!selectedArchetype}
               />
@@ -496,10 +496,10 @@ export function SearchModeArchetypes({
           )}
 
           {/* Dica */}
-          <div className="px-2 py-1.5 rounded-md bg-gray-50 border border-gray-200">
+          <div className="px-2 py-1.5 rounded-md bg-gray-50 border border-lia-border-subtle">
             <div className="flex items-center gap-1.5">
-              <Lightbulb className="w-3 h-3 flex-shrink-0 text-gray-700" />
-              <p className="text-xs text-gray-800 dark:text-gray-200">
+              <Lightbulb className="w-3 h-3 flex-shrink-0 lia-text-700" />
+              <p className="text-xs lia-text-800 dark:text-lia-text-primary">
                 <strong>Dica:</strong> Arquétipos são perfis baseados em contratações bem-sucedidas.
               </p>
             </div>
@@ -515,10 +515,10 @@ export function SearchModeArchetypes({
             <button
               onClick={() => onArchetypeCreateModeChange("job")}
               className={cn(
-                "flex-1 px-3 py-2 rounded-md text-xs font-medium transition-all border border-gray-200",
+                "flex-1 px-3 py-2 rounded-md text-xs font-medium transition-colors border border-lia-border-subtle",
                 archetypeCreateMode === "job"
-                  ? "bg-gray-100 ring-1 ring-gray-400 text-gray-800"
-                  : "bg-white hover:bg-gray-50 text-gray-500"
+                  ? "bg-gray-100 ring-1 ring-gray-400 lia-text-800"
+                  : "bg-lia-bg-primary hover:bg-gray-50 lia-text-500"
               )}
             >
               <Briefcase className="w-3.5 h-3.5 inline mr-1.5" />
@@ -527,10 +527,10 @@ export function SearchModeArchetypes({
             <button
               onClick={() => onArchetypeCreateModeChange("description")}
               className={cn(
-                "flex-1 px-3 py-2 rounded-md text-xs font-medium transition-all border border-gray-200",
+                "flex-1 px-3 py-2 rounded-md text-xs font-medium transition-colors border border-lia-border-subtle",
                 archetypeCreateMode === "description"
-                  ? "bg-gray-100 ring-1 ring-gray-400 text-gray-800"
-                  : "bg-white hover:bg-gray-50 text-gray-500"
+                  ? "bg-gray-100 ring-1 ring-gray-400 lia-text-800"
+                  : "bg-lia-bg-primary hover:bg-gray-50 lia-text-500"
               )}
             >
               <FileText className="w-3.5 h-3.5 inline mr-1.5" />
@@ -541,13 +541,13 @@ export function SearchModeArchetypes({
           {/* A partir de Vaga */}
           {archetypeCreateMode === "job" && (
             <div className="space-y-2">
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs lia-text-500 dark:text-lia-text-tertiary">
                 Busque por nome ou ID da vaga para criar um arquétipo:
               </p>
 
               <div className="relative">
                 <Search
-                  className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400"
+                  className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 lia-text-400"
                 />
                 <input
                   type="text"
@@ -557,26 +557,26 @@ export function SearchModeArchetypes({
                     onSearchJobsForArchetype(e.target.value)
                   }}
                   placeholder="Buscar vaga por nome ou ID..."
-                  className="w-full pl-8 pr-3 py-2 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-gray-200"
+                  className="w-full pl-8 pr-3 py-2 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-lia-border-subtle"
                 />
                 {isSearchingJobs && (
-                  <Loader2 className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 animate-spin text-gray-700" />
+                  <Loader2 className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 animate-spin lia-text-700" />
                 )}
               </div>
 
               {jobSearchQuery.trim() && (
-                <div className="max-h-[200px] overflow-y-auto space-y-1.5 rounded-md border border-gray-200">
+                <div className="max-h-[200px] overflow-y-auto space-y-1.5 rounded-md border border-lia-border-subtle">
                   {isSearchingJobs ? (
                     <div className="flex items-center justify-center py-4">
-                      <Loader2 className="w-4 h-4 animate-spin text-gray-700" />
-                      <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                      <Loader2 className="w-4 h-4 animate-spin lia-text-700" />
+                      <span className="ml-2 text-xs lia-text-500 dark:text-lia-text-tertiary">
                         Buscando vagas...
                       </span>
                     </div>
                   ) : jobSearchResults.length === 0 ? (
                     <div className="text-center py-4 px-3">
                       <Briefcase className="w-5 h-5 mx-auto mb-1.5" />
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs lia-text-400">
                         Nenhuma vaga encontrada para "{jobSearchQuery}"
                       </p>
                     </div>
@@ -585,14 +585,14 @@ export function SearchModeArchetypes({
                       <button
                         key={job.id}
                         onClick={() => onOpenArchetypeFromJob(job)}
-                        className="w-full p-2.5 text-left transition-all hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                        className="w-full p-2.5 text-left transition-colors hover:bg-gray-50 border-b border-lia-border-subtle last:border-b-0"
                       >
                         <div className="flex items-start gap-2">
-                          <Briefcase className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-600" />
+                          <Briefcase className="w-4 h-4 mt-0.5 flex-shrink-0 lia-text-600" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
                               <p
-                                className="font-medium text-xs truncate text-gray-950"
+                                className="font-medium text-xs truncate lia-text-950"
                               >
                                 {job.title}
                               </p>
@@ -615,35 +615,35 @@ export function SearchModeArchetypes({
                               </span>
                             </div>
                             <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-micro text-gray-400">
+                              <span className="text-micro lia-text-400">
                                 ID: {job.id.slice(0, 8)}...
                               </span>
                               {job.department && (
                                 <>
-                                  <span className="text-micro text-gray-300">
+                                  <span className="text-micro lia-text-300">
                                     •
                                   </span>
-                                  <span className="text-micro text-gray-400">
+                                  <span className="text-micro lia-text-400">
                                     {job.department}
                                   </span>
                                 </>
                               )}
                               {job.seniority_level && (
                                 <>
-                                  <span className="text-micro text-gray-300">
+                                  <span className="text-micro lia-text-300">
                                     •
                                   </span>
-                                  <span className="text-micro text-gray-400">
+                                  <span className="text-micro lia-text-400">
                                     {job.seniority_level}
                                   </span>
                                 </>
                               )}
                             </div>
-                            <p className="text-micro mt-0.5 text-gray-400">
+                            <p className="text-micro mt-0.5 lia-text-400">
                               Criada em {new Date(job.created_at).toLocaleDateString("pt-BR")}
                             </p>
                             {job.description && (
-                              <p className="text-micro mt-1 line-clamp-2 text-gray-400">
+                              <p className="text-micro mt-1 line-clamp-2 lia-text-400">
                                 {job.description.slice(0, 120)}
                                 {job.description.length > 120 ? "..." : ""}
                               </p>
@@ -657,18 +657,18 @@ export function SearchModeArchetypes({
               )}
 
               {!jobSearchQuery.trim() && (
-                <div className="text-center py-4 px-3 rounded-md border border-dashed border-gray-200">
+                <div className="text-center py-4 px-3 rounded-md border border-dashed border-lia-border-subtle">
                   <Search className="w-5 h-5 mx-auto mb-1.5" />
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs lia-text-400">
                     Digite o nome ou ID da vaga para buscar
                   </p>
                 </div>
               )}
 
-              <div className="p-2.5 rounded-md bg-gray-50 border border-gray-200">
+              <div className="p-2.5 rounded-md bg-gray-50 border border-lia-border-subtle">
                 <div className="flex items-start gap-2">
-                  <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-700" />
-                  <p className="text-xs text-gray-800 dark:text-gray-200">
+                  <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 lia-text-700" />
+                  <p className="text-xs lia-text-800 dark:text-lia-text-primary">
                     <strong>Dica:</strong> Selecione uma vaga para preencher automaticamente os dados do
                     arquétipo. Você poderá editar antes de salvar.
                   </p>
@@ -680,7 +680,7 @@ export function SearchModeArchetypes({
           {/* A partir de Descrição */}
           {archetypeCreateMode === "description" && (
             <div className="space-y-2">
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs lia-text-500 dark:text-lia-text-tertiary">
                 Descreva o perfil ideal que deseja buscar:
               </p>
               <textarea
@@ -688,13 +688,13 @@ export function SearchModeArchetypes({
                 onChange={(e) => onArchetypeDescriptionChange(e.target.value)}
                 placeholder="Ex: Desenvolvedor Python sênior com experiência em machine learning e cloud AWS, preferencialmente com background em fintechs..."
                 rows={3}
-                className="w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 resize-none border border-gray-300 bg-gray-50 text-gray-800"
+                className="w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 resize-none border border-lia-border-default bg-gray-50 lia-text-800"
               />
               <Button
                 onClick={() => onCreateArchetypeFromDescription(archetypeDescription)}
                 disabled={archetypeDescription.length < 20 || isCreatingArchetype}
                 size="sm"
-                className={cn("w-full", archetypeDescription.length >= 20 ? "bg-gray-950 text-white" : "bg-gray-100 text-gray-500")}
+                className={cn("w-full", archetypeDescription.length >= 20 ? "bg-gray-950 text-white" : "bg-gray-100 lia-text-500")}
               >
                 {isCreatingArchetype ? (
                   <>
@@ -709,10 +709,10 @@ export function SearchModeArchetypes({
                 )}
               </Button>
 
-              <div className="p-2.5 rounded-md bg-gray-50 border border-gray-200">
+              <div className="p-2.5 rounded-md bg-gray-50 border border-lia-border-subtle">
                 <div className="flex items-start gap-2">
-                  <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-700" />
-                  <p className="text-xs text-gray-800 dark:text-gray-200">
+                  <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 lia-text-700" />
+                  <p className="text-xs lia-text-800 dark:text-lia-text-primary">
                     <strong>Dica:</strong> Descreva o perfil ideal e a LIA vai extrair automaticamente cargo,
                     senioridade e skills para criar o arquétipo.
                   </p>
@@ -768,11 +768,11 @@ function ScopeButtons({
                   onSearchSourceChange("local")
                 }}
                 className={cn(
-                  "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                  "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                   searchSource === "local"
                     ? "bg-wedo-green/15 ring-1 ring-wedo-green"
                     : "hover:bg-gray-100"
-                , searchSource === "local" ? "text-wedo-green" : "text-gray-400"
+                , searchSource === "local" ? "text-wedo-green" : "lia-text-400"
                 )}
               >
                 <Home className="w-4 h-4" />
@@ -783,7 +783,7 @@ function ScopeButtons({
               className="!animate-none !duration-0"
             >
               <p className="text-xs font-medium">Seu banco de talentos</p>
-              <p className="text-xs text-gray-300">Gratuito • Local</p>
+              <p className="text-xs lia-text-300">Gratuito • Local</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -800,11 +800,11 @@ function ScopeButtons({
                     onHandleSourceChange?.("hybrid")
                   }}
                   className={cn(
-                    "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                    "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                     searchSource === "hybrid"
                       ? "bg-wedo-orange/15 ring-1 ring-wedo-orange"
                       : "hover:bg-gray-100"
-                  , searchSource === "hybrid" ? "text-wedo-orange" : "text-gray-400"
+                  , searchSource === "hybrid" ? "text-wedo-orange" : "lia-text-400"
                   )}
                 >
                   <Zap className="w-4 h-4" />
@@ -815,7 +815,7 @@ function ScopeButtons({
                 className="!animate-none !duration-0"
               >
                 <p className="text-xs font-medium">Expanda sua busca</p>
-                <p className="text-xs text-gray-300">Local + Global • 1 crédito/candidato</p>
+                <p className="text-xs lia-text-300">Local + Global • 1 crédito/candidato</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -833,11 +833,11 @@ function ScopeButtons({
                     onHandleSourceChange?.("global")
                   }}
                   className={cn(
-                    "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                    "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                     searchSource === "global"
                       ? "bg-wedo-cyan/15 ring-1 ring-gray-900/20"
                       : "hover:bg-gray-100"
-                  , searchSource === "global" ? "text-gray-950" : "text-gray-400"
+                  , searchSource === "global" ? "lia-text-950" : "lia-text-400"
                   )}
                 >
                   <Globe className="w-4 h-4" />
@@ -848,7 +848,7 @@ function ScopeButtons({
                 className="!animate-none !duration-0"
               >
                 <p className="text-xs font-medium">Alcance global</p>
-                <p className="text-xs text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
+                <p className="text-xs lia-text-300">800M+ candidatos • 1 crédito/candidato</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -869,11 +869,11 @@ function ScopeButtons({
                         onRequireEmailsChange(!requireEmails)
                       }}
                       className={cn(
-                        "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                        "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                         requireEmails
                           ? "bg-wedo-green/15 ring-1 ring-wedo-green"
                           : "hover:bg-gray-100"
-                      , requireEmails ? "text-wedo-green" : "text-gray-400"
+                      , requireEmails ? "text-wedo-green" : "lia-text-400"
                       )}
                     >
                       <Mail className="w-3.5 h-3.5" />
@@ -884,7 +884,7 @@ function ScopeButtons({
                     className="!animate-none !duration-0"
                   >
                     <p className="text-xs font-medium">Apenas com Email</p>
-                    <p className="text-xs text-gray-300">
+                    <p className="text-xs lia-text-300">
                       {requireEmails ? "Ativo (+1 crédito)" : "Clique para ativar (+1 crédito)"}
                     </p>
                   </TooltipContent>
@@ -902,11 +902,11 @@ function ScopeButtons({
                         onRequirePhoneNumbersChange(!requirePhoneNumbers)
                       }}
                       className={cn(
-                        "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                        "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                         requirePhoneNumbers
                           ? "bg-wedo-green/15 ring-1 ring-wedo-green"
                           : "hover:bg-gray-100"
-                      , requirePhoneNumbers ? "text-wedo-green" : "text-gray-400"
+                      , requirePhoneNumbers ? "text-wedo-green" : "lia-text-400"
                       )}
                     >
                       <Phone className="w-3.5 h-3.5" />
@@ -917,7 +917,7 @@ function ScopeButtons({
                     className="!animate-none !duration-0"
                   >
                     <p className="text-xs font-medium">Apenas com Telefone</p>
-                    <p className="text-xs text-gray-300">
+                    <p className="text-xs lia-text-300">
                       {requirePhoneNumbers ? "Ativo (+1 crédito)" : "Clique para ativar (+1 crédito)"}
                     </p>
                   </TooltipContent>
@@ -934,9 +934,9 @@ function ScopeButtons({
                 onClick={onSubmit}
                 disabled={!selectedArchetype || isLoading}
                 className={cn(
-                  "flex items-center justify-center p-1.5 rounded-md transition-all",
+                  "flex items-center justify-center p-1.5 rounded-md transition-colors",
                   selectedArchetype ? "hover:bg-gray-100" : "opacity-50 cursor-not-allowed"
-                , selectedArchetype ? "text-gray-400" : "text-gray-200"
+                , selectedArchetype ? "lia-text-400" : "lia-text-200"
                 )}
               >
                 {isLoading ? (
@@ -951,12 +951,12 @@ function ScopeButtons({
               className="!animate-none !duration-0"
             >
               <p className="text-xs font-medium">Buscar Arquétipo</p>
-              <p className="text-xs text-gray-300">Encontra perfis similares ao arquétipo</p>
+              <p className="text-xs lia-text-300">Encontra perfis similares ao arquétipo</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
       </div>
-      <span className="text-micro text-gray-400 italic">buscar arquétipo</span>
+      <span className="text-micro lia-text-400 italic">buscar arquétipo</span>
     </>
   )
 }

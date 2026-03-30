@@ -39,7 +39,7 @@ export function HITLConfirmCard({
   return (
     <div
       className={cn(
-        "rounded-md border border-status-warning/30 dark:border-status-warning/30",
+ "rounded-md border border-status-warning/30 dark:border-status-warning/30",
         "bg-status-warning/10",
         "p-3 space-y-2.5"
       )}
@@ -62,7 +62,7 @@ export function HITLConfirmCard({
 
       {/* Descrição da ação */}
       <p
-        className="text-sm-ui text-gray-700 dark:text-gray-300 leading-relaxed pl-6"
+        className="text-sm-ui text-gray-700 dark:text-lia-text-secondary leading-relaxed pl-6"
        
       >
         {description}
@@ -82,7 +82,7 @@ export function HITLConfirmCard({
           aria-label="Confirmar automaticamente esta ação no futuro"
         />
         <span
-          className="text-xs text-gray-500 dark:text-gray-400"
+          className="text-xs text-gray-500 dark:text-lia-text-tertiary"
          
         >
           Confirmar automaticamente esta ação no futuro
@@ -94,9 +94,9 @@ export function HITLConfirmCard({
         <button
           onClick={() => onConfirm(autoConfirm)}
           className={cn(
-            "flex items-center gap-1.5 px-3 py-1.5",
+ "flex items-center gap-1.5 px-3 py-1.5",
             "rounded-md text-xs font-medium",
-            "bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900",
+            "bg-gray-900 text-white",
             "hover:bg-gray-700 dark:hover:bg-gray-200 transition-colors"
           )}
           aria-label="Confirmar ação"
@@ -107,10 +107,10 @@ export function HITLConfirmCard({
         <button
           onClick={onCancel}
           className={cn(
-            "flex items-center gap-1.5 px-3 py-1.5",
+ "flex items-center gap-1.5 px-3 py-1.5",
             "rounded-md text-xs font-medium",
-            "border border-gray-200 dark:border-gray-700",
-            "text-gray-600 dark:text-gray-400",
+            "border border-lia-border-subtle dark:border-lia-border-subtle",
+            "text-gray-600 dark:text-lia-text-tertiary",
             "hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           )}
           aria-label="Cancelar ação"

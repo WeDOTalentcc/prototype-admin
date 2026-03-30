@@ -1,9 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
 import { FirstAccessManager } from "./first-access-manager"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Brain, Clock, Lightbulb, AlertTriangle, CheckCircle, ArrowRight } from "lucide-react"
 import './onboarding-styles.css'
 
@@ -235,11 +235,11 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-md p-8 max-w-md w-full text-center">
+      <div className="bg-lia-bg-primary rounded-md p-8 max-w-md w-full text-center">
         <h2 className="text-2xl font-bold text-gray-950 mb-4">
           Acesso Restrito
         </h2>
-        <p className="text-gray-800 mb-6">
+        <p className="lia-text-strong mb-6">
           Você precisa de um convite para acessar a plataforma LIA.
         </p>
         <div className="space-y-3">
@@ -265,67 +265,42 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
 function SetupIntroModal({ onStartSetup, onSkip }: { onStartSetup: () => void, onSkip: () => void }) {
   return (
     <div className="fixed inset-0 z-50 overflow-hidden lia-bg-lavender">
-      <div className="absolute inset-0 z-0 overflow-hidden">
-        {[...Array(12)].map((_, i) => (
-          <motion.div
+      {/* OPT-027: Decorative particles — static (replaced framer-motion infinite float) */}
+      <div className="absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
+        {[8, 15, 25, 35, 45, 55, 65, 75, 85, 20, 50, 80].map((left, i) => (
+          <div
             key={i}
-            className="absolute w-4 h-4 lia-bg-white opacity-10 rounded-full"
-            style={{left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`}}
-            animate={{
-              y: [0, -100, 0],
-              opacity: [0, 0.2, 0],
-              scale: [0.5, 1, 0.5],
-            }}
-            transition={{
-              duration: 6 + Math.random() * 4,
-              repeat: Infinity,
-              delay: Math.random() * 5,
-            }}
+            className="absolute w-4 h-4 lia-bg-lia-bg-primary opacity-5 rounded-full"
+            style={{left: `${left}%`, top: `${(i * 8 + 5) % 100}%`}}
           />
         ))}
       </div>
 
       <div className="relative z-10 h-full flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 30 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="lia-card max-w-2xl w-full"
+        <Card
+          className="max-w-2xl w-full animate-in fade-in zoom-in-95 slide-in-from-bottom-6 duration-500"
         >
           <div className="text-center mb-8">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.3, type: "spring", bounce: 0.5 }}
-              className="inline-flex items-center justify-center w-20 h-20 lia-bg-coral rounded-full mb-6"
+            <div
+              className="inline-flex items-center justify-center w-20 h-20 lia-bg-coral rounded-full mb-6 animate-in zoom-in-75 duration-300"
             >
               <Brain className="w-10 h-10 text-white" />
-            </motion.div>
+            </div>
             
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="lia-title-medium lia-text-black mb-3"
+            <h1
+              className="lia-title-medium lia-text-black mb-3 animate-in fade-in slide-in-from-bottom-3 duration-300"
             >
               Vamos Configurar sua Plataforma
-            </motion.h1>
+            </h1>
             
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="lia-text-medium"
+            <p
+              className="lia-text-medium animate-in fade-in slide-in-from-bottom-3 duration-300"
             >
               Personalize a LIA para atender às necessidades da sua empresa
-            </motion.p>
+            </p>
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
+          <div
             className="space-y-6 mb-8"
           >
             <p className="lia-text-medium leading-relaxed">
@@ -349,7 +324,7 @@ function SetupIntroModal({ onStartSetup, onSkip }: { onStartSetup: () => void, o
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
               <div className="flex items-center gap-3 bg-gray-50 rounded-md p-4">
-                <Clock className="w-5 h-5 text-gray-600" />
+                <Clock className="w-5 h-5 lia-text-base" />
                 <div>
                   <p className="lia-text-bold text-sm">Tempo estimado</p>
                   <p className="lia-text-small">3-5 minutos</p>
@@ -357,7 +332,7 @@ function SetupIntroModal({ onStartSetup, onSkip }: { onStartSetup: () => void, o
               </div>
               
               <div className="flex items-center gap-3 bg-gray-50 rounded-md p-4">
-                <Lightbulb className="w-5 h-5 text-gray-600" />
+                <Lightbulb className="w-5 h-5 lia-text-base" />
                 <div>
                   <p className="lia-text-bold text-sm">Pode continuar depois</p>
                   <p className="lia-text-small">Menu Configurações</p>
@@ -371,13 +346,10 @@ function SetupIntroModal({ onStartSetup, onSkip }: { onStartSetup: () => void, o
                 Preencher essas informações é extremamente importante para que a plataforma seja configurada e customizada de forma adequada.
               </p>
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+          <div
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in duration-300"
           >
             <Button
               onClick={onStartSetup}
@@ -394,8 +366,8 @@ function SetupIntroModal({ onStartSetup, onSkip }: { onStartSetup: () => void, o
             >
               Fazer depois
             </Button>
-          </motion.div>
-        </motion.div>
+          </div>
+        </Card>
       </div>
     </div>
   )
@@ -419,73 +391,40 @@ function ThankYouScreen({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden lia-bg-mint">
-      <div className="absolute inset-0 z-0 overflow-hidden">
-        {[...Array(20)].map((_, i) => (
-          <motion.div
+      <style>{`@keyframes check-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } }`}</style>
+      {/* OPT-027: Decorative particles — static (replaced framer-motion infinite float) */}
+      <div className="absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
+        {[5,10,18,28,38,48,58,68,78,88,14,24,44,54,74,84,33,63,93,7].map((left, i) => (
+          <div
             key={i}
-            className="absolute w-3 h-3 lia-bg-white opacity-15 rounded-full"
-            style={{left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`}}
-            animate={{
-              y: [0, -80, 0],
-              opacity: [0, 0.25, 0],
-              scale: [0.5, 1.2, 0.5],
-            }}
-            transition={{
-              duration: 5 + Math.random() * 3,
-              repeat: Infinity,
-              delay: Math.random() * 4,
-            }}
+            className="absolute w-3 h-3 lia-bg-lia-bg-primary opacity-5 rounded-full"
+            style={{left: `${left}%`, top: `${(i * 5 + 3) % 100}%`}}
           />
         ))}
       </div>
 
       <div className="relative z-10 h-full flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="text-center max-w-2xl"
+        <div
+          className="text-center max-w-2xl animate-in fade-in zoom-in-90 duration-700"
         >
-          <motion.div
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ 
-              delay: 0.3, 
-              type: "spring", 
-              bounce: 0.4,
-              duration: 1 
-            }}
-            className="inline-flex items-center justify-center w-32 h-32 bg-white rounded-full mb-8"
+          <div
+            className="inline-flex items-center justify-center w-32 h-32 bg-lia-bg-primary rounded-full mb-8 animate-in zoom-in-50 duration-500"
           >
-            <motion.div
-              animate={{ 
-                scale: [1, 1.1, 1],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
+            <div
+              style={{animation: "check-pulse 2s ease-in-out infinite"}}
             >
               <CheckCircle className="w-16 h-16" style={{color: 'var(--wedo-green-pastel)'}} />
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
           
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="lia-title-large lia-text-black mb-6"
+          <h1
+            className="lia-title-large lia-text-black mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
           >
             Parabéns! Configuração Concluída
-          </motion.h1>
+          </h1>
           
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 }}
-            className="space-y-4 mb-10"
+          <div
+            className="space-y-4 mb-10 animate-in fade-in duration-500"
           >
             <p className="lia-text-large">
               Obrigado por completar a configuração inicial da plataforma.
@@ -496,13 +435,10 @@ function ThankYouScreen({ onClose }: { onClose: () => void }) {
             <p className="lia-text-large font-medium">
               Enquanto isso, você já pode explorar a plataforma!
             </p>
-          </motion.div>
+          </div>
           
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.9 }}
-            className="space-y-4"
+          <div
+            className="space-y-4 animate-in fade-in duration-500"
           >
             <Button
               onClick={onClose}
@@ -512,16 +448,13 @@ function ThankYouScreen({ onClose }: { onClose: () => void }) {
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
             
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.2 }}
-              className="lia-text-small"
+            <p
+              className="lia-text-small animate-in fade-in duration-500"
             >
               Redirecionando automaticamente em {countdown} segundos...
-            </motion.p>
-          </motion.div>
-        </motion.div>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   )

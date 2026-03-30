@@ -21,7 +21,7 @@ export function QuickActionChips({ actions, className = '' }: QuickActionChipsPr
   const getVariantStyles = (variant: QuickAction['variant'] = 'default') => {
     switch (variant) {
       case 'primary':
- return 'text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:bg-gray-100'
+ return 'text-gray-600 dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default hover:bg-gray-100'
       case 'success':
         return 'bg-status-success/10 text-status-success border-status-success/30 hover:bg-status-success/20'
       case 'warning':
@@ -41,7 +41,7 @@ export function QuickActionChips({ actions, className = '' }: QuickActionChipsPr
             variant="outline"
             size="sm"
             onClick={action.onClick}
-            className={`inline-flex items-center gap-2 px-3 py-1.5 h-auto rounded-md text-sm font-medium transition-all duration-200 border-gray-300 ${getVariantStyles(action.variant)}`}
+            className={`inline-flex items-center gap-2 px-3 py-1.5 h-auto rounded-md text-sm font-medium transition-colors duration-200 border-lia-border-default ${getVariantStyles(action.variant)}`}
           >
             <Icon className="w-3.5 h-3.5" />
             <span>{action.label}</span>

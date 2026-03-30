@@ -43,18 +43,18 @@ export function ClientCard({ client, onSelect }: ClientCardProps) {
             <img
               src={client.logo_url}
               alt={client.name}
-              className="w-12 h-12 rounded-md object-cover border border-gray-200 dark:border-gray-600"
+              className="w-12 h-12 rounded-md object-cover border border-lia-border-subtle dark:border-lia-border-default"
             />
           ) : (
-            <div className="w-12 h-12 rounded-md bg-gray-100 dark:bg-gray-700 flex items-center justify-center border border-gray-200 dark:border-gray-600">
-              <Building2 className="w-6 h-6 text-gray-400" />
+            <div className="w-12 h-12 rounded-md bg-gray-100 dark:bg-lia-bg-elevated flex items-center justify-center border border-lia-border-subtle dark:border-lia-border-default">
+              <Building2 className="w-6 h-6 lia-text-secondary" />
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-medium text-gray-950 dark:text-gray-50 truncate group-hover:text-gray-900 dark:group-hover:text-gray-50 transition-colors">
+            <h3 className="text-sm font-medium text-gray-950 truncate group-hover:text-gray-900 dark:group-hover:text-gray-50 transition-colors">
               {client.name}
             </h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+            <p className="text-xs text-gray-500 dark:text-lia-text-tertiary truncate">
               {formatCNPJ(client.cnpj)}
             </p>
           </div>
@@ -63,37 +63,37 @@ export function ClientCard({ client, onSelect }: ClientCardProps) {
         
         <div className="mt-4 grid grid-cols-2 gap-3">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-gray-50 dark:bg-gray-700 flex items-center justify-center">
-              <Users className="w-3 h-3 text-gray-400" />
+            <div className="w-6 h-6 rounded-md bg-gray-50 dark:bg-lia-bg-elevated flex items-center justify-center">
+              <Users className="w-3 h-3 lia-text-secondary" />
             </div>
             <div>
-              <p className="text-micro text-gray-500 dark:text-gray-400 uppercase">Usuários</p>
-              <p className="text-xs font-medium text-gray-950 dark:text-gray-50">
+              <p className="text-micro text-gray-500 dark:text-lia-text-tertiary uppercase">Usuários</p>
+              <p className="text-xs font-medium text-gray-950">
                 {client.active_users}/{client.user_limit}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-gray-50 dark:bg-gray-700 flex items-center justify-center">
-              <Calendar className="w-3 h-3 text-gray-400" />
+            <div className="w-6 h-6 rounded-md bg-gray-50 dark:bg-lia-bg-elevated flex items-center justify-center">
+              <Calendar className="w-3 h-3 lia-text-secondary" />
             </div>
             <div>
-              <p className="text-micro text-gray-500 dark:text-gray-400 uppercase">Início</p>
-              <p className="text-xs font-medium text-gray-950 dark:text-gray-50">
+              <p className="text-micro text-gray-500 dark:text-lia-text-tertiary uppercase">Início</p>
+              <p className="text-xs font-medium text-gray-950">
                 {formatDate(client.start_date)}
               </p>
             </div>
           </div>
         </div>
         
-        <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+        <div className="mt-3 pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-micro">
               {client.plan}
             </Badge>
           </div>
           {client.account_manager && (
-            <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+            <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-lia-text-tertiary">
               <UserCircle className="w-3 h-3" />
               <span className="truncate max-w-[100px]">{client.account_manager}</span>
             </div>

@@ -293,7 +293,7 @@ export function UniversitiesFilterInput({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {value.length > 0 && (
-            <span className="text-xs text-gray-500">
+            <span className="text-xs lia-text-500">
               {value.length} universit{value.length !== 1 ? 'ies' : 'y'} selected
             </span>
           )}
@@ -301,7 +301,7 @@ export function UniversitiesFilterInput({
         <div className="flex items-center gap-3">
           <button 
             onClick={clearAll}
-            className="text-xs text-gray-500 hover:text-status-error flex items-center gap-1 transition-colors"
+            className="text-xs lia-text-500 hover:text-status-error flex items-center gap-1 transition-colors"
           >
             <RotateCcw className="w-3 h-3" />
             Limpar tudo
@@ -309,7 +309,7 @@ export function UniversitiesFilterInput({
           <button 
             onClick={() => setShowSavePresetModal(true)}
             disabled={value.length === 0}
-            className="text-xs text-gray-600 hover:text-gray-800 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-xs lia-text-600 hover:lia-text-800 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Save className="w-3.5 h-3.5" />
             Salvar Preset
@@ -317,7 +317,7 @@ export function UniversitiesFilterInput({
           {showPresets && (
             <button 
               onClick={() => setIsPresetsModalOpen(true)}
-              className="text-xs text-gray-600 hover:text-gray-800 flex items-center gap-1"
+              className="text-xs lia-text-600 hover:lia-text-800 flex items-center gap-1"
             >
               <List className="w-3.5 h-3.5" />
               Presets
@@ -328,7 +328,7 @@ export function UniversitiesFilterInput({
 
       <div className="relative">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-400" />
           <Input
             ref={inputRef}
             value={inputValue}
@@ -336,12 +336,12 @@ export function UniversitiesFilterInput({
             onKeyDown={handleKeyDown}
             onFocus={() => inputValue.length > 0 && setIsDropdownOpen(true)}
             placeholder={placeholder}
-            className="pl-9 pr-3 border-gray-200 focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+            className="pl-9 pr-3 border-lia-border-subtle focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
             disabled={isLoadingAI}
           />
           {isLoadingAI && (
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <Loader2 className="w-4 h-4 animate-spin text-gray-600 dark:text-gray-400" />
+              <Loader2 className="w-4 h-4 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
             </div>
           )}
         </div>
@@ -349,7 +349,7 @@ export function UniversitiesFilterInput({
         {isDropdownOpen && dropdownItems.length > 0 && (
           <div 
             ref={dropdownRef}
-            className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md max-h-64 overflow-y-auto"
+            className="absolute z-50 w-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-md max-h-64 overflow-y-auto"
           >
             {dropdownItems.map((item, index) => (
               <button
@@ -364,7 +364,7 @@ export function UniversitiesFilterInput({
                 className={cn(
                   "w-full text-left px-3 py-2 text-sm transition-colors",
                   focusedIndex === index ? "bg-gray-100" : "hover:bg-gray-50",
-                  item.type === 'ai' && "border-b border-gray-100"
+                  item.type === 'ai' && "border-b border-lia-border-subtle"
                 )}
               >
                 {item.type === 'ai' ? (
@@ -373,7 +373,7 @@ export function UniversitiesFilterInput({
                     <span>{item.label}</span>
                   </div>
                 ) : (
-                  <span className="text-gray-800 dark:text-gray-200">{item.label}</span>
+                  <span className="lia-text-800 dark:text-lia-text-primary">{item.label}</span>
                 )}
               </button>
             ))}
@@ -387,7 +387,7 @@ export function UniversitiesFilterInput({
             {value.map(university => (
               <Badge
                 key={university}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:text-gray-200 border border-gray-200"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle"
               >
                 <span>{university}</span>
                 <button
@@ -406,7 +406,7 @@ export function UniversitiesFilterInput({
             size="sm"
             onClick={findSimilarUniversities}
             disabled={isFindingSimilar || value.length === 0}
-            className="text-xs gap-1.5 border-gray-900 dark:border-gray-50 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:bg-gray-800"
+            className="text-xs gap-1.5 border-gray-900 dark:lia-border-50 lia-text-600 dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary"
           >
             {isFindingSimilar ? (
               <Loader2 className="w-3 h-3 animate-spin" />
@@ -426,7 +426,7 @@ export function UniversitiesFilterInput({
 
       {showSavePresetModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowSavePresetModal(false)}>
-          <div className="bg-white rounded-md p-4 w-80" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-lia-bg-primary rounded-md p-4 w-80" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-medium text-sm mb-3">Salvar Preset</h3>
             <Input
               value={savePresetName}
@@ -442,7 +442,7 @@ export function UniversitiesFilterInput({
                 size="sm" 
                 onClick={handleSaveCustomPreset}
                 disabled={!savePresetName.trim()}
-                className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
               >
                 <Save className="w-3.5 h-3.5 mr-1.5" />
                 Salvar

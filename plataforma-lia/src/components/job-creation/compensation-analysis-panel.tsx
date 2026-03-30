@@ -125,7 +125,7 @@ const DATA_SOURCE_CONFIG: Record<DataSource, {
   user_input: {
     icon: '✏️',
     label: 'Informado',
-    className: 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700'
+    className: 'bg-gray-100 text-gray-700 border-lia-border-subtle dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-subtle'
   }
 }
 
@@ -200,7 +200,7 @@ function SalaryComparisonBar({
 
   return (
     <div className="relative h-16 mt-4 mb-2">
-      <div className="absolute inset-x-0 top-6 h-2 bg-gray-100 dark:bg-gray-800 rounded-full" />
+      <div className="absolute inset-x-0 top-6 h-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-full" />
       
       <div 
         className="absolute top-6 h-2 bg-wedo-purple/20 dark:bg-wedo-purple rounded-full"
@@ -270,7 +270,7 @@ function CompensationBreakdownChart({
         {segments.map((segment, index) => (
           <div
             key={segment.label}
-            className={cn(segment.color, 'transition-all')}
+            className={cn(segment.color, 'transition-colors')}
             style={{width: `${segment.percentage}%`}}
           />
         ))}
@@ -297,10 +297,10 @@ export function CompensationAnalysisPanel({
 }: CompensationAnalysisPanelProps) {
   if (isLoading) {
     return (
-      <Card className="border-dashed rounded-md dark:bg-gray-800 dark:border-gray-700">
+      <Card className="border-dashed rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
         <CardContent className="flex flex-col items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground dark:text-gray-400 mb-3" />
-          <p className="text-sm text-muted-foreground dark:text-gray-400">Analisando remuneração...</p>
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground dark:text-lia-text-tertiary mb-3" />
+          <p className="text-sm text-muted-foreground dark:text-lia-text-tertiary">Analisando remuneração...</p>
         </CardContent>
       </Card>
     )
@@ -338,23 +338,23 @@ export function CompensationAnalysisPanel({
   }
 
   return (
-    <Card className="overflow-hidden rounded-md dark:bg-gray-800 dark:border-gray-700">
-      <CardHeader className={cn('border-b border-gray-200 dark:border-gray-700', statusConfig.bgClassName)}>
+    <Card className="overflow-hidden rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+      <CardHeader className={cn('border-b border-lia-border-subtle dark:border-lia-border-subtle', statusConfig.bgClassName)}>
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
             <StatusIcon className={cn('h-5 w-5', statusConfig.className)} />
             <div>
-              <CardTitle className="text-sm font-sans dark:text-gray-100">{statusConfig.label}</CardTitle>
+              <CardTitle className="text-sm font-sans dark:text-lia-text-primary">{statusConfig.label}</CardTitle>
               <CardDescription className="text-xs mt-0.5">
                 {statusConfig.description}
               </CardDescription>
             </div>
           </div>
-          <Button variant="ghost" size="sm" onClick={onDismiss} className="h-7 w-7 p-0 dark:text-gray-400 dark:hover:bg-gray-700">
+          <Button variant="ghost" size="sm" onClick={onDismiss} className="h-7 w-7 p-0 dark:text-lia-text-tertiary dark:hover:bg-gray-700">
             <X className="h-4 w-4" />
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground dark:text-gray-400 mt-2">
+        <p className="text-xs text-muted-foreground dark:text-lia-text-tertiary mt-2">
           {analysis.executiveSummary}
         </p>
       </CardHeader>
@@ -363,8 +363,8 @@ export function CompensationAnalysisPanel({
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-muted-foreground dark:text-gray-400" />
-              <h4 className="text-xs font-medium dark:text-gray-100">Salário</h4>
+              <DollarSign className="h-4 w-4 text-muted-foreground dark:text-lia-text-tertiary" />
+              <h4 className="text-xs font-medium dark:text-lia-text-primary">Salário</h4>
             </div>
             <DataSourceBadge source={analysis.salary.source} />
           </div>
@@ -401,7 +401,7 @@ export function CompensationAnalysisPanel({
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground">Posição vs. Mercado:</span>
             <span className={cn(
-              'font-medium',
+ 'font-medium',
               analysis.salary.percentileVsMarket >= 50 ? 'text-status-success' : 'text-status-warning'
             )}>
               Percentil {analysis.salary.percentileVsMarket}
@@ -421,14 +421,14 @@ export function CompensationAnalysisPanel({
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Target className="h-4 w-4 text-muted-foreground dark:text-gray-400" />
-              <h4 className="text-xs font-medium dark:text-gray-100">Bônus</h4>
+              <Target className="h-4 w-4 text-muted-foreground dark:text-lia-text-tertiary" />
+              <h4 className="text-xs font-medium dark:text-lia-text-primary">Bônus</h4>
             </div>
             <DataSourceBadge source={analysis.bonus.source} />
           </div>
 
           <div className="grid grid-cols-2 gap-2">
-            <div className="p-2 rounded-md bg-gray-50 dark:bg-gray-900 border">
+            <div className="p-2 rounded-md bg-gray-50 dark:bg-lia-bg-primary border">
               <p className="text-micro text-muted-foreground mb-1">Proposto</p>
               <p className="text-sm font-semibold">{analysis.bonus.proposedPercentage}%</p>
             </div>
@@ -461,8 +461,8 @@ export function CompensationAnalysisPanel({
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Gift className="h-4 w-4 text-muted-foreground dark:text-gray-400" />
-              <h4 className="text-xs font-medium dark:text-gray-100">Benefícios</h4>
+              <Gift className="h-4 w-4 text-muted-foreground dark:text-lia-text-tertiary" />
+              <h4 className="text-xs font-medium dark:text-lia-text-primary">Benefícios</h4>
             </div>
             <DataSourceBadge source={analysis.benefits.source} />
           </div>
@@ -514,7 +514,7 @@ export function CompensationAnalysisPanel({
             </div>
           )}
 
-          <div className="p-2 rounded-md bg-gray-50 dark:bg-gray-900 border">
+          <div className="p-2 rounded-md bg-gray-50 dark:bg-lia-bg-primary border">
             <div className="flex items-center justify-between">
               <span className="text-micro text-muted-foreground">Valor Monetizável Anual:</span>
               <span className="text-xs font-semibold">
@@ -526,12 +526,12 @@ export function CompensationAnalysisPanel({
 
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <PieChart className="h-4 w-4 text-muted-foreground dark:text-gray-400" />
-            <h4 className="text-xs font-medium dark:text-gray-100">Total Compensation</h4>
+            <PieChart className="h-4 w-4 text-muted-foreground dark:text-lia-text-tertiary" />
+            <h4 className="text-xs font-medium dark:text-lia-text-primary">Total Compensation</h4>
           </div>
 
           <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="p-2 rounded-md bg-gray-50 dark:bg-gray-900 border">
+            <div className="p-2 rounded-md bg-gray-50 dark:bg-lia-bg-primary border">
               <p className="text-micro text-muted-foreground mb-1">Proposto Anual</p>
               <p className="text-xs font-semibold">
                 {formatCurrency(analysis.totalCompensation.proposedAnnual)}
@@ -558,12 +558,12 @@ export function CompensationAnalysisPanel({
           <CompensationBreakdownChart breakdown={analysis.totalCompensation.breakdown} />
         </div>
 
-        <div className="flex gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex gap-2 pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
           {hasSuggestions && (
             <Button 
               variant="primary" 
               size="sm" 
-              className="flex-1 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+              className="flex-1 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
               onClick={() => onApplySuggestions(buildSuggestions())}
             >
               <Brain className="h-3.5 w-3.5 mr-1 text-wedo-cyan" />
@@ -574,7 +574,7 @@ export function CompensationAnalysisPanel({
             <Button 
               variant="outline" 
               size="sm" 
-              className="flex-1 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+              className="flex-1 dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-700"
               onClick={onAdjustManually}
             >
               <PenLine className="h-3.5 w-3.5 mr-1" />
@@ -584,7 +584,7 @@ export function CompensationAnalysisPanel({
           <Button 
             variant={hasSuggestions ? "ghost" : "primary"}
             size="sm" 
- className={cn("flex-1", !hasSuggestions && "hover:text-white dark:bg-gray-50 dark:hover:bg-gray-200", hasSuggestions && "dark:text-gray-300 dark:hover:bg-gray-700")}
+ className={cn("flex-1", !hasSuggestions && "hover:text-white dark:hover:bg-gray-200", hasSuggestions && "dark:text-lia-text-secondary dark:hover:bg-gray-700")}
             onClick={onDismiss}
           >
             Prosseguir

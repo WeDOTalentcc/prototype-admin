@@ -40,16 +40,16 @@ export function QuestionDiffView({
       case "removed":
         return { label: "Removida", className: "text-micro px-1.5 py-0 h-4 bg-status-error/10 text-status-error border border-status-error/30", style: {} }
       default:
-        return { label: action, className: "text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-600 border border-gray-200", style: {} }
+        return { label: action, className: "text-micro px-1.5 py-0 h-4 bg-gray-100 lia-text-base border border-lia-border-subtle", style: {} }
     }
   }
 
   return (
     <div className={cn("space-y-3", className)}>
       <div className="flex items-center gap-1.5">
-        <ArrowRight className="h-3.5 w-3.5 text-gray-500" />
-        <span className="text-xs font-semibold text-gray-800">Antes / Depois</span>
-        <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-gray-600 border-gray-200">
+        <ArrowRight className="h-3.5 w-3.5 lia-text-secondary" />
+        <span className="text-xs font-semibold lia-text-strong">Antes / Depois</span>
+        <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-gray-100 lia-text-base border-lia-border-subtle">
           {diffs.length} alteração(ões)
         </Badge>
       </div>
@@ -60,22 +60,22 @@ export function QuestionDiffView({
           return (
             <div
               key={diff.question_id || idx}
-              className="rounded-md border border-gray-200 overflow-hidden"
+              className="rounded-md border border-lia-border-subtle overflow-hidden"
             >
-              <div className="px-3 py-1.5 bg-gray-50 border-b border-gray-100 flex items-center gap-2">
+              <div className="px-3 py-1.5 bg-gray-50 border-b border-lia-border-subtle flex items-center gap-2">
                 <Badge variant="outline" className={badge.className} style={badge.style}>
                   {badge.label}
                 </Badge>
                 {diff.reason && (
-                  <span className="text-micro text-gray-500 truncate">{diff.reason}</span>
+                  <span className="text-micro lia-text-secondary truncate">{diff.reason}</span>
                 )}
               </div>
 
               {diff.before && (
-                <div className="px-3 py-2 border-b border-gray-100" style={{backgroundColor: 'var(--gray-50)'}}>
+                <div className="px-3 py-2 border-b border-lia-border-subtle" style={{backgroundColor: 'var(--gray-50)'}}>
                   <div className="flex items-start gap-2">
-                    <span className="text-micro font-medium text-gray-400 mt-0.5 shrink-0">ANTES</span>
-                    <p className="text-xs text-gray-500 line-through leading-relaxed">
+                    <span className="text-micro font-medium lia-text-secondary mt-0.5 shrink-0">ANTES</span>
+                    <p className="text-xs lia-text-secondary line-through leading-relaxed">
                       {diff.before}
                     </p>
                   </div>
@@ -85,8 +85,8 @@ export function QuestionDiffView({
               {diff.after && (
                 <div className="px-3 py-2 bg-wedo-cyan/[.04]">
                   <div className="flex items-start gap-2">
-                    <span className="text-micro font-medium shrink-0 text-gray-700">DEPOIS</span>
-                    <p className="text-xs text-gray-800 leading-relaxed font-medium">
+                    <span className="text-micro font-medium shrink-0 lia-text-base">DEPOIS</span>
+                    <p className="text-xs lia-text-strong leading-relaxed font-medium">
                       {diff.after}
                     </p>
                   </div>
@@ -110,7 +110,7 @@ export function QuestionDiffView({
         <Button
           variant="outline"
           size="sm"
-          className="h-7 text-xs px-3 border-gray-200 text-gray-700"
+          className="h-7 text-xs px-3 border-lia-border-subtle lia-text-base"
           onClick={onRequestAnother}
           disabled={disabled}
         >

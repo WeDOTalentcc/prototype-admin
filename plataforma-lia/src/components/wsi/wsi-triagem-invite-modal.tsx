@@ -328,7 +328,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
     return text
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/\[(.*?)\]/g, '<span class="text-gray-600 dark:text-gray-400 underline cursor-pointer">$1</span>')
+      .replace(/\[(.*?)\]/g, '<span class="text-gray-600 dark:text-lia-text-tertiary underline cursor-pointer">$1</span>')
       .replace(/•/g, '&bull;')
       .replace(/\n/g, '<br>')
   }
@@ -342,10 +342,10 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
        
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50/50">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
-              <ClipboardList className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <div className="w-10 h-10 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center">
+              <ClipboardList className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
             </div>
             <div>
               <h2 className={textStyles.titleLarge}>
@@ -360,14 +360,14 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-md transition-colors"
           >
-            <X className="w-4 h-4 text-gray-500" />
+            <X className="w-4 h-4 lia-text-secondary" />
           </button>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-hidden flex">
           {/* Left Panel - Form */}
-          <div className="w-1/2 border-r border-gray-100 overflow-y-auto p-5 space-y-5">
+          <div className="w-1/2 border-r border-lia-border-subtle overflow-y-auto p-5 space-y-5">
             {/* Canal de Contato */}
             <div>
               <label className={`${textStyles.subtitle} mb-2 block`}>
@@ -376,13 +376,13 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
               <div className="flex flex-col gap-2">
                 <button
                   onClick={() => setChannel('email')}
-                  className={`flex items-center gap-3 p-3 rounded-md border transition-all text-left ${
-                    channel === 'email' 
-                      ? 'border-gray-900 dark:border-gray-50 bg-gray-50 dark:bg-gray-800/50' 
-                      : 'border-gray-200 hover:border-gray-300'
+                  className={`flex items-center gap-3 p-3 rounded-md border transition-colors text-left ${
+ channel === 'email' 
+                      ? 'border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50' 
+                      : 'border-lia-border-subtle hover:border-lia-border-default'
                   }`}
                 >
-                  <Mail className={`w-4 h-4 ${channel === 'email' ? 'text-gray-600 dark:text-gray-400' : 'text-gray-500'}`} />
+                  <Mail className={`w-4 h-4 ${channel === 'email' ? 'text-gray-600 dark:text-lia-text-tertiary' : 'text-gray-500'}`} />
                   <div className="flex-1">
                     <div className={textStyles.subtitle}>Email</div>
                     <div className={textStyles.caption}>{candidate.email || 'Não informado'}</div>
@@ -391,13 +391,13 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                 
                 <button
                   onClick={() => setChannel('whatsapp')}
-                  className={`flex items-center gap-3 p-3 rounded-md border transition-all text-left ${
-                    channel === 'whatsapp' 
-                      ? 'border-gray-900 dark:border-gray-50 bg-gray-50 dark:bg-gray-800/50' 
-                      : 'border-gray-200 hover:border-gray-300'
+                  className={`flex items-center gap-3 p-3 rounded-md border transition-colors text-left ${
+ channel === 'whatsapp' 
+                      ? 'border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50' 
+                      : 'border-lia-border-subtle hover:border-lia-border-default'
                   }`}
                 >
-                  <MessageSquare className={`w-4 h-4 ${channel === 'whatsapp' ? 'text-gray-600 dark:text-gray-400' : 'text-gray-500'}`} />
+                  <MessageSquare className={`w-4 h-4 ${channel === 'whatsapp' ? 'text-gray-600 dark:text-lia-text-tertiary' : 'text-gray-500'}`} />
                   <div className="flex-1">
                     <div className={textStyles.subtitle}>WhatsApp</div>
                     <div className={textStyles.caption}>{candidate.phone || 'Não informado'}</div>
@@ -406,13 +406,13 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                 
                 <button
                   onClick={() => setChannel('telefone')}
-                  className={`flex items-center gap-3 p-3 rounded-md border transition-all text-left ${
-                    channel === 'telefone' 
-                      ? 'border-gray-900 dark:border-gray-50 bg-gray-50 dark:bg-gray-800/50' 
-                      : 'border-gray-200 hover:border-gray-300'
+                  className={`flex items-center gap-3 p-3 rounded-md border transition-colors text-left ${
+ channel === 'telefone' 
+                      ? 'border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50' 
+                      : 'border-lia-border-subtle hover:border-lia-border-default'
                   }`}
                 >
-                  <Phone className={`w-4 h-4 ${channel === 'telefone' ? 'text-gray-600 dark:text-gray-400' : 'text-gray-500'}`} />
+                  <Phone className={`w-4 h-4 ${channel === 'telefone' ? 'text-gray-600 dark:text-lia-text-tertiary' : 'text-gray-500'}`} />
                   <div className="flex-1">
                     <div className={textStyles.subtitle}>Telefone (Ligação)</div>
                     <div className={textStyles.caption}>{candidate.phone || 'Não informado'}</div>
@@ -421,15 +421,15 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                 
                 <button
                   onClick={() => setChannel('both')}
-                  className={`flex items-center gap-3 p-3 rounded-md border transition-all text-left ${
-                    channel === 'both' 
-                      ? 'border-gray-900 dark:border-gray-50 bg-gray-50 dark:bg-gray-800/50' 
-                      : 'border-gray-200 hover:border-gray-300'
+                  className={`flex items-center gap-3 p-3 rounded-md border transition-colors text-left ${
+ channel === 'both' 
+                      ? 'border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50' 
+                      : 'border-lia-border-subtle hover:border-lia-border-default'
                   }`}
                 >
                   <div className="flex items-center gap-0.5">
-                    <Mail className={`w-3.5 h-3.5 ${channel === 'both' ? 'text-gray-600 dark:text-gray-400' : 'text-gray-500'}`} />
-                    <MessageSquare className={`w-3.5 h-3.5 ${channel === 'both' ? 'text-gray-600 dark:text-gray-400' : 'text-gray-500'}`} />
+                    <Mail className={`w-3.5 h-3.5 ${channel === 'both' ? 'text-gray-600 dark:text-lia-text-tertiary' : 'text-gray-500'}`} />
+                    <MessageSquare className={`w-3.5 h-3.5 ${channel === 'both' ? 'text-gray-600 dark:text-lia-text-tertiary' : 'text-gray-500'}`} />
                   </div>
                   <div className="flex-1">
                     <div className={textStyles.subtitle}>Ambos (Email + WhatsApp)</div>
@@ -462,7 +462,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
               />
             ) : (
               <div>
-                <label className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-2 block">
+                <label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary mb-2 block">
                   Script de Abordagem
                 </label>
                 <Textarea
@@ -470,16 +470,16 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Script para ligação..."
-                  className="min-h-[180px] text-xs focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 resize-none border-gray-200"
+                  className="min-h-[180px] text-xs focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 resize-none border-lia-border-subtle"
                 />
               </div>
             )}
 
             {/* Vincular à Vaga */}
-            <div className="border border-gray-200 rounded-md overflow-hidden">
+            <div className="border border-lia-border-subtle rounded-md overflow-hidden">
               <div className="flex items-center justify-between p-3 bg-gray-50">
                 <div className="flex items-center gap-2">
-                  <Briefcase className="w-4 h-4 text-gray-600" />
+                  <Briefcase className="w-4 h-4 lia-text-base" />
                   <div>
                     <span className={textStyles.subtitle}>Vincular à Vaga</span>
                     <span className={`${textStyles.description} ml-2`}>(opcional)</span>
@@ -492,25 +492,25 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
               </div>
               
               {linkToVacancy && (
-                <div className="p-3 space-y-3 border-t border-gray-100">
+                <div className="p-3 space-y-3 border-t border-lia-border-subtle">
                   <div>
                     <label className={`${textStyles.subtitle} mb-1.5 block`}>
                       Selecione a Vaga
                     </label>
                     {isLoadingVacancies ? (
-                      <div className="flex items-center gap-2 text-xs text-gray-500 py-2">
+                      <div className="flex items-center gap-2 text-xs lia-text-secondary py-2">
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
                         Carregando vagas...
                       </div>
                     ) : vacancies.length === 0 ? (
-                      <div className="text-xs text-gray-500 py-2">
+                      <div className="text-xs lia-text-secondary py-2">
                         Nenhuma vaga disponível
                       </div>
                     ) : (
                       <select
                         value={selectedVacancyId || ''}
                         onChange={(e) => setSelectedVacancyId(e.target.value || null)}
-                        className="w-full text-xs border border-gray-200 rounded-md px-3 py-2 bg-white focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                        className="w-full text-xs border border-lia-border-subtle rounded-md px-3 py-2 bg-lia-bg-primary focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
                       >
                         <option value="">Selecione uma vaga...</option>
                         {vacancies.map((vacancy) => (
@@ -531,7 +531,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                     <select
                       value={selectedStage}
                       onChange={(e) => setSelectedStage(e.target.value)}
-                      className="w-full text-xs border border-gray-200 rounded-md px-3 py-2 bg-white focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                      className="w-full text-xs border border-lia-border-subtle rounded-md px-3 py-2 bg-lia-bg-primary focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
                     >
                       {PIPELINE_STAGES.map((stage) => (
                         <option key={stage.value} value={stage.value}>
@@ -542,9 +542,9 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   </div>
                   
                   {selectedVacancyId && (
-                    <div className="p-2 bg-gray-50 dark:bg-gray-800/50 rounded-md border border-gray-300 dark:border-gray-600">
-                      <p className="text-xs text-gray-600">
-                        Ao enviar, o candidato será automaticamente adicionado à vaga selecionada na etapa <strong className="text-gray-600 dark:text-gray-400">{PIPELINE_STAGES.find(s => s.value === selectedStage)?.label}</strong>
+                    <div className="p-2 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md border border-lia-border-default dark:border-lia-border-default">
+                      <p className="text-xs lia-text-base">
+                        Ao enviar, o candidato será automaticamente adicionado à vaga selecionada na etapa <strong className="text-gray-600 dark:text-lia-text-tertiary">{PIPELINE_STAGES.find(s => s.value === selectedStage)?.label}</strong>
                       </p>
                     </div>
                   )}
@@ -553,21 +553,21 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
             </div>
 
             {/* Perguntas de Triagem */}
-            <div className="border border-gray-200 rounded-md overflow-hidden">
+            <div className="border border-lia-border-subtle rounded-md overflow-hidden">
               <button
                 onClick={() => setShowQuestions(!showQuestions)}
                 className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition-colors"
               >
                 <div className="flex items-center gap-2">
-                  <ListChecks className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                  <ListChecks className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
                   <span className={textStyles.subtitle}>
                     Roteiro de Triagem ({screeningQuestions.length} perguntas)
                   </span>
                 </div>
                 {showQuestions ? (
-                  <ChevronUp className="w-4 h-4 text-gray-500" />
+                  <ChevronUp className="w-4 h-4 lia-text-secondary" />
                 ) : (
-                  <ChevronDown className="w-4 h-4 text-gray-500" />
+                  <ChevronDown className="w-4 h-4 lia-text-secondary" />
                 )}
               </button>
               
@@ -603,7 +603,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
           <div className="w-1/2 bg-gray-50 p-5 overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <Eye className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                <Eye className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
                 <span className={textStyles.subtitle}>Preview da Mensagem</span>
               </div>
               <Badge variant="outline" className="text-micro">
@@ -613,15 +613,15 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
 
             {/* Preview Card - Different styles per channel */}
             <div className={`rounded-md overflow-hidden ${
-              channel === 'whatsapp' ? 'bg-whatsapp-bg' : 'bg-white border border-gray-200'
+ channel === 'whatsapp' ? 'bg-whatsapp-bg' : 'bg-lia-bg-primary border border-lia-border-subtle'
             }`}>
               {(channel === 'email' || channel === 'both') ? (
                 <>
                   {/* Email Preview Header */}
-                  <div className="p-4 border-b border-gray-100 bg-gray-50/50">
+                  <div className="p-4 border-b border-lia-border-subtle bg-gray-50/50">
                     <div className="flex items-center gap-3">
                       <Avatar className="w-8 h-8">
-                        <AvatarFallback className="text-micro bg-gray-900 dark:bg-gray-50 text-white">
+                        <AvatarFallback className="text-micro bg-gray-900 text-white">
                           RH
                         </AvatarFallback>
                       </Avatar>
@@ -636,7 +636,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   </div>
                   {/* Email Subject */}
                   {subject && (
-                    <div className="px-4 py-2 border-b border-gray-100">
+                    <div className="px-4 py-2 border-b border-lia-border-subtle">
                       <div className={textStyles.subtitle}>
                         {subject}
                       </div>
@@ -646,7 +646,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   <div className="p-4">
                     <div 
                       className={`${textStyles.body} leading-relaxed`}
-                      dangerouslySetInnerHTML={{ __html: formatPreviewMessage(message) || '<span class="text-gray-400">A mensagem aparecerá aqui...</span>' }}
+                      dangerouslySetInnerHTML={{ __html: formatPreviewMessage(message) || '<span class="lia-text-secondary">A mensagem aparecerá aqui...</span>' }}
                     />
                   </div>
                 </>
@@ -656,17 +656,17 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   <div className="flex justify-end mb-2">
                     <div className="bg-whatsapp-bubble rounded-md p-3 max-w-[85%]">
                       <div 
-                        className="text-xs text-gray-800 leading-relaxed whitespace-pre-wrap"
-                        dangerouslySetInnerHTML={{ __html: formatPreviewMessage(message) || '<span class="text-gray-400">A mensagem aparecerá aqui...</span>' }}
+                        className="text-xs lia-text-strong leading-relaxed whitespace-pre-wrap"
+                        dangerouslySetInnerHTML={{ __html: formatPreviewMessage(message) || '<span class="lia-text-secondary">A mensagem aparecerá aqui...</span>' }}
                       />
-                      <div className="text-micro text-gray-500 text-right mt-1">
+                      <div className="text-micro lia-text-secondary text-right mt-1">
                         {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} ✓✓
                       </div>
                     </div>
                   </div>
                   {/* WhatsApp Info */}
                   <div className="text-center mt-3">
-                    <span className="text-micro text-gray-500 bg-white/60 rounded-full py-1 px-3">
+                    <span className="text-micro lia-text-secondary bg-lia-bg-primary/60 rounded-full py-1 px-3">
                       Será aberto o WhatsApp Web/App
                     </span>
                   </div>
@@ -674,7 +674,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
               ) : (
                 <>
                   {/* Telefone/Script Preview */}
-                  <div className="p-4 border-b border-gray-100 bg-status-warning/10/50">
+                  <div className="p-4 border-b border-lia-border-subtle bg-status-warning/10/50">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-status-warning/15 rounded-full flex items-center justify-center">
                         <Phone className="w-4 h-4 text-status-warning" />
@@ -688,8 +688,8 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   {/* Script Content */}
                   <div className="p-4">
                     <div 
-                      className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed font-mono bg-gray-50 p-3 rounded-md border border-gray-100"
-                      dangerouslySetInnerHTML={{ __html: formatPreviewMessage(message) || '<span class="text-gray-400">O script aparecerá aqui...</span>' }}
+                      className="text-xs text-gray-800 dark:text-lia-text-primary leading-relaxed font-mono bg-gray-50 p-3 rounded-md border border-lia-border-subtle"
+                      dangerouslySetInnerHTML={{ __html: formatPreviewMessage(message) || '<span class="lia-text-secondary">O script aparecerá aqui...</span>' }}
                     />
                   </div>
                 </>
@@ -698,9 +698,9 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
 
             {/* Info Box - Different per channel */}
             {(channel === 'email' || channel === 'both') && (
-              <div className={`mt-4 p-3 ${badgeStyles.info} rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50`}>
+              <div className={`mt-4 p-3 ${badgeStyles.info} rounded-md border border-lia-border-default dark:border-lia-border-default bg-gray-50 dark:bg-lia-bg-secondary/50`}>
                 <div className="flex items-start gap-2">
-                  <Info className="w-4 h-4 text-gray-600 dark:text-gray-400 mt-0.5" />
+                  <Info className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary mt-0.5" />
                   <div>
                     <div className={textStyles.label}>{channel === 'both' ? 'Envio Simultâneo:' : 'Após Confirmação:'}</div>
                     <ul className={`${textStyles.caption} mt-1 space-y-0.5`}>
@@ -752,7 +752,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 bg-gray-50 dark:bg-gray-900 dark:border-gray-700">
+        <div className="flex items-center justify-between px-6 py-4 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle">
           <div className={`flex items-center gap-2 ${textStyles.description}`}>
             <Mail className="w-3.5 h-3.5" />
             {channel === 'email' 
@@ -767,14 +767,14 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
             <Button
               onClick={onClose}
               variant="outline"
-              className="h-9 px-4 text-xs font-medium border-gray-200 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+              className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-gray-700 hover:bg-gray-50 dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-700"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleSend}
               disabled={isSending || !message.trim()}
-              className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+              className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
             >
               {isSending ? (
                 <>

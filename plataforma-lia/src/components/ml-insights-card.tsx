@@ -42,7 +42,7 @@ function formatCurrency(value: number): string {
 function confidenceColor(level: string): string {
   if (level === "high") return "text-status-success dark:text-status-success"
   if (level === "medium") return "text-status-warning dark:text-status-warning"
-  return "text-gray-500 dark:text-gray-400"
+  return "text-gray-500 dark:text-lia-text-tertiary"
 }
 
 // ── Component ─────────────────────────────────────────────────────────────
@@ -79,33 +79,33 @@ export function MLInsightsCard({ companyId, jobData, className = "" }: MLInsight
   }, [companyId, jobData, fetchTimeToFill, fetchSalary])
 
   return (
-    <div className={`border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 overflow-hidden ${className}`}>
+    <div className={`border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-primary overflow-hidden ${className}`}>
       {/* Header — sempre visível */}
       <button
         onClick={handleToggle}
-        className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+        className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-gray-700 dark:text-lia-text-secondary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
        
       >
         <span className="flex items-center gap-1.5">
-          <TrendingUp className="w-3.5 h-3.5 text-gray-500" />
+          <TrendingUp className="w-3.5 h-3.5 lia-text-secondary" />
           Previsões IA
         </span>
         <span className="flex items-center gap-1">
-          {loading && <Loader2 className="w-3 h-3 animate-spin text-gray-400" />}
-          {isOpen ? <ChevronUp className="w-3.5 h-3.5 text-gray-400" /> : <ChevronDown className="w-3.5 h-3.5 text-gray-400" />}
+          {loading && <Loader2 className="w-3 h-3 animate-spin lia-text-secondary" />}
+          {isOpen ? <ChevronUp className="w-3.5 h-3.5 lia-text-secondary" /> : <ChevronDown className="w-3.5 h-3.5 lia-text-secondary" />}
         </span>
       </button>
 
       {/* Body — expandível */}
       {isOpen && (
-        <div className="border-t border-gray-200 dark:border-gray-700 px-3 py-2.5 space-y-2.5">
+        <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle px-3 py-2.5 space-y-2.5">
           {error && (
             <div className="flex items-center gap-1.5 text-xs text-status-error dark:text-status-error">
               <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
               <span>{error}</span>
               <button
                 onClick={handleRefresh}
-                className="ml-auto text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                className="ml-auto lia-text-secondary hover:lia-text-base dark:hover:lia-text-muted"
                 title="Tentar novamente"
               >
                 <RefreshCw className="w-3 h-3" />
@@ -115,8 +115,8 @@ export function MLInsightsCard({ companyId, jobData, className = "" }: MLInsight
 
           {loading && !timeToFill && !salary && (
             <div className="flex items-center justify-center py-3">
-              <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
-              <span className="ml-2 text-xs text-gray-500">
+              <Loader2 className="w-4 h-4 animate-spin lia-text-secondary" />
+              <span className="ml-2 text-xs lia-text-secondary">
                 Calculando previsões...
               </span>
             </div>
@@ -125,14 +125,14 @@ export function MLInsightsCard({ companyId, jobData, className = "" }: MLInsight
           {/* Time to Fill */}
           {timeToFill && (
             <div className="flex items-start gap-2">
-              <Clock className="w-3.5 h-3.5 text-gray-500 flex-shrink-0 mt-0.5" />
+              <Clock className="w-3.5 h-3.5 lia-text-secondary flex-shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
                   Tempo estimado de preenchimento
                 </p>
-                <p className="text-sm font-semibold text-gray-900 dark:text-gray-50" >
+                <p className="text-sm font-semibold text-gray-900" >
                   {timeToFill.predicted_days} dias
-                  <span className="text-micro font-normal text-gray-500 ml-1">
+                  <span className="text-micro font-normal lia-text-secondary ml-1">
                     ({timeToFill.range_min}–{timeToFill.range_max})
                   </span>
                 </p>
@@ -146,12 +146,12 @@ export function MLInsightsCard({ companyId, jobData, className = "" }: MLInsight
           {/* Salary Range */}
           {salary && (
             <div className="flex items-start gap-2">
-              <DollarSign className="w-3.5 h-3.5 text-gray-500 flex-shrink-0 mt-0.5" />
+              <DollarSign className="w-3.5 h-3.5 lia-text-secondary flex-shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
                   Faixa salarial sugerida
                 </p>
-                <p className="text-sm font-semibold text-gray-900 dark:text-gray-50" >
+                <p className="text-sm font-semibold text-gray-900" >
                   {formatCurrency(salary.suggested_min)} – {formatCurrency(salary.suggested_max)}
                 </p>
                 <p className={`text-micro ${confidenceColor(salary.confidence_level)}`}>
@@ -166,7 +166,7 @@ export function MLInsightsCard({ companyId, jobData, className = "" }: MLInsight
             <div className="flex justify-end pt-0.5">
               <button
                 onClick={handleRefresh}
-                className="flex items-center gap-1 text-micro text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                className="flex items-center gap-1 text-micro lia-text-secondary hover:lia-text-base dark:hover:lia-text-muted transition-colors"
                
               >
                 <RefreshCw className="w-2.5 h-2.5" />

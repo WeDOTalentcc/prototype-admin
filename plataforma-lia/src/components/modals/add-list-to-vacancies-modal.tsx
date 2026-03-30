@@ -152,10 +152,10 @@ export function AddListToVacanciesModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg border-gray-200 dark:border-gray-700 rounded-md dark:bg-gray-900">
+      <DialogContent className="max-w-lg border-lia-border-subtle dark:border-lia-border-subtle rounded-md dark:bg-lia-bg-primary">
         <DialogHeader>
           <DialogTitle className="font-['Open_Sans',sans-serif] text-lg flex items-center gap-2">
-            <Briefcase className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <Briefcase className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
             Adicionar a Vagas
           </DialogTitle>
           <DialogDescription className="text-xs">
@@ -164,9 +164,9 @@ export function AddListToVacanciesModal({
                 <div 
                   className="w-3 h-3 rounded-full bg-gray-500 dark:bg-gray-400" 
                 />
-                <span className="font-medium text-gray-800 dark:text-gray-200">{listName}</span>
+                <span className="font-medium text-gray-800 dark:text-lia-text-primary">{listName}</span>
               </div>
-              <div className="flex items-center gap-1.5 text-gray-800 dark:text-gray-200">
+              <div className="flex items-center gap-1.5 text-gray-800 dark:text-lia-text-primary">
                 <Users className="w-4 h-4" />
                 <span>
                   {isAddingSelected 
@@ -186,7 +186,7 @@ export function AddListToVacanciesModal({
               placeholder="Buscar vagas por título, departamento ou local..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 border-gray-200 rounded-md text-xs"
+              className="pl-9 border-lia-border-subtle rounded-md text-xs"
             />
           </div>
 
@@ -197,7 +197,7 @@ export function AddListToVacanciesModal({
           ) : vacancies.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Briefcase className="w-10 h-10 text-gray-300 mb-3" />
-              <p className="text-xs text-gray-800 dark:text-gray-200">Nenhuma vaga aberta encontrada</p>
+              <p className="text-xs text-gray-800 dark:text-lia-text-primary">Nenhuma vaga aberta encontrada</p>
               <p className="text-xs text-gray-600 mt-1">
                 Crie uma vaga primeiro para poder adicionar candidatos
               </p>
@@ -205,7 +205,7 @@ export function AddListToVacanciesModal({
           ) : filteredVacancies.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Search className="w-10 h-10 text-gray-300 mb-3" />
-              <p className="text-xs text-gray-800 dark:text-gray-200">Nenhuma vaga encontrada</p>
+              <p className="text-xs text-gray-800 dark:text-lia-text-primary">Nenhuma vaga encontrada</p>
               <p className="text-xs text-gray-600 mt-1">
                 Tente buscar com outros termos
               </p>
@@ -216,7 +216,7 @@ export function AddListToVacanciesModal({
                 <button
                   type="button"
                   onClick={toggleAll}
-                  className="text-xs text-gray-700 dark:text-gray-300 hover:underline flex items-center gap-1.5"
+                  className="text-xs text-gray-700 dark:text-lia-text-secondary hover:underline flex items-center gap-1.5"
                 >
                   <Checkbox 
                     checked={selectedVacancyIds.size === filteredVacancies.length && filteredVacancies.length > 0}
@@ -227,7 +227,7 @@ export function AddListToVacanciesModal({
                     : 'Selecionar todas'
                   }
                 </button>
-                <span className="text-xs text-gray-800 dark:text-gray-200">
+                <span className="text-xs text-gray-800 dark:text-lia-text-primary">
                   {filteredVacancies.length} vaga{filteredVacancies.length !== 1 ? 's' : ''} disponíve{filteredVacancies.length !== 1 ? 'is' : 'l'}
                 </span>
               </div>
@@ -238,8 +238,8 @@ export function AddListToVacanciesModal({
                     <div
                       key={vacancy.id}
                       className={cn(
-                        "flex items-start gap-3 p-3 rounded-md border border-gray-200 dark:border-gray-700 cursor-pointer transition-all hover:border-gray-400 dark:hover:border-gray-500",
-                        selectedVacancyIds.has(vacancy.id) && "border-gray-900 dark:border-gray-300 bg-gray-50 dark:bg-gray-800"
+                        "flex items-start gap-3 p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle cursor-pointer transition-colors hover:border-gray-400 dark:hover:border-gray-500",
+                        selectedVacancyIds.has(vacancy.id) && "border-gray-900 dark:border-lia-border-default bg-gray-50 dark:bg-lia-bg-secondary"
                       )}
                       onClick={() => toggleVacancy(vacancy.id)}
                     >
@@ -255,7 +255,7 @@ export function AddListToVacanciesModal({
                             <h4 className="text-xs font-medium text-gray-950 dark:text-gray-50 truncate">
                               {vacancy.title}
                             </h4>
-                            <div className="flex items-center gap-3 mt-1 text-xs text-gray-800 dark:text-gray-200">
+                            <div className="flex items-center gap-3 mt-1 text-xs text-gray-800 dark:text-lia-text-primary">
                               {vacancy.department && (
                                 <div className="flex items-center gap-1">
                                   <Building2 className="w-3 h-3" />
@@ -276,13 +276,13 @@ export function AddListToVacanciesModal({
                           </div>
                         </div>
                         {vacancy.funnel_data?.total !== undefined && (
-                          <div className="mt-2 text-xs text-gray-800 dark:text-gray-200">
+                          <div className="mt-2 text-xs text-gray-800 dark:text-lia-text-primary">
                             {vacancy.funnel_data.total} candidato{vacancy.funnel_data.total !== 1 ? 's' : ''} no funil
                           </div>
                         )}
                       </div>
                       {selectedVacancyIds.has(vacancy.id) && (
-                        <Check className="w-4 h-4 flex-shrink-0 mt-0.5 text-gray-900 dark:text-gray-100" />
+                        <Check className="w-4 h-4 flex-shrink-0 mt-0.5 text-gray-900 dark:text-lia-text-primary" />
                       )}
                     </div>
                   ))}
@@ -290,9 +290,9 @@ export function AddListToVacanciesModal({
               </ScrollArea>
 
               {selectedVacancyIds.size > 0 && (
-                <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-300 dark:border-gray-600">
-                  <Check className="w-4 h-4 text-gray-900 dark:text-gray-100" />
-                  <span className="text-xs text-gray-800 dark:text-gray-200">
+                <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default">
+                  <Check className="w-4 h-4 text-gray-900 dark:text-lia-text-primary" />
+                  <span className="text-xs text-gray-800 dark:text-lia-text-primary">
                     <strong>{selectedVacancyIds.size}</strong> vaga{selectedVacancyIds.size !== 1 ? 's' : ''} selecionada{selectedVacancyIds.size !== 1 ? 's' : ''}
                     {' · '}
                     <strong>{candidatesToAdd}</strong> candidato{candidatesToAdd !== 1 ? 's' : ''} serão adicionados
@@ -303,13 +303,13 @@ export function AddListToVacanciesModal({
           )}
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4 -mx-6 -mb-6 rounded-b-xl">
+        <DialogFooter className="gap-2 sm:gap-2 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary p-4 -mx-6 -mb-6 rounded-b-xl">
           <Button
             type="button"
             variant="outline"
             onClick={handleClose}
             disabled={isSubmitting}
-            className="bg-white border border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700"
+            className="bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700"
           >
             Cancelar
           </Button>

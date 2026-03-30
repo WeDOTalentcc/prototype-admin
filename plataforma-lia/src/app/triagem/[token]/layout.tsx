@@ -21,7 +21,7 @@ export default function TriagemLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 font-['Open_Sans',sans-serif]">
+    <div className="min-h-screen bg-gray-50 dark:lia-bg-950 font-['Open_Sans',sans-serif]">
       {children}
     </div>
   )

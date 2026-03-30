@@ -59,12 +59,12 @@ function ProgressBar({ value, label, maxValue = 100 }: ScoreDimension) {
   return (
     <div className="space-y-0.5">
       <div className="flex items-center justify-between">
-        <span className="text-micro text-gray-600 dark:text-gray-400">{label}</span>
+        <span className="text-micro text-gray-600 dark:text-lia-text-tertiary">{label}</span>
         <span className={cn("text-micro font-semibold", getScoreColor(percentage))}>{percentage}%</span>
       </div>
       <div className={cn("h-1.5 rounded-full w-full", getBarBgColor(percentage))}>
         <div
-          className={cn("h-1.5 rounded-full transition-all duration-500", getBarColor(percentage))}
+          className={cn("h-1.5 rounded-full transition-[width,height] duration-500", getBarColor(percentage))}
           style={{width: `${percentage}%`}}
         />
       </div>
@@ -114,7 +114,7 @@ export function ScoreBreakdownBadgeLazy({
       <PopoverTrigger asChild>
         <button
           className={cn(
-            "inline-flex items-center gap-1 cursor-pointer select-none rounded-md hover:opacity-80 transition-opacity",
+ "inline-flex items-center gap-1 cursor-pointer select-none rounded-md hover:opacity-80 transition-opacity",
             sizeClasses[size],
             getScoreColor(score),
             className
@@ -127,22 +127,22 @@ export function ScoreBreakdownBadgeLazy({
       </PopoverTrigger>
       <PopoverContent className="w-72 p-3" side="left" align="start">
         <div className="space-y-2">
-          <div className="flex items-center gap-1.5 pb-2 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-1.5 pb-2 border-b border-lia-border-subtle dark:border-lia-border-subtle">
             <Brain className="h-3.5 w-3.5 text-wedo-cyan-dark" />
-            <span className="text-xs font-semibold text-gray-900 dark:text-gray-100">
+            <span className="text-xs font-semibold text-gray-900 dark:text-lia-text-primary">
               Score LIA: {Math.round(score)}
             </span>
           </div>
 
           {loading && (
             <div className="flex items-center justify-center py-4">
-              <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
-              <span className="ml-2 text-xs text-gray-500">Carregando...</span>
+              <Loader2 className="h-4 w-4 animate-spin lia-text-secondary" />
+              <span className="ml-2 text-xs lia-text-secondary">Carregando...</span>
             </div>
           )}
 
           {error && !loading && (
-            <div className="flex items-center gap-1.5 py-2 text-xs text-gray-500">
+            <div className="flex items-center gap-1.5 py-2 text-xs lia-text-secondary">
               <AlertCircle className="h-3.5 w-3.5 text-status-warning" />
               <span>{error}</span>
             </div>
@@ -152,12 +152,12 @@ export function ScoreBreakdownBadgeLazy({
             <>
               {data.strengths.length > 0 && (
                 <div>
-                  <p className="text-micro font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  <p className="text-micro font-semibold text-gray-700 dark:text-lia-text-secondary mb-1">
                     Pontos fortes
                   </p>
                   <ul className="space-y-0.5">
                     {data.strengths.slice(0, 3).map((s, i) => (
-                      <li key={i} className="text-micro text-gray-600 dark:text-gray-400 flex gap-1">
+                      <li key={i} className="text-micro text-gray-600 dark:text-lia-text-tertiary flex gap-1">
                         <span className="text-status-success mt-0.5">•</span>
                         <span>{s}</span>
                       </li>
@@ -168,12 +168,12 @@ export function ScoreBreakdownBadgeLazy({
 
               {data.concerns.length > 0 && (
                 <div>
-                  <p className="text-micro font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  <p className="text-micro font-semibold text-gray-700 dark:text-lia-text-secondary mb-1">
                     Pontos de atenção
                   </p>
                   <ul className="space-y-0.5">
                     {data.concerns.slice(0, 3).map((c, i) => (
-                      <li key={i} className="text-micro text-gray-600 dark:text-gray-400 flex gap-1">
+                      <li key={i} className="text-micro text-gray-600 dark:text-lia-text-tertiary flex gap-1">
                         <span className="text-status-warning mt-0.5">•</span>
                         <span>{c}</span>
                       </li>
@@ -183,8 +183,8 @@ export function ScoreBreakdownBadgeLazy({
               )}
 
               {data.reasoning && (
-                <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
-                  <p className="text-micro text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-3">
+                <div className="pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
+                  <p className="text-micro text-gray-500 dark:text-lia-text-tertiary leading-relaxed line-clamp-3">
                     {data.reasoning}
                   </p>
                 </div>
@@ -230,7 +230,7 @@ export function ScoreBreakdownBadge({
   const badgeContent = (
     <div
       className={cn(
-        "inline-flex items-center gap-1 cursor-pointer select-none",
+ "inline-flex items-center gap-1 cursor-pointer select-none",
         sizeClasses[size],
         getScoreColor(score),
         className
@@ -257,7 +257,7 @@ export function ScoreBreakdownBadge({
             <div className="space-y-2">
               <div className="flex items-center gap-1.5 mb-2">
                 <Brain className="h-3.5 w-3.5 text-wedo-cyan-dark" />
-                <span className="text-xs font-semibold text-gray-900 dark:text-gray-100">
+                <span className="text-xs font-semibold text-gray-900 dark:text-lia-text-primary">
                   Score LIA: {Math.round(score)}
                 </span>
               </div>
@@ -270,17 +270,17 @@ export function ScoreBreakdownBadge({
       </TooltipProvider>
 
       {expanded && showExpand && (
-        <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 max-w-xs">
+        <div className="mt-2 p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-lg border border-lia-border-subtle dark:border-lia-border-subtle max-w-xs">
           <div className="space-y-2 mb-3">
             {dimensions.map((dim) => (
               <ProgressBar key={dim.label} {...dim} />
             ))}
           </div>
           {explanation && (
-            <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+            <div className="pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="flex items-start gap-1.5">
                 <Brain className="h-3.5 w-3.5 text-wedo-cyan-dark mt-0.5 flex-shrink-0" />
-                <p className="text-micro text-gray-600 dark:text-gray-400 leading-relaxed">
+                <p className="text-micro text-gray-600 dark:text-lia-text-tertiary leading-relaxed">
                   {explanation}
                 </p>
               </div>

@@ -118,7 +118,7 @@ export function DataRequestIndicator({
           <button
             type="button"
             className={cn(
-              "inline-flex items-center justify-center rounded-full transition-colors",
+ "inline-flex items-center justify-center rounded-full transition-colors",
               containerSize,
               className
             )}
@@ -134,7 +134,7 @@ export function DataRequestIndicator({
         </TooltipTrigger>
         <TooltipContent 
           side="top" 
-          className="w-64 p-0 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700"
+          className="w-64 p-0 bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle"
         >
           <div className="p-3 space-y-3">
             <div className="flex items-center justify-between">
@@ -146,7 +146,7 @@ export function DataRequestIndicator({
                 >
                   {effectiveConfig.icon}
                 </span>
-                <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                <span className="text-xs font-medium text-gray-900 dark:text-lia-text-primary">
                   {effectiveConfig.label}
                 </span>
               </div>
@@ -160,7 +160,7 @@ export function DataRequestIndicator({
             </div>
 
             <div className="space-y-1.5">
-              <p className="text-micro font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+              <p className="text-micro font-medium text-gray-500 dark:text-lia-text-tertiary uppercase tracking-wide">
                 Campos Solicitados
               </p>
               <div className="space-y-1 max-h-32 overflow-y-auto">
@@ -172,27 +172,27 @@ export function DataRequestIndicator({
                       <Clock className="w-3 h-3 text-wedo-orange flex-shrink-0" />
                     )}
                     <span className={cn(
-                      "truncate",
+ "truncate",
                       field.status === 'completed' 
-                        ? "text-gray-700 dark:text-gray-300" 
-                        : "text-gray-500 dark:text-gray-400"
+                        ? "text-gray-700 dark:text-lia-text-secondary" 
+                        : "text-gray-500 dark:text-lia-text-tertiary"
                     )}>
                       {field.displayName}
                     </span>
                   </div>
                 ))}
                 {allFields.length === 0 && (
-                  <span className="text-xs text-gray-400">Nenhum campo solicitado</span>
+                  <span className="text-xs lia-text-secondary">Nenhum campo solicitado</span>
                 )}
               </div>
             </div>
 
             {expiresAt && (
               <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-500 dark:text-gray-400">Expira em:</span>
+                <span className="text-gray-500 dark:text-lia-text-tertiary">Expira em:</span>
                 <span className={cn(
-                  "font-medium",
-                  expired ? "text-status-error" : "text-gray-700 dark:text-gray-300"
+ "font-medium",
+                  expired ? "text-status-error" : "text-gray-700 dark:text-lia-text-secondary"
                 )}>
                   {formatDate(expiresAt)}
                   {expired && " (expirado)"}

@@ -33,14 +33,14 @@ export default function ProactiveChatMessage({
       <div className="flex items-center gap-1.5 mb-1">
         <div className="w-1.5 h-1.5 rounded-full bg-wedo-cyan" />
         <span
-          className="text-sm font-medium text-gray-200"
+          className="text-sm font-medium lia-text-muted"
          
         >
           {title}
         </span>
       </div>
       <p
-        className="text-xs text-gray-400 mb-2"
+        className="text-xs lia-text-secondary mb-2"
        
       >
         {message}
@@ -57,7 +57,7 @@ export default function ProactiveChatMessage({
         <button
           onClick={onReject}
           disabled={processing}
-          className="px-3 py-1 text-xs rounded-md text-gray-500 hover:text-gray-300 hover:bg-white/5 transition-colors disabled:opacity-50"
+          className="px-3 py-1 text-xs rounded-md lia-text-secondary hover:lia-text-muted hover:bg-lia-bg-primary/5 transition-colors disabled:opacity-50"
          
         >
           Ignorar

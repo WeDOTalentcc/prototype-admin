@@ -40,7 +40,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 font-open-sans p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-xl p-10">
+        <div className="bg-lia-bg-primary rounded-xl p-10">
           <div className="flex items-center justify-center mb-6">
             <div className="w-10 h-10 bg-black rounded-md flex items-center justify-center">
               <WeDOLogo className="h-5 text-white" />
@@ -52,11 +52,11 @@ export default function ForgotPasswordPage() {
               <div className="w-16 h-16 bg-status-success/15 rounded-full flex items-center justify-center mx-auto mb-6">
                 <CheckCircle className="w-8 h-8 text-status-success" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-950 dark:text-gray-50 mb-3">Email Enviado!</h2>
-              <p className="text-gray-600 mb-6">
+              <h2 className="text-2xl font-bold lia-text-950 dark:lia-text-50 mb-3">Email Enviado!</h2>
+              <p className="lia-text-600 mb-6">
                 Se existe uma conta com o email <strong>{email}</strong>, você receberá um link para redefinir sua senha.
               </p>
-              <p className="text-gray-500 text-sm mb-6">
+              <p className="lia-text-500 text-sm mb-6">
                 Verifique também sua pasta de spam caso não encontre o email.
               </p>
               <Link href="/login">
@@ -69,17 +69,17 @@ export default function ForgotPasswordPage() {
             <>
               <div className="text-center mb-6">
                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Mail className="w-8 h-8 text-gray-600" />
+                  <Mail className="w-8 h-8 lia-text-600" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-950 dark:text-gray-50 mb-3">Esqueceu a senha?</h2>
-                <p className="text-gray-600 text-base leading-relaxed">
+                <h2 className="text-2xl font-bold lia-text-950 dark:lia-text-50 mb-3">Esqueceu a senha?</h2>
+                <p className="lia-text-600 text-base leading-relaxed">
                   Digite seu email e enviaremos um link para você redefinir sua senha.
                 </p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                  <label className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2">
                     Email
                   </label>
                   <input
@@ -87,7 +87,7 @@ export default function ForgotPasswordPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Digite seu email"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all"
+                    className="w-full px-4 py-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors"
                     required
                   />
                 </div>
@@ -101,7 +101,7 @@ export default function ForgotPasswordPage() {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-md transition-all font-medium"
+                  className="w-full py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-md transition-colors font-medium"
                 >
                   {isLoading ? (
                     <>
@@ -115,7 +115,7 @@ export default function ForgotPasswordPage() {
 
                 <Link 
                   href="/login" 
-                  className="flex items-center justify-center gap-2 text-gray-600 hover:text-gray-900 text-sm transition-colors"
+                  className="flex items-center justify-center gap-2 lia-text-600 hover:lia-text-900 text-sm transition-colors"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   Voltar para o Login

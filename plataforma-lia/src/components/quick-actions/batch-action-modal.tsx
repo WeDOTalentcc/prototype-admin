@@ -96,14 +96,14 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 dark:bg-gray-950/70 backdrop-blur-[1px] z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+    <div className="fixed inset-0 bg-black/50/70 backdrop-blur-[1px] z-50 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div>
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-50">
+            <h3 className="text-lg font-semibold text-gray-800">
               Ações em Lote
             </h3>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm lia-text-secondary">
               {selectedCandidates.length} candidatos selecionados
             </p>
           </div>
@@ -115,10 +115,10 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
         <div className="p-6 space-y-6">
           {/* Candidatos Selecionados */}
           <div>
-            <h4 className="text-sm font-medium text-gray-800 mb-3">
+            <h4 className="text-sm font-medium lia-text-strong mb-3">
               Candidatos Selecionados
             </h4>
-            <div className="max-h-32 overflow-y-auto border border-gray-100 rounded-md p-3">
+            <div className="max-h-32 overflow-y-auto border border-lia-border-subtle rounded-md p-3">
               <div className="space-y-2">
                 {selectedCandidates.map((candidate) => (
                   <div key={candidate.id} className="flex items-center gap-3">
@@ -127,7 +127,7 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
                       <AvatarFallback className="text-xs">{candidate.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                     </Avatar>
                     <span className="text-sm">{candidate.name}</span>
-                    <span className="text-xs text-gray-800 dark:text-gray-200">- {candidate.role}</span>
+                    <span className="text-xs text-gray-800 dark:text-lia-text-primary">- {candidate.role}</span>
                   </div>
                 ))}
               </div>
@@ -136,7 +136,7 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
 
           {/* Ação */}
           <div>
-            <h4 className="text-sm font-medium text-gray-800 mb-3">
+            <h4 className="text-sm font-medium lia-text-strong mb-3">
               Selecione a Ação
             </h4>
             <div className="grid grid-cols-2 gap-3">
@@ -145,14 +145,14 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
                   key={actionItem.id}
                   onClick={() => setAction(actionItem.id)}
                   className={`p-4 border rounded-md text-left transition-colors ${
-                    action === actionItem.id
-                      ? 'border-gray-300 bg-gray-100'
-                      : 'border-gray-100 hover:bg-gray-50'
+ action === actionItem.id
+                      ? 'border-lia-border-default bg-gray-100'
+                      : 'border-lia-border-subtle hover:bg-gray-50'
                   }`}
                 >
                   <actionItem.icon className="w-5 h-5 mb-2" />
                   <div className="text-sm font-medium">{actionItem.name}</div>
-                  <div className="text-xs text-gray-500">{actionItem.description}</div>
+                  <div className="text-xs lia-text-secondary">{actionItem.description}</div>
                 </button>
               ))}
             </div>
@@ -161,13 +161,13 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
           {/* Configurações específicas por ação */}
           {action === 'move_stage' && (
             <div>
-              <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+              <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
                 Nova Etapa
               </label>
               <select
                 value={stage}
                 onChange={(e) => setStage(e.target.value)}
-                className="w-full p-3 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
+                className="w-full p-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
               >
                 <option value="">Selecione a etapa</option>
                 {stages.map((stageOption) => (
@@ -179,13 +179,13 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
 
           {action === 'assign' && (
             <div>
-              <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+              <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
                 Atribuir para
               </label>
               <select
                 value={assignTo}
                 onChange={(e) => setAssignTo(e.target.value)}
-                className="w-full p-3 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
+                className="w-full p-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
               >
                 <option value="">Selecione o responsável</option>
                 {recruiters.map((recruiter) => (
@@ -197,14 +197,14 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
 
           {/* Comentário */}
           <div>
-            <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+            <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
               Comentário (opcional)
             </label>
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               rows={3}
-              className="w-full p-3 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
+              className="w-full p-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
               placeholder="Adicione um comentário sobre esta ação..."
             />
           </div>
@@ -216,22 +216,22 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
               id="notification"
               checked={sendNotification}
               onChange={(e) => setSendNotification(e.target.checked)}
-              className="rounded-md border-gray-200"
+              className="rounded-md border-lia-border-subtle"
             />
-            <label htmlFor="notification" className="text-sm text-gray-600">
+            <label htmlFor="notification" className="text-sm lia-text-base">
               Enviar notificação para os candidatos sobre esta alteração
             </label>
           </div>
 
           {/* Ações */}
-          <div className="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <Button variant="outline" onClick={onClose} className="bg-white border border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700">
+          <div className="flex justify-end gap-3 pt-6 border-t border-lia-border-subtle dark:border-lia-border-subtle">
+            <Button variant="outline" onClick={onClose} className="bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700">
               Cancelar
             </Button>
             <Button
               onClick={handleExecute}
               disabled={!action || (action === 'move_stage' && !stage) || (action === 'assign' && !assignTo)}
-              className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+              className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
             >
               <Zap className="w-4 h-4" />
               Executar Ação

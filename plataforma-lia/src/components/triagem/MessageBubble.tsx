@@ -56,7 +56,7 @@ export function MessageBubble({ message, candidateName = "Candidato", className,
   return (
     <div
       className={cn(
-        "flex gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300",
+ "flex gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300",
         isLia ? "justify-start" : "justify-end",
         className
       )}
@@ -75,10 +75,10 @@ export function MessageBubble({ message, candidateName = "Candidato", className,
       <div className="flex flex-col gap-1 max-w-[80%]">
         <div
           className={cn(
-            "px-4 py-3 text-sm font-['Open_Sans',sans-serif] leading-relaxed rounded-md",
+ "px-4 py-3 text-sm font-['Open_Sans',sans-serif] leading-relaxed rounded-md",
             isLia
-              ? "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100"
-              : "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900"
+              ? "bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-gray-900 dark:text-lia-text-primary"
+              : "bg-gray-900 text-white"
           )}
           dangerouslySetInnerHTML={{ __html: parseSimpleMarkdown(message.content) }}
         />
@@ -94,7 +94,7 @@ export function MessageBubble({ message, candidateName = "Candidato", className,
         )}
         <span
           className={cn(
-            "text-micro font-['Inter',sans-serif] text-gray-400 dark:text-gray-500",
+ "text-micro font-['Inter',sans-serif] text-gray-400",
             isLia ? "text-left" : "text-right"
           )}
         >
@@ -105,7 +105,7 @@ export function MessageBubble({ message, candidateName = "Candidato", className,
       {!isLia && (
         <div className="flex-shrink-0 mt-1">
           <div
-            className="w-8 h-8 rounded-md bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-semibold text-gray-600 dark:text-gray-300 font-['Inter',sans-serif]"
+            className="w-8 h-8 rounded-md bg-gray-200 dark:bg-lia-bg-elevated flex items-center justify-center text-xs font-semibold text-gray-600 dark:text-lia-text-secondary font-['Inter',sans-serif]"
             aria-hidden="true"
           >
             {getInitials(candidateName)}

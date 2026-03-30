@@ -60,7 +60,7 @@ function SectionHeader({
           className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           aria-label={`Editar ${label}`}
         >
-          <svg className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="w-3.5 h-3.5 lia-text-secondary hover:lia-text-base dark:hover:lia-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
           </svg>
         </button>
@@ -104,9 +104,9 @@ export function VacancySummaryCard({ jobData, onConfirmPublish, onEdit, classNam
             {percentage}%
           </span>
         </div>
-        <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+        <div className="w-full h-1.5 bg-gray-100 dark:bg-lia-bg-elevated rounded-full overflow-hidden">
           <div
-            className={`h-full rounded-full transition-all duration-500 ${percentage >= 80 ? 'bg-status-success' : percentage >= 50 ? 'bg-status-warning' : 'bg-status-error'}`}
+            className={`h-full rounded-full transition-[width,height] duration-500 ${percentage >= 80 ? 'bg-status-success' : percentage >= 50 ? 'bg-status-warning' : 'bg-status-error'}`}
             style={{width: `${Math.min(percentage, 100)}%`}}
           />
         </div>
@@ -171,7 +171,7 @@ export function VacancySummaryCard({ jobData, onConfirmPublish, onEdit, classNam
             <ul className="space-y-1">
               {jobData.requirements!.map((req, i) => (
                 <li key={i} className={`${textStyles.bodySmall} flex items-start gap-1.5`}>
-                  <span className="text-gray-400 mt-0.5">•</span>
+                  <span className="lia-text-secondary mt-0.5">•</span>
                   <span>{req}</span>
                 </li>
               ))}
@@ -216,7 +216,7 @@ export function VacancySummaryCard({ jobData, onConfirmPublish, onEdit, classNam
             <ul className="space-y-1">
               {jobData.benefits!.map((benefit, i) => (
                 <li key={i} className={`${textStyles.bodySmall} flex items-start gap-1.5`}>
-                  <span className="text-gray-400 mt-0.5">•</span>
+                  <span className="lia-text-secondary mt-0.5">•</span>
                   <span>{benefit}</span>
                 </li>
               ))}
@@ -243,7 +243,7 @@ export function VacancySummaryCard({ jobData, onConfirmPublish, onEdit, classNam
       </div>
 
       {onConfirmPublish && (
-        <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-700">
+        <div className="mt-6 pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
           <button
             onClick={onConfirmPublish}
             className={`${buttonStyles.primary} w-full justify-center flex items-center gap-2`}

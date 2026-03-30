@@ -227,9 +227,9 @@ export function AdvancedReportExporter({
   const getTemplateIcon = (type: string) => {
     switch (type) {
       case 'executive': return <Target className="w-5 h-5 text-wedo-purple" />
-      case 'operational': return <BarChart3 className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+      case 'operational': return <BarChart3 className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
       case 'analytical': return <PieChart className="w-5 h-5 text-status-success" />
-      default: return <FileText className="w-5 h-5 text-gray-600" />
+      default: return <FileText className="w-5 h-5 lia-text-base" />
     }
   }
 
@@ -243,14 +243,14 @@ export function AdvancedReportExporter({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-md w-full max-w-5xl h-[90vh] flex flex-col">
+      <div className="bg-lia-bg-primary rounded-md w-full max-w-5xl h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <div>
-            <h2 className="text-xl font-semibold text-gray-950 dark:text-gray-50">
+            <h2 className="text-xl font-semibold text-gray-950">
               Exportação Avançada de Relatórios
             </h2>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm lia-text-base">
               Gere relatórios personalizados em PDF e Excel
             </p>
           </div>
@@ -272,8 +272,8 @@ export function AdvancedReportExporter({
                 {getTemplatesForRole().map((template) => (
                   <Card
                     key={template.id}
-                    className={`cursor-pointer transition-all hover:${
-                      selectedTemplate?.id === template.id ? 'ring-2 ring-gray-900/20 dark:ring-gray-50/20 bg-gray-100 dark:bg-gray-800' : ''
+                    className={`cursor-pointer transition-colors hover:${
+ selectedTemplate?.id === template.id ? 'ring-2 ring-gray-900/20 dark:ring-gray-50/20 bg-gray-100 dark:bg-lia-bg-secondary' : ''
                     }`}
                     onClick={() => setSelectedTemplate(template)}
                   >
@@ -282,12 +282,12 @@ export function AdvancedReportExporter({
                         {getTemplateIcon(template.type)}
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-medium text-gray-950 dark:text-gray-50">{template.name}</h4>
+                            <h4 className="font-medium text-gray-950">{template.name}</h4>
                             <Badge variant="outline" className="text-xs">
                               {template.format.toUpperCase()}
                             </Badge>
                           </div>
-                          <p className="text-sm text-gray-600 mb-2">{template.description}</p>
+                          <p className="text-sm lia-text-base mb-2">{template.description}</p>
                           <div className="flex flex-wrap gap-1">
                             {template.sections.slice(0, 3).map((section, index) => (
                               <Badge key={index} variant="secondary" className="text-xs">
@@ -314,12 +314,12 @@ export function AdvancedReportExporter({
                 <div className="space-y-6">
                   <div>
                     <h3 className="text-lg font-medium mb-2">Configurações de Exportação</h3>
-                    <p className="text-sm text-gray-600">Template: {selectedTemplate.name}</p>
+                    <p className="text-sm lia-text-base">Template: {selectedTemplate.name}</p>
                   </div>
 
                   {/* Período */}
                   <div>
-                    <label className="text-sm font-medium text-gray-800 dark:text-gray-200 block mb-2">
+                    <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary block mb-2">
                       Período dos Dados
                     </label>
                     <select
@@ -328,7 +328,7 @@ export function AdvancedReportExporter({
                         ...prev,
                         dateRange: e.target.value as ExportConfig['dateRange']
                       }))}
-                      className="w-full p-2 border border-gray-300 rounded-md"
+                      className="w-full p-2 border border-lia-border-default rounded-md"
                     >
                       <option value="last_week">Última Semana</option>
                       <option value="last_month">Último Mês</option>
@@ -339,7 +339,7 @@ export function AdvancedReportExporter({
 
                   {/* Departamentos */}
                   <div>
-                    <label className="text-sm font-medium text-gray-800 dark:text-gray-200 block mb-2">
+                    <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary block mb-2">
                       Departamentos (deixe vazio para todos)
                     </label>
                     <div className="grid grid-cols-2 gap-2">
@@ -364,7 +364,7 @@ export function AdvancedReportExporter({
 
                   {/* Métricas */}
                   <div>
-                    <label className="text-sm font-medium text-gray-800 dark:text-gray-200 block mb-2">
+                    <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary block mb-2">
                       Métricas Específicas
                     </label>
                     <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto">
@@ -389,7 +389,7 @@ export function AdvancedReportExporter({
 
                   {/* Opções Adicionais */}
                   <div>
-                    <label className="text-sm font-medium text-gray-800 dark:text-gray-200 block mb-2">
+                    <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary block mb-2">
                       Opções de Conteúdo
                     </label>
                     <div className="space-y-2">
@@ -465,7 +465,7 @@ export function AdvancedReportExporter({
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
-                          className="bg-gray-700 dark:bg-gray-300 h-2 rounded-full transition-all duration-300"
+                          className="bg-gray-700 h-2 rounded-full transition-[width,height] duration-300"
                           style={{width: `${exportProgress}%`}}
                         />
                       </div>
@@ -498,9 +498,9 @@ export function AdvancedReportExporter({
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-center h-full text-gray-800 dark:text-gray-200">
+                <div className="flex items-center justify-center h-full text-gray-800 dark:text-lia-text-primary">
                   <div className="text-center">
-                    <FileText className="w-12 h-12 mx-auto mb-4 text-gray-600" />
+                    <FileText className="w-12 h-12 mx-auto mb-4 lia-text-base" />
                     <p>Selecione um template para configurar a exportação</p>
                   </div>
                 </div>

@@ -128,15 +128,15 @@ export function InterviewSchedulingModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl bg-white dark:bg-gray-800 rounded-md dark:border-gray-700">
+      <DialogContent className="max-w-2xl bg-white dark:bg-lia-bg-secondary rounded-md dark:border-lia-border-subtle">
         <DialogHeader>
           <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-            <DialogTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50">
+            <Calendar className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+            <DialogTitle className="text-sm font-semibold text-gray-950">
               Agendar Entrevista
             </DialogTitle>
           </div>
-          <DialogDescription className="text-xs text-gray-600 dark:text-gray-400">
+          <DialogDescription className="text-xs text-gray-600 dark:text-lia-text-tertiary">
             {candidateName} • {jobTitle}
           </DialogDescription>
         </DialogHeader>
@@ -150,7 +150,7 @@ export function InterviewSchedulingModal({
                   Entrevista agendada com sucesso!
                 </span>
               </div>
-              <p className="text-xs text-gray-600">
+              <p className="text-xs lia-text-base">
                 {scheduledInterview.interviewer} receberá a confirmação por email.
               </p>
               {scheduledInterview.meeting_url && (
@@ -158,7 +158,7 @@ export function InterviewSchedulingModal({
                   href={scheduledInterview.meeting_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-gray-600 dark:text-gray-400 hover:underline inline-flex items-center gap-1 mt-2"
+                  className="text-xs text-gray-600 dark:text-lia-text-tertiary hover:underline inline-flex items-center gap-1 mt-2"
                 >
                   Abrir Teams Meeting
                 </a>
@@ -168,10 +168,10 @@ export function InterviewSchedulingModal({
             <>
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <Label className="text-xs font-medium text-gray-800 dark:text-gray-200">
+                  <Label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">
                     Email de Convite
                   </Label>
-                  <Badge className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-0">
+                  <Badge className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary border-0">
                     <Brain className="w-3 h-3 mr-1 text-wedo-cyan" />
                     Gerado por LIA
                   </Badge>
@@ -179,7 +179,7 @@ export function InterviewSchedulingModal({
 
                 {isGeneratingEmail ? (
                   <div className="flex items-center justify-center p-8">
-                    <Loader2 className="w-6 h-6 animate-spin text-gray-600 dark:text-gray-400" />
+                    <Loader2 className="w-6 h-6 animate-spin text-gray-600 dark:text-lia-text-tertiary" />
                   </div>
                 ) : emailTemplate ? (
                   <div className="space-y-2">
@@ -188,10 +188,10 @@ export function InterviewSchedulingModal({
                       onChange={(e) =>
                         setEmailTemplate({ ...emailTemplate, subject: e.target.value })
                       }
-                      className="h-9 text-xs font-medium border-gray-200 focus:ring-gray-400 focus:border-gray-400 bg-gray-50 text-gray-800"
+                      className="h-9 text-xs font-medium border-lia-border-subtle focus:ring-gray-400 focus:border-gray-400 bg-gray-50 lia-text-strong"
                     />
                     <div
-                      className="p-3 rounded-md border border-gray-200 text-xs overflow-y-auto max-h-[200px] bg-gray-50 text-gray-600"
+                      className="p-3 rounded-md border border-lia-border-subtle text-xs overflow-y-auto max-h-[200px] bg-gray-50 lia-text-base"
                       dangerouslySetInnerHTML={{ __html: emailTemplate.body }}
                     />
                   </div>
@@ -201,7 +201,7 @@ export function InterviewSchedulingModal({
               </div>
 
               <div className="space-y-3">
-                <Label className="text-xs font-medium text-gray-800 dark:text-gray-200">
+                <Label className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">
                   Quando agendar?
                 </Label>
                 <Input
@@ -215,9 +215,9 @@ export function InterviewSchedulingModal({
                     }
                   }}
                   disabled={isScheduling}
-                  className="h-9 text-xs border-gray-200 focus:ring-gray-400 focus:border-gray-400 bg-gray-50 text-gray-800"
+                  className="h-9 text-xs border-lia-border-subtle focus:ring-gray-400 focus:border-gray-400 bg-gray-50 lia-text-strong"
                 />
-                <p className="text-xs text-gray-500">
+                <p className="text-xs lia-text-secondary">
                   Use linguagem natural: "amanhã às 14h comigo" ou "próxima segunda 10h"
                 </p>
               </div>
@@ -238,19 +238,19 @@ export function InterviewSchedulingModal({
                 </div>
               )}
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                 <Button
                   variant="outline"
                   onClick={() => onOpenChange(false)}
                   disabled={isScheduling}
-                  className="h-9 px-4 text-xs font-medium border-gray-200 text-gray-700 hover:bg-gray-50"
+                  className="h-9 px-4 text-xs font-medium border-lia-border-subtle lia-text-base hover:bg-gray-50"
                 >
                   Cancelar
                 </Button>
                 <Button
                   onClick={handleSchedule}
                   disabled={isScheduling || !schedulingPrompt.trim()}
-                  className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                  className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
                 >
                   {isScheduling ? (
                     <>

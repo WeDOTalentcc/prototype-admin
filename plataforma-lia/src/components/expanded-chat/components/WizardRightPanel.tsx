@@ -357,7 +357,7 @@ export function WizardRightPanel({
   return (
     <div
       ref={resizeRef}
-      className="flex flex-col rounded-md flex-shrink-0 m-3 ml-0 relative bg-gray-50 border border-gray-200"
+      className="flex flex-col rounded-md flex-shrink-0 m-3 ml-0 relative bg-gray-50 border border-lia-border-subtle"
       style={{width: `${panelWidth}%`}}
     >
       {/* Resize Handle - cursor change only, no visual indicator */}
@@ -401,18 +401,18 @@ export function WizardRightPanel({
       <div className="flex-1 overflow-y-auto p-4 relative">
         {/* Loading Overlay during stage transitions */}
         {stageTransition === 'loading' && (
-          <div className="absolute inset-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center gap-4">
+          <div className="absolute inset-0 bg-white/90 dark:bg-lia-bg-primary/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center gap-4">
             <div className="relative">
-              <div className="w-12 h-12 rounded-full border-3 border-gray-300 dark:border-gray-600 border-t-gray-300 dark:border-t-gray-600 animate-spin" />
+              <div className="w-12 h-12 rounded-full border-3 border-lia-border-default dark:border-lia-border-default border-t-gray-300 dark:border-t-gray-600 animate-spin" />
               <div className="absolute inset-0 flex items-center justify-center">
                 <Brain className="w-5 h-5 text-chat-cyan" />
               </div>
             </div>
             <div className="text-center">
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <p className="text-sm font-medium text-gray-700 dark:text-lia-text-secondary">
                 LIA está analisando...
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs text-gray-500 dark:text-lia-text-tertiary mt-1">
                 Preparando sugestões personalizadas
               </p>
             </div>
@@ -572,7 +572,7 @@ export function WizardRightPanel({
       </div>
 
       {/* Navigation Buttons */}
-      <div className="px-4 py-3 bg-white dark:bg-gray-950 rounded-b-md">
+      <div className="px-4 py-3 bg-white rounded-b-md">
         {currentStage === 'search-calibration' ? (
           <SearchCalibrationNavButtons
             calibrationCandidates={calibrationCandidates}
@@ -583,11 +583,11 @@ export function WizardRightPanel({
             onSetShowCalibrationModal={onSetShowCalibrationModal}
           />
         ) : currentStage === 'input-evaluation' ? (
-          <div className="text-center text-micro text-gray-500 dark:text-gray-400">
+          <div className="text-center text-micro text-gray-500 dark:text-lia-text-tertiary">
             Continue descrevendo a vaga para detectar mais critérios
           </div>
         ) : currentStage === 'jd-enrichment' ? (
-          <div className="text-center text-micro text-gray-500 dark:text-gray-400">
+          <div className="text-center text-micro text-gray-500 dark:text-lia-text-tertiary">
             Revise as sugestões no chat e responda o que deseja aceitar ou modificar
           </div>
         ) : (
@@ -595,7 +595,7 @@ export function WizardRightPanel({
             {currentStageIndex > 0 && (
               <Button
                 variant="outline"
-                className="flex-1 h-9 rounded-md text-xs font-medium border-gray-200 text-gray-600 hover:border-gray-900 dark:hover:border-gray-50 hover:text-gray-900 dark:hover:text-gray-50"
+                className="flex-1 h-9 rounded-md text-xs font-medium border-lia-border-subtle lia-text-base hover:border-gray-900 dark:hover:border-gray-50 hover:lia-text-strong dark:hover:lia-text-subtle"
                 onClick={onGoToPreviousStage}
                 aria-label="Voltar para etapa anterior"
               >
@@ -607,13 +607,13 @@ export function WizardRightPanel({
             {currentStage !== 'salary' && currentStage !== 'competencies' && (
               <Button
                 className={cn(
-                  "flex-1 h-9 rounded-md text-xs font-semibold transition-all",
+ "flex-1 h-9 rounded-md text-xs font-semibold transition-colors",
                   currentStageIndex === 0 ? "w-full" : "",
                   currentStage === 'review-publish'
-                    ? "bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900"
+                    ? "bg-gray-900 text-white"
                     : canAdvanceToNextStage()
-                      ? "bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900"
-                      : "bg-gray-200 text-gray-400 dark:bg-gray-800 dark:text-gray-600"
+                      ? "bg-gray-900 text-white"
+                      : "bg-gray-200 text-gray-400 dark:bg-lia-bg-secondary"
                 )}
                 disabled={!canAdvanceToNextStage()}
                 onClick={currentStage === 'review-publish' ? onPublishJob : onGoToNextStage}

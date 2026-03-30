@@ -97,9 +97,9 @@ export function LanguagesPanel({
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-md dark:bg-gray-800 dark:border-gray-700">
-        <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
-          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-gray-100 text-lia-text-primary">
+      <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-lia-text-primary text-lia-text-primary">
             🌍 Idiomas Requeridos
           </CardTitle>
         </CardHeader>
@@ -110,23 +110,23 @@ export function LanguagesPanel({
           />
 
           {languages.length === 0 ? (
-            <div className="text-center py-8 text-sm dark:text-gray-400 text-lia-text-tertiary">
+            <div className="text-center py-8 text-sm dark:text-lia-text-tertiary text-lia-text-tertiary">
               Nenhum idioma adicionado.
               <br />
               Use o campo acima para adicionar.
             </div>
           ) : (
-            <div className="rounded-md overflow-hidden dark:border-gray-700 border border-lia-border-subtle">
+            <div className="rounded-md overflow-hidden dark:border-lia-border-subtle border border-lia-border-subtle">
               <table className="w-full">
                 <thead className="bg-lia-bg-secondary">
                   <tr>
-                    <th className="text-left px-3 py-2 text-xs font-medium dark:text-gray-400 text-lia-text-secondary">
+                    <th className="text-left px-3 py-2 text-xs font-medium dark:text-lia-text-tertiary text-lia-text-secondary">
                       Idioma
                     </th>
-                    <th className="text-left px-3 py-2 text-xs font-medium w-36 dark:text-gray-400 text-lia-text-secondary">
+                    <th className="text-left px-3 py-2 text-xs font-medium w-36 dark:text-lia-text-tertiary text-lia-text-secondary">
                       Nível
                     </th>
-                    <th className="text-center px-3 py-2 text-xs font-medium w-24 dark:text-gray-400 text-lia-text-secondary">
+                    <th className="text-center px-3 py-2 text-xs font-medium w-24 dark:text-lia-text-tertiary text-lia-text-secondary">
                       Obrigatório?
                     </th>
                     <th className="w-10"></th>
@@ -143,7 +143,7 @@ export function LanguagesPanel({
                       <td className="px-3 py-2">
                         <div className="flex items-center gap-2">
                           <span className="text-lg">{getFlag(lang.code)}</span>
-                          <span className="text-sm font-medium dark:text-gray-100 text-lia-text-primary">{lang.name}</span>
+                          <span className="text-sm font-medium dark:text-lia-text-primary text-lia-text-primary">{lang.name}</span>
                           {lang.required && (
                             <Badge
                               variant="secondary"
@@ -161,7 +161,7 @@ export function LanguagesPanel({
                             handleUpdateLevel(lang.id, value as LanguageLevel)
                           }
                         >
-                          <SelectTrigger className="h-8 text-xs dark:bg-gray-900 dark:border-gray-700">
+                          <SelectTrigger className="h-8 text-xs dark:bg-lia-bg-primary dark:border-lia-border-subtle">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -193,7 +193,7 @@ export function LanguagesPanel({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7 dark:text-gray-400 dark:hover:bg-gray-700"
+                          className="h-7 w-7 dark:text-lia-text-tertiary dark:hover:bg-gray-700"
                           onClick={() => handleRemoveLanguage(lang.id)}
                         >
                           <X className="h-4 w-4" />
@@ -208,14 +208,14 @@ export function LanguagesPanel({
         </CardContent>
       </Card>
 
-      <Card className="rounded-md dark:bg-gray-800 dark:border-gray-700">
-        <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
-          <CardTitle className="text-sm font-sans dark:text-gray-100 text-lia-text-primary">📊 Resumo</CardTitle>
+      <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+          <CardTitle className="text-sm font-sans dark:text-lia-text-primary text-lia-text-primary">📊 Resumo</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
             {languages.length === 0 ? (
-              <span className="text-sm dark:text-gray-400 text-lia-text-tertiary">
+              <span className="text-sm dark:text-lia-text-tertiary text-lia-text-tertiary">
                 Nenhum idioma adicionado ainda.
               </span>
             ) : (
@@ -223,7 +223,7 @@ export function LanguagesPanel({
                 <Badge
                   key={lang.id}
                   variant="outline"
-                  className="text-xs dark:border-gray-600 dark:text-gray-300 text-lia-text-secondary"
+                  className="text-xs dark:border-lia-border-default dark:text-lia-text-secondary text-lia-text-secondary"
                   style={{borderColor: lang.required ? 'var(--lia-border-default)' : 'var(--lia-border-subtle)',
                     backgroundColor: lang.required ? 'var(--lia-bg-secondary)' : 'transparent'}}
                 >
@@ -232,7 +232,7 @@ export function LanguagesPanel({
               ))
             )}
           </div>
-          <div className="mt-3 text-xs dark:text-gray-400 text-lia-text-tertiary">
+          <div className="mt-3 text-xs dark:text-lia-text-tertiary text-lia-text-tertiary">
             {languages.filter((l) => l.required).length} obrigatórios,{" "}
             {languages.filter((l) => !l.required).length} desejáveis
           </div>
@@ -242,7 +242,7 @@ export function LanguagesPanel({
       <Button
         onClick={handleSubmit}
         disabled={isLoading}
-        className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+        className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
         size="lg"
       >
         {isLoading ? (
@@ -338,14 +338,14 @@ function LanguageAutocomplete({
             onFocus={() => setShowSuggestions(true)}
             onKeyDown={handleKeyDown}
             placeholder="Buscar idioma..."
-            className="pl-9 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
+            className="pl-9 dark:bg-lia-bg-primary dark:border-lia-border-subtle dark:text-lia-text-primary"
           />
         </div>
         <Button
           type="button"
           variant="outline"
           size="icon"
-          className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+          className="dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-700"
           onClick={() => {
             if (availableLanguages[0]) {
               handleAdd(availableLanguages[0])
@@ -360,7 +360,7 @@ function LanguageAutocomplete({
       {showSuggestions && availableLanguages.length > 0 && (
         <div
           ref={suggestionsRef}
-          className="absolute z-50 top-full left-0 right-0 mt-1 rounded-md max-h-48 overflow-auto dark:bg-gray-800 dark:border-gray-700 bg-lia-bg-primary border border-lia-border-subtle"
+          className="absolute z-50 top-full left-0 right-0 mt-1 rounded-md max-h-48 overflow-auto dark:bg-lia-bg-secondary dark:border-lia-border-subtle bg-lia-bg-primary border border-lia-border-subtle"
         >
           {availableLanguages.slice(0, 10).map((lang, index) => (
             <button
@@ -372,7 +372,7 @@ function LanguageAutocomplete({
               onMouseEnter={() => setSelectedIndex(index)}
             >
               <span className="text-lg">{lang.flag}</span>
-              <span className="dark:text-gray-100">{lang.name}</span>
+              <span className="dark:text-lia-text-primary">{lang.name}</span>
             </button>
           ))}
         </div>

@@ -270,7 +270,7 @@ export function useKanbanTableView({
     dynamicStages.map(stage => ({
       id: stage.id, title: stage.displayName,
       count: candidatesData[stage.id]?.length || 0,
-      color: 'bg-gray-50 border-gray-200', stageColor: stage.color
+      color: 'bg-gray-50 border-lia-border-subtle', stageColor: stage.color
     })),
     [dynamicStages, candidatesData]
   )

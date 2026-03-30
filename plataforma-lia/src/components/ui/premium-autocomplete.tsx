@@ -26,8 +26,8 @@ const CATEGORY_CONFIG = {
   recent: {
     label: "Recentes",
     icon: Clock,
-    color: "text-gray-600 dark:text-gray-400",
-    bgColor: "bg-gray-100 dark:bg-gray-800",
+    color: "text-gray-600 dark:text-lia-text-tertiary",
+    bgColor: "bg-gray-100 dark:bg-lia-bg-secondary",
   },
   popular: {
     label: "Populares na empresa",
@@ -156,7 +156,7 @@ export function PremiumAutocomplete({
     <div
       ref={containerRef}
       className={cn(
-        "absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md overflow-hidden",
+ "absolute z-50 w-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-md overflow-hidden",
         className
       )}
     >
@@ -170,7 +170,7 @@ export function PremiumAutocomplete({
           <div key={category}>
             <div
               className={cn(
-                "flex items-center gap-2 px-3 py-1.5 text-micro font-medium uppercase tracking-wide",
+ "flex items-center gap-2 px-3 py-1.5 text-micro font-medium uppercase tracking-wide",
                 config.bgColor,
                 config.color
               )}
@@ -192,18 +192,18 @@ export function PremiumAutocomplete({
                     onClose()
                   }}
                   className={cn(
-                    "w-full flex items-center justify-between px-3 py-2 text-left text-sm transition-colors",
+ "w-full flex items-center justify-between px-3 py-2 text-left text-sm transition-colors",
                     isSelected
                       ? "bg-gray-100 text-gray-950"
-                      : "text-gray-800 dark:text-gray-200 hover:bg-gray-50"
+                      : "text-gray-800 dark:text-lia-text-primary hover:bg-gray-50"
                   )}
                 >
                   <div className="flex items-center gap-2">
-                    <Search className="h-3.5 w-3.5 text-gray-400" />
+                    <Search className="h-3.5 w-3.5 lia-text-secondary" />
                     <span>{suggestion.text}</span>
                   </div>
                   {suggestion.count && (
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs lia-text-secondary">
                       {suggestion.count}x
                     </span>
                   )}

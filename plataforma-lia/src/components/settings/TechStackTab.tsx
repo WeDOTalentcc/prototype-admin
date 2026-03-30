@@ -46,7 +46,7 @@ export function TechStackTab({
     <Card className={cardStyles.default}>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+          <CardTitle className="flex items-center gap-2 text-sm font-semibold lia-text-900 dark:text-lia-text-primary">
             <Code className="w-4 h-4" />
             Tech Stack por Categoria
           </CardTitle>
@@ -70,7 +70,7 @@ export function TechStackTab({
           return (
             <div
               key={category.key}
-              className="border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden"
+              className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md overflow-hidden"
             >
               <button
                 type="button"
@@ -101,7 +101,7 @@ export function TechStackTab({
               </button>
 
               {isExpanded && (
-                <div className="p-3 bg-white dark:bg-gray-800 space-y-3">
+                <div className="p-3 bg-white dark:bg-lia-bg-secondary space-y-3">
                   {categoryTechs.length > 0 && (
                     <div className="flex flex-wrap gap-1.5">
                       {categoryTechs.map((tech, idx) => (
@@ -138,7 +138,7 @@ export function TechStackTab({
                             if (!isEditingCompanyData) return;
                             addTechToCategory(category.key, suggestion);
                           }}
-                          className={`text-micro px-2 py-1 border border-dashed border-gray-300 dark:border-gray-600 rounded-full text-gray-500 dark:text-gray-400 hover:border-gray-400 hover:text-gray-700 dark:hover:border-gray-500 dark:hover:text-gray-300 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
+                          className={`text-micro px-2 py-1 border border-dashed border-lia-border-default dark:border-lia-border-default rounded-full lia-text-500 dark:text-lia-text-tertiary hover:border-gray-400 hover:lia-text-700 dark:hover:border-gray-500 dark:hover:lia-text-300 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
                         >
                           + {suggestion}
                         </button>
@@ -149,7 +149,7 @@ export function TechStackTab({
                     type="text"
                     placeholder={`Adicionar ${category.label.toLowerCase()} personalizada...`}
                     disabled={!isEditingCompanyData}
-                    className={`w-full px-3 py-2 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    className={`w-full px-3 py-2 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && e.currentTarget.value.trim()) {
                         e.preventDefault();
@@ -165,7 +165,7 @@ export function TechStackTab({
         })}
 
         {techStackByCategory["outros"] && techStackByCategory["outros"].length > 0 && (
-          <div className="border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden">
+          <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md overflow-hidden">
             <button
               type="button"
               onClick={() =>
@@ -174,7 +174,7 @@ export function TechStackTab({
                   outros: !prev.outros,
                 }))
               }
-              className="w-full flex items-center justify-between px-3 py-2.5 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 hover:opacity-90 transition-opacity"
+              className="w-full flex items-center justify-between px-3 py-2.5 bg-gray-100 lia-text-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary hover:opacity-90 transition-opacity"
             >
               <div className="flex items-center gap-2">
                 <Code className="w-4 h-4" />
@@ -191,12 +191,12 @@ export function TechStackTab({
             </button>
 
             {expandedCategories.outros && (
-              <div className="p-3 bg-white dark:bg-gray-800 space-y-3">
+              <div className="p-3 bg-white dark:bg-lia-bg-secondary space-y-3">
                 <div className="flex flex-wrap gap-1.5">
                   {techStackByCategory["outros"].map((tech, idx) => (
                     <Badge
                       key={idx}
-                      className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2.5 py-1 rounded-full"
+                      className="bg-gray-100 dark:bg-lia-bg-elevated lia-text-800 dark:text-lia-text-primary text-xs px-2.5 py-1 rounded-full"
                     >
                       {tech}
                       {isEditingCompanyData && (
@@ -215,7 +215,7 @@ export function TechStackTab({
                   type="text"
                   placeholder="Adicionar tecnologia..."
                   disabled={!isEditingCompanyData}
-                  className={`w-full px-3 py-2 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
+                  className={`w-full px-3 py-2 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && e.currentTarget.value.trim()) {
                       e.preventDefault();
@@ -229,8 +229,8 @@ export function TechStackTab({
           </div>
         )}
 
-        <div className="border-t border-gray-100 dark:border-gray-800 pt-4">
-          <label className="flex items-center gap-3 text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+        <div className="border-t border-lia-border-subtle dark:lia-border-800 pt-4">
+          <label className="flex items-center gap-3 text-xs font-medium lia-text-600 dark:text-lia-text-tertiary mb-2">
             <span className="flex items-center gap-1">
               <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
               Cultura de Engenharia
@@ -254,7 +254,7 @@ export function TechStackTab({
                 engineering_culture: e.target.value,
               }))
             }
-            className={`w-full px-3 py-2 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed bg-gray-50 dark:bg-gray-900' : ''}`}
+            className={`w-full px-3 py-2 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed bg-gray-50 dark:bg-lia-bg-primary' : ''}`}
             rows={3}
             placeholder="Descreva a cultura de engenharia da empresa (metodologias, práticas de desenvolvimento, ambiente de trabalho técnico)..."
           />

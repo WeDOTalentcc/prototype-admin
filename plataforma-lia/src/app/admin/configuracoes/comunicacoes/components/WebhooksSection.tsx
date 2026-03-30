@@ -82,7 +82,7 @@ export function WebhooksSection({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400" >
+          <h3 className="text-sm font-medium lia-text-500 dark:text-lia-text-tertiary" >
             Webhooks Configurados ({webhooks.length})
           </h3>
           <Button
@@ -96,7 +96,7 @@ export function WebhooksSection({
         </div>
         <Button
           size="sm"
-          className="bg-gray-900 dark:bg-gray-50 hover:bg-gray-800 dark:hover:bg-gray-200"
+          className="bg-gray-900 dark:lia-bg-50 hover:bg-gray-800 dark:hover:bg-gray-200"
           onClick={handleCreateWebhook}
           disabled={webhooksLoading}
         >
@@ -107,8 +107,8 @@ export function WebhooksSection({
 
       {webhooksLoading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-gray-700 dark:text-gray-300" />
-          <span className="ml-3 text-sm text-gray-500 dark:text-gray-400" >
+          <Loader2 className="w-8 h-8 animate-spin lia-text-700 dark:text-lia-text-secondary" />
+          <span className="ml-3 text-sm lia-text-500 dark:text-lia-text-tertiary" >
             Carregando webhooks...
           </span>
         </div>
@@ -127,7 +127,7 @@ export function WebhooksSection({
                     </Button>
                     <Button 
                       size="sm" 
-                      className="bg-gray-900 dark:bg-gray-50 hover:bg-gray-800 dark:hover:bg-gray-200" 
+                      className="bg-gray-900 dark:lia-bg-50 hover:bg-gray-800 dark:hover:bg-gray-200" 
                       onClick={handleSaveWebhook}
                       disabled={savingWebhook || !editingWebhook.name || !editingWebhook.url}
                     >
@@ -144,7 +144,7 @@ export function WebhooksSection({
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-medium text-gray-500 dark:text-gray-400" >Nome *</label>
+                    <label className="text-xs font-medium lia-text-500 dark:text-lia-text-tertiary" >Nome *</label>
                     <Input
                       value={editingWebhook.name}
                       onChange={(e) => setEditingWebhook({ ...editingWebhook, name: e.target.value })}
@@ -152,7 +152,7 @@ export function WebhooksSection({
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-gray-500 dark:text-gray-400" >URL do Endpoint *</label>
+                    <label className="text-xs font-medium lia-text-500 dark:text-lia-text-tertiary" >URL do Endpoint *</label>
                     <Input
                       value={editingWebhook.url}
                       onChange={(e) => setEditingWebhook({ ...editingWebhook, url: e.target.value })}
@@ -161,7 +161,7 @@ export function WebhooksSection({
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-500 dark:text-gray-400" >Descrição</label>
+                  <label className="text-xs font-medium lia-text-500 dark:text-lia-text-tertiary" >Descrição</label>
                   <Textarea
                     value={editingWebhook.description || ''}
                     onChange={(e) => setEditingWebhook({ ...editingWebhook, description: e.target.value })}
@@ -170,11 +170,11 @@ export function WebhooksSection({
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium mb-2 block text-gray-500 dark:text-gray-400" >
+                  <label className="text-xs font-medium mb-2 block lia-text-500 dark:text-lia-text-tertiary" >
                     Eventos ({editingWebhook.events.length} selecionados)
                   </label>
                   {availableEvents.length > 0 ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-48 overflow-y-auto p-2 border rounded-md border-gray-200 dark:border-gray-700" >
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-48 overflow-y-auto p-2 border rounded-md border-lia-border-subtle dark:border-lia-border-subtle" >
                       {availableEvents.map(event => (
                         <label
                           key={event.name}
@@ -186,7 +186,7 @@ export function WebhooksSection({
                             onChange={() => handleToggleWebhookEvent(event.name)}
                             className="rounded-md"
                           />
-                          <span className="text-gray-800 dark:text-gray-100" >{event.name}</span>
+                          <span className="lia-text-800 dark:text-lia-text-primary" >{event.name}</span>
                         </label>
                       ))}
                     </div>
@@ -203,7 +203,7 @@ export function WebhooksSection({
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-medium text-gray-500 dark:text-gray-400" >Retry Count</label>
+                    <label className="text-xs font-medium lia-text-500 dark:text-lia-text-tertiary" >Retry Count</label>
                     <Input
                       type="number"
                       min={0}
@@ -213,7 +213,7 @@ export function WebhooksSection({
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-gray-500 dark:text-gray-400" >Timeout (segundos)</label>
+                    <label className="text-xs font-medium lia-text-500 dark:text-lia-text-tertiary" >Timeout (segundos)</label>
                     <Input
                       type="number"
                       min={5}
@@ -224,13 +224,13 @@ export function WebhooksSection({
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-medium mb-2 block text-gray-500 dark:text-gray-400" >
+                  <label className="text-xs font-medium mb-2 block lia-text-500 dark:text-lia-text-tertiary" >
                     Headers Customizados
                   </label>
                   {editingWebhook.headers && Object.keys(editingWebhook.headers).length > 0 && (
                     <div className="space-y-1 mb-2">
                       {Object.entries(editingWebhook.headers).map(([key, value]) => (
-                        <div key={key} className="flex items-center gap-2 text-xs p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
+                        <div key={key} className="flex items-center gap-2 text-xs p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                           <code className="flex-1">{key}: {value}</code>
                           <Button size="sm" variant="ghost" onClick={() => handleRemoveWebhookHeader(key)}>
                             <X className="w-3 h-3" />
@@ -262,7 +262,7 @@ export function WebhooksSection({
                     checked={editingWebhook.isActive}
                     onCheckedChange={(checked: boolean) => setEditingWebhook({ ...editingWebhook, isActive: checked })}
                   />
-                  <span className="text-sm text-gray-500 dark:text-gray-400" >Ativo</span>
+                  <span className="text-sm lia-text-500 dark:text-lia-text-tertiary" >Ativo</span>
                 </div>
               </CardContent>
             </Card>
@@ -270,16 +270,16 @@ export function WebhooksSection({
 
           {webhooks.length === 0 && !editingWebhook ? (
             <Card className="flex flex-col items-center justify-center py-12">
-              <Webhook className="w-12 h-12 mb-3 text-gray-400 dark:text-gray-500"  />
-              <p className="text-sm font-medium mb-1 text-gray-500 dark:text-gray-400" >
+              <Webhook className="w-12 h-12 mb-3 lia-text-400 dark:lia-text-500"  />
+              <p className="text-sm font-medium mb-1 lia-text-500 dark:text-lia-text-tertiary" >
                 Nenhum webhook configurado
               </p>
-              <p className="text-xs mb-4 text-gray-400 dark:text-gray-500" >
+              <p className="text-xs mb-4 lia-text-400 dark:lia-text-500" >
                 Configure webhooks para receber notificações de eventos em tempo real
               </p>
               <Button
                 size="sm"
-                className="bg-gray-900 dark:bg-gray-50 hover:bg-gray-800 dark:hover:bg-gray-200"
+                className="bg-gray-900 dark:lia-bg-50 hover:bg-gray-800 dark:hover:bg-gray-200"
                 onClick={handleCreateWebhook}
               >
                 <Plus className="w-4 h-4 mr-2" />
@@ -294,8 +294,8 @@ export function WebhooksSection({
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <Webhook className={`w-4 h-4 ${webhook.isActive ? 'text-gray-950' : 'text-gray-400 dark:text-gray-500'}`} />
-                          <h4 className="font-medium text-sm text-gray-800 dark:text-gray-100" >
+                          <Webhook className={`w-4 h-4 ${webhook.isActive ? 'lia-text-950' : 'lia-text-400 dark:lia-text-500'}`} />
+                          <h4 className="font-medium text-sm lia-text-800 dark:text-lia-text-primary" >
                             {webhook.name}
                           </h4>
                           <Badge variant={webhook.isActive ? 'default' : 'secondary'} className="text-xs">
@@ -303,11 +303,11 @@ export function WebhooksSection({
                           </Badge>
                         </div>
                         {webhook.description && (
-                          <p className="text-xs mb-1 text-gray-500 dark:text-gray-400" >
+                          <p className="text-xs mb-1 lia-text-500 dark:text-lia-text-tertiary" >
                             {webhook.description}
                           </p>
                         )}
-                        <p className="text-xs mb-2 font-mono text-gray-400 dark:text-gray-500" >
+                        <p className="text-xs mb-2 font-mono lia-text-400 dark:lia-text-500" >
                           {webhook.url}
                         </p>
                         <div className="flex flex-wrap gap-1 mb-2">
@@ -322,7 +322,7 @@ export function WebhooksSection({
                             </Badge>
                           )}
                         </div>
-                        <div className="flex items-center gap-4 text-xs text-gray-400 dark:text-gray-500" >
+                        <div className="flex items-center gap-4 text-xs lia-text-400 dark:lia-text-500" >
                           <span className="flex items-center gap-1">
                             <Activity className="w-3 h-3" />
                             {webhook.successRate}% sucesso
@@ -384,7 +384,7 @@ export function WebhooksSection({
                       </div>
                     </div>
                     {showWebhookSecret === webhook.id && webhook.secret && (
-                      <div className="mt-3 p-2 bg-gray-50 dark:bg-gray-800 rounded-md flex items-center justify-between">
+                      <div className="mt-3 p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md flex items-center justify-between">
                         <code className="text-xs">{webhook.secret}</code>
                         <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard.writeText(webhook.secret); toast.success('Secret copiado!') }}>
                           <Copy className="w-3 h-3" />
@@ -413,15 +413,15 @@ export function WebhooksSection({
                 <CardContent className="overflow-y-auto max-h-[60vh]">
                   {webhookLogsLoading ? (
                     <div className="flex items-center justify-center py-8">
-                      <Loader2 className="w-6 h-6 animate-spin text-gray-700 dark:text-gray-300" />
-                      <span className="ml-2 text-sm text-gray-500 dark:text-gray-400" >
+                      <Loader2 className="w-6 h-6 animate-spin lia-text-700 dark:text-lia-text-secondary" />
+                      <span className="ml-2 text-sm lia-text-500 dark:text-lia-text-tertiary" >
                         Carregando logs...
                       </span>
                     </div>
                   ) : webhookLogs.length === 0 ? (
                     <div className="text-center py-8">
-                      <FileText className="w-10 h-10 mx-auto mb-2 text-gray-400 dark:text-gray-500"  />
-                      <p className="text-sm text-gray-500 dark:text-gray-400" >
+                      <FileText className="w-10 h-10 mx-auto mb-2 lia-text-400 dark:lia-text-500"  />
+                      <p className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
                         Nenhum log de entrega encontrado
                       </p>
                     </div>
@@ -430,7 +430,7 @@ export function WebhooksSection({
                       {webhookLogs.map((log: WebhookLog) => (
                         <div
                           key={log.id}
-                          className="p-3 rounded-md border text-sm border-gray-200 dark:border-gray-700"
+                          className="p-3 rounded-md border text-sm border-lia-border-subtle dark:border-lia-border-subtle"
                           
                         >
                           <div className="flex items-center justify-between mb-2">
@@ -446,30 +446,30 @@ export function WebhooksSection({
                               >
                                 {log.status === 'success' ? 'Sucesso' : log.status === 'failed' ? 'Falha' : 'Pendente'}
                               </Badge>
-                              <span className="text-gray-800 dark:text-gray-100" >{log.event_type}</span>
+                              <span className="lia-text-800 dark:text-lia-text-primary" >{log.event_type}</span>
                             </div>
-                            <span className="text-xs text-gray-400 dark:text-gray-500" >
+                            <span className="text-xs lia-text-400 dark:lia-text-500" >
                               {new Date(log.created_at).toLocaleString('pt-BR')}
                             </span>
                           </div>
                           <div className="grid grid-cols-2 gap-2 text-xs">
                             {log.response_status && (
                               <div>
-                                <span className="text-gray-500 dark:text-gray-400" >Status HTTP: </span>
-                                <span className="text-gray-800 dark:text-gray-100" >{log.response_status}</span>
+                                <span className="lia-text-500 dark:text-lia-text-tertiary" >Status HTTP: </span>
+                                <span className="lia-text-800 dark:text-lia-text-primary" >{log.response_status}</span>
                               </div>
                             )}
                             <div>
-                              <span className="text-gray-500 dark:text-gray-400" >Tentativas: </span>
-                              <span className="text-gray-800 dark:text-gray-100" >{log.attempts}</span>
+                              <span className="lia-text-500 dark:text-lia-text-tertiary" >Tentativas: </span>
+                              <span className="lia-text-800 dark:text-lia-text-primary" >{log.attempts}</span>
                             </div>
                           </div>
                           {log.response_body && (
                             <details className="mt-2">
-                              <summary className="text-xs cursor-pointer text-gray-500 dark:text-gray-400" >
+                              <summary className="text-xs cursor-pointer lia-text-500 dark:text-lia-text-tertiary" >
                                 Ver resposta
                               </summary>
-                              <pre className="mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded-md text-xs overflow-x-auto">
+                              <pre className="mt-1 p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md text-xs overflow-x-auto">
                                 {log.response_body}
                               </pre>
                             </details>

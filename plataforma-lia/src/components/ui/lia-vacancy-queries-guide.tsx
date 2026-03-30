@@ -105,9 +105,9 @@ export function LiaVacancyQueriesGuide({
         <PopoverTrigger asChild>
           <button
             className={cn(
-              "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full border transition-all font-medium",
-              "hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-gray-800/50",
-              isOpen && "border-gray-900 dark:border-gray-50 bg-gray-50 dark:bg-gray-800/50",
+ "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full border transition-[width,height] font-medium",
+              "hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50",
+              isOpen && "border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50",
               className
             )}
             style={{borderColor: isOpen ? 'var(--gray-950)' : 'var(--gray-200)'}}
@@ -131,13 +131,13 @@ export function LiaVacancyQueriesGuide({
             style={{backgroundColor: 'var(--gray-100)',
               border: '1px solid var(--gray-200)'}}
           >
-            <Search className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+            <Search className="w-3.5 h-3.5 lia-text-secondary flex-shrink-0" />
             <input
               type="text"
               placeholder="Buscar sugestão..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1 bg-transparent text-xs outline-none placeholder:text-gray-400"
+              className="flex-1 bg-transparent text-xs outline-none placeholder:lia-text-secondary"
               style={{color: 'var(--gray-950)'}}
               autoFocus
             />
@@ -147,7 +147,7 @@ export function LiaVacancyQueriesGuide({
                 className="p-0.5 rounded-full hover:bg-gray-200 transition-colors"
                 aria-label="Limpar busca"
               >
-                <X className="w-3 h-3 text-gray-400" />
+                <X className="w-3 h-3 lia-text-secondary" />
               </button>
             )}
           </div>
@@ -157,10 +157,10 @@ export function LiaVacancyQueriesGuide({
           <button
             onClick={() => setActiveCategory(null)}
             className={cn(
-              "px-2 py-1 rounded-full text-micro font-medium transition-all whitespace-nowrap",
+ "px-2 py-1 rounded-full text-micro font-medium transition-[width,height] whitespace-nowrap",
               !activeCategory 
-                ? "bg-gray-900 dark:bg-gray-50 text-white" 
-                : "bg-gray-100 text-gray-500 hover:bg-gray-200 border border-gray-200"
+                ? "bg-gray-900 text-white" 
+                : "bg-gray-100 lia-text-secondary hover:bg-gray-200 border border-lia-border-subtle"
             )}
            
           >
@@ -171,10 +171,10 @@ export function LiaVacancyQueriesGuide({
               key={key}
               onClick={() => setActiveCategory(activeCategory === key ? null : key)}
               className={cn(
-                "inline-flex items-center gap-1 px-2 py-1 rounded-full text-micro font-medium transition-all whitespace-nowrap",
+ "inline-flex items-center gap-1 px-2 py-1 rounded-full text-micro font-medium transition-[width,height] whitespace-nowrap",
                 activeCategory === key 
-                  ? "bg-gray-900 dark:bg-gray-50 text-white" 
-                  : "bg-gray-100 text-gray-500 hover:bg-gray-200 border border-gray-200"
+                  ? "bg-gray-900 text-white" 
+                  : "bg-gray-100 lia-text-secondary hover:bg-gray-200 border border-lia-border-subtle"
               )}
              
             >
@@ -190,12 +190,12 @@ export function LiaVacancyQueriesGuide({
               <button
                 key={query.id}
                 onClick={() => handleSelectQuery(query.question)}
-                className="w-full px-2.5 py-2 text-left transition-all rounded-md group flex items-center gap-2"
+                className="w-full px-2.5 py-2 text-left transition-colors rounded-md group flex items-center gap-2"
                 style={{backgroundColor: 'var(--gray-50)',
                   border: '1px solid var(--gray-100)'}}
               >
                 <div className="p-1.5 rounded-md flex-shrink-0 bg-gray-900/[0.08]">
-                  <query.icon className="w-3 h-3 text-gray-600 dark:text-gray-400" />
+                  <query.icon className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
                 </div>
                 <span
                   className="text-xs leading-snug"
@@ -212,7 +212,7 @@ export function LiaVacancyQueriesGuide({
                   className="w-8 h-8 mx-auto mb-2 rounded-full flex items-center justify-center"
                   style={{backgroundColor: 'var(--gray-50)'}}
                 >
-                  <Search className="w-3.5 h-3.5 text-gray-300" />
+                  <Search className="w-3.5 h-3.5 lia-text-muted" />
                 </div>
                 <p
                   className="text-xs"

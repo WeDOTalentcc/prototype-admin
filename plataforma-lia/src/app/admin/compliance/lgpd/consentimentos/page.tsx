@@ -218,7 +218,7 @@ export default function ConsentimentosPage() {
       case 'expired':
         return <Badge className="bg-status-error/15 text-status-error hover:bg-status-error/15">Expirado</Badge>
       case 'renewed':
- return <Badge className="text-gray-900 dark:text-gray-50 hover:bg-gray-100">Renovado</Badge>
+ return <Badge className="lia-text-900 dark:lia-text-50 hover:bg-gray-100">Renovado</Badge>
       default:
         return <Badge>{eventType}</Badge>
     }
@@ -261,16 +261,16 @@ export default function ConsentimentosPage() {
             <div 
               className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
             >
-              <CheckSquare className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <CheckSquare className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+                className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary"
                 
               >
                 Gestão de Consentimentos
               </h1>
-              <p className="text-sm text-gray-400 dark:text-gray-500" >
+              <p className="text-sm lia-text-400 dark:lia-text-500" >
                 Ciclo de vida de consentimentos de titulares
               </p>
             </div>
@@ -293,13 +293,13 @@ export default function ConsentimentosPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
-                  <TrendingUp className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  <TrendingUp className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >
+                  <p className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary" >
                     {isLoading ? '...' : `${Math.round(taxaConsentimento)}%`}
                   </p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500" >Taxa de Consentimento</p>
+                  <p className="text-xs lia-text-400 dark:lia-text-500" >Taxa de Consentimento</p>
                 </div>
               </div>
             </CardContent>
@@ -312,10 +312,10 @@ export default function ConsentimentosPage() {
                   <CheckSquare className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >
+                  <p className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary" >
                     {isLoading ? '...' : totalActive.toLocaleString('pt-BR')}
                   </p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500" >Consentimentos Ativos</p>
+                  <p className="text-xs lia-text-400 dark:lia-text-500" >Consentimentos Ativos</p>
                 </div>
               </div>
             </CardContent>
@@ -328,10 +328,10 @@ export default function ConsentimentosPage() {
                   <RefreshCw className="w-5 h-5 text-status-warning" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >
+                  <p className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary" >
                     {isLoading ? '...' : totalPending}
                   </p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500" >Pendentes de Renovação</p>
+                  <p className="text-xs lia-text-400 dark:lia-text-500" >Pendentes de Renovação</p>
                 </div>
               </div>
             </CardContent>
@@ -344,10 +344,10 @@ export default function ConsentimentosPage() {
                   <XCircle className="w-5 h-5 text-status-error" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >
+                  <p className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary" >
                     {isLoading ? '...' : totalExpired}
                   </p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500" >Expirados</p>
+                  <p className="text-xs lia-text-400 dark:lia-text-500" >Expirados</p>
                 </div>
               </div>
             </CardContent>
@@ -360,10 +360,10 @@ export default function ConsentimentosPage() {
                   <Ban className="w-5 h-5 text-wedo-purple" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-gray-800 dark:text-gray-100" >
+                  <p className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary" >
                     {isLoading ? '...' : totalRevoked}
                   </p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500" >Revogados</p>
+                  <p className="text-xs lia-text-400 dark:lia-text-500" >Revogados</p>
                 </div>
               </div>
             </CardContent>
@@ -390,12 +390,12 @@ export default function ConsentimentosPage() {
             <Card >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between flex-wrap gap-4">
-                  <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
+                  <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
                     Versões de Termos de Consentimento
                   </CardTitle>
                   <div className="flex items-center gap-3">
                     <div className="relative w-64">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500"  />
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-400 dark:lia-text-500"  />
                       <Input
                         placeholder="Buscar termo..."
                         value={searchTerm}
@@ -421,13 +421,13 @@ export default function ConsentimentosPage() {
               <CardContent>
                 {isLoadingVersions ? (
                   <div className="flex items-center justify-center py-12">
-                    <Loader2 className="w-6 h-6 animate-spin text-gray-600 dark:text-gray-400" />
-                    <span className="ml-2 text-gray-500 dark:text-gray-400" >Carregando...</span>
+                    <Loader2 className="w-6 h-6 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+                    <span className="ml-2 lia-text-500 dark:text-lia-text-tertiary" >Carregando...</span>
                   </div>
                 ) : filteredVersions.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12">
-                    <AlertCircle className="w-12 h-12 text-gray-300 mb-4" />
-                    <p className="text-gray-500 dark:text-gray-400" >Nenhuma versão de termo encontrada</p>
+                    <AlertCircle className="w-12 h-12 lia-text-300 mb-4" />
+                    <p className="lia-text-500 dark:text-lia-text-tertiary" >Nenhuma versão de termo encontrada</p>
                     <Button variant="outline" className="mt-4" onClick={() => setIsCreateVersionModalOpen(true)}>
                       <Plus className="w-4 h-4 mr-2" />
                       Criar Primeira Versão
@@ -454,20 +454,20 @@ export default function ConsentimentosPage() {
                           <TableCell>
                             <div className="flex items-center gap-2">
                               <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-200/30">
-                                <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                                <FileText className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                               </div>
-                              <span className="font-medium text-gray-800 dark:text-gray-100" >
+                              <span className="font-medium lia-text-800 dark:text-lia-text-primary" >
                                 {CONSENT_TYPE_LABELS[version.consentType] || version.consentType}
                               </span>
                             </div>
                           </TableCell>
                           <TableCell className="text-center">
-                            <Badge variant={version.isCurrent ? "default" : "outline"} className={version.isCurrent ? "bg-gray-900 dark:bg-gray-50" : ""}>
+                            <Badge variant={version.isCurrent ? "default" : "outline"} className={version.isCurrent ? "bg-gray-900 dark:lia-bg-50" : ""}>
                               v{version.version}
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <span className="text-gray-500 dark:text-gray-400" >{version.title}</span>
+                            <span className="lia-text-500 dark:text-lia-text-tertiary" >{version.title}</span>
                           </TableCell>
                           <TableCell className="text-center">
                             <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15">
@@ -485,7 +485,7 @@ export default function ConsentimentosPage() {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <span className="text-gray-500 dark:text-gray-400" >
+                            <span className="lia-text-500 dark:text-lia-text-tertiary" >
                               {new Date(version.createdAt).toLocaleDateString('pt-BR')}
                             </span>
                           </TableCell>
@@ -493,9 +493,9 @@ export default function ConsentimentosPage() {
                             {version.isCurrent ? (
                               <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15">Atual</Badge>
                             ) : version.isActive ? (
- <Badge className="text-gray-900 dark:text-gray-50 hover:bg-gray-100">Ativo</Badge>
+ <Badge className="lia-text-900 dark:lia-text-50 hover:bg-gray-100">Ativo</Badge>
                             ) : (
-                              <Badge className="bg-gray-100 text-gray-800 dark:text-gray-200 hover:bg-gray-100">Inativo</Badge>
+                              <Badge className="bg-gray-100 lia-text-800 dark:text-lia-text-primary hover:bg-gray-100">Inativo</Badge>
                             )}
                           </TableCell>
                           <TableCell className="text-right">
@@ -532,14 +532,14 @@ export default function ConsentimentosPage() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between flex-wrap gap-4">
                   <div>
-                    <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
+                    <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
                       Eventos de Consentimento
                     </CardTitle>
                     <CardDescription>Registro de concessões, revogações e expirações</CardDescription>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="relative w-64">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500"  />
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-400 dark:lia-text-500"  />
                       <Input
                         placeholder="Buscar titular..."
                         value={searchTerm}
@@ -576,13 +576,13 @@ export default function ConsentimentosPage() {
               <CardContent>
                 {isLoadingEvents ? (
                   <div className="flex items-center justify-center py-12">
-                    <Loader2 className="w-6 h-6 animate-spin text-gray-600 dark:text-gray-400" />
-                    <span className="ml-2 text-gray-500 dark:text-gray-400" >Carregando...</span>
+                    <Loader2 className="w-6 h-6 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+                    <span className="ml-2 lia-text-500 dark:text-lia-text-tertiary" >Carregando...</span>
                   </div>
                 ) : filteredEvents.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12">
-                    <AlertCircle className="w-12 h-12 text-gray-300 mb-4" />
-                    <p className="text-gray-500 dark:text-gray-400" >Nenhum evento de consentimento encontrado</p>
+                    <AlertCircle className="w-12 h-12 lia-text-300 mb-4" />
+                    <p className="lia-text-500 dark:text-lia-text-tertiary" >Nenhum evento de consentimento encontrado</p>
                   </div>
                 ) : (
                   <Table>
@@ -602,12 +602,12 @@ export default function ConsentimentosPage() {
                       {filteredEvents.map((event) => (
                         <TableRow key={event.id} className="hover:bg-gray-50">
                           <TableCell>
-                            <span className="font-medium text-gray-800 dark:text-gray-100" >
+                            <span className="font-medium lia-text-800 dark:text-lia-text-primary" >
                               {event.subjectName || event.subjectIdentifier}
                             </span>
                           </TableCell>
                           <TableCell>
-                            <span className="text-gray-500 dark:text-gray-400" >
+                            <span className="lia-text-500 dark:text-lia-text-tertiary" >
                               {event.subjectEmail || '-'}
                             </span>
                           </TableCell>
@@ -621,7 +621,7 @@ export default function ConsentimentosPage() {
                           </TableCell>
                           <TableCell>{getEventStatusBadge(event.eventType)}</TableCell>
                           <TableCell>
-                            <span className="text-gray-500 dark:text-gray-400" >
+                            <span className="lia-text-500 dark:text-lia-text-tertiary" >
                               {new Date(event.createdAt).toLocaleDateString('pt-BR', {
                                 day: '2-digit',
                                 month: '2-digit',
@@ -632,7 +632,7 @@ export default function ConsentimentosPage() {
                             </span>
                           </TableCell>
                           <TableCell>
-                            <div className="text-xs text-gray-400 dark:text-gray-500" >
+                            <div className="text-xs lia-text-400 dark:lia-text-500" >
                               <div>{event.ipAddress || '-'}</div>
                               <div className="truncate max-w-32">{event.userAgent || '-'}</div>
                             </div>
@@ -674,29 +674,29 @@ export default function ConsentimentosPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card >
                 <CardHeader>
-                  <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
+                  <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
                     Taxa de Consentimento por Tipo
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {isLoadingStats ? (
                     <div className="flex items-center justify-center py-8">
-                      <Loader2 className="w-6 h-6 animate-spin text-gray-600 dark:text-gray-400" />
+                      <Loader2 className="w-6 h-6 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
                     </div>
                   ) : stats && Object.keys(stats.byType).length > 0 ? (
                     <div className="space-y-4">
                       {Object.entries(stats.byType).map(([type, data]) => (
                         <div key={type} className="space-y-2">
                           <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-gray-800 dark:text-gray-100" >
+                            <span className="text-sm font-medium lia-text-800 dark:text-lia-text-primary" >
                               {CONSENT_TYPE_LABELS[type] || type}
                             </span>
-                            <span className="text-sm font-semibold text-gray-800 dark:text-gray-100" >
+                            <span className="text-sm font-semibold lia-text-800 dark:text-lia-text-primary" >
                               {Math.round(data.rate)}%
                             </span>
                           </div>
                           <Progress value={data.rate} className="h-2" />
-                          <div className="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500" >
+                          <div className="flex items-center justify-between text-xs lia-text-400 dark:lia-text-500" >
                             <span>{data.active} ativos</span>
                             <span>{data.pending} pendentes</span>
                             <span>{data.revoked} revogados</span>
@@ -706,8 +706,8 @@ export default function ConsentimentosPage() {
                     </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center py-8">
-                      <AlertCircle className="w-10 h-10 text-gray-300 mb-3" />
-                      <p className="text-sm text-gray-500 dark:text-gray-400" >
+                      <AlertCircle className="w-10 h-10 lia-text-300 mb-3" />
+                      <p className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
                         Nenhuma estatística disponível
                       </p>
                     </div>
@@ -717,21 +717,21 @@ export default function ConsentimentosPage() {
 
               <Card >
                 <CardHeader>
-                  <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
+                  <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
                     Atividade Recente
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {isLoadingStats ? (
                     <div className="flex items-center justify-center py-8">
-                      <Loader2 className="w-6 h-6 animate-spin text-gray-600 dark:text-gray-400" />
+                      <Loader2 className="w-6 h-6 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
                     </div>
                   ) : stats ? (
                     <div className="space-y-4">
                       <div className="flex items-center justify-between p-3 rounded-md bg-status-success/10">
                         <div className="flex items-center gap-3">
                           <CheckSquare className="w-5 h-5 text-status-success" />
-                          <span className="text-sm text-gray-800 dark:text-gray-100" >
+                          <span className="text-sm lia-text-800 dark:text-lia-text-primary" >
                             Consentimentos Hoje
                           </span>
                         </div>
@@ -742,7 +742,7 @@ export default function ConsentimentosPage() {
                       <div className="flex items-center justify-between p-3 rounded-md bg-wedo-purple/10">
                         <div className="flex items-center gap-3">
                           <Ban className="w-5 h-5 text-wedo-purple" />
-                          <span className="text-sm text-gray-800 dark:text-gray-100" >
+                          <span className="text-sm lia-text-800 dark:text-lia-text-primary" >
                             Revogações Hoje
                           </span>
                         </div>
@@ -753,7 +753,7 @@ export default function ConsentimentosPage() {
                       <div className="flex items-center justify-between p-3 rounded-md bg-status-warning/10">
                         <div className="flex items-center gap-3">
                           <Clock className="w-5 h-5 text-status-warning" />
-                          <span className="text-sm text-gray-800 dark:text-gray-100" >
+                          <span className="text-sm lia-text-800 dark:text-lia-text-primary" >
                             Expirando Esta Semana
                           </span>
                         </div>
@@ -768,25 +768,25 @@ export default function ConsentimentosPage() {
 
               <Card className="md:col-span-2" >
                 <CardHeader>
-                  <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
+                  <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
                     Resumo Geral
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="text-center p-4 rounded-md bg-gray-50">
-                      <p className="text-3xl font-bold text-gray-800 dark:text-gray-100" >
+                      <p className="text-3xl font-bold lia-text-800 dark:text-lia-text-primary" >
                         {stats?.totalVersions || 0}
                       </p>
-                      <p className="text-sm text-gray-400 dark:text-gray-500" >
+                      <p className="text-sm lia-text-400 dark:lia-text-500" >
                         Versões de Termos
                       </p>
                     </div>
                     <div className="text-center p-4 rounded-md bg-gray-50">
-                      <p className="text-3xl font-bold text-gray-800 dark:text-gray-100" >
+                      <p className="text-3xl font-bold lia-text-800 dark:text-lia-text-primary" >
                         {stats?.totalConsents || 0}
                       </p>
-                      <p className="text-sm text-gray-400 dark:text-gray-500" >
+                      <p className="text-sm lia-text-400 dark:lia-text-500" >
                         Total de Consentimentos
                       </p>
                     </div>
@@ -794,15 +794,15 @@ export default function ConsentimentosPage() {
                       <p className="text-3xl font-bold text-status-success">
                         {stats?.activeVersions || 0}
                       </p>
-                      <p className="text-sm text-gray-400 dark:text-gray-500" >
+                      <p className="text-sm lia-text-400 dark:lia-text-500" >
                         Versões Ativas
                       </p>
                     </div>
                     <div className="text-center p-4 rounded-md bg-gray-50">
-                      <p className="text-3xl font-bold text-gray-900 dark:text-gray-50">
+                      <p className="text-3xl font-bold lia-text-900 dark:lia-text-50">
                         {Math.round(stats?.consentRate || 0)}%
                       </p>
-                      <p className="text-sm text-gray-400 dark:text-gray-500" >
+                      <p className="text-sm lia-text-400 dark:lia-text-500" >
                         Taxa de Aceite
                       </p>
                     </div>
@@ -937,17 +937,17 @@ export default function ConsentimentosPage() {
               <div className="space-y-4">
                 {subjectHistory.currentConsents.length > 0 && (
                   <div>
-                    <h4 className="text-sm font-medium mb-2 text-gray-800 dark:text-gray-100" >
+                    <h4 className="text-sm font-medium mb-2 lia-text-800 dark:text-lia-text-primary" >
                       Consentimentos Atuais
                     </h4>
                     <div className="space-y-2">
                       {subjectHistory.currentConsents.map((consent, index) => (
                         <div key={index} className="flex items-center justify-between p-3 rounded-md bg-gray-50">
                           <div>
-                            <span className="font-medium text-gray-800 dark:text-gray-100" >
+                            <span className="font-medium lia-text-800 dark:text-lia-text-primary" >
                               {CONSENT_TYPE_LABELS[consent.consentType] || consent.consentType}
                             </span>
-                            <span className="text-xs ml-2 text-gray-400 dark:text-gray-500" >
+                            <span className="text-xs ml-2 lia-text-400 dark:lia-text-500" >
                               v{consent.version}
                             </span>
                           </div>
@@ -961,7 +961,7 @@ export default function ConsentimentosPage() {
                             }>
                               {consent.status === 'active' ? 'Ativo' : consent.status === 'revoked' ? 'Revogado' : 'Expirado'}
                             </Badge>
-                            <span className="text-xs text-gray-400 dark:text-gray-500" >
+                            <span className="text-xs lia-text-400 dark:lia-text-500" >
                               até {new Date(consent.expiresAt).toLocaleDateString('pt-BR')}
                             </span>
                           </div>
@@ -972,7 +972,7 @@ export default function ConsentimentosPage() {
                 )}
                 
                 <div>
-                  <h4 className="text-sm font-medium mb-2 text-gray-800 dark:text-gray-100" >
+                  <h4 className="text-sm font-medium mb-2 lia-text-800 dark:text-lia-text-primary" >
                     Histórico de Eventos
                   </h4>
                   <div className="space-y-2">
@@ -981,15 +981,15 @@ export default function ConsentimentosPage() {
                         <div className="flex items-center gap-3">
                           {getEventStatusBadge(event.eventType)}
                           <div>
-                            <span className="text-sm text-gray-800 dark:text-gray-100" >
+                            <span className="text-sm lia-text-800 dark:text-lia-text-primary" >
                               {CONSENT_TYPE_LABELS[event.consentType] || event.consentType}
                             </span>
-                            <span className="text-xs ml-2 text-gray-400 dark:text-gray-500" >
+                            <span className="text-xs ml-2 lia-text-400 dark:lia-text-500" >
                               v{event.version}
                             </span>
                           </div>
                         </div>
-                        <span className="text-xs text-gray-400 dark:text-gray-500" >
+                        <span className="text-xs lia-text-400 dark:lia-text-500" >
                           {new Date(event.createdAt).toLocaleDateString('pt-BR', {
                             day: '2-digit',
                             month: '2-digit',
@@ -1005,7 +1005,7 @@ export default function ConsentimentosPage() {
               </div>
             ) : (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin text-gray-600 dark:text-gray-400" />
+                <Loader2 className="w-6 h-6 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
               </div>
             )}
             <DialogFooter>

@@ -79,11 +79,11 @@ export function TimezoneDropdown({
     <div className={cn("flex flex-col gap-1.5", className)}>
       {showLabel && (
         <div className="flex items-center gap-1.5">
-          <span className="text-xs font-medium text-gray-800 dark:text-gray-200">Fuso Horário</span>
+          <span className="text-xs font-medium lia-text-800 dark:text-lia-text-primary">Fuso Horário</span>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Info className="w-3.5 h-3.5 text-gray-400 cursor-help" />
+                <Info className="w-3.5 h-3.5 lia-text-400 cursor-help" />
               </TooltipTrigger>
               <TooltipContent>
                 <p className="text-xs">Filter candidates by their timezone</p>
@@ -96,9 +96,9 @@ export function TimezoneDropdown({
         <PopoverTrigger asChild>
           <button 
             className={cn(
-              "flex items-center justify-between gap-2 px-3 py-2 rounded-md border border-gray-200",
-              "text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-gray-700 transition-colors w-full",
-              !selectedOption && "text-gray-400"
+              "flex items-center justify-between gap-2 px-3 py-2 rounded-md border border-lia-border-subtle",
+              "text-sm lia-text-800 dark:text-lia-text-primary hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-lia-border-subtle transition-colors w-full",
+              !selectedOption && "lia-text-400"
             )}
           >
             <span className="truncate text-xs">
@@ -107,10 +107,10 @@ export function TimezoneDropdown({
                 : 'Selecionar fuso horário'
               }
             </span>
-            <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />
+            <ChevronDown className="w-4 h-4 lia-text-400 flex-shrink-0" />
           </button>
         </PopoverTrigger>
-        <PopoverContent className="w-72 p-0 rounded-md dark:bg-gray-800 dark:border-gray-700" align="start">
+        <PopoverContent className="w-72 p-0 rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle" align="start">
           <div className="py-1 max-h-80 overflow-y-auto">
             {value && (
               <button
@@ -118,7 +118,7 @@ export function TimezoneDropdown({
                   onChange(null)
                   setIsOpen(false)
                 }}
-                className="w-full text-left px-3 py-2 text-xs text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700"
+                className="w-full text-left px-3 py-2 text-xs lia-text-500 dark:text-lia-text-tertiary hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-lia-border-subtle dark:border-lia-border-subtle"
               >
                 Limpar seleção
               </button>
@@ -126,7 +126,7 @@ export function TimezoneDropdown({
             {groupedOptions.map((group, groupIndex) => (
               <div key={group.group}>
                 {group.group !== 'default' && (
-                  <div className="px-3 py-1.5 text-xs font-semibold text-gray-600 bg-gray-50 dark:bg-gray-700 border-t border-gray-100 dark:border-gray-700">
+                  <div className="px-3 py-1.5 text-xs font-semibold lia-text-600 bg-gray-50 dark:bg-lia-bg-elevated border-t border-lia-border-subtle dark:border-lia-border-subtle">
                     {group.group}
                   </div>
                 )}
@@ -139,21 +139,21 @@ export function TimezoneDropdown({
                     }}
                     className={cn(
                       "w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors",
-                      value === option.value && "bg-gray-50 dark:bg-gray-700"
+                      value === option.value && "bg-gray-50 dark:bg-lia-bg-elevated"
                     )}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex flex-col">
                         <span className={cn(
                           "text-xs",
- value === option.value ? "font-medium text-gray-950" : "text-gray-800 dark:text-gray-200"
+ value === option.value ? "font-medium lia-text-950" : "lia-text-800 dark:text-lia-text-primary"
                         )}>
                           {option.label}
                         </span>
-                        <span className="text-micro text-gray-400 dark:text-gray-500">{option.offset}</span>
+                        <span className="text-micro lia-text-400 dark:lia-text-500">{option.offset}</span>
                       </div>
                       {value === option.value && (
-                        <Check className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                        <Check className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                       )}
                     </div>
                   </button>

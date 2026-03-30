@@ -60,21 +60,21 @@ export function RadiusDropdown({
       <PopoverTrigger asChild>
         <button 
           className={cn(
-            "flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-gray-200",
-            "text-xs font-medium text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-gray-700 transition-colors",
+            "flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-lia-border-subtle",
+            "text-xs font-medium lia-text-800 dark:text-lia-text-primary hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-lia-border-subtle transition-colors",
             className
           )}
         >
           <span>{selectedOption.label}</span>
-          <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+          <ChevronDown className="w-3.5 h-3.5 lia-text-400" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-64 p-0 rounded-md dark:bg-gray-800 dark:border-gray-700" align="start">
+      <PopoverContent className="w-64 p-0 rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle" align="start">
         <div className="py-1 max-h-80 overflow-y-auto">
           {RADIUS_OPTIONS.map((option, index) => (
             <div key={option.value}>
               {option.isSeparator && (
-                <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
+                <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle my-1" />
               )}
               <button
                 onClick={() => {
@@ -83,22 +83,22 @@ export function RadiusDropdown({
                 }}
                 className={cn(
                   "w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors",
-                  value === option.value && "bg-gray-50 dark:bg-gray-700"
+                  value === option.value && "bg-gray-50 dark:bg-lia-bg-elevated"
                 )}
               >
                 <div className="flex items-center justify-between">
                   <span className={cn(
                     "text-xs",
- value === option.value ? "font-medium text-gray-950" : "text-gray-800 dark:text-gray-200"
+ value === option.value ? "font-medium lia-text-950" : "lia-text-800 dark:text-lia-text-primary"
                   )}>
                     {option.label}
                   </span>
                   {value === option.value && (
-                    <Check className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                    <Check className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                   )}
                 </div>
                 {option.description && (
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{option.description}</p>
+                  <p className="text-xs lia-text-500 dark:text-lia-text-tertiary mt-0.5">{option.description}</p>
                 )}
               </button>
             </div>

@@ -302,18 +302,18 @@ export function UnifiedCandidateTable({
   const getSortIcon = (columnId: string, isSortable: boolean) => {
     if (!isSortable) return null
     if (activeSort?.field !== columnId) {
-      return <ArrowUpDown className="w-3 h-3 text-gray-400" />
+      return <ArrowUpDown className="w-3 h-3 lia-text-secondary" />
     }
     return activeSort.direction === 'asc' 
-      ? <ArrowUp className="w-3 h-3 text-gray-600" />
-      : <ArrowDown className="w-3 h-3 text-gray-600" />
+      ? <ArrowUp className="w-3 h-3 lia-text-base" />
+      : <ArrowDown className="w-3 h-3 lia-text-base" />
   }
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-        <span className="ml-2 text-sm text-gray-500">Carregando candidatos...</span>
+        <Loader2 className="w-6 h-6 animate-spin lia-text-secondary" />
+        <span className="ml-2 text-sm lia-text-secondary">Carregando candidatos...</span>
       </div>
     )
   }
@@ -321,29 +321,29 @@ export function UnifiedCandidateTable({
   if (candidates.length === 0) {
     return (
       <div className="flex items-center justify-center py-12">
-        <span className="text-sm text-gray-500">{emptyMessage}</span>
+        <span className="text-sm lia-text-secondary">{emptyMessage}</span>
       </div>
     )
   }
 
   return (
-    <div className={`bg-white dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700 ${className}`}>
+    <div className={`bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle ${className}`}>
       <div
         ref={enableVirtualScroll ? virtualScrollRef : undefined}
         className="overflow-x-auto"
         style={enableVirtualScroll ? { overflowY: "auto", maxHeight: "600px" } : undefined}
       >
         <table className="w-full" style={{tableLayout: enableColumnResize ? 'fixed' : 'auto'}}>
-          <thead className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700">
+          <thead className="sticky top-0 z-10 bg-white dark:bg-lia-bg-primary border-b border-lia-border-subtle dark:border-lia-border-subtle">
             <tr>
               {showCheckboxes && (
                 <th className="px-3 py-2.5 w-[50px]">
                   <div
                     onClick={handleSelectAll}
-                    className="cursor-pointer w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all border-gray-300 dark:border-gray-600 hover:border-gray-500"
+                    className="cursor-pointer w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors border-lia-border-default dark:border-lia-border-default hover:border-gray-500"
                   >
                     {paginatedCandidates.length > 0 && paginatedCandidates.every(c => selectedIds.has(c.id)) && (
-                      <div className="w-2.5 h-2.5 bg-gray-900 dark:bg-gray-200 rounded-sm" />
+                      <div className="w-2.5 h-2.5 bg-gray-900 rounded-sm" />
                     )}
                   </div>
                 </th>
@@ -357,7 +357,7 @@ export function UnifiedCandidateTable({
                   <th
                     key={column.id}
                     className={`
-                      px-3 py-3 relative group select-none text-xs font-semibold text-gray-800 dark:text-gray-200
+ px-3 py-3 relative group select-none text-xs font-semibold text-gray-800 dark:text-lia-text-primary
                       ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : 'text-left'}
                       ${isDragging ? 'opacity-50' : ''}
                       ${isDropTarget ? 'bg-wedo-cyan/10' : ''}
@@ -375,18 +375,18 @@ export function UnifiedCandidateTable({
                   >
                     <div className="flex items-center gap-1">
                       {enableColumnReorder && (
-                        <GripVertical className="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab" />
+                        <GripVertical className="w-3 h-3 lia-text-secondary opacity-0 group-hover:opacity-100 transition-opacity cursor-grab" />
                       )}
                       {renderCustomHeader?.(column.id, column.label) ?? (
                         column.id === 'acoes' || column.id === 'actions' ? (
                           <>
                             <span className="sr-only">Ações</span>
-                            <MoreVertical className="w-4 h-4 text-gray-600 dark:text-gray-300" aria-hidden="true" />
+                            <MoreVertical className="w-4 h-4 text-gray-600 dark:text-lia-text-secondary" aria-hidden="true" />
                           </>
                         ) : (
                           <span className="flex items-center gap-1">
                             {column.isGlobalSearch && (
-                              <Globe className="w-3 h-3 text-gray-600 dark:text-gray-400" />
+                              <Globe className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary" />
                             )}
                             {column.label}
                           </span>
@@ -398,8 +398,8 @@ export function UnifiedCandidateTable({
                     {/* Resize Handle - Sempre visível */}
                     {enableColumnResize && (
                       <div
-                        className={`absolute right-0 top-0 h-full w-2 cursor-col-resize transition-all ${
-                          resizingColumnId === column.id 
+                        className={`absolute right-0 top-0 h-full w-2 cursor-col-resize transition-colors ${
+ resizingColumnId === column.id 
                             ? 'bg-gray-400 w-1' 
                             : 'bg-transparent hover:bg-gray-300 group-hover:bg-gray-200'
                         }`}
@@ -498,25 +498,25 @@ export function UnifiedCandidateTable({
       </div>
 
       {showPagination && totalPages > 1 && (
-        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700">
-          <span className="text-xs text-gray-500">
+        <div className="flex items-center justify-between px-4 py-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
+          <span className="text-xs lia-text-secondary">
             Mostrando {((currentPage - 1) * pageSize) + 1} - {Math.min(currentPage * pageSize, sortedCandidates.length)} de {sortedCandidates.length}
           </span>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="px-3 py-1 text-xs rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 text-xs rounded-md border border-lia-border-default dark:border-lia-border-default hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Anterior
             </button>
-            <span className="text-xs text-gray-600 dark:text-gray-400">
+            <span className="text-xs text-gray-600 dark:text-lia-text-tertiary">
               Página {currentPage} de {totalPages}
             </span>
             <button
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="px-3 py-1 text-xs rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 text-xs rounded-md border border-lia-border-default dark:border-lia-border-default hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Próxima
             </button>

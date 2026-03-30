@@ -61,8 +61,8 @@ export function CandidateTableRow({
 
   return (
     <tr
-      className={`border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors ${
-        isSelected ? 'bg-gray-100 dark:bg-gray-800/10' : ''
+      className={`border-b border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors ${
+        isSelected ? 'bg-gray-100 dark:bg-lia-bg-secondary/10' : ''
       }`}
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
@@ -73,10 +73,10 @@ export function CandidateTableRow({
           onClick={() => onToggleSelect && onToggleSelect(candidate.id)}
           className="cursor-pointer"
         >
-          <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
+          <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${
             isSelected
-              ? 'bg-gray-900 border-gray-900 dark:bg-gray-200 dark:border-gray-200'
-              : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:border-gray-500 dark:hover:border-gray-500'
+              ? 'bg-gray-900 border-gray-900 dark:lia-bg-200 dark:border-lia-border-subtle'
+              : 'bg-white dark:bg-lia-bg-elevated border-lia-border-default dark:border-lia-border-default hover:border-gray-500 dark:hover:border-gray-500'
           }`}>
             {isSelected && (
               <CheckCircle className="w-3.5 h-3.5 text-white" fill="currentColor" />
@@ -86,7 +86,7 @@ export function CandidateTableRow({
       </td>
 
       <td className="px-4 py-2">
-        <div className="text-xs font-mono text-gray-600 dark:text-gray-400">
+        <div className="text-xs font-mono lia-text-600 dark:text-lia-text-tertiary">
           {candidate.candidateCode || candidate.id?.substring(0, 6).toUpperCase()}
         </div>
       </td>
@@ -94,20 +94,20 @@ export function CandidateTableRow({
       <td className="px-3 py-2">
         <div className="flex items-center gap-1 justify-center">
           <BrainCircuit className={`w-3 h-3 ${
-            urgency.level === 'excellent' ? 'text-gray-950 dark:text-gray-50' :
-            urgency.level === 'great' ? 'text-gray-800 dark:text-gray-200' :
-            urgency.level === 'good' ? 'text-gray-800 dark:text-gray-200' :
-            urgency.level === 'average' ? 'text-gray-600 dark:text-gray-400' :
-            urgency.level === 'below' ? 'text-gray-800 dark:text-gray-200' :
-            'text-gray-600 dark:text-gray-600'
+            urgency.level === 'excellent' ? 'lia-text-950 dark:lia-text-50' :
+            urgency.level === 'great' ? 'lia-text-800 dark:text-lia-text-primary' :
+            urgency.level === 'good' ? 'lia-text-800 dark:text-lia-text-primary' :
+            urgency.level === 'average' ? 'lia-text-600 dark:text-lia-text-tertiary' :
+            urgency.level === 'below' ? 'lia-text-800 dark:text-lia-text-primary' :
+            'lia-text-600 dark:lia-text-600'
           }`} />
           <span className={`text-sm font-semibold ${
-            urgency.level === 'excellent' ? 'text-gray-950 dark:text-gray-50' :
-            urgency.level === 'great' ? 'text-gray-800 dark:text-gray-200' :
-            urgency.level === 'good' ? 'text-gray-800 dark:text-gray-200' :
-            urgency.level === 'average' ? 'text-gray-600 dark:text-gray-400' :
-            urgency.level === 'below' ? 'text-gray-800 dark:text-gray-200' :
-            'text-gray-600 dark:text-gray-600'
+            urgency.level === 'excellent' ? 'lia-text-950 dark:lia-text-50' :
+            urgency.level === 'great' ? 'lia-text-800 dark:text-lia-text-primary' :
+            urgency.level === 'good' ? 'lia-text-800 dark:text-lia-text-primary' :
+            urgency.level === 'average' ? 'lia-text-600 dark:text-lia-text-tertiary' :
+            urgency.level === 'below' ? 'lia-text-800 dark:text-lia-text-primary' :
+            'lia-text-600 dark:lia-text-600'
           }`}>
             {ranking}
           </span>
@@ -118,27 +118,27 @@ export function CandidateTableRow({
         <div className="flex items-center gap-1 justify-center">
           {(candidate.liaScore !== null && candidate.liaScore !== undefined) || (candidate.score !== null && candidate.score !== undefined) ? (
             <>
-              <BrainCircuit className="w-3 h-3 text-gray-950 dark:text-gray-50" />
+              <BrainCircuit className="w-3 h-3 lia-text-950 dark:lia-text-50" />
               <Badge 
                 variant="secondary" 
-                className="text-xs px-2 py-0.5 font-semibold border-0 text-gray-950 dark:text-gray-50"
+                className="text-xs px-2 py-0.5 font-semibold border-0 lia-text-950 dark:lia-text-50"
                 style={{backgroundColor: 'var(--gray-300)'}}
               >
                 {formatScorePercent(candidate.liaScore ?? candidate.score, 0)}
               </Badge>
             </>
           ) : (
-            <span className="text-xs text-gray-600 dark:text-gray-500">—</span>
+            <span className="text-xs lia-text-600 dark:lia-text-500">—</span>
           )}
         </div>
       </td>
 
       <td className="px-2 py-2">
         <div className="flex items-center gap-1 justify-center">
-          <Target className="w-3 h-3 text-gray-950 dark:text-gray-50" />
+          <Target className="w-3 h-3 lia-text-950 dark:lia-text-50" />
           <Badge 
             variant="secondary" 
-            className="text-xs px-2 py-0.5 font-semibold border-0 text-gray-950 dark:text-gray-50"
+            className="text-xs px-2 py-0.5 font-semibold border-0 lia-text-950 dark:lia-text-50"
             style={{backgroundColor: 'var(--gray-400)'}}
           >
             {formatScorePercent(candidate.skillsMatch || candidate.fitScore || 0, 0)}
@@ -151,7 +151,7 @@ export function CandidateTableRow({
           <div className="flex items-center gap-1 justify-center group">
             <Badge
               variant="secondary"
-              className="text-xs px-2 py-0.5 font-semibold border-0 cursor-pointer hover:opacity-80 transition-opacity text-gray-950 dark:text-gray-50"
+              className="text-xs px-2 py-0.5 font-semibold border-0 cursor-pointer hover:opacity-80 transition-opacity lia-text-950 dark:lia-text-50"
               style={{backgroundColor: candidate.technicalTestScore >= 80 ? 'var(--status-success)' :
                                  candidate.technicalTestScore >= 60 ? 'var(--status-warning)' :
                                  candidate.technicalTestScore >= 40 ? 'var(--gray-400)' :
@@ -163,10 +163,10 @@ export function CandidateTableRow({
             >
               {formatScorePercent(candidate.technicalTestScore, 0)}
             </Badge>
-            <Eye className="w-3 h-3 text-gray-600 dark:text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <Eye className="w-3 h-3 lia-text-600 dark:lia-text-500 opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
         ) : (
-          <span className="text-xs text-gray-600 dark:text-gray-500">—</span>
+          <span className="text-xs lia-text-600 dark:lia-text-500">—</span>
         )}
       </td>
 
@@ -175,7 +175,7 @@ export function CandidateTableRow({
           <div className="flex items-center gap-1 justify-center group">
             <Badge
               variant="secondary"
-              className="text-xs px-2 py-0.5 font-semibold border-0 cursor-pointer hover:opacity-80 transition-opacity text-gray-950 dark:text-gray-50"
+              className="text-xs px-2 py-0.5 font-semibold border-0 cursor-pointer hover:opacity-80 transition-opacity lia-text-950 dark:lia-text-50"
               style={{backgroundColor: candidate.englishTestScore >= 80 ? 'var(--status-success)' :
                                  candidate.englishTestScore >= 60 ? 'var(--status-warning)' :
                                  candidate.englishTestScore >= 40 ? 'var(--gray-400)' :
@@ -187,10 +187,10 @@ export function CandidateTableRow({
             >
               {formatScorePercent(candidate.englishTestScore, 0)}
             </Badge>
-            <Eye className="w-3 h-3 text-gray-600 dark:text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <Eye className="w-3 h-3 lia-text-600 dark:lia-text-500 opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
         ) : (
-          <span className="text-xs text-gray-600 dark:text-gray-500">—</span>
+          <span className="text-xs lia-text-600 dark:lia-text-500">—</span>
         )}
       </td>
 
@@ -213,7 +213,7 @@ export function CandidateTableRow({
                 title={`${key}: ${value}%`}
               >
                 <div 
-                  className="w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold transition-opacity group-hover:opacity-80 text-gray-950 dark:text-gray-50"
+                  className="w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold transition-opacity group-hover:opacity-80 lia-text-950 dark:lia-text-50"
                   style={{backgroundColor: value >= 70 ? (index === 0 ? 'var(--status-success)' : index === 1 ? 'var(--gray-400)' : 'var(--gray-300)') :
                                      value >= 40 ? (index === 0 ? 'var(--gray-500)' : index === 1 ? 'var(--gray-300)' : 'var(--gray-500)') :
                                      'var(--gray-600)'}}
@@ -222,10 +222,10 @@ export function CandidateTableRow({
                 </div>
               </div>
             ))}
-            <Eye className="w-3 h-3 text-gray-600 dark:text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity self-center ml-1" />
+            <Eye className="w-3 h-3 lia-text-600 dark:lia-text-500 opacity-0 group-hover:opacity-100 transition-opacity self-center ml-1" />
           </div>
         ) : (
-          <span className="text-xs text-gray-600 dark:text-gray-500">—</span>
+          <span className="text-xs lia-text-600 dark:lia-text-500">—</span>
         )}
       </td>
 
@@ -237,15 +237,15 @@ export function CandidateTableRow({
                 className="relative flex items-center justify-center w-8 h-8 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors group"
                 aria-label={`${alerts.length} alerta${alerts.length > 1 ? 's' : ''} da LIA`}
               >
-                <Bell className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-100" />
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-950 text-xs font-bold rounded-full flex items-center justify-center">
+                <Bell className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary group-hover:lia-text-900 dark:group-hover:lia-text-100" />
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-gray-900 dark:lia-bg-100 text-white dark:lia-text-950 text-xs font-bold rounded-full flex items-center justify-center">
                   {alerts.length}
                 </span>
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-72 p-3" align="start">
               <div className="space-y-2">
-                <h4 className="text-xs font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-1.5 mb-2">
+                <h4 className="text-xs font-semibold lia-text-950 dark:lia-text-50 flex items-center gap-1.5 mb-2">
                   <Bell className="w-3.5 h-3.5" />
                   Alertas LIA ({alerts.length})
                 </h4>
@@ -262,7 +262,7 @@ export function CandidateTableRow({
             </PopoverContent>
           </Popover>
         ) : (
-          <span className="text-xs text-gray-600 dark:text-gray-500 flex items-center justify-center">—</span>
+          <span className="text-xs lia-text-600 dark:lia-text-500 flex items-center justify-center">—</span>
         )}
       </td>
 
@@ -279,27 +279,27 @@ export function CandidateTableRow({
               </div>
             )}
           </div>
-          <div className="font-medium text-sm text-gray-950 dark:text-gray-50">
+          <div className="font-medium text-sm lia-text-950 dark:lia-text-50">
             {candidate.name}
           </div>
         </div>
       </td>
 
       <td className="px-4 py-2">
-        <div className="text-xs text-gray-950 dark:text-gray-50">
+        <div className="text-xs lia-text-950 dark:lia-text-50">
           {candidate.role || candidate.position || 'UX Designer'}
         </div>
       </td>
 
       <td className="px-4 py-2">
-        <div className="text-xs text-gray-950 dark:text-gray-50">
+        <div className="text-xs lia-text-950 dark:lia-text-50">
           {candidate.currentCompany || (candidate.source === 'LinkedIn' ? 'TechCorp' : 'Digital Agency')}
         </div>
       </td>
 
       <td className="px-2 py-2">
         <Badge
-          className="text-xs font-semibold border-0 whitespace-nowrap text-gray-950 dark:text-gray-50"
+          className="text-xs font-semibold border-0 whitespace-nowrap lia-text-950 dark:lia-text-50"
           style={{backgroundColor: 
               candidate.stage === 'Funil' ? 'var(--gray-200)' :
               candidate.stage === 'Triagem' ? 'var(--gray-300)' :
@@ -315,7 +315,7 @@ export function CandidateTableRow({
 
       <td className="px-4 py-2">
         <div className="space-y-1">
-          <div className="text-xs text-gray-600 dark:text-gray-400">
+          <div className="text-xs lia-text-600 dark:text-lia-text-tertiary">
             {candidate.status || 'Novo'}
           </div>
           <CandidateBadges

@@ -160,11 +160,11 @@ export function SaveArchetypeModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-xl max-h-[90vh] bg-white overflow-y-auto rounded-md dark:bg-gray-800 dark:border-gray-700">
-        <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
+      <Card className="w-full max-w-xl max-h-[90vh] bg-white overflow-y-auto rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center">
-              <Target className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <div className="w-10 h-10 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+              <Target className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
             </div>
             <div>
               <CardTitle className={textStyles.titleLarge}>Salvar como Arquétipo</CardTitle>
@@ -209,10 +209,10 @@ export function SaveArchetypeModal({
                   key={emoji}
                   type="button"
                   onClick={() => setSelectedEmoji(emoji)}
-                  className={`w-10 h-10 rounded-md border-2 text-xl flex items-center justify-center transition-all ${
+                  className={`w-10 h-10 rounded-md border-2 text-xl flex items-center justify-center transition-colors ${
                     selectedEmoji === emoji
-                      ? "border-gray-900 dark:border-gray-50 bg-gray-100 dark:bg-gray-800"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "border-gray-900 dark:lia-border-50 bg-gray-100 dark:bg-lia-bg-secondary"
+                      : "border-lia-border-subtle hover:border-lia-border-default"
                   }`}
                 >
                   {emoji}
@@ -290,14 +290,14 @@ export function SaveArchetypeModal({
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 bg-gray-50 dark:bg-gray-900 dark:border-gray-700">
-            <Button variant="outline" onClick={onClose} disabled={isSaving} className="bg-white border border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700">
+          <div className="flex justify-end gap-3 pt-4 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle">
+            <Button variant="outline" onClick={onClose} disabled={isSaving} className="bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700">
               Cancelar
             </Button>
             <Button
               onClick={handleSave}
               disabled={!name.trim() || isSaving}
-              className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+              className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
             >
               {isSaving ? (
                 <>

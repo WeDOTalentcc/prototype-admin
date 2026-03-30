@@ -63,7 +63,7 @@ export function RubricEvaluationCard({
 
   const getScoreBadge = (scoreValue: number) => {
     if (scoreValue >= 80) return { label: 'Forte', className: 'bg-status-success/15 text-status-success border-status-success/30' }
-    if (scoreValue >= 60) return { label: 'Bom', className: 'bg-gray-100 dark:bg-gray-800 text-wedo-cyan-dark border-gray-300 dark:border-gray-600' }
+    if (scoreValue >= 60) return { label: 'Bom', className: 'bg-gray-100 dark:bg-lia-bg-secondary text-wedo-cyan-dark border-lia-border-default dark:border-lia-border-default' }
     if (scoreValue >= 40) return { label: 'Moderado', className: 'bg-status-warning/15 text-status-warning border-status-warning/30' }
     return { label: 'Fraco', className: 'bg-status-error/15 text-status-error border-status-error/30' }
   }
@@ -84,13 +84,13 @@ export function RubricEvaluationCard({
       case 'exceeds':
         return <Check className="w-3.5 h-3.5 text-status-success" />
       case 'meets':
-        return <Check className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+        return <Check className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
       case 'partial':
         return <AlertTriangle className="w-3.5 h-3.5 text-status-warning" />
       case 'missing':
         return <X className="w-3.5 h-3.5 text-status-error" />
       default:
-        return <AlertCircle className="w-3.5 h-3.5 text-gray-400" />
+        return <AlertCircle className="w-3.5 h-3.5 lia-text-secondary" />
     }
   }
 
@@ -105,7 +105,7 @@ export function RubricEvaluationCard({
       case 'missing':
         return 'text-status-error'
       default:
-        return 'text-gray-600'
+        return 'lia-text-base'
     }
   }
 
@@ -114,7 +114,7 @@ export function RubricEvaluationCard({
       case 'exceeds':
         return 'bg-status-success/10'
       case 'meets':
-        return 'bg-gray-50 dark:bg-gray-900'
+        return 'bg-gray-50 dark:bg-lia-bg-primary'
       case 'partial':
         return 'bg-status-warning/10'
       case 'missing':
@@ -176,10 +176,10 @@ export function RubricEvaluationCard({
 
   return (
     <div className={`space-y-3 ${className}`}>
-      <div className="flex items-center justify-between border-b border-gray-200/50 pb-2">
+      <div className="flex items-center justify-between border-b border-lia-border-subtle/50 pb-2">
         <div className="flex items-center gap-2">
           <Target className="w-4 h-4" style={{color: ACCENT_COLOR}} />
-          <span className={`${textStyles.subtitle} text-gray-800`}>
+          <span className={`${textStyles.subtitle} lia-text-strong`}>
             Análise CV vs Vaga
           </span>
         </div>
@@ -191,11 +191,11 @@ export function RubricEvaluationCard({
       </div>
 
       <div className="flex items-center justify-between">
-        <p className={`${textStyles.bodySmall} text-gray-800 dark:text-gray-200`}>
+        <p className={`${textStyles.bodySmall} text-gray-800 dark:text-lia-text-primary`}>
           <span className="font-medium">Vaga:</span> {jobTitle}
         </p>
         {jobCode && (
-          <span className={`${textStyles.caption} text-gray-500 font-mono`}>
+          <span className={`${textStyles.caption} lia-text-secondary font-mono`}>
             ID: {jobCode}
           </span>
         )}
@@ -203,15 +203,15 @@ export function RubricEvaluationCard({
 
       <div className="space-y-1.5">
         <div className="flex items-center gap-3">
-          <span className={`${textStyles.label} text-gray-600 min-w-[45px]`}>Score:</span>
-          <div className="flex-1 h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden max-w-[160px]">
+          <span className={`${textStyles.label} lia-text-base min-w-[45px]`}>Score:</span>
+          <div className="flex-1 h-2.5 bg-gray-200 dark:bg-lia-bg-elevated rounded-full overflow-hidden max-w-[160px]">
             <div 
-              className="h-full rounded-full transition-all duration-500 ease-out"
+              className="h-full rounded-full transition-[width,height] duration-500 ease-out"
               style={{width: `${score}%`,
                 backgroundColor: getScoreColor(score)}}
             />
           </div>
-          <span className={`${textStyles.label} text-gray-950 dark:text-gray-50 font-bold min-w-10`}>
+          <span className={`${textStyles.label} text-gray-950 font-bold min-w-10`}>
             {score}%
           </span>
           <Badge className={`${scoreBadge.className} text-micro px-2 py-0.5 border font-medium`}>
@@ -238,17 +238,17 @@ export function RubricEvaluationCard({
                     <span className={`${textStyles.bodySmall} font-medium ${getRubricColor(level)}`}>
                       {getRubricLabel(level)}:
                     </span>
-                    <span className={`${textStyles.bodySmall} text-gray-800`}>
+                    <span className={`${textStyles.bodySmall} lia-text-strong`}>
                       {reqName}
                     </span>
                     {req.priority && (
-                      <span className={`${textStyles.caption} text-gray-500 bg-white/50 px-1.5 py-0.5 rounded-md`}>
+                      <span className={`${textStyles.caption} lia-text-secondary bg-lia-bg-primary/50 px-1.5 py-0.5 rounded-md`}>
                         {getPriorityLabel(req.priority)}
                       </span>
                     )}
                   </div>
                   {req.evidence && isExpanded && (
-                    <p className={`${textStyles.caption} text-gray-600 mt-0.5 line-clamp-1`}>
+                    <p className={`${textStyles.caption} lia-text-base mt-0.5 line-clamp-1`}>
                       {req.evidence}
                     </p>
                   )}
@@ -260,7 +260,7 @@ export function RubricEvaluationCard({
           {hasMoreRequirements && (
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className={`flex items-center gap-1 ${textStyles.caption} text-gray-500 hover:text-gray-700 transition-colors pl-1 pt-1`}
+              className={`flex items-center gap-1 ${textStyles.caption} lia-text-secondary hover:lia-text-base transition-colors pl-1 pt-1`}
             >
               {isExpanded ? (
                 <>
@@ -280,12 +280,12 @@ export function RubricEvaluationCard({
 
       {displaySummary && (
         <div className="flex items-start gap-2 pt-1 bg-gray-50/50 p-2 rounded-md">
-          <FileText className="w-3.5 h-3.5 text-gray-400 mt-0.5 flex-shrink-0" />
+          <FileText className="w-3.5 h-3.5 lia-text-secondary mt-0.5 flex-shrink-0" />
           <div>
-            <span className={`${textStyles.caption} text-gray-500 font-medium block mb-0.5`}>
+            <span className={`${textStyles.caption} lia-text-secondary font-medium block mb-0.5`}>
               Resumo LIA:
             </span>
-            <p className={`${textStyles.bodySmall} text-gray-800 dark:text-gray-200 ${isExpanded ? '' : 'line-clamp-2'} italic`}>
+            <p className={`${textStyles.bodySmall} text-gray-800 dark:text-lia-text-primary ${isExpanded ? '' : 'line-clamp-2'} italic`}>
               "{displaySummary}"
             </p>
           </div>
@@ -296,7 +296,7 @@ export function RubricEvaluationCard({
         <div className="flex items-start gap-2 pt-1">
           <TrendingUp className="w-3.5 h-3.5 text-status-success mt-0.5 flex-shrink-0" />
           <div className="flex-1">
-            <span className={`${textStyles.caption} text-gray-500 font-medium block mb-1`}>
+            <span className={`${textStyles.caption} lia-text-secondary font-medium block mb-1`}>
               Pontos Fortes:
             </span>
             <div className="flex flex-wrap gap-1">
@@ -314,7 +314,7 @@ export function RubricEvaluationCard({
         <div className="flex items-start gap-2">
           <AlertCircle className="w-3.5 h-3.5 text-status-warning mt-0.5 flex-shrink-0" />
           <div className="flex-1">
-            <span className={`${textStyles.caption} text-gray-500 font-medium block mb-1`}>
+            <span className={`${textStyles.caption} lia-text-secondary font-medium block mb-1`}>
               Pontos de Atenção:
             </span>
             <div className="flex flex-wrap gap-1">
@@ -328,11 +328,11 @@ export function RubricEvaluationCard({
         </div>
       )}
 
-      <div className="flex items-center gap-2 pt-2 border-t border-gray-200/50">
+      <div className="flex items-center gap-2 pt-2 border-t border-lia-border-subtle/50">
         <Button
           variant="ghost"
           size="sm"
-          className={`h-7 px-3 gap-1.5 ${textStyles.bodySmall} bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200`}
+          className={`h-7 px-3 gap-1.5 ${textStyles.bodySmall} bg-white dark:bg-lia-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700 border border-lia-border-subtle dark:border-lia-border-subtle text-gray-800 dark:text-lia-text-primary`}
           onClick={(e) => {
             e.stopPropagation()
             onViewAnalysis?.()

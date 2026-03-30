@@ -5,19 +5,19 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md !text-xs font-medium transition-all duration-200 focus-visible:outline-none focus:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md !text-xs font-medium transition-opacity duration-200 focus-visible:outline-none focus:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        primary: "bg-gray-900 dark:bg-gray-50 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20",
+        primary: "bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20",
         destructive:
           "bg-status-error text-white hover:bg-status-error dark:bg-status-error dark:hover:bg-status-error focus:ring-2 focus:ring-red-600/20",
         outline:
-          "border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-950 dark:hover:text-gray-50 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20",
+          "border border-lia-border-default dark:border-lia-border-default bg-white dark:bg-lia-bg-secondary text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-950 dark:hover:lia-text-subtle focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20",
         secondary:
-          "bg-gray-100 dark:bg-gray-700 text-gray-950 dark:text-gray-50 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20",
-        ghost: "text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-950 dark:hover:text-gray-50 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20",
-        link: "text-gray-700 dark:text-gray-300 underline-offset-4 hover:underline hover:text-gray-900 dark:hover:text-gray-100 focus:text-gray-900 dark:focus:text-gray-100",
+          "bg-gray-100 dark:bg-lia-bg-elevated text-gray-950 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20",
+        ghost: "text-gray-800 dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-950 dark:hover:lia-text-subtle focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20",
+        link: "text-gray-700 dark:text-lia-text-secondary underline-offset-4 hover:underline hover:text-gray-900 dark:hover:lia-text-subtle focus:text-gray-900 dark:focus:text-gray-100",
       },
       size: {
         default: "h-10 px-4 py-2",

@@ -23,12 +23,12 @@ import type { CompanyBenefit } from "@/types/benefits"
 const CATEGORY_MAP: Record<string, { name: string; icon: LucideIcon; color: string }> = {
   health: { name: "Saúde", icon: Stethoscope, color: "text-status-error" },
   food: { name: "Alimentação", icon: Utensils, color: "text-wedo-orange" },
-  transport: { name: "Transporte", icon: Car, color: "text-gray-600 dark:text-gray-400" },
+  transport: { name: "Transporte", icon: Car, color: "text-gray-600 dark:text-lia-text-tertiary" },
   education: { name: "Educação", icon: GraduationCap, color: "text-wedo-purple" },
   financial: { name: "Financeiro", icon: Wallet, color: "text-status-success" },
-  quality_life: { name: "Qualidade", icon: Home, color: "text-gray-700 dark:text-gray-300" },
+  quality_life: { name: "Qualidade", icon: Home, color: "text-gray-700 dark:text-lia-text-secondary" },
   family: { name: "Família", icon: Baby, color: "text-wedo-magenta" },
-  security: { name: "Segurança", icon: Shield, color: "text-gray-800 dark:text-gray-200" },
+  security: { name: "Segurança", icon: Shield, color: "text-gray-800 dark:text-lia-text-primary" },
 }
 
 export interface CompanyBenefitsData {
@@ -68,7 +68,7 @@ export function CompanyBenefitsSummaryCard({
   }
 
   const getCategoryInfo = (categoryId: string) => {
-    return CATEGORY_MAP[categoryId] || { name: categoryId, icon: Gift, color: "text-gray-800 dark:text-gray-200" }
+    return CATEGORY_MAP[categoryId] || { name: categoryId, icon: Gift, color: "text-gray-800 dark:text-lia-text-primary" }
   }
 
   return (
@@ -96,13 +96,13 @@ export function CompanyBenefitsSummaryCard({
               <Badge
                 key={benefit.id || index}
                 variant="outline"
-                className="flex items-center gap-1 py-1 px-2 text-xs bg-white dark:bg-gray-800"
+                className="flex items-center gap-1 py-1 px-2 text-xs bg-white dark:bg-lia-bg-secondary"
                 title={benefit.description}
               >
                 <CategoryIcon className={`w-3 h-3 ${categoryInfo.color}`} />
                 <span className="truncate max-w-[120px]">{benefit.name}</span>
                 {value && (
-                  <span className="text-gray-800 dark:text-gray-200 text-xs">
+                  <span className="text-gray-800 dark:text-lia-text-primary text-xs">
                     ({value})
                   </span>
                 )}
@@ -110,7 +110,7 @@ export function CompanyBenefitsSummaryCard({
                   <Star className="w-2.5 h-2.5 text-status-warning fill-current" />
                 )}
                 {benefit.is_mandatory && (
-                  <span className="text-micro px-0.5 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400">obr.</span>
+                  <span className="text-micro px-0.5 rounded-md bg-gray-200 dark:bg-lia-bg-elevated text-gray-600 dark:text-lia-text-tertiary">obr.</span>
                 )}
                 {benefit.is_discount && (
                   <span className="text-micro px-0.5 rounded-md bg-status-error/15 dark:bg-status-error/30 text-status-error dark:text-status-error">desc.</span>

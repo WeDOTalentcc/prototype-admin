@@ -250,20 +250,20 @@ export function LocationPresetsModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-[1px] z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-md w-full max-w-2xl max-h-[80vh] flex flex-col dark:bg-gray-800 dark:border-gray-700">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Location Presets</h2>
+      <div className="bg-white rounded-md w-full max-w-2xl max-h-[80vh] flex flex-col dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+          <h2 className="text-sm font-semibold lia-text-800 dark:text-lia-text-primary">Location Presets</h2>
           <button 
             onClick={onClose}
             className="p-1 hover:bg-gray-100 rounded-md transition-colors"
           >
-            <X className="w-4 h-4 text-gray-500" />
+            <X className="w-4 h-4 lia-text-500" />
           </button>
         </div>
 
-        <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+        <div className="px-4 py-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 lia-text-400" />
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -273,14 +273,14 @@ export function LocationPresetsModal({
           </div>
         </div>
 
-        <div className="flex border-b border-gray-200 dark:border-gray-700">
+        <div className="flex border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <button
             onClick={() => setActiveTab("organization")}
             className={cn(
               "flex-1 px-4 py-2.5 text-sm font-medium transition-colors",
               activeTab === "organization"
-                ? "text-gray-900 dark:text-gray-100 border-b-2 border-gray-900 dark:border-gray-100"
-                : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                ? "lia-text-900 dark:text-lia-text-primary border-b-2 border-gray-900 dark:border-lia-border-subtle"
+                : "lia-text-500 hover:lia-text-700 dark:text-lia-text-tertiary dark:hover:lia-text-200"
             )}
           >
             Organization Presets
@@ -295,8 +295,8 @@ export function LocationPresetsModal({
             className={cn(
               "flex-1 px-4 py-2.5 text-sm font-medium transition-colors",
               activeTab === "general"
-                ? "text-gray-900 dark:text-gray-100 border-b-2 border-gray-900 dark:border-gray-100"
-                : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                ? "lia-text-900 dark:text-lia-text-primary border-b-2 border-gray-900 dark:border-lia-border-subtle"
+                : "lia-text-500 hover:lia-text-700 dark:text-lia-text-tertiary dark:hover:lia-text-200"
             )}
           >
             General Presets
@@ -314,25 +314,25 @@ export function LocationPresetsModal({
                   <button
                     key={preset.id}
                     onClick={() => handleSelectPreset(preset)}
-                    className="w-full text-left p-3 border border-gray-200 rounded-md hover:border-gray-400 hover:bg-gray-50 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-700 transition-all"
+                    className="w-full text-left p-3 border border-lia-border-subtle rounded-md hover:border-gray-400 hover:bg-gray-50 dark:border-lia-border-default dark:hover:border-gray-500 dark:hover:bg-gray-700 transition-colors"
                   >
                     <div className="flex items-start justify-between">
                       <div>
-                        <h3 className="text-sm font-medium text-gray-800 dark:text-gray-100">{preset.name}</h3>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{preset.description}</p>
+                        <h3 className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">{preset.name}</h3>
+                        <p className="text-xs lia-text-500 dark:text-lia-text-tertiary mt-0.5">{preset.description}</p>
                       </div>
-                      <Badge className="bg-gray-100 text-gray-600 text-micro">
+                      <Badge className="bg-gray-100 lia-text-600 text-micro">
                         {preset.locations.length} locations
                       </Badge>
                     </div>
                     <div className="flex flex-wrap gap-1.5 mt-2">
                       {preset.locations.slice(0, 4).map((loc, i) => (
-                        <Badge key={i} className="bg-gray-50 text-gray-600 text-micro font-normal">
+                        <Badge key={i} className="bg-gray-50 lia-text-600 text-micro font-normal">
                           {loc.value.split(',')[0]}
                         </Badge>
                       ))}
                       {preset.locations.length > 4 && (
-                        <Badge className="bg-gray-50 text-gray-500 text-micro font-normal">
+                        <Badge className="bg-gray-50 lia-text-500 text-micro font-normal">
                           +{preset.locations.length - 4} more
                         </Badge>
                       )}
@@ -342,7 +342,7 @@ export function LocationPresetsModal({
               </div>
             ) : (
               <div className="text-center py-8">
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm lia-text-500 dark:text-lia-text-tertiary">
                   {searchQuery 
                     ? "No organization presets match your search"
                     : "No organization presets yet"
@@ -353,7 +353,7 @@ export function LocationPresetsModal({
                     variant="outline"
                     size="sm"
                     onClick={() => setShowSaveForm(true)}
-                    className="mt-3 bg-white border border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700"
+                    className="mt-3 bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700"
                   >
                     <Plus className="w-3.5 h-3.5 mr-1.5" />
                     Create Preset
@@ -367,25 +367,25 @@ export function LocationPresetsModal({
                 <button
                   key={preset.id}
                   onClick={() => handleSelectPreset(preset)}
-                  className="w-full text-left p-3 border border-gray-200 rounded-md hover:border-gray-400 hover:bg-gray-50 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-700 transition-all"
+                  className="w-full text-left p-3 border border-lia-border-subtle rounded-md hover:border-gray-400 hover:bg-gray-50 dark:border-lia-border-default dark:hover:border-gray-500 dark:hover:bg-gray-700 transition-colors"
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="text-sm font-medium text-gray-800 dark:text-gray-100">{preset.name}</h3>
-                      <p className="text-xs text-gray-500 mt-0.5">{preset.description}</p>
+                      <h3 className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">{preset.name}</h3>
+                      <p className="text-xs lia-text-500 mt-0.5">{preset.description}</p>
                     </div>
-                    <Badge className="bg-gray-100 text-gray-600 text-micro">
+                    <Badge className="bg-gray-100 lia-text-600 text-micro">
                       {preset.locations.length} locations
                     </Badge>
                   </div>
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     {preset.locations.slice(0, 4).map((loc, i) => (
-                      <Badge key={i} className="bg-gray-50 text-gray-600 text-micro font-normal">
+                      <Badge key={i} className="bg-gray-50 lia-text-600 text-micro font-normal">
                         {loc.value.split(',')[0]}
                       </Badge>
                     ))}
                     {preset.locations.length > 4 && (
-                      <Badge className="bg-gray-50 text-gray-500 text-micro font-normal">
+                      <Badge className="bg-gray-50 lia-text-500 text-micro font-normal">
                         +{preset.locations.length - 4} more
                       </Badge>
                     )}
@@ -394,7 +394,7 @@ export function LocationPresetsModal({
               ))}
               {filteredGeneralPresets.length === 0 && (
                 <div className="text-center py-8">
-                  <p className="text-sm text-gray-500">No presets match your search</p>
+                  <p className="text-sm lia-text-500">No presets match your search</p>
                 </div>
               )}
             </div>
@@ -402,8 +402,8 @@ export function LocationPresetsModal({
         </div>
 
         {showSaveForm && onSavePreset && (
-          <div className="px-4 py-3 border-t border-gray-200 bg-gray-50 dark:bg-gray-900 dark:border-gray-700">
-            <Label className="text-xs font-medium text-gray-800 dark:text-gray-200">Create New Preset</Label>
+          <div className="px-4 py-3 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle">
+            <Label className="text-xs font-medium lia-text-800 dark:text-lia-text-primary">Create New Preset</Label>
             <div className="flex gap-2 mt-2">
               <Input
                 value={newPresetName}
@@ -431,7 +431,7 @@ export function LocationPresetsModal({
                     setShowSaveForm(false)
                   }
                 }}
-                className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
               >
                 Save
               </Button>

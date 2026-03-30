@@ -172,14 +172,14 @@ export function HistoryTab({
 
   if (history.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center bg-[var(--lia-bg-secondary)] dark:bg-gray-900/50 rounded-md border border-[var(--lia-border-subtle)] dark:border-gray-800">
-        <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3 bg-[var(--lia-bg-tertiary)] dark:bg-gray-800">
-          <Clock className="w-5 h-5 text-[var(--lia-text-tertiary)]" />
+      <div className="flex flex-col items-center justify-center py-12 text-center bg-[var(--lia-bg-secondary)] dark:bg-lia-bg-primary/50 rounded-md border border-[var(--lia-border-subtle)]">
+        <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3 bg-[var(--lia-bg-tertiary)] dark:bg-lia-bg-secondary">
+          <Clock className="w-5 h-5 text-lia-text-tertiary" />
         </div>
-        <h3 className="text-sm font-medium text-[var(--lia-text-primary)] dark:text-gray-200 mb-1">
+        <h3 className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-1">
           Nenhuma busca realizada
         </h3>
-        <p className="text-xs text-[var(--lia-text-tertiary)] dark:text-gray-500 max-w-sm leading-relaxed">
+        <p className="text-xs text-lia-text-tertiary max-w-sm leading-relaxed">
           Suas buscas aparecerão aqui. Faça uma busca para começar.
         </p>
       </div>
@@ -190,18 +190,18 @@ export function HistoryTab({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-gray-950 dark:text-gray-50 font-['Open_Sans',sans-serif] flex items-center gap-2">
-            <Clock className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+          <h2 className="text-lg font-semibold text-gray-950 font-['Open_Sans',sans-serif] flex items-center gap-2">
+            <Clock className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
             Histórico de Buscas
           </h2>
-          <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+          <p className="text-xs text-gray-600 dark:text-lia-text-tertiary mt-0.5">
             {history.length} {history.length === 1 ? 'busca realizada' : 'buscas realizadas'} • Clique para re-executar
           </p>
         </div>
         <Button 
           variant="ghost" 
           size="sm"
-          className="text-xs text-gray-800 dark:text-gray-200 hover:text-status-error"
+          className="text-xs text-gray-800 dark:text-lia-text-primary hover:text-status-error"
           onClick={() => setShowClearConfirm(true)}
         >
           <Trash2 className="w-3.5 h-3.5 mr-1" />
@@ -213,11 +213,11 @@ export function HistoryTab({
         {Object.entries(groupedHistory).map(([dateGroup, items]) => (
           <div key={dateGroup}>
             <div className="flex items-center gap-2 mb-3">
-              <Calendar className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-              <span className="text-xs font-medium text-gray-800 dark:text-gray-200 uppercase tracking-wide">
+              <Calendar className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+              <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary uppercase tracking-wide">
                 {dateGroup}
               </span>
-              <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+              <div className="flex-1 h-px bg-gray-200 dark:bg-lia-bg-elevated" />
             </div>
 
             <div className="space-y-2">
@@ -228,7 +228,7 @@ export function HistoryTab({
                 return (
                   <div
                     key={item.id}
-                    className="group relative flex items-center gap-4 p-4 rounded-md border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 hover:transition-all cursor-pointer"
+                    className="group relative flex items-center gap-4 p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary hover:bg-gray-50 transition-colors cursor-pointer"
                     onClick={() => onReExecuteSearch(item)}
                   >
                     <div 
@@ -237,17 +237,17 @@ export function HistoryTab({
                       {item.mode === 'natural' ? (
                         <LIAIcon size="sm" />
                       ) : (
-                        <ModeIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                        <ModeIcon className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
                       )}
                     </div>
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <p className="text-sm font-medium text-gray-950 dark:text-gray-50 truncate">
+                        <p className="text-sm font-medium text-gray-950 truncate">
                           "{item.query}"
                         </p>
                       </div>
-                      <div className="flex items-center gap-3 text-xs text-gray-800 dark:text-gray-200">
+                      <div className="flex items-center gap-3 text-xs text-gray-800 dark:text-lia-text-primary">
                         <span className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />
                           {formatRelativeTime(item.timestamp)}
@@ -276,7 +276,7 @@ export function HistoryTab({
                         onClick={(e) => handleSaveClick(item, e)}
                         title="Salvar busca"
                       >
-                        <Bookmark className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                        <Bookmark className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -289,7 +289,7 @@ export function HistoryTab({
                       </Button>
                     </div>
 
-                    <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-gray-600 transition-colors" />
+                    <ChevronRight className="w-5 h-5 lia-text-muted group-hover:lia-text-base transition-colors" />
                   </div>
                 )
               })}
@@ -298,7 +298,7 @@ export function HistoryTab({
         ))}
       </div>
 
-      <div className="flex items-center justify-center gap-2 py-4 text-xs text-gray-600 dark:text-gray-400">
+      <div className="flex items-center justify-center gap-2 py-4 text-xs text-gray-600 dark:text-lia-text-tertiary">
         <LIAIcon size="xs" />
         <span>Clique em qualquer busca para executá-la novamente</span>
       </div>
@@ -307,7 +307,7 @@ export function HistoryTab({
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Bookmark className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <Bookmark className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
               Salvar Busca
             </DialogTitle>
             <DialogDescription>
@@ -317,7 +317,7 @@ export function HistoryTab({
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-800 dark:text-gray-200">
+              <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
                 Nome da Busca *
               </label>
               <Input
@@ -328,7 +328,7 @@ export function HistoryTab({
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-800 dark:text-gray-200">
+              <label className="text-sm font-medium text-gray-800 dark:text-lia-text-primary">
                 Descrição (opcional)
               </label>
               <Input
@@ -339,9 +339,9 @@ export function HistoryTab({
             </div>
 
             {selectedItem && (
-              <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
-                <p className="text-xs text-gray-800 dark:text-gray-200 mb-1">Query:</p>
-                <code className="text-xs text-gray-800 dark:text-gray-200">
+              <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                <p className="text-xs text-gray-800 dark:text-lia-text-primary mb-1">Query:</p>
+                <code className="text-xs text-gray-800 dark:text-lia-text-primary">
                   {selectedItem.query}
                 </code>
               </div>

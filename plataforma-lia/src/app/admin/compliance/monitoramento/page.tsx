@@ -137,7 +137,7 @@ const getSeverityConfig = (severity: string) => {
     case 'low':
       return { color: 'bg-status-success/15 text-status-success border-status-success/30', dot: 'bg-status-success' }
     default:
-      return { color: 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200', dot: 'bg-gray-500' }
+      return { color: 'bg-gray-100 lia-text-800 dark:text-lia-text-primary border-lia-border-subtle', dot: 'bg-gray-500' }
   }
 }
 
@@ -148,9 +148,9 @@ const getStatusConfig = (status: string) => {
     case 'investigating':
       return { label: 'Investigando', color: 'bg-status-warning/15 text-status-warning', icon: Clock }
     case 'mitigating':
-      return { label: 'Mitigando', color: 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50', icon: Activity }
+      return { label: 'Mitigando', color: 'bg-gray-100 dark:bg-lia-bg-secondary lia-text-900 dark:lia-text-50', icon: Activity }
     default:
-      return { label: status, color: 'bg-gray-100 text-gray-800 dark:text-gray-200', icon: Clock }
+      return { label: status, color: 'bg-gray-100 lia-text-800 dark:text-lia-text-primary', icon: Clock }
   }
 }
 
@@ -165,16 +165,16 @@ export default function MonitoramentoPage() {
           <div 
             className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
           >
-            <Activity className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <Activity className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
           </div>
           <div>
             <h1 
-              className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+              className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary"
               
             >
               Monitoramento & SOC
             </h1>
-            <p className="text-sm text-gray-400 dark:text-gray-500" >
+            <p className="text-sm lia-text-400 dark:lia-text-500" >
               Centro de operações de segurança e monitoramento contínuo
             </p>
           </div>
@@ -185,10 +185,10 @@ export default function MonitoramentoPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-gray-400 dark:text-gray-500" >
+                  <p className="text-sm lia-text-400 dark:lia-text-500" >
                     Sistemas Monitorados
                   </p>
-                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
+                  <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary" >
                     {systemOverview.systemsMonitored}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -208,10 +208,10 @@ export default function MonitoramentoPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-gray-400 dark:text-gray-500" >
+                  <p className="text-sm lia-text-400 dark:lia-text-500" >
                     Incidentes Abertos
                   </p>
-                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
+                  <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary" >
                     {systemOverview.openIncidents}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -231,10 +231,10 @@ export default function MonitoramentoPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-gray-400 dark:text-gray-500" >
+                  <p className="text-sm lia-text-400 dark:lia-text-500" >
                     Alertas (últimas 24h)
                   </p>
-                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
+                  <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary" >
                     {systemOverview.alerts24h}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -242,7 +242,7 @@ export default function MonitoramentoPage() {
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
-                  <Bell className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  <Bell className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                 </div>
               </div>
             </CardContent>
@@ -252,10 +252,10 @@ export default function MonitoramentoPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-gray-400 dark:text-gray-500" >
+                  <p className="text-sm lia-text-400 dark:lia-text-500" >
                     Uptime Médio
                   </p>
-                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
+                  <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary" >
                     {systemOverview.avgUptime}%
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -277,8 +277,8 @@ export default function MonitoramentoPage() {
         <Card className="mb-6" >
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-medium flex items-center gap-2 text-gray-800 dark:text-gray-100" >
-                <Server className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              <CardTitle className="text-base font-medium flex items-center gap-2 lia-text-800 dark:text-lia-text-primary" >
+                <Server className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                 Status dos Serviços Principais
               </CardTitle>
               <Badge className="bg-status-success/15 text-status-success">
@@ -294,13 +294,13 @@ export default function MonitoramentoPage() {
                 return (
                   <div 
                     key={service.name}
-                    className="p-4 rounded-md border border-gray-200 dark:border-gray-700"
+                    className="p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle"
                     
                   >
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <ServiceIcon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                        <span className="font-medium text-sm text-gray-800 dark:text-gray-100" >
+                        <ServiceIcon className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                        <span className="font-medium text-sm lia-text-800 dark:text-lia-text-primary" >
                           {service.name}
                         </span>
                       </div>
@@ -310,13 +310,13 @@ export default function MonitoramentoPage() {
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-400 dark:text-gray-500" >Uptime</span>
-                        <span className="text-xs font-medium text-gray-800 dark:text-gray-100" >{service.uptime}%</span>
+                        <span className="text-xs lia-text-400 dark:lia-text-500" >Uptime</span>
+                        <span className="text-xs font-medium lia-text-800 dark:text-lia-text-primary" >{service.uptime}%</span>
                       </div>
                       <Progress value={service.uptime} className="h-1.5" />
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-400 dark:text-gray-500" >Latência</span>
-                        <span className="text-xs font-medium text-gray-800 dark:text-gray-100" >{service.latency}</span>
+                        <span className="text-xs lia-text-400 dark:lia-text-500" >Latência</span>
+                        <span className="text-xs font-medium lia-text-800 dark:text-lia-text-primary" >{service.latency}</span>
                       </div>
                     </div>
                   </div>
@@ -330,13 +330,13 @@ export default function MonitoramentoPage() {
           <Card >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-medium flex items-center gap-2 text-gray-800 dark:text-gray-100" >
-                  <Bell className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                <CardTitle className="text-base font-medium flex items-center gap-2 lia-text-800 dark:text-lia-text-primary" >
+                  <Bell className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                   Últimos Alertas
                 </CardTitle>
                 <Link 
                   href="/admin/compliance/monitoramento/alertas"
-                  className="text-sm text-gray-600 dark:text-gray-400 hover:underline flex items-center gap-1"
+                  className="text-sm lia-text-600 dark:text-lia-text-tertiary hover:underline flex items-center gap-1"
                 >
                   Ver todos <ExternalLink className="w-3 h-3" />
                 </Link>
@@ -349,7 +349,7 @@ export default function MonitoramentoPage() {
                   return (
                     <div 
                       key={alert.id}
-                      className="flex items-center justify-between p-3 rounded-md border border-gray-200 dark:border-gray-700"
+                      className="flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle"
                       
                     >
                       <div className="flex items-center gap-3">
@@ -359,11 +359,11 @@ export default function MonitoramentoPage() {
                             <Badge variant="outline" className="font-mono text-xs">
                               {alert.id}
                             </Badge>
-                            <span className="font-medium text-sm text-gray-800 dark:text-gray-100" >
+                            <span className="font-medium text-sm lia-text-800 dark:text-lia-text-primary" >
                               {alert.title}
                             </span>
                           </div>
-                          <p className="text-xs mt-1 text-gray-400 dark:text-gray-500" >
+                          <p className="text-xs mt-1 lia-text-400 dark:lia-text-500" >
                             {new Date(alert.createdAt).toLocaleString('pt-BR')}
                           </p>
                         </div>
@@ -381,14 +381,14 @@ export default function MonitoramentoPage() {
           <Card >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
+                <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
                   Status das Integrações
                 </CardTitle>
                 <a 
                   href={getWorkOSLinks().logStreams}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-gray-600 dark:text-gray-400 hover:underline flex items-center gap-1"
+                  className="text-sm lia-text-600 dark:text-lia-text-tertiary hover:underline flex items-center gap-1"
                 >
                   Configurar no WorkOS <ExternalLink className="w-3 h-3" />
                 </a>
@@ -399,7 +399,7 @@ export default function MonitoramentoPage() {
                 {integrationStatus.map((integration) => (
                   <div 
                     key={integration.name}
-                    className="flex items-center justify-between p-3 rounded-md border border-gray-200 dark:border-gray-700"
+                    className="flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle"
                     
                   >
                     <div className="flex items-center gap-3">
@@ -409,11 +409,11 @@ export default function MonitoramentoPage() {
                         <WifiOff className="w-4 h-4 text-status-warning" />
                       )}
                       <div>
-                        <span className="font-medium text-sm text-gray-800 dark:text-gray-100" >
+                        <span className="font-medium text-sm lia-text-800 dark:text-lia-text-primary" >
                           {integration.name}
                         </span>
                         {integration.lastSync && (
-                          <p className="text-xs text-gray-400 dark:text-gray-500" >
+                          <p className="text-xs lia-text-400 dark:lia-text-500" >
                             Última sincronização: {new Date(integration.lastSync).toLocaleString('pt-BR')}
                           </p>
                         )}
@@ -449,14 +449,14 @@ export default function MonitoramentoPage() {
                       <div 
                         className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
                       >
-                        <Icon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                        <Icon className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                       </div>
-                      <ArrowRight className="w-4 h-4 text-gray-400 dark:text-gray-500"  />
+                      <ArrowRight className="w-4 h-4 lia-text-400 dark:lia-text-500"  />
                     </div>
-                    <h3 className="font-medium mb-1 text-gray-800 dark:text-gray-100" >
+                    <h3 className="font-medium mb-1 lia-text-800 dark:text-lia-text-primary" >
                       {page.name}
                     </h3>
-                    <p className="text-sm text-gray-400 dark:text-gray-500" >
+                    <p className="text-sm lia-text-400 dark:lia-text-500" >
                       {page.description}
                     </p>
                   </CardContent>
@@ -465,7 +465,7 @@ export default function MonitoramentoPage() {
             )
           })}
           <Card 
-            className="h-full border-dashed border-2 border-gray-200 dark:border-gray-700 bg-wedo-cyan/[0.02]"
+            className="h-full border-dashed border-2 border-lia-border-subtle dark:border-lia-border-subtle bg-wedo-cyan/[0.02]"
           >
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">
@@ -474,19 +474,19 @@ export default function MonitoramentoPage() {
                 >
                   <Radio className="w-5 h-5 text-wedo-purple" />
                 </div>
-                <ExternalLink className="w-4 h-4 text-gray-400 dark:text-gray-500"  />
+                <ExternalLink className="w-4 h-4 lia-text-400 dark:lia-text-500"  />
               </div>
-              <h3 className="font-medium mb-1 text-gray-800 dark:text-gray-100" >
+              <h3 className="font-medium mb-1 lia-text-800 dark:text-lia-text-primary" >
                 Log Streaming (SIEM)
               </h3>
-              <p className="text-sm mb-4 text-gray-400 dark:text-gray-500" >
+              <p className="text-sm mb-4 lia-text-400 dark:lia-text-500" >
                 Configure streaming de logs para Datadog, Splunk, S3 e outros diretamente no WorkOS Dashboard.
               </p>
               <a
                 href={getWorkOSLinks().logStreams}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 transition-colors"
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 transition-colors"
               >
                 Configurar no WorkOS
                 <ExternalLink className="w-3 h-3" />

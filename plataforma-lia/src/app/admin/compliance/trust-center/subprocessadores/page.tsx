@@ -41,7 +41,7 @@ export default function SubprocessadoresPage() {
         <div className="mb-4">
           <Link 
             href="/admin/compliance/trust-center"
-            className="inline-flex items-center gap-1 text-sm hover:underline text-gray-700"
+            className="inline-flex items-center gap-1 text-sm hover:underline lia-text-700"
           >
             <ArrowLeft className="w-4 h-4" />
             Voltar ao Trust Center
@@ -52,48 +52,48 @@ export default function SubprocessadoresPage() {
           <div 
             className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
           >
-            <Building2 className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <Building2 className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
           </div>
           <div>
             <h1 
-              className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+              className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary"
               
             >
               Subprocessadores
             </h1>
-            <p className="text-sm text-gray-400 dark:text-gray-500" >
+            <p className="text-sm lia-text-400 dark:lia-text-500" >
               Lista de subprocessadores e terceiros autorizados
             </p>
           </div>
         </div>
         
         <div 
-          className="rounded-md border overflow-hidden bg-white dark:bg-gray-950 border-gray-200 dark:border-gray-700"
+          className="rounded-md border overflow-hidden bg-white dark:lia-bg-950 border-lia-border-subtle dark:border-lia-border-subtle"
           
         >
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr 
-                  className="border-b bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700"
+                  className="border-b bg-gray-50 dark:bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle"
                   
                 >
-                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500" >
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider lia-text-400 dark:lia-text-500" >
                     Subprocessador
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500" >
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider lia-text-400 dark:lia-text-500" >
                     Tipo de Serviço
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500" >
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider lia-text-400 dark:lia-text-500" >
                     País/Região
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500" >
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider lia-text-400 dark:lia-text-500" >
                     Dados Processados
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500" >
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider lia-text-400 dark:lia-text-500" >
                     Avaliação de Risco
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500" >
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider lia-text-400 dark:lia-text-500" >
                     Última Revisão
                   </th>
                 </tr>
@@ -102,12 +102,12 @@ export default function SubprocessadoresPage() {
                 {subprocessors.map((sub, index) => (
                   <tr 
                     key={sub.id}
-                    className={`border-b hover:bg-gray-50 transition-colors border-gray-200 dark:border-gray-700 ${index % 2 !== 0 ? 'bg-gray-50 dark:bg-gray-900' : ''}`}
+                    className={`border-b hover:bg-gray-50 transition-colors border-lia-border-subtle dark:border-lia-border-subtle ${index % 2 !== 0 ? 'bg-gray-50 dark:bg-lia-bg-primary' : ''}`}
                   >
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-2">
-                        <Building2 className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                        <span className="font-medium text-sm text-gray-800 dark:text-gray-100" >
+                        <Building2 className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                        <span className="font-medium text-sm lia-text-800 dark:text-lia-text-primary" >
                           {sub.name}
                         </span>
                       </div>
@@ -121,14 +121,14 @@ export default function SubprocessadoresPage() {
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-1.5">
-                        <Globe className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500"  />
-                        <span className="text-sm text-gray-500 dark:text-gray-400" >
+                        <Globe className="w-3.5 h-3.5 lia-text-400 dark:lia-text-500"  />
+                        <span className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
                           {sub.country}
                         </span>
                       </div>
                     </td>
                     <td className="px-4 py-4">
-                      <span className="text-sm text-gray-500 dark:text-gray-400" >
+                      <span className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
                         {sub.dataTypes}
                       </span>
                     </td>
@@ -136,7 +136,7 @@ export default function SubprocessadoresPage() {
                       {getRiskBadge(sub.risk)}
                     </td>
                     <td className="px-4 py-4">
-                      <span className="text-sm text-gray-500 dark:text-gray-400" >
+                      <span className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
                         {formatDate(sub.lastReview)}
                       </span>
                     </td>
@@ -150,7 +150,7 @@ export default function SubprocessadoresPage() {
         <div 
           className="mt-4 p-4 rounded-md border bg-gray-200/20 border-wedo-cyan/20"
         >
-          <p className="text-sm text-gray-500 dark:text-gray-400" >
+          <p className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
             <strong>Transparência:</strong> Todos os subprocessadores passam por avaliação de segurança e possuem acordos de processamento de dados (DPA) assinados. Notificamos nossos clientes sobre qualquer alteração nesta lista com antecedência mínima de 30 dias.
           </p>
         </div>

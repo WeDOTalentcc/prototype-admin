@@ -98,17 +98,17 @@ export function CalibrationCard({
 
   return (
     <Card className={cn(
-      "w-full border transition-all duration-200",
+ "w-full border transition-colors duration-200",
       feedbackGiven === 'like' && "border-status-success/30 bg-status-success/10/50 dark:bg-status-success/10",
-      feedbackGiven === 'dislike' && "border-gray-300 bg-gray-50/50 dark:bg-gray-900/10 opacity-60",
-      !feedbackGiven && "border-gray-100 dark:border-gray-700 hover:bg-gray-50 hover:border-gray-200 hover:",
+      feedbackGiven === 'dislike' && "border-lia-border-default bg-gray-50/50 dark:bg-lia-bg-primary/10 opacity-60",
+      !feedbackGiven && "border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 hover:border-lia-border-subtle hover:",
       className
     )}>
       {progress && (
         <CardHeader className="p-3 pb-0">
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
+              <span className="text-gray-600 dark:text-lia-text-tertiary flex items-center gap-1.5">
                 <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                 {progress.isComplete ? (
                   <span className="text-status-success font-medium flex items-center gap-1">
@@ -121,16 +121,16 @@ export function CalibrationCard({
                   </span>
                 )}
               </span>
-              <span className="text-gray-600 dark:text-gray-400 font-medium">
+              <span className="text-gray-600 dark:text-lia-text-tertiary font-medium">
                 {progressPercentage}%
               </span>
             </div>
             <Progress 
               value={progressPercentage} 
-              className="h-1.5 bg-gray-100 dark:bg-gray-800"
+              className="h-1.5 bg-gray-100 dark:bg-lia-bg-secondary"
             />
             {!progress.isComplete && feedbacksRemaining > 0 && (
-              <p className="text-xs text-gray-800 dark:text-gray-200">
+              <p className="text-xs text-gray-800 dark:text-lia-text-primary">
                 {feedbacksRemaining === 1 
                   ? 'Falta apenas 1 avaliação para liberar o sourcing automático'
                   : `Faltam ${feedbacksRemaining} avaliações para liberar o sourcing automático`
@@ -148,11 +148,11 @@ export function CalibrationCard({
       <CardContent className="p-3">
         <div className="flex gap-3">
           <div className="flex-shrink-0">
-            <Avatar className="w-12 h-12 border-2 border-white dark:border-gray-800">
+            <Avatar className="w-12 h-12 border-2 border-white">
               {candidate.avatar_url ? (
                 <AvatarImage src={candidate.avatar_url} alt={candidate.name} />
               ) : null}
-              <AvatarFallback className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm font-medium">
+              <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary text-sm font-medium">
                 {getInitials(candidate.name)}
               </AvatarFallback>
             </Avatar>
@@ -162,7 +162,7 @@ export function CalibrationCard({
             <div className="flex items-start justify-between gap-2 mb-1">
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <h4 className="text-sm font-semibold text-gray-950 dark:text-gray-50 truncate">
+                  <h4 className="text-sm font-semibold text-gray-950 truncate">
                     {candidate.name}
                   </h4>
                   {candidate.linkedin_url && (
@@ -170,28 +170,28 @@ export function CalibrationCard({
                       href={candidate.linkedin_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-gray-600 hover:text-gray-700 transition-colors"
+                      className="lia-text-base hover:lia-text-base transition-colors"
                       title="Ver perfil no LinkedIn"
                     >
                       <Linkedin className="w-3.5 h-3.5" />
                     </a>
                   )}
                   {candidate.lia_score && (
-                    <Badge className="text-xs py-0 px-1.5 bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200">
+                    <Badge className="text-xs py-0 px-1.5 bg-gray-100 text-gray-800 dark:text-lia-text-primary border-lia-border-subtle">
                       Score: {candidate.lia_score}
                     </Badge>
                   )}
                 </div>
                 <div className="flex items-center gap-1.5 mt-0.5">
-                  <Briefcase className="w-3 h-3 text-gray-600" />
-                  <span className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                  <Briefcase className="w-3 h-3 lia-text-base" />
+                  <span className="text-xs text-gray-600 dark:text-lia-text-tertiary truncate">
                     {candidate.current_title}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mb-2">
+            <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-lia-text-tertiary mb-2">
               {candidate.current_company && (
                 <div className="flex items-center gap-1">
                   <Building className="w-3 h-3" />
@@ -213,7 +213,7 @@ export function CalibrationCard({
             </div>
 
             {candidate.summary && (
-              <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 mb-2">
+              <p className="text-xs text-gray-600 dark:text-lia-text-tertiary line-clamp-2 mb-2">
                 {candidate.summary}
               </p>
             )}
@@ -224,7 +224,7 @@ export function CalibrationCard({
                   <Badge 
                     key={skill} 
                     variant="secondary"
-                    className="text-xs py-0 px-1.5 bg-gray-100 dark:bg-gray-800"
+                    className="text-xs py-0 px-1.5 bg-gray-100 dark:bg-lia-bg-secondary"
                   >
                     {skill}
                   </Badge>
@@ -304,8 +304,8 @@ export function CalibrationCard({
 
             {feedbackGiven && (
               <div className={cn(
-                "flex items-center gap-2 pt-1 text-xs",
-                feedbackGiven === 'like' ? "text-status-success" : "text-gray-800 dark:text-gray-200"
+ "flex items-center gap-2 pt-1 text-xs",
+                feedbackGiven === 'like' ? "text-status-success" : "text-gray-800 dark:text-lia-text-primary"
               )}>
                 {feedbackGiven === 'like' ? (
                   <>

@@ -149,14 +149,14 @@ export function JobsPage(props: JobsPageProps) {
           <div className="p-2.5 max-w-full overflow-x-auto">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <div className="h-6 w-48 bg-gray-200 dark:bg-gray-800 rounded-md animate-pulse" />
-                <div className="h-4 w-64 bg-gray-200 dark:bg-gray-800 rounded-md animate-pulse mt-2" />
+                <div className="h-6 w-48 bg-gray-200 dark:bg-lia-bg-secondary rounded-md animate-pulse" />
+                <div className="h-4 w-64 bg-gray-200 dark:bg-lia-bg-secondary rounded-md animate-pulse mt-2" />
               </div>
-              <div className="h-8 w-24 bg-gray-200 dark:bg-gray-800 rounded-md animate-pulse" />
+              <div className="h-8 w-24 bg-gray-200 dark:bg-lia-bg-secondary rounded-md animate-pulse" />
             </div>
             <div className="space-y-2 mt-6">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="h-12 bg-gray-200 dark:bg-gray-800 rounded-md animate-pulse" />
+                <div key={i} className="h-12 bg-gray-200 dark:bg-lia-bg-secondary rounded-md animate-pulse" />
               ))}
             </div>
           </div>
@@ -169,7 +169,7 @@ export function JobsPage(props: JobsPageProps) {
     <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-950 overflow-hidden relative">
       {/* Super Chat Fullscreen Mode - Cobre toda a área de conteúdo */}
       {chatMode ==='job-creation' && isChatFullscreen && showInlineChat && (
-        <div className="absolute inset-0 z-50 bg-white dark:bg-gray-900 flex flex-col">
+        <div className="absolute inset-0 z-50 bg-white dark:bg-lia-bg-primary flex flex-col">
           <ExpandedChatModal
             isOpen={true}
             onClose={closeChat}
@@ -195,7 +195,7 @@ export function JobsPage(props: JobsPageProps) {
             <div className="flex items-center gap-3">
               <div>
                 <h1 className="text-xl font-['Open_Sans',sans-serif] font-semibold wedo-text-black flex items-center gap-2">
-                  <Briefcase className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  <Briefcase className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
                   Gestão de Vagas
                 </h1>
               </div>
@@ -214,10 +214,10 @@ export function JobsPage(props: JobsPageProps) {
 
         {/* Sistema de Abas - Padrão Funil de Talentos */}
         <div className="mb-0">
-          <div className="border-b border-gray-200 dark:border-gray-700">
+          <div className="border-b border-lia-border-subtle dark:border-lia-border-subtle">
             <nav className="-mb-px flex items-center space-x-6 nav-tabs" aria-label="Tabs" role="tablist">
+              {/* TODO Sprint 3: migrar para <Tabs> shadcn */}
               {navigationFilters.map((filter) => (
-                {/* TODO Sprint 3: migrar para <Tabs> shadcn */}
                 <button
                   key={filter.id}
                   onClick={() => {
@@ -226,8 +226,8 @@ export function JobsPage(props: JobsPageProps) {
                   role="tab"
                   className={`group inline-flex items-center py-2 px-1 border-b-2 tab-button ${
                     activeFilter === filter.id
-                      ?'border-gray-900 text-gray-950 dark:border-gray-100 dark:text-gray-50 font-semibold'
-                      :'border-transparent text-gray-800 hover:text-gray-950 hover:border-gray-300 dark:text-gray-200 dark:hover:text-gray-600'
+                      ?'border-gray-900 text-gray-950 dark:border-lia-border-subtle dark:text-gray-50 font-semibold'
+                      :'border-transparent text-gray-800 hover:text-gray-950 hover:border-lia-border-default dark:text-lia-text-primary dark:hover:text-gray-600'
                   }`}
                 >
                   <span>{filter.label}</span>
@@ -236,8 +236,8 @@ export function JobsPage(props: JobsPageProps) {
                       variant="secondary"
                       className={`ml-2 text-xs ${
                         activeFilter === filter.id
-                          ?'bg-gray-100 text-gray-950 dark:bg-gray-700 dark:text-gray-200 font-semibold'
-                          :'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
+                          ?'bg-gray-100 text-gray-950 dark:bg-lia-bg-elevated dark:text-lia-text-primary font-semibold'
+                          :'bg-gray-100 text-gray-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary'
                       }`}
                     >
                       {isLoadingJobs ? (
@@ -265,7 +265,7 @@ export function JobsPage(props: JobsPageProps) {
             <div className="w-full max-w-[780px] mx-auto px-4 flex flex-col">
               <LiaPromptHeader title="Posso te ajudar com análises de vagas?" />
               {/* Container externo - Background branco como funil de talentos */}
-              <div className="rounded-xl overflow-hidden bg-white border border-gray-200">
+              <div className="rounded-xl overflow-hidden bg-lia-bg-primary border border-lia-border-subtle">
                 {/* Área de Tags - Linha superior */}
                 <div className="px-4 pt-4 pb-4 border-b border-b-gray-200">
                   <div className="flex flex-wrap items-center gap-2">
@@ -275,7 +275,7 @@ export function JobsPage(props: JobsPageProps) {
                         setActiveFilter('todas')
                         setTimeout(() => openJobCreationChat('Criar nova vaga'), 100)
                       }}
-                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-all bg-gray-100 text-gray-950 hover:bg-gray-900 hover:text-white font-open-sans"
+                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-gray-950 hover:bg-gray-900 hover:text-white font-open-sans"
                     >
                       <Plus className="w-3.5 h-3.5 text-gray-800 group-hover:text-white transition-colors" />
                       Criar nova vaga
@@ -283,7 +283,7 @@ export function JobsPage(props: JobsPageProps) {
                     {/* Tag 2: Ver minhas vagas */}
                     <button
                       onClick={() => setActiveFilter('ativas')}
-                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-all bg-gray-100 text-gray-950 hover:bg-gray-900 hover:text-white font-open-sans"
+                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-gray-950 hover:bg-gray-900 hover:text-white font-open-sans"
                     >
                       <Briefcase className="w-3.5 h-3.5 text-gray-800 group-hover:text-white transition-colors" />
                       Ver minhas vagas
@@ -291,7 +291,7 @@ export function JobsPage(props: JobsPageProps) {
                     {/* Tag 3: Ver todas as vagas */}
                     <button
                       onClick={() => setActiveFilter('todas')}
-                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-all bg-gray-100 text-gray-950 hover:bg-gray-900 hover:text-white font-open-sans"
+                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-gray-950 hover:bg-gray-900 hover:text-white font-open-sans"
                     >
                       <Building2 className="w-3.5 h-3.5 text-gray-800 group-hover:text-white transition-colors" />
                       Ver todas as vagas
@@ -302,7 +302,7 @@ export function JobsPage(props: JobsPageProps) {
                         setActiveFilter('todas')
                         setTimeout(() => openGeneralChat('Resumo das minhas vagas ativas'), 100)
                       }}
-                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-all bg-gray-100 text-gray-950 hover:bg-gray-900 hover:text-white font-open-sans"
+                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-gray-950 hover:bg-gray-900 hover:text-white font-open-sans"
                     >
                       <BarChart3 className="w-3.5 h-3.5 text-gray-800 group-hover:text-white transition-colors" />
                       Resumo das vagas
@@ -319,7 +319,7 @@ export function JobsPage(props: JobsPageProps) {
 
                 {/* Input - Estilo Funil de Talentos */}
                 <div className="px-4 pt-4 pb-4">
-                  <div className="flex items-center gap-3 px-4 py-3 bg-white rounded-md border border-gray-200 transition-colors focus-within:border-gray-400 focus-within:ring-1 focus-within:ring-gray-900/20">
+                  <div className="flex items-center gap-3 px-4 py-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle transition-colors focus-within:border-gray-400 focus-within:ring-1 focus-within:ring-gray-900/20">
                     {/* Input */}
                     <input
                       type="text"
@@ -382,7 +382,7 @@ export function JobsPage(props: JobsPageProps) {
                           setActiveFilter('todas')
                           setTimeout(() => openGeneralChat(suggestion), 100)
                         }}
-                        className="inline-flex items-center px-2.5 py-0.5 text-xs rounded-full transition-all bg-gray-50 text-gray-800 border border-gray-200 hover:text-gray-900 hover:bg-gray-100"
+                        className="inline-flex items-center px-2.5 py-0.5 text-xs rounded-full transition-[width,height] bg-gray-50 text-gray-800 border border-lia-border-subtle hover:text-gray-900 hover:bg-gray-100"
                        
                       >
                         {suggestion}
@@ -411,7 +411,7 @@ export function JobsPage(props: JobsPageProps) {
                   placeholder="Ex: Desenvolvedores Python com 5+ anos em São Paulo..."
                   value={liaPromptValue}
                   onChange={(e) => setLiaPromptValue(e.target.value)}
-                  className="w-full h-10 pl-4 pr-20 text-base-ui rounded-md focus:outline-none placeholder:text-gray-600 transition-all border bg-lia-bg-primary"
+                  className="w-full h-10 pl-4 pr-20 text-base-ui rounded-md focus:outline-none placeholder:text-gray-600 transition-colors border bg-lia-bg-primary"
                   style={{color:"var(--gray-950)"}}
                   onFocus={(e) => {
                     e.currentTarget.style.borderColor ="var(--gray-800)"
@@ -457,7 +457,7 @@ export function JobsPage(props: JobsPageProps) {
             <div className="flex items-center gap-3">
               {/* Badge de seleção */}
               {selectedJobsForBatch.size > 0 && (
-                <Badge className="bg-gray-100 text-gray-950 border-gray-300 dark:bg-gray-800 dark:text-gray-50 dark:border-gray-600 text-xs font-bold">
+                <Badge className="bg-gray-100 text-gray-950 border-lia-border-default dark:bg-lia-bg-secondary dark:text-gray-50 dark:border-lia-border-default text-xs font-bold">
                   🎯 {selectedJobsForBatch.size}
                 </Badge>
               )}
@@ -506,7 +506,7 @@ export function JobsPage(props: JobsPageProps) {
                   className={`ml-1 text-xs ${
                     showColumnConfig
                       ?'bg-gray-800 text-white dark:bg-gray-200 dark:text-gray-900 font-bold'
-                      :'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                      :'bg-gray-100 text-gray-800 dark:bg-lia-bg-elevated dark:text-lia-text-primary'
                   }`}
                 >
                   6
@@ -518,9 +518,9 @@ export function JobsPage(props: JobsPageProps) {
 
           {/* Results Summary */}
           <div className="flex-shrink-0 flex items-center justify-between mb-2">
-            <div className="text-xs text-gray-800 dark:text-gray-200 flex items-center gap-3">
+            <div className="text-xs text-gray-800 dark:text-lia-text-primary flex items-center gap-3">
               {(searchTerm || selectedDaysFilter !=='todas') && (
-                <Badge variant="outline" className="text-xs bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 font-medium">
+                <Badge variant="outline" className="text-xs bg-gray-100 text-gray-800 border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:border-lia-border-default font-medium">
                   filtros ativos
                 </Badge>
               )}
@@ -545,7 +545,7 @@ export function JobsPage(props: JobsPageProps) {
           />
 
           {/* Results Layout with Sidebars - Layout flex responsivo */}
-          <div className="flex gap-2 transition-all duration-300 flex-1 min-h-0 overflow-hidden">
+          <div className="flex gap-2 transition-colors duration-300 flex-1 min-h-0 overflow-hidden">
             {/* LIA Sidebar Expandida - InlineChatPanel */}
             <InlineChatPanel
               showExpandedLIA={showExpandedLIA}
@@ -598,7 +598,7 @@ export function JobsPage(props: JobsPageProps) {
 
             {/* Tabela de Vagas - Com suporte a contração e ocultação em fullscreen */}
             {!(chatMode ==='job-creation' && isChatFullscreen) && (
-            <div className={`h-full bg-white dark:bg-gray-800 rounded-md transition-all duration-300 min-w-0 overflow-hidden ${
+            <div className={`h-full bg-white dark:bg-lia-bg-secondary rounded-md transition-[width,height] duration-300 min-w-0 overflow-hidden ${
               isTableCollapsed 
                 ?'w-14 flex-shrink-0' 
                 : showJobPreview ?'flex-1' :'flex-1'
@@ -614,7 +614,7 @@ export function JobsPage(props: JobsPageProps) {
                     className="h-10 w-10 p-0 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
                     title="Expandir tabela de vagas"
                   >
-                    <ChevronRight className="w-5 h-5 text-gray-800 dark:text-gray-200" />
+                    <ChevronRight className="w-5 h-5 text-gray-800 dark:text-lia-text-primary" />
                   </Button>
                   
                   {/* Ícone da tabela */}
@@ -637,10 +637,10 @@ export function JobsPage(props: JobsPageProps) {
                 <div className="h-full flex flex-col">
                   {/* Header da tabela com botão de contrair */}
                   {showInlineChat && (
-                    <div className="flex-shrink-0 px-3 py-2 bg-gray-50 dark:bg-gray-800 flex items-center justify-between">
+                    <div className="flex-shrink-0 px-3 py-2 bg-gray-50 dark:bg-lia-bg-secondary flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Briefcase className="w-4 h-4 text-gray-800" />
-                        <span className="text-xs font-medium text-gray-800 dark:text-gray-200">
+                        <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">
                           Vagas ({filteredJobs.length})
                         </span>
                       </div>
@@ -1331,36 +1331,36 @@ export function JobsPage(props: JobsPageProps) {
 
         {showReactivateScreeningDialog && reactivateScreeningJobs.length > 0 && (
           <Dialog open={showReactivateScreeningDialog} onOpenChange={(open) => !open && setShowReactivateScreeningDialog(false)}>
-            <DialogContent className="max-w-sm rounded-md bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700">
-              <DialogHeader className="pb-3 border-b border-gray-200 dark:border-gray-700">
+            <DialogContent className="max-w-sm rounded-md bg-white border border-lia-border-subtle dark:bg-lia-bg-primary dark:border-lia-border-subtle">
+              <DialogHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
                 <DialogTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50 font-['Open_Sans',sans-serif]">
                   Reativar Triagem?
                 </DialogTitle>
               </DialogHeader>
               <div className="py-4 space-y-3">
-                <p className="text-xs text-gray-600 dark:text-gray-400">
+                <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
                   {reactivateScreeningJobs.length === 1 
                     ? `A vaga"${reactivateScreeningJobs[0]?.title}" tinha a triagem ativa antes de ser pausada. Deseja reativar a triagem?`
                     : `${reactivateScreeningJobs.length} vagas tinham triagem ativa antes de serem pausadas. Deseja reativá-las?`
                   }
                 </p>
                 <div className="space-y-2">
-                  <Label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                  <Label className="text-xs font-medium text-gray-600 dark:text-lia-text-tertiary">
                     Nova data de término (opcional)
                   </Label>
                   <Input
                     type="date"
                     value={reactivateEndDate}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setReactivateEndDate(e.target.value)}
-                    className="h-8 text-xs border-gray-200 dark:border-gray-600 dark:bg-gray-700"
+                    className="h-8 text-xs border-lia-border-subtle dark:border-lia-border-default dark:bg-lia-bg-elevated"
                   />
                 </div>
               </div>
-              <DialogFooter className="gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+              <DialogFooter className="gap-2 pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                 <Button
                   variant="outline"
                   onClick={() => { setShowReactivateScreeningDialog(false); setReactivateScreeningJobs([]); setReactivateEndDate('') }}
-                  className="h-8 px-4 text-xs border-gray-300 dark:border-gray-600"
+                  className="h-8 px-4 text-xs border-lia-border-default dark:border-lia-border-default"
                 >
                   Não, manter pausada
                 </Button>

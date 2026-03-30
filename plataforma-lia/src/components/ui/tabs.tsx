@@ -14,7 +14,7 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "inline-flex h-10 items-center justify-center rounded-full bg-gray-100 p-1 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
+ "inline-flex h-10 items-center justify-center rounded-full bg-gray-100 p-1 text-gray-600 dark:bg-lia-bg-secondary dark:text-lia-text-tertiary",
       className
     )}
     {...props}
@@ -29,7 +29,7 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "inline-flex items-center justify-center whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/30 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:dark:ring-offset-gray-950 dark:focus-visible:ring-gray-400/30 dark:data-[state=active]:bg-gray-950 dark:data-[state=active]:text-gray-50",
+ "inline-flex items-center justify-center whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium ring-offset-white transition-[width,height] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/30 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-lia-bg-primary data-[state=active]:lia-text-strong data-[state=active]:dark:ring-offset-gray-950 dark:focus-visible:ring-gray-400/30 dark:data-[state=active]:bg-gray-950 dark:data-[state=active]:lia-text-subtle",
       className
     )}
     {...props}
@@ -44,7 +44,7 @@ const TabsContent = React.forwardRef<
   <TabsPrimitive.Content
     ref={ref}
     className={cn(
-      "mt-2 ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 dark:ring-offset-gray-950 dark:focus-visible:ring-gray-300",
+ "mt-2 ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 dark:ring-offset-gray-950 dark:focus-visible:ring-gray-300",
       className
     )}
     {...props}

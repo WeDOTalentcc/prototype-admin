@@ -162,7 +162,7 @@ const getSeverityConfig = (severity: string) => {
     case 'low':
       return { label: 'Baixo', color: 'bg-status-success/15 text-status-success border-status-success/30', dot: 'bg-status-success' }
     default:
-      return { label: severity, color: 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200', dot: 'bg-gray-500' }
+      return { label: severity, color: 'bg-gray-100 lia-text-800 dark:text-lia-text-primary border-lia-border-subtle', dot: 'bg-gray-500' }
   }
 }
 
@@ -173,13 +173,13 @@ const getStatusConfig = (status: string) => {
     case 'investigating':
       return { label: 'Investigando', color: 'bg-status-warning/15 text-status-warning', icon: Clock }
     case 'mitigating':
-      return { label: 'Mitigando', color: 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50', icon: Shield }
+      return { label: 'Mitigando', color: 'bg-gray-100 dark:bg-lia-bg-secondary lia-text-900 dark:lia-text-50', icon: Shield }
     case 'resolved':
       return { label: 'Resolvido', color: 'bg-status-success/15 text-status-success', icon: CheckCircle2 }
     case 'closed':
-      return { label: 'Fechado', color: 'bg-gray-100 text-gray-800 dark:text-gray-200', icon: XCircle }
+      return { label: 'Fechado', color: 'bg-gray-100 lia-text-800 dark:text-lia-text-primary', icon: XCircle }
     default:
-      return { label: status, color: 'bg-gray-100 text-gray-800 dark:text-gray-200', icon: Clock }
+      return { label: status, color: 'bg-gray-100 lia-text-800 dark:text-lia-text-primary', icon: Clock }
   }
 }
 
@@ -216,30 +216,30 @@ export default function IncidentesPage() {
             <div 
               className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
             >
-              <AlertCircle className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <AlertCircle className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+                className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary"
                 
               >
                 Gestão de Incidentes (PRI)
               </h1>
-              <p className="text-sm text-gray-400 dark:text-gray-500" >
+              <p className="text-sm lia-text-400 dark:lia-text-500" >
                 Plano de Resposta a Incidentes e registro de ocorrências
               </p>
             </div>
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200">
+              <Button className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200">
                 <Plus className="w-4 h-4 mr-2" />
                 Registrar Incidente
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-panel-xl">
               <DialogHeader>
-                <DialogTitle className="text-gray-800 dark:text-gray-100" >Registrar Novo Incidente</DialogTitle>
+                <DialogTitle className="lia-text-800 dark:text-lia-text-primary" >Registrar Novo Incidente</DialogTitle>
                 <DialogDescription>
                   Preencha as informações do incidente para iniciar o processo de resposta.
                 </DialogDescription>
@@ -299,7 +299,7 @@ export default function IncidentesPage() {
                         variant="outline"
                         className={`cursor-pointer transition-colors ${
                           newIncident.affectedServices.includes(service)
-                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-900 dark:border-gray-50'
+                            ? 'bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary border-gray-900 dark:lia-border-50'
                             : 'hover:bg-gray-100'
                         }`}
                         onClick={() => {
@@ -331,7 +331,7 @@ export default function IncidentesPage() {
                   Cancelar
                 </Button>
                 <Button 
-                  className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                  className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
                   onClick={handleSubmitIncident}
                 >
                   Registrar Incidente
@@ -362,10 +362,10 @@ export default function IncidentesPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-gray-400 dark:text-gray-500" >
+                  <p className="text-sm lia-text-400 dark:lia-text-500" >
                     Incidentes Abertos
                   </p>
-                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
+                  <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary" >
                     {openIncidents}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -385,10 +385,10 @@ export default function IncidentesPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-gray-400 dark:text-gray-500" >
+                  <p className="text-sm lia-text-400 dark:lia-text-500" >
                     Alta Severidade
                   </p>
-                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
+                  <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary" >
                     {criticalIncidents}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -408,10 +408,10 @@ export default function IncidentesPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-gray-400 dark:text-gray-500" >
+                  <p className="text-sm lia-text-400 dark:lia-text-500" >
                     Resolvidos (30 dias)
                   </p>
-                  <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100" >
+                  <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary" >
                     {resolvedIncidents}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -430,7 +430,7 @@ export default function IncidentesPage() {
 
         <Card className="mb-6" >
           <CardHeader className="pb-3">
-            <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
+            <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
               Workflow de Resposta a Incidentes (PRI)
             </CardTitle>
           </CardHeader>
@@ -444,20 +444,20 @@ export default function IncidentesPage() {
                       <div 
                         className="w-12 h-12 rounded-full flex items-center justify-center mb-2 bg-gray-200/30"
                       >
-                        <Icon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                        <Icon className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                       </div>
                       <Badge variant="outline" className="mb-1 text-xs">
                         {step.phase}
                       </Badge>
-                      <span className="font-medium text-sm text-gray-800 dark:text-gray-100" >
+                      <span className="font-medium text-sm lia-text-800 dark:text-lia-text-primary" >
                         {step.name}
                       </span>
-                      <span className="text-xs mt-1 text-gray-400 dark:text-gray-500" >
+                      <span className="text-xs mt-1 lia-text-400 dark:lia-text-500" >
                         {step.description}
                       </span>
                     </div>
                     {idx < responseWorkflow.length - 1 && (
-                      <ArrowRight className="w-5 h-5 flex-shrink-0 mx-2 text-gray-400 dark:text-gray-500"  />
+                      <ArrowRight className="w-5 h-5 flex-shrink-0 mx-2 lia-text-400 dark:lia-text-500"  />
                     )}
                   </React.Fragment>
                 )
@@ -471,12 +471,12 @@ export default function IncidentesPage() {
             <Card >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
+                  <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
                     Histórico de Incidentes
                   </CardTitle>
                   <div className="flex items-center gap-2">
                     <div className="relative w-64">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500"  />
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-400 dark:lia-text-500"  />
                       <Input
                         placeholder="Buscar incidentes..."
                         value={searchTerm}
@@ -517,7 +517,7 @@ export default function IncidentesPage() {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <span className="font-medium text-sm text-gray-800 dark:text-gray-100" >
+                            <span className="font-medium text-sm lia-text-800 dark:text-lia-text-primary" >
                               {incident.title}
                             </span>
                           </TableCell>
@@ -548,12 +548,12 @@ export default function IncidentesPage() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <span className="text-sm text-gray-500 dark:text-gray-400" >
+                            <span className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
                               {incident.assignee}
                             </span>
                           </TableCell>
                           <TableCell>
-                            <span className="text-sm text-gray-500 dark:text-gray-400" >
+                            <span className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
                               {new Date(incident.startedAt).toLocaleString('pt-BR')}
                             </span>
                           </TableCell>
@@ -587,7 +587,7 @@ export default function IncidentesPage() {
 
           <Card >
             <CardHeader className="pb-3">
-              <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100" >
+              <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
                 SLAs por Severidade
               </CardTitle>
             </CardHeader>
@@ -598,21 +598,21 @@ export default function IncidentesPage() {
                   return (
                     <div 
                       key={idx}
-                      className="p-3 rounded-md border border-gray-200 dark:border-gray-700"
+                      className="p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle"
                       
                     >
                       <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center gap-2">
                           <div className={`w-2 h-2 rounded-full ${severityConfig.dot}`} />
-                          <span className="font-medium text-sm text-gray-800 dark:text-gray-100" >
+                          <span className="font-medium text-sm lia-text-800 dark:text-lia-text-primary" >
                             {severityConfig.label}
                           </span>
                         </div>
-                        <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 font-mono">
+                        <Badge className="bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary font-mono">
                           {sla.sla}
                         </Badge>
                       </div>
-                      <p className="text-xs text-gray-400 dark:text-gray-500" >
+                      <p className="text-xs lia-text-400 dark:lia-text-500" >
                         {sla.description}
                       </p>
                     </div>
@@ -622,7 +622,7 @@ export default function IncidentesPage() {
               <div 
                 className="mt-4 p-3 rounded-md bg-gray-200/20"
               >
-                <p className="text-xs text-gray-400 dark:text-gray-500" >
+                <p className="text-xs lia-text-400 dark:lia-text-500" >
                   Os prazos são contados a partir da data de conhecimento do incidente pela organização, conforme Art. 48 da LGPD.
                 </p>
               </div>

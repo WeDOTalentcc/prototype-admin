@@ -51,7 +51,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
       name: 'Telefônica',
       icon: Phone,
       description: 'Conversa por telefone',
-      color: 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200'
+      color: 'bg-gray-100 text-gray-800 dark:text-lia-text-primary border-lia-border-subtle'
     },
     {
       id: 'video',
@@ -320,16 +320,16 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 dark:bg-gray-950/70 backdrop-blur-[1px] z-50 flex items-center justify-center p-4">
-      <div className={`${cardStyles.default} dark:bg-gray-900 dark:border-gray-700 rounded-md w-full max-w-3xl max-h-[90vh] overflow-y-auto`}>
-        <div className="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
+    <div className="fixed inset-0 bg-black/50/70 backdrop-blur-[1px] z-50 flex items-center justify-center p-4">
+      <div className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle rounded-md w-full max-w-3xl max-h-[90vh] overflow-y-auto`}>
+        <div className="flex items-center justify-between p-5 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <Avatar className="h-12 w-12">
               <AvatarImage src={candidate.avatar} />
               <AvatarFallback>{candidate.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
             </Avatar>
             <div>
-              <h3 className={`${textStyles.title} dark:text-gray-100`}>
+              <h3 className={`${textStyles.title} dark:text-lia-text-primary`}>
                 Agendar Entrevista - {candidate.name}
               </h3>
               <p className={textStyles.bodySmall}>
@@ -337,14 +337,14 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
+          <button onClick={onClose} className="p-1 rounded-md lia-text-secondary hover:lia-text-base dark:hover:lia-text-muted hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
 
         <div className="p-5 space-y-6">
           {/* LIA Assistant */}
-          <div className={`${cardStyles.flat} dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4`}>
+          <div className={`${cardStyles.flat} dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle p-4`}>
             <div className="flex items-center justify-between mb-3">
               <h4 className={`${textStyles.label} flex items-center gap-2`}>
                 <Brain className="w-4 h-4 text-wedo-cyan" />
@@ -354,7 +354,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                 <select
                   value={liaFocus}
                   onChange={(e) => setLiaFocus(e.target.value as 'comprehensive' | 'technical' | 'behavioral' | 'cultural')}
-                  className="text-micro border border-gray-200 rounded-md px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                  className="text-micro border border-lia-border-subtle rounded-md px-2 py-1 bg-lia-bg-primary focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
                 >
                   <option value="comprehensive">Análise Completa</option>
                   <option value="technical">Foco Técnico</option>
@@ -364,7 +364,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                 <button
                   onClick={generateLiaRecommendations}
                   disabled={isLiaAnalyzing}
-                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-gray-200 text-gray-800 dark:text-gray-200 hover:bg-gray-50 transition-all disabled:opacity-50"
+                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 transition-colors disabled:opacity-50"
                 >
                   {isLiaAnalyzing ? (
                     <>
@@ -387,40 +387,40 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                 {isLiaAnalyzing ? (
                   <div className="flex items-center justify-center py-6">
                     <div className="text-center">
-                      <RefreshCw className="w-8 h-8 animate-spin text-gray-600 dark:text-gray-400 mx-auto mb-2" />
-                      <p className="text-xs text-gray-600">LIA analisando perfil para recomendações...</p>
+                      <RefreshCw className="w-8 h-8 animate-spin text-gray-600 dark:text-lia-text-tertiary mx-auto mb-2" />
+                      <p className="text-xs lia-text-base">LIA analisando perfil para recomendações...</p>
                     </div>
                   </div>
                 ) : liaRecommendations && (
                   <div className="space-y-4">
                     {/* Quick Recommendations */}
                     <div className="grid grid-cols-3 gap-3">
-                      <div className="text-center p-3 bg-white rounded-md border border-gray-100">
-                        <div className="text-lg font-semibold text-gray-900 dark:text-gray-50">{liaRecommendations.recommendedDuration}min</div>
-                        <div className="text-micro text-gray-600">Duração sugerida</div>
+                      <div className="text-center p-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
+                        <div className="text-lg font-semibold text-gray-900">{liaRecommendations.recommendedDuration}min</div>
+                        <div className="text-micro lia-text-base">Duração sugerida</div>
                         <button
                           onClick={() => applyLiaRecommendation('duration')}
-                          className="text-micro mt-1 h-6 px-2 text-gray-800 dark:text-gray-200 hover:bg-gray-50 rounded-full transition-all"
+                          className="text-micro mt-1 h-6 px-2 text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 rounded-full transition-[width,height]"
                         >
                           Aplicar
                         </button>
                       </div>
-                      <div className="text-center p-3 bg-white rounded-md border border-gray-100">
-                        <div className="text-lg font-semibold text-gray-900 dark:text-gray-50 capitalize">{liaRecommendations.recommendedType}</div>
-                        <div className="text-micro text-gray-600">Tipo recomendado</div>
+                      <div className="text-center p-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
+                        <div className="text-lg font-semibold text-gray-900 capitalize">{liaRecommendations.recommendedType}</div>
+                        <div className="text-micro lia-text-base">Tipo recomendado</div>
                         <button
                           onClick={() => applyLiaRecommendation('type')}
-                          className="text-micro mt-1 h-6 px-2 text-gray-800 dark:text-gray-200 hover:bg-gray-50 rounded-full transition-all"
+                          className="text-micro mt-1 h-6 px-2 text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 rounded-full transition-[width,height]"
                         >
                           Aplicar
                         </button>
                       </div>
-                      <div className="text-center p-3 bg-white rounded-md border border-gray-100">
-                        <div className="text-lg font-semibold text-gray-900 dark:text-gray-50 capitalize">{liaRecommendations.recommendedPlatform}</div>
-                        <div className="text-micro text-gray-600">Plataforma sugerida</div>
+                      <div className="text-center p-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
+                        <div className="text-lg font-semibold text-gray-900 capitalize">{liaRecommendations.recommendedPlatform}</div>
+                        <div className="text-micro lia-text-base">Plataforma sugerida</div>
                         <button
                           onClick={() => applyLiaRecommendation('platform')}
-                          className="text-micro mt-1 h-6 px-2 text-gray-800 dark:text-gray-200 hover:bg-gray-50 rounded-full transition-all"
+                          className="text-micro mt-1 h-6 px-2 text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 rounded-full transition-[width,height]"
                         >
                           Aplicar
                         </button>
@@ -429,17 +429,17 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
 
                     {/* Suggested Times */}
                     <div>
-                      <h5 className="text-xs font-medium text-gray-800 mb-2">Horários Recomendados:</h5>
+                      <h5 className="text-xs font-medium lia-text-strong mb-2">Horários Recomendados:</h5>
                       <div className="space-y-2">
                         {liaRecommendations.suggestedTimes.map((timeRec: { time: string; reason?: string }, idx: number) => (
-                          <div key={idx} className="flex items-center justify-between p-2 bg-white rounded-md border border-gray-100">
+                          <div key={idx} className="flex items-center justify-between p-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
                             <div>
-                              <span className="font-medium text-gray-800 text-xs">{timeRec.time}</span>
-                              <span className="text-micro text-gray-600 ml-2">{timeRec.reason}</span>
+                              <span className="font-medium lia-text-strong text-xs">{timeRec.time}</span>
+                              <span className="text-micro lia-text-base ml-2">{timeRec.reason}</span>
                             </div>
                             <button
                               onClick={() => setTime(timeRec.time)}
-                              className="text-micro h-6 px-2 text-gray-800 dark:text-gray-200 hover:bg-gray-50 rounded-full transition-all"
+                              className="text-micro h-6 px-2 text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 rounded-full transition-[width,height]"
                             >
                               Usar
                             </button>
@@ -450,7 +450,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
 
                     {/* Interview Focus */}
                     <div>
-                      <h5 className="text-xs font-medium text-gray-800 mb-2">Foco da Entrevista:</h5>
+                      <h5 className="text-xs font-medium lia-text-strong mb-2">Foco da Entrevista:</h5>
                       <div className="grid grid-cols-2 gap-2">
                         {Object.entries(liaRecommendations.interviewFocus)
                           .sort(([,a], [,b]) => ((b as { weight?: number }).weight ?? 0) - ((a as { weight?: number }).weight ?? 0))
@@ -458,31 +458,31 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                           .map(([key, value]: [string, unknown]) => {
                             const v = value as { weight?: number; approach?: string }
                             return (
-                          <div key={key} className="p-2 bg-white rounded-md border border-gray-100">
+                          <div key={key} className="p-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
                             <div className="flex items-center justify-between mb-1">
-                              <span className="text-micro font-medium text-gray-800 capitalize">{key}</span>
-                              <span className="text-micro text-gray-600 dark:text-gray-400">{v.weight}%</span>
+                              <span className="text-micro font-medium lia-text-strong capitalize">{key}</span>
+                              <span className="text-micro text-gray-600 dark:text-lia-text-tertiary">{v.weight}%</span>
                             </div>
-                            <p className="text-micro text-gray-600">{v.approach}</p>
+                            <p className="text-micro lia-text-base">{v.approach}</p>
                           </div>
                             )
                           })}
                       </div>
                       <button
                         onClick={() => applyLiaRecommendation('notes')}
-                        className="text-micro mt-2 px-2 py-1 text-gray-800 dark:text-gray-200 hover:bg-gray-50 rounded-full transition-all"
+                        className="text-micro mt-2 px-2 py-1 text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 rounded-full transition-[width,height]"
                       >
                         Aplicar foco nas observações
                       </button>
                     </div>
 
                     {/* Key Insights */}
-                    <div className="border-t border-gray-100 pt-3">
-                      <h5 className="text-xs font-medium text-gray-800 mb-2">Insights Principais:</h5>
+                    <div className="border-t border-lia-border-subtle pt-3">
+                      <h5 className="text-xs font-medium lia-text-strong mb-2">Insights Principais:</h5>
                       <div className="grid grid-cols-1 gap-2">
                         <div>
-                          <span className="text-micro font-medium text-gray-800 dark:text-gray-200">Pontos Fortes:</span>
-                          <ul className="text-micro text-gray-600 ml-2">
+                          <span className="text-micro font-medium text-gray-800 dark:text-lia-text-primary">Pontos Fortes:</span>
+                          <ul className="text-micro lia-text-base ml-2">
                             {liaRecommendations.attentionPoints.strengths.slice(0, 2).map((strength: string, idx: number) => (
                               <li key={idx}>• {strength}</li>
                             ))}
@@ -508,7 +508,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
 
           {/* Tipo de Entrevista */}
           <div>
-            <h4 className="text-xs font-medium text-gray-800 mb-3">
+            <h4 className="text-xs font-medium lia-text-strong mb-3">
               Tipo de Entrevista
             </h4>
             <div className="grid grid-cols-3 gap-3">
@@ -516,15 +516,15 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                 <button
                   key={type.id}
                   onClick={() => setScheduleType(type.id as 'phone' | 'video' | 'presential')}
-                  className={`p-4 border rounded-md text-left transition-all ${
-                    scheduleType === type.id
-                      ? 'border-gray-300 bg-gray-100'
-                      : 'border-gray-100 hover:bg-gray-50 hover:border-gray-200'
+                  className={`p-4 border rounded-md text-left transition-colors ${
+ scheduleType === type.id
+                      ? 'border-lia-border-default bg-gray-100'
+                      : 'border-lia-border-subtle hover:bg-gray-50 hover:border-lia-border-subtle'
                   }`}
                 >
-                  <type.icon className={`w-5 h-5 mb-2 ${scheduleType === type.id ? 'text-gray-900' : 'text-gray-500'}`} />
-                  <div className="text-xs font-medium text-gray-800">{type.name}</div>
-                  <div className="text-micro text-gray-600">{type.description}</div>
+                  <type.icon className={`w-5 h-5 mb-2 ${scheduleType === type.id ? 'lia-text-strong' : 'lia-text-secondary'}`} />
+                  <div className="text-xs font-medium lia-text-strong">{type.name}</div>
+                  <div className="text-micro lia-text-base">{type.description}</div>
                 </button>
               ))}
             </div>
@@ -533,7 +533,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
           {/* Data e Hora */}
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-800 mb-1.5">
+              <label className="block text-xs font-medium lia-text-strong mb-1.5">
                 Data
               </label>
               <input
@@ -541,28 +541,28 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 min={new Date().toISOString().split('T')[0]}
-                className="w-full px-3 py-2 text-xs border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
+                className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-800 mb-1.5">
+              <label className="block text-xs font-medium lia-text-strong mb-1.5">
                 Horário
               </label>
               <input
                 type="time"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-                className="w-full px-3 py-2 text-xs border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
+                className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-800 mb-1.5">
+              <label className="block text-xs font-medium lia-text-strong mb-1.5">
                 Duração (min)
               </label>
               <select
                 value={duration}
                 onChange={(e) => setDuration(e.target.value)}
-                className="w-full px-3 py-2 text-xs border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
+                className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
               >
                 <option value="30">30 minutos</option>
                 <option value="45">45 minutos</option>
@@ -576,7 +576,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
           {/* Local/Plataforma */}
           {scheduleType === 'video' && (
             <div>
-              <label className="block text-xs font-medium text-gray-800 mb-1.5">
+              <label className="block text-xs font-medium lia-text-strong mb-1.5">
                 Plataforma
               </label>
               <div className="grid grid-cols-4 gap-2">
@@ -584,14 +584,14 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                   <button
                     key={plat.id}
                     onClick={() => setPlatform(plat.id)}
-                    className={`p-3 border rounded-md text-center transition-all ${
-                      platform === plat.id
-                        ? 'border-gray-300 bg-gray-100'
-                        : 'border-gray-100 hover:bg-gray-50 hover:border-gray-200'
+                    className={`p-3 border rounded-md text-center transition-colors ${
+ platform === plat.id
+                        ? 'border-lia-border-default bg-gray-100'
+                        : 'border-lia-border-subtle hover:bg-gray-50 hover:border-lia-border-subtle'
                     }`}
                   >
-                    <plat.icon className={`w-5 h-5 mx-auto mb-1 ${platform === plat.id ? 'text-gray-900' : 'text-gray-500'}`} />
-                    <div className="text-micro text-gray-800 dark:text-gray-200">{plat.name}</div>
+                    <plat.icon className={`w-5 h-5 mx-auto mb-1 ${platform === plat.id ? 'lia-text-strong' : 'lia-text-secondary'}`} />
+                    <div className="text-micro text-gray-800 dark:text-lia-text-primary">{plat.name}</div>
                   </button>
                 ))}
               </div>
@@ -600,14 +600,14 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
 
           {scheduleType === 'presential' && (
             <div>
-              <label className="block text-xs font-medium text-gray-800 mb-1.5">
+              <label className="block text-xs font-medium lia-text-strong mb-1.5">
                 Local da Entrevista
               </label>
               <input
                 type="text"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                className="w-full px-3 py-2 text-xs border border-gray-200 rounded-md placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-900 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200"
+                className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md placeholder:lia-text-secondary focus:outline-none focus:ring-1 focus:ring-gray-900 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-lia-text-primary"
                 placeholder="Endereço completo ou sala"
               />
             </div>
@@ -615,13 +615,13 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
 
           {/* Entrevistador */}
           <div>
-            <label className="block text-xs font-medium text-gray-800 mb-1.5">
+            <label className="block text-xs font-medium lia-text-strong mb-1.5">
               Entrevistador Responsável
             </label>
             <select
               value={interviewer}
               onChange={(e) => setInterviewer(e.target.value)}
-              className="w-full px-3 py-2 text-xs border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
+              className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
             >
               <option value="">Selecione o entrevistador</option>
               {interviewers.map((person) => (
@@ -632,14 +632,14 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
 
           {/* Observações */}
           <div>
-            <label className="block text-xs font-medium text-gray-800 mb-1.5">
+            <label className="block text-xs font-medium lia-text-strong mb-1.5">
               Observações para a Entrevista
             </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 text-xs border border-gray-200 rounded-md placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-900 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200"
+              className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md placeholder:lia-text-secondary focus:outline-none focus:ring-1 focus:ring-gray-900 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-lia-text-primary"
               placeholder="Pontos específicos a abordar, preparações necessárias..."
             />
           </div>
@@ -656,17 +656,17 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
           </div>
 
           {/* Ações */}
-          <div className="flex justify-end gap-3 pt-5 border-t border-gray-100">
+          <div className="flex justify-end gap-3 pt-5 border-t border-lia-border-subtle">
             <button
               onClick={onClose}
-              className="px-3 py-1.5 text-xs font-medium rounded-md border border-gray-200 bg-white text-gray-800 dark:text-gray-200 hover:bg-gray-50 transition-all"
+              className="px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 transition-colors"
             >
               Cancelar
             </button>
             {createdInterviewId && (
               <button
                 onClick={handleDownloadIcs}
-                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-gray-200 bg-white text-gray-800 dark:text-gray-200 hover:bg-gray-50 transition-all"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-gray-800 dark:text-lia-text-primary hover:bg-gray-50 transition-colors"
               >
                 <Download className="w-4 h-4" />
                 Baixar .ICS
@@ -675,7 +675,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
             <button
               onClick={handleSchedule}
               disabled={!date || !time || !interviewer || isScheduling}
-              className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md bg-gray-900 hover:bg-gray-800 text-white transition-all disabled:opacity-50"
+              className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md bg-gray-900 hover:bg-gray-800 text-white transition-colors disabled:opacity-50"
             >
               {isScheduling ? (
                 <>

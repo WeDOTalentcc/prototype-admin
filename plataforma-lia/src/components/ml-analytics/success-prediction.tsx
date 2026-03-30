@@ -267,7 +267,7 @@ export function SuccessPredictionAnalytics() {
     switch (trend) {
       case 'up': return <ArrowUp className="w-4 h-4 text-status-success" />
       case 'down': return <ArrowDown className="w-4 h-4 text-status-error" />
-      default: return <Minus className="w-4 h-4 text-gray-600" />
+      default: return <Minus className="w-4 h-4 lia-text-base" />
     }
   }
 
@@ -275,7 +275,7 @@ export function SuccessPredictionAnalytics() {
     switch (trend) {
       case 'up': return 'text-status-success'
       case 'down': return 'text-status-error'
-      default: return 'text-gray-600'
+      default: return 'lia-text-base'
     }
   }
 
@@ -290,7 +290,7 @@ export function SuccessPredictionAnalytics() {
       case 'low': return 'bg-status-success/10 text-status-success border-status-success/30'
       case 'medium': return 'bg-status-warning/10 text-status-warning border-status-warning/30'
       case 'high': return 'bg-status-error/10 text-status-error border-status-error/30'
-      default: return 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200'
+      default: return 'bg-gray-100 text-gray-800 dark:text-lia-text-primary border-lia-border-subtle'
     }
   }
 
@@ -302,7 +302,7 @@ export function SuccessPredictionAnalytics() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Taxa de Sucesso Prevista</p>
+                <p className="text-sm font-medium lia-text-base">Taxa de Sucesso Prevista</p>
                 <p className="text-2xl font-bold text-status-success">87.3%</p>
                 <div className="flex items-center gap-1 mt-1">
                   {getTrendIcon(historicalAnalysis.trends.quality)}
@@ -322,8 +322,8 @@ export function SuccessPredictionAnalytics() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Retenção Média</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">{historicalAnalysis.averageRetention} meses</p>
+                <p className="text-sm font-medium lia-text-base">Retenção Média</p>
+                <p className="text-2xl font-bold text-gray-900">{historicalAnalysis.averageRetention} meses</p>
                 <div className="flex items-center gap-1 mt-1">
                   {getTrendIcon(historicalAnalysis.trends.retention)}
                   <span className={`text-sm ${getTrendColor(historicalAnalysis.trends.retention)}`}>
@@ -331,8 +331,8 @@ export function SuccessPredictionAnalytics() {
                   </span>
                 </div>
               </div>
-              <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center">
-                <Users className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+              <div className="w-12 h-12 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+                <Users className="w-6 h-6 text-gray-600 dark:text-lia-text-tertiary" />
               </div>
             </div>
           </CardContent>
@@ -342,7 +342,7 @@ export function SuccessPredictionAnalytics() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Performance Média</p>
+                <p className="text-sm font-medium lia-text-base">Performance Média</p>
                 <p className="text-2xl font-bold text-wedo-purple">{historicalAnalysis.averagePerformance}%</p>
                 <div className="flex items-center gap-1 mt-1">
                   {getTrendIcon('up')}
@@ -360,9 +360,9 @@ export function SuccessPredictionAnalytics() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Modelos Ativos</p>
+                <p className="text-sm font-medium lia-text-base">Modelos Ativos</p>
                 <p className="text-2xl font-bold text-wedo-orange">{mlModels.filter(m => m.status === 'active').length}</p>
-                <p className="text-sm text-gray-800 dark:text-gray-200">de {mlModels.length} total</p>
+                <p className="text-sm text-gray-800 dark:text-lia-text-primary">de {mlModels.length} total</p>
               </div>
               <div className="w-12 h-12 bg-wedo-orange/10 rounded-md flex items-center justify-center">
                 <Brain className="w-6 h-6 text-wedo-cyan" />
@@ -376,35 +376,35 @@ export function SuccessPredictionAnalytics() {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <Zap className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <Zap className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
             Predições Recentes
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {candidatePredictions.map(prediction => (
-              <div key={prediction.candidateId} className="p-4 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">
+              <div key={prediction.candidateId} className="p-4 border border-lia-border-subtle rounded-md hover:bg-gray-50 transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center">
-                      <User className="w-6 h-6 text-gray-800 dark:text-gray-200" />
+                      <User className="w-6 h-6 text-gray-800 dark:text-lia-text-primary" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-950 dark:text-gray-50">{prediction.name}</h4>
-                      <p className="text-sm text-gray-600">{prediction.position} • {prediction.department}</p>
+                      <h4 className="font-medium text-gray-950">{prediction.name}</h4>
+                      <p className="text-sm lia-text-base">{prediction.position} • {prediction.department}</p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-6 text-sm">
                     <div className="text-center">
-                      <p className="font-medium text-gray-600">Score de Sucesso</p>
+                      <p className="font-medium lia-text-base">Score de Sucesso</p>
                       <p className={`text-xl font-bold ${getScoreColor(prediction.predictions.successScore)}`}>
                         {prediction.predictions.successScore}%
                       </p>
                     </div>
 
                     <div className="text-center">
-                      <p className="font-medium text-gray-600">Risco de Retenção</p>
+                      <p className="font-medium lia-text-base">Risco de Retenção</p>
                       <Badge className={getRiskColor(prediction.predictions.retentionRisk)}>
                         {prediction.predictions.retentionRisk === 'low' ? 'Baixo' :
                          prediction.predictions.retentionRisk === 'medium' ? 'Médio' : 'Alto'}
@@ -412,7 +412,7 @@ export function SuccessPredictionAnalytics() {
                     </div>
 
                     <div className="text-center">
-                      <p className="font-medium text-gray-600">Fit Cultural</p>
+                      <p className="font-medium lia-text-base">Fit Cultural</p>
                       <p className={`text-xl font-bold ${getScoreColor(prediction.predictions.culturalFit)}`}>
                         {prediction.predictions.culturalFit}%
                       </p>
@@ -444,20 +444,20 @@ export function SuccessPredictionAnalytics() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-medium text-gray-950 dark:text-gray-50">Departamento</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-950 dark:text-gray-50">Contratações</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-950 dark:text-gray-50">Taxa de Sucesso</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-950 dark:text-gray-50">Tempo para Produtividade</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-950 dark:text-gray-50">Top Skills</th>
+                <tr className="border-b border-lia-border-subtle">
+                  <th className="text-left py-3 px-4 font-medium text-gray-950">Departamento</th>
+                  <th className="text-center py-3 px-4 font-medium text-gray-950">Contratações</th>
+                  <th className="text-center py-3 px-4 font-medium text-gray-950">Taxa de Sucesso</th>
+                  <th className="text-center py-3 px-4 font-medium text-gray-950">Tempo para Produtividade</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-950">Top Skills</th>
                 </tr>
               </thead>
               <tbody>
                 {historicalAnalysis.departmentMetrics.map((dept, index) => (
-                  <tr key={index} className="border-b border-gray-100">
+                  <tr key={index} className="border-b border-lia-border-subtle">
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
-                        <Briefcase className="w-4 h-4 text-gray-600" />
+                        <Briefcase className="w-4 h-4 lia-text-base" />
                         <span className="font-medium">{dept.department}</span>
                       </div>
                     </td>
@@ -496,8 +496,8 @@ export function SuccessPredictionAnalytics() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-medium text-gray-950 dark:text-gray-50">Modelos de Machine Learning</h3>
-          <p className="text-sm text-gray-600">Gerencie e monitore os modelos de predição</p>
+          <h3 className="text-lg font-medium text-gray-950">Modelos de Machine Learning</h3>
+          <p className="text-sm lia-text-base">Gerencie e monitore os modelos de predição</p>
         </div>
         <Button className="gap-2" disabled={isTraining}>
           <RefreshCw className={`w-4 h-4 ${isTraining ? 'animate-spin' : ''}`} />
@@ -512,7 +512,7 @@ export function SuccessPredictionAnalytics() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-lg">{model.name}</CardTitle>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm lia-text-base mt-1">
                     {model.type === 'success_prediction' ? 'Predição de Sucesso' :
                      model.type === 'retention_risk' ? 'Risco de Retenção' :
                      model.type === 'performance_forecast' ? 'Previsão de Performance' : 'Fit Cultural'}
@@ -527,28 +527,28 @@ export function SuccessPredictionAnalytics() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Acurácia</p>
+                    <p className="text-sm font-medium lia-text-base">Acurácia</p>
                     <p className={`text-2xl font-bold ${getScoreColor(model.accuracy)}`}>
                       {model.accuracy}%
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Amostras</p>
-                    <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">
+                    <p className="text-sm font-medium lia-text-base">Amostras</p>
+                    <p className="text-2xl font-bold text-gray-950">
                       {model.samplesUsed.toLocaleString()}
                     </p>
                   </div>
                 </div>
 
                 <div>
-                  <p className="text-sm font-medium text-gray-600 mb-2">Último Treinamento</p>
-                  <p className="text-sm text-gray-950 dark:text-gray-50">
+                  <p className="text-sm font-medium lia-text-base mb-2">Último Treinamento</p>
+                  <p className="text-sm text-gray-950">
                     {new Date(model.lastTrained).toLocaleDateString('pt-BR')}
                   </p>
                 </div>
 
                 <div>
-                  <p className="text-sm font-medium text-gray-600 mb-2">Features Utilizadas</p>
+                  <p className="text-sm font-medium lia-text-base mb-2">Features Utilizadas</p>
                   <div className="flex flex-wrap gap-1">
                     {model.features.map((feature, index) => (
                       <Badge key={index} variant="outline" className="text-xs">
@@ -589,11 +589,11 @@ export function SuccessPredictionAnalytics() {
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-2xl font-semibold font-sans text-gray-950 dark:text-gray-50 mb-2 flex items-center gap-2">
+              <h1 className="text-2xl font-semibold font-sans text-gray-950 mb-2 flex items-center gap-2">
                 <Brain className="w-6 h-6 text-wedo-cyan" />
                 Analytics com Machine Learning
               </h1>
-              <p className="text-gray-600">
+              <p className="lia-text-base">
                 Predição inteligente de sucesso e analytics avançado de contratações
               </p>
             </div>
@@ -621,9 +621,9 @@ export function SuccessPredictionAnalytics() {
                 key={tab.id}
                 onClick={() => setSelectedView(tab.id as any)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  selectedView === tab.id
-                    ? 'bg-white text-gray-950 dark:text-gray-50'
-                    : 'text-gray-600 hover:text-gray-900'
+ selectedView === tab.id
+                    ? 'bg-lia-bg-primary text-gray-950'
+                    : 'lia-text-base hover:lia-text-strong'
                 }`}
               >
                 <tab.icon className="w-4 h-4" />
@@ -638,16 +638,16 @@ export function SuccessPredictionAnalytics() {
         {selectedView === 'models' && renderModels()}
         {selectedView === 'predictions' && (
           <div className="text-center py-12">
-            <Target className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-            <h3 className="text-lg font-medium font-sans text-gray-950 dark:text-gray-50 mb-2">Predições Detalhadas</h3>
-            <p className="text-gray-600">Interface de predições em desenvolvimento</p>
+            <Target className="w-12 h-12 lia-text-base mx-auto mb-4" />
+            <h3 className="text-lg font-medium font-sans text-gray-950 mb-2">Predições Detalhadas</h3>
+            <p className="lia-text-base">Interface de predições em desenvolvimento</p>
           </div>
         )}
         {selectedView === 'insights' && (
           <div className="text-center py-12">
-            <Lightbulb className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-            <h3 className="text-lg font-medium font-sans text-gray-950 dark:text-gray-50 mb-2">Insights Avançados</h3>
-            <p className="text-gray-600">Painel de insights em desenvolvimento</p>
+            <Lightbulb className="w-12 h-12 lia-text-base mx-auto mb-4" />
+            <h3 className="text-lg font-medium font-sans text-gray-950 mb-2">Insights Avançados</h3>
+            <p className="lia-text-base">Painel de insights em desenvolvimento</p>
           </div>
         )}
 
@@ -681,21 +681,21 @@ function CandidatePredictionModal({ candidate, onClose }: CandidatePredictionMod
       case 'low': return 'bg-status-success/10 text-status-success border-status-success/30'
       case 'medium': return 'bg-status-warning/10 text-status-warning border-status-warning/30'
       case 'high': return 'bg-status-error/10 text-status-error border-status-error/30'
-      default: return 'bg-gray-100 text-gray-800 dark:text-gray-200 border-gray-200'
+      default: return 'bg-gray-100 text-gray-800 dark:text-lia-text-primary border-lia-border-subtle'
     }
   }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-md w-full max-w-5xl h-[90vh] flex flex-col">
+      <div className="bg-lia-bg-primary rounded-md w-full max-w-5xl h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <div>
-            <h2 className="text-xl font-semibold text-gray-950 dark:text-gray-50 flex items-center gap-2">
+            <h2 className="text-xl font-semibold text-gray-950 flex items-center gap-2">
               <Brain className="w-5 h-5 text-wedo-cyan" />
               Análise Preditiva - {candidate.name}
             </h2>
-            <p className="text-gray-600">{candidate.position} • {candidate.department}</p>
+            <p className="lia-text-base">{candidate.position} • {candidate.department}</p>
           </div>
           <Button variant="ghost" onClick={onClose}>×</Button>
         </div>
@@ -709,17 +709,17 @@ function CandidatePredictionModal({ candidate, onClose }: CandidatePredictionMod
               <div className="grid grid-cols-2 gap-4">
                 <Card>
                   <CardContent className="p-4 text-center">
-                    <p className="text-sm font-medium text-gray-600 mb-2">Score de Sucesso</p>
+                    <p className="text-sm font-medium lia-text-base mb-2">Score de Sucesso</p>
                     <p className={`text-3xl font-bold ${getScoreColor(candidate.predictions.successScore)}`}>
                       {candidate.predictions.successScore}%
                     </p>
-                    <p className="text-xs text-gray-800 dark:text-gray-200 mt-1">Confiança: {candidate.confidenceLevel}%</p>
+                    <p className="text-xs text-gray-800 dark:text-lia-text-primary mt-1">Confiança: {candidate.confidenceLevel}%</p>
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardContent className="p-4 text-center">
-                    <p className="text-sm font-medium text-gray-600 mb-2">Fit Cultural</p>
+                    <p className="text-sm font-medium lia-text-base mb-2">Fit Cultural</p>
                     <p className={`text-3xl font-bold ${getScoreColor(candidate.predictions.culturalFit)}`}>
                       {candidate.predictions.culturalFit}%
                     </p>
@@ -739,21 +739,21 @@ function CandidatePredictionModal({ candidate, onClose }: CandidatePredictionMod
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Nível de Performance</p>
+                      <p className="text-sm font-medium lia-text-base">Nível de Performance</p>
                       <p className="text-lg font-bold text-wedo-purple capitalize">
                         {candidate.predictions.performanceLevel.replace('_', ' ')}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Tempo para Produtividade</p>
-                      <p className="text-lg font-bold text-gray-900 dark:text-gray-50">
+                      <p className="text-sm font-medium lia-text-base">Tempo para Produtividade</p>
+                      <p className="text-lg font-bold text-gray-900">
                         {candidate.predictions.timeToProductivity} dias
                       </p>
                     </div>
                   </div>
 
                   <div>
-                    <p className="text-sm font-medium text-gray-600 mb-2">Recomendação Salarial</p>
+                    <p className="text-sm font-medium lia-text-base mb-2">Recomendação Salarial</p>
                     <div className="bg-gray-50 p-3 rounded-md">
                       <div className="flex justify-between items-center">
                         <span className="text-sm">Faixa:</span>
@@ -787,7 +787,7 @@ function CandidatePredictionModal({ candidate, onClose }: CandidatePredictionMod
                       </h4>
                       <div className="space-y-1">
                         {candidate.factors.positive.map((factor, index) => (
-                          <div key={index} className="text-sm text-gray-800 dark:text-gray-200 bg-status-success/10 p-2 rounded-md">
+                          <div key={index} className="text-sm text-gray-800 dark:text-lia-text-primary bg-status-success/10 p-2 rounded-md">
                             • {factor}
                           </div>
                         ))}
@@ -801,7 +801,7 @@ function CandidatePredictionModal({ candidate, onClose }: CandidatePredictionMod
                       </h4>
                       <div className="space-y-1">
                         {candidate.factors.negative.map((factor, index) => (
-                          <div key={index} className="text-sm text-gray-800 dark:text-gray-200 bg-status-error/10 p-2 rounded-md">
+                          <div key={index} className="text-sm text-gray-800 dark:text-lia-text-primary bg-status-error/10 p-2 rounded-md">
                             • {factor}
                           </div>
                         ))}
@@ -824,7 +824,7 @@ function CandidatePredictionModal({ candidate, onClose }: CandidatePredictionMod
                 <CardContent>
                   <div className="space-y-3">
                     {candidate.recommendations.map((rec, index) => (
-                      <div key={index} className="p-3 bg-gray-100 dark:bg-gray-800 rounded-md">
+                      <div key={index} className="p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
                         <p className="text-sm text-wedo-cyan-dark">{rec}</p>
                       </div>
                     ))}

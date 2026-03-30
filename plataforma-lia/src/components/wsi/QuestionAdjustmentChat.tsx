@@ -172,8 +172,8 @@ export function QuestionAdjustmentChat({
   return (
     <div className={cn("flex flex-col h-full", className)}>
       <div className="flex items-center gap-1.5 mb-2">
-        <MessageCircle className="h-3.5 w-3.5 text-gray-700" />
-        <span className="text-xs font-semibold text-gray-800">Chat de Ajuste</span>
+        <MessageCircle className="h-3.5 w-3.5 lia-text-base" />
+        <span className="text-xs font-semibold lia-text-strong">Chat de Ajuste</span>
       </div>
 
       <div
@@ -185,7 +185,7 @@ export function QuestionAdjustmentChat({
           <div
             key={msg.id}
             className={cn(
-              "flex gap-2",
+ "flex gap-2",
               msg.role === "user" ? "justify-end" : "justify-start"
             )}
           >
@@ -196,18 +196,18 @@ export function QuestionAdjustmentChat({
             )}
             <div
               className={cn(
-                "max-w-[85%] rounded-md px-3 py-2",
+ "max-w-[85%] rounded-md px-3 py-2",
                 msg.role === "user"
                   ? "bg-gray-900 text-white"
-                  : "bg-gray-50 border border-gray-200 text-gray-800"
+                  : "bg-gray-50 border border-lia-border-subtle lia-text-strong"
               )}
             >
               <p className="text-xs leading-relaxed whitespace-pre-wrap">
                 {msg.content}
               </p>
               {msg.diff && msg.diff.length > 0 && (
-                <div className="mt-2 pt-2 border-t border-gray-200/50">
-                  <p className="text-micro font-medium text-gray-700">
+                <div className="mt-2 pt-2 border-t border-lia-border-subtle/50">
+                  <p className="text-micro font-medium lia-text-base">
                     {msg.diff.length} alteração(ões) feita(s) ↓
                   </p>
                 </div>
@@ -215,7 +215,7 @@ export function QuestionAdjustmentChat({
             </div>
             {msg.role === "user" && (
               <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
-                <User className="h-3 w-3 text-gray-600" />
+                <User className="h-3 w-3 lia-text-base" />
               </div>
             )}
           </div>
@@ -225,10 +225,10 @@ export function QuestionAdjustmentChat({
             <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 bg-wedo-cyan/15">
               <Brain className="h-3 w-3 text-wedo-cyan" />
             </div>
-            <div className="bg-gray-50 border border-gray-200 rounded-md px-3 py-2">
+            <div className="bg-gray-50 border border-lia-border-subtle rounded-md px-3 py-2">
               <div className="flex items-center gap-2">
-                <Loader2 className="h-3 w-3 animate-spin text-gray-700" />
-                <span className="text-xs text-gray-500">Regenerando perguntas...</span>
+                <Loader2 className="h-3 w-3 animate-spin lia-text-base" />
+                <span className="text-xs lia-text-secondary">Regenerando perguntas...</span>
               </div>
             </div>
           </div>
@@ -243,7 +243,7 @@ export function QuestionAdjustmentChat({
           onKeyDown={handleKeyDown}
           placeholder={disabled ? "Edições bloqueadas" : "Descreva o ajuste desejado..."}
           disabled={disabled || isLoading}
-          className="w-full h-16 pl-3 pr-10 py-2 text-xs border border-gray-200 rounded-md resize-none focus:outline-none focus:ring-2 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full h-16 pl-3 pr-10 py-2 text-xs border border-lia-border-subtle rounded-md resize-none focus:outline-none focus:ring-2 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
           style={{focusRingColor: "var(--wedo-cyan-border)"}}
         />
         <Button

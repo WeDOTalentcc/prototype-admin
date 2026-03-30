@@ -94,10 +94,10 @@ export function CandidateProfileTab({
     <div className="lg:col-span-2 space-y-4">
       {/* Technical Skills */}
       {candidate.technical_skills && candidate.technical_skills.length > 0 && (
-        <Card className="border-gray-100">
+        <Card className="border-lia-border-subtle">
           <CardHeader className="py-2.5 px-4">
-            <CardTitle className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-              <Code className="w-4 h-4 text-gray-600" />
+            <CardTitle className="text-sm font-semibold lia-text-800 flex items-center gap-2">
+              <Code className="w-4 h-4 lia-text-600" />
               Skills Principais
             </CardTitle>
           </CardHeader>
@@ -115,12 +115,12 @@ export function CandidateProfileTab({
 
       {/* Skills Map - Categorized */}
       {skillCategories.length > 0 && (
-        <Card className="border-gray-100">
+        <Card className="border-lia-border-subtle">
           <CardHeader className="py-2.5 px-4">
-            <CardTitle className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-              <Code className="w-4 h-4 text-gray-600" />
+            <CardTitle className="text-sm font-semibold lia-text-800 flex items-center gap-2">
+              <Code className="w-4 h-4 lia-text-600" />
               Mapa de Skills
-              <Badge className="text-xs bg-gray-200 text-gray-800 dark:text-gray-200">
+              <Badge className="text-xs bg-gray-200 lia-text-800 dark:text-lia-text-primary">
                 {candidate.technical_skills?.length || 0} itens
               </Badge>
             </CardTitle>
@@ -128,7 +128,7 @@ export function CandidateProfileTab({
           <CardContent className="px-4 pb-4 space-y-3">
             {skillCategories.map(([key, category]) => (
               <div key={key}>
-                <h5 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-1.5">{category.label}</h5>
+                <h5 className="text-xs font-medium lia-text-800 dark:text-lia-text-primary mb-1.5">{category.label}</h5>
                 <div className="flex flex-wrap gap-1.5">
                   {category.skills.map((skill, idx) => (
                     <Badge key={idx} variant="outline" className="text-xs px-2 py-0.5 bg-gray-50">
@@ -159,10 +159,10 @@ export function CandidateProfileTab({
       )}
 
       {/* Professional Experience */}
-      <Card className="border-gray-100">
+      <Card className="border-lia-border-subtle">
         <CardHeader className="py-2.5 px-4">
-          <CardTitle className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-            <Briefcase className="w-4 h-4 text-gray-600" />
+          <CardTitle className="text-sm font-semibold lia-text-800 flex items-center gap-2">
+            <Briefcase className="w-4 h-4 lia-text-600" />
             Experiência Profissional
           </CardTitle>
         </CardHeader>
@@ -181,17 +181,17 @@ export function CandidateProfileTab({
               const isStartup = exp.is_startup
 
               return (
-                <div key={index} className={`border-l-2 ${index === 0 ? 'border-gray-700' : 'border-gray-300'} pl-3`}>
+                <div key={index} className={`border-l-2 ${index === 0 ? 'border-gray-700' : 'border-lia-border-default'} pl-3`}>
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <div>
-                      <h5 className="text-sm font-medium text-gray-800">{title || 'Cargo não informado'}</h5>
-                      <p className="text-sm text-gray-600">
+                      <h5 className="text-sm font-medium lia-text-800">{title || 'Cargo não informado'}</h5>
+                      <p className="text-sm lia-text-600">
                         {company || 'Empresa não informada'}
                         {location && ` • ${location}`}
-                        {exp.duration_years != null && <span className="text-gray-400 ml-1">({exp.duration_years.toFixed(1)} anos)</span>}
+                        {exp.duration_years != null && <span className="lia-text-400 ml-1">({exp.duration_years.toFixed(1)} anos)</span>}
                       </p>
                     </div>
-                    <span className="text-xs text-gray-500 whitespace-nowrap">
+                    <span className="text-xs lia-text-500 whitespace-nowrap">
                       {formatDateShort(startDate)}{startDate && endDate ? ' - ' : ''}{endDate === 'Atual' ? 'Atual' : formatDateShort(endDate)}
                     </span>
                   </div>
@@ -199,7 +199,7 @@ export function CandidateProfileTab({
                   {/* Metadata Row */}
                   <div className="flex flex-wrap gap-1.5 mb-2">
                     {industries.slice(0, 2).map((ind: string, idx: number) => (
-                      <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 border border-gray-200 dark:border-gray-700">
+                      <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro bg-gray-50 dark:bg-lia-bg-primary lia-text-900 dark:lia-text-50 border border-lia-border-subtle dark:border-lia-border-subtle">
                         <Building2 className="w-2.5 h-2.5 mr-0.5" />
                         {ind}
                       </span>
@@ -210,7 +210,7 @@ export function CandidateProfileTab({
                       </span>
                     )}
                     {companySize && (
-                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-micro bg-gray-50 text-gray-600 border border-gray-100">
+                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-micro bg-gray-50 lia-text-600 border border-lia-border-subtle">
                         <Users className="w-2.5 h-2.5" />
                         {companySize}
                       </span>
@@ -220,69 +220,69 @@ export function CandidateProfileTab({
                   {/* Technologies */}
                   {technologies.length > 0 && (
                     <div className="flex flex-wrap gap-1 mb-2">
-                      <span className="text-micro text-gray-400 flex items-center gap-0.5">
+                      <span className="text-micro lia-text-400 flex items-center gap-0.5">
                         <Code className="w-2.5 h-2.5" />
                         Stack:
                       </span>
                       {technologies.slice(0, 6).map((tech: string, idx: number) => (
-                        <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-gray-800 dark:text-gray-200">
+                        <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 lia-text-800 dark:text-lia-text-primary">
                           {tech}
                         </span>
                       ))}
                       {technologies.length > 6 && (
-                        <span className="text-micro text-gray-400">+{technologies.length - 6}</span>
+                        <span className="text-micro lia-text-400">+{technologies.length - 6}</span>
                       )}
                     </div>
                   )}
 
                   {description && (
-                    <p className="text-xs text-gray-600 mt-1">{description}</p>
+                    <p className="text-xs lia-text-600 mt-1">{description}</p>
                   )}
                 </div>
               )
             })
           ) : (
-            <p className="text-sm text-gray-500 italic">Não informado</p>
+            <p className="text-sm lia-text-500 italic">Não informado</p>
           )}
         </CardContent>
       </Card>
 
       {/* Education */}
-      <Card className="border-gray-100">
+      <Card className="border-lia-border-subtle">
         <CardHeader className="py-2.5 px-4">
-          <CardTitle className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-            <GraduationCap className="w-4 h-4 text-gray-600" />
+          <CardTitle className="text-sm font-semibold lia-text-800 flex items-center gap-2">
+            <GraduationCap className="w-4 h-4 lia-text-600" />
             Formação Acadêmica
           </CardTitle>
         </CardHeader>
         <CardContent className="px-4 pb-4 space-y-3">
           {education.length > 0 ? (
             education.map((edu, index: number) => (
-              <div key={index} className={`flex items-start justify-between gap-2 ${index < education.length - 1 ? 'pb-3 border-b border-gray-100' : ''}`}>
+              <div key={index} className={`flex items-start justify-between gap-2 ${index < education.length - 1 ? 'pb-3 border-b border-lia-border-subtle' : ''}`}>
                 <div>
-                  <h5 className="text-sm font-medium text-gray-800">
+                  <h5 className="text-sm font-medium lia-text-800">
                     {edu.degree || edu.title || 'Formação'}
                     {(edu.field_of_study || edu.fieldOfStudy) && ` em ${edu.field_of_study || edu.fieldOfStudy}`}
                   </h5>
-                  <p className="text-sm text-gray-600">{edu.school || edu.institution || 'Instituição não informada'}</p>
+                  <p className="text-sm lia-text-600">{edu.school || edu.institution || 'Instituição não informada'}</p>
                 </div>
-                <span className="text-xs text-gray-500 whitespace-nowrap">
+                <span className="text-xs lia-text-500 whitespace-nowrap">
                   {edu.start_date || edu.startDate || ''}{(edu.start_date || edu.startDate) && (edu.end_date || edu.endDate) ? ' - ' : ''}{edu.end_date || edu.endDate || ''}
                 </span>
               </div>
             ))
           ) : (
-            <p className="text-sm text-gray-500 italic">Não informado</p>
+            <p className="text-sm lia-text-500 italic">Não informado</p>
           )}
         </CardContent>
       </Card>
 
       {/* Certifications */}
       {candidate.certifications && candidate.certifications.length > 0 && (
-        <Card className="border-gray-100">
+        <Card className="border-lia-border-subtle">
           <CardHeader className="py-2.5 px-4">
-            <CardTitle className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-              <Award className="w-4 h-4 text-gray-600" />
+            <CardTitle className="text-sm font-semibold lia-text-800 flex items-center gap-2">
+              <Award className="w-4 h-4 lia-text-600" />
               Certificações
             </CardTitle>
           </CardHeader>
@@ -305,65 +305,65 @@ export function CandidateProfileTab({
     {/* RIGHT COLUMN (1/3) */}
     <div className="space-y-4">
       {/* Salary Card */}
-      <Card className="border-gray-100">
+      <Card className="border-lia-border-subtle">
         <CardHeader className="py-2.5 px-4">
-          <CardTitle className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-            <DollarSign className="w-4 h-4 text-gray-600" />
+          <CardTitle className="text-sm font-semibold lia-text-800 flex items-center gap-2">
+            <DollarSign className="w-4 h-4 lia-text-600" />
             Remuneração
           </CardTitle>
         </CardHeader>
         <CardContent className="px-4 pb-4 space-y-2">
           {candidate.current_salary && (
             <div className="flex justify-between items-center">
-              <span className="text-xs text-gray-500">Salário Atual</span>
-              <span className="text-sm font-medium text-gray-800">{formatCurrency(candidate.current_salary, candidate.salary_currency || 'BRL')}</span>
+              <span className="text-xs lia-text-500">Salário Atual</span>
+              <span className="text-sm font-medium lia-text-800">{formatCurrency(candidate.current_salary, candidate.salary_currency || 'BRL')}</span>
             </div>
           )}
           {candidate.salary_expectation_clt && (
             <div className="flex justify-between items-center">
-              <span className="text-xs text-gray-500">Pretensão CLT</span>
-              <span className="text-sm font-medium text-gray-800">{formatCurrency(candidate.salary_expectation_clt)}</span>
+              <span className="text-xs lia-text-500">Pretensão CLT</span>
+              <span className="text-sm font-medium lia-text-800">{formatCurrency(candidate.salary_expectation_clt)}</span>
             </div>
           )}
           {candidate.salary_expectation_pj && (
             <div className="flex justify-between items-center">
-              <span className="text-xs text-gray-500">Pretensão PJ</span>
-              <span className="text-sm font-medium text-gray-800">{formatCurrency(candidate.salary_expectation_pj)}</span>
+              <span className="text-xs lia-text-500">Pretensão PJ</span>
+              <span className="text-sm font-medium lia-text-800">{formatCurrency(candidate.salary_expectation_pj)}</span>
             </div>
           )}
           {candidate.salary_expectation_freelance && (
             <div className="flex justify-between items-center">
-              <span className="text-xs text-gray-500">Freelance</span>
-              <span className="text-sm font-medium text-gray-800">{formatCurrency(candidate.salary_expectation_freelance)}</span>
+              <span className="text-xs lia-text-500">Freelance</span>
+              <span className="text-sm font-medium lia-text-800">{formatCurrency(candidate.salary_expectation_freelance)}</span>
             </div>
           )}
           {(candidate.desired_salary_min || candidate.desired_salary_max) && (
-            <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-              <span className="text-xs text-gray-500">Faixa Desejada</span>
-              <span className="text-sm font-medium text-gray-800">
+            <div className="flex justify-between items-center pt-2 border-t border-lia-border-subtle">
+              <span className="text-xs lia-text-500">Faixa Desejada</span>
+              <span className="text-sm font-medium lia-text-800">
                 {formatCurrency(candidate.desired_salary_min)} - {formatCurrency(candidate.desired_salary_max)}
               </span>
             </div>
           )}
           {candidate.salary_expectation_clt && (
-            <div className="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 -mx-4 px-4 py-2">
-              <span className="text-xs font-medium text-gray-800 dark:text-gray-200">Total Anual (CLT)</span>
-              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+            <div className="flex justify-between items-center pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary -mx-4 px-4 py-2">
+              <span className="text-xs font-medium lia-text-800 dark:text-lia-text-primary">Total Anual (CLT)</span>
+              <span className="text-sm font-semibold lia-text-900 dark:text-lia-text-primary">
                 {formatCurrency((candidate.salary_expectation_clt ?? 0) * 13.33)}
               </span>
             </div>
           )}
           {!candidate.current_salary && !candidate.salary_expectation_clt && !candidate.salary_expectation_pj && (
-            <p className="text-sm text-gray-500 italic">Não informado</p>
+            <p className="text-sm lia-text-500 italic">Não informado</p>
           )}
         </CardContent>
       </Card>
 
       {/* Languages Card */}
-      <Card className="border-gray-100">
+      <Card className="border-lia-border-subtle">
         <CardHeader className="py-2.5 px-4">
-          <CardTitle className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-            <Languages className="w-4 h-4 text-gray-600" />
+          <CardTitle className="text-sm font-semibold lia-text-800 flex items-center gap-2">
+            <Languages className="w-4 h-4 lia-text-600" />
             Idiomas
           </CardTitle>
         </CardHeader>
@@ -374,8 +374,8 @@ export function CandidateProfileTab({
               return (
                 <div key={index} className="space-y-1">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{lang.language}</span>
-                    <span className="text-xs text-gray-500">{levelInfo.label}</span>
+                    <span className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">{lang.language}</span>
+                    <span className="text-xs lia-text-500">{levelInfo.label}</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-1.5">
                     <div 
@@ -387,29 +387,29 @@ export function CandidateProfileTab({
               )
             })
           ) : (
-            <p className="text-sm text-gray-500 italic">Não informado</p>
+            <p className="text-sm lia-text-500 italic">Não informado</p>
           )}
         </CardContent>
       </Card>
 
       {/* Additional Details Card */}
-      <Card className="border-gray-100">
+      <Card className="border-lia-border-subtle">
         <CardHeader className="py-2.5 px-4">
-          <CardTitle className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-            <Home className="w-4 h-4 text-gray-600" />
+          <CardTitle className="text-sm font-semibold lia-text-800 flex items-center gap-2">
+            <Home className="w-4 h-4 lia-text-600" />
             Detalhes Adicionais
           </CardTitle>
         </CardHeader>
         <CardContent className="px-4 pb-4 space-y-3">
           {/* Location */}
           <div>
-            <h5 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-1">Localização</h5>
-            <p className="text-sm text-gray-600">
+            <h5 className="text-xs font-medium lia-text-800 dark:text-lia-text-primary mb-1">Localização</h5>
+            <p className="text-sm lia-text-600">
               {[candidate.location_city, candidate.location_state, candidate.location_country]
                 .filter(Boolean).join(', ') || 'Não informado'}
             </p>
             {(candidate.address_street || candidate.address_district) && (
-              <p className="text-xs text-gray-500 mt-0.5">
+              <p className="text-xs lia-text-500 mt-0.5">
                 {[candidate.address_street, candidate.address_number, candidate.address_district, candidate.address_zip, candidate.address_complement]
                   .filter(Boolean).join(', ')}
               </p>
@@ -418,10 +418,10 @@ export function CandidateProfileTab({
 
           {/* Work Preferences */}
           <div>
-            <h5 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-1.5">Preferências de Trabalho</h5>
+            <h5 className="text-xs font-medium lia-text-800 dark:text-lia-text-primary mb-1.5">Preferências de Trabalho</h5>
             <div className="flex flex-wrap gap-1.5">
               {candidate.is_remote && (
-                <Badge variant="outline" className="text-xs bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 border-gray-300 dark:border-gray-600">Remoto</Badge>
+                <Badge variant="outline" className="text-xs bg-gray-50 dark:bg-lia-bg-primary lia-text-900 dark:lia-text-50 border-lia-border-default dark:border-lia-border-default">Remoto</Badge>
               )}
               {candidate.willing_to_relocate && (
                 <Badge variant="outline" className="text-xs bg-status-success/10 text-status-success border-status-success/30">Aceita Relocação</Badge>
@@ -437,8 +437,8 @@ export function CandidateProfileTab({
 
           {/* Dates */}
           <div>
-            <h5 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-1">Datas</h5>
-            <div className="space-y-0.5 text-xs text-gray-600">
+            <h5 className="text-xs font-medium lia-text-800 dark:text-lia-text-primary mb-1">Datas</h5>
+            <div className="space-y-0.5 text-xs lia-text-600">
               {candidate.created_at && <p>Cadastro: {formatDate(candidate.created_at)}</p>}
               {candidate.updated_at && <p>Atualizado: {formatDate(candidate.updated_at)}</p>}
               {candidate.last_contacted_at && <p>Último contato: {formatDate(candidate.last_contacted_at)}</p>}
@@ -448,9 +448,9 @@ export function CandidateProfileTab({
 
           {/* Status */}
           <div>
-            <h5 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-1.5">Status</h5>
+            <h5 className="text-xs font-medium lia-text-800 dark:text-lia-text-primary mb-1.5">Status</h5>
             <div className="flex flex-wrap gap-1.5">
-              <Badge variant="outline" className={`text-xs ${candidate.is_active ? 'bg-status-success/10 text-status-success' : 'bg-gray-100 text-gray-600'}`}>
+              <Badge variant="outline" className={`text-xs ${candidate.is_active ? 'bg-status-success/10 text-status-success' : 'bg-gray-100 lia-text-600'}`}>
                 {candidate.is_active ? 'Ativo' : 'Inativo'}
               </Badge>
               {candidate.source && (
@@ -462,10 +462,10 @@ export function CandidateProfileTab({
           {/* Tags */}
           {candidate.tags && candidate.tags.length > 0 && (
             <div>
-              <h5 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-1.5">Tags</h5>
+              <h5 className="text-xs font-medium lia-text-800 dark:text-lia-text-primary mb-1.5">Tags</h5>
               <div className="flex flex-wrap gap-1">
                 {candidate.tags.map((tag, idx) => (
-                  <Badge key={idx} className="text-xs bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600">
+                  <Badge key={idx} className="text-xs bg-gray-100 lia-text-700 border-lia-border-subtle dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-default">
                     {tag}
                   </Badge>
                 ))}
@@ -477,24 +477,24 @@ export function CandidateProfileTab({
 
       {/* Personal Data Card - Dados Pessoais */}
       {hasPersonalData(candidate as unknown as Record<string, unknown>) && (
-        <Card className="border-gray-100">
+        <Card className="border-lia-border-subtle">
           <CardHeader className="py-2.5 px-4">
-            <CardTitle className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-              <User className="w-4 h-4 text-gray-600" />
+            <CardTitle className="text-sm font-semibold lia-text-800 flex items-center gap-2">
+              <User className="w-4 h-4 lia-text-600" />
               Dados Pessoais
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4 space-y-2">
             {(candidate.date_of_birth || candidate.estimated_age) && (
               <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500 flex items-center gap-1">
+                <span className="text-xs lia-text-500 flex items-center gap-1">
                   <Cake className="w-3.5 h-3.5" />
                   Idade
                 </span>
-                <span className="text-sm font-medium text-gray-800">
+                <span className="text-sm font-medium lia-text-800">
                   {(candidate.date_of_birth ? calculateAge(candidate.date_of_birth) : null) || candidate.estimated_age} anos
                   {candidate.date_of_birth && (
-                    <span className="text-xs text-gray-400 ml-1">
+                    <span className="text-xs lia-text-400 ml-1">
                       ({formatDate(candidate.date_of_birth)})
                     </span>
                   )}
@@ -503,20 +503,20 @@ export function CandidateProfileTab({
             )}
             {candidate.gender && (
               <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500">Gênero</span>
-                <span className="text-sm font-medium text-gray-800">{candidate.gender}</span>
+                <span className="text-xs lia-text-500">Gênero</span>
+                <span className="text-sm font-medium lia-text-800">{candidate.gender}</span>
               </div>
             )}
             {candidate.nationality && (
               <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500">Nacionalidade</span>
-                <span className="text-sm font-medium text-gray-800">{candidate.nationality}</span>
+                <span className="text-xs lia-text-500">Nacionalidade</span>
+                <span className="text-sm font-medium lia-text-800">{candidate.nationality}</span>
               </div>
             )}
             {candidate.marital_status && (
               <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500">Estado Civil</span>
-                <span className="text-sm font-medium text-gray-800">{candidate.marital_status}</span>
+                <span className="text-xs lia-text-500">Estado Civil</span>
+                <span className="text-sm font-medium lia-text-800">{candidate.marital_status}</span>
               </div>
             )}
           </CardContent>
@@ -525,20 +525,20 @@ export function CandidateProfileTab({
 
       {/* LinkedIn/Pearch Insights Card */}
       {hasPearchData(candidate as unknown as Record<string, unknown>) && (
-        <Card className="border-gray-100 border-l-4 border-l-[#0A66C2]">
+        <Card className="border-lia-border-subtle border-l-4 border-l-[#0A66C2]">
           <CardHeader className="py-2.5 px-4">
-            <CardTitle className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-              <Linkedin className="w-4 h-4 text-[#0A66C2]" />
+            <CardTitle className="text-sm font-semibold lia-text-800 flex items-center gap-2">
+              <Linkedin className="w-4 h-4 text-brand-linkedin" />
               LinkedIn Insights
               {candidate.pearch_profile_id && (
-                <Badge className="text-micro px-1.5 py-0 bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">Pearch</Badge>
+                <Badge className="text-micro px-1.5 py-0 bg-gray-100 lia-text-700 dark:bg-lia-bg-secondary dark:text-lia-text-secondary">Pearch</Badge>
               )}
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4 space-y-3">
             {candidate.headline && (
               <div>
-                <p className="text-sm text-gray-800 dark:text-gray-200 italic">"{candidate.headline}"</p>
+                <p className="text-sm lia-text-800 dark:text-lia-text-primary italic">"{candidate.headline}"</p>
               </div>
             )}
 
@@ -560,7 +560,7 @@ export function CandidateProfileTab({
                 </Badge>
               )}
               {candidate.is_hiring && (
-                <Badge className="text-xs bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 border-gray-300 dark:border-gray-600">
+                <Badge className="text-xs bg-gray-50 dark:bg-lia-bg-primary lia-text-900 dark:lia-text-50 border-lia-border-default dark:border-lia-border-default">
                   📢 Hiring
                 </Badge>
               )}
@@ -568,21 +568,21 @@ export function CandidateProfileTab({
 
             {/* Connections & Followers */}
             {(candidate.linkedin_connections_count || candidate.linkedin_followers_count) && (
-              <div className="flex gap-4 pt-2 border-t border-gray-100">
+              <div className="flex gap-4 pt-2 border-t border-lia-border-subtle">
                 {candidate.linkedin_connections_count && (
                   <div className="text-center">
-                    <p className="text-lg font-semibold text-gray-800">
+                    <p className="text-lg font-semibold lia-text-800">
                       {(candidate.linkedin_connections_count ?? 0).toLocaleString('pt-BR')}
                     </p>
-                    <p className="text-micro text-gray-500">Conexões</p>
+                    <p className="text-micro lia-text-500">Conexões</p>
                   </div>
                 )}
                 {candidate.linkedin_followers_count && (
                   <div className="text-center">
-                    <p className="text-lg font-semibold text-gray-800">
+                    <p className="text-lg font-semibold lia-text-800">
                       {(candidate.linkedin_followers_count ?? 0).toLocaleString('pt-BR')}
                     </p>
-                    <p className="text-micro text-gray-500">Seguidores</p>
+                    <p className="text-micro lia-text-500">Seguidores</p>
                   </div>
                 )}
               </div>
@@ -593,10 +593,10 @@ export function CandidateProfileTab({
 
       {/* Documents Card */}
       {hasDocuments(candidate as unknown as Record<string, unknown>) && (
-        <Card className="border-gray-100">
+        <Card className="border-lia-border-subtle">
           <CardHeader className="py-2.5 px-4">
-            <CardTitle className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-gray-600" />
+            <CardTitle className="text-sm font-semibold lia-text-800 flex items-center gap-2">
+              <FileText className="w-4 h-4 lia-text-600" />
               Documentos
             </CardTitle>
           </CardHeader>
@@ -607,22 +607,22 @@ export function CandidateProfileTab({
                   href={candidate.resume_url} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100 rounded-md text-sm text-gray-800 dark:text-gray-200 transition-colors"
+                  className="inline-flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100 rounded-md text-sm lia-text-800 dark:text-lia-text-primary transition-colors"
                 >
                   <Download className="w-4 h-4" />
                   Baixar Currículo
-                  <ExternalLink className="w-3 h-3 text-gray-400" />
+                  <ExternalLink className="w-3 h-3 lia-text-400" />
                 </a>
               </div>
             )}
 
             {candidate.self_introduction && (
               <div>
-                <h5 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-1.5 flex items-center gap-1">
+                <h5 className="text-xs font-medium lia-text-800 dark:text-lia-text-primary mb-1.5 flex items-center gap-1">
                   <Brain className="w-3 h-3 text-wedo-cyan" />
                   Apresentação Profissional
                 </h5>
-                <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md leading-relaxed">
+                <p className="text-sm lia-text-600 bg-gray-50 p-3 rounded-md leading-relaxed">
                   {candidate.self_introduction.length > 300 
                     ? `${candidate.self_introduction.slice(0, 300)}...` 
                     : candidate.self_introduction}
@@ -632,11 +632,11 @@ export function CandidateProfileTab({
 
             {candidate.cover_letter && (
               <div>
-                <h5 className="text-xs font-medium text-gray-800 dark:text-gray-200 mb-1.5 flex items-center gap-1">
+                <h5 className="text-xs font-medium lia-text-800 dark:text-lia-text-primary mb-1.5 flex items-center gap-1">
                   <Mail className="w-3 h-3" />
                   Carta de Apresentação
                 </h5>
-                <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md leading-relaxed">
+                <p className="text-sm lia-text-600 bg-gray-50 p-3 rounded-md leading-relaxed">
                   {candidate.cover_letter.length > 300 
                     ? `${candidate.cover_letter.slice(0, 300)}...` 
                     : candidate.cover_letter}
@@ -649,10 +649,10 @@ export function CandidateProfileTab({
 
       {/* Interests Card */}
       {candidate.interests && candidate.interests.length > 0 && (
-        <Card className="border-gray-100">
+        <Card className="border-lia-border-subtle">
           <CardHeader className="py-2.5 px-4">
-            <CardTitle className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-              <Lightbulb className="w-4 h-4 text-gray-600" />
+            <CardTitle className="text-sm font-semibold lia-text-800 flex items-center gap-2">
+              <Lightbulb className="w-4 h-4 lia-text-600" />
               Interesses
             </CardTitle>
           </CardHeader>

@@ -193,8 +193,8 @@ export function JobPublishModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl bg-white border border-gray-200">
-        <DialogHeader className="pb-3 border-b border-gray-200">
+      <DialogContent className="max-w-2xl bg-lia-bg-primary border border-lia-border-subtle">
+        <DialogHeader className="pb-3 border-b border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-md bg-gray-100 flex items-center justify-center">
               <Share2 className="w-4 h-4 text-gray-600" />
@@ -221,13 +221,13 @@ export function JobPublishModal({
                   Vagas Selecionadas
                 </h4>
                 <div className={cn(
-                  "overflow-y-auto space-y-1 bg-gray-50 rounded-md p-2 border border-gray-200",
+                  "overflow-y-auto space-y-1 bg-gray-50 rounded-md p-2 border border-lia-border-subtle",
                   mode === 'unpublish' ? "max-h-[120px]" : "max-h-[100px]"
                 )}>
                   {jobs.map((job) => (
                     <div
                       key={job.id}
-                      className="flex items-center justify-between py-1.5 px-2 bg-white rounded-md border border-gray-200"
+                      className="flex items-center justify-between py-1.5 px-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle"
                     >
                       <div className="flex items-center gap-2 min-w-0 flex-1">
                         <Briefcase className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
@@ -260,23 +260,23 @@ export function JobPublishModal({
                     onValueChange={(value) => setScheduleType(value as 'now' | 'scheduled')}
                     className="space-y-1.5"
                   >
-                    <div className="flex items-center gap-2 p-2 rounded-md border border-gray-200 bg-white">
+                    <div className="flex items-center gap-2 p-2 rounded-md border border-lia-border-subtle bg-lia-bg-primary">
                       <RadioGroupItem
                         value="now"
                         id="schedule-now"
-                        className="border-gray-300 text-gray-900 data-[state=checked]:border-gray-900"
+                        className="border-lia-border-default text-gray-900 data-[state=checked]:border-gray-900"
                       />
                       <Label htmlFor="schedule-now" className="text-xs text-gray-800 cursor-pointer">
                         Publicar agora
                       </Label>
                     </div>
                     
-                    <div className="space-y-2 p-2 rounded-md border border-gray-200 bg-white">
+                    <div className="space-y-2 p-2 rounded-md border border-lia-border-subtle bg-lia-bg-primary">
                       <div className="flex items-center gap-2">
                         <RadioGroupItem
                           value="scheduled"
                           id="schedule-later"
-                          className="border-gray-300 text-gray-900 data-[state=checked]:border-gray-900"
+                          className="border-lia-border-default text-gray-900 data-[state=checked]:border-gray-900"
                         />
                         <Label htmlFor="schedule-later" className="text-xs text-gray-800 cursor-pointer">
                           Agendar para:
@@ -289,13 +289,13 @@ export function JobPublishModal({
                             type="date"
                             value={scheduleDate}
                             onChange={(e) => setScheduleDate(e.target.value)}
-                            className="w-32 h-7 text-xs border-gray-200"
+                            className="w-32 h-7 text-xs border-lia-border-subtle"
                           />
                           <Input
                             type="time"
                             value={scheduleTime}
                             onChange={(e) => setScheduleTime(e.target.value)}
-                            className="w-24 h-7 text-xs border-gray-200"
+                            className="w-24 h-7 text-xs border-lia-border-subtle"
                           />
                         </div>
                       )}
@@ -305,7 +305,7 @@ export function JobPublishModal({
               )}
 
               {(mode === 'unpublish' || mode === 'mixed') && (
-                <div className="space-y-3 bg-gray-50 rounded-md p-3 border border-gray-200">
+                <div className="space-y-3 bg-gray-50 rounded-md p-3 border border-lia-border-subtle">
                   <div className="flex items-center gap-2 text-gray-800 mb-2">
                     <AlertTriangle className="w-3.5 h-3.5 text-status-warning" />
                     <span className="text-xs font-semibold text-gray-950">Opções ao despublicar</span>
@@ -335,7 +335,7 @@ export function JobPublishModal({
                           <select
                             value={freezeReason}
                             onChange={(e) => setFreezeReason(e.target.value)}
-                            className="w-full h-8 px-2 text-xs border border-gray-200 rounded-md bg-white text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-900/20"
+                            className="w-full h-8 px-2 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-900/20"
                           >
                             <option value="">Selecione um motivo...</option>
                             <option value="budget_review">Revisão orçamentária</option>
@@ -358,14 +358,14 @@ export function JobPublishModal({
                             value={unfreezeDate}
                             onChange={(e) => setUnfreezeDate(e.target.value)}
                             min={new Date().toISOString().split('T')[0]}
-                            className="h-8 text-xs border-gray-200"
+                            className="h-8 text-xs border-lia-border-subtle"
                           />
                         </div>
                       </div>
                     )}
                   </div>
                   
-                  <div className="border-t border-gray-200 pt-2">
+                  <div className="border-t border-lia-border-subtle pt-2">
                     <div className="flex items-start gap-2">
                       <Checkbox
                         id="notifyApplicants"
@@ -381,7 +381,7 @@ export function JobPublishModal({
                           Todos os candidatos do processo receberão uma mensagem
                         </p>
                         {notifyApplicants && (
-                          <div className="mt-1.5 flex items-center gap-1.5 text-micro text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 px-2 py-1 rounded-full">
+                          <div className="mt-1.5 flex items-center gap-1.5 text-micro text-gray-600 dark:text-lia-text-tertiary bg-gray-50 dark:bg-lia-bg-secondary/50 px-2 py-1 rounded-full">
                             <Brain className="w-3 h-3 text-wedo-cyan" />
                             <span>LIA abrirá o modal de envio por email/WhatsApp com template sugerido</span>
                           </div>
@@ -395,7 +395,7 @@ export function JobPublishModal({
 
             <div className="space-y-3">
               {(mode === 'publish' || mode === 'mixed') && (
-                <div className="rounded-md border border-gray-200 bg-gray-50 p-3 space-y-2">
+                <div className="rounded-md border border-lia-border-subtle bg-gray-50 p-3 space-y-2">
                   <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide font-['Open_Sans',sans-serif]">
                     Checklist de Publicação
                   </h4>
@@ -462,10 +462,10 @@ export function JobPublishModal({
                         <div
                           key={channel.id}
                           className={cn(
-                            "flex items-center gap-2 p-2 rounded-md border transition-all cursor-pointer",
+                            "flex items-center gap-2 p-2 rounded-md border transition-colors cursor-pointer",
                             selectedChannels.has(channel.id) && channel.connected
                               ? "border-gray-900 bg-gray-50"
-                              : "border-gray-200 bg-white hover:border-gray-300"
+                              : "border-lia-border-subtle bg-lia-bg-primary hover:border-lia-border-default"
                           )}
                           onClick={() => channel.connected && toggleChannel(channel.id)}
                         >
@@ -499,7 +499,7 @@ export function JobPublishModal({
                       <Search className="w-3 h-3" />
                       Busca Automática
                     </h4>
-                    <div className="space-y-2 bg-gray-50 rounded-md p-3 border border-gray-200">
+                    <div className="space-y-2 bg-gray-50 rounded-md p-3 border border-lia-border-subtle">
                       <div className="flex items-start gap-2">
                         <Checkbox
                           id="autoSearchInternal"
@@ -525,7 +525,7 @@ export function JobPublishModal({
                         <div className="flex-1">
                           <Label htmlFor="autoSearchGlobal" className="text-xs font-medium text-gray-950 cursor-pointer flex items-center gap-1">
                             Busca Global
-                            <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded-full text-micro font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                            <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded-full text-micro font-medium bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary">
                               <Brain className="w-2 h-2 text-wedo-cyan" />
                               IA
                             </span>
@@ -547,12 +547,12 @@ export function JobPublishModal({
           </div>
         </div>
 
-        <DialogFooter className="border-t border-gray-200 pt-3 gap-2">
+        <DialogFooter className="border-t border-lia-border-subtle pt-3 gap-2">
           <Button
             variant="outline"
             onClick={onClose}
             disabled={isSubmitting}
-            className="h-9 px-4 text-xs font-medium border-gray-200 text-gray-700 hover:bg-gray-50"
+            className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-gray-700 hover:bg-gray-50"
           >
             Cancelar
           </Button>
@@ -562,7 +562,7 @@ export function JobPublishModal({
               variant="outline"
               onClick={handleUnpublish}
               disabled={isSubmitting}
-              className="h-9 px-4 text-xs font-medium border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100"
+              className="h-9 px-4 text-xs font-medium border-lia-border-subtle bg-gray-50 text-gray-700 hover:bg-gray-100"
             >
               {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : <X className="w-3.5 h-3.5 mr-1.5" />}
               Despublicar ({publishedCount})

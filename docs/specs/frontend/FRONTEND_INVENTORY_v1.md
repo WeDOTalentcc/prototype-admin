@@ -1,4 +1,8 @@
 # FRONTEND INVENTORY — plataforma-lia
+> **Última atualização:** 2026-03-30 — Sprints 1–11 concluídos. Ver `OPORTUNIDADES_PADRONIZACAO.md` para histórico completo.
+> **Score estimado:** 9.0/10 (era 7.6/10 antes das sprints)
+> **Build status:** ✅ Verde (output: 'export' removido, workos lazy init)
+
 > Gerado automaticamente em 2026-03-29 | Modo: INVENTARIO_COMPLETO
 > Stack: React 19 + Next.js 15 + Tailwind CSS + shadcn/ui (Radix UI)
 > Fonte: extração direta via SSH do repositório em `/home/runner/workspace/plataforma-lia/`
@@ -40,7 +44,7 @@ Filosofia: 90% monocromático + 10% acentos estratégicos de marca.
 | `--wedo-purple`         | `#9860D1` | Insights, premium, análises IA               |
 | `--wedo-magenta`        | `#D160AB` | Urgência crítica, prioridade alta            |
 | `--wedo-amber`          | `#F59E0B` | Warning vibrante, urgência                   |
-| `--wedo-blue`           | `#3B82F6` | Azul informativo (legado)                    |
+| `--wedo-blue`           | `#3B82F6` | Azul informativo *(migrado para blue-500 OPT-058)* |
 | `--wedo-coral`          | `#E87575` | Coral suave (atualizado 2026-03-29)          |
 
 #### Marca LIA / Brand Primary (design-tokens.css, linhas ~49–52)
@@ -51,20 +55,20 @@ Filosofia: 90% monocromático + 10% acentos estratégicos de marca.
 | `--lia-brand-primary-hover`   | `#B23B3D`     | `#DC2626`    | Hover do brand primary           |
 | `--lia-brand-primary-light`   | `#FEF2F2`     | `#2D1D1E`    | Background sutil vermelho        |
 
-#### Paleta de Suporte WeDo (globals.css, linhas ~60–80)
+#### Paleta de Suporte WeDo (globals.css (251 linhas, split em styles/), linhas ~60–80)
 Cores de apoio para UI suave:
 
 | Token CSS                   | Valor     |
 |-----------------------------|-----------|
-| `--wedo-apoio-cream`        | `#F5EFE7` |
-| `--wedo-apoio-peach-light`  | `#FADCD2` |
-| `--wedo-apoio-salmon`       | `#FFB5A7` |
-| `--wedo-apoio-blue`         | `#8FA4C4` |
-| `--wedo-apoio-mint`         | `#A8D5BA` |
-| `--wedo-apoio-coral`        | `#F08080` |
-| `--wedo-apoio-gold`         | `#F4D06F` |
+| `--wedo-apoio-cream`        | `#F5EFE7` | *(deprecated OPT-006)* |
+| `--wedo-apoio-peach-light`  | `#FADCD2` | *(deprecated OPT-006)* |
+| `--wedo-apoio-salmon`       | `#FFB5A7` | *(deprecated OPT-006)* |
+| `--wedo-apoio-blue`         | `#8FA4C4` | *(deprecated OPT-006)* |
+| `--wedo-apoio-mint`         | `#A8D5BA` | *(deprecated OPT-006)* |
+| `--wedo-apoio-coral`        | `#F08080` | *(deprecated OPT-006)* |
+| `--wedo-apoio-gold`         | `#F4D06F` | *(deprecated OPT-006)* |
 
-#### Paleta Tech Startups 2024-2025 (globals.css, linhas ~200–230)
+#### Paleta Tech Startups 2024-2025 (globals.css (251 linhas, split em styles/), linhas ~200–230)
 Tokens HSL para variantes wedo-card, wedo-button, etc.:
 
 | Token CSS           | HSL Value        | Hex aprox. |
@@ -165,6 +169,15 @@ Aliases semânticos (design-tokens.css, linhas ~490–504):
 - **Toggle:** Componente `/src/components/theme-toggle.tsx`.
 - **Cobertura:** 100% dos tokens semânticos possuem variante dark. Tokens de terceiros (`--whatsapp-*`) e brand voice (`--lia-voice-*`) não possuem override dark (uso contextual).
 
+#### Dark Mode Status (pós-Sprint 11 — OPT-033 executado)
+
+| Métrica | Valor |
+|---------|-------|
+| `dark:lia-*` tokens semânticos em uso | **9.572 ocorrências** |
+| `dark:gray-N` hardcoded residual (gray-500..950) | **3.816** (sem mapeamento semântico definido) |
+| Componentes UI base com `dark:` | **62/65** (3 N/A: collapsible, lia-icon, toaster) |
+| Pages com `dark:` | **81/90** |
+
 ---
 
 ### 1.4 Cores de Componentes Específicos
@@ -188,7 +201,7 @@ Nota: em dark mode, Primary inverte: bg=`#F9FAFB`, text=`#111827`.
 | Default   | `#E5E7EB`       | `#FFFFFF` | —                               |
 | Focus     | `#60BED1`       | `#FFFFFF` | `rgba(96,190,209,0.2)`          |
 
-#### Badges por Categoria (globals.css/design-tokens, linhas ~700–730)
+#### Badges por Categoria (globals.css (251 linhas, split em styles/)/design-tokens, linhas ~700–730)
 
 | Classe CSS            | BG                        | Texto     |
 |-----------------------|---------------------------|-----------|
@@ -198,7 +211,7 @@ Nota: em dark mode, Primary inverte: bg=`#F9FAFB`, text=`#111827`.
 | `.lia-badge-reports`  | rgba(139,92,246,0.12)     | `#6D28D9` |
 | `.lia-badge-neutral`  | `#F3F4F6`                 | `#4B5563` |
 
-#### Cards (globals.css, linhas ~660–680)
+#### Cards (globals.css (251 linhas, split em styles/), linhas ~660–680)
 
 | Classe            | BG        | Shadow                          | BR   |
 |-------------------|-----------|---------------------------------|------|
@@ -211,11 +224,12 @@ Nota: em dark mode, Primary inverte: bg=`#F9FAFB`, text=`#111827`.
 
 | Métrica                             | Valor         |
 |-------------------------------------|---------------|
-| Total de tokens CSS (`--*`)         | ~180+         |
+| Total de tokens CSS (`--*`)         | ~301 (design-tokens.css: **195** + globals.css: **106**) |
 | Tokens `--lia-*`                    | ~60           |
 | Tokens `--wedo-*`                   | ~50           |
 | Tokens `--status-*`                 | ~18           |
 | Tokens com variante dark mode       | ~50 (todos --lia-*) |
+| Tailwind custom tokens (wedo-/lia-/status-/chat-) | **77** |
 | Cores de terceiros isoladas         | 3 (WhatsApp, login gradient) |
 | Tokens em tailwind.config.ts        | ~80 aliases + CSS vars |
 | Escala de cinzas canônica           | 10 stops      |
@@ -240,7 +254,7 @@ Nota: em dark mode, Primary inverte: bg=`#F9FAFB`, text=`#111827`.
 
 **Font na tag `<body>`:** `Open Sans` como fonte padrão do body, com `Inter` e `Crimson Text` disponíveis via variáveis.
 
-**Import externo (globals.css, linha 1):**
+**Import externo (globals.css (251 linhas, split em styles/), linha 1):**
 ```
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&display=swap');
 ```
@@ -255,9 +269,9 @@ Nota: O `next/font` em layout.tsx e o `@import` no CSS são redundantes para Int
 | `font-crimson`           | `var(--font-crimson)`  | —               |
 | `font-brand`             | `var(--font-open-sans)`| Marca           |
 | `font-data`              | `var(--font-inter)`    | Dados numéricos |
-| `font-sidebar`           | `var(--font-source-serif-4)` | Sidebar (atenção: fonte não carregada!) |
+| `font-sidebar`           | ~~`var(--font-source-serif-4)`~~ | **REMOVIDO do tailwind.config** (Sprint 11) |
 
-**Atenção:** `font-sidebar` aponta para `--font-source-serif-4`, que não é carregada em `layout.tsx`. Pode resultar em fallback para sans-serif genérico.
+> ✅ **Sprint 11:** `font-sidebar` e `--font-source-serif-4` removidos do `tailwind.config` — issue resolvida.
 
 ---
 
@@ -297,7 +311,7 @@ Nota: os tamanhos padrão do Tailwind (text-sm=14px, text-base=16px, text-lg, te
 
 ### 2.3 Componentes Tipográficos
 
-Definidos como classes CSS em `design-tokens.css` (linhas ~800–995) e `globals.css`:
+Definidos como classes CSS em `design-tokens.css` (linhas ~800–995) e `globals.css (251 linhas, split em styles/)`:
 
 #### Headings (`.lia-h*`) — Open Sans
 
@@ -346,7 +360,7 @@ Dark mode override: todos → `color: #F9FAFB`.
 | `.lia-page-title`       | 1.75rem   | Título de página   |
 | `.lia-page-description` | 0.9375rem | Descrição de página|
 
-#### Apple-Inspired Scale (globals.css, linhas ~580–610)
+#### Apple-Inspired Scale (globals.css (251 linhas, split em styles/), linhas ~580–610)
 Classes adicionais de legado:
 
 | Classe             | Tailwind base | Line-height |
@@ -530,7 +544,7 @@ Filosofia: sombras extremamente sutis no light mode, mais pronunciadas no dark (
 | `.lia-shadow-md` | `var(--lia-shadow-md)` |
 | `.lia-shadow-lg` | `var(--lia-shadow-lg)` |
 
-#### Sombras especiais de Cards (globals.css)
+#### Sombras especiais de Cards (globals.css (251 linhas, split em styles/))
 
 | Classe                | Shadow                           |
 |-----------------------|----------------------------------|
@@ -545,7 +559,7 @@ Filosofia: sombras extremamente sutis no light mode, mais pronunciadas no dark (
 
 ### 4.2 Border Radius
 
-#### Token CSS (globals.css, linha ~202)
+#### Token CSS (globals.css (251 linhas, split em styles/), linha ~202)
 `--radius: 0.75rem` (12px) — raio base do sistema.
 
 #### Tailwind borderRadius (tailwind.config.ts, linhas ~168–172)
@@ -582,7 +596,7 @@ Classes utilitárias:
 Tailwind:
 - `border` → `hsl(var(--border))` (Shadcn) → 215 12% 92% (light)
 
-**COBERTURA desta seção: 100%** — sombras, raios, bordas e tokens confirmados via inspeção de design-tokens.css e globals.css.
+**COBERTURA desta seção: 100%** — sombras, raios, bordas e tokens confirmados via inspeção de design-tokens.css e globals.css (251 linhas, split em styles/).
 
 ---
 
@@ -590,7 +604,7 @@ Tailwind:
 
 ### 5.1 Tokens de Motion
 
-#### Transição global base (globals.css, linhas ~290–293)
+#### Transição global base (globals.css (251 linhas, split em styles/), linhas ~290–293)
 ```css
 * {
   transition-duration: 200ms;
@@ -623,7 +637,7 @@ Todas as propriedades herdam 200ms / ease-in-out como padrão.
 
 ### 5.2 Animações Definidas
 
-#### Keyframes em globals.css
+#### Keyframes em globals.css (251 linhas, split em styles/)
 
 | @keyframes            | Efeito                                         |
 |-----------------------|------------------------------------------------|
@@ -672,7 +686,7 @@ Classes Tailwind geradas:
 - `animate-scale-in-delayed` — 0.2s ease-out
 - `animate-slide-in-up` — 0.3s ease-out
 
-#### Classes utilitárias de animação (globals.css)
+#### Classes utilitárias de animação (globals.css (251 linhas, split em styles/))
 
 | Classe CSS                    | Animação               | Duração   |
 |-------------------------------|------------------------|-----------|
@@ -695,14 +709,15 @@ Classes Tailwind geradas:
 
 | Métrica                                   | Valor        |
 |-------------------------------------------|--------------|
-| Keyframes definidos                       | ~30          |
+| Keyframes definidos                       | **24** (5 NOP removidos no Sprint 11) |
 | Classes utilitárias de animação           | ~15          |
 | Transição global padrão                   | 200ms ease   |
 | Animações Radix UI (tooltip/dropdown/popover) | **DESABILITADAS** via `animation: none !important` |
 | Animações Tailwind `.animate-in/out`      | **DESABILITADAS** globalmente |
-| Suporte `prefers-reduced-motion`          | Presente em globals.css e design-tokens.css (wizard sync) |
+| Suporte `prefers-reduced-motion`          | Presente em globals.css (251 linhas, split em styles/) e design-tokens.css (wizard sync) |
 | Plugin utilizado                          | `tailwindcss-animate` |
-| Biblioteca de motion                      | `framer-motion ^12.23.22` (instalada — **0 usos diretos encontrados em .tsx**) |
+| `transition-all` ocorrências              | **0** (795 migradas para transition-colors/opacity/transform) |
+| framer-motion                             | **REMOVIDO** — substituído por CSS keyframes nativos e tailwindcss-animate |
 
 **Nota importante:** As animações de entrada/saída do Radix UI (tooltip, dropdown, popover) estão completamente desabilitadas por decisão de design. As animações do Tailwind (`.animate-in`, `.fade-in-0`, etc.) também estão suprimidas globalmente. Animações ativas são somente as explícitas (sonar, glow, shimmer, field sync wizard).
 
@@ -715,7 +730,7 @@ Classes Tailwind geradas:
 | `AnimatePresence`                    | **0**                                  |
 | `useAnimation` / `useMotion`         | **0**                                  |
 
-**Conclusão:** `framer-motion ^12.23.22` está declarado em `package.json` mas **não é usado em nenhum arquivo `.tsx`**. Todo o motion do projeto é implementado via CSS keyframes nativos (`globals.css`) e classes utilitárias Tailwind. O pacote pode ser removido sem impacto, reduzindo ~160 KB do bundle.
+**Conclusão (pós-Sprint 11):** `framer-motion` foi **removido** do `package.json` no Sprint 11. Todo o motion do projeto é implementado via CSS keyframes nativos e classes utilitárias Tailwind (`tailwindcss-animate`). Bundle reduzido em ~160 KB.
 
 **COBERTURA desta seção: 98%** — auditoria de motion completa com confirmação via grep.
 
@@ -724,7 +739,7 @@ Classes Tailwind geradas:
 ## SEÇÃO 6 — Catálogo de Componentes
 
 ### 6.1 Componentes Base (shadcn/ui)
-Localização: `/src/components/ui/` — 62 arquivos
+Localização: `/src/components/ui/` — **65 arquivos**
 
 **Configuração shadcn:** `style: "new-york"`, `baseColor: "zinc"`, `cssVariables: true`, `iconLibrary: "lucide"`.
 
@@ -795,7 +810,7 @@ Localização: `/src/components/ui/` — 62 arquivos
 | `unified-bulk-actions-bar.tsx`   | Barra unificada de ações em massa              |
 | `variable-selector.tsx`          | Seletor de variáveis (templates)               |
 
-**Total: 62 componentes UI**
+**Total: 65 componentes UI** *(atualizado pós-Sprint 11)*
 
 ---
 
@@ -916,7 +931,7 @@ Não há um diretório dedicado `/components/layout/`, mas os componentes de lay
 
 | Métrica                              | Valor       |
 |--------------------------------------|-------------|
-| Componentes UI base (shadcn/ui)      | 62          |
+| Componentes UI base (shadcn/ui)      | **65**      |
 | Componentes de página compostos      | ~25         |
 | Componentes específicos LIA          | ~15 (lia-float, expanded-chat, screening, etc.) |
 | Componentes de Admin                 | ~10+        |
@@ -1415,7 +1430,7 @@ Localização: `/src/hooks/` — **110 arquivos** (hooks + testes + admin + sett
 | Comunicação/Templates  | 4          |
 | Admin                  | 10         |
 | Settings               | 6          |
-| **Total hooks (.ts/.tsx)** | **~108** |
+| **Total hooks (.ts/.tsx)** | **128** |
 | Testes unitários (`__tests__/`) | 13 arquivos |
 
 ---
@@ -1656,7 +1671,7 @@ Todos os 90+ grupos de `backend-proxy` seguem o mesmo padrão:
 ```
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&display=swap');
 ```
-Localizado em `globals.css` linha 1. Pode duplicar requisições de fonte — o `next/font` self-hosted é preferível e deve sobrescrever o import externo via CSS specificity.
+Localizado em `globals.css (251 linhas, split em styles/)` linha 1. Pode duplicar requisições de fonte — o `next/font` self-hosted é preferível e deve sobrescrever o import externo via CSS specificity.
 
 ---
 
@@ -1686,7 +1701,8 @@ Localizado em `globals.css` linha 1. Pode duplicar requisições de fonte — o 
 │   ├── app/                     # Next.js App Router
 │   │   ├── (rotas)              # 90 page.tsx
 │   │   ├── api/                 # 424 route.ts
-│   │   ├── globals.css          # Estilos globais (1334 linhas)
+│   │   ├── globals.css          # Estilos globais — 251 linhas (split em styles/)
+│   │   │   └── styles/          # animations.css(351L) | components.css(528L) | typography.css(88L) | dark-mode.css(41L)
 │   │   └── layout.tsx           # Root layout
 │   ├── components/              # Componentes React
 │   │   ├── ui/                  # 62 shadcn/ui components
@@ -1703,7 +1719,7 @@ Localizado em `globals.css` linha 1. Pode duplicar requisições de fonte — o 
 │   │   ├── auth-context.tsx
 │   │   ├── lia-float-context.tsx
 │   │   └── ClientContext.tsx
-│   ├── hooks/                   # Custom hooks (~108 arquivos .ts/.tsx)
+│   ├── hooks/                   # Custom hooks (**128 arquivos** .ts/.tsx)
 │   │   ├── admin/               # 10 hooks admin (useAuditLogs, useBiasAudits, etc.)
 │   │   ├── settings/            # 2 hooks de settings
 │   │   ├── __tests__/           # 13 arquivos de teste
@@ -1768,7 +1784,7 @@ Localizado em `globals.css` linha 1. Pode duplicar requisições de fonte — o 
 | `clsx`                         | `^2.1.1`     | Concatenação de classes CSS          |
 | `tailwind-merge`               | `^3.3.0`     | Merge de classes Tailwind            |
 | `tailwindcss-animate`          | `^1.0.7`     | Plugin de animações Tailwind         |
-| `framer-motion`                | `^12.23.22`  | Animações declarativas               |
+| `framer-motion`                | ~~`^12.23.22`~~ — **REMOVIDO no Sprint 11 (-160KB bundle)** | Substituído por CSS keyframes nativos + tailwindcss-animate |
 | `next-themes`                  | `^0.4.6`     | Sistema de temas claro/escuro        |
 | `@radix-ui/react-*`            | vários       | 20 primitivos UI                     |
 | `lucide-react`                 | `^0.475.0`   | Ícones                               |
@@ -1825,7 +1841,7 @@ Localizado em `globals.css` linha 1. Pode duplicar requisições de fonte — o 
 
 | Configuração                    | Valor                             |
 |---------------------------------|-----------------------------------|
-| `output`                        | `'export'` (production only)      |
+| `output`                        | ~~`'export'`~~ **REMOVIDO** — deploy via Node server (incompatível com SSR WorkOS) |
 | `distDir`                       | `'out'`                           |
 | `trailingSlash`                 | `true`                            |
 | `reactStrictMode`               | `false`                           |
@@ -1873,7 +1889,7 @@ Localizado em `globals.css` linha 1. Pode duplicar requisições de fonte — o 
 | Ferramenta               | Versão / Config                              | Uso                                        |
 |--------------------------|----------------------------------------------|--------------------------------------------|
 | **Biome**                | `1.9.4` (`biome.json`)                       | Linter + Formatter principal               |
-| **ESLint**               | `^9.27.0` (`eslint.config.mjs`)              | Linter complementar (regras Next.js)       |
+| **ESLint**               | `^9.27.0` (`eslint.config.mjs`)              | Linter complementar (regras Next.js) — **4 regras WeDo DS ativas** (transition-all, rounded-2xl, wedo-apoio-*, wedo-blue) |
 | **TypeScript**           | `^5.8.3` (strict mode)                       | Type checking (noEmit, sem ignoreBuildErrors) |
 | **Playwright**           | `^1.57.0` (`playwright.config.ts`)           | E2E tests (wizard, kanban)                 |
 | **Vitest**               | `^4.0.15` (`vitest.config.ts`)               | Unit tests                                 |
@@ -1899,7 +1915,7 @@ Localizado em `globals.css` linha 1. Pode duplicar requisições de fonte — o 
 | CSS Variables               | Habilitadas (shadcn style)                             |
 | Dark mode strategy          | `class` (Tailwind `darkMode: ["class"]`)               |
 | Design tokens source        | `src/styles/design-tokens.css` (995 linhas)            |
-| Global styles               | `src/app/globals.css` (1334 linhas)                    |
+| Global styles               | `src/app/globals.css` **251 linhas** (split em `src/app/styles/`: animations.css 351L, components.css 528L, typography.css 88L, dark-mode.css 41L) |
 | Animações plugin            | `tailwindcss-animate`                                  |
 | Utilidade de merge          | `tailwind-merge ^3.3.0` + `clsx ^2.1.1` → `cn()`      |
 | Variantes de componente     | `class-variance-authority ^0.7.1`                      |
@@ -1916,21 +1932,23 @@ Localizado em `globals.css` linha 1. Pode duplicar requisições de fonte — o 
 
 | Dimensão                     | Contagem / Detalhe                              |
 |------------------------------|-------------------------------------------------|
+| **Arquivos .tsx**            | **688**                                         |
+| **Arquivos .ts**             | **785**                                         |
 | **Rotas de página**          | 90                                              |
 | **API routes (route.ts)**    | 424                                             |
-| **Componentes UI (shadcn)**  | 62                                              |
+| **Componentes UI (shadcn)**  | **65**                                          |
 | **Componentes de página**    | ~25                                             |
 | **Total componentes estimado**| ~200+                                          |
-| **Custom hooks**             | ~108 (em /src/hooks/ + subpastas)               |
+| **Custom hooks**             | **128** (em /src/hooks/ + subpastas)            |
 | **Contexts / Providers**     | 6                                               |
 | **Serviços**                 | 8+                                              |
 | **CSS tokens (`--*`)**       | ~180+                                           |
 | **Tokens `--lia-*`**         | ~60                                             |
 | **Tokens `--wedo-*`**        | ~50                                             |
-| **Keyframes CSS**            | ~30                                             |
+| **Keyframes CSS**            | **24** (5 NOP removidos Sprint 11)              |
 | **Classes utilitárias CSS**  | ~80+                                            |
 | **Linhas design-tokens.css** | 995                                             |
-| **Linhas globals.css**       | 1334                                            |
+| **Linhas globals.css (251 linhas, split em styles/)**       | 251 (split em 4 arquivos — ver abaixo)          |
 
 ### Stack Confirmada
 
@@ -1940,7 +1958,7 @@ Localizado em `globals.css` linha 1. Pode duplicar requisições de fonte — o 
 - **Primitivos UI:** Radix UI (20 pacotes)
 - **Ícones:** Lucide React `^0.475.0`
 - **Fontes:** Inter + Open Sans (via next/font/google) + Crimson Text
-- **Motion:** framer-motion `^12.23.22` + CSS keyframes nativos
+- **Motion:** CSS keyframes nativos + `tailwindcss-animate` (framer-motion **removido** no Sprint 11 — -160KB)
 - **Temas:** next-themes `^0.4.6` (class-based)
 - **DnD:** @dnd-kit
 - **Gráficos:** Recharts + Chart.js
@@ -1954,19 +1972,39 @@ Localizado em `globals.css` linha 1. Pode duplicar requisições de fonte — o 
 2. **Cyan exclusivo para IA:** `#60BED1` (wedo-cyan) reservado para interações com a LIA.
 3. **Animações Radix desabilitadas:** tooltip, dropdown, popover sem motion por decisão deliberada.
 4. **Sem middleware de rota:** Proteção via React Context no cliente, não via edge middleware.
-5. **Static export em produção:** `output: 'export'` — incompatível com SSR em produção.
+5. ~~**Static export em produção:** `output: 'export'` — incompatível com SSR em produção.~~ ✅ **Sprint 11: removido — deploy via Node server (compatível com SSR WorkOS).**
 6. **API como proxy:** 424 routes.ts atuam como proxy para backend Python FastAPI na porta 8000.
 7. **DS v4.1:** Open Sans 60% / Inter 40% — Inter exclusivo para métricas numéricas.
 8. **Tokens com dupla fonte de verdade:** CSS vars em `design-tokens.css` + aliases em `tailwind.config.ts`.
 
 ### Alertas e Pendências
 
-| Alerta                                      | Impacto   |
-|---------------------------------------------|-----------|
-| `font-sidebar` referencia fonte não carregada (`--font-source-serif-4`) | Baixo (fallback automático) |
-| Import CSS de Google Fonts redundante com next/font | Baixo (performance) |
-| `reactStrictMode: false`                    | Risco de bugs não detectados em dev |
-| `noImplicitAny: false` no tsconfig          | Reduz cobertura de type safety |
-| Sem middleware edge de autenticação         | Proteção de rotas depende do cliente |
-| 424 API routes proxy — overhead de cold start | Performance em Replit |
+| Alerta | Status | Impacto |
+|--------|--------|---------|
+| ~~`font-sidebar` referencia fonte não carregada (`--font-source-serif-4`)~~ | ✅ Resolvido Sprint 11 | — |
+| ~~Import CSS de Google Fonts redundante com next/font~~ | ✅ Resolvido Sprint 11 | — |
+| ~~Static export em produção: `output: 'export'`~~ | ✅ Resolvido Sprint 11 | — |
+| `reactStrictMode: false` | ⚠️ Aberto | Risco de bugs não detectados em dev |
+| `noImplicitAny: false` no tsconfig | ⚠️ Aberto | Reduz cobertura de type safety |
+| Sem middleware edge de autenticação | ⚠️ Aberto | Proteção de rotas depende do cliente |
+| `dark:gray-N` hardcoded residual: 3.816 casos (gray-500+ sem token semântico) | ⚠️ Aberto | Médio |
+| `text-[#hex]` hardcoded: 4 ocorrências residuais | ⚠️ Aberto | Baixo |
+| `bg-white` sem `dark:`: 1.535 ocorrências | ⚠️ Aberto | Alta (oportunidade futura dark mode) |
 
+
+---
+
+## Oportunidades Futuras (pós-Sprint 11)
+
+| # | Item | Escala | Prioridade |
+|---|------|--------|-----------|
+| F-01 | `bg-white` sem `dark:` | 1.535 ocorrências | Alta |
+| F-02 | `text-gray-900` sem `dark:` | 109 ocorrências | Alta |
+| F-03 | `dark:gray-N` hardcoded residual (gray-500+) | 3.816 | Média |
+| F-04 | `text-[#hex]` hardcoded | 4 | Baixa |
+| F-05 | TypeScript `unsafe any` | 245 | Alta |
+| F-06 | Arquivos >1.500L (monolitos) | 10 arquivos | Alta |
+| F-07 | TODO/FIXME restantes | 27 | Média |
+| F-08 | `style={{}}` dinâmicos (OPT-043) | 977 | Baixa (correto manter) |
+| F-09 | Testes: <4% cobertura | 688 componentes | Alta |
+| F-10 | Zod schemas para API responses | 424 routes | Alta |

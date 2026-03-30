@@ -72,7 +72,7 @@ function MetricCard({
     <Card className="relative overflow-hidden">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle
-          className="text-sm font-medium text-gray-500 dark:text-gray-400"
+          className="text-sm font-medium lia-text-500 dark:text-lia-text-tertiary"
           
         >
           {title}
@@ -89,7 +89,7 @@ function MetricCard({
       </CardHeader>
       <CardContent>
         <div
-          className="text-2xl font-bold text-gray-800 dark:text-gray-100"
+          className="text-2xl font-bold lia-text-800 dark:text-lia-text-primary"
           
         >
           {value}
@@ -113,7 +113,7 @@ function MetricCard({
             )}
             {trendLabel && (
               <span
-                className="text-xs text-gray-400 dark:text-gray-500"
+                className="text-xs lia-text-400 dark:lia-text-500"
                 
               >
                 {trendLabel}
@@ -121,7 +121,7 @@ function MetricCard({
             )}
             {subtitle && !trend && (
               <span
-                className="text-xs text-gray-400 dark:text-gray-500"
+                className="text-xs lia-text-400 dark:lia-text-500"
                 
               >
                 {subtitle}
@@ -141,11 +141,11 @@ function LoadingSkeleton() {
         {Array.from({ length: 4 }).map((_, i) => (
           <Card key={i} className="animate-pulse">
             <CardHeader className="pb-2">
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded-md w-24" />
+              <div className="h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md w-24" />
             </CardHeader>
             <CardContent>
-              <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded-md w-32 mb-2" />
-              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-md w-20" />
+              <div className="h-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-md w-32 mb-2" />
+              <div className="h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-md w-20" />
             </CardContent>
           </Card>
         ))}
@@ -154,12 +154,12 @@ function LoadingSkeleton() {
         {Array.from({ length: 2 }).map((_, i) => (
           <Card key={i} className="animate-pulse">
             <CardHeader>
-              <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded-md w-40" />
+              <div className="h-5 bg-gray-200 dark:bg-lia-bg-elevated rounded-md w-40" />
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {Array.from({ length: 3 }).map((_, j) => (
-                  <div key={j} className="h-12 bg-gray-200 dark:bg-gray-700 rounded-md" />
+                  <div key={j} className="h-12 bg-gray-200 dark:bg-lia-bg-elevated rounded-md" />
                 ))}
               </div>
             </CardContent>
@@ -180,27 +180,27 @@ export default function MetricasPlataformaPage() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary p-8">
         <LoadingSkeleton />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-950 dark:text-gray-50">
+            <h1 className="text-2xl font-semibold lia-text-950 dark:lia-text-50">
               Métricas da Plataforma
             </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-sm lia-text-500 dark:text-lia-text-tertiary mt-1">
               Visão consolidada de todos os clientes • Atualizado em tempo real
             </p>
           </div>
           <div className="flex items-center gap-3">
             {metrics?.lastUpdated && (
-              <span className="text-xs text-gray-500">
+              <span className="text-xs lia-text-500">
                 Última atualização:{" "}
                 {new Date(metrics.lastUpdated).toLocaleString("pt-BR")}
               </span>
@@ -231,8 +231,8 @@ export default function MetricasPlataformaPage() {
         ) : metrics ? (
           <div className="space-y-6">
             <div>
-              <h2 className="text-lg font-medium text-gray-950 dark:text-gray-50 mb-4 flex items-center gap-2">
-                <DollarSign className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <h2 className="text-lg font-medium lia-text-950 dark:lia-text-50 mb-4 flex items-center gap-2">
+                <DollarSign className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                 Métricas de Receita
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -270,7 +270,7 @@ export default function MetricasPlataformaPage() {
             </div>
 
             <div>
-              <h2 className="text-lg font-medium text-gray-950 dark:text-gray-50 mb-4 flex items-center gap-2">
+              <h2 className="text-lg font-medium lia-text-950 dark:lia-text-50 mb-4 flex items-center gap-2">
                 <Building className="w-5 h-5 text-wedo-orange" />
                 Métricas de Clientes
               </h2>
@@ -311,39 +311,39 @@ export default function MetricasPlataformaPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base font-medium">
-                    <Zap className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                    <Zap className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                     Métricas de Uso
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                     <div>
-                      <p className="text-sm font-medium text-gray-950 dark:text-gray-50">
+                      <p className="text-sm font-medium lia-text-950 dark:lia-text-50">
                         Consumo Total de IA
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                      <p className="text-xs lia-text-500 dark:text-lia-text-tertiary">
                         Claude + Gemini (tokens)
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-bold text-gray-900 dark:text-gray-50">
+                      <p className="text-lg font-bold lia-text-900 dark:lia-text-50">
                         {formatNumber(metrics.usage.totalAITokens)}
                       </p>
                       <Badge variant="info">este mês</Badge>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                     <div>
-                      <p className="text-sm font-medium text-gray-950 dark:text-gray-50">
+                      <p className="text-sm font-medium lia-text-950 dark:lia-text-50">
                         Usuários Totais
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                      <p className="text-xs lia-text-500 dark:text-lia-text-tertiary">
                         Todos os clientes
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-bold text-gray-900 dark:text-gray-50">
+                      <p className="text-lg font-bold lia-text-900 dark:lia-text-50">
                         {metrics.usage.totalUsers}
                       </p>
                       <Badge variant="success">
@@ -352,17 +352,17 @@ export default function MetricasPlataformaPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                     <div>
-                      <p className="text-sm font-medium text-gray-950 dark:text-gray-50">
+                      <p className="text-sm font-medium lia-text-950 dark:lia-text-50">
                         Sessões Ativas Hoje
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                      <p className="text-xs lia-text-500 dark:text-lia-text-tertiary">
                         Usuários conectados
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-bold text-gray-900 dark:text-gray-50">
+                      <p className="text-lg font-bold lia-text-900 dark:lia-text-50">
                         {metrics.usage.activeSessionsToday}
                       </p>
                       <Badge variant="success">online</Badge>
@@ -379,12 +379,12 @@ export default function MetricasPlataformaPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                     <div>
-                      <p className="text-sm font-medium text-gray-950 dark:text-gray-50">
+                      <p className="text-sm font-medium lia-text-950 dark:lia-text-50">
                         Custo de Infraestrutura
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                      <p className="text-xs lia-text-500 dark:text-lia-text-tertiary">
                         Servidores, banco de dados
                       </p>
                     </div>
@@ -396,12 +396,12 @@ export default function MetricasPlataformaPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                     <div>
-                      <p className="text-sm font-medium text-gray-950 dark:text-gray-50">
+                      <p className="text-sm font-medium lia-text-950 dark:lia-text-50">
                         Custo de APIs de IA
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                      <p className="text-xs lia-text-500 dark:text-lia-text-tertiary">
                         Claude, Gemini, OpenAI
                       </p>
                     </div>
@@ -415,17 +415,17 @@ export default function MetricasPlataformaPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-300 dark:border-gray-600">
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default">
                     <div>
-                      <p className="text-sm font-medium text-gray-950 dark:text-gray-50">
+                      <p className="text-sm font-medium lia-text-950 dark:lia-text-50">
                         Custo Total Mensal
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                      <p className="text-xs lia-text-500 dark:text-lia-text-tertiary">
                         Infra + IA
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-bold text-gray-900 dark:text-gray-50">
+                      <p className="text-lg font-bold lia-text-900 dark:lia-text-50">
                         {formatCurrency(metrics.costs.totalMonthlyCost)}
                       </p>
                       <Badge variant="info">
@@ -457,14 +457,14 @@ export default function MetricasPlataformaPage() {
                       {formatCurrency(metrics.revenue.mrr - metrics.costs.totalMonthlyCost)} lucro bruto
                     </p>
                   </div>
-                  <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-md text-center">
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-50 mb-1">
+                  <div className="p-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md text-center">
+                    <p className="text-sm font-medium lia-text-900 dark:lia-text-50 mb-1">
                       ARPU (Receita por Cliente)
                     </p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-50">
+                    <p className="text-2xl font-bold lia-text-900 dark:lia-text-50">
                       {formatCurrency(metrics.revenue.mrr / metrics.clients.activeClients)}
                     </p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    <p className="text-xs lia-text-600 dark:text-lia-text-tertiary mt-1">
                       média mensal por cliente
                     </p>
                   </div>

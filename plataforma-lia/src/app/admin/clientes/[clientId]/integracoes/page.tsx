@@ -149,8 +149,8 @@ export default function ClientIntegracoesPage({
     return (
       <div className="flex items-center justify-center h-64">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 animate-spin text-gray-600 dark:text-gray-400" />
-          <p className="text-sm text-gray-400 dark:text-gray-500">
+          <Loader2 className="w-8 h-8 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+          <p className="text-sm lia-text-400 dark:lia-text-500">
             Carregando integrações...
           </p>
         </div>
@@ -163,14 +163,14 @@ export default function ClientIntegracoesPage({
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <Plug className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+            <Plug className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />
             <h2 
-              className="text-lg font-semibold text-gray-800 dark:text-gray-100"
+              className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary"
             >
               Integrações
             </h2>
           </div>
-          <p className="text-sm text-gray-400 dark:text-gray-500">
+          <p className="text-sm lia-text-400 dark:lia-text-500">
             Conexões com sistemas externos
           </p>
         </div>
@@ -224,7 +224,7 @@ export default function ClientIntegracoesPage({
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-semibold text-status-success">{connectedCount}</p>
-            <p className="text-sm text-gray-400 dark:text-gray-500">
+            <p className="text-sm lia-text-400 dark:lia-text-500">
               Conectadas
             </p>
           </CardContent>
@@ -232,7 +232,7 @@ export default function ClientIntegracoesPage({
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-semibold text-status-warning">{pendingCount}</p>
-            <p className="text-sm text-gray-400 dark:text-gray-500">
+            <p className="text-sm lia-text-400 dark:lia-text-500">
               Pendentes
             </p>
           </CardContent>
@@ -240,7 +240,7 @@ export default function ClientIntegracoesPage({
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-semibold text-status-error">{disconnectedCount}</p>
-            <p className="text-sm text-gray-400 dark:text-gray-500">
+            <p className="text-sm lia-text-400 dark:lia-text-500">
               Desconectadas
             </p>
           </CardContent>
@@ -250,11 +250,11 @@ export default function ClientIntegracoesPage({
       {integrations.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center">
-            <Plug className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-            <p className="text-lg font-medium text-gray-800 dark:text-gray-100">
+            <Plug className="w-12 h-12 mx-auto mb-4 lia-text-300" />
+            <p className="text-lg font-medium lia-text-800 dark:text-lia-text-primary">
               Nenhuma integração configurada
             </p>
-            <p className="text-sm mt-2 text-gray-400 dark:text-gray-500">
+            <p className="text-sm mt-2 lia-text-400 dark:lia-text-500">
               Este cliente ainda não possui integrações configuradas.
             </p>
           </CardContent>
@@ -268,25 +268,25 @@ export default function ClientIntegracoesPage({
             >
               <CardContent className="p-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0">
-                    <Plug className="w-6 h-6 text-gray-400" />
+                  <div className="w-12 h-12 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center shrink-0">
+                    <Plug className="w-6 h-6 lia-text-400" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
                       <h3 
-                        className="font-medium text-gray-800 dark:text-gray-100"
+                        className="font-medium lia-text-800 dark:text-lia-text-primary"
                       >
                         {getIntegrationLabel(integration.name)}
                       </h3>
                       {getStatusBadge(integration.status)}
                     </div>
                     <p 
-                      className="text-sm text-gray-400 dark:text-gray-500"
+                      className="text-sm lia-text-400 dark:lia-text-500"
                     >
                       {getIntegrationDescription(integration)}
                     </p>
                     <p 
-                      className="text-xs mt-1 text-gray-400 dark:text-gray-500"
+                      className="text-xs mt-1 lia-text-400 dark:lia-text-500"
                     >
                       Última sincronização: {formatDate(integration.last_sync)}
                     </p>

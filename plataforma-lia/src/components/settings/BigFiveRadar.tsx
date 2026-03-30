@@ -96,7 +96,7 @@ export function BigFiveRadar({
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1"
-                className="text-gray-200 dark:text-gray-700"
+                className="lia-text-200 dark:lia-text-700"
               />
             )
           })}
@@ -112,7 +112,7 @@ export function BigFiveRadar({
                 y2={point.y}
                 stroke="currentColor"
                 strokeWidth="1"
-                className="text-gray-200 dark:text-gray-700"
+                className="lia-text-200 dark:lia-text-700"
               />
             )
           })}
@@ -128,7 +128,7 @@ export function BigFiveRadar({
             fill="url(#radarGradient)"
             stroke="var(--gray-600)"
             strokeWidth="2"
-            className="transition-all duration-300"
+            className="transition-colors duration-300"
           />
 
           {dataPoints.map((value, index) => {
@@ -142,7 +142,7 @@ export function BigFiveRadar({
                 fill="var(--gray-600)"
                 stroke="white"
                 strokeWidth="2"
-                className="transition-all duration-300"
+                className="transition-colors duration-300"
               />
             )
           })}
@@ -160,7 +160,7 @@ export function BigFiveRadar({
                 x={labelPoint.x}
                 y={labelPoint.y + dy}
                 textAnchor={textAnchor}
-                className="text-xs font-medium fill-gray-600 dark:fill-gray-400 font-['Open_Sans',sans-serif]"
+                className="text-xs font-medium fill-gray-600 dark:lia-fill-400 font-['Open_Sans',sans-serif]"
               >
                 {trait.label}
               </text>
@@ -177,7 +177,7 @@ export function BigFiveRadar({
                 <Label className={textStyles.label}>
                   {trait.label}
                 </Label>
-                <span className="text-xs font-semibold text-gray-900 dark:text-gray-100">
+                <span className="text-xs font-semibold lia-text-900 dark:text-lia-text-primary">
                   {scores[trait.key]}%
                 </span>
               </div>
@@ -190,7 +190,7 @@ export function BigFiveRadar({
                 max="100"
                 value={scores[trait.key]}
                 onChange={(e) => handleSliderChange(trait.key, parseInt(e.target.value))}
-                className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-md appearance-none cursor-pointer accent-gray-900 dark:accent-gray-100"
+                className="w-full h-1.5 bg-gray-200 dark:bg-lia-bg-elevated rounded-md appearance-none cursor-pointer accent-gray-900 dark:lia-accent-100"
               />
             </div>
           ))}
@@ -201,7 +201,7 @@ export function BigFiveRadar({
         <div className="grid grid-cols-5 gap-2 text-center">
           {TRAITS.map((trait) => (
             <div key={trait.key} className="space-y-1">
-              <div className="text-sm font-bold text-gray-900 dark:text-gray-100">
+              <div className="text-sm font-bold lia-text-900 dark:text-lia-text-primary">
                 {scores[trait.key]}%
               </div>
               <div className={textStyles.description}>

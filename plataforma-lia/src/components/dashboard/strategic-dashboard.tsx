@@ -112,12 +112,12 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
     switch (trend) {
       case 'up': return <TrendingUp className="w-4 h-4 text-status-success" />
       case 'down': return <TrendingDown className="w-4 h-4 text-status-error" />
-      default: return <Minus className="w-4 h-4 text-gray-400" />
+      default: return <Minus className="w-4 h-4 lia-text-secondary" />
     }
   }
 
   const getTrendColor = (trend: string, value: number, isPositive: boolean = true) => {
-    if (trend === 'stable') return 'text-gray-500'
+    if (trend === 'stable') return 'lia-text-secondary'
     const positive = isPositive ? trend === 'up' : trend === 'down'
     return positive ? 'text-status-success' : 'text-status-error'
   }
@@ -256,8 +256,8 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
     <div id="strategic-dashboard-content" className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <BarChart3 className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-          <h2 className="text-xs font-semibold text-gray-950 dark:text-gray-50 font-['Open_Sans']">
+          <BarChart3 className="w-5 h-5 text-gray-600 dark:text-lia-text-tertiary" />
+          <h2 className="text-xs font-semibold text-gray-950 font-['Open_Sans']">
             Dashboard Estratégico
           </h2>
         </div>
@@ -302,10 +302,10 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
             <CardContent className="p-4">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <p className="text-xs font-medium text-gray-500 font-['Open_Sans']">
+                  <p className="text-xs font-medium lia-text-secondary font-['Open_Sans']">
                     {indicator.name}
                   </p>
-                  <p className="text-2xl font-bold text-gray-950 dark:text-gray-50 mt-1 font-['Open_Sans'] animate-[fadeIn_0.5s_ease-out]">
+                  <p className="text-2xl font-bold text-gray-950 mt-1 font-['Open_Sans'] animate-[fadeIn_0.5s_ease-out]">
                     {formatValue(indicator.value, indicator.unit)}
                   </p>
                   <div className="flex items-center gap-1 mt-1">
@@ -314,13 +314,13 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
                       {indicator.trend_percentage > 0 ? '+' : ''}{indicator.trend_percentage}%
                     </span>
                     {indicator.target && (
-                      <span className="text-xs text-gray-400 ml-2">
+                      <span className="text-xs lia-text-secondary ml-2">
                         Meta: {formatValue(indicator.target, indicator.unit)}
                       </span>
                     )}
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400">
+                <div className="w-10 h-10 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center text-gray-600 dark:text-lia-text-tertiary">
                   {getCategoryIcon(indicator.category)}
                 </div>
               </div>
@@ -333,10 +333,10 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
         {secondaryIndicators.map((indicator) => (
           <Card key={indicator.id} className="">
             <CardContent className="p-3">
-              <p className="text-xs text-gray-500 font-['Open_Sans'] truncate" title={indicator.name}>
+              <p className="text-xs lia-text-secondary font-['Open_Sans'] truncate" title={indicator.name}>
                 {indicator.name}
               </p>
-              <p className="text-lg font-bold text-gray-950 dark:text-gray-50 font-['Open_Sans']">
+              <p className="text-lg font-bold text-gray-950 font-['Open_Sans']">
                 {formatValue(indicator.value, indicator.unit)}
               </p>
               <div className="flex items-center gap-1">
@@ -353,7 +353,7 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
       <Card className="">
         <CardHeader className="pb-2">
           <CardTitle className="text-xs font-semibold font-['Open_Sans'] flex items-center gap-2">
-            <Activity className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+            <Activity className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
             Funil de Recrutamento
           </CardTitle>
         </CardHeader>
@@ -362,20 +362,20 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
             {funnelStages.map((stage, index) => {
               const widthPercent = (stage.count / maxFunnelCount) * 100
               const colors = [
-                'bg-gray-900 dark:bg-gray-50',
-                'bg-gray-700 dark:bg-gray-300',
-                'bg-gray-200 dark:bg-gray-700',
-                'bg-gray-200 dark:bg-gray-700',
+                'bg-gray-900',
+                'bg-gray-700',
+                'bg-gray-200 dark:bg-lia-bg-elevated',
+                'bg-gray-200 dark:bg-lia-bg-elevated',
                 'bg-status-success'
               ]
               
               return (
                 <div key={stage.stage_name} className="relative">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-medium text-gray-800 dark:text-gray-200 font-['Open_Sans']">
+                    <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary font-['Open_Sans']">
                       {stage.stage_name}
                     </span>
-                    <div className="flex items-center gap-4 text-xs text-gray-500 font-['Open_Sans']">
+                    <div className="flex items-center gap-4 text-xs lia-text-secondary font-['Open_Sans']">
                       <span>{stage.count} candidatos</span>
                       <span>Conv: {stage.conversion_rate.toFixed(1)}%</span>
                       <span>{stage.avg_time_in_stage_days}d média</span>
@@ -383,7 +383,7 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
                   </div>
                   <div className="h-8 bg-gray-100 rounded-md overflow-hidden">
                     <div 
-                      className={`h-full ${colors[index] || 'bg-gray-400'} rounded-md transition-all duration-700 ease-out flex items-center justify-end pr-2`}
+                      className={`h-full ${colors[index] || 'bg-gray-400'} rounded-md transition-[width,height] duration-700 ease-out flex items-center justify-end pr-2`}
                       style={{width: `${widthPercent}%`,
                         animation: `slideIn 0.5s ease-out ${index * 100}ms backwards`}}
                     >
@@ -409,7 +409,7 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
       <Card className="">
         <CardHeader className="pb-2">
           <CardTitle className="text-xs font-semibold font-['Open_Sans'] flex items-center gap-2">
-            <Award className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+            <Award className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
             Ranking de Recrutadores
           </CardTitle>
         </CardHeader>
@@ -417,15 +417,15 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
           <div className="overflow-x-auto">
             <table className="w-full text-xs font-['Open_Sans']">
               <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-2 px-2 text-gray-500 font-medium">Rank</th>
-                  <th className="text-left py-2 px-2 text-gray-500 font-medium">Recrutador</th>
-                  <th className="text-center py-2 px-2 text-gray-500 font-medium">Posições</th>
-                  <th className="text-center py-2 px-2 text-gray-500 font-medium">Triagens</th>
-                  <th className="text-center py-2 px-2 text-gray-500 font-medium">Entrevistas</th>
-                  <th className="text-center py-2 px-2 text-gray-500 font-medium">Conversão</th>
-                  <th className="text-center py-2 px-2 text-gray-500 font-medium">Tempo Médio</th>
-                  <th className="text-center py-2 px-2 text-gray-500 font-medium">Qualidade</th>
+                <tr className="border-b border-lia-border-subtle">
+                  <th className="text-left py-2 px-2 lia-text-secondary font-medium">Rank</th>
+                  <th className="text-left py-2 px-2 lia-text-secondary font-medium">Recrutador</th>
+                  <th className="text-center py-2 px-2 lia-text-secondary font-medium">Posições</th>
+                  <th className="text-center py-2 px-2 lia-text-secondary font-medium">Triagens</th>
+                  <th className="text-center py-2 px-2 lia-text-secondary font-medium">Entrevistas</th>
+                  <th className="text-center py-2 px-2 lia-text-secondary font-medium">Conversão</th>
+                  <th className="text-center py-2 px-2 lia-text-secondary font-medium">Tempo Médio</th>
+                  <th className="text-center py-2 px-2 lia-text-secondary font-medium">Qualidade</th>
                 </tr>
               </thead>
               <tbody>
@@ -436,14 +436,14 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
                   return (
                     <tr 
                       key={recruiter.recruiter_id} 
-                      className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                      className="border-b border-lia-border-subtle hover:bg-gray-50 transition-colors"
                     >
                       <td className="py-3 px-2">
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                          recruiter.rank === 1 ? 'bg-status-warning/10 text-status-warning' :
-                          recruiter.rank === 2 ? 'bg-gray-300 text-gray-800 dark:bg-gray-600 dark:text-gray-200' :
+ recruiter.rank === 1 ? 'bg-status-warning/10 text-status-warning' :
+                          recruiter.rank === 2 ? 'bg-gray-300 text-gray-800 dark:text-lia-text-primary' :
                           recruiter.rank === 3 ? 'bg-wedo-orange/10 text-wedo-orange' :
-                          'bg-gray-100 text-gray-600'
+                          'bg-gray-100 lia-text-base'
                         }`}>
                           {recruiter.rank}
                         </div>
@@ -452,20 +452,20 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
                         <div className="flex items-center gap-2">
                           <Avatar className="w-8 h-8">
                             <AvatarImage src={recruiter.avatar_url} alt={recruiter.recruiter_name} />
-                            <AvatarFallback className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                            <AvatarFallback className="text-xs bg-gray-100 dark:bg-lia-bg-secondary text-gray-600 dark:text-lia-text-tertiary">
                               {recruiter.recruiter_name.split(' ').map(n => n[0]).join('')}
                             </AvatarFallback>
                           </Avatar>
-                          <span className="font-medium text-gray-950 dark:text-gray-50">{recruiter.recruiter_name}</span>
+                          <span className="font-medium text-gray-950">{recruiter.recruiter_name}</span>
                         </div>
                       </td>
                       <td className="py-3 px-2 text-center">
                         <div className="flex items-center justify-center gap-1">
-                          <span className={isOnTarget ? 'text-status-success font-bold' : 'text-gray-950 dark:text-gray-50'}>
+                          <span className={isOnTarget ? 'text-status-success font-bold' : 'text-gray-950'}>
                             {recruiter.positions_filled}
                           </span>
-                          <span className="text-gray-400">/</span>
-                          <span className="text-gray-500">{recruiter.positions_target}</span>
+                          <span className="lia-text-secondary">/</span>
+                          <span className="lia-text-secondary">{recruiter.positions_target}</span>
                           {isOnTarget && (
                             <Badge className="ml-1 bg-status-success/15 text-status-success text-xs">
                               ✓
@@ -473,16 +473,16 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
                           )}
                         </div>
                       </td>
-                      <td className="py-3 px-2 text-center text-gray-800 dark:text-gray-200">
+                      <td className="py-3 px-2 text-center text-gray-800 dark:text-lia-text-primary">
                         {recruiter.candidates_screened}
                       </td>
-                      <td className="py-3 px-2 text-center text-gray-800 dark:text-gray-200">
+                      <td className="py-3 px-2 text-center text-gray-800 dark:text-lia-text-primary">
                         {recruiter.interviews_conducted}
                       </td>
                       <td className="py-3 px-2 text-center">
                         <span className={`font-medium ${
-                          recruiter.conversion_rate >= 3 ? 'text-status-success' : 
-                          recruiter.conversion_rate >= 2 ? 'text-gray-600 dark:text-gray-400' : 
+ recruiter.conversion_rate >= 3 ? 'text-status-success' : 
+                          recruiter.conversion_rate >= 2 ? 'text-gray-600 dark:text-lia-text-tertiary' : 
                           'text-wedo-orange'
                         }`}>
                           {recruiter.conversion_rate.toFixed(1)}%
@@ -490,8 +490,8 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
                       </td>
                       <td className="py-3 px-2 text-center">
                         <span className={`${
-                          recruiter.avg_time_to_fill_days <= 25 ? 'text-status-success' : 
-                          recruiter.avg_time_to_fill_days <= 30 ? 'text-gray-600 dark:text-gray-400' : 
+ recruiter.avg_time_to_fill_days <= 25 ? 'text-status-success' : 
+                          recruiter.avg_time_to_fill_days <= 30 ? 'text-gray-600 dark:text-lia-text-tertiary' : 
                           'text-wedo-orange'
                         }`}>
                           {recruiter.avg_time_to_fill_days}d
@@ -501,11 +501,11 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
                         <div className="flex items-center justify-center gap-1">
                           <div className="w-12 h-2 bg-gray-200 rounded-full overflow-hidden">
                             <div 
-                              className="h-full bg-gray-900 dark:bg-gray-50 rounded-full transition-all duration-500"
+                              className="h-full bg-gray-900 rounded-full transition-[width,height] duration-500"
                               style={{width: `${recruiter.quality_score}%`}}
                             />
                           </div>
-                          <span className="text-gray-800 dark:text-gray-200 font-medium">{recruiter.quality_score.toFixed(0)}</span>
+                          <span className="text-gray-800 dark:text-lia-text-primary font-medium">{recruiter.quality_score.toFixed(0)}</span>
                         </div>
                       </td>
                     </tr>

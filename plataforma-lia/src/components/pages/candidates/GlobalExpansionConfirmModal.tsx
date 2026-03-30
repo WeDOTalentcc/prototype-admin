@@ -46,7 +46,7 @@ export function GlobalExpansionConfirmModal({
               A Busca Global encontra candidatos além da sua base local em um pool de mais de 800 milhões de perfis profissionais.
             </p>
 
-            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-md p-4 space-y-3">
+            <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4 space-y-3">
               <div className="flex justify-between items-center text-sm">
                 <span className="text-gray-800">Busca atual:</span>
                 <span className="font-medium text-xs max-w-sidebar-content truncate">{lastSuccessfulQuery || lastSearchQuery || 'N/A'}</span>
@@ -55,7 +55,7 @@ export function GlobalExpansionConfirmModal({
                 <span className="text-gray-800">Resultados locais:</span>
                 <span className="font-medium">{localResultsCount} candidatos</span>
               </div>
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-2">
+              <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-2">
                 <div className="flex justify-between items-center">
                   <span className="font-medium">Custo por candidato:</span>
                   <span className="font-bold text-lg text-gray-700">

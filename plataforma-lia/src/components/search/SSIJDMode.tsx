@@ -34,7 +34,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
         >
           Buscar vaga existente
         </span>
-        <span className="text-micro text-gray-400">opcional</span>
+        <span className="text-micro lia-text-400">opcional</span>
       </div>
 
       {selectedVacancy ? (
@@ -45,12 +45,12 @@ export function SSIJDMode(props: SSIJDModeProps) {
             <div 
               className="w-6 h-6 rounded-full flex items-center justify-center bg-gray-200"
             >
-              <Briefcase className="w-3 h-3 text-gray-600" />
+              <Briefcase className="w-3 h-3 lia-text-600" />
             </div>
             <div>
-              <p className="text-base-ui font-medium text-gray-800">{selectedVacancy.title}</p>
+              <p className="text-base-ui font-medium lia-text-800">{selectedVacancy.title}</p>
               {selectedVacancy.job_id && (
-                <p className="text-micro text-gray-500">ID: {selectedVacancy.job_id}</p>
+                <p className="text-micro lia-text-500">ID: {selectedVacancy.job_id}</p>
               )}
             </div>
           </div>
@@ -58,16 +58,16 @@ export function SSIJDMode(props: SSIJDModeProps) {
             onClick={clearSelectedVacancy}
             className="p-1 rounded-md hover:bg-gray-100 transition-colors"
           >
-            <X className="w-3.5 h-3.5 text-gray-400" />
+            <X className="w-3.5 h-3.5 lia-text-400" />
           </button>
         </div>
       ) : (
         <div className="relative">
           <div className="absolute left-3 top-1/2 -translate-y-1/2">
             {isSearchingVacancies ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-gray-400" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin lia-text-400" />
             ) : (
-              <Search className="w-3.5 h-3.5 text-gray-400" />
+              <Search className="w-3.5 h-3.5 lia-text-400" />
             )}
           </div>
           <input
@@ -75,7 +75,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
             value={jdVacancySearch}
             onChange={(e) => setJdVacancySearch(e.target.value)}
             placeholder="Digite o nome ou ID da vaga..."
-            className="w-full pl-9 pr-4 py-2.5 text-base-ui rounded-md border focus:outline-none transition-all bg-gray-50 text-gray-950"
+            className="w-full pl-9 pr-4 py-2.5 text-base-ui rounded-md border focus:outline-none transition-colors bg-gray-50 lia-text-950"
             onFocus={(e) => {
               e.currentTarget.style.borderColor = "var(--gray-300)"
               e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)"
@@ -95,12 +95,12 @@ export function SSIJDMode(props: SSIJDModeProps) {
                 <button
                   key={vacancy.id}
                   onClick={() => handleSelectVacancy(vacancy)}
-                  className="w-full p-2.5 text-left hover:bg-gray-50 transition-colors border-b last:border-b-0 border border-gray-200"
+                  className="w-full p-2.5 text-left hover:bg-gray-50 transition-colors border-b last:border-b-0 border border-lia-border-subtle"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="text-base-ui font-medium text-gray-800 truncate">{vacancy.title}</p>
+                        <p className="text-base-ui font-medium lia-text-800 truncate">{vacancy.title}</p>
                         <Badge 
                           variant="outline" 
                           className="text-micro px-1.5 py-0 h-4 flex-shrink-0"
@@ -112,17 +112,17 @@ export function SSIJDMode(props: SSIJDModeProps) {
                       </div>
                       <div className="flex items-center gap-2 mt-0.5">
                         {vacancy.job_id && (
-                          <span className="text-micro text-gray-500">ID: {vacancy.job_id}</span>
+                          <span className="text-micro lia-text-500">ID: {vacancy.job_id}</span>
                         )}
-                        <span className="text-micro text-gray-400">{formatDate(vacancy.created_at)}</span>
+                        <span className="text-micro lia-text-400">{formatDate(vacancy.created_at)}</span>
                       </div>
                       {vacancy.description_preview && (
-                        <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                        <p className="text-xs lia-text-500 mt-1 line-clamp-2">
                           {vacancy.description_preview}
                         </p>
                       )}
                     </div>
-                    <ChevronRight className="w-3.5 h-3.5 text-gray-300 flex-shrink-0 mt-0.5" />
+                    <ChevronRight className="w-3.5 h-3.5 lia-text-300 flex-shrink-0 mt-0.5" />
                   </div>
                 </button>
               ))}
@@ -134,7 +134,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
               className="absolute z-50 top-full left-0 right-0 mt-1 p-2.5 rounded-md border text-center"
               style={{backgroundColor: 'var(--gray-50)'}}
             >
-              <p className="text-base-ui text-gray-500">Nenhuma vaga encontrada</p>
+              <p className="text-base-ui lia-text-500">Nenhuma vaga encontrada</p>
             </div>
           )}
         </div>
@@ -143,7 +143,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
 
     <div className="flex items-center gap-3">
       <div className="flex-1 h-px bg-gray-200" />
-      <span className="text-micro text-gray-400 uppercase tracking-wider">ou</span>
+      <span className="text-micro lia-text-400 uppercase tracking-wider">ou</span>
       <div className="flex-1 h-px bg-gray-200" />
     </div>
 
@@ -183,7 +183,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
           }
         }}
         placeholder={getPlaceholder()}
-        className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[100px] transition-all border bg-lia-bg-primary"
+        className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[100px] transition-colors border bg-lia-bg-primary"
         style={{color: "var(--gray-950)"}}
         onFocus={(e) => {
           e.currentTarget.style.borderColor = "var(--gray-300)"
@@ -205,11 +205,11 @@ export function SSIJDMode(props: SSIJDModeProps) {
                     type="button"
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSearchSourceChange('local'); }}
                     className={cn(
-                      "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                      "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                       searchSource === 'local' 
                         ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                         : "hover:bg-gray-100"
-                    , searchSource === 'local' ? "text-wedo-green" : "text-gray-400"
+                    , searchSource === 'local' ? "text-wedo-green" : "lia-text-400"
                     )}
                   >
                     <Home className="w-4 h-4" />
@@ -217,7 +217,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="!animate-none !duration-0">
                   <p className="text-xs font-medium">Seu banco de talentos</p>
-                  <p className="text-xs text-gray-300">Gratuito • Local</p>
+                  <p className="text-xs lia-text-300">Gratuito • Local</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -230,11 +230,11 @@ export function SSIJDMode(props: SSIJDModeProps) {
                       type="button"
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSourceChange('hybrid'); }}
                       className={cn(
-                        "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                        "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                         searchSource === 'hybrid' 
                           ? "bg-wedo-orange/15 ring-1 ring-wedo-orange" 
                           : "hover:bg-gray-100"
-                      , searchSource === 'hybrid' ? "text-wedo-orange" : "text-gray-400"
+                      , searchSource === 'hybrid' ? "text-wedo-orange" : "lia-text-400"
                       )}
                     >
                       <Zap className="w-4 h-4" />
@@ -242,7 +242,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="!animate-none !duration-0">
                     <p className="text-xs font-medium">Expanda sua busca</p>
-                    <p className="text-xs text-gray-300">Local + Global • 1 crédito/candidato</p>
+                    <p className="text-xs lia-text-300">Local + Global • 1 crédito/candidato</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -256,11 +256,11 @@ export function SSIJDMode(props: SSIJDModeProps) {
                       type="button"
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSourceChange('global'); }}
                       className={cn(
-                        "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                        "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                         searchSource === 'global' 
                           ? "bg-wedo-cyan/15 ring-1 ring-gray-900/20" 
                           : "hover:bg-gray-100"
-                      , searchSource === 'global' ? "text-gray-950" : "text-gray-400"
+                      , searchSource === 'global' ? "lia-text-950" : "lia-text-400"
                       )}
                     >
                       <Globe className="w-4 h-4" />
@@ -268,7 +268,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="!animate-none !duration-0">
                     <p className="text-xs font-medium">Alcance global</p>
-                    <p className="text-xs text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
+                    <p className="text-xs lia-text-300">800M+ candidatos • 1 crédito/candidato</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -283,11 +283,11 @@ export function SSIJDMode(props: SSIJDModeProps) {
                         type="button"
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRequireEmailsChange(!requireEmails); }}
                         className={cn(
-                          "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                          "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                           requireEmails 
                             ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                             : "hover:bg-gray-100"
-                        , requireEmails ? "text-wedo-green" : "text-gray-400"
+                        , requireEmails ? "text-wedo-green" : "lia-text-400"
                         )}
                       >
                         <Mail className="w-3.5 h-3.5" />
@@ -295,7 +295,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="!animate-none !duration-0">
                       <p className="text-xs font-medium">Apenas com Email</p>
-                      <p className="text-xs text-gray-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                      <p className="text-xs lia-text-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -307,11 +307,11 @@ export function SSIJDMode(props: SSIJDModeProps) {
                         type="button"
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRequirePhoneNumbersChange(!requirePhoneNumbers); }}
                         className={cn(
-                          "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                          "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                           requirePhoneNumbers 
                             ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                             : "hover:bg-gray-100"
-                        , requirePhoneNumbers ? "text-wedo-green" : "text-gray-400"
+                        , requirePhoneNumbers ? "text-wedo-green" : "lia-text-400"
                         )}
                       >
                         <Phone className="w-3.5 h-3.5" />
@@ -319,7 +319,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="!animate-none !duration-0">
                       <p className="text-xs font-medium">Apenas com Telefone</p>
-                      <p className="text-xs text-gray-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                      <p className="text-xs lia-text-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -334,9 +334,9 @@ export function SSIJDMode(props: SSIJDModeProps) {
                     onClick={handleSubmit}
                     disabled={!canSubmit() || isLoading}
                     className={cn(
-                      "flex items-center justify-center p-1.5 rounded-md transition-all",
+                      "flex items-center justify-center p-1.5 rounded-md transition-colors",
                       canSubmit() ? "hover:bg-gray-100" : "opacity-50 cursor-not-allowed"
-                    , canSubmit() ? "text-gray-400" : "text-gray-200"
+                    , canSubmit() ? "lia-text-400" : "lia-text-200"
                     )}
                   >
                     {isLoading ? (
@@ -348,12 +348,12 @@ export function SSIJDMode(props: SSIJDModeProps) {
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="!animate-none !duration-0">
                   <p className="text-xs font-medium">Extrair e Buscar</p>
-                  <p className="text-xs text-gray-300">Extrai requisitos e busca candidatos</p>
+                  <p className="text-xs lia-text-300">Extrai requisitos e busca candidatos</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </div>
-          <span className="text-micro text-gray-400 italic">extrair e buscar</span>
+          <span className="text-micro lia-text-400 italic">extrair e buscar</span>
         </div>
       )}
     </div>
@@ -362,12 +362,12 @@ export function SSIJDMode(props: SSIJDModeProps) {
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <FileText className="w-3.5 h-3.5 text-gray-700" />
-            <span className="text-xs font-medium text-gray-800 dark:text-gray-100">
+            <FileText className="w-3.5 h-3.5 lia-text-700" />
+            <span className="text-xs font-medium lia-text-800 dark:text-lia-text-primary">
               Preview do prompt de busca
             </span>
           </div>
-          <span className="text-micro text-gray-400">editável</span>
+          <span className="text-micro lia-text-400">editável</span>
         </div>
         <textarea
           value={jdSearchPrompt}
@@ -382,10 +382,10 @@ export function SSIJDMode(props: SSIJDModeProps) {
       </div>
     )}
 
-    <div className="p-2.5 rounded-md bg-gray-50 border border-gray-200">
+    <div className="p-2.5 rounded-md bg-gray-50 border border-lia-border-subtle">
       <div className="flex items-start gap-2">
-        <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-gray-700" />
-        <p className="text-xs text-gray-800 dark:text-gray-200">
+        <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 lia-text-700" />
+        <p className="text-xs lia-text-800 dark:text-lia-text-primary">
           <strong>Dica:</strong> Selecione uma vaga existente ou cole a JD completa para extrair automaticamente requisitos técnicos e comportamentais.
         </p>
       </div>

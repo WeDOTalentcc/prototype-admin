@@ -76,7 +76,7 @@ export function IntegrationsPage() {
       type: 'teams',
       status: 'active',
       icon: MessageSquare,
-      color: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300',
+      color: 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary',
       webhookUrl: 'https://outlook.office.com/webhook/xxxxx/IncomingWebhook/yyyyy',
       channels: ['RH Geral', 'Aprovações'],
       events: ['aprovacao_lote', 'candidato_final', 'relatorio_semanal'],
@@ -224,7 +224,7 @@ export function IntegrationsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'bg-status-success/15 text-status-success border-status-success/30'
-      case 'inactive': return 'bg-gray-100 text-gray-800 border-gray-200'
+      case 'inactive': return 'bg-gray-100 text-gray-800 border-lia-border-subtle'
       case 'error': return 'bg-status-error/15 text-status-error border-status-error/30'
       default: return 'bg-status-warning/15 text-status-warning border-status-warning/30'
     }
@@ -281,17 +281,17 @@ export function IntegrationsPage() {
   })
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-950 dark:text-gray-50 mb-2 flex items-center gap-3 font-sans">
-                <Settings className="w-8 h-8 text-gray-600 dark:text-gray-400" />
+                <Settings className="w-8 h-8 text-gray-600 dark:text-lia-text-tertiary" />
                 Integrações Externas
               </h1>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-gray-600 dark:text-lia-text-tertiary">
                 Configure notificações automáticas para Slack, Teams e outras ferramentas
               </p>
             </div>
@@ -321,7 +321,7 @@ export function IntegrationsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  <p className="text-sm font-medium text-gray-600 dark:text-lia-text-tertiary">
                     Integrações Ativas
                   </p>
                   <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">
@@ -337,14 +337,14 @@ export function IntegrationsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  <p className="text-sm font-medium text-gray-600 dark:text-lia-text-tertiary">
                     Mensagens Enviadas
                   </p>
                   <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">
                     {integrations.reduce((acc, i) => acc + i.messagesCount, 0)}
                   </p>
                 </div>
-                <MessageCircle className="w-8 h-8 text-gray-600 dark:text-gray-400" />
+                <MessageCircle className="w-8 h-8 text-gray-600 dark:text-lia-text-tertiary" />
               </div>
             </CardContent>
           </Card>
@@ -353,7 +353,7 @@ export function IntegrationsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  <p className="text-sm font-medium text-gray-600 dark:text-lia-text-tertiary">
                     Templates Ativos
                   </p>
                   <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">
@@ -369,7 +369,7 @@ export function IntegrationsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  <p className="text-sm font-medium text-gray-600 dark:text-lia-text-tertiary">
                     Taxa de Sucesso
                   </p>
                   <p className="text-2xl font-bold text-gray-950 dark:text-gray-50">
@@ -395,7 +395,7 @@ export function IntegrationsPage() {
               <CardContent>
                 <div className="space-y-4">
                   {integrations.map((integration) => (
-                    <div key={integration.id} className="border border-gray-200 dark:border-gray-700 rounded-md p-4">
+                    <div key={integration.id} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4">
                       <div className="flex items-start justify-between">
                         <div className="flex items-start gap-4">
                           <div className={`w-12 h-12 rounded-md flex items-center justify-center ${integration.color}`}>
@@ -414,7 +414,7 @@ export function IntegrationsPage() {
                             </div>
 
                             <div className="space-y-2">
-                              <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                              <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-lia-text-tertiary">
                                 <div className="flex items-center gap-1">
                                   <Hash className="w-4 h-4" />
                                   <span>{integration.channels.join(', ')}</span>
@@ -425,7 +425,7 @@ export function IntegrationsPage() {
                                 </div>
                               </div>
 
-                              <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                              <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-lia-text-tertiary">
                                 <div>
                                   <span className="font-medium text-status-success">{integration.messagesCount}</span> mensagens enviadas
                                 </div>
@@ -437,7 +437,7 @@ export function IntegrationsPage() {
                                 </div>
                               </div>
 
-                              <div className="text-xs text-gray-600 dark:text-gray-400">
+                              <div className="text-xs text-gray-600 dark:text-lia-text-tertiary">
                                 Criado por {integration.createdBy} em {new Date(integration.createdAt).toLocaleDateString('pt-BR')}
                               </div>
                             </div>
@@ -524,7 +524,7 @@ export function IntegrationsPage() {
               <CardContent>
                 <div className="space-y-4">
                   {templates.map((template) => (
-                    <div key={template.id} className="border border-gray-200 dark:border-gray-700 rounded-md p-4">
+                    <div key={template.id} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
@@ -539,11 +539,11 @@ export function IntegrationsPage() {
                             </Badge>
                           </div>
 
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                          <p className="text-sm text-gray-600 dark:text-lia-text-tertiary mb-2">
                             {template.title}
                           </p>
 
-                          <div className="text-xs text-gray-600 dark:text-gray-400">
+                          <div className="text-xs text-gray-600 dark:text-lia-text-tertiary">
                             Usado em: {template.integrations.join(', ')}
                           </div>
                         </div>
@@ -604,7 +604,7 @@ export function IntegrationsPage() {
                 <CardContent>
                   <div className="space-y-3 max-h-96 overflow-y-auto">
                     {filteredEvents.map((event) => (
-                      <div key={event.id} className="border border-gray-200 dark:border-gray-700 rounded-md p-3">
+                      <div key={event.id} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             {event.status === 'success' && <CheckCircle className="w-4 h-4 text-status-success" />}
@@ -619,7 +619,7 @@ export function IntegrationsPage() {
                           </span>
                         </div>
 
-                        <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">
+                        <p className="text-xs text-gray-600 dark:text-lia-text-tertiary mb-1">
                           {event.integration}
                         </p>
 
@@ -653,12 +653,12 @@ export function IntegrationsPage() {
                 <div className="space-y-2">
                   {availableEvents.map((event) => (
                     <div key={event.id} className="flex items-start gap-3 p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800">
-                      <event.icon className="w-4 h-4 text-gray-600 dark:text-gray-400 mt-0.5" />
+                      <event.icon className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary mt-0.5" />
                       <div>
                         <h5 className="text-sm font-medium text-gray-950 dark:text-gray-50">
                           {event.label}
                         </h5>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                        <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
                           {event.description}
                         </p>
                       </div>
@@ -673,7 +673,7 @@ export function IntegrationsPage() {
         {/* Modals placeholder */}
         {showNewIntegration && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-md max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-white dark:bg-lia-bg-secondary rounded-md max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <div className="p-6">
                 <h3 className="text-lg font-semibold text-gray-950 dark:text-gray-50 mb-4">
                   Nova Integração
@@ -681,13 +681,13 @@ export function IntegrationsPage() {
                 {/* Form for new integration */}
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                    <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
                       Plataforma
                     </label>
                     <select
                       value={newIntegration.type}
                       onChange={(e) => setNewIntegration({...newIntegration, type: e.target.value as 'slack' | 'teams'})}
-                      className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-950 dark:text-gray-50"
+                      className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-gray-950 dark:text-gray-50"
                     >
                       <option value="slack">Slack</option>
                       <option value="teams">Microsoft Teams</option>
@@ -695,7 +695,7 @@ export function IntegrationsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                    <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
                       Nome da Integração
                     </label>
                     <input
@@ -703,12 +703,12 @@ export function IntegrationsPage() {
                       value={newIntegration.name}
                       onChange={(e) => setNewIntegration({...newIntegration, name: e.target.value})}
                       placeholder="Ex: Canal #recrutamento"
-                      className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-950 dark:text-gray-50"
+                      className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-gray-950 dark:text-gray-50"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                    <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
                       Webhook URL
                     </label>
                     <input
@@ -716,17 +716,17 @@ export function IntegrationsPage() {
                       value={newIntegration.webhookUrl}
                       onChange={(e) => setNewIntegration({...newIntegration, webhookUrl: e.target.value})}
                       placeholder="https://hooks.slack.com/services/..."
-                      className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-950 dark:text-gray-50"
+                      className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-gray-950 dark:text-gray-50"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                    <label className="block text-sm font-medium text-gray-800 dark:text-lia-text-primary mb-2">
                       Eventos para Notificar
                     </label>
                     <div className="grid grid-cols-2 gap-2">
                       {availableEvents.map((event) => (
-                        <label key={event.id} className="flex items-center gap-2 p-2 border border-gray-200 dark:border-gray-700 rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <label key={event.id} className="flex items-center gap-2 p-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
                           <input
                             type="checkbox"
                             checked={newIntegration.events.includes(event.id)}
@@ -743,10 +743,10 @@ export function IntegrationsPage() {
                                 })
                               }
                             }}
-                            className="rounded-md border-gray-300"
+                            className="rounded-md border-lia-border-default"
                           />
-                          <event.icon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                          <span className="text-sm text-gray-800 dark:text-gray-200">{event.label}</span>
+                          <event.icon className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
+                          <span className="text-sm text-gray-800 dark:text-lia-text-primary">{event.label}</span>
                         </label>
                       ))}
                     </div>
@@ -763,7 +763,7 @@ export function IntegrationsPage() {
                         type: newIntegration.type,
                         status: 'active',
                         icon: newIntegration.type === 'slack' ? Slack : MessageSquare,
-                        color: newIntegration.type === 'slack' ? 'bg-wedo-purple/15 text-wedo-purple' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300',
+                        color: newIntegration.type === 'slack' ? 'bg-wedo-purple/15 text-wedo-purple' : 'bg-gray-100 dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary',
                         webhookUrl: newIntegration.webhookUrl,
                         channels: newIntegration.channels,
                         events: newIntegration.events,

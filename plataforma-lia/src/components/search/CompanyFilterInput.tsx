@@ -321,9 +321,9 @@ export function CompanyFilterInput({
         <div className="flex items-center gap-2">
           <Popover open={isTimeFilterOpen} onOpenChange={setIsTimeFilterOpen}>
             <PopoverTrigger asChild>
-              <button className="flex items-center gap-2 px-2.5 py-1 rounded-md border border-gray-200 text-xs hover:bg-gray-50 transition-colors">
-                <span className="text-gray-800 dark:text-gray-200">{currentTimeOption?.label}</span>
-                <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+              <button className="flex items-center gap-2 px-2.5 py-1 rounded-md border border-lia-border-subtle text-xs hover:bg-gray-50 transition-colors">
+                <span className="lia-text-800 dark:text-lia-text-primary">{currentTimeOption?.label}</span>
+                <ChevronDown className="w-3.5 h-3.5 lia-text-400" />
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-80 p-0" align="start">
@@ -341,12 +341,12 @@ export function CompanyFilterInput({
                     )}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-gray-800 dark:text-gray-200">{option.label}</span>
+                      <span className="text-xs font-medium lia-text-800 dark:text-lia-text-primary">{option.label}</span>
                       {timeFilter === option.value && (
-                        <div className="w-2 h-2 rounded-full bg-gray-900 dark:bg-gray-50" />
+                        <div className="w-2 h-2 rounded-full bg-gray-900 dark:lia-bg-50" />
                       )}
                     </div>
-                    <p className="text-xs text-gray-500 mt-0.5">{option.description}</p>
+                    <p className="text-xs lia-text-500 mt-0.5">{option.description}</p>
                   </button>
                 ))}
               </div>
@@ -366,7 +366,7 @@ export function CompanyFilterInput({
                 min={1990}
                 max={currentYear}
               />
-              <span className="text-gray-500">to</span>
+              <span className="lia-text-500">to</span>
               <Input
                 type="number"
                 value={specificYears?.end || currentYear}
@@ -384,11 +384,11 @@ export function CompanyFilterInput({
           {timeFilter === 'funding_stage' && (
             <Popover>
               <PopoverTrigger asChild>
-                <button className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-gray-200 text-sm hover:bg-gray-50">
-                  <span className="text-gray-800 dark:text-gray-200">
+                <button className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-lia-border-subtle text-sm hover:bg-gray-50">
+                  <span className="lia-text-800 dark:text-lia-text-primary">
                     {fundingStages?.length ? `${fundingStages.length} selected` : 'Select stages'}
                   </span>
-                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                  <ChevronDown className="w-4 h-4 lia-text-400" />
                 </button>
               </PopoverTrigger>
               <PopoverContent className="w-48 p-2" align="start">
@@ -407,8 +407,8 @@ export function CompanyFilterInput({
                       className={cn(
                         "w-full text-left px-2 py-1.5 rounded-md text-sm transition-colors",
                         fundingStages?.includes(stage)
-                          ? "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50"
-                          : "hover:bg-gray-50 text-gray-800 dark:text-gray-200"
+                          ? "bg-gray-100 dark:bg-lia-bg-secondary lia-text-900 dark:lia-text-50"
+                          : "hover:bg-gray-50 lia-text-800 dark:text-lia-text-primary"
                       )}
                     >
                       {stage}
@@ -426,7 +426,7 @@ export function CompanyFilterInput({
         <button
           onClick={clearAll}
           disabled={value.length === 0}
-          className="text-xs text-gray-500 hover:text-status-error flex items-center gap-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-gray-500"
+          className="text-xs lia-text-500 hover:text-status-error flex items-center gap-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:lia-text-500"
         >
           <RotateCcw className="w-3 h-3" />
           Limpar tudo
@@ -436,14 +436,14 @@ export function CompanyFilterInput({
             <button
               onClick={() => {}}
               disabled={value.length === 0}
-              className="text-xs text-gray-600 hover:text-gray-800 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="text-xs lia-text-600 hover:lia-text-800 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save className="w-3 h-3" />
               Salvar Preset
             </button>
             <button
               onClick={() => setIsPresetsModalOpen(true)}
-              className="text-xs text-gray-600 hover:text-gray-800 flex items-center gap-1"
+              className="text-xs lia-text-600 hover:lia-text-800 flex items-center gap-1"
             >
               <List className="w-3 h-3" />
               Presets
@@ -454,7 +454,7 @@ export function CompanyFilterInput({
 
       <div className="relative">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-400" />
           <Input
             ref={inputRef}
             value={inputValue}
@@ -462,12 +462,12 @@ export function CompanyFilterInput({
             onKeyDown={handleKeyDown}
             onFocus={() => inputValue.length > 0 && setIsDropdownOpen(true)}
             placeholder={placeholder}
-            className="pl-9 pr-3 border-gray-200 focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+            className="pl-9 pr-3 border-lia-border-subtle focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
             disabled={isLoadingAI}
           />
           {isLoadingAI && (
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <Loader2 className="w-4 h-4 animate-spin text-gray-600" />
+              <Loader2 className="w-4 h-4 animate-spin lia-text-600" />
             </div>
           )}
         </div>
@@ -475,7 +475,7 @@ export function CompanyFilterInput({
         {isDropdownOpen && dropdownItems.length > 0 && (
           <div 
             ref={dropdownRef}
-            className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md max-h-64 overflow-y-auto"
+            className="absolute z-50 w-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-md max-h-64 overflow-y-auto"
           >
             {dropdownItems.map((item, index) => (
               <button
@@ -490,7 +490,7 @@ export function CompanyFilterInput({
                 className={cn(
                   "w-full text-left px-3 py-2 text-sm transition-colors",
                   focusedIndex === index ? "bg-gray-100" : "hover:bg-gray-50",
-                  item.type === 'ai' && "border-b border-gray-100"
+                  item.type === 'ai' && "border-b border-lia-border-subtle"
                 )}
               >
                 {item.type === 'ai' ? (
@@ -500,9 +500,9 @@ export function CompanyFilterInput({
                   </div>
                 ) : (
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-800 dark:text-gray-200">{item.label}</span>
+                    <span className="lia-text-800 dark:text-lia-text-primary">{item.label}</span>
                     {item.company?.domain && (
-                      <span className="text-xs text-gray-400">{item.company.domain}</span>
+                      <span className="text-xs lia-text-400">{item.company.domain}</span>
                     )}
                   </div>
                 )}
@@ -518,11 +518,11 @@ export function CompanyFilterInput({
             {value.map(company => (
               <Badge
                 key={company.name}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:text-gray-200 border border-gray-200"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle"
               >
                 <span>{company.name}</span>
                 {company.domain && (
-                  <span className="text-gray-400 text-micro">• {company.domain}</span>
+                  <span className="lia-text-400 text-micro">• {company.domain}</span>
                 )}
                 <button
                   onClick={() => removeCompany(company.name)}
@@ -540,7 +540,7 @@ export function CompanyFilterInput({
             size="sm"
             onClick={findSimilarCompanies}
             disabled={isFindingSimilar || value.length === 0}
-            className="text-xs gap-1.5 border-gray-900 dark:border-gray-50 text-gray-900 dark:text-gray-50 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="text-xs gap-1.5 border-gray-900 dark:lia-border-50 lia-text-900 dark:lia-text-50 hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             {isFindingSimilar ? (
               <Loader2 className="w-3 h-3 animate-spin" />

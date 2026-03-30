@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils"
 import { getProactiveActions, acceptProactiveAction, rejectProactiveAction } from "@/services/lia-api"
 
 const PRIORITY_STYLES: Record<string, { badge: string; icon: React.ElementType }> = {
-  low: { badge: 'bg-gray-500/10 text-gray-500', icon: Info },
+  low: { badge: 'bg-gray-500/10 lia-text-secondary', icon: Info },
   normal: { badge: 'bg-wedo-cyan/10 text-wedo-cyan-dark dark:text-wedo-cyan-dark', icon: Lightbulb },
   high: { badge: 'bg-wedo-orange/10 text-wedo-orange dark:text-wedo-orange', icon: AlertCircle },
   urgent: { badge: 'bg-status-error/10 text-status-error dark:text-status-error', icon: Bell }
@@ -113,7 +113,7 @@ export function ProactiveActions({
   if (loading) {
     return (
       <div className={cn("flex items-center justify-center py-8", className)}>
-        <Loader2 className="h-6 w-6 animate-spin text-gray-600 dark:text-gray-400" />
+        <Loader2 className="h-6 w-6 animate-spin text-gray-600 dark:text-lia-text-tertiary" />
       </div>
     )
   }
@@ -122,13 +122,13 @@ export function ProactiveActions({
     return (
       <Card className={className}>
         <CardContent className="flex flex-col items-center justify-center py-8">
-          <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+          <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center mb-4">
             <Brain className="h-6 w-6 text-wedo-cyan" />
           </div>
-          <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
+          <h3 className="text-sm font-medium text-gray-900 dark:text-lia-text-primary mb-1">
             Tudo em dia!
           </h3>
-          <p className="text-xs text-gray-500 dark:text-gray-400 text-center max-w-sm">
+          <p className="text-xs text-gray-500 dark:text-lia-text-tertiary text-center max-w-sm">
             Não há ações proativas pendentes no momento. A LIA está monitorando e notificará quando houver sugestões.
           </p>
         </CardContent>
@@ -147,19 +147,19 @@ export function ProactiveActions({
           return (
             <div
               key={action.id}
- className="flex items-start gap-3 p-3 rounded-md border border-gray-100 bg-white dark:bg-gray-900 hover:border-gray-300 dark:border-gray-600 transition-colors"
+ className="flex items-start gap-3 p-3 rounded-md border border-lia-border-subtle bg-white dark:bg-lia-bg-primary hover:border-lia-border-default dark:border-lia-border-default transition-colors"
             >
               <div className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
+ "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
                 priorityStyle.badge
               )}>
                 <PriorityIcon className="h-4 w-4" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate">
+                <p className="text-xs font-medium text-gray-900 dark:text-lia-text-primary truncate">
                   {action.title}
                 </p>
-                <p className="text-micro text-gray-500 dark:text-gray-400 truncate">
+                <p className="text-micro text-gray-500 dark:text-lia-text-tertiary truncate">
                   {typeof action.suggested_action === 'string' 
                     ? action.suggested_action 
                     : action.suggested_action?.label || action.suggested_action?.action || 'Ver detalhes'}
@@ -182,7 +182,7 @@ export function ProactiveActions({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 w-7 p-0 text-gray-400 hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error/20"
+                  className="h-7 w-7 p-0 lia-text-secondary hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error/20"
                   onClick={() => handleReject(action.id)}
                   disabled={isProcessing}
                 >
@@ -201,7 +201,7 @@ export function ProactiveActions({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Brain className="h-5 w-5 text-wedo-cyan" />
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-lia-text-primary">
             Sugestões da LIA
           </h3>
           <Badge variant="secondary">{actions.length}</Badge>
@@ -217,12 +217,12 @@ export function ProactiveActions({
           return (
             <Card
               key={action.id}
-              className="hover:border-gray-300 dark:border-gray-600 transition-colors"
+              className="hover:border-lia-border-default dark:border-lia-border-default transition-colors"
             >
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <div className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
+ "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
                     priorityStyle.badge
                   )}>
                     <PriorityIcon className="h-5 w-5" />
@@ -230,15 +230,15 @@ export function ProactiveActions({
                   <div className="flex-1 min-w-0 space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <h4 className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                        <h4 className="text-xs font-medium text-gray-900 dark:text-lia-text-primary">
                           {action.title}
                         </h4>
                         <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-micro text-gray-400">
+                          <span className="text-micro lia-text-secondary">
                             {action.action_type ? (ACTION_TYPE_LABELS[action.action_type] || action.action_type) : 'Ação'}
                           </span>
-                          <span className="text-micro text-gray-300 dark:text-gray-600">•</span>
-                          <span className="text-micro text-gray-400">
+                          <span className="text-micro text-gray-300">•</span>
+                          <span className="text-micro lia-text-secondary">
                             {formatTimeAgo(action.created_at)}
                           </span>
                         </div>
@@ -248,13 +248,13 @@ export function ProactiveActions({
                       </Badge>
                     </div>
 
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                    <p className="text-xs text-gray-600 dark:text-lia-text-tertiary">
                       {action.description}
                     </p>
 
-                    <div className="flex items-center gap-2 p-2 rounded-md bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-600">
-                      <ArrowRight className="h-4 w-4 text-gray-600 dark:text-gray-400 shrink-0" />
-                      <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                    <div className="flex items-center gap-2 p-2 rounded-md bg-gray-50 dark:bg-lia-bg-secondary/50 border border-lia-border-default dark:border-lia-border-default">
+                      <ArrowRight className="h-4 w-4 text-gray-600 dark:text-lia-text-tertiary shrink-0" />
+                      <span className="text-xs text-gray-600 dark:text-lia-text-tertiary font-medium">
                         {typeof action.suggested_action === 'string' 
                           ? action.suggested_action 
                           : action.suggested_action?.label || action.suggested_action?.action || 'Ver detalhes'}
@@ -265,7 +265,7 @@ export function ProactiveActions({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-gray-500 hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error/20"
+                        className="lia-text-secondary hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error/20"
                         onClick={() => handleReject(action.id)}
                         disabled={isProcessing}
                       >

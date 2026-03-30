@@ -64,8 +64,8 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
       icon: Shield,
       color: 'var(--gray-600)', // Azul royal
       colorName: 'gray',
-      bgColor: 'bg-gray-100 dark:bg-gray-800',
-      barColor: 'bg-gray-700 dark:bg-gray-300',
+      bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary',
+      barColor: 'bg-gray-700',
       description: 'Neuroticismo: tendência a sentir emoções negativas.',
       detailedDescription: 'Estabilidade emocional, resiliência ao estresse e capacidade de lidar com pressão.',
       traits: {
@@ -211,7 +211,7 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
               <div key={dimension.key} className="space-y-1">
                 {/* Header compacto com nome e percentual */}
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-gray-800 dark:text-gray-200">
+                  <span className="text-xs font-medium text-gray-800 dark:text-lia-text-primary">
                     {dimension.shortName}
                   </span>
                   <span className="text-xs font-bold" style={{color: dimension.color}}>
@@ -220,9 +220,9 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
                 </div>
 
                 {/* Barra ultra compacta */}
-                <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                <div className="h-1.5 bg-gray-100 dark:bg-lia-bg-secondary rounded-full overflow-hidden">
                   <div
-                    className="h-full transition-all duration-500 rounded-full"
+                    className="h-full transition-[width,height] duration-500 rounded-full"
                     style={{width: `${score}%`,
                       backgroundColor: dimension.color}}
                   />
@@ -230,16 +230,16 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
 
                 {/* Labels minimalistas */}
                 <div className="flex justify-between">
-                  <span className="text-xs text-gray-400 dark:text-gray-500">
+                  <span className="text-xs text-gray-400">
                     {dimension.labels.low.split(',')[0]}
                   </span>
-                  <span className="text-xs text-gray-400 dark:text-gray-500 text-right">
+                  <span className="text-xs text-gray-400 text-right">
                     {dimension.labels.high.split(',')[0]}
                   </span>
                 </div>
 
                 {/* Traits compactos */}
-                <div className="text-xs text-gray-600 dark:text-gray-400 line-clamp-1">
+                <div className="text-xs text-gray-600 dark:text-lia-text-tertiary line-clamp-1">
                   {relevantTraits.slice(0, 3).join(', ')}
                 </div>
               </div>
@@ -255,10 +255,10 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
               <div className="flex items-start gap-1.5">
                 <Brain className="w-3 h-3 mt-0.5 flex-shrink-0 text-wedo-cyan" />
                 <div className="space-y-1">
-                  <div className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                  <div className="text-xs font-medium text-gray-600 dark:text-lia-text-tertiary">
                     Insight Comportamental
                   </div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                  <div className="text-xs text-gray-600 dark:text-lia-text-tertiary leading-relaxed">
                     {generatePersonalityInsight()}
                   </div>
                 </div>
@@ -267,29 +267,29 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
 
             {/* Fit para funções super compacto */}
             <div className="flex flex-wrap gap-1">
-              <span className="text-xs text-gray-500 dark:text-gray-400">Fit:</span>
+              <span className="text-xs text-gray-500 dark:text-lia-text-tertiary">Fit:</span>
               {scores.conscientiousness > 70 && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 text-status-success" style={{borderColor: 'var(--gray-200)'}}>
+                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 text-status-success" style={{borderColor: 'var(--lia-border-subtle)'}}>
                   Gestão
                 </Badge>
               )}
               {scores.openness > 70 && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 text-status-error" style={{borderColor: 'var(--gray-200)'}}>
+                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 text-status-error" style={{borderColor: 'var(--lia-border-subtle)'}}>
                   Inovação
                 </Badge>
               )}
               {scores.extraversion > 70 && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 text-status-warning" style={{borderColor: 'var(--gray-200)'}}>
+                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 text-status-warning" style={{borderColor: 'var(--lia-border-subtle)'}}>
                   Liderança
                 </Badge>
               )}
               {scores.agreeableness > 70 && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{borderColor: 'var(--gray-200)', color: 'var(--wedo-purple)'}}>
+                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{borderColor: 'var(--lia-border-subtle)', color: 'var(--wedo-purple)'}}>
                   Atendimento
                 </Badge>
               )}
               {scores.neuroticism < 30 && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{borderColor: 'var(--gray-200)', color: 'var(--gray-600)'}}>
+                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{borderColor: 'var(--lia-border-subtle)', color: 'var(--gray-600)'}}>
                   Alta Pressão
                 </Badge>
               )}

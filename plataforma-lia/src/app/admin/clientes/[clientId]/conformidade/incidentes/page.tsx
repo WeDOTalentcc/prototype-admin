@@ -63,7 +63,7 @@ const severityColors: Record<string, string> = {
   critical: 'bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error',
   high: 'bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/30 dark:text-wedo-orange',
   medium: 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning',
-  low: 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50',
+  low: 'bg-gray-100 lia-text-900 dark:bg-lia-bg-secondary dark:lia-text-50',
 }
 
 const statusColors: Record<string, string> = {
@@ -80,7 +80,7 @@ const statusLabels: Record<string, string> = {
 
 function LoadingSpinner({ size = 'sm' }: { size?: 'sm' | 'md' | 'lg' }) {
   const sizeClass = size === 'lg' ? 'w-8 h-8' : size === 'md' ? 'w-6 h-6' : 'w-4 h-4'
-  return <Loader2 className={`${sizeClass} animate-spin text-gray-600`} />
+  return <Loader2 className={`${sizeClass} animate-spin lia-text-600`} />
 }
 
 export default function IncidentesPage({ params }: { params: Promise<{ clientId: string }> }) {
@@ -160,7 +160,7 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-1 border-b pb-px -mb-px border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-1 border-b pb-px -mb-px border-lia-border-subtle dark:border-lia-border-subtle">
           {internalTabs.map((tab) => {
             const Icon = tab.icon
             return (
@@ -171,7 +171,7 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
                   "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
                   "border-transparent"
                 )}
-                className="text-gray-500 dark:text-gray-400"
+                className="lia-text-500 dark:text-lia-text-tertiary"
               >
                 <Icon className="w-4 h-4" />
                 {tab.name}
@@ -181,7 +181,7 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
         </div>
         <div className="flex items-center justify-center py-12">
           <LoadingSpinner size="lg" />
-          <span className="ml-3 text-sm text-gray-400 dark:text-gray-500">Carregando incidentes...</span>
+          <span className="ml-3 text-sm lia-text-400 dark:lia-text-500">Carregando incidentes...</span>
         </div>
       </div>
     )
@@ -190,7 +190,7 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
   if (error) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-1 border-b pb-px -mb-px border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-1 border-b pb-px -mb-px border-lia-border-subtle dark:border-lia-border-subtle">
           {internalTabs.map((tab) => {
             const Icon = tab.icon
             return (
@@ -201,7 +201,7 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
                   "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
                   "border-transparent"
                 )}
-                className="text-gray-500 dark:text-gray-400"
+                className="lia-text-500 dark:text-lia-text-tertiary"
               >
                 <Icon className="w-4 h-4" />
                 {tab.name}
@@ -223,7 +223,7 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-1 border-b pb-px -mb-px border-gray-200 dark:border-gray-700">
+      <div className="flex items-center gap-1 border-b pb-px -mb-px border-lia-border-subtle dark:border-lia-border-subtle">
         {internalTabs.map((tab) => {
           const isActive = isTabActive(tab.href)
           const Icon = tab.icon
@@ -234,8 +234,8 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
               className={cn(
                 "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
                 isActive
-                  ? "border-gray-900 dark:border-gray-50 text-gray-900 dark:text-gray-50"
-                  : "border-transparent hover:border-gray-300 dark:hover:border-gray-600 text-gray-500 dark:text-gray-400"
+                  ? "border-gray-900 dark:lia-border-50 lia-text-900 dark:lia-text-50"
+                  : "border-transparent hover:border-lia-border-default dark:hover:border-gray-600 lia-text-500 dark:text-lia-text-tertiary"
               )}
             >
               <Icon className="w-4 h-4" />
@@ -250,8 +250,8 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-gray-400 dark:text-gray-500">Incidentes Abertos</p>
-                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">{openIncidents}</p>
+                <p className="text-sm lia-text-400 dark:lia-text-500">Incidentes Abertos</p>
+                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">{openIncidents}</p>
                 <div className="flex items-center gap-1 mt-1">
                   {openIncidents > 0 ? (
                     <>
@@ -283,8 +283,8 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-gray-400 dark:text-gray-500">Resolvidos</p>
-                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">{resolvedIncidents}</p>
+                <p className="text-sm lia-text-400 dark:lia-text-500">Resolvidos</p>
+                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">{resolvedIncidents}</p>
                 <div className="flex items-center gap-1 mt-1">
                   <CheckCircle2 className="w-3 h-3 text-status-success" />
                   <span className="text-xs text-status-success">Últimos 30 dias</span>
@@ -301,17 +301,17 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-gray-400 dark:text-gray-500">Integrações Saudáveis</p>
-                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
+                <p className="text-sm lia-text-400 dark:lia-text-500">Integrações Saudáveis</p>
+                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
                   {integrationsLoading ? '-' : `${healthyIntegrations}/${integrations.length}`}
                 </p>
                 <div className="flex items-center gap-1 mt-1">
-                  <Wifi className="w-3 h-3 text-gray-600 dark:text-gray-400" />
-                  <span className="text-xs text-gray-600 dark:text-gray-400">Online</span>
+                  <Wifi className="w-3 h-3 lia-text-600 dark:text-lia-text-tertiary" />
+                  <span className="text-xs lia-text-600 dark:text-lia-text-tertiary">Online</span>
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-md bg-gray-50 dark:bg-gray-800/50 flex items-center justify-center">
-                <Server className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <div className="w-10 h-10 rounded-md bg-gray-50 dark:bg-lia-bg-secondary/50 flex items-center justify-center">
+                <Server className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
               </div>
             </div>
           </CardContent>
@@ -321,8 +321,8 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-gray-400 dark:text-gray-500">Uptime Médio</p>
-                <p className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-100">
+                <p className="text-sm lia-text-400 dark:lia-text-500">Uptime Médio</p>
+                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
                   {integrationsLoading || integrations.length === 0 ? '-' : `${(integrations.reduce((acc, i) => acc + i.uptime, 0) / integrations.length).toFixed(1)}%`}
                 </p>
                 <div className="flex items-center gap-1 mt-1">
@@ -341,14 +341,14 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
+            <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
               Incidentes Recentes
             </CardTitle>
             <div className="flex items-center gap-2">
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="text-sm px-3 py-1.5 rounded-md border bg-white dark:bg-gray-950 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-100"
+                className="text-sm px-3 py-1.5 rounded-md border bg-white dark:lia-bg-950 border-lia-border-subtle dark:border-lia-border-subtle lia-text-800 dark:text-lia-text-primary"
               >
                 <option value="all">Todos</option>
                 <option value="open">Abertos</option>
@@ -362,11 +362,11 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
           {filteredIncidents.length > 0 ? (
             <div className="space-y-3">
               {filteredIncidents.map((incident) => (
-                <div key={incident.id} className="p-4 rounded-md border border-gray-200 dark:border-gray-700">
+                <div key={incident.id} className="p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <h4 className="font-medium text-gray-800 dark:text-gray-100">{incident.title}</h4>
+                        <h4 className="font-medium lia-text-800 dark:text-lia-text-primary">{incident.title}</h4>
                         <Badge className={severityColors[incident.severity]}>
                           {incident.severity}
                         </Badge>
@@ -376,8 +376,8 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
                       </div>
                       <div className="flex items-center gap-4 mt-2">
                         <div className="flex items-center gap-1">
-                          <Clock className="w-3 h-3 text-gray-400 dark:text-gray-500" />
-                          <span className="text-xs text-gray-400 dark:text-gray-500">
+                          <Clock className="w-3 h-3 lia-text-400 dark:lia-text-500" />
+                          <span className="text-xs lia-text-400 dark:lia-text-500">
                             Início: {formatDateTime(incident.startedAt)}
                           </span>
                         </div>
@@ -392,7 +392,7 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
                       </div>
                       {incident.affectedServices.length > 0 && (
                         <div className="flex items-center gap-2 mt-2">
-                          <span className="text-xs text-gray-400 dark:text-gray-500">Serviços afetados:</span>
+                          <span className="text-xs lia-text-400 dark:lia-text-500">Serviços afetados:</span>
                           {incident.affectedServices.map((service, idx) => (
                             <Badge key={idx} variant="outline" className="text-xs">{service}</Badge>
                           ))}
@@ -406,7 +406,7 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
           ) : (
             <div className="text-center py-6">
               <CheckCircle2 className="w-8 h-8 text-status-success mx-auto mb-2" />
-              <p className="text-sm text-gray-400 dark:text-gray-500">Nenhum incidente encontrado</p>
+              <p className="text-sm lia-text-400 dark:lia-text-500">Nenhum incidente encontrado</p>
             </div>
           )}
         </CardContent>
@@ -414,7 +414,7 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
+          <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
             Status das Integrações
           </CardTitle>
         </CardHeader>
@@ -422,7 +422,7 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
           {integrationsLoading ? (
             <div className="flex items-center justify-center py-6">
               <LoadingSpinner size="md" />
-              <span className="ml-3 text-sm text-gray-400 dark:text-gray-500">
+              <span className="ml-3 text-sm lia-text-400 dark:lia-text-500">
                 Carregando integrações...
               </span>
             </div>
@@ -431,7 +431,7 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
               {integrations.map((integration) => (
                 <div 
                   key={integration.id} 
-                  className="p-4 rounded-md border flex items-center justify-between border-gray-200 dark:border-gray-700"
+                  className="p-4 rounded-md border flex items-center justify-between border-lia-border-subtle dark:border-lia-border-subtle"
                 >
                   <div className="flex items-center gap-3">
                     {integration.status === 'up' ? (
@@ -442,15 +442,15 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
                       <Wifi className="w-5 h-5 text-status-warning" />
                     )}
                     <div>
-                      <p className="font-medium text-sm text-gray-800 dark:text-gray-100">{integration.name}</p>
-                      <p className="text-xs text-gray-400 dark:text-gray-500">{integration.type}</p>
+                      <p className="font-medium text-sm lia-text-800 dark:text-lia-text-primary">{integration.name}</p>
+                      <p className="text-xs lia-text-400 dark:lia-text-500">{integration.type}</p>
                     </div>
                   </div>
                   <div className="text-right">
                     <Badge variant={integration.status === 'up' ? 'success' : integration.status === 'down' ? 'destructive' : 'warning'}>
                       {integration.status === 'up' ? 'Online' : integration.status === 'down' ? 'Offline' : 'Degradado'}
                     </Badge>
-                    <p className="text-xs mt-1 text-gray-400 dark:text-gray-500">
+                    <p className="text-xs mt-1 lia-text-400 dark:lia-text-500">
                       {integration.uptime}% uptime
                     </p>
                   </div>
@@ -459,8 +459,8 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
             </div>
           ) : (
             <div className="text-center py-6">
-              <Server className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm text-gray-400 dark:text-gray-500">
+              <Server className="w-8 h-8 lia-text-400 mx-auto mb-2" />
+              <p className="text-sm lia-text-400 dark:lia-text-500">
                 Nenhuma integração configurada
               </p>
             </div>

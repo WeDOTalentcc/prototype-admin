@@ -112,10 +112,10 @@ export function CandidatesFilterPanel({
   onClose,
 }: CandidatesFilterPanelProps) {
   return (
-    <div className="flex-shrink-0 w-80 transition-all duration-300">
-      <div className="bg-white rounded-md h-[calc(100vh-9rem)] overflow-hidden">
+    <div className="flex-shrink-0 w-80 transition-colors duration-300">
+      <div className="bg-lia-bg-primary rounded-md h-[calc(100vh-9rem)] overflow-hidden">
         {/* Header */}
-        <div className="p-4 flex items-center justify-between border-b border-gray-100">
+        <div className="p-4 flex items-center justify-between border-b border-lia-border-subtle">
           <div>
             <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50">
               Refinar Resultados
@@ -128,7 +128,7 @@ export function CandidatesFilterPanel({
           </div>
           <button
             onClick={onClose}
-            className="h-8 w-8 rounded-md flex items-center justify-center transition-all text-gray-800 hover:text-gray-950 hover:bg-gray-100"
+            className="h-8 w-8 rounded-md flex items-center justify-center transition-colors text-gray-800 hover:text-gray-950 hover:bg-gray-100"
           >
             <X className="w-4 h-4" />
           </button>
@@ -156,10 +156,10 @@ export function CandidatesFilterPanel({
                 <label
                   key={option.value}
                   className={cn(
-                    "flex items-center gap-2.5 px-3 py-2 rounded-md border cursor-pointer transition-all text-xs",
+                    "flex items-center gap-2.5 px-3 py-2 rounded-md border cursor-pointer transition-colors text-xs",
                     searchSortBy === option.value
                       ? "border-gray-900 bg-gray-50 font-medium text-gray-900"
-                      : "border-gray-200 hover:border-gray-300 text-gray-700"
+                      : "border-lia-border-subtle hover:border-lia-border-default text-gray-700"
                   )}
                  
                 >
@@ -796,7 +796,7 @@ export function CandidatesFilterPanel({
                               : (opt.value as TableFilters["availabilityWindow"]),
                         }))
                       }
-                      className="px-2 py-1.5 text-micro rounded-md transition-all"
+                      className="px-2 py-1.5 text-micro rounded-md transition-colors"
                       style={{backgroundColor:
                           tableFilters.availabilityWindow === opt.value ? "var(--gray-950)" : "var(--gray-50)",
                         color: tableFilters.availabilityWindow === opt.value ? "white" : "var(--gray-500)",
@@ -999,9 +999,9 @@ export function CandidatesFilterPanel({
           </div>
 
           {/* Botões de ação */}
-          <div className="pt-4 border-t border-gray-100 space-y-2">
+          <div className="pt-4 border-t border-lia-border-subtle space-y-2">
             <button
-              className="w-full h-9 text-xs rounded-md transition-all border border-gray-200"
+              className="w-full h-9 text-xs rounded-md transition-colors border border-lia-border-subtle"
              
               onClick={onClearAll}
             >
@@ -1026,10 +1026,10 @@ function CheckableItem({ label, checked, onClick }: CheckableItemProps) {
   return (
     <div
       onClick={onClick}
-      className={`flex items-center gap-2.5 p-2 rounded-md cursor-pointer transition-all hover:bg-gray-50 ${checked ? "bg-wedo-cyan/[0.08] border border-wedo-cyan/20" : "bg-transparent border border-transparent"}`}
+      className={`flex items-center gap-2.5 p-2 rounded-md cursor-pointer transition-colors hover:bg-gray-50 ${checked ? "bg-wedo-cyan/[0.08] border border-wedo-cyan/20" : "bg-transparent border border-transparent"}`}
     >
       <div
-        className="w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-all"
+        className="w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-colors"
         style={{backgroundColor: checked ? "var(--gray-950)" : "transparent",
           border: checked ? "none" : "2px solid var(--gray-300)"}}
       >
@@ -1099,7 +1099,7 @@ function TriStateButtons({ value, onChange }: TriStateButtonsProps) {
         <button
           key={String(opt.value)}
           onClick={() => onChange(opt.value)}
-          className="flex-1 px-2 py-1.5 text-micro rounded-md transition-all"
+          className="flex-1 px-2 py-1.5 text-micro rounded-md transition-colors"
           style={{backgroundColor: value === opt.value ? "var(--gray-950)" : "var(--gray-50)",
             color: value === opt.value ? "white" : "var(--gray-500)",
             border: value === opt.value ? "none" : "1px solid var(--gray-200)"}}

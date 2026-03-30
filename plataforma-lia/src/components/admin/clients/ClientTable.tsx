@@ -24,21 +24,21 @@ function ClientSkeleton() {
     <Card className="overflow-hidden animate-pulse">
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-md bg-gray-200 dark:bg-gray-700" />
+          <div className="w-12 h-12 rounded-md bg-gray-200 dark:bg-lia-bg-elevated" />
           <div className="flex-1 space-y-2">
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded-md w-3/4" />
-            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-md w-1/2" />
+            <div className="h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md w-3/4" />
+            <div className="h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-md w-1/2" />
           </div>
-          <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded-full" />
+          <div className="h-5 w-16 bg-gray-200 dark:bg-lia-bg-elevated rounded-full" />
         </div>
         <div className="mt-4 grid grid-cols-2 gap-4">
           <div className="space-y-1">
-            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-md w-1/2" />
-            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-md w-3/4" />
+            <div className="h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-md w-1/2" />
+            <div className="h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-md w-3/4" />
           </div>
           <div className="space-y-1">
-            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-md w-1/2" />
-            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-md w-3/4" />
+            <div className="h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-md w-1/2" />
+            <div className="h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-md w-3/4" />
           </div>
         </div>
       </CardContent>
@@ -49,13 +49,13 @@ function ClientSkeleton() {
 function EmptyState({ message, onRetry }: { message?: string, onRetry?: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4">
-      <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
-        <Building2 className="w-8 h-8 text-gray-400" />
+      <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center mb-4">
+        <Building2 className="w-8 h-8 lia-text-secondary" />
       </div>
-      <h3 className="text-lg font-medium text-gray-950 dark:text-gray-50 mb-1">
+      <h3 className="text-lg font-medium text-gray-950 mb-1">
         Nenhum cliente encontrado
       </h3>
-      <p className="text-sm text-gray-500 dark:text-gray-400 text-center max-w-md mb-4">
+      <p className="text-sm text-gray-500 dark:text-lia-text-tertiary text-center max-w-md mb-4">
         {message || 'Não encontramos clientes com os filtros selecionados. Tente ajustar sua busca ou adicione um novo cliente.'}
       </p>
       {onRetry && (
@@ -74,10 +74,10 @@ function ErrorState({ message, onRetry }: { message: string, onRetry?: () => voi
       <div className="w-16 h-16 rounded-full bg-status-error/10 dark:bg-status-error/20 flex items-center justify-center mb-4">
         <AlertCircle className="w-8 h-8 text-status-error" />
       </div>
-      <h3 className="text-lg font-medium text-gray-950 dark:text-gray-50 mb-1">
+      <h3 className="text-lg font-medium text-gray-950 mb-1">
         Erro ao carregar clientes
       </h3>
-      <p className="text-sm text-gray-500 dark:text-gray-400 text-center max-w-md mb-4">
+      <p className="text-sm text-gray-500 dark:text-lia-text-tertiary text-center max-w-md mb-4">
         {message}
       </p>
       {onRetry && (
@@ -159,7 +159,7 @@ export function ClientTable({
                   variant={page === pageNum ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => onPageChange(pageNum)}
-                  className={page === pageNum ? 'bg-gray-900 dark:bg-gray-50 hover:bg-wedo-cyan-dark' : ''}
+                  className={page === pageNum ? 'bg-gray-900 hover:bg-wedo-cyan-dark' : ''}
                 >
                   {pageNum}
                 </Button>

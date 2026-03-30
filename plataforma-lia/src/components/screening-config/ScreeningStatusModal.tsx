@@ -56,8 +56,8 @@ interface ScreeningStatusModalProps {
 }
 
 const STATUS_CONFIG: Record<ScreeningStatus, { label: string; color: string; bgColor: string; darkBgColor: string; icon: React.ElementType }> = {
-  not_configured: { label: SCREENING_STATUS_LABELS.not_configured, color: 'text-gray-600', bgColor: 'bg-gray-100', darkBgColor: 'dark:bg-gray-800', icon: AlertCircle },
-  not_started: { label: SCREENING_STATUS_LABELS.not_started, color: 'text-gray-700', bgColor: 'bg-gray-200', darkBgColor: 'dark:bg-gray-700', icon: Clock },
+  not_configured: { label: SCREENING_STATUS_LABELS.not_configured, color: 'lia-text-base', bgColor: 'bg-gray-100', darkBgColor: 'dark:bg-lia-bg-secondary', icon: AlertCircle },
+  not_started: { label: SCREENING_STATUS_LABELS.not_started, color: 'lia-text-base', bgColor: 'bg-gray-200', darkBgColor: 'dark:bg-lia-bg-elevated', icon: Clock },
   active: { label: SCREENING_STATUS_LABELS.active, color: 'text-status-success', bgColor: 'bg-status-success/15', darkBgColor: 'dark:bg-status-success/30', icon: Play },
   paused: { label: SCREENING_STATUS_LABELS.paused, color: 'text-status-warning', bgColor: 'bg-status-warning/15', darkBgColor: 'dark:bg-status-warning/30', icon: Pause },
   completed: { label: SCREENING_STATUS_LABELS.completed, color: 'text-wedo-cyan-dark', bgColor: 'bg-wedo-cyan/15', darkBgColor: 'dark:bg-wedo-cyan/10/30', icon: CheckCircle2 },
@@ -134,17 +134,17 @@ export function ScreeningStatusModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md rounded-md bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700">
-        <DialogHeader className="pb-4 border-b border-gray-200 dark:border-gray-700">
+      <DialogContent className="max-w-md rounded-md bg-white border border-lia-border-subtle dark:bg-lia-bg-primary dark:border-lia-border-subtle">
+        <DialogHeader className="pb-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-100 dark:bg-gray-800">
-              <BrainCircuit className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+            <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-100 dark:bg-lia-bg-secondary">
+              <BrainCircuit className="w-4 h-4 text-gray-600 dark:text-lia-text-tertiary" />
             </div>
             <div className="flex-1 min-w-0">
-              <DialogTitle className="text-sm font-semibold text-gray-950 dark:text-gray-50 font-['Open_Sans',sans-serif]">
+              <DialogTitle className="text-sm font-semibold text-gray-950 font-['Open_Sans',sans-serif]">
                 Status da Triagem
               </DialogTitle>
-              <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+              <p className="text-xs text-gray-500 dark:text-lia-text-tertiary truncate mt-0.5">
                 {jobTitle}
               </p>
             </div>
@@ -158,11 +158,11 @@ export function ScreeningStatusModal({
         <div className="py-4 space-y-4">
           {screeningStatus === 'not_configured' && (
             <div className="text-center py-6">
-              <AlertCircle className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-              <p className="text-base-ui text-gray-600 dark:text-gray-400 mb-1">
+              <AlertCircle className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+              <p className="text-base-ui text-gray-600 dark:text-lia-text-tertiary mb-1">
                 Triagem não configurada
               </p>
-              <p className="text-xs text-gray-400 dark:text-gray-500">
+              <p className="text-xs text-gray-400">
                 Configure as perguntas de triagem na aba &quot;Roteiro de Triagem&quot; da vaga para poder iniciar.
               </p>
             </div>
@@ -170,13 +170,13 @@ export function ScreeningStatusModal({
 
           {screeningStatus === 'not_started' && !showPauseForm && (
             <div className="space-y-4">
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-4">
-                <p className="text-xs text-gray-700 dark:text-gray-300 mb-3">
+              <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-4">
+                <p className="text-xs text-gray-700 dark:text-lia-text-secondary mb-3">
                   A triagem está configurada mas ainda não foi iniciada. Ao ativar, candidatos poderão ser triados automaticamente.
                 </p>
                 
                 <div className="space-y-2">
-                  <Label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                  <Label className="text-xs font-medium text-gray-600 dark:text-lia-text-tertiary">
                     <Calendar className="w-3 h-3 inline mr-1" />
                     Data de término (opcional)
                   </Label>
@@ -184,9 +184,9 @@ export function ScreeningStatusModal({
                     type="date"
                     value={scheduledEndDate}
                     onChange={(e) => setScheduledEndDate(e.target.value)}
-                    className="h-8 text-xs border-gray-200 dark:border-gray-600 dark:bg-gray-700"
+                    className="h-8 text-xs border-lia-border-subtle dark:border-lia-border-default dark:bg-lia-bg-elevated"
                   />
-                  <p className="text-micro text-gray-400">
+                  <p className="text-micro lia-text-secondary">
                     A triagem será concluída automaticamente nesta data
                   </p>
                 </div>
@@ -195,7 +195,7 @@ export function ScreeningStatusModal({
               <Button
                 onClick={() => handleStatusChange('active')}
                 disabled={isUpdating}
-                className="w-full h-10 text-base-ui font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 gap-2"
+                className="w-full h-10 text-base-ui font-medium bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 gap-2"
               >
                 {isUpdating ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -211,33 +211,33 @@ export function ScreeningStatusModal({
             <div className="space-y-4">
               {metrics && (metrics.screened_count || 0) > 0 && (
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-3 text-center">
-                    <Users className="w-4 h-4 text-gray-400 mx-auto mb-1" />
-                    <p className="text-base font-semibold text-gray-900 dark:text-gray-50">{metrics.screened_count || 0}</p>
-                    <p className="text-micro text-gray-500">Triados</p>
+                  <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-3 text-center">
+                    <Users className="w-4 h-4 lia-text-secondary mx-auto mb-1" />
+                    <p className="text-base font-semibold text-gray-900">{metrics.screened_count || 0}</p>
+                    <p className="text-micro lia-text-secondary">Triados</p>
                   </div>
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-3 text-center">
-                    <BarChart3 className="w-4 h-4 text-gray-400 mx-auto mb-1" />
-                    <p className="text-base font-semibold text-gray-900 dark:text-gray-50">{metrics.completion_rate || 0}%</p>
-                    <p className="text-micro text-gray-500">Conclusão</p>
+                  <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-3 text-center">
+                    <BarChart3 className="w-4 h-4 lia-text-secondary mx-auto mb-1" />
+                    <p className="text-base font-semibold text-gray-900">{metrics.completion_rate || 0}%</p>
+                    <p className="text-micro lia-text-secondary">Conclusão</p>
                   </div>
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-3 text-center">
-                    <CheckCircle2 className="w-4 h-4 text-gray-400 mx-auto mb-1" />
-                    <p className="text-base font-semibold text-gray-900 dark:text-gray-50">{metrics.average_rating?.toFixed(1) || '—'}</p>
-                    <p className="text-micro text-gray-500">Nota Média</p>
+                  <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-3 text-center">
+                    <CheckCircle2 className="w-4 h-4 lia-text-secondary mx-auto mb-1" />
+                    <p className="text-base font-semibold text-gray-900">{metrics.average_rating?.toFixed(1) || '—'}</p>
+                    <p className="text-micro lia-text-secondary">Nota Média</p>
                   </div>
                 </div>
               )}
 
               {screeningConfig?.status?.scheduled_end_date && (
-                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg px-3 py-2">
+                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-lia-text-tertiary bg-gray-50 dark:bg-lia-bg-secondary rounded-lg px-3 py-2">
                   <Calendar className="w-3.5 h-3.5" />
                   <span>Término previsto: {new Date(screeningConfig.status.scheduled_end_date).toLocaleDateString('pt-BR')}</span>
                 </div>
               )}
 
               {screeningConfig?.status?.activated_at && (
-                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-lia-text-tertiary">
                   <Clock className="w-3 h-3" />
                   <span>Ativa desde {new Date(screeningConfig.status.activated_at).toLocaleDateString('pt-BR')}</span>
                 </div>
@@ -286,17 +286,17 @@ export function ScreeningStatusModal({
 
               {metrics && (metrics.screened_count || 0) > 0 && (
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-3 text-center">
-                    <p className="text-base font-semibold text-gray-900 dark:text-gray-50">{metrics.screened_count || 0}</p>
-                    <p className="text-micro text-gray-500">Triados</p>
+                  <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-3 text-center">
+                    <p className="text-base font-semibold text-gray-900">{metrics.screened_count || 0}</p>
+                    <p className="text-micro lia-text-secondary">Triados</p>
                   </div>
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-3 text-center">
-                    <p className="text-base font-semibold text-gray-900 dark:text-gray-50">{metrics.completion_rate || 0}%</p>
-                    <p className="text-micro text-gray-500">Conclusão</p>
+                  <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-3 text-center">
+                    <p className="text-base font-semibold text-gray-900">{metrics.completion_rate || 0}%</p>
+                    <p className="text-micro lia-text-secondary">Conclusão</p>
                   </div>
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-3 text-center">
-                    <p className="text-base font-semibold text-gray-900 dark:text-gray-50">{metrics.average_rating?.toFixed(1) || '—'}</p>
-                    <p className="text-micro text-gray-500">Nota Média</p>
+                  <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-3 text-center">
+                    <p className="text-base font-semibold text-gray-900">{metrics.average_rating?.toFixed(1) || '—'}</p>
+                    <p className="text-micro lia-text-secondary">Nota Média</p>
                   </div>
                 </div>
               )}
@@ -304,22 +304,22 @@ export function ScreeningStatusModal({
           )}
 
           {showPauseForm && (
-            <div className="space-y-3 bg-gray-50 dark:bg-gray-800 rounded-md p-4">
-              <p className="text-xs font-medium text-gray-700 dark:text-gray-300">Pausar Triagem</p>
+            <div className="space-y-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-4">
+              <p className="text-xs font-medium text-gray-700 dark:text-lia-text-secondary">Pausar Triagem</p>
               <div className="space-y-2">
-                <Label className="text-xs text-gray-600 dark:text-gray-400">Motivo (opcional)</Label>
+                <Label className="text-xs text-gray-600 dark:text-lia-text-tertiary">Motivo (opcional)</Label>
                 <Textarea
                   value={pauseReason}
                   onChange={(e) => setPauseReason(e.target.value)}
                   placeholder="Ex: Aguardando aprovação do gestor..."
-                  className="h-20 text-xs resize-none border-gray-200 dark:border-gray-600 dark:bg-gray-700"
+                  className="h-20 text-xs resize-none border-lia-border-subtle dark:border-lia-border-default dark:bg-lia-bg-elevated"
                 />
               </div>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   onClick={() => { setShowPauseForm(false); setPauseReason('') }}
-                  className="flex-1 h-8 text-xs border-gray-300 dark:border-gray-600"
+                  className="flex-1 h-8 text-xs border-lia-border-default dark:border-lia-border-default"
                 >
                   Cancelar
                 </Button>
@@ -335,7 +335,7 @@ export function ScreeningStatusModal({
           )}
         </div>
 
-        <DialogFooter className="pt-4 border-t border-gray-200 dark:border-gray-700 flex flex-col gap-2">
+        <DialogFooter className="pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle flex flex-col gap-2">
           {screeningStatus === 'active' && !showPauseForm && (
             <div className="flex gap-2 w-full">
               <Button
@@ -363,7 +363,7 @@ export function ScreeningStatusModal({
             <Button
               onClick={() => handleStatusChange('active')}
               disabled={isUpdating}
-              className="w-full h-9 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 gap-1.5"
+              className="w-full h-9 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 gap-1.5"
             >
               {isUpdating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
               Retomar Triagem
@@ -374,7 +374,7 @@ export function ScreeningStatusModal({
             <Button
               variant="outline"
               onClick={() => { onNavigateToJob(); onClose() }}
-              className="w-full h-9 text-xs font-medium border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 gap-1.5"
+              className="w-full h-9 text-xs font-medium border-lia-border-default text-gray-700 hover:bg-gray-50 dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-800 gap-1.5"
             >
               <ExternalLink className="w-3.5 h-3.5" />
               Ir para Vaga
@@ -384,7 +384,7 @@ export function ScreeningStatusModal({
           {screeningStatus === 'not_configured' && onNavigateToJob && (
             <Button
               onClick={() => { onNavigateToJob(); onClose() }}
-              className="w-full h-9 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 gap-1.5"
+              className="w-full h-9 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 gap-1.5"
             >
               <ExternalLink className="w-3.5 h-3.5" />
               Ir para Vaga

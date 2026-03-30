@@ -92,16 +92,16 @@ export function KanbanLIASidebar({
 }: KanbanLIASidebarProps) {
   return (
     <div
-      className="flex-shrink-0 transition-all duration-300 pl-4 py-4 pr-0 relative"
+      className="flex-shrink-0 transition-colors duration-300 pl-4 py-4 pr-0 relative"
       style={{width: `${liaExpandedWidth}px`}}
     >
-      <Card className="h-[calc(100vh-16rem)] flex flex-col overflow-hidden border border-gray-300 bg-gray-50 dark:bg-gray-900 max-h-[calc(100vh-16rem)]">
+      <Card className="h-[calc(100vh-16rem)] flex flex-col overflow-hidden border border-lia-border-default bg-gray-50 dark:bg-lia-bg-primary max-h-[calc(100vh-16rem)]">
         {/* Mensagem de Apresentação da LIA */}
-        <div className="flex-shrink-0 px-4 py-3 bg-gray-50 dark:bg-gray-900">
+        <div className="flex-shrink-0 px-4 py-3 bg-gray-50 dark:bg-lia-bg-primary">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <div
-                className="w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 bg-gray-50 dark:bg-gray-900"
+                className="w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 bg-gray-50 dark:bg-lia-bg-primary"
               >
                 <Brain className="w-6 h-6 text-wedo-cyan" strokeWidth={2.5} />
               </div>
@@ -153,7 +153,7 @@ export function KanbanLIASidebar({
         {/* Indicador de candidatos selecionados - Estilo padronizado */}
         {selectedCandidates.size > 0 && (
           <div className="flex-shrink-0 px-4 py-2">
-            <div className="px-3 py-2 bg-gray-100 rounded-md border border-gray-200 flex items-center gap-2">
+            <div className="px-3 py-2 bg-gray-100 rounded-md border border-lia-border-subtle flex items-center gap-2">
               <Users className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
               <span className="text-xs text-gray-700 font-medium">
                 {selectedCandidates.size} candidato{selectedCandidates.size > 1 ? 's' : ''} selecionado{selectedCandidates.size > 1 ? 's' : ''}
@@ -173,7 +173,7 @@ export function KanbanLIASidebar({
           <div className="flex-shrink-0 px-4 py-2">
             <button
               onClick={() => setShowLiaSuggestionsPanel(prev => !prev)}
-              className="w-full flex items-center justify-between px-3 py-2 bg-gray-50 rounded-md border border-gray-200 hover:bg-gray-100 transition-colors"
+              className="w-full flex items-center justify-between px-3 py-2 bg-gray-50 rounded-md border border-lia-border-subtle hover:bg-gray-100 transition-colors"
             >
               <div className="flex items-center gap-2">
                 <Lightbulb className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -195,7 +195,7 @@ export function KanbanLIASidebar({
                   const IconComponent = suggestion.type === 'stale_candidate' ? Clock : suggestion.type === 'high_score' ? TrendingUp : AlertTriangle
                   const iconColor = suggestion.type === 'stale_candidate' ? 'text-status-warning' : suggestion.type === 'high_score' ? 'text-status-success' : 'text-status-error'
                   return (
-                    <div key={`suggestion-${idx}`} className={`border-l-2 ${borderColor} bg-white rounded-md px-2.5 py-2 border border-gray-100`}>
+                    <div key={`suggestion-${idx}`} className={`border-l-2 ${borderColor} bg-lia-bg-primary rounded-md px-2.5 py-2 border border-lia-border-subtle`}>
                       <div className="flex items-start gap-2">
                         <IconComponent className={`w-3.5 h-3.5 mt-0.5 flex-shrink-0 ${iconColor}`} />
                         <div className="flex-1 min-w-0">
@@ -302,9 +302,9 @@ export function KanbanLIASidebar({
 
             {isLiaLoading && (
               <div className="flex justify-start">
-                <div className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-gray-100 dark:bg-gray-800">
-                  <div className="w-5 h-5 rounded-md bg-white flex items-center justify-center">
-                    <Loader2 className="w-3 h-3 animate-spin text-gray-600 dark:text-gray-400" />
+                <div className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
+                  <div className="w-5 h-5 rounded-md bg-lia-bg-primary flex items-center justify-center">
+                    <Loader2 className="w-3 h-3 animate-spin text-gray-600 dark:text-lia-text-tertiary" />
                   </div>
                   <span className="text-micro text-gray-500">Pensando...</span>
                 </div>
@@ -321,7 +321,7 @@ export function KanbanLIASidebar({
         {/* Input Area - Fixo na parte inferior */}
         <div className="flex-shrink-0 px-4 pb-4 pt-2">
           {/* Campo de Input */}
-          <div className="flex items-center gap-2 p-2 rounded-md border bg-white border-gray-100">
+          <div className="flex items-center gap-2 p-2 rounded-md border bg-lia-bg-primary border-lia-border-subtle">
             <input
               type="text"
               placeholder="Envie mensagem para a LIA..."
@@ -360,14 +360,14 @@ export function KanbanLIASidebar({
             <span className="text-micro font-medium text-gray-500">Sugestões:</span>
             <button
               onClick={() => setLiaPromptValue('Rankear candidatos desta vaga')}
-              className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-all"
+              className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-[width,height]"
             >
               <Star className="w-2.5 h-2.5 text-gray-500" />
               Rankear
             </button>
             <button
               onClick={() => setLiaPromptValue('Comparar os melhores candidatos')}
-              className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-all"
+              className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-[width,height]"
             >
               <Users className="w-2.5 h-2.5 text-gray-500" />
               Comparar
@@ -387,7 +387,7 @@ export function KanbanLIASidebar({
           setIsResizingLIA(true)
         }}
       >
-        <div className="w-0.5 h-12 bg-gray-300 dark:bg-gray-700 group-hover:bg-gray-600 dark:group-hover:bg-gray-400 rounded-full transition-colors" />
+        <div className="w-0.5 h-12 bg-gray-300 dark:bg-lia-bg-elevated group-hover:bg-gray-600 dark:group-hover:bg-gray-400 rounded-full transition-colors" />
       </div>
     </div>
   )

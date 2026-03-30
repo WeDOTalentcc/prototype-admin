@@ -40,7 +40,7 @@ const CHANNEL_LABELS: Record<string, { label: string; color: string }> = {
   'whatsapp': { label: 'WhatsApp', color: 'bg-status-success/10 text-status-success dark:bg-status-success/20 dark:text-status-success' },
   'bell': { label: 'Bell', color: 'bg-status-warning/10 text-status-warning dark:bg-status-warning/20 dark:text-status-warning' },
   'teams': { label: 'Teams', color: 'bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple' },
- 'briefing': { label: 'Briefing', color: 'bg-gray-50 text-gray-900 dark:bg-gray-800 dark:text-gray-300' },
+ 'briefing': { label: 'Briefing', color: 'bg-gray-50 text-gray-900 dark:bg-lia-bg-secondary dark:text-lia-text-secondary' },
   'parecer': { label: 'Parecer', color: 'bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple' },
   'report': { label: 'Report', color: 'bg-wedo-magenta/10 text-wedo-magenta dark:bg-wedo-magenta/20 dark:text-wedo-magenta' },
   'chat_lia': { label: 'Chat LIA', color: 'bg-wedo-cyan/10 text-wedo-cyan dark:bg-wedo-cyan/20 dark:text-wedo-cyan' }
@@ -344,17 +344,17 @@ export function AdminTemplateHub() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-lia-text-primary">
           Templates de Sistema
         </h2>
-        <p className="text-sm text-gray-400 dark:text-gray-500">
+        <p className="text-sm text-gray-400">
           Gerencie templates automáticos, alertas e notificações internas
         </p>
       </div>
 
       {successMessage && (
         <div className="px-3 py-2 rounded-md flex items-center gap-2 border border-wedo-cyan/30 text-wedo-cyan-dark bg-gray-200/30">
-          <CheckCircle className="w-4 h-4 text-gray-700" />
+          <CheckCircle className="w-4 h-4 lia-text-base" />
           <span>{successMessage}</span>
         </div>
       )}
@@ -368,7 +368,7 @@ export function AdminTemplateHub() {
       <div className="space-y-3">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 lia-text-secondary" />
             <Input
               placeholder="Buscar templates..."
               value={searchQuery}
@@ -391,9 +391,9 @@ export function AdminTemplateHub() {
                 key={key}
                 onClick={() => handleChannelFilterChange(key as typeof channelFilter)}
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                  channelFilter === key 
+ channelFilter === key 
                     ? 'text-white' 
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-lia-bg-elevated dark:text-lia-text-secondary'
                 }`}
                 style={channelFilter === key ? { backgroundColor: 'var(--gray-950)' } : {}}
               >
@@ -407,7 +407,7 @@ export function AdminTemplateHub() {
             <select
               value={triggerTypeFilter}
               onChange={(e) => setTriggerTypeFilter(e.target.value as 'all' | 'automatic' | 'manual' | 'both')}
-              className="px-2.5 py-1.5 rounded-md text-xs font-medium border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300"
+              className="px-2.5 py-1.5 rounded-md text-xs font-medium border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary text-gray-700 dark:text-lia-text-secondary"
             >
               <option value="all">Todos Tipos</option>
               <option value="automatic">Automático</option>
@@ -417,7 +417,7 @@ export function AdminTemplateHub() {
           </div>
         </div>
 
-        <div className="text-xs text-gray-500 flex items-center gap-2">
+        <div className="text-xs lia-text-secondary flex items-center gap-2">
           <Filter className="w-3.5 h-3.5" />
           {filteredTemplates.length} template{filteredTemplates.length !== 1 ? 's' : ''} encontrado{filteredTemplates.length !== 1 ? 's' : ''}
         </div>
@@ -440,7 +440,7 @@ export function AdminTemplateHub() {
               </Card>
             ))}
           </div>
-          <Card className="border-dashed border-2 border-gray-200 rounded-md h-64 flex items-center justify-center animate-pulse">
+          <Card className="border-dashed border-2 border-lia-border-subtle rounded-md h-64 flex items-center justify-center animate-pulse">
             <CardContent className="text-center">
               <div className="w-10 h-10 rounded-full mx-auto mb-3 bg-wedo-cyan/20"></div>
               <div className="h-4 w-40 rounded-md mx-auto bg-wedo-cyan/20"></div>
@@ -451,15 +451,15 @@ export function AdminTemplateHub() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-[500px]">
           <div className="space-y-3 overflow-y-auto pr-2 pb-8" style={{maxHeight: 'calc(100vh - 320px)'}}>
             {filteredTemplates.length === 0 ? (
-              <Card className="border border-dashed border-gray-200 rounded-md">
+              <Card className="border border-dashed border-lia-border-subtle rounded-md">
                 <CardContent className="p-4 text-center">
                   <div className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2 bg-gray-200/30">
-                    <Search className="w-4 h-4 text-gray-700" />
+                    <Search className="w-4 h-4 lia-text-base" />
                   </div>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm lia-text-base">
                     Nenhum template encontrado
                   </p>
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-xs lia-text-secondary mt-1">
                     Tente ajustar os filtros de busca
                   </p>
                 </CardContent>
@@ -476,11 +476,11 @@ export function AdminTemplateHub() {
                   if (groupTemplates.length === 0) return null
                   
                   return (
-                    <AccordionItem key={groupKey} value={groupKey} className="border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden">
+                    <AccordionItem key={groupKey} value={groupKey} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md overflow-hidden">
                       <AccordionTrigger className="px-3 py-2.5 hover:no-underline hover:bg-gray-50 dark:hover:bg-gray-800/50">
                         <div className="flex items-center gap-2 text-left">
                           <span className="text-lg">{group.icon}</span>
-                          <span className="text-sm font-semibold text-gray-950 dark:text-gray-50">
+                          <span className="text-sm font-semibold text-gray-950">
                             {group.label}
                           </span>
                           <Badge variant="outline" className="text-xs ml-1">
@@ -493,10 +493,10 @@ export function AdminTemplateHub() {
                           {groupTemplates.map((template) => (
                             <Card 
                               key={template.id}
-                              className={`border cursor-pointer transition-all rounded-md ${
-                                selectedTemplate?.id === template.id 
-                                  ? 'border-gray-900 dark:border-gray-50' 
-                                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                              className={`border cursor-pointer transition-colors rounded-md ${
+ selectedTemplate?.id === template.id 
+                                  ? 'border-gray-900' 
+                                  : 'border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default'
                               }`}
                               style={selectedTemplate?.id === template.id ? { boxShadow: '0 0 0 2px var(--wedo-cyan-bg-20)' } : {}}
                               onClick={() => setSelectedTemplate(template)}
@@ -504,12 +504,12 @@ export function AdminTemplateHub() {
                               <CardContent className="p-2.5">
                                 <div className="flex items-start justify-between gap-2">
                                   <div className="flex items-center gap-2 flex-1 min-w-0">
-                                    <div className={`w-7 h-7 rounded-md ${CHANNEL_LABELS[template.channel || 'email']?.color || 'bg-gray-50 text-gray-600'} flex items-center justify-center flex-shrink-0`}>
+                                    <div className={`w-7 h-7 rounded-md ${CHANNEL_LABELS[template.channel || 'email']?.color || 'bg-gray-50 lia-text-base'} flex items-center justify-center flex-shrink-0`}>
                                       {getChannelIcon(template.channel || 'email')}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                       <div className="flex items-center gap-1.5">
-                                        <p className="text-xs font-medium text-gray-950 dark:text-gray-50 truncate">
+                                        <p className="text-xs font-medium text-gray-950 truncate">
                                           {template.name}
                                         </p>
                                         {template.priority && (
@@ -548,7 +548,7 @@ export function AdminTemplateHub() {
             {selectedTemplate ? (
               <>
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-50">
+                  <h3 className="text-sm font-semibold text-gray-950">
                     {editingTemplate ? 'Editando Template' : 'Visualização'}
                   </h3>
                   <div className="flex items-center gap-2">
@@ -567,7 +567,7 @@ export function AdminTemplateHub() {
                         variant="outline" 
                         size="sm"
                         onClick={() => setEditingTemplate({ ...selectedTemplate })}
-                        className="rounded-md py-1.5 px-2 text-xs border-gray-300"
+                        className="rounded-md py-1.5 px-2 text-xs border-lia-border-default"
                       >
                         <Edit className="w-3.5 h-3.5 mr-1" />
                         Editar
@@ -576,7 +576,7 @@ export function AdminTemplateHub() {
                   </div>
                 </div>
 
-                <Card className="border border-gray-200/50 dark:border-gray-700/50 bg-white/80 dark:bg-gray-800/80 rounded-md">
+                <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-white/80 dark:bg-lia-bg-secondary/80 rounded-md">
                   <CardContent className="p-4 space-y-4">
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge className={`${CHANNEL_LABELS[selectedTemplate.channel || 'email']?.color || ''}`}>
@@ -592,23 +592,23 @@ export function AdminTemplateHub() {
 
                     {selectedTemplate.subject && (
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">Assunto</label>
+                        <label className="block text-xs font-medium lia-text-base mb-1">Assunto</label>
                         {editingTemplate ? (
                           <input
                             type="text"
                             value={editingTemplate.subject}
                             onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, subject: e.target.value } : null)}
-                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md bg-white focus:ring-2 focus:outline-none"
+                            className="w-full px-3 py-2 text-sm border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:outline-none"
                           />
                         ) : (
-                          <p className="text-sm text-gray-950 dark:text-gray-50 bg-gray-50 rounded-md px-3 py-2">{selectedTemplate.subject}</p>
+                          <p className="text-sm text-gray-950 bg-gray-50 rounded-md px-3 py-2">{selectedTemplate.subject}</p>
                         )}
                       </div>
                     )}
 
                     <div>
                       <div className="flex items-center justify-between mb-1">
-                        <label className="block text-xs font-medium text-gray-600">Conteúdo</label>
+                        <label className="block text-xs font-medium lia-text-base">Conteúdo</label>
                         {editingTemplate && (
                           <VariableSelector 
                             onSelect={insertVariableAtCursor}
@@ -622,11 +622,11 @@ export function AdminTemplateHub() {
                           value={editingTemplate.body}
                           onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, body: e.target.value } : null)}
                           rows={12}
-                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md bg-white focus:ring-2 focus:outline-none font-mono"
+                          className="w-full px-3 py-2 text-sm border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:outline-none font-mono"
                         />
                       ) : (
                         <div className="bg-gray-50 rounded-md p-3">
-                          <pre className="text-sm text-gray-950 dark:text-gray-50 whitespace-pre-wrap font-sans">
+                          <pre className="text-sm text-gray-950 whitespace-pre-wrap font-sans">
                             {selectedTemplate.body}
                           </pre>
                         </div>
@@ -635,7 +635,7 @@ export function AdminTemplateHub() {
 
                     {selectedTemplate.variables && selectedTemplate.variables.length > 0 && (
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-2">Variáveis Disponíveis</label>
+                        <label className="block text-xs font-medium lia-text-base mb-2">Variáveis Disponíveis</label>
                         <div className="flex flex-wrap gap-1.5">
                           {selectedTemplate.variables.map((variable, idx) => (
                             <Badge key={idx} variant="outline" className="text-xs font-mono">
@@ -648,7 +648,7 @@ export function AdminTemplateHub() {
 
                     {selectedTemplate.used_in && selectedTemplate.used_in.length > 0 && (
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-2">Usado em</label>
+                        <label className="block text-xs font-medium lia-text-base mb-2">Usado em</label>
                         <div className="flex flex-wrap gap-1.5">
                           {selectedTemplate.used_in.map((usage, idx) => (
                             <Badge key={idx} variant="secondary" className="text-xs">
@@ -662,15 +662,15 @@ export function AdminTemplateHub() {
                 </Card>
 
                 {editingTemplate && (
-                  <Card className="rounded-md border border-gray-200 bg-white">
+                  <Card className="rounded-md border border-lia-border-subtle bg-lia-bg-primary">
                     <CardContent className="p-4 space-y-3">
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-200/30">
                           <Brain className="w-4 h-4 text-wedo-cyan" />
                         </div>
                         <div>
-                          <span className="text-base-ui font-semibold text-gray-900">Ajustar com a LIA</span>
-                          <p className="text-xs text-gray-500">
+                          <span className="text-base-ui font-semibold lia-text-strong">Ajustar com a LIA</span>
+                          <p className="text-xs lia-text-secondary">
                             Descreva as alterações desejadas
                           </p>
                         </div>
@@ -683,7 +683,7 @@ export function AdminTemplateHub() {
                           onKeyDown={(e) => e.key === 'Enter' && !isGenerating && aiPrompt.trim() && handleAdjustWithAI()}
                           placeholder="Ex: Torne mais formal e adicione contexto técnico..."
                           disabled={isGenerating}
-                          className="flex-1 px-3 py-2 text-xs border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400 focus:outline-none disabled:bg-gray-50 disabled:text-gray-400"
+                          className="flex-1 px-3 py-2 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400 focus:outline-none disabled:bg-gray-50 disabled:lia-text-secondary"
                          
                         />
                         <Button 
@@ -723,18 +723,18 @@ export function AdminTemplateHub() {
 
                 {aiResultModal?.show && (
                   <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <Card className="w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-md bg-white">
-                      <div className="border-b border-gray-100 p-4">
+                    <Card className="w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-md bg-lia-bg-primary">
+                      <div className="border-b border-lia-border-subtle p-4">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
                               <Brain className="w-5 h-5 text-wedo-cyan" />
                             </div>
                             <div>
-                              <h3 className="text-sm font-semibold text-gray-900">
+                              <h3 className="text-sm font-semibold lia-text-strong">
                                 Ajustes da LIA
                               </h3>
-                              <p className="text-xs text-gray-500">
+                              <p className="text-xs lia-text-secondary">
                                 Revise as alterações sugeridas
                               </p>
                             </div>
@@ -746,7 +746,7 @@ export function AdminTemplateHub() {
                       </div>
                       <CardContent className="p-4 space-y-4 overflow-y-auto" style={{maxHeight: 'calc(90vh - 180px)'}}>
                         <div>
-                          <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+                          <label className="block text-xs font-medium lia-text-secondary uppercase tracking-wide mb-2">
                             Alterações Realizadas
                           </label>
                           <div className="flex flex-wrap gap-1.5">
@@ -761,20 +761,20 @@ export function AdminTemplateHub() {
                         
                         {aiResultModal.newSubject && (
                           <div>
-                            <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+                            <label className="block text-xs font-medium lia-text-secondary uppercase tracking-wide mb-2">
                               Novo Assunto
                             </label>
-                            <div className="p-3 bg-gray-50 rounded-md text-xs text-gray-900">
+                            <div className="p-3 bg-gray-50 rounded-md text-xs lia-text-strong">
                               {aiResultModal.newSubject}
                             </div>
                           </div>
                         )}
 
                         <div>
-                          <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+                          <label className="block text-xs font-medium lia-text-secondary uppercase tracking-wide mb-2">
                             Novo Conteúdo
                           </label>
-                          <div className="p-3 bg-gray-50 rounded-md text-xs text-gray-900 whitespace-pre-wrap max-h-[300px] overflow-y-auto">
+                          <div className="p-3 bg-gray-50 rounded-md text-xs lia-text-strong whitespace-pre-wrap max-h-[300px] overflow-y-auto">
                             {aiResultModal.newBody}
                           </div>
                         </div>
@@ -788,13 +788,13 @@ export function AdminTemplateHub() {
                           </div>
                         </div>
                       </CardContent>
-                      <div className="border-t border-gray-100 p-4 flex items-center justify-end gap-3">
+                      <div className="border-t border-lia-border-subtle p-4 flex items-center justify-end gap-3">
                         <Button variant="outline" onClick={handleCancelAIAdjustment} className="rounded-md px-4 py-2 text-xs">
                           Cancelar
                         </Button>
                         <Button 
                           onClick={handleConfirmAIAdjustment}
-                          className="rounded-md px-4 py-2 text-xs gap-1.5 bg-gray-900" style={{color: 'white'}}
+                          className="rounded-md px-4 py-2 text-xs gap-1.5 bg-gray-900 text-white"
                         >
                           <Check className="w-3.5 h-3.5" />
                           Aplicar Ajustes
@@ -805,15 +805,15 @@ export function AdminTemplateHub() {
                 )}
               </>
             ) : (
-              <Card className="border-dashed border-2 border-gray-200 rounded-md h-96 flex items-center justify-center">
+              <Card className="border-dashed border-2 border-lia-border-subtle rounded-md h-96 flex items-center justify-center">
                 <CardContent className="text-center">
                   <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 bg-gray-200/30">
-                    <Settings className="w-6 h-6 text-gray-700" />
+                    <Settings className="w-6 h-6 lia-text-base" />
                   </div>
-                  <p className="text-sm text-gray-600 mb-1">
+                  <p className="text-sm lia-text-base mb-1">
                     Selecione um template
                   </p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs lia-text-secondary">
                     Clique em um template à esquerda para visualizar e editar
                   </p>
                 </CardContent>

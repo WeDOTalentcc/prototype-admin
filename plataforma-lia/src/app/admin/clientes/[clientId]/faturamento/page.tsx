@@ -256,12 +256,12 @@ export default function ClientFaturamentoPage({
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <CreditCard className="w-6 h-6 text-gray-600 dark:text-gray-400" />
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+              <CreditCard className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />
+              <h2 className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary">
                 Faturamento
               </h2>
             </div>
-            <p className="text-sm text-gray-400 dark:text-gray-500">
+            <p className="text-sm lia-text-400 dark:lia-text-500">
               Histórico de faturas e informações de cobrança
             </p>
           </div>
@@ -277,10 +277,10 @@ export default function ClientFaturamentoPage({
         <div className="w-16 h-16 rounded-full bg-status-error/10 dark:bg-status-error/20 flex items-center justify-center mb-4">
           <AlertCircle className="w-8 h-8 text-status-error" />
         </div>
-        <h3 className="text-lg font-medium mb-1 text-gray-800 dark:text-gray-100">
+        <h3 className="text-lg font-medium mb-1 lia-text-800 dark:text-lia-text-primary">
           Erro ao carregar dados
         </h3>
-        <p className="text-sm mb-4 text-gray-400 dark:text-gray-500">
+        <p className="text-sm mb-4 lia-text-400 dark:lia-text-500">
           {error}
         </p>
         <Button variant="outline" onClick={fetchBillingData}>
@@ -300,12 +300,12 @@ export default function ClientFaturamentoPage({
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <CreditCard className="w-6 h-6 text-gray-600 dark:text-gray-400" />
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+            <CreditCard className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />
+            <h2 className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary">
               Faturamento
             </h2>
           </div>
-          <p className="text-sm text-gray-400 dark:text-gray-500">
+          <p className="text-sm lia-text-400 dark:lia-text-500">
             Histórico de faturas e informações de cobrança
           </p>
         </div>
@@ -318,60 +318,60 @@ export default function ClientFaturamentoPage({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="border-gray-100">
+        <Card className="border-lia-border-subtle">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-md bg-status-success/15 dark:bg-status-success/30 flex items-center justify-center">
                 <DollarSign className="w-5 h-5 text-status-success" />
               </div>
               <div>
-                <p className="text-xs text-gray-400 dark:text-gray-500">MRR</p>
-                <p className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                <p className="text-xs lia-text-400 dark:lia-text-500">MRR</p>
+                <p className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary">
                   {formatCurrency(billingData.subscription.mrr)}
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="border-gray-100">
+        <Card className="border-lia-border-subtle">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <div className="w-10 h-10 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
+                <Calendar className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
               </div>
               <div>
-                <p className="text-xs text-gray-400 dark:text-gray-500">Próximo Vencimento</p>
-                <p className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                <p className="text-xs lia-text-400 dark:lia-text-500">Próximo Vencimento</p>
+                <p className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary">
                   {formatDate(billingData.subscription.next_billing_date)}
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="border-gray-100">
+        <Card className="border-lia-border-subtle">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-md bg-wedo-purple/15 dark:bg-wedo-purple/30 flex items-center justify-center">
                 <TrendingUp className="w-5 h-5 text-wedo-purple" />
               </div>
               <div>
-                <p className="text-xs text-gray-400 dark:text-gray-500">LTV Estimado</p>
-                <p className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                <p className="text-xs lia-text-400 dark:lia-text-500">LTV Estimado</p>
+                <p className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary">
                   {formatCurrency(billingData.summary.ltv_estimated)}
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="border-gray-100">
+        <Card className="border-lia-border-subtle">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-md bg-status-warning/15 dark:bg-status-warning/30 flex items-center justify-center">
                 <FileText className="w-5 h-5 text-status-warning" />
               </div>
               <div>
-                <p className="text-xs text-gray-400 dark:text-gray-500">Total Faturas</p>
-                <p className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                <p className="text-xs lia-text-400 dark:lia-text-500">Total Faturas</p>
+                <p className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary">
                   {billingData.summary.invoices_count}
                 </p>
               </div>
@@ -381,10 +381,10 @@ export default function ClientFaturamentoPage({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2 border-gray-100">
+        <Card className="lg:col-span-2 border-lia-border-subtle">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
+              <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
                 Detalhes do Plano
               </CardTitle>
               <Badge variant={subscriptionStatus.variant}>{subscriptionStatus.label}</Badge>
@@ -393,34 +393,34 @@ export default function ClientFaturamentoPage({
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
               <div>
-                <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                <p className="text-xs uppercase tracking-wide lia-text-400 dark:lia-text-500">
                   Plano
                 </p>
                 <div className="flex items-center gap-2 mt-1">
-                  <Package className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                  <span className="font-medium text-gray-800 dark:text-gray-100">
+                  <Package className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                  <span className="font-medium lia-text-800 dark:text-lia-text-primary">
                     {billingData.subscription.plan_name}
                   </span>
                 </div>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                <p className="text-xs uppercase tracking-wide lia-text-400 dark:lia-text-500">
                   Ciclo
                 </p>
-                <p className="text-sm font-medium mt-1 text-gray-800 dark:text-gray-100">
+                <p className="text-sm font-medium mt-1 lia-text-800 dark:text-lia-text-primary">
                   {billingData.subscription.billing_cycle === 'monthly' ? 'Mensal' : 'Anual'}
                 </p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                <p className="text-xs uppercase tracking-wide lia-text-400 dark:lia-text-500">
                   Cliente Desde
                 </p>
-                <p className="text-sm font-medium mt-1 text-gray-800 dark:text-gray-100">
+                <p className="text-sm font-medium mt-1 lia-text-800 dark:text-lia-text-primary">
                   {formatDate(billingData.subscription.started_at)}
                 </p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                <p className="text-xs uppercase tracking-wide lia-text-400 dark:lia-text-500">
                   Total Pago
                 </p>
                 <p className="text-sm font-medium mt-1 text-status-success">
@@ -428,7 +428,7 @@ export default function ClientFaturamentoPage({
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-2 pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -460,9 +460,9 @@ export default function ClientFaturamentoPage({
           </CardContent>
         </Card>
 
-        <Card className="border-gray-100">
+        <Card className="border-lia-border-subtle">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
+            <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
               Métodos de Pagamento
             </CardTitle>
           </CardHeader>
@@ -471,31 +471,31 @@ export default function ClientFaturamentoPage({
               {billingData.payment_methods.map((method) => (
                 <div 
                   key={method.id}
-                  className={`flex items-center justify-between p-3 rounded-md border ${!method.is_default ? 'border-gray-200 dark:border-gray-700' : ''}`}
+                  className={`flex items-center justify-between p-3 rounded-md border ${!method.is_default ? 'border-lia-border-subtle dark:border-lia-border-subtle' : ''}`}
                   style={method.is_default ? { borderColor: 'var(--gray-950)' } : undefined}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
                       {method.type === 'credit_card' ? (
-                        <CreditCard className="w-4 h-4 text-gray-600" />
+                        <CreditCard className="w-4 h-4 lia-text-600" />
                       ) : method.type === 'pix' ? (
                         <Wallet className="w-4 h-4 text-status-success" />
                       ) : (
-                        <FileText className="w-4 h-4 text-gray-600" />
+                        <FileText className="w-4 h-4 lia-text-600" />
                       )}
                     </div>
                     <div>
                       {method.type === 'credit_card' ? (
                         <>
-                          <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
+                          <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
                             {method.brand} •••• {method.last_four}
                           </p>
-                          <p className="text-xs text-gray-400 dark:text-gray-500">
+                          <p className="text-xs lia-text-400 dark:lia-text-500">
                             Expira em {method.expires_at}
                           </p>
                         </>
                       ) : (
-                        <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
+                        <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
                           {method.type === 'pix' ? 'PIX' : 'Boleto'}
                         </p>
                       )}
@@ -514,9 +514,9 @@ export default function ClientFaturamentoPage({
         </Card>
       </div>
 
-      <Card className="border-gray-100">
+      <Card className="border-lia-border-subtle">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base font-medium text-gray-800 dark:text-gray-100">
+          <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
             Histórico de Faturas
           </CardTitle>
         </CardHeader>
@@ -529,18 +529,18 @@ export default function ClientFaturamentoPage({
               return (
                 <div 
                   key={invoice.id}
-                  className="flex items-center justify-between p-3 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors border-gray-200 dark:border-gray-700"
+                  className="flex items-center justify-between p-3 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors border-lia-border-subtle dark:border-lia-border-subtle"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                      <FileText className="w-5 h-5 text-gray-500" />
+                    <div className="w-10 h-10 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
+                      <FileText className="w-5 h-5 lia-text-500" />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-800 dark:text-gray-100">
+                      <p className="font-medium lia-text-800 dark:text-lia-text-primary">
                         {invoice.description}
                       </p>
                       <div className="flex items-center gap-2">
-                        <p className="text-sm text-gray-400 dark:text-gray-500">
+                        <p className="text-sm lia-text-400 dark:lia-text-500">
                           {formatDate(invoice.date)}
                         </p>
                         {invoice.status === 'overdue' && (
@@ -552,7 +552,7 @@ export default function ClientFaturamentoPage({
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <p className="font-semibold text-gray-800 dark:text-gray-100">
+                    <p className="font-semibold lia-text-800 dark:text-lia-text-primary">
                       {formatCurrency(invoice.amount)}
                     </p>
                     <Badge variant={statusInfo.variant} className="flex items-center gap-1">

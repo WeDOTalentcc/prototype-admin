@@ -67,12 +67,12 @@ const Stepper: React.FC<StepperProps> = ({ steps }) => {
         <React.Fragment key={step.id}>
           <div className="flex flex-col items-center">
             <div
-              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium transition-all ${
-                step.status === 'completed'
-                  ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900'
+              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium transition-[width,height] ${
+ step.status === 'completed'
+                  ? 'bg-gray-900 text-white'
                   : step.status === 'current'
-                  ? 'bg-gray-900 text-white ring-2 ring-gray-900/20 dark:bg-gray-100 dark:text-gray-900'
-                  : 'bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
+                  ? 'bg-gray-900 text-white ring-2 ring-gray-900/20'
+                  : 'bg-gray-200 text-gray-500 dark:bg-lia-bg-elevated dark:text-lia-text-tertiary'
               }`}
              
             >
@@ -84,11 +84,11 @@ const Stepper: React.FC<StepperProps> = ({ steps }) => {
             </div>
             <span
               className={`mt-1.5 text-micro text-center max-w-[70px] ${
-                step.status === 'current'
-                  ? 'text-gray-900 font-medium dark:text-gray-100'
+ step.status === 'current'
+                  ? 'text-gray-900 font-medium dark:text-lia-text-primary'
                   : step.status === 'completed'
-                  ? 'text-gray-600 dark:text-gray-400'
-                  : 'text-gray-400'
+                  ? 'text-gray-600 dark:text-lia-text-tertiary'
+                  : 'lia-text-secondary'
               }`}
              
             >
@@ -98,9 +98,9 @@ const Stepper: React.FC<StepperProps> = ({ steps }) => {
           {index < steps.length - 1 && (
             <div
               className={`flex-1 h-0.5 mx-1.5 ${
-                steps[index + 1].status === 'completed' || steps[index + 1].status === 'current'
-                  ? 'bg-gray-900 dark:bg-gray-100'
-                  : 'bg-gray-200 dark:bg-gray-700'
+ steps[index + 1].status === 'completed' || steps[index + 1].status === 'current'
+                  ? 'bg-gray-900'
+                  : 'bg-gray-200 dark:bg-lia-bg-elevated'
               }`}
             />
           )}
@@ -117,48 +117,48 @@ const LIARulesInfo: React.FC<{ type: 'triage' | 'interview' }> = ({ type }) => {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <button className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
+          <button className="inline-flex items-center gap-1 text-xs lia-text-secondary hover:lia-text-strong dark:hover:lia-text-subtle transition-colors">
             <Info className="w-3 h-3" />
             <span>Como funciona?</span>
           </button>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="max-w-xs p-3">
           <div className="space-y-2">
-            <p className="font-medium text-xs text-gray-950 dark:text-gray-50">
+            <p className="font-medium text-xs text-gray-950">
               {isInterview ? 'Processo de Agendamento LIA:' : 'Processo de Triagem LIA:'}
             </p>
-            <ul className="space-y-1 text-xs text-gray-600 dark:text-gray-300">
+            <ul className="space-y-1 text-xs text-gray-600 dark:text-lia-text-secondary">
               {isInterview ? (
                 <>
                   <li className="flex items-start gap-1.5">
-                    <span className="text-gray-400 dark:text-gray-500">•</span>
+                    <span className="text-gray-400">•</span>
                     LIA envia mensagem por WhatsApp e Email com link e horários disponíveis em sua agenda
                   </li>
                   <li className="flex items-start gap-1.5">
-                    <span className="text-gray-400 dark:text-gray-500">•</span>
+                    <span className="text-gray-400">•</span>
                     Se não responder, nova tentativa a cada 12h
                   </li>
                   <li className="flex items-start gap-1.5">
-                    <span className="text-gray-400 dark:text-gray-500">•</span>
+                    <span className="text-gray-400">•</span>
                     Após 3 tentativas sem resposta, você será avisado
                   </li>
                 </>
               ) : (
                 <>
                   <li className="flex items-start gap-1.5">
-                    <span className="text-gray-400 dark:text-gray-500">•</span>
+                    <span className="text-gray-400">•</span>
                     LIA envia convite via WhatsApp e Email
                   </li>
                   <li className="flex items-start gap-1.5">
-                    <span className="text-gray-400 dark:text-gray-500">•</span>
+                    <span className="text-gray-400">•</span>
                     Se não responder, nova tentativa a cada 24h
                   </li>
                   <li className="flex items-start gap-1.5">
-                    <span className="text-gray-400 dark:text-gray-500">•</span>
+                    <span className="text-gray-400">•</span>
                     Após 3 tentativas sem resposta, você será avisado
                   </li>
                   <li className="flex items-start gap-1.5">
-                    <span className="text-gray-400 dark:text-gray-500">•</span>
+                    <span className="text-gray-400">•</span>
                     Candidato tem 24h para completar a triagem
                   </li>
                 </>
@@ -219,12 +219,12 @@ Equipe de Recrutamento`
             { id: 'schedule', label: 'Agendamento', status: 'upcoming' as const },
           ],
           confirmLabel: 'Iniciar Triagem',
-          confirmColor: 'bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200',
+          confirmColor: 'bg-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200',
         }
       case 'approve_to_interview':
         return {
           title: 'Aprovar para Entrevista',
-          icon: <Calendar className="w-5 h-5 text-gray-700 dark:text-gray-300" />,
+          icon: <Calendar className="w-5 h-5 text-gray-700 dark:text-lia-text-secondary" />,
           steps: [
             { id: 'approve', label: 'Aprovação', status: 'completed' as const },
             { id: 'triage', label: 'Triagem LIA', status: 'completed' as const },
@@ -232,7 +232,7 @@ Equipe de Recrutamento`
             { id: 'schedule', label: 'Agendamento', status: 'upcoming' as const },
           ],
           confirmLabel: 'Agendar Entrevista',
-          confirmColor: 'bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200',
+          confirmColor: 'bg-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200',
         }
       case 'reject_pre_triage':
         return {
@@ -263,16 +263,16 @@ Equipe de Recrutamento`
       case 'reschedule_interview':
         return {
           title: 'Alterar Horário',
-          icon: <Calendar className="w-5 h-5 text-gray-700 dark:text-gray-300" />,
+          icon: <Calendar className="w-5 h-5 text-gray-700 dark:text-lia-text-secondary" />,
           steps: [],
           confirmLabel: 'Buscar Novos Horários',
-          confirmColor: 'bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200',
+          confirmColor: 'bg-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200',
           description: 'A LIA vai buscar novos horários disponíveis na sua agenda e enviar as opções para o candidato escolher.',
         }
       case 'confirm_hire':
         return {
           title: 'Confirmar Contratação',
-          icon: <CheckCircle className="w-5 h-5 text-gray-700 dark:text-gray-300" />,
+          icon: <CheckCircle className="w-5 h-5 text-gray-700 dark:text-lia-text-secondary" />,
           steps: [
             { id: 'approve', label: 'Aprovação', status: 'completed' as const },
             { id: 'triage', label: 'Triagem', status: 'completed' as const },
@@ -280,7 +280,7 @@ Equipe de Recrutamento`
             { id: 'hire', label: 'Contratação', status: 'current' as const },
           ],
           confirmLabel: 'Confirmar Contratação',
-          confirmColor: 'bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200',
+          confirmColor: 'bg-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200',
         }
     }
   }
@@ -308,7 +308,7 @@ Equipe de Recrutamento`
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden">
-        <DialogHeader className="px-5 pt-5 pb-3 border-b border-gray-200 dark:border-gray-700">
+        <DialogHeader className="px-5 pt-5 pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <DialogTitle className="flex items-center gap-2 text-sm font-semibold">
             {config.icon}
             {config.title}
@@ -317,18 +317,18 @@ Equipe de Recrutamento`
 
         <div className="px-5 py-4">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden">
+            <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center overflow-hidden">
               {candidate.avatar ? (
                 <img src={candidate.avatar} alt={candidate.name} className="w-full h-full object-cover" />
               ) : (
-                <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">
+                <span className="text-sm font-semibold text-gray-600 dark:text-lia-text-secondary">
                   {candidate.name.charAt(0)}
                 </span>
               )}
             </div>
             <div>
-              <p className="text-base-ui font-medium text-gray-950 dark:text-gray-50">{candidate.name}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-base-ui font-medium text-gray-950">{candidate.name}</p>
+              <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
                 {candidate.role} {candidate.currentCompany && `• ${candidate.currentCompany}`}
               </p>
             </div>
@@ -339,16 +339,16 @@ Equipe de Recrutamento`
           )}
 
           {(flowType === 'approve_to_triage' || flowType === 'approve_to_interview') && (
-            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-md p-3 mb-4">
+            <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-3 mb-4">
               <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+                <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
                   <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-base-ui font-medium text-gray-950 dark:text-gray-50 mb-0.5">
+                  <p className="text-base-ui font-medium text-gray-950 mb-0.5">
                     {flowType === 'approve_to_triage' ? 'LIA vai iniciar a triagem' : 'LIA vai agendar a entrevista'}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1.5">
+                  <p className="text-xs text-gray-500 dark:text-lia-text-tertiary mb-1.5">
                     {flowType === 'approve_to_triage' 
                       ? `Contato via ${contactChannels.join(' e ') || 'WhatsApp e Email'}`
                       : 'Candidato receberá link para escolher horário'
@@ -361,16 +361,16 @@ Equipe de Recrutamento`
           )}
 
           {flowType === 'confirm_hire' && (
-            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-md p-3 mb-4">
+            <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-3 mb-4">
               <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
-                  <CheckCircle className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="w-3.5 h-3.5 text-gray-600 dark:text-lia-text-tertiary" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-base-ui font-medium text-gray-950 dark:text-gray-50 mb-0.5">
+                  <p className="text-base-ui font-medium text-gray-950 mb-0.5">
                     LIA vai enviar boas-vindas
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1.5">
+                  <p className="text-xs text-gray-500 dark:text-lia-text-tertiary mb-1.5">
                     {`Contato via ${contactChannels.join(' e ') || 'Email'} com próximos passos de onboarding`}
                   </p>
                 </div>
@@ -385,10 +385,10 @@ Equipe de Recrutamento`
                   <AlertCircle className="w-3.5 h-3.5 text-wedo-coral" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-base-ui font-medium text-gray-950 dark:text-gray-50 mb-0.5">
+                  <p className="text-base-ui font-medium text-gray-950 mb-0.5">
                     Candidato será reprovado
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
                     Como ainda não iniciou a triagem, não é necessário enviar feedback.
                   </p>
                 </div>
@@ -403,10 +403,10 @@ Equipe de Recrutamento`
                   <MessageSquare className="w-3.5 h-3.5 text-wedo-coral" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-base-ui font-medium text-gray-950 dark:text-gray-50 mb-0.5">
+                  <p className="text-base-ui font-medium text-gray-950 mb-0.5">
                     Candidato participou da triagem
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
                     Recomendamos enviar feedback para manter boa experiência do candidato.
                   </p>
                 </div>
@@ -421,10 +421,10 @@ Equipe de Recrutamento`
                   <AlertCircle className="w-3.5 h-3.5 text-status-warning" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-base-ui font-medium text-gray-950 dark:text-gray-50 mb-0.5">
+                  <p className="text-base-ui font-medium text-gray-950 mb-0.5">
                     Solicitação de Urgência
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
                     A LIA enviará uma nova mensagem de agendamento com prioridade alta para o candidato, solicitando retorno imediato.
                   </p>
                 </div>
@@ -433,16 +433,16 @@ Equipe de Recrutamento`
           )}
 
           {flowType === 'reschedule_interview' && (
-            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-md p-3 mb-4">
+            <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-3 mb-4">
               <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
-                  <Calendar className="w-3.5 h-3.5 text-gray-700 dark:text-gray-300" />
+                <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-lia-bg-elevated flex items-center justify-center flex-shrink-0">
+                  <Calendar className="w-3.5 h-3.5 text-gray-700 dark:text-lia-text-secondary" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-base-ui font-medium text-gray-950 dark:text-gray-50 mb-0.5">
+                  <p className="text-base-ui font-medium text-gray-950 mb-0.5">
                     Alterar Horário da Entrevista
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500 dark:text-lia-text-tertiary">
                     A LIA vai buscar novos horários disponíveis na sua agenda e enviar as opções para o candidato escolher.
                   </p>
                 </div>
@@ -451,12 +451,12 @@ Equipe de Recrutamento`
           )}
         </div>
 
-        <div className="px-6 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-2">
+        <div className="px-6 py-3 bg-gray-50 dark:bg-lia-bg-primary border-t border-lia-border-subtle dark:border-lia-border-subtle flex justify-end gap-2">
           <Button 
             variant="outline" 
             onClick={onClose} 
             disabled={isLoading}
-            className="text-xs h-8 border border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
+            className="text-xs h-8 border border-lia-border-default text-gray-700 hover:bg-gray-50 dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-800"
            
           >
             Cancelar
@@ -471,7 +471,7 @@ Equipe de Recrutamento`
                   onClose()
                 }}
                 disabled={isLoading}
-                className="text-xs h-8 text-gray-600"
+                className="text-xs h-8 lia-text-base"
                
               >
                 Apenas reprovar

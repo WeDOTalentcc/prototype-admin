@@ -93,7 +93,7 @@ export function InterviewConfirmationCard({
         className="px-4 py-2 flex items-center gap-2 bg-lia-text-primary"
       >
         <CheckCircle2 className="h-5 w-5 text-wedo-green" />
-        <span className="font-medium text-[var(--lia-text-inverse)]">
+        <span className="font-medium text-lia-text-inverse">
           Entrevista Agendada!
         </span>
       </div>
@@ -109,10 +109,10 @@ export function InterviewConfirmationCard({
             </AvatarFallback>
           </Avatar>
           <div>
-            <div className="font-semibold text-[var(--lia-text-primary)]">
+            <div className="font-semibold text-lia-text-primary">
               {data.candidate_name}
             </div>
-            <div className="text-sm text-[var(--lia-text-secondary)]">
+            <div className="text-sm text-lia-text-secondary">
               {data.job_title}
             </div>
           </div>
@@ -122,11 +122,11 @@ export function InterviewConfirmationCard({
           <div
             className="p-3 rounded-md border bg-lia-bg-primary border-lia-border-subtle"
           >
-            <div className="flex items-center gap-2 mb-1 text-[var(--lia-text-tertiary)]">
+            <div className="flex items-center gap-2 mb-1 text-lia-text-tertiary">
               <Calendar className="h-4 w-4" />
               <span className="text-xs">Data</span>
             </div>
-            <div className="font-semibold text-[var(--lia-text-primary)]">
+            <div className="font-semibold text-lia-text-primary">
               {data.date}
             </div>
           </div>
@@ -134,14 +134,14 @@ export function InterviewConfirmationCard({
           <div
             className="p-3 rounded-md border bg-lia-bg-primary border-lia-border-subtle"
           >
-            <div className="flex items-center gap-2 mb-1 text-[var(--lia-text-tertiary)]">
-              <Clock className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+            <div className="flex items-center gap-2 mb-1 text-lia-text-tertiary">
+              <Clock className="h-4 w-4 text-gray-700 dark:text-lia-text-secondary" />
               <span className="text-xs">Horário</span>
             </div>
-            <div className="font-semibold text-[var(--lia-text-primary)]">
+            <div className="font-semibold text-lia-text-primary">
               {data.time}
             </div>
-            <div className="text-xs text-[var(--lia-text-tertiary)]">
+            <div className="text-xs text-lia-text-tertiary">
               {data.duration}
             </div>
           </div>
@@ -152,12 +152,12 @@ export function InterviewConfirmationCard({
         >
           <div className="flex items-center gap-2 mb-2">
             <span className="text-lia-text-secondary">{getTypeIcon(data.type)}</span>
-            <span className="text-sm font-medium text-[var(--lia-text-primary)]">
+            <span className="text-sm font-medium text-lia-text-primary">
               {getTypeLabel(data.type)}
             </span>
           </div>
           {data.location && (
-            <div className="text-sm text-[var(--lia-text-secondary)]">
+            <div className="text-sm text-lia-text-secondary">
               {data.location}
             </div>
           )}
@@ -167,7 +167,7 @@ export function InterviewConfirmationCard({
                 href={data.meeting_link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-gray-600 dark:text-gray-400 hover:underline flex items-center gap-1"
+                className="text-sm text-gray-600 dark:text-lia-text-tertiary hover:underline flex items-center gap-1"
               >
                 Acessar reunião
                 <ExternalLink className="h-3 w-3" />
@@ -188,7 +188,7 @@ export function InterviewConfirmationCard({
 
         {data.interviewers && data.interviewers.length > 0 && (
           <div className="mb-4">
-            <div className="flex items-center gap-2 text-sm mb-2 text-[var(--lia-text-tertiary)]">
+            <div className="flex items-center gap-2 text-sm mb-2 text-lia-text-tertiary">
               <Users className="h-4 w-4" />
               Entrevistadores
             </div>
@@ -206,7 +206,7 @@ export function InterviewConfirmationCard({
                       {getInitials(interviewer.name)}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-sm text-[var(--lia-text-secondary)]">
+                  <span className="text-sm text-lia-text-secondary">
                     {interviewer.name}
                   </span>
                 </div>
@@ -219,8 +219,8 @@ export function InterviewConfirmationCard({
           <div
             className="p-3 rounded-md border mb-4 bg-lia-bg-tertiary border-lia-border-subtle"
           >
-            <div className="text-xs mb-1 text-gray-700 dark:text-gray-300">Notas para o candidato</div>
-            <p className="text-sm text-[var(--lia-text-secondary)]">{data.notes}</p>
+            <div className="text-xs mb-1 text-gray-700 dark:text-lia-text-secondary">Notas para o candidato</div>
+            <p className="text-sm text-lia-text-secondary">{data.notes}</p>
           </div>
         )}
 

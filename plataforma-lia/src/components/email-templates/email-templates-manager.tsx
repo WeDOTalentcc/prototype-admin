@@ -30,9 +30,9 @@ import { EmailTemplateFormModal } from "./email-template-form-modal"
 
 const CATEGORY_LABELS: Record<string, { label: string; color: string }> = {
   interview: { label: "Entrevista", color: "bg-wedo-cyan/10 text-wedo-cyan-dark dark:bg-wedo-cyan/15 dark:text-wedo-cyan" },
-  rejection: { label: "Rejeição", color: "bg-gray-100 text-gray-800 dark:text-gray-200" },
+  rejection: { label: "Rejeição", color: "bg-gray-100 text-gray-800 dark:text-lia-text-primary" },
   offer: { label: "Proposta", color: "bg-status-success/10 text-status-success" },
-  followup: { label: "Follow-up", color: "bg-gray-100 text-gray-800 dark:text-gray-200" },
+  followup: { label: "Follow-up", color: "bg-gray-100 text-gray-800 dark:text-lia-text-primary" },
   screening: { label: "Triagem", color: "bg-status-warning/10 text-status-warning" },
 }
 
@@ -274,8 +274,8 @@ export function EmailTemplatesManager() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-sans font-semibold text-gray-950 dark:text-gray-50">Templates de Email</h2>
-          <p className="text-gray-600 mt-1">
+          <h2 className="text-2xl font-sans font-semibold text-gray-950">Templates de Email</h2>
+          <p className="lia-text-base mt-1">
             Gerencie os templates de email para comunicação com candidatos
           </p>
         </div>
@@ -287,7 +287,7 @@ export function EmailTemplatesManager() {
 
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 lia-text-base" />
           <Input
             placeholder="Buscar templates..."
             value={searchQuery}
@@ -330,13 +330,13 @@ export function EmailTemplatesManager() {
         <Card className="border-dashed">
           <CardContent className="py-12">
             <div className="text-center">
-              <FileText className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-950 dark:text-gray-50 mb-2">
+              <FileText className="w-12 h-12 lia-text-base mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-950 mb-2">
                 {searchQuery || categoryFilter !== "all"
                   ? "Nenhum template encontrado"
                   : "Nenhum template cadastrado"}
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className="lia-text-base mb-4">
                 {searchQuery || categoryFilter !== "all"
                   ? "Tente ajustar os filtros de busca"
                   : "Crie seu primeiro template de email para começar"}
@@ -361,15 +361,15 @@ export function EmailTemplatesManager() {
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <Mail className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                      <h3 className="font-medium text-gray-950 dark:text-gray-50 truncate">
+                      <Mail className="w-4 h-4 lia-text-base flex-shrink-0" />
+                      <h3 className="font-medium text-gray-950 truncate">
                         {template.name}
                       </h3>
                     </div>
                     {template.category && (
                       <Badge
                         className={`text-xs ${
-                          CATEGORY_LABELS[template.category]?.color || "bg-gray-100 text-gray-800"
+ CATEGORY_LABELS[template.category]?.color || "bg-gray-100 lia-text-strong"
                         }`}
                       >
                         {CATEGORY_LABELS[template.category]?.label || template.category}
@@ -414,7 +414,7 @@ export function EmailTemplatesManager() {
                   </DropdownMenu>
                 </div>
 
-                <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                <p className="text-sm lia-text-base mb-3 line-clamp-2">
                   <span className="font-medium">Assunto:</span> {template.subject}
                 </p>
 
@@ -433,7 +433,7 @@ export function EmailTemplatesManager() {
                   </div>
                 )}
 
-                <div className="flex items-center justify-between text-xs text-gray-600 pt-3 border-t">
+                <div className="flex items-center justify-between text-xs lia-text-base pt-3 border-t">
                   <div className="flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
                     {formatDate(template.updated_at)}
@@ -472,26 +472,26 @@ export function EmailTemplatesManager() {
           <div className="flex-1 overflow-y-auto">
             <div className="space-y-4">
               <div className="p-3 bg-gray-50 rounded-md">
-                <span className="text-sm font-medium text-gray-600">Assunto:</span>
-                <p className="text-gray-950 dark:text-gray-50">{selectedTemplate?.subject}</p>
+                <span className="text-sm font-medium lia-text-base">Assunto:</span>
+                <p className="text-gray-950">{selectedTemplate?.subject}</p>
               </div>
               <div className="border rounded-md overflow-hidden">
-                <div className="bg-gray-100 px-4 py-2 text-sm font-medium text-gray-600 border-b">
+                <div className="bg-gray-100 px-4 py-2 text-sm font-medium lia-text-base border-b">
                   Corpo do Email (HTML)
                 </div>
                 <div
-                  className="p-4 bg-white prose prose-sm max-w-none"
+                  className="p-4 bg-lia-bg-primary prose prose-sm max-w-none"
                   dangerouslySetInnerHTML={{
                     __html: selectedTemplate?.body_html || "",
                   }}
                 />
               </div>
               {selectedTemplate?.variables && selectedTemplate.variables.length > 0 && (
-                <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-md">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Variáveis:</span>
+                <div className="p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+                  <span className="text-sm font-medium text-gray-700 dark:text-lia-text-secondary">Variáveis:</span>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {selectedTemplate.variables.map((v) => (
-                      <Badge key={v} variant="outline" className="bg-white">
+                      <Badge key={v} variant="outline" className="bg-lia-bg-primary">
                         {`{{${v}}}`}
                       </Badge>
                     ))}

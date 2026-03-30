@@ -175,15 +175,15 @@ export default function ExportarPage() {
             <div 
               className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
             >
-              <FileArchive className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <FileArchive className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold text-gray-800 dark:text-gray-100"
+                className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary"
               >
                 Gerador de Pacote para Auditores
               </h1>
-              <p className="text-sm text-gray-400 dark:text-gray-500">
+              <p className="text-sm lia-text-400 dark:lia-text-500">
                 Exportação de evidências e documentação para auditorias
               </p>
             </div>
@@ -216,14 +216,14 @@ export default function ExportarPage() {
             <Card className="mb-6">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base font-medium flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                  <Shield className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                   Configuração do Pacote
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   <div>
-                    <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2 block">
+                    <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2 block">
                       Framework de Compliance
                     </label>
                     <Select value={selectedFramework} onValueChange={setSelectedFramework}>
@@ -241,16 +241,16 @@ export default function ExportarPage() {
                       </SelectContent>
                     </Select>
                     {selectedFrameworkData && (
-                      <p className="text-xs text-gray-500 mt-1">{selectedFrameworkData.description}</p>
+                      <p className="text-xs lia-text-500 mt-1">{selectedFrameworkData.description}</p>
                     )}
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2 block">
+                    <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2 block">
                       Período
                     </label>
                     <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
                       <SelectTrigger>
-                        <Calendar className="w-4 h-4 mr-2 text-gray-400" />
+                        <Calendar className="w-4 h-4 mr-2 lia-text-400" />
                         <SelectValue placeholder="Selecione o período" />
                       </SelectTrigger>
                       <SelectContent>
@@ -263,7 +263,7 @@ export default function ExportarPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-3 block">
+                  <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
                     Tipos de Evidência
                   </label>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -272,10 +272,10 @@ export default function ExportarPage() {
                       return (
                         <div 
                           key={evidence.id}
-                          className={`p-4 rounded-md border cursor-pointer transition-all ${
+                          className={`p-4 rounded-md border cursor-pointer transition-colors ${
                             evidence.selected 
-                              ? 'border-gray-900 dark:border-gray-50 bg-gray-50 dark:bg-gray-800/50' 
-                              : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                              ? 'border-gray-900 dark:lia-border-50 bg-gray-50 dark:bg-lia-bg-secondary/50' 
+                              : 'border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default'
                           }`}
                           onClick={() => toggleEvidence(evidence.id)}
                         >
@@ -287,15 +287,15 @@ export default function ExportarPage() {
                             />
                             <div className="flex-1">
                               <div className="flex items-center gap-2">
-                                <Icon className={`w-4 h-4 ${evidence.selected ? 'text-gray-600 dark:text-gray-400' : 'text-gray-400'}`} />
-                                <span className="text-sm font-medium text-gray-950 dark:text-gray-50">
+                                <Icon className={`w-4 h-4 ${evidence.selected ? 'lia-text-600 dark:text-lia-text-tertiary' : 'lia-text-400'}`} />
+                                <span className="text-sm font-medium lia-text-950 dark:lia-text-50">
                                   {evidence.name}
                                 </span>
                                 <Badge variant="secondary" className="text-xs">
                                   {evidence.count.toLocaleString('pt-BR')}
                                 </Badge>
                               </div>
-                              <p className="text-xs text-gray-500 mt-1">{evidence.description}</p>
+                              <p className="text-xs lia-text-500 mt-1">{evidence.description}</p>
                             </div>
                           </div>
                         </div>
@@ -310,7 +310,7 @@ export default function ExportarPage() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base font-medium flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                    <Clock className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                     Exportações Anteriores
                   </CardTitle>
                   <Badge variant="outline">{previousExports.length} exportações</Badge>
@@ -320,33 +320,33 @@ export default function ExportarPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-                        <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">Framework</th>
-                        <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-4 py-3">Período</th>
-                        <th className="text-center text-xs font-medium text-gray-500 uppercase tracking-wider px-4 py-3">Evidências</th>
-                        <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-4 py-3">Gerado em</th>
-                        <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-4 py-3">Por</th>
-                        <th className="text-center text-xs font-medium text-gray-500 uppercase tracking-wider px-4 py-3">Status</th>
-                        <th className="text-center text-xs font-medium text-gray-500 uppercase tracking-wider px-4 py-3">Ação</th>
+                      <tr className="border-b border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary/50">
+                        <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-6 py-3">Framework</th>
+                        <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-4 py-3">Período</th>
+                        <th className="text-center text-xs font-medium lia-text-500 uppercase tracking-wider px-4 py-3">Evidências</th>
+                        <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-4 py-3">Gerado em</th>
+                        <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-4 py-3">Por</th>
+                        <th className="text-center text-xs font-medium lia-text-500 uppercase tracking-wider px-4 py-3">Status</th>
+                        <th className="text-center text-xs font-medium lia-text-500 uppercase tracking-wider px-4 py-3">Ação</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                    <tbody className="divide-y divide-gray-200 dark:lia-divide-700">
                       {previousExports.map((exp) => (
                         <tr key={exp.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                           <td className="px-6 py-4">
-                            <span className="text-sm font-medium text-gray-950 dark:text-gray-50">{exp.framework}</span>
+                            <span className="text-sm font-medium lia-text-950 dark:lia-text-50">{exp.framework}</span>
                           </td>
                           <td className="px-4 py-4">
-                            <span className="text-sm text-gray-800 dark:text-gray-200">{exp.period}</span>
+                            <span className="text-sm lia-text-800 dark:text-lia-text-primary">{exp.period}</span>
                           </td>
                           <td className="px-4 py-4 text-center">
                             <Badge variant="secondary">{exp.evidenceCount}</Badge>
                           </td>
                           <td className="px-4 py-4">
-                            <span className="text-sm text-gray-600 dark:text-gray-400">{formatDateTime(exp.generatedAt)}</span>
+                            <span className="text-sm lia-text-600 dark:text-lia-text-tertiary">{formatDateTime(exp.generatedAt)}</span>
                           </td>
                           <td className="px-4 py-4">
-                            <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
+                            <div className="flex items-center gap-1 text-sm lia-text-600 dark:text-lia-text-tertiary">
                               <User className="w-3 h-3" />
                               {exp.generatedBy}
                             </div>
@@ -375,28 +375,28 @@ export default function ExportarPage() {
             <Card className="sticky top-6">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base font-medium flex items-center gap-2">
-                  <Package className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                  <Package className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                   Preview do Pacote
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="p-3 rounded-md bg-gray-50 dark:bg-gray-800/50">
-                    <p className="text-xs text-gray-500 mb-1">Framework</p>
-                    <p className="text-sm font-medium text-gray-950 dark:text-gray-50">
+                  <div className="p-3 rounded-md bg-gray-50 dark:bg-lia-bg-secondary/50">
+                    <p className="text-xs lia-text-500 mb-1">Framework</p>
+                    <p className="text-sm font-medium lia-text-950 dark:lia-text-50">
                       {selectedFrameworkData?.name || 'Não selecionado'}
                     </p>
                   </div>
 
-                  <div className="p-3 rounded-md bg-gray-50 dark:bg-gray-800/50">
-                    <p className="text-xs text-gray-500 mb-1">Período</p>
-                    <p className="text-sm font-medium text-gray-950 dark:text-gray-50">
+                  <div className="p-3 rounded-md bg-gray-50 dark:bg-lia-bg-secondary/50">
+                    <p className="text-xs lia-text-500 mb-1">Período</p>
+                    <p className="text-sm font-medium lia-text-950 dark:lia-text-50">
                       {selectedPeriodData?.name || 'Não selecionado'}
                     </p>
                   </div>
 
-                  <div className="p-3 rounded-md bg-gray-50 dark:bg-gray-800/50">
-                    <p className="text-xs text-gray-500 mb-1">Tipos de Evidência</p>
+                  <div className="p-3 rounded-md bg-gray-50 dark:bg-lia-bg-secondary/50">
+                    <p className="text-xs lia-text-500 mb-1">Tipos de Evidência</p>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {evidenceTypes.filter(e => e.selected).map((e) => (
                         <Badge key={e.id} variant="secondary" className="text-xs">
@@ -404,21 +404,21 @@ export default function ExportarPage() {
                         </Badge>
                       ))}
                       {selectedCount === 0 && (
-                        <span className="text-sm text-gray-400">Nenhum selecionado</span>
+                        <span className="text-sm lia-text-400">Nenhum selecionado</span>
                       )}
                     </div>
                   </div>
 
-                  <div className="p-3 rounded-md bg-gray-50 dark:bg-gray-800/50">
-                    <p className="text-xs text-gray-500 mb-1">Total de Itens</p>
-                    <p className="text-2xl font-semibold text-gray-950 dark:text-gray-50">
+                  <div className="p-3 rounded-md bg-gray-50 dark:bg-lia-bg-secondary/50">
+                    <p className="text-xs lia-text-500 mb-1">Total de Itens</p>
+                    <p className="text-2xl font-semibold lia-text-950 dark:lia-text-50">
                       {totalItems.toLocaleString('pt-BR')}
                     </p>
                   </div>
 
-                  <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                  <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-4">
                     <Button 
-                      className="w-full gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+                      className="w-full gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
                       onClick={handleGeneratePackage}
                       disabled={isGenerating || selectedCount === 0}
                     >
@@ -447,14 +447,14 @@ export default function ExportarPage() {
             <Card className="mt-4">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-md">
-                    <Shield className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  <div className="p-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+                    <Shield className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-950 dark:text-gray-50">
+                    <p className="text-sm font-medium lia-text-950 dark:lia-text-50">
                       Pacote Seguro
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs lia-text-500 mt-1">
                       O pacote é gerado com criptografia AES-256 e pode incluir assinatura digital para integridade.
                     </p>
                   </div>

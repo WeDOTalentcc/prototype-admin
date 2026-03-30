@@ -41,10 +41,10 @@ export function WizardHeader({
   getLastSavedText
 }: WizardHeaderProps) {
   return (
-    <div className="px-3 py-2 rounded-t-xl bg-white">
+    <div className="px-3 py-2 rounded-t-xl bg-lia-bg-primary">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <div className="w-5 h-5 rounded-md flex items-center justify-center bg-gray-900 dark:bg-gray-50">
+          <div className="w-5 h-5 rounded-md flex items-center justify-center bg-gray-900">
             <FileText className="w-3 h-3 text-white" />
           </div>
           <span className="text-xs font-semibold text-gray-950">
@@ -53,12 +53,12 @@ export function WizardHeader({
           {catalogStatus && (
             <span 
               className={cn(
-                "inline-flex items-center gap-1 px-1.5 py-0.5 text-micro font-medium rounded-full",
+ "inline-flex items-center gap-1 px-1.5 py-0.5 text-micro font-medium rounded-full",
                 catalogStatus.maturity_level === 'complete' 
                   ? "bg-status-success/10 text-status-success"
                   : catalogStatus.maturity_level === 'partial'
                   ? "bg-status-warning/10 text-status-warning"
-                  : "bg-gray-100 text-gray-500"
+                  : "bg-gray-100 lia-text-secondary"
               )}
              
             >
@@ -85,8 +85,8 @@ export function WizardHeader({
           <div className="flex items-center gap-1 text-micro">
             {isAutoSaving ? (
               <>
-                <Loader2 className="w-3 h-3 text-gray-600 dark:text-gray-400 animate-spin" />
-                <span className="text-gray-500">Salvando...</span>
+                <Loader2 className="w-3 h-3 text-gray-600 dark:text-lia-text-tertiary animate-spin" />
+                <span className="lia-text-secondary">Salvando...</span>
               </>
             ) : autoSaveLastSaved ? (
               <>
@@ -107,18 +107,18 @@ export function WizardHeader({
               title="Começar do zero"
               aria-label="Limpar rascunho e começar do zero"
             >
-              <RefreshCw className="w-3.5 h-3.5 text-gray-400 group-hover:text-status-error transition-colors" />
+              <RefreshCw className="w-3.5 h-3.5 lia-text-secondary group-hover:text-status-error transition-colors" />
             </button>
           )}
           <button
             onClick={() => onFullscreenChange(!isFullscreen)}
-            className="p-1 rounded-md hover:bg-gray-100 dark:bg-gray-800 transition-colors group focus-visible:ring-2 focus-visible:ring-gray-400"
+            className="p-1 rounded-md hover:bg-gray-100 dark:bg-lia-bg-secondary transition-colors group focus-visible:ring-2 focus-visible:ring-gray-400"
             title={isFullscreen ? "Reduzir chat" : "Expandir tela cheia"}
             aria-label={isFullscreen ? "Reduzir chat" : "Expandir para tela cheia"}
           >
             {isFullscreen 
-              ? <Minimize2 className="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-50 transition-colors" />
-              : <Maximize2 className="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-50 transition-colors" />
+              ? <Minimize2 className="w-3.5 h-3.5 lia-text-secondary group-hover:lia-text-strong dark:group-hover:lia-text-subtle transition-colors" />
+              : <Maximize2 className="w-3.5 h-3.5 lia-text-secondary group-hover:lia-text-strong dark:group-hover:lia-text-subtle transition-colors" />
             }
           </button>
           <button 
@@ -127,7 +127,7 @@ export function WizardHeader({
             title="Fechar painel"
             aria-label="Fechar painel de etapas"
           >
-            <X className="w-4 h-4 text-gray-500" />
+            <X className="w-4 h-4 lia-text-secondary" />
           </button>
         </div>
       </div>
@@ -137,7 +137,7 @@ export function WizardHeader({
          catalogStatus.maturity_level === 'partial') && (
         <div 
           className={cn(
-            "mt-2 px-2.5 py-1.5 rounded-md flex items-center gap-2 border",
+ "mt-2 px-2.5 py-1.5 rounded-md flex items-center gap-2 border",
             catalogStatus.maturity_level === 'complete'
               ? "bg-status-success/[0.08] border-status-success/30/20"
               : "bg-status-warning/[0.08] border-status-warning/20"
@@ -145,7 +145,7 @@ export function WizardHeader({
         >
           <CheckCircle2 
             className={cn(
-              "w-3.5 h-3.5 flex-shrink-0",
+ "w-3.5 h-3.5 flex-shrink-0",
               catalogStatus.maturity_level === 'complete'
                 ? "text-status-success"
                 : "text-status-warning"
@@ -153,7 +153,7 @@ export function WizardHeader({
           />
           <span 
             className={cn(
-              "text-micro font-medium",
+ "text-micro font-medium",
               catalogStatus.maturity_level === 'complete'
                 ? "text-status-success"
                 : "text-status-warning"

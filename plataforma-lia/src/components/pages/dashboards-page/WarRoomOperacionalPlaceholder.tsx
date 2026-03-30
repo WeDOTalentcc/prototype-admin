@@ -115,7 +115,7 @@ export function WarRoomOperacionalPlaceholder() {
           <AlertTriangle className="w-3.5 h-3.5 text-wedo-magenta" />
           War Room Operacional
         </h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1 font-open-sans text-xs">
+        <p className="text-gray-600 dark:text-lia-text-tertiary mt-1 font-open-sans text-xs">
           Alertas críticos, ações urgentes e pipelines em risco que exigem atenção imediata
         </p>
       </div>
@@ -159,7 +159,7 @@ export function WarRoomOperacionalPlaceholder() {
       {/* Vagas Críticas Detalhadas */}
       <Card className="border-status-error/30 dark:border-status-error/30">
         <CardHeader className="pb-3 bg-status-error/10 dark:bg-status-error/20">
-          <CardTitle className={`${textStyles.subtitle} dark:text-gray-100 flex items-center gap-2`}>
+          <CardTitle className={`${textStyles.subtitle} dark:text-lia-text-primary flex items-center gap-2`}>
             <AlertTriangle className="w-3.5 h-3.5 text-status-error" />
             Vagas Críticas - Ação Imediata Necessária
           </CardTitle>
@@ -169,7 +169,7 @@ export function WarRoomOperacionalPlaceholder() {
             <div className="flex items-start justify-between mb-2">
               <div>
                 <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50">Vaga #2847 - Senior ML Engineer</p>
-                <p className="text-sm font-open-sans text-gray-600 dark:text-gray-400 mt-1">
+                <p className="text-sm font-open-sans text-gray-600 dark:text-lia-text-tertiary mt-1">
                   62 dias aberta • 0 candidatos qualificados • Prioridade MÁXIMA
                 </p>
               </div>
@@ -185,7 +185,7 @@ export function WarRoomOperacionalPlaceholder() {
             <div className="flex items-start justify-between mb-2">
               <div>
                 <p className="font-open-sans font-semibold text-gray-950 dark:text-gray-50">Vaga #3012 - Tech Lead Backend</p>
-                <p className="text-sm font-open-sans text-gray-600 dark:text-gray-400 mt-1">51 dias aberta • 3 candidatos em avaliação • Pipeline lento</p>
+                <p className="text-sm font-open-sans text-gray-600 dark:text-lia-text-tertiary mt-1">51 dias aberta • 3 candidatos em avaliação • Pipeline lento</p>
               </div>
               <Badge className="bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/30 dark:text-wedo-orange font-inter shrink-0">URGENTE</Badge>
             </div>
@@ -198,9 +198,9 @@ export function WarRoomOperacionalPlaceholder() {
       </Card>
 
       {/* Gargalos e Recomendações LIA */}
-      <Card className="border-status-error/30 dark:border-status-error/30 rounded-md bg-white dark:bg-gray-900">
+      <Card className="border-status-error/30 dark:border-status-error/30 rounded-md bg-white dark:bg-lia-bg-primary">
         <CardHeader className="px-4 py-3">
-          <CardTitle className={`${textStyles.title} dark:text-gray-100 flex items-center gap-2`}>
+          <CardTitle className={`${textStyles.title} dark:text-lia-text-primary flex items-center gap-2`}>
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
             Recomendações Urgentes da LIA
           </CardTitle>
@@ -208,19 +208,19 @@ export function WarRoomOperacionalPlaceholder() {
         <CardContent className="space-y-3">
           <div className="flex items-start gap-3">
             <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-status-error" />
-            <p className="text-sm font-open-sans text-gray-800 dark:text-gray-200">
+            <p className="text-sm font-open-sans text-gray-800 dark:text-lia-text-primary">
               <strong>Vaga #2847 (ML Engineer) precisa de ação imediata:</strong> 62 dias sem candidatos. LIA sugere flexibilizar requisitos de "PhD obrigatório" para "Mestrado + 5 anos exp."
             </p>
           </div>
           <div className="flex items-start gap-3">
             <Target className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-wedo-orange" />
-            <p className="text-sm font-open-sans text-gray-800 dark:text-gray-200">
+            <p className="text-sm font-open-sans text-gray-800 dark:text-lia-text-primary">
               <strong>Processo Tech Lead está 73% mais lento que a média:</strong> Gargalo identificado na aprovação do gestor. Sugere reunião de alinhamento.
             </p>
           </div>
           <div className="flex items-start gap-3">
             <Users className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-status-warning" />
-            <p className="text-sm font-open-sans text-gray-800 dark:text-gray-200">
+            <p className="text-sm font-open-sans text-gray-800 dark:text-lia-text-primary">
               <strong>47 candidatos em espera podem desistir:</strong> LIA identificou padrão histórico de 65% desistência após 7 dias sem contato. Agendar entrevistas urgente.
             </p>
           </div>

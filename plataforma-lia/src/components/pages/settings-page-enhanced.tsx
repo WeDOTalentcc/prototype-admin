@@ -406,7 +406,7 @@ export default function SettingsPageEnhanced() {
       default:
         return (
           <div className="text-center py-12">
-            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-gray-100 dark:bg-lia-bg-secondary rounded-xl flex items-center justify-center mx-auto mb-4">
               <Settings className="w-8 h-8 text-gray-800" />
             </div>
             <h3 className={`${textStyles.subtitle} dark:text-gray-50 mb-2`}>
@@ -424,20 +424,20 @@ export default function SettingsPageEnhanced() {
 
   return (
     <>
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden">
+    <div className="flex h-screen bg-gray-50 dark:bg-lia-bg-primary overflow-hidden">
       <aside 
         className={`
           ${isCollapsed && !isLocked ? 'w-16' : 'w-64'}
-          transition-all duration-200
+          transition-colors duration-200
           flex-shrink-0
         `}
         onMouseEnter={() => !isLocked && setIsCollapsed(false)}
         onMouseLeave={() => !isLocked && setIsCollapsed(true)}
       >
-        <Card className="h-full m-3 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 backdrop-blur-sm rounded-md overflow-hidden flex flex-col">
-          <div className={`p-4 border-b border-gray-200 dark:border-gray-700 ${isCollapsed && !isLocked ? 'px-2' : ''}`}>
+        <Card className="h-full m-3 border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary backdrop-blur-sm rounded-md overflow-hidden flex flex-col">
+          <div className={`p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle ${isCollapsed && !isLocked ? 'px-2' : ''}`}>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 bg-gray-100 dark:bg-lia-bg-elevated text-gray-800 dark:text-lia-text-primary rounded-md flex items-center justify-center flex-shrink-0">
                 <Settings className="w-5 h-5" />
               </div>
               {shouldShowContent && (
@@ -481,11 +481,11 @@ export default function SettingsPageEnhanced() {
                     </Button>
                   </div>
                 </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mb-3 cursor-pointer"
+                <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-1.5 mb-3 cursor-pointer"
                      onClick={() => setShowProgressDashboard(true)}
                      title="Clique para ver detalhes">
                   <div
-                    className="bg-gray-900 dark:bg-gray-50 h-1.5 rounded-full transition-all duration-500"
+                    className="bg-gray-900 dark:bg-gray-50 h-1.5 rounded-full transition-[width,height] duration-500"
                     style={{width: `${progressMetrics.overall}%`}}
                   />
                 </div>
@@ -514,8 +514,8 @@ export default function SettingsPageEnhanced() {
                       }}
                       className={`w-full flex items-center gap-2 p-2.5 rounded-md text-left transition-colors ${
                         isActive && !activeSubsection
-                          ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-50'
-                          : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 text-gray-700 dark:text-gray-300'
+                          ? 'bg-gray-100 dark:bg-lia-bg-elevated text-gray-900 dark:text-gray-50'
+                          : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 text-gray-700 dark:text-lia-text-secondary'
                       } ${isCollapsed && !isLocked ? 'justify-center' : ''}`}
                       title={isCollapsed && !isLocked ? section.title : ''}
                     >
@@ -543,7 +543,7 @@ export default function SettingsPageEnhanced() {
                     </button>
 
                     {shouldShowContent && isExpanded && section.subsections && (
-                      <div className="ml-6 mt-1 space-y-1 border-l-2 border-gray-200 dark:border-gray-700 pl-2">
+                      <div className="ml-6 mt-1 space-y-1 border-l-2 border-lia-border-subtle dark:border-lia-border-subtle pl-2">
                         {section.subsections.map((subsection) => {
                           const isComplete = subsectionCompletion[subsection.id] ?? false
                           return (
@@ -552,7 +552,7 @@ export default function SettingsPageEnhanced() {
                               onClick={() => handleSelectSubsection(section.id, subsection.id)}
                               className={`w-full text-left px-2 py-1.5 rounded-md transition-colors ${
                                 activeSubsection === subsection.id
-                                  ? 'bg-gray-100 dark:bg-gray-700'
+                                  ? 'bg-gray-100 dark:bg-lia-bg-elevated'
                                   : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
                               }`}
                             >
@@ -581,13 +581,13 @@ export default function SettingsPageEnhanced() {
       </aside>
 
         <div className="flex-1 flex flex-col">
-          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className={`${textStyles.h3} mb-1`}>
                   {settingsSections.find(s => s.id === activeSection)?.title}
                   {activeSubsection && settingsSections.find(s => s.id === activeSection)?.subsections?.find(sub => sub.id === activeSubsection) && (
-                    <span className="text-gray-600 dark:text-gray-400 font-normal"> / {settingsSections.find(s => s.id === activeSection)?.subsections?.find(sub => sub.id === activeSubsection)?.title}</span>
+                    <span className="text-gray-600 dark:text-lia-text-tertiary font-normal"> / {settingsSections.find(s => s.id === activeSection)?.subsections?.find(sub => sub.id === activeSubsection)?.title}</span>
                   )}
                 </h2>
                 <p className={textStyles.description}>

@@ -46,7 +46,7 @@ export function AISuggestionBadge({
   
   const confidenceColor = 
     confidencePercent >= 90 ? "text-status-success" :
-    confidencePercent >= 75 ? "text-gray-900 dark:text-gray-50" :
+    confidencePercent >= 75 ? "text-gray-900" :
     "text-status-warning"
 
   const handleApprove = async () => {
@@ -78,8 +78,8 @@ export function AISuggestionBadge({
           <Badge 
             variant="outline" 
             className={cn(
- "cursor-pointer gap-1 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-50 hover:bg-gray-100 dark:bg-gray-800",
-              className
+ "cursor-pointer gap-1 border-lia-border-default dark:border-lia-border-default text-gray-900 hover:bg-gray-100 dark:bg-lia-bg-secondary",
+ className
             )}
           >
             <Brain className="h-3 w-3 text-wedo-cyan" />
@@ -128,12 +128,12 @@ export function AISuggestionBadge({
 
   return (
     <div className={cn(
-      "flex items-center gap-2 p-2 rounded-md bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600",
+ "flex items-center gap-2 p-2 rounded-md bg-gray-50 dark:bg-lia-bg-primary border border-lia-border-default dark:border-lia-border-default",
       className
     )}>
       <Brain className="h-4 w-4 text-wedo-cyan flex-shrink-0" />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-900 dark:text-gray-50 truncate">
+        <p className="text-sm font-medium text-gray-900 truncate">
           {actionLabel}
         </p>
         <p className={cn("text-xs", confidenceColor)}>

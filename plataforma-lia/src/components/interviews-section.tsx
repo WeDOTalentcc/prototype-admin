@@ -57,7 +57,7 @@ const getStatusIcon = (status: string) => {
     case "Rejeitado":
       return <XCircle className="w-4 h-4 text-status-error" />
     default:
-      return <Clock className="w-4 h-4 text-gray-600" />
+      return <Clock className="w-4 h-4 lia-text-base" />
   }
 }
 
@@ -70,7 +70,7 @@ const getStatusBadge = (status: string) => {
     case "Rejeitado":
       return "bg-status-error/10 text-status-error border-status-error/30"
     default:
-      return "bg-gray-50 text-gray-800 dark:text-gray-200 border-gray-200"
+      return "bg-gray-50 text-gray-800 dark:text-lia-text-primary border-lia-border-subtle"
   }
 }
 
@@ -78,15 +78,15 @@ export function InterviewsSection() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-sans font-semibold text-gray-950 dark:text-gray-50">Últimas Triagens</h2>
-        <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200">
+        <h2 className="text-sm font-sans font-semibold text-gray-950">Últimas Triagens</h2>
+        <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-800 dark:text-lia-text-tertiary dark:hover:text-gray-200">
           Ver mais
         </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {candidates.map((candidate) => (
-          <div key={candidate.id} className="wedo-card p-5 hover:border-gray-300 dark:hover:border-gray-600 transition-all cursor-pointer">
+          <div key={candidate.id} className="wedo-card p-5 hover:border-lia-border-default dark:hover:border-gray-600 transition-colors cursor-pointer">
             <div className="space-y-4">
               {/* Header com avatar, nome e status */}
               <div className="flex items-start gap-3">
@@ -96,19 +96,19 @@ export function InterviewsSection() {
                     alt={candidate.name}
                     className="object-cover"
                   />
-                  <AvatarFallback className="bg-gray-100 text-gray-600">
+                  <AvatarFallback className="bg-gray-100 lia-text-base">
                     {candidate.name.split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between mb-1">
-                    <h3 className="font-semibold text-gray-950 dark:text-gray-50 text-sm leading-tight">
+                    <h3 className="font-semibold text-gray-950 text-sm leading-tight">
                       {candidate.name}
                     </h3>
                     {getStatusIcon(candidate.status)}
                   </div>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">{candidate.position}</p>
+                  <p className="text-xs text-gray-600 dark:text-lia-text-tertiary mb-2">{candidate.position}</p>
 
                   <Badge
                     variant="outline"
@@ -121,11 +121,11 @@ export function InterviewsSection() {
 
               {/* Informações da vaga */}
               <div className="space-y-2">
-                <div className="text-xs text-gray-600 dark:text-gray-400">
-                  <span className="font-medium text-gray-800 dark:text-gray-200">Vaga:</span> {candidate.job}
+                <div className="text-xs text-gray-600 dark:text-lia-text-tertiary">
+                  <span className="font-medium text-gray-800 dark:text-lia-text-primary">Vaga:</span> {candidate.job}
                 </div>
-                <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
-                  <Calendar className="w-3 h-3 text-gray-600" />
+                <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-lia-text-tertiary">
+                  <Calendar className="w-3 h-3 lia-text-base" />
                   <span>{candidate.date} às {candidate.time}</span>
                 </div>
               </div>
@@ -134,17 +134,17 @@ export function InterviewsSection() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Star className="w-4 h-4 text-status-warning fill-current" />
-                  <span className="text-sm font-semibold text-gray-950 dark:text-gray-50">
+                  <span className="text-sm font-semibold text-gray-950">
                     {candidate.score}
                   </span>
-                  <span className="text-xs text-gray-600">/10</span>
+                  <span className="text-xs lia-text-base">/10</span>
                 </div>
 
                 <div className="flex items-center gap-1">
-                  <div className="w-16 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div className="w-16 h-2 bg-gray-200 dark:bg-lia-bg-elevated rounded-full overflow-hidden">
                     <div
-                      className={`h-full rounded-full transition-all ${
-                        candidate.score >= 8 ? 'bg-status-success' :
+                      className={`h-full rounded-full transition-[width,height] ${
+ candidate.score >= 8 ? 'bg-status-success' :
                         candidate.score >= 7 ? 'bg-status-warning' :
                         candidate.score >= 6 ? 'bg-wedo-orange' : 'bg-status-error'
                       }`}
@@ -155,26 +155,26 @@ export function InterviewsSection() {
               </div>
 
               {/* Contatos com botões intuitivos */}
-              <div className="space-y-2 py-2 border-t border-gray-100 dark:border-gray-700">
+              <div className="space-y-2 py-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                 <div className="flex items-center gap-2">
-                  <Phone className="w-3 h-3 text-gray-600" />
-                  <span className="text-xs text-gray-600 dark:text-gray-400 flex-1">{candidate.phone}</span>
+                  <Phone className="w-3 h-3 lia-text-base" />
+                  <span className="text-xs text-gray-600 dark:text-lia-text-tertiary flex-1">{candidate.phone}</span>
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-6 px-2 text-xs bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 dark:text-gray-200"
+                    className="h-6 px-2 text-xs bg-gray-50 hover:bg-gray-100 border-lia-border-subtle lia-text-strong dark:bg-lia-bg-elevated dark:hover:bg-gray-600 dark:border-lia-border-default dark:text-lia-text-primary"
                     onClick={() => window.open(`https://wa.me/${candidate.phone.replace(/\D/g, '')}`, '_blank')}
                   >
                     WhatsApp
                   </Button>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Mail className="w-3 h-3 text-gray-600" />
-                  <span className="text-xs text-gray-600 dark:text-gray-400 flex-1 truncate">{candidate.email}</span>
+                  <Mail className="w-3 h-3 lia-text-base" />
+                  <span className="text-xs text-gray-600 dark:text-lia-text-tertiary flex-1 truncate">{candidate.email}</span>
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-6 px-2 text-xs bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 dark:text-gray-200"
+                    className="h-6 px-2 text-xs bg-gray-50 hover:bg-gray-100 border-lia-border-subtle lia-text-strong dark:bg-lia-bg-elevated dark:hover:bg-gray-600 dark:border-lia-border-default dark:text-lia-text-primary"
                     onClick={() => window.open(`mailto:${candidate.email}`, '_blank')}
                   >
                     Email
@@ -184,11 +184,11 @@ export function InterviewsSection() {
 
               {/* Ações */}
               <div className="flex items-center gap-2 pt-2">
-                <Button size="sm" variant="outline" className="flex-1 gap-1 text-xs h-8 bg-gray-50 hover:bg-gray-100 border-gray-200 hover:border-gray-300 text-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 dark:text-gray-200">
+                <Button size="sm" variant="outline" className="flex-1 gap-1 text-xs h-8 bg-gray-50 hover:bg-gray-100 border-lia-border-subtle hover:border-lia-border-default lia-text-strong dark:bg-lia-bg-elevated dark:hover:bg-gray-600 dark:border-lia-border-default dark:text-lia-text-primary">
                   <MessageSquare className="w-3 h-3" />
                   Ver Chat
                 </Button>
-                <Button size="sm" variant="outline" className="flex-1 gap-1 text-xs h-8 bg-gray-50 hover:bg-gray-100 border-gray-200 hover:border-gray-300 text-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 dark:text-gray-200">
+                <Button size="sm" variant="outline" className="flex-1 gap-1 text-xs h-8 bg-gray-50 hover:bg-gray-100 border-lia-border-subtle hover:border-lia-border-default lia-text-strong dark:bg-lia-bg-elevated dark:hover:bg-gray-600 dark:border-lia-border-default dark:text-lia-text-primary">
                   <FileText className="w-3 h-3" />
                   Perfil
                 </Button>

@@ -52,7 +52,7 @@ export function WSIQualityBar({
     <TooltipProvider>
       <div
         className={cn(
-          'px-3 py-2 rounded-md border transition-all duration-300',
+ 'px-3 py-2 rounded-md border transition-colors duration-300',
           colors.bgLight,
           colors.border,
           className
@@ -73,7 +73,7 @@ export function WSIQualityBar({
             <div className="flex-1 max-w-[140px]">
               <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div
-                  className={cn('h-full rounded-full transition-all duration-500', colors.bg)}
+                  className={cn('h-full rounded-full transition-[width,height] duration-500', colors.bg)}
                   style={{width: `${score}%`}}
                 />
               </div>
@@ -93,10 +93,10 @@ export function WSIQualityBar({
                 <TooltipTrigger asChild>
                   <div
                     className={cn(
-                      'w-5 h-5 rounded-full flex items-center justify-center transition-all',
+ 'w-5 h-5 rounded-full flex items-center justify-center transition-[width,height]',
                       field.isMet 
                         ? 'bg-status-success/15 text-status-success' 
-                        : 'bg-gray-100 text-gray-400'
+                        : 'bg-gray-100 lia-text-secondary'
                     )}
                   >
                     {field.isMet ? (
@@ -108,7 +108,7 @@ export function WSIQualityBar({
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">
                   <p className="font-medium">{field.label}</p>
-                  <p className={field.isMet ? 'text-status-success' : 'text-gray-500'}>
+                  <p className={field.isMet ? 'text-status-success' : 'lia-text-secondary'}>
                     {field.current}/{field.required} {field.isMet ? '✓' : 'necessário'}
                   </p>
                 </TooltipContent>
@@ -119,7 +119,7 @@ export function WSIQualityBar({
 
         <div className="mt-1.5 flex items-center justify-between gap-2">
           <p 
-            className="text-micro text-gray-600 truncate"
+            className="text-micro lia-text-base truncate"
            
           >
             {summaryText}
