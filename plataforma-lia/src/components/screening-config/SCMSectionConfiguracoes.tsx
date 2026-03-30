@@ -1,0 +1,548 @@
+"use client"
+
+import React from "react"
+import { cn } from "@/lib/utils"
+import { SCREENING_STATUS_LABELS, type ScreeningStatus } from "@/types/screening"
+import { Card, CardContent } from "@/components/ui/card"
+import { approvalPresetToLimit } from '@/hooks/useScreeningConfig'
+import {
+  AlertCircle, AlertTriangle, Calendar, CalendarCheck,
+  CheckCircle, Clock, Globe, MessageSquare, Pause, Phone, Play, ShieldAlert
+} from "lucide-react"
+import type { useScreeningConfigManagerCore } from "./hooks/useScreeningConfigManagerCore"
+
+type Props = ReturnType<typeof useScreeningConfigManagerCore>
+
+export function SCMSectionConfiguracoes({
+  job, onJobUpdate,
+  screeningConfig,
+  isEditingScreeningConfig,
+  editChannels, setEditChannels,
+  editMinScorePreset, setEditMinScorePreset,
+  editTimeoutHours, setEditTimeoutHours,
+  editMaxRetries, setEditMaxRetries,
+  editAutoApprovalPreset, setEditAutoApprovalPreset,
+  editSchedulingEnabled, setEditSchedulingEnabled,
+  editSchedulingMinScorePreset, setEditSchedulingMinScorePreset,
+  editCalendarProvider, setEditCalendarProvider,
+  editAvailableHours, setEditAvailableHours,
+  editAvailableHoursInherited, setEditAvailableHoursInherited,
+  editInterviewDuration, setEditInterviewDuration,
+  setShowScreeningToggleConfirm,
+}: Props) {
+  const statusValue = (job.screeningStatus || 'not_configured') as ScreeningStatus
+
+  return (
+    <Card className="border border-lia-border-subtle dark:border-lia-border-subtle">
+      {!isEditingScreeningConfig && (
+        <CardContent className="p-4">
+          <div className="space-y-4">
+            {/* Status Row */}
+            <div className="px-3 py-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50/50 dark:bg-lia-bg-secondary/30">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center ${
+                    statusValue === 'active' ? 'bg-status-success/15 dark:bg-status-success/30' :
+                    statusValue === 'paused' ? 'bg-status-warning/15 dark:bg-status-warning/30' :
+                    statusValue === 'completed' ? 'bg-wedo-cyan/15' :
+                    'bg-gray-100 dark:bg-lia-bg-secondary'
+                  }`}>
+                    {statusValue === 'active' && <Play className="w-3.5 h-3.5 text-status-success" />}
+                    {statusValue === 'paused' && <Pause className="w-3.5 h-3.5 text-status-warning" />}
+                    {statusValue === 'completed' && <CheckCircle className="w-3.5 h-3.5 text-wedo-cyan-dark" />}
+                    {statusValue === 'not_started' && <Clock className="w-3.5 h-3.5 lia-text-secondary" />}
+                    {statusValue === 'not_configured' && <AlertCircle className="w-3.5 h-3.5 lia-text-secondary" />}
+                  </div>
+                  <div>
+                    <span className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">Status da Triagem</span>
+                    <span className={`ml-2 text-micro font-medium px-2 py-0.5 rounded-full ${
+                      statusValue === 'active' ? 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success' :
+                      statusValue === 'paused' ? 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning' :
+                      statusValue === 'completed' ? 'bg-wedo-cyan/15 text-wedo-cyan-dark dark:text-wedo-cyan-dark' :
+                      statusValue === 'not_started' ? 'bg-gray-200 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary' :
+                      'bg-gray-100 text-lia-text-tertiary dark:bg-lia-bg-secondary'
+                    }`}>
+                      {SCREENING_STATUS_LABELS[statusValue]}
+                    </span>
+                  </div>
+                </div>
+                {(job.screeningStatus === 'not_configured' || job.screeningStatus === 'completed') ? null : (
+                  <div className="flex items-center gap-2.5 opacity-50 cursor-not-allowed" title="Clique em Editar Configurações para alterar">
+                    <span className="text-micro text-lia-text-disabled">{job.screeningStatus === 'active' ? 'Ativa' : 'Inativa'}</span>
+                    <div className={`relative inline-flex h-5 w-9 items-center rounded-full ${job.screeningStatus === 'active' ? 'bg-status-success' : 'bg-gray-200 dark:bg-lia-bg-elevated'}`}>
+                      <span className="inline-block h-3.5 w-3.5 transform rounded-full bg-lia-bg-secondary" style={{transform: job.screeningStatus === 'active' ? 'translateX(17px)' : 'translateX(2px)'}} />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Channels preview */}
+            <div>
+              <h3 className="text-xs font-semibold text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Canais</h3>
+              <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md divide-y divide-gray-100 dark:divide-gray-700">
+                {[
+                  { key: 'whatsapp', label: 'WhatsApp', icon: MessageSquare, enabled: screeningConfig?.channels?.whatsapp?.enabled ?? true },
+                  { key: 'chat_web', label: 'Chat Web', icon: Globe, enabled: screeningConfig?.channels?.chat_web?.enabled ?? true },
+                  { key: 'phone', label: 'Ligação', icon: Phone, enabled: screeningConfig?.channels?.phone?.enabled ?? false },
+                ].map((ch) => {
+                  const ChIcon = ch.icon
+                  return (
+                    <div key={ch.key} className="flex items-center justify-between px-3 py-2">
+                      <div className="flex items-center gap-2">
+                        <ChIcon className="w-3.5 h-3.5 text-lia-text-disabled" />
+                        <span className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary">{ch.label}</span>
+                        {ch.key === 'phone' && !ch.enabled && <span className="text-micro text-lia-text-disabled">(Integração pendente)</span>}
+                      </div>
+                      <div className={`relative inline-flex h-5 w-9 items-center rounded-full ${ch.enabled ? 'bg-gray-400' : 'bg-gray-200 dark:bg-lia-bg-elevated'}`}>
+                        <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white dark:bg-lia-bg-primary ${ch.enabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Settings preview */}
+            <div>
+              <h3 className="text-xs font-semibold text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Configurações</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Score Mínimo Aprovação (WSI)</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { key: 'rigorous', label: 'Rigoroso', score: '≥ 4.2/5.0', desc: 'Só aprovados automaticamente' },
+                      { key: 'recommended', label: 'Recomendado', score: '≥ 3.8/5.0', desc: 'Inclui revisão manual' },
+                      { key: 'flexible', label: 'Flexível', score: '≥ 3.0/5.0', desc: 'Todos acima do corte' },
+                    ].map((preset) => {
+                      const isSelected = (screeningConfig?.settings?.min_score_preset ?? 'recommended') === preset.key
+                      return (
+                        <div key={preset.key} className={`p-2 rounded-md border text-left ${isSelected ? 'border-lia-border-default bg-gray-50/50' : 'border-lia-border-subtle bg-white dark:border-lia-border-subtle dark:bg-lia-bg-secondary/50'}`}>
+                          <div className="flex items-center justify-between mb-0.5">
+                            <span className={`text-micro font-semibold ${isSelected ? 'text-lia-text-secondary' : 'text-lia-text-disabled'}`}>{preset.label}</span>
+                            {isSelected && <CheckCircle className="w-3 h-3 text-lia-text-disabled" />}
+                          </div>
+                          <span className={`text-micro font-medium block ${isSelected ? 'text-lia-text-secondary' : 'text-lia-text-disabled'}`}>{preset.score}</span>
+                          <span className="text-micro text-lia-text-disabled block mt-0.5">{preset.desc}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Timeout Resposta</label>
+                    <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary opacity-60">
+                      {screeningConfig?.settings?.response_timeout_hours ?? 48}h
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Re-tentativas</label>
+                    <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary opacity-60">
+                      {screeningConfig?.settings?.max_retries ?? 2}x
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Deadline preview */}
+            <div className="pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
+              <div className="flex items-center gap-2 mb-2">
+                <Calendar className="w-3.5 h-3.5 text-lia-text-disabled" />
+                <span className="text-xs font-semibold text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif]">Prazo da Triagem</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Data Limite</label>
+                  <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary opacity-60">
+                    {job.deadlineScreening ? new Date(job.deadlineScreening).toLocaleDateString('pt-BR') : 'Não definido'}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Dias Restantes</label>
+                  <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary opacity-60">
+                    {job.deadlineScreening ? (() => { const days = Math.ceil((new Date(job.deadlineScreening).getTime() - Date.now()) / (1000*60*60*24)); return days > 0 ? `${days} dias` : days === 0 ? 'Hoje' : 'Expirado' })() : '—'}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Controle de Paralização preview */}
+            <div className="pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
+              <div className="flex items-center gap-2 mb-2">
+                <ShieldAlert className="w-3.5 h-3.5 text-lia-text-disabled" />
+                <span className="text-xs font-semibold text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif]">Controle de Paralização</span>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Limite de aprovações automáticas</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { key: 'conservative' as const, label: 'Conservador', limit: '5 aprovações', desc: 'Revisão humana frequente' },
+                      { key: 'recommended' as const, label: 'Recomendado', limit: '10 aprovações', desc: 'Equilíbrio automação/supervisão' },
+                      { key: 'autonomous' as const, label: 'Autônomo', limit: '25 aprovações', desc: 'Máxima automação' },
+                    ].map((preset) => {
+                      const currentPreset = screeningConfig?.settings?.auto_approval_preset ?? 'recommended'
+                      const isSelected = currentPreset === preset.key
+                      return (
+                        <div key={preset.key} className={`p-2 rounded-md border text-left ${isSelected ? 'border-lia-border-default bg-gray-50/50' : 'border-lia-border-subtle bg-white dark:border-lia-border-subtle dark:bg-lia-bg-secondary/50'}`}>
+                          <div className="flex items-center justify-between mb-0.5">
+                            <span className={`text-micro font-semibold ${isSelected ? 'text-lia-text-secondary' : 'text-lia-text-disabled'}`}>{preset.label}</span>
+                            {isSelected && <CheckCircle className="w-3 h-3 text-lia-text-disabled" />}
+                          </div>
+                          <span className={`text-micro font-medium block ${isSelected ? 'text-lia-text-secondary' : 'text-lia-text-disabled'}`}>{preset.limit}</span>
+                          <span className="text-micro text-lia-text-disabled block mt-0.5">{preset.desc}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+                {(screeningConfig?.settings?.auto_approvals_count ?? 0) > 0 && (
+                  <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-micro text-lia-text-disabled">Progresso atual</span>
+                      <span className="text-micro font-medium text-lia-text-tertiary dark:text-lia-text-tertiary">
+                        {screeningConfig?.settings?.auto_approvals_count ?? 0}/{screeningConfig?.settings?.auto_approval_limit ?? 10} aprovações
+                      </span>
+                    </div>
+                    <div className="w-full h-1.5 bg-gray-100 dark:bg-lia-bg-elevated rounded-full mt-1">
+                      <div
+                        className={`h-1.5 rounded-full transition-[width,height] ${(screeningConfig?.settings?.auto_approvals_count ?? 0) >= (screeningConfig?.settings?.auto_approval_limit ?? 10) ? 'bg-status-warning' : 'bg-gray-300'}`}
+                        style={{width: `${Math.min(100, ((screeningConfig?.settings?.auto_approvals_count ?? 0) / (screeningConfig?.settings?.auto_approval_limit ?? 10)) * 100)}%`}}
+                      />
+                    </div>
+                  </div>
+                )}
+                {screeningConfig?.settings?.auto_approval_paused && (
+                  <div className="flex items-center gap-1.5 px-2 py-1.5 bg-status-warning/10/50 dark:bg-status-warning/10 rounded-md text-status-warning dark:text-status-warning">
+                    <AlertTriangle className="w-3 h-3" />
+                    <span className="text-micro font-medium">Triagem pausada — limite atingido, aguardando revisão humana</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Agendamento Automático preview */}
+            <div className="pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <CalendarCheck className="w-3.5 h-3.5 text-lia-text-disabled" />
+                  <span className="text-xs font-semibold text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif]">Agendamento Automático</span>
+                </div>
+                <div className={`relative inline-flex h-5 w-9 items-center rounded-full ${(screeningConfig?.scheduling?.auto_enabled ?? true) ? 'bg-gray-400' : 'bg-gray-200 dark:bg-lia-bg-elevated'}`}>
+                  <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white dark:bg-lia-bg-primary ${(screeningConfig?.scheduling?.auto_enabled ?? true) ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                </div>
+              </div>
+              {(screeningConfig?.scheduling?.auto_enabled ?? true) && (
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Score Mínimo para Agendamento (WSI)</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { key: 'rigorous', label: 'Rigoroso', score: '≥ 4.2/5.0', desc: 'Só aprovados automaticamente' },
+                        { key: 'recommended', label: 'Recomendado', score: '≥ 3.8/5.0', desc: 'Inclui revisão manual' },
+                        { key: 'flexible', label: 'Flexível', score: '≥ 3.0/5.0', desc: 'Todos acima do corte' },
+                      ].map((preset) => {
+                        const isSelected = (screeningConfig?.scheduling?.min_score_for_auto_preset ?? 'recommended') === preset.key
+                        return (
+                          <div key={preset.key} className={`p-2 rounded-md border text-left ${isSelected ? 'border-lia-border-default bg-gray-50/50' : 'border-lia-border-subtle bg-white dark:border-lia-border-subtle dark:bg-lia-bg-secondary/50'}`}>
+                            <div className="flex items-center justify-between mb-0.5">
+                              <span className={`text-micro font-semibold ${isSelected ? 'text-lia-text-secondary' : 'text-lia-text-disabled'}`}>{preset.label}</span>
+                              {isSelected && <CheckCircle className="w-3 h-3 text-lia-text-disabled" />}
+                            </div>
+                            <span className={`text-micro font-medium block ${isSelected ? 'text-lia-text-secondary' : 'text-lia-text-disabled'}`}>{preset.score}</span>
+                            <span className="text-micro text-lia-text-disabled block mt-0.5">{preset.desc}</span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Calendário</label>
+                      <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary opacity-60">
+                        {screeningConfig?.scheduling?.calendar_provider || 'Microsoft'}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Horários</label>
+                      <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary opacity-60">
+                        {screeningConfig?.scheduling?.available_hours || '9h-18h'}
+                      </div>
+                      {(screeningConfig?.scheduling?.available_hours_inherited ?? true) && (
+                        <span className="text-micro text-lia-text-disabled mt-0.5 block">Conforme config. da empresa</span>
+                      )}
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Duração</label>
+                      <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary opacity-60">
+                        {screeningConfig?.scheduling?.interview_duration_min ?? 60}min
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      )}
+
+      {isEditingScreeningConfig && (
+        <CardContent className="p-4">
+          <div className="space-y-4">
+            {/* Status editing */}
+            <div className="px-3 py-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center ${
+                    statusValue === 'active' ? 'bg-status-success/15 dark:bg-status-success/30' :
+                    statusValue === 'paused' ? 'bg-status-warning/15 dark:bg-status-warning/30' :
+                    statusValue === 'completed' ? 'bg-wedo-cyan/15' :
+                    'bg-gray-100 dark:bg-lia-bg-secondary'
+                  }`}>
+                    {statusValue === 'active' && <Play className="w-3.5 h-3.5 text-status-success" />}
+                    {statusValue === 'paused' && <Pause className="w-3.5 h-3.5 text-status-warning" />}
+                    {statusValue === 'completed' && <CheckCircle className="w-3.5 h-3.5 text-wedo-cyan-dark" />}
+                    {statusValue === 'not_started' && <Clock className="w-3.5 h-3.5 lia-text-secondary" />}
+                    {statusValue === 'not_configured' && <AlertCircle className="w-3.5 h-3.5 lia-text-secondary" />}
+                  </div>
+                  <div>
+                    <span className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">Status da Triagem</span>
+                    <span className={`ml-2 text-micro font-medium px-2 py-0.5 rounded-full ${
+                      statusValue === 'active' ? 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success' :
+                      statusValue === 'paused' ? 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning' :
+                      statusValue === 'completed' ? 'bg-wedo-cyan/15 text-wedo-cyan-dark dark:text-wedo-cyan-dark' :
+                      statusValue === 'not_started' ? 'bg-gray-200 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary' :
+                      'bg-gray-100 text-lia-text-tertiary dark:bg-lia-bg-secondary'
+                    }`}>
+                      {SCREENING_STATUS_LABELS[statusValue]}
+                    </span>
+                  </div>
+                </div>
+                {(job.screeningStatus === 'not_configured' || job.screeningStatus === 'completed') ? null : (
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary">{job.screeningStatus === 'active' ? 'Ativa' : 'Inativa'}</span>
+                    <button
+                      onClick={() => setShowScreeningToggleConfirm(job.screeningStatus === 'active' ? 'pause' : 'activate')}
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors motion-reduce:transition-none duration-200 ${job.screeningStatus === 'active' ? 'bg-status-success' : 'bg-gray-300'}`}
+                    >
+                      <span className="inline-block h-3.5 w-3.5 transform rounded-full bg-lia-bg-secondary transition-transform motion-reduce:transition-none duration-200" style={{transform: job.screeningStatus === 'active' ? 'translateX(17px)' : 'translateX(2px)'}} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Channels editing */}
+            <div>
+              <h3 className="text-xs font-semibold text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Canais</h3>
+              <div className="border border-lia-border-subtle dark:border-lia-border-default rounded-md divide-y divide-gray-200 dark:divide-gray-600">
+                {([
+                  { key: 'whatsapp' as const, label: 'WhatsApp', icon: MessageSquare },
+                  { key: 'chat_web' as const, label: 'Chat Web', icon: Globe },
+                  { key: 'phone' as const, label: 'Ligação', icon: Phone },
+                ] as const).map((ch) => {
+                  const ChIcon = ch.icon
+                  const enabled = editChannels[ch.key]
+                  return (
+                    <div key={ch.key} className="flex items-center justify-between px-3 py-2">
+                      <div className="flex items-center gap-2">
+                        <ChIcon className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                        <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">{ch.label}</span>
+                        {ch.key === 'phone' && !enabled && <span className="text-micro text-lia-text-disabled">(Integração pendente)</span>}
+                      </div>
+                      <button onClick={() => setEditChannels(prev => ({ ...prev, [ch.key]: !prev[ch.key] }))}
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors motion-reduce:transition-none ${enabled ? 'bg-gray-900' : 'bg-gray-300'}`}>
+                        <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white dark:bg-lia-bg-primary transition-transform motion-reduce:transition-none ${enabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Settings editing */}
+            <div>
+              <h3 className="text-xs font-semibold text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Configurações</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Score Mínimo Aprovação (WSI)</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {([
+                      { key: 'rigorous' as const, label: 'Rigoroso', score: '≥ 4.2/5.0', desc: 'Só aprovados automaticamente' },
+                      { key: 'recommended' as const, label: 'Recomendado', score: '≥ 3.8/5.0', desc: 'Inclui revisão manual' },
+                      { key: 'flexible' as const, label: 'Flexível', score: '≥ 3.0/5.0', desc: 'Todos acima do corte' },
+                    ] as const).map((preset) => {
+                      const isSelected = editMinScorePreset === preset.key
+                      return (
+                        <button key={preset.key} onClick={() => setEditMinScorePreset(preset.key)}
+                          className={`p-2 rounded-md border text-left transition-colors motion-reduce:transition-none ${isSelected ? 'border-gray-900 bg-gray-50 ring-1 ring-gray-900 dark:ring-gray-300' : 'border-lia-border-subtle bg-white hover:border-lia-border-default dark:border-lia-border-default dark:bg-lia-bg-secondary dark:hover:border-gray-500'}`}>
+                          <div className="flex items-center justify-between mb-0.5">
+                            <span className={`text-micro font-semibold ${isSelected ? 'text-lia-text-primary' : 'text-lia-text-secondary dark:text-lia-text-tertiary'}`}>{preset.label}</span>
+                            {isSelected && <CheckCircle className="w-3 h-3 text-lia-text-primary dark:text-lia-text-secondary" />}
+                          </div>
+                          <span className="text-micro font-medium text-lia-text-primary dark:text-lia-text-primary block">{preset.score}</span>
+                          <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary block mt-0.5">{preset.desc}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Timeout Resposta</label>
+                    <select value={editTimeoutHours} onChange={(e) => setEditTimeoutHours(Number(e.target.value))} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-secondary focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors motion-reduce:transition-none">
+                      {[12, 24, 48, 72].map(h => (<option key={h} value={h}>{h}h</option>))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Re-tentativas</label>
+                    <select value={editMaxRetries} onChange={(e) => setEditMaxRetries(Number(e.target.value))} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-secondary focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors motion-reduce:transition-none">
+                      {[1, 2, 3, 4, 5].map(n => (<option key={n} value={n}>{n}x</option>))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Controle de Paralização editing */}
+            <div className="pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
+              <div className="flex items-center gap-2 mb-2">
+                <ShieldAlert className="w-3.5 h-3.5 text-lia-text-tertiary dark:text-lia-text-tertiary" />
+                <span className="text-xs font-semibold text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif]">Controle de Paralização</span>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Limite de aprovações automáticas</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {([
+                      { key: 'conservative' as const, label: 'Conservador', limit: '5 aprovações', desc: 'Revisão humana frequente' },
+                      { key: 'recommended' as const, label: 'Recomendado', limit: '10 aprovações', desc: 'Equilíbrio automação/supervisão' },
+                      { key: 'autonomous' as const, label: 'Autônomo', limit: '25 aprovações', desc: 'Máxima automação' },
+                    ] as const).map((preset) => {
+                      const isSelected = editAutoApprovalPreset === preset.key
+                      return (
+                        <button key={preset.key} onClick={() => setEditAutoApprovalPreset(preset.key)}
+                          className={`p-2 rounded-md border text-left transition-colors motion-reduce:transition-none ${isSelected ? 'border-gray-900 bg-gray-50 ring-1 ring-gray-900 dark:ring-gray-300' : 'border-lia-border-subtle bg-white hover:border-lia-border-default dark:border-lia-border-default dark:bg-lia-bg-secondary dark:hover:border-gray-500'}`}>
+                          <div className="flex items-center justify-between mb-0.5">
+                            <span className={`text-micro font-semibold ${isSelected ? 'text-lia-text-primary' : 'text-lia-text-secondary dark:text-lia-text-tertiary'}`}>{preset.label}</span>
+                            {isSelected && <CheckCircle className="w-3 h-3 text-lia-text-primary dark:text-lia-text-secondary" />}
+                          </div>
+                          <span className="text-micro font-medium text-lia-text-primary dark:text-lia-text-primary block">{preset.limit}</span>
+                          <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary block mt-0.5">{preset.desc}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+                {(screeningConfig?.settings?.auto_approvals_count ?? 0) > 0 && (
+                  <div className="border border-lia-border-subtle dark:border-lia-border-default rounded-md p-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary">Progresso atual</span>
+                      <span className="text-micro font-medium text-lia-text-secondary dark:text-lia-text-secondary">
+                        {screeningConfig?.settings?.auto_approvals_count ?? 0}/{approvalPresetToLimit(editAutoApprovalPreset)} aprovações
+                      </span>
+                    </div>
+                    <div className="w-full h-1.5 bg-gray-100 dark:bg-lia-bg-elevated rounded-full mt-1">
+                      <div
+                        className={`h-1.5 rounded-full transition-[width,height] ${(screeningConfig?.settings?.auto_approvals_count ?? 0) >= approvalPresetToLimit(editAutoApprovalPreset) ? 'bg-status-warning' : 'bg-gray-400'}`}
+                        style={{width: `${Math.min(100, ((screeningConfig?.settings?.auto_approvals_count ?? 0) / approvalPresetToLimit(editAutoApprovalPreset)) * 100)}%`}}
+                      />
+                    </div>
+                  </div>
+                )}
+                {screeningConfig?.settings?.auto_approval_paused && (
+                  <div className="flex items-center gap-1.5 px-2 py-1.5 bg-status-warning/10 dark:bg-status-warning/20 rounded-md text-status-warning dark:text-status-warning">
+                    <AlertTriangle className="w-3 h-3" />
+                    <span className="text-micro font-medium">Triagem pausada — limite atingido</span>
+                    <button onClick={() => {}} className="ml-auto text-micro font-medium text-lia-text-secondary dark:text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse underline">Retomar</button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Prazo da Triagem editing */}
+            <div className="pt-3 border-t border-lia-border-subtle dark:border-lia-border-default">
+              <div className="flex items-center gap-2 mb-2">
+                <Calendar className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                <span className="text-xs font-semibold text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif]">Prazo da Triagem</span>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Data Limite</label>
+                <input
+                  type="date"
+                  value={job.deadlineScreening ? new Date(job.deadlineScreening).toISOString().split('T')[0] : ''}
+                  onChange={(e) => onJobUpdate?.({ ...job, deadlineScreening: e.target.value || null })}
+                  className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary"
+                />
+              </div>
+            </div>
+
+            {/* Agendamento editing */}
+            <div className="pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <CalendarCheck className="w-3.5 h-3.5 text-lia-text-tertiary dark:text-lia-text-tertiary" />
+                  <span className="text-xs font-semibold text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif]">Agendamento Automático</span>
+                </div>
+                <button onClick={() => setEditSchedulingEnabled(!editSchedulingEnabled)}
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors motion-reduce:transition-none ${editSchedulingEnabled ? 'bg-gray-900' : 'bg-gray-300'}`}>
+                  <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white dark:bg-lia-bg-primary transition-transform motion-reduce:transition-none ${editSchedulingEnabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                </button>
+              </div>
+              {editSchedulingEnabled && (
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Score Mínimo para Agendamento (WSI)</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {([
+                        { key: 'rigorous' as const, label: 'Rigoroso', score: '≥ 4.2/5.0', desc: 'Só aprovados automaticamente' },
+                        { key: 'recommended' as const, label: 'Recomendado', score: '≥ 3.8/5.0', desc: 'Inclui revisão manual' },
+                        { key: 'flexible' as const, label: 'Flexível', score: '≥ 3.0/5.0', desc: 'Todos acima do corte' },
+                      ] as const).map((preset) => {
+                        const isSelected = editSchedulingMinScorePreset === preset.key
+                        return (
+                          <button key={preset.key} onClick={() => setEditSchedulingMinScorePreset(preset.key)}
+                            className={`p-2 rounded-md border text-left transition-colors motion-reduce:transition-none ${isSelected ? 'border-gray-900 bg-gray-50 ring-1 ring-gray-900 dark:ring-gray-300' : 'border-lia-border-subtle bg-white hover:border-lia-border-default dark:border-lia-border-default dark:bg-lia-bg-secondary dark:hover:border-gray-500'}`}>
+                            <div className="flex items-center justify-between mb-0.5">
+                              <span className={`text-micro font-semibold ${isSelected ? 'text-lia-text-primary' : 'text-lia-text-secondary dark:text-lia-text-tertiary'}`}>{preset.label}</span>
+                              {isSelected && <CheckCircle className="w-3 h-3 text-lia-text-primary dark:text-lia-text-secondary" />}
+                            </div>
+                            <span className="text-micro font-medium text-lia-text-primary dark:text-lia-text-primary block">{preset.score}</span>
+                            <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary block mt-0.5">{preset.desc}</span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Calendário</label>
+                      <select value={editCalendarProvider} onChange={(e) => setEditCalendarProvider(e.target.value)} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-secondary focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors motion-reduce:transition-none">
+                        <option value="Microsoft">Microsoft</option>
+                        <option value="Google">Google</option>
+                        <option value="Outlook">Outlook</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Horários</label>
+                      <input type="text" value={editAvailableHours} onChange={(e) => { setEditAvailableHours(e.target.value); setEditAvailableHoursInherited(false) }} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-secondary focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors motion-reduce:transition-none" />
+                      {editAvailableHoursInherited && <span className="text-micro text-lia-text-disabled mt-0.5 block">Conforme config. da empresa</span>}
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Duração</label>
+                      <select value={editInterviewDuration} onChange={(e) => setEditInterviewDuration(Number(e.target.value))} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-secondary focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors motion-reduce:transition-none">
+                        {[30, 45, 60, 90].map(d => (<option key={d} value={d}>{d}min</option>))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      )}
+    </Card>
+  )
+}
