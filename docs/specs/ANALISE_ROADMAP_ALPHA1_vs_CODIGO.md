@@ -1,8 +1,110 @@
 # Análise Profunda: Roadmap Alpha 1 vs. Código Existente
 
 **Data:** 30/03/2026  
+**Versão:** 2.0 — Mapa Completo com Camadas de Inteligência  
 **Escopo:** Cruzamento do Fluxo Alpha 1 (v2) com a implementação real no Replit  
-**Objetivo:** Identificar gaps, mapear agentes/domínios/serviços/tools/camadas de compliance, e gerar mapa de prioridades de construção
+**Objetivo:** Mapear TODAS as dimensões — agentes, domínios, serviços, tools, 6 camadas de compliance, 11 camadas de inteligência — por etapa do fluxo Alpha 1
+
+---
+
+## 0. DIAGRAMA DE JORNADA VISUAL — FLUXO ALPHA 1
+
+```
+╔══════════════════════════════════════════════════════════════════════════════════╗
+║                        JORNADA ALPHA 1 — 9 ETAPAS                              ║
+╠══════════════════════════════════════════════════════════════════════════════════╣
+║                                                                                ║
+║  ┌─────────┐    ┌─────────────┐    ┌──────────────┐    ┌─────────────────┐     ║
+║  │ ETAPA 1 │───►│  ETAPA 2    │───►│  ETAPA 3     │───►│    ETAPA 4      │     ║
+║  │  LOGIN  │    │ EDITAR VAGA │    │ ROTEIRO WSI  │    │BUSCAR CANDIDATOS│     ║
+║  │         │    │ (ATS Import)│    │ (Perguntas)  │    │(Funil Talentos) │     ║
+║  └─────────┘    └─────────────┘    └──────────────┘    └────────┬────────┘     ║
+║       │              │                    │                      │              ║
+║    [Auth]        [Ag.8 ATS]          [Ag.4 WSI]          [Ag.2 Sourcing]       ║
+║    [JWT+SSO]     [FG L1-L2]          [FG L1-L2]         [Ag.3 Triagem]        ║
+║                  [Template           [Fact-Check]        [FG L1-L2-L3]        ║
+║                   Learning]          [A/B Testing]       [Semantic Search]     ║
+║                                                          [Score Norm.]        ║
+║                                                          [Predictive]         ║
+║                                                                                ║
+║  ┌──────────────┐    ┌────────────────┐    ┌──────────────────┐                ║
+║  │   ETAPA 5    │───►│    ETAPA 6     │───►│     ETAPA 7      │                ║
+║  │APROVAR MAPE- │    │ CONTATO EMAIL  │    │  TRIAGEM WSI     │                ║
+║  │ADOS (Gate 1) │    │ + FOLLOW-UP    │    │ (Chat/WhatsApp)  │                ║
+║  └──────┬───────┘    └────────────────┘    └────────┬─────────┘                ║
+║         │                  │                        │                          ║
+║    [Ag.0 Orch.]       [Ag.0 Orch.]           [Ag.4 Entrev.]                   ║
+║    [Ag.7 Feedback]    [Rate Limiting]        [Ag.5 Avaliador]                 ║
+║    [Policy Engine]    [LGPD Opt-out]         [FG L1-L2-L3]                    ║
+║    [Calibration]      [Scheduler ⚠️]         [Voice Analysis]                 ║
+║    [Learning Loop]                           [Conv. Memory]                   ║
+║                                              [Scheduler ⚠️]                   ║
+║                                              [Chat Web ⚠️]                    ║
+║                                                                                ║
+║  ┌──────────────────┐    ┌────────────────────┐                                ║
+║  │     ETAPA 8      │───►│      ETAPA 9       │                                ║
+║  │ APROVAR TRIADOS  │    │ AGENDAR ENTREVISTA  │                                ║
+║  │   (Gate 2)       │    │ + FEEDBACK          │                                ║
+║  └──────────────────┘    └────────────────────┘                                ║
+║         │                        │                                             ║
+║    [Ag.7 Feedback]          [Ag.6 Scheduling]                                  ║
+║    [Policy Engine]          [Ag.7 Feedback]                                    ║
+║    [Audit Trail]            [FG (texto)]                                      ║
+║    [Routing Learning]       [Embedding Svc]                                   ║
+║                                                                                ║
+║  ⚠️ = GAP BLOQUEANTE (não existe no código)                                    ║
+╚══════════════════════════════════════════════════════════════════════════════════╝
+```
+
+### Camadas Transversais (ativas em TODOS os nós do grafo):
+
+```
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                    6 CAMADAS DE COMPLIANCE                                      │
+├──────────────────────────────────────────────────────────────────────────────────┤
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐                 │
+│  │ FairnessGuard   │  │ PII Masking     │  │ Fact-Checker    │                 │
+│  │ L1: 350 patterns│  │ L1: Regex       │  │ Salary/Count/   │                 │
+│  │ L2: Proxy terms │  │ L2: Spacy NER   │  │ Percentage/Date │                 │
+│  │ L3: Semantic    │  │ L3: Contextual  │  │ + Top-N claims  │                 │
+│  │ (13 categorias) │  │ L4: Presidio    │  │                 │                 │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘                 │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐                 │
+│  │ Audit Trail     │  │ Policy Engine   │  │ LGPD/Consent    │                 │
+│  │ SOX-compliant   │  │ Business Rules  │  │ DSR/Anonymize   │                 │
+│  │ 730-1825d ret.  │  │ Rate Limiting   │  │ Opt-out/Delete  │                 │
+│  │ Human Override  │  │ Escalation      │  │ PII Export      │                 │
+│  │ tracking        │  │ Sector Rules    │  │                 │                 │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘                 │
+└──────────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                    11 CAMADAS DE INTELIGÊNCIA                                   │
+├──────────────────────────────────────────────────────────────────────────────────┤
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐           │
+│  │Learning Loop │ │ A/B Testing  │ │Routing Learn.│ │Template Learn│           │
+│  │Silent capture│ │z-score/p-val │ │0.8x-1.2x adj│ │Auto after 3  │           │
+│  │accept/modify/│ │95% CI, >5%   │ │per domain    │ │similar jobs  │           │
+│  │reject/ignore │ │improvement   │ │              │ │              │           │
+│  └──────────────┘ └──────────────┘ └──────────────┘ └──────────────┘           │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐           │
+│  │Calibration   │ │Score Normal. │ │Predictive    │ │Model Drift   │           │
+│  │Explicit +    │ │Difficulty    │ │Time-to-fill  │ │4 dimensions: │           │
+│  │implicit      │ │coefficient   │ │Optimal salary│ │Score/Approval│           │
+│  │feedback      │ │per version   │ │Skill success │ │Cost/Latency  │           │
+│  └──────────────┘ └──────────────┘ └──────────────┘ └──────────────┘           │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐                            │
+│  │Conv. Memory  │ │Semantic Srch │ │Voice Analysis│                            │
+│  │Entity track  │ │Gemini 768-dim│ │STT: Deepgram │                            │
+│  │Pronoun resol.│ │Redis cache   │ │TTS: OpenAI   │                            │
+│  │Session state │ │Domain expand │ │Multi-provider│                            │
+│  └──────────────┘ └──────────────┘ └──────────────┘                            │
+│                                                                                │
+│  + Embedding Service (Gemini text-embedding-004, 768-dim vectors)              │
+│  + Long-Term Memory (episode store + LLM compression after 30d)                │
+│  + Learning Snapshot (pre-learning rollback points)                             │
+└──────────────────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -10,9 +112,9 @@
 
 ### 1.1 Resumo Executivo
 
-O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios, 30+ tools registradas, 6+ agentes ReAct migrados para LangGraph, e camadas de compliance (FairnessGuard, PII Masking, Fact-Checker, Audit Service) implementadas. O frontend (`plataforma-lia`) tem integração real via proxy Next.js → FastAPI.
+O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios, 30+ tools registradas, 6+ agentes ReAct migrados para LangGraph, 6 camadas de compliance (FairnessGuard, PII Masking, Fact-Checker, Audit, Policy Engine, LGPD) e **11 camadas de inteligência** (Learning Loop, A/B Testing, Routing Adaptativo, Template Learning, Calibration, Score Normalization, Predictive Analytics, Model Drift, Conversation Memory, Semantic Search, Voice Analysis) implementadas. O frontend (`plataforma-lia`) tem integração real via proxy Next.js → FastAPI.
 
-**Porém, a distância entre "código existente" e "MVP funcional Alpha 1" está em 3 eixos:**
+**A distância entre "código existente" e "MVP funcional Alpha 1" está em 3 eixos:**
 
 1. **Integração ponta-a-ponta** — Muitos serviços existem isolados mas não estão conectados no fluxo completo
 2. **Infraestrutura externa** — ATS real (Gupy/Pandapé), Twilio WhatsApp, Resend/SendGrid, Apify, Microsoft Teams dependem de credenciais e configuração de produção
@@ -20,68 +122,111 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 
 ---
 
-## 2. MAPA COMPLETO: ETAPAS DO ALPHA 1 × AGENTES × DOMÍNIOS × SERVIÇOS × TOOLS × CAMADAS
+## 2. TABELA MESTRE: ETAPAS × AGENTES × COMPLIANCE × INTELIGÊNCIA
 
 ### ETAPA 1: LOGIN
 
-| Dimensão | Componente | Status | Localização |
-|----------|-----------|--------|-------------|
+| Dimensão | Componente | Status | Arquivo Replit |
+|----------|-----------|--------|----------------|
 | **Domínio** | Auth | Implementado | `app/api/v1/auth.py` |
 | **Serviço** | AuthService (JWT + WorkOS SSO) | Implementado | `app/services/auth_service.py` |
 | **Tool** | — (não é agente) | N/A | — |
 | **Frontend** | Login page + auth hooks | Implementado | `src/app/(auth)/login/` |
-| **Camadas Ativas** | | | |
-| ↳ PII Masking | Logs de login mascarados | Ativo | `PIIMaskingFilter` global |
-| ↳ Rate Limiting | Tentativas de login | A CONFIGURAR | `rate_limiter.py` |
-| ↳ Audit | Login events | A CONFIGURAR | Precisa log de auth events |
+| **COMPLIANCE** | | | |
+| ↳ FairnessGuard | N/A nesta etapa | — | — |
+| ↳ PII Masking | Logs de login mascarados | ATIVO | `PIIMaskingFilter` global |
+| ↳ Fact-Checker | N/A nesta etapa | — | — |
+| ↳ Audit Trail | Login events | A CONFIGURAR | Precisa log de auth events |
+| ↳ Policy Engine | Rate limiting de tentativas | A CONFIGURAR | `rate_limiter.py` |
+| ↳ LGPD | Cookie consent | A VERIFICAR | — |
+| **INTELIGÊNCIA** | | | |
+| ↳ Learning Loop | N/A | — | — |
+| ↳ A/B Testing | N/A | — | — |
+| ↳ Routing Adaptativo | N/A | — | — |
+| ↳ Template Learning | N/A | — | — |
+| ↳ Calibration | N/A | — | — |
+| ↳ Score Normalization | N/A | — | — |
+| ↳ Predictive Analytics | N/A | — | — |
+| ↳ Model Drift | N/A | — | — |
+| ↳ Conv. Memory | N/A | — | — |
+| ↳ Semantic Search | N/A | — | — |
+| ↳ Voice Analysis | N/A | — | — |
 
-**Gap:** Rate limiting de login precisa ser configurado. Audit trail de autenticação precisa ser ativado.
+**Gap:** Rate limiting de login + Audit trail de autenticação precisam ser ativados.
 
 ---
 
 ### ETAPA 2: EDITAR VAGA (importada do ATS)
 
-| Dimensão | Componente | Status | Localização |
-|----------|-----------|--------|-------------|
+| Dimensão | Componente | Status | Arquivo Replit |
+|----------|-----------|--------|----------------|
 | **Agente** | Ag.8 IntegradorATS | Implementado | `app/domains/ats_integration/` |
 | **Domínio** | `ats_integration` + `job_management` | Implementado | `app/domains/` |
 | **Serviços** | ATSSyncService, GupyClient, PandapeClient | Implementado | `app/services/ats_sync_service.py` |
 | **Tools** | `sync_candidate_to_ats`, `fetch_candidate_from_ats`, `validate_ats_fields` | Registradas | `ats_integration_tool_registry.py` |
 | **Frontend** | Página de vagas + edição | Implementado | `src/app/(dashboard)/jobs/` |
-| **Camadas Ativas** | | | |
-| ↳ FairnessGuard L1 | Bloquear requisitos discriminatórios no JD | PRECISA ATIVAR | Inserir no pipeline de save do JD |
-| ↳ FairnessGuard L2 | Alertar termos implicitamente enviesados | PRECISA ATIVAR | Inserir no pipeline de save do JD |
-| ↳ PII Masking | Strip PII antes de enviar ao LLM | Ativo (global) | `strip_pii_for_llm_prompt` |
-| ↳ Audit | Log de edições de vaga | PRECISA ATIVAR | `audit_service.py` |
+| **COMPLIANCE** | | | |
+| ↳ FairnessGuard L1 | Bloquear requisitos discriminatórios no JD | PRECISA ATIVAR | `fairness_guard.py` → inserir no save JD |
+| ↳ FairnessGuard L2 | Alertar termos proxy enviesados | PRECISA ATIVAR | `fairness_guard.py` → inserir no save JD |
+| ↳ PII Masking | Strip PII antes de enviar ao LLM | ATIVO (global) | `strip_pii_for_llm_prompt` |
+| ↳ Fact-Checker | N/A (não há claims numéricas) | — | — |
+| ↳ Audit Trail | Log de edições de vaga | PRECISA ATIVAR | `audit_service.py` |
+| ↳ Policy Engine | N/A nesta etapa | — | — |
 | ↳ LGPD | Dados do ATS com consentimento | PRECISA VERIFICAR | Verificar fluxo de import |
+| **INTELIGÊNCIA** | | | |
+| ↳ Learning Loop | Captura edições do wizard (salary, skills, benefits) | ATIVO | `learning_loop_service.py` via `capture_from_wizard_update` |
+| ↳ A/B Testing | Variantes de prompt para JD generation | DISPONÍVEL | `ab_testing_service.py` — precisa criar testes |
+| ↳ Routing Adaptativo | N/A (domínio fixo: job_management) | — | — |
+| ↳ Template Learning | Aprende templates após 3 vagas similares | ATIVO | `template_learning_service.py` |
+| ↳ Calibration | N/A (sem scoring nesta etapa) | — | — |
+| ↳ Score Normalization | N/A | — | — |
+| ↳ Predictive Analytics | `predict_time_to_fill`, `predict_optimal_salary` | DISPONÍVEL | `ml/outcome_predictor.py` |
+| ↳ Model Drift | N/A | — | — |
+| ↳ Conv. Memory | Entity tracking (vaga mencionada) | ATIVO | `conversation_state.py` |
+| ↳ Semantic Search | Expansão de skills para JD | DISPONÍVEL | `semantic_search_service.py` |
+| ↳ Voice Analysis | N/A | — | — |
 
-**Gap:** O sync com ATS real depende de credenciais de produção (API keys Gupy/Pandapé). FairnessGuard precisa ser inserido como middleware no endpoint de salvar vaga.
+**Gap:** Sync com ATS real depende de credenciais de produção (API keys Gupy/Pandapé). FairnessGuard precisa virar middleware no endpoint de salvar vaga.
 
 ---
 
 ### ETAPA 3: CONFIGURAR ROTEIRO WSI
 
-| Dimensão | Componente | Status | Localização |
-|----------|-----------|--------|-------------|
+| Dimensão | Componente | Status | Arquivo Replit |
+|----------|-----------|--------|----------------|
 | **Agente** | Ag.4 EntrevistadorWSI | Implementado | `app/domains/cv_screening/` |
 | **Domínio** | `cv_screening` (WSI) + `wizard` | Implementado | `app/domains/` |
 | **Serviços** | WSIService, JDGeneratorService | Implementado | `wsi_service.py`, `jd_generator_service.py` |
 | **Tools** | `generate_screening_questions`, `analyze_jd_and_suggest_competencies` | Registradas | WSI domain tools |
 | **Frontend** | Modal WSI + Preview Vaga | Implementado | `src/components/modals/` |
-| **Camadas Ativas** | | | |
+| **COMPLIANCE** | | | |
 | ↳ FairnessGuard L1-L2 | Perguntas geradas sem viés | PRECISA ATIVAR | Pós-geração de perguntas WSI |
+| ↳ PII Masking | Strip antes de enviar JD ao LLM | ATIVO | `strip_pii_for_llm_prompt` |
 | ↳ Fact-Checker | Validar claims nas perguntas | PRECISA ATIVAR | `fact_checker.py` |
-| ↳ Audit | Log de geração de roteiro | PRECISA ATIVAR | `audit_service.py` |
-| ↳ PII Masking | Strip antes de enviar JD ao LLM | Ativo | `strip_pii_for_llm_prompt` |
+| ↳ Audit Trail | Log de geração de roteiro | PRECISA ATIVAR | `audit_service.py` |
+| ↳ Policy Engine | N/A | — | — |
+| ↳ LGPD | N/A (dados internos) | — | — |
+| **INTELIGÊNCIA** | | | |
+| ↳ Learning Loop | Captura edições nas perguntas geradas | ATIVO | `learning_loop_service.py` |
+| ↳ A/B Testing | Variantes de prompt para geração de perguntas | DISPONÍVEL | `ab_testing_service.py` |
+| ↳ Routing Adaptativo | N/A (domínio fixo) | — | — |
+| ↳ Template Learning | N/A (roteiro é por vaga) | — | — |
+| ↳ Calibration | N/A | — | — |
+| ↳ Score Normalization | N/A | — | — |
+| ↳ Predictive Analytics | N/A | — | — |
+| ↳ Model Drift | N/A | — | — |
+| ↳ Conv. Memory | Tracking da vaga ativa na sessão | ATIVO | `conversation_state.py` |
+| ↳ Semantic Search | Expansão de competências sugeridas | DISPONÍVEL | `semantic_search_service.py` |
+| ↳ Voice Analysis | N/A | — | — |
 
-**Gap:** O fluxo funciona end-to-end no backend, mas as camadas de compliance (FairnessGuard nas perguntas geradas) precisam ser ativadas como step pós-geração.
+**Gap:** FairnessGuard e Fact-Checker precisam ser ativados como step pós-geração nas perguntas WSI.
 
 ---
 
 ### ETAPA 4: BUSCAR CANDIDATOS (Funil de Talentos)
 
-| Dimensão | Componente | Status | Localização |
-|----------|-----------|--------|-------------|
+| Dimensão | Componente | Status | Arquivo Replit |
+|----------|-----------|--------|----------------|
 | **Agente** | Ag.2 SourcingAgent | Implementado | `app/domains/sourcing/` |
 | **Agente** | Ag.3 TriagemCurricular | Implementado | `app/domains/cv_screening/` |
 | **Agente** | Ag.5 AvaliadorWSI | Implementado | `app/domains/cv_screening/` (WSI Evaluator) |
@@ -89,124 +234,315 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | **Serviços** | SourcingPipelineService, CandidateEnrichmentService, CVScoringService | Implementados | `app/services/` |
 | **Tools** | `search_candidates`, `analyze_profile`, `score_candidate`, `enrich_profile` | Registradas | `sourcing_tool_registry.py` |
 | **Frontend** | Funil de Talentos (tabela + filtros + sidebar LIA) | Implementado | `src/app/(dashboard)/candidates/` |
-| **Busca** | Elasticsearch + PGVector + WRF | PARCIAL | ES e PGVector configurados; WRF Dynamic K precisa integração |
-| **Camadas Ativas** | | | |
-| ↳ FairnessGuard L1 | Bloquear buscas discriminatórias | ATIVO | Integrado no `MainOrchestrator` |
-| ↳ FairnessGuard L2 | Alertar proxy terms na busca | ATIVO | Integrado no `MainOrchestrator` |
-| ↳ FairnessGuard L3 | Análise semântica nas respostas do LLM | PRECISA ATIVAR | No `RubricEvaluationService` |
-| ↳ PII Masking | Strip PII de candidatos antes do LLM | Ativo | `strip_pii_for_llm_prompt` |
-| ↳ LGPD Anonymize | Modo anônimo no Toon | Implementado | `ToonService` `anonymize=True` |
-| ↳ Bias Detection | Scoring sem variáveis protegidas | PRECISA VERIFICAR | `_LEARNING_PROTECTED_FIELDS` |
-| ↳ Audit | Log de buscas + scores | PRECISA ATIVAR | `audit_service.py` |
+| **Busca** | Elasticsearch + PGVector + WRF | PARCIAL | ES e PGVector configurados; WRF Dynamic K precisa validação |
+| **COMPLIANCE** | | | |
+| ↳ FairnessGuard L1 | Bloquear buscas discriminatórias | ATIVO | `MainOrchestrator` L35-47 |
+| ↳ FairnessGuard L2 | Alertar proxy terms na busca | ATIVO | `MainOrchestrator` L48-62 |
+| ↳ FairnessGuard L3 | Análise semântica nas respostas do LLM | PRECISA ATIVAR | `RubricEvaluationService` — sector rules |
+| ↳ PII Masking | Strip PII de candidatos antes do LLM | ATIVO | `strip_pii_for_llm_prompt` |
 | ↳ Fact-Checker | Validar claims nas análises LIA | PRECISA ATIVAR | `fact_checker.py` |
+| ↳ Audit Trail | Log de buscas + scores | PRECISA ATIVAR | `audit_service.py` |
+| ↳ Policy Engine | N/A | — | — |
+| ↳ LGPD | Modo anônimo no Toon | IMPLEMENTADO | `ToonService` `anonymize=True` |
+| ↳ Bias Detection | `_LEARNING_PROTECTED_FIELDS` | ATIVO | Bloqueia learning de campos protegidos |
+| **INTELIGÊNCIA** | | | |
+| ↳ Learning Loop | Captura accept/modify/reject de candidatos avaliados | ATIVO | `learning_loop_service.py` |
+| ↳ A/B Testing | Variantes de prompt para scoring | DISPONÍVEL | `ab_testing_service.py` |
+| ↳ Routing Adaptativo | Ajuste de confiança sourcing vs screening | ATIVO | `routing_learning_service.py` (0.8x-1.2x) |
+| ↳ Template Learning | N/A (não é criação de vaga) | — | — |
+| ↳ Calibration | Feedback explícito/implícito sobre scores | ATIVO | `calibration_service.py` |
+| ↳ Score Normalization | Normaliza scores por difficulty_coefficient | ATIVO | `score_normalization_service.py` |
+| ↳ Predictive Analytics | `predict_skill_success` | DISPONÍVEL | `ml/outcome_predictor.py` |
+| ↳ Model Drift | Monitora score_drift + approval_drift | ATIVO | `model_drift_service.py` — trigger automático |
+| ↳ Conv. Memory | Tracking de candidatos mencionados + filtros | ATIVO | `conversation_state.py` |
+| ↳ Semantic Search | Expansão semântica de skills/títulos/indústrias | ATIVO | `semantic_search_service.py` (Gemini 768-dim) |
+| ↳ Voice Analysis | N/A (busca não é por voz) | — | — |
 
-**Gap CRÍTICO:** A busca com Elasticsearch + PGVector existe, mas o WRF (Weighted Rank Fusion) com Dynamic K e LLM Job Classification precisa ser validado end-to-end. A integração com Pearch/Apify depende de API keys de produção. FairnessGuard L3 (semântico) precisa ser ativado explicitamente no fluxo de análise.
+**Gap CRÍTICO:** WRF Dynamic K + LLM Job Classification precisa validação end-to-end. FairnessGuard L3 precisa ser ativado explicitamente (depende de `ALPHA1_SECTOR_RULES[sector].fairness_layer3_enabled`). Integração com Pearch/Apify depende de API keys.
 
 ---
 
 ### ETAPA 5: APROVAR MAPEADOS (Gate 1)
 
-| Dimensão | Componente | Status | Localização |
-|----------|-----------|--------|-------------|
-| **Agente** | Ag.0 Orchestrator | Implementado | `app/orchestrator/main_orchestrator.py` |
+| Dimensão | Componente | Status | Arquivo Replit |
+|----------|-----------|--------|----------------|
+| **Agente** | Ag.0 Orchestrator | Implementado | `main_orchestrator.py` |
 | **Agente** | Ag.7 AnalistaFeedback | Implementado | `app/domains/analytics/` |
 | **Agente** | Ag.8 IntegradorATS | Implementado | `app/domains/ats_integration/` |
 | **Domínio** | `pipeline` + `kanban` | Implementado | `app/domains/` |
 | **Serviços** | KanbanService, PipelineTransitionService | Implementados | `app/services/` |
 | **Tools** | `suggest_movements`, `check_rejection_fairness`, `identify_bottlenecks` | Registradas | `kanban_tool_registry.py` |
 | **Frontend** | Kanban board + SmartTransitionModal | Implementado | `src/app/(dashboard)/job-kanban/` |
-| **Camadas Ativas** | | | |
-| ↳ FairnessGuard | `check_rejection_fairness` — valida motivo de rejeição | Registrada como tool | Precisa ser chamada automaticamente |
-| ↳ Policy Engine | Autonomy levels + HITL thresholds | Implementado | `policy_engine_service.py` |
-| ↳ Escalation | Trigger quando AI confidence baixa | Implementado | `trigger_escalation` |
-| ↳ Audit | Log de aprovações/rejeições + overrides humanos | PRECISA ATIVAR | `audit_service.py` |
+| **COMPLIANCE** | | | |
+| ↳ FairnessGuard | `check_rejection_fairness` como tool | REGISTRADA | Precisa ser automática, não sob demanda |
+| ↳ PII Masking | Ativo globalmente | ATIVO | — |
+| ↳ Fact-Checker | N/A (decisão binária) | — | — |
+| ↳ Audit Trail | Log de aprovações/rejeições + overrides | PRECISA ATIVAR | `audit_service.py` — `record_human_review` |
+| ↳ Policy Engine | Autonomy levels + HITL thresholds por setor | IMPLEMENTADO | `ALPHA1_SECTOR_RULES` em `policy_engine_service.py` |
+| ↳ Escalation | Trigger quando AI confidence < threshold | IMPLEMENTADO | `trigger_escalation` |
 | ↳ LGPD | Consentimento antes de contato | PRECISA VERIFICAR | Fluxo de consentimento |
+| **INTELIGÊNCIA** | | | |
+| ↳ Learning Loop | Captura decisões: aceitar/rejeitar/modificar AI suggestion | ATIVO | `learning_loop_service.py` |
+| ↳ A/B Testing | N/A (decisão humana) | — | — |
+| ↳ Routing Adaptativo | Correções de rota alimentam ajustes | ATIVO | `routing_learning_service.py` |
+| ↳ Template Learning | N/A | — | — |
+| ↳ Calibration | Implicit feedback: avançar candidato low-score = sinal | ATIVO | `calibration_service.py` → `record_implicit_feedback` |
+| ↳ Score Normalization | N/A (scores já normalizados) | — | — |
+| ↳ Predictive Analytics | N/A | — | — |
+| ↳ Model Drift | Trigger se approval_drift > 10 p.p. | ATIVO | `model_drift_service.py` |
+| ↳ Conv. Memory | Tracking de ações no kanban | ATIVO | `conversation_state.py` |
+| ↳ Semantic Search | N/A | — | — |
+| ↳ Voice Analysis | N/A | — | — |
 
-**Gap:** O `check_rejection_fairness` existe como tool mas precisa ser chamado automaticamente (não só sob demanda do agente). O Audit de overrides humanos (quando consultor muda decisão do AI) precisa ser ativado.
+**Gap:** `check_rejection_fairness` precisa ser chamado automaticamente (não sob demanda). Audit de overrides humanos precisa ativação.
 
 ---
 
 ### ETAPA 6: CONTATO VIA EMAIL + FOLLOW-UP
 
-| Dimensão | Componente | Status | Localização |
-|----------|-----------|--------|-------------|
+| Dimensão | Componente | Status | Arquivo Replit |
+|----------|-----------|--------|----------------|
 | **Agente** | Ag.0 Orchestrator | Implementado | `main_orchestrator.py` |
 | **Domínio** | `communication` | Implementado | `app/domains/communication/` |
 | **Serviços** | EmailService (Resend/SendGrid), WhatsAppService (Twilio) | Implementados | `email_service.py`, `whatsapp_service.py` |
 | **Tools** | `send_email`, `send_whatsapp`, `send_bulk_email`, `send_feedback` | Registradas | `communication_tools.py` |
 | **Frontend** | Templates de email | Implementado | `src/components/` |
-| **Camadas Ativas** | | | |
-| ↳ Rate Limiting | Limite de envio por empresa/dia | Implementado | `RateLimitRule` |
-| ↳ PII Masking | Emails não logam dados pessoais | Ativo | `PIIMaskingFilter` |
-| ↳ LGPD | Opt-out link no email | PRECISA IMPLEMENTAR | Template precisa ter unsubscribe |
-| ↳ Audit | Log de envios + opens + clicks | PRECISA ATIVAR | `audit_service.py` |
-| ↳ Follow-up 7 dias | Automação de re-envio | PRECISA IMPLEMENTAR | Scheduler/cron job |
+| **COMPLIANCE** | | | |
+| ↳ FairnessGuard | N/A (email é template) | — | — |
+| ↳ PII Masking | Emails não logam dados pessoais | ATIVO | `PIIMaskingFilter` |
+| ↳ Fact-Checker | N/A | — | — |
+| ↳ Audit Trail | Log de envios + opens + clicks | PRECISA ATIVAR | `audit_service.py` |
+| ↳ Policy Engine / Rate Limiting | Limite de envio por empresa/dia | IMPLEMENTADO | `RateLimitRule` sliding window |
+| ↳ LGPD | Opt-out link no email | PRECISA IMPLEMENTAR | Template precisa unsubscribe |
+| **INTELIGÊNCIA** | | | |
+| ↳ Learning Loop | N/A (email é ação, não sugestão) | — | — |
+| ↳ A/B Testing | Variantes de template de email | DISPONÍVEL | `ab_testing_service.py` |
+| ↳ Routing Adaptativo | N/A | — | — |
+| ↳ Template Learning | Templates de email aprendidos | DISPONÍVEL | `template_learning_service.py` |
+| ↳ Calibration | N/A | — | — |
+| ↳ Score Normalization | N/A | — | — |
+| ↳ Predictive Analytics | N/A | — | — |
+| ↳ Model Drift | N/A | — | — |
+| ↳ Conv. Memory | Tracking de candidatos contatados | ATIVO | `conversation_state.py` |
+| ↳ Semantic Search | N/A | — | — |
+| ↳ Voice Analysis | N/A | — | — |
 
-**Gap:** O follow-up automático de 7 dias precisa de um scheduler (celery/cron/background task) que NÃO existe no código atual. O template de email precisa de link de opt-out (LGPD). O tracking de opens/clicks precisa ser configurado no provedor (Resend/SendGrid).
+**Gap:** Follow-up automático de 7 dias precisa de **scheduler** (Celery/cron/background task) que NÃO existe. Template de email precisa de link de opt-out (LGPD). Tracking de opens/clicks precisa configuração no provedor.
 
 ---
 
 ### ETAPA 7: TRIAGEM WSI (Chat Web / WhatsApp)
 
-| Dimensão | Componente | Status | Localização |
-|----------|-----------|--------|-------------|
+| Dimensão | Componente | Status | Arquivo Replit |
+|----------|-----------|--------|----------------|
 | **Agente** | Ag.0 Orchestrator | Implementado | `main_orchestrator.py` |
 | **Agente** | Ag.4 EntrevistadorWSI | Implementado | `app/domains/cv_screening/` |
 | **Agente** | Ag.5 AvaliadorWSI | Implementado | `app/domains/cv_screening/` |
 | **Domínio** | `cv_screening` + `communication` | Implementado | `app/domains/` |
 | **Serviços** | WSIService, WhatsAppService, VoiceService | Implementados | `app/services/` |
 | **Tools** | `generate_screening_questions`, `analyze_response`, `calculate_wsi` | Registradas | WSI tools |
-| **Frontend Chat Web** | Chat page para candidato | PRECISA IMPLEMENTAR | Página pública de triagem |
-| **Camadas Ativas** | | | |
-| ↳ FairnessGuard L1-L3 | Perguntas e análises sem viés | PRECISA ATIVAR | Em cada step da triagem |
-| ↳ PII Masking | Strip PII nas respostas antes do LLM | Ativo | `strip_pii_for_llm_prompt` |
-| ↳ Fact-Checker | Validar scores e claims | PRECISA ATIVAR | Pós-cálculo WSI |
-| ↳ Audit | Log completo da triagem | PRECISA ATIVAR | Cada pergunta/resposta |
-| ↳ LGPD | Consentimento antes da triagem | PRECISA IMPLEMENTAR | Tela de aceite |
-| ↳ Timeout/Abandono | Lembretes 48h + 48h | PRECISA IMPLEMENTAR | Scheduler |
+| **Frontend Chat Web** | Chat page para candidato | **NÃO EXISTE** | PRECISA SER CONSTRUÍDO |
+| **COMPLIANCE** | | | |
+| ↳ FairnessGuard L1-L2 | Perguntas e análises sem viés | PRECISA ATIVAR | Em cada step da triagem |
+| ↳ FairnessGuard L3 | Análise semântica das respostas | PRECISA ATIVAR | Sector-dependent: `fairness_layer3_enabled` |
+| ↳ PII Masking | Strip PII nas respostas antes do LLM | ATIVO | `strip_pii_for_llm_prompt` |
+| ↳ Fact-Checker | Validar scores e claims do WSI | PRECISA ATIVAR | `fact_checker.py` |
+| ↳ Audit Trail | Log completo: cada pergunta/resposta/score | PRECISA ATIVAR | `audit_service.py` |
+| ↳ Policy Engine | Autonomy level por setor | IMPLEMENTADO | `ALPHA1_SECTOR_RULES` |
+| ↳ LGPD | Consentimento antes da triagem | **PRECISA IMPLEMENTAR** | Tela de aceite frontend |
+| ↳ Timeout/Abandono | Lembretes 48h + 48h | **PRECISA IMPLEMENTAR** | Scheduler |
+| **INTELIGÊNCIA** | | | |
+| ↳ Learning Loop | Captura padrões de resposta por competência | ATIVO | `learning_loop_service.py` |
+| ↳ A/B Testing | Variantes de prompt para análise de respostas | DISPONÍVEL | `ab_testing_service.py` |
+| ↳ Routing Adaptativo | N/A (domínio fixo: cv_screening) | — | — |
+| ↳ Template Learning | N/A | — | — |
+| ↳ Calibration | Calibração de scores WSI | ATIVO | `calibration_service.py` |
+| ↳ Score Normalization | Normalização por versão do roteiro | ATIVO | `score_normalization_service.py` |
+| ↳ Predictive Analytics | N/A | — | — |
+| ↳ Model Drift | Monitora drift em scores WSI | ATIVO | `model_drift_service.py` |
+| ↳ Conv. Memory | Estado da triagem por candidato | ATIVO | `conversation_state.py` |
+| ↳ Semantic Search | N/A (perguntas já definidas) | — | — |
+| ↳ Voice Analysis | STT/TTS para triagem por voz | IMPLEMENTADO | `voice_service.py` (Deepgram + OpenAI) |
 
-**Gap CRÍTICO:** O chat web público para candidato (onde ele acessa pelo link do email) NÃO existe como página no frontend. Existe a infraestrutura de chat no backend, mas a página pública de triagem precisa ser construída. Os timeouts de abandono (48h+48h) precisam de scheduler.
+**Gap CRÍTICO:** Chat web público para candidato NÃO existe. Timeouts 48h+48h precisam de scheduler. Consentimento LGPD precisa de tela frontend.
 
 ---
 
-### ETAPAS 8-9: APROVAR TRIADOS (Gate 2) + AGENDAR ENTREVISTA + FEEDBACK
+### ETAPA 8: APROVAR TRIADOS (Gate 2)
 
-| Dimensão | Componente | Status | Localização |
-|----------|-----------|--------|-------------|
+| Dimensão | Componente | Status | Arquivo Replit |
+|----------|-----------|--------|----------------|
+| **Agente** | Ag.7 AnalistaFeedback | Implementado | `app/domains/analytics/` |
+| **Agente** | Ag.8 IntegradorATS | Implementado | `app/domains/ats_integration/` |
+| **Domínio** | `pipeline` + `kanban` + `analytics` | Implementado | `app/domains/` |
+| **Tools** | `suggest_movements`, `check_rejection_fairness` | Registradas | `kanban_tool_registry.py` |
+| **Frontend** | Kanban board (mesmo de Gate 1) | Implementado | `src/app/(dashboard)/job-kanban/` |
+| **COMPLIANCE** | | | |
+| ↳ FairnessGuard | Validação de rejeição (motivo) | REGISTRADA | `check_rejection_fairness` tool |
+| ↳ PII Masking | Ativo | ATIVO | — |
+| ↳ Audit Trail | Log de aprovação/rejeição Gate 2 | PRECISA ATIVAR | `audit_service.py` |
+| ↳ Policy Engine | HITL thresholds por setor | IMPLEMENTADO | `ALPHA1_SECTOR_RULES` |
+| ↳ LGPD | Dados compartilhados com próxima etapa | PRECISA VERIFICAR | Minimização de dados |
+| **INTELIGÊNCIA** | | | |
+| ↳ Learning Loop | Feedback sobre decisões Gate 2 | ATIVO | `learning_loop_service.py` |
+| ↳ Calibration | Implicit feedback: avançar candidato low-WSI | ATIVO | `calibration_service.py` |
+| ↳ Model Drift | Monitora approval_drift Gate 2 | ATIVO | `model_drift_service.py` |
+| ↳ Routing Adaptativo | Correções de rota entre domínios | ATIVO | `routing_learning_service.py` |
+| ↳ (demais) | N/A nesta etapa | — | — |
+
+**Gap:** Mesmo que Gate 1 — `check_rejection_fairness` precisa ser automática.
+
+---
+
+### ETAPA 9: AGENDAR ENTREVISTA + FEEDBACK
+
+| Dimensão | Componente | Status | Arquivo Replit |
+|----------|-----------|--------|----------------|
 | **Agente** | Ag.6 SchedulingAgent | Implementado | `app/domains/interview_scheduling/` |
 | **Agente** | Ag.7 AnalistaFeedback | Implementado | `app/domains/analytics/` |
 | **Domínio** | `scheduling` + `analytics` + `communication` | Implementados | `app/domains/` |
 | **Serviços** | SchedulingService (ICS + Teams), EmailService, WhatsAppService | Implementados | `app/services/` |
 | **Tools** | `schedule_interview`, `send_feedback` | Registradas | `communication_tools.py` |
-| **Camadas Ativas** | | | |
+| **Frontend** | Scheduling UI | Implementado | `src/app/(dashboard)/` |
+| **COMPLIANCE** | | | |
 | ↳ FairnessGuard | Feedback sem viés | PRECISA ATIVAR | Análise do texto de feedback |
-| ↳ Audit | Log de aprovação/rejeição Gate 2 | PRECISA ATIVAR | `audit_service.py` |
-| ↳ LGPD | Dados compartilhados com calendário | PRECISA VERIFICAR | Minimização de dados |
+| ↳ PII Masking | Ativo | ATIVO | — |
+| ↳ Fact-Checker | N/A | — | — |
+| ↳ Audit Trail | Log de aprovação/rejeição + feedback enviado | PRECISA ATIVAR | `audit_service.py` |
+| ↳ Policy Engine | N/A | — | — |
+| ↳ LGPD | Dados compartilhados com calendário | PRECISA VERIFICAR | Minimização de dados no ICS |
+| **INTELIGÊNCIA** | | | |
+| ↳ Learning Loop | Feedback sobre qualidade do feedback gerado | DISPONÍVEL | `learning_loop_service.py` |
+| ↳ A/B Testing | Variantes de template de feedback | DISPONÍVEL | `ab_testing_service.py` |
+| ↳ Template Learning | Templates de feedback aprendidos | DISPONÍVEL | `template_learning_service.py` |
+| ↳ Embedding Service | Embedding do perfil para matching futuro | DISPONÍVEL | `embedding_service.py` (Gemini 768-dim) |
+| ↳ Long-Term Memory | Armazena episódios da vaga para referência | DISPONÍVEL | `long_term_memory.py` |
+| ↳ (demais) | N/A nesta etapa | — | — |
 
-**Gap:** O agendamento com Microsoft Teams está implementado mas depende de configuração de tenant (Graph API). O ICS funciona standalone.
-
----
-
-## 3. MAPA DE CAMADAS DE COMPLIANCE POR AGENTE/DOMÍNIO
-
-| Agente | Domínio | FairnessGuard | PII Masking | LGPD | Fact-Check | Audit | Policy Engine | Bias Detection |
-|--------|---------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| Ag.0 Orchestrator | orchestration | L1-L2 ativo | Ativo | — | — | Parcial | Ativo | Via FG |
-| Ag.2 SourcingAgent | sourcing | L1-L2 ativo | Ativo | Anonymize | A ativar | A ativar | — | A ativar L3 |
-| Ag.3 TriagemCurricular | cv_screening | A ativar | Ativo | A verificar | A ativar | A ativar | — | A ativar |
-| Ag.4 EntrevistadorWSI | cv_screening | A ativar | Ativo | A implementar | A ativar | A ativar | — | A ativar |
-| Ag.5 AvaliadorWSI | cv_screening | A ativar L3 | Ativo | A verificar | A ativar | A ativar | — | A ativar |
-| Ag.6 SchedulingAgent | scheduling | — | Ativo | A verificar | — | A ativar | — | — |
-| Ag.7 AnalistaFeedback | analytics | A ativar | Ativo | — | A ativar | A ativar | — | A ativar |
-| Ag.8 IntegradorATS | ats_integration | — | Ativo | A verificar | — | A ativar | — | — |
-
-**Legenda:** Ativo = funcionando em produção | A ativar = código existe, precisa ser ligado | A implementar = código não existe | A verificar = precisa checagem
+**Gap:** Agendamento com Microsoft Teams depende de configuração de tenant (Graph API). ICS funciona standalone.
 
 ---
 
-## 4. O QUE FALTA NO ROADMAP (GAPS IDENTIFICADOS)
+## 3. MATRIZ CONSOLIDADA: COMPLIANCE POR AGENTE
 
-### 4.1 Gaps Estruturais (faltam no fluxo descrito)
+| Agente | Domínio | FG L1 | FG L2 | FG L3 | PII | LGPD | Fact-Check | Audit | Policy | Bias Det. |
+|--------|---------|:-----:|:-----:|:-----:|:---:|:----:|:----------:|:-----:|:------:|:---------:|
+| Ag.0 Orchestrator | orchestration | ATIVO | ATIVO | — | ATIVO | — | — | Parcial | ATIVO | Via FG |
+| Ag.2 Sourcing | sourcing | ATIVO | ATIVO | A ativar | ATIVO | Anonymize | A ativar | A ativar | — | A ativar |
+| Ag.3 TriagemCurr. | cv_screening | A ativar | A ativar | A ativar | ATIVO | A verificar | A ativar | A ativar | — | A ativar |
+| Ag.4 Entrev.WSI | cv_screening | A ativar | A ativar | A ativar | ATIVO | A impl. | A ativar | A ativar | — | A ativar |
+| Ag.5 Avaliador WSI | cv_screening | A ativar | A ativar | A ativar | ATIVO | A verificar | A ativar | A ativar | — | A ativar |
+| Ag.6 Scheduling | scheduling | — | — | — | ATIVO | A verificar | — | A ativar | — | — |
+| Ag.7 Feedback | analytics | A ativar | A ativar | — | ATIVO | — | A ativar | A ativar | — | A ativar |
+| Ag.8 ATS Integr. | ats_integration | — | — | — | ATIVO | A verificar | — | A ativar | — | — |
+
+**Legenda:** ATIVO = funcionando | A ativar = código existe, precisa ligar | A impl. = código não existe | A verificar = precisa checagem
+
+---
+
+## 4. MATRIZ CONSOLIDADA: INTELIGÊNCIA POR ETAPA
+
+| Etapa | Learning Loop | A/B Test | Routing | Template | Calibr. | Score Norm. | Predict. | Drift | Conv. Mem. | Semantic | Voice |
+|-------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| 1. Login | — | — | — | — | — | — | — | — | — | — | — |
+| 2. Editar Vaga | ATIVO | DISP | — | ATIVO | — | — | DISP | — | ATIVO | DISP | — |
+| 3. Roteiro WSI | ATIVO | DISP | — | — | — | — | — | — | ATIVO | DISP | — |
+| 4. Buscar Cand. | ATIVO | DISP | ATIVO | — | ATIVO | ATIVO | DISP | ATIVO | ATIVO | ATIVO | — |
+| 5. Gate 1 | ATIVO | — | ATIVO | — | ATIVO | — | — | ATIVO | ATIVO | — | — |
+| 6. Email/Follow | — | DISP | — | DISP | — | — | — | — | ATIVO | — | — |
+| 7. Triagem WSI | ATIVO | DISP | — | — | ATIVO | ATIVO | — | ATIVO | ATIVO | — | IMPL |
+| 8. Gate 2 | ATIVO | — | ATIVO | — | ATIVO | — | — | ATIVO | — | — | — |
+| 9. Agendar/Feed. | DISP | DISP | — | DISP | — | — | — | — | — | — | — |
+
+**Legenda:** ATIVO = integrado e funcionando | DISP = disponível, precisa wiring | IMPL = implementado mas não integrado no fluxo | — = N/A
+
+---
+
+## 5. DETALHAMENTO DAS 11 CAMADAS DE INTELIGÊNCIA
+
+### 5.1 Learning Loop (Captura Silenciosa)
+- **Arquivo:** `app/shared/learning/learning_loop_service.py` (1137 linhas)
+- **Mecanismo:** Observa o que o recrutador aceita, modifica ou rejeita sem pedir feedback explícito
+- **Outcomes:** `accepted` | `modified` | `rejected` | `ignored`
+- **Pattern Types:** salary_preference, skill_preference, benefit_preference, work_model_preference, screening_preference, jd_style_preference, source_trust
+- **Confidence:** Baseada em sample size (≥20 = high, ≥10 = medium, ≥5 = low)
+- **FairnessGuard Integration:** `validate_learning_batch()` bloqueia padrões discriminatórios ANTES de persistir (F1-02)
+- **Model Drift Integration:** Trigger automático via `asyncio.create_task` quando feedback é `rejected` ou `ignored`
+- **Snapshot Integration:** `learning_snapshot_service` salva snapshot ANTES de aplicar patterns (rollback Z2-01)
+
+### 5.2 A/B Testing
+- **Arquivo:** `app/shared/learning/ab_testing_service.py` (307 linhas)
+- **Mecanismo:** Hash-based traffic splitting (MD5 → bucket 0-9999)
+- **Estatísticas:** z-score, p-value (erfc), 95% CI, improvement percentage
+- **Significância:** p < 0.05 AND |improvement| > 5%
+- **Modelo:** `PromptVariant` (test_name, variant_name, traffic_percentage) + `ABTestResult` (metric_name, metric_value)
+
+### 5.3 Routing Adaptativo
+- **Arquivo:** `app/services/routing_learning_service.py`
+- **Mecanismo:** Quando usuário corrige roteamento (mensagem foi pro domínio errado), ajusta multiplicadores de confiança por domínio
+- **Range:** 0.8x (muitos erros) a 1.2x (alta precisão)
+- **Método:** `compute_domain_confidence_adjustments(company_id, db)` → Dict[str, float]
+
+### 5.4 Template Learning
+- **Arquivo:** `app/shared/learning/template_learning_service.py`
+- **Mecanismo:** Após 3 vagas similares (mesmo setor/seniority), gera template automaticamente
+- **Métodos:** `learn_from_job_creation()`, `suggest_templates_for_improvement()`
+
+### 5.5 Calibration
+- **Arquivo:** `app/services/calibration_service.py`
+- **Mecanismo:** Dual feedback — explícito (thumbs up/down) + implícito (avançar candidato low-score)
+- **Output:** `CalibrationSuggestion` (ex: "Reduzir peso de skill técnica em 15%")
+- **Métodos:** `record_explicit_feedback()`, `record_implicit_feedback()`, `generate_suggestions()`
+
+### 5.6 Score Normalization
+- **Arquivo:** `app/domains/cv_screening/services/score_normalization_service.py`
+- **Mecanismo:** Ajusta scores baseado no `difficulty_coefficient` da versão do questionário
+- **Objetivo:** Candidatos que responderam versões mais difíceis não são penalizados
+
+### 5.7 Predictive Analytics
+- **Arquivo:** `app/services/ml/outcome_predictor.py`
+- **Métodos:**
+  - `predict_time_to_fill(db, job_data, company_id)` → dias estimados + confidence
+  - `predict_optimal_salary(db, job_data, company_id)` → faixa salarial competitiva
+  - `predict_skill_success(db, skill_name, company_id)` → probabilidade de sucesso
+
+### 5.8 Model Drift
+- **Arquivo:** `app/services/model_drift_service.py`
+- **4 Dimensões monitoradas:**
+  - Score Drift: variação > 0.5 pts na janela de 7 dias
+  - Approval Drift: variação > 10 pontos percentuais
+  - Cost Drift: aumento significativo de custo LLM
+  - Latency Drift: degradação de tempo de resposta
+- **Trigger:** Chamado automaticamente pelo Learning Loop quando feedback negativo acumula
+
+### 5.9 Conversation Memory
+- **Arquivo:** `app/shared/memory/conversation_state.py`
+- **Mecanismo:** Estado efêmero da sessão de chat
+- **Recursos:**
+  - Entity tracking (última vaga, último candidato mencionado)
+  - Pronoun resolution ("conte mais sobre **ele**" → resolve para último candidato)
+  - Active filters tracking (filtros de busca persistem na sessão)
+- **Long-Term Memory:** `libs/agents-core/lia_agents_core/long_term_memory.py` — episódios + compressão LLM após 30 dias
+
+### 5.10 Semantic Search
+- **Arquivo:** `app/shared/intelligence/semantic_search_service.py`
+- **Provider:** Gemini `text-embedding-004` (768 dimensões)
+- **Cache:** Redis para evitar re-embedding
+- **Domínios:** Skills, Job Titles, Industries, Locations
+- **Métodos:** `expand_query(domain, query)`, `expand_skills()`, `expand_job_titles()`
+- **Embedding Service:** `app/shared/intelligence/embedding_service.py` — wrapper para geração de vetores
+
+### 5.11 Voice Analysis
+- **Arquivo:** `app/services/voice_service.py`
+- **STT Providers:** Deepgram (primário), Whisper (fallback)
+- **TTS Provider:** OpenAI (`voice="nova"`)
+- **Uso:** Triagem WSI por voz (candidato pode responder por áudio)
+
+---
+
+## 6. GAPS IDENTIFICADOS
+
+### 6.1 Gaps Estruturais (faltam no fluxo)
 
 | # | Gap | Impacto | Prioridade |
 |---|-----|---------|-----------|
@@ -216,25 +552,36 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | G4 | **Consentimento LGPD (Tela de Aceite)** — Antes da triagem WSI | Obrigatório legalmente | BLOQUEANTE |
 | G5 | **Unsubscribe Link** — Nos templates de email | LGPD/CAN-SPAM compliance | ALTO |
 | G6 | **Notificações (Teams/Email/Bell)** — Sistema de alertas ao consultor | Mencionado no roadmap mas não implementado como sistema | ALTO |
-| G7 | **Configuração de Infra Externa** — API keys: Twilio, Resend/SendGrid, Apify, ATS | Sem credenciais, tudo roda em "dev mode" | BLOQUEANTE para Alpha 1 |
+| G7 | **Configuração de Infra Externa** — API keys: Twilio, Resend/SendGrid, Apify, ATS | Sem credenciais, tudo roda em "dev mode" | BLOQUEANTE |
 
-### 4.2 Gaps de Camadas de Compliance
+### 6.2 Gaps de Compliance
 
 | # | Gap | O que existe | O que falta |
 |---|-----|-------------|-------------|
 | C1 | **FairnessGuard ativo em todos os pontos** | L1-L2 no Orchestrator | Ativar em: save JD, geração WSI, análise de resposta, feedback, scoring |
-| C2 | **FairnessGuard L3 (Semântico) em produção** | Código existe no RubricEvaluationService | Ativar como step obrigatório pós-LLM em todos os domínios |
-| C3 | **Audit Trail completo** | AuditService existe | Ativar em: login, edição vaga, geração roteiro, busca, aprovação, contato, triagem, feedback |
+| C2 | **FairnessGuard L3 (Semântico)** | Código existe, sector rules definidas | Ativar como step obrigatório pós-LLM (tech/financeiro/saude/rpo) |
+| C3 | **Audit Trail completo** | `AuditService` com 8 decision types | Ativar em: login, edição vaga, geração roteiro, busca, aprovação, contato, triagem, feedback |
 | C4 | **LGPD Consent Flow** | Endpoints de consentimento existem | Falta fluxo frontend + enforcement antes de processar candidato |
-| C5 | **Fact-Checker em todos os outputs** | Código existe | Ativar como middleware pós-resposta em todos os agentes |
+| C5 | **Fact-Checker em todos os outputs** | 4 checkers (salary, count, %, date) + 3 granulares (V5) | Ativar como middleware pós-resposta em todos os agentes |
 | C6 | **Bias Audit Report** | FairnessGuard coleta dados | Falta dashboard/relatório periódico de Four-Fifths Rule |
 | C7 | **EU AI Act Compliance** | Mencionado nos docs | Falta classificação de risco por agente e disclosure obrigatório |
 
+### 6.3 Gaps de Inteligência
+
+| # | Gap | Status | O que falta |
+|---|-----|--------|-------------|
+| I1 | **A/B Testing sem testes criados** | Serviço implementado | Precisa definir e criar os primeiros testes (JD prompt, scoring prompt) |
+| I2 | **Predictive Analytics não integrado no fluxo** | Serviço implementado | Precisa ser chamado na UI de criação de vaga (predict_time_to_fill, predict_optimal_salary) |
+| I3 | **Template Learning sem trigger automático** | Serviço implementado | Precisa hook pós-criação de vaga para chamar `learn_from_job_creation` |
+| I4 | **Voice Analysis não integrado na triagem web** | STT/TTS implementado | Precisa UI de gravação de áudio na página de triagem do candidato |
+| I5 | **Long-Term Memory sem compressão ativa** | Código de compressão existe | Precisa de cron job para executar `compress_old_episodes` periodicamente |
+| I6 | **Semantic Search parcialmente wired** | Expansão funciona | Precisa ser integrado no fluxo de busca de candidatos como step automático |
+
 ---
 
-## 5. MAPA DE PRIORIDADES DE CONSTRUÇÃO
+## 7. MAPA DE PRIORIDADES DE CONSTRUÇÃO
 
-### Fase 0: INFRAESTRUTURA (Semana 1-2) — Sem isso nada funciona
+### Fase 0: INFRAESTRUTURA (Semana 1-2)
 
 | # | Item | Tipo | Esforço |
 |---|------|------|---------|
@@ -243,48 +590,50 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | P0.3 | Configurar Elasticsearch + PGVector em produção | Infra | 2-3 dias |
 | P0.4 | Ativar Audit Trail em todos os endpoints | Backend | 2-3 dias |
 
-### Fase 1: FLUXO CORE (Semana 2-4) — Caminho feliz funcional
+### Fase 1: FLUXO CORE (Semana 2-4)
 
-| # | Item | Agentes Envolvidos | Camadas a Ativar | Esforço |
-|---|------|-------------------|------------------|---------|
-| P1.1 | Login funcional + rate limiting | — | Rate Limiting, Audit | 1 dia |
-| P1.2 | Import/Edição de Vaga do ATS | Ag.8 | FairnessGuard L1-L2, Audit | 2-3 dias |
-| P1.3 | Configurar Roteiro WSI (JD → Perguntas) | Ag.4 | FairnessGuard L1-L2, Fact-Checker | 2-3 dias |
-| P1.4 | Busca de Candidatos (ES+PGVector+WRF) | Ag.2, Ag.3 | FairnessGuard L1-L3, PII, Audit | 5-7 dias |
-| P1.5 | Aprovação no Kanban (Gate 1) | Ag.0, Ag.7, Ag.8 | check_rejection_fairness, Policy Engine, Audit | 3-4 dias |
-| P1.6 | Envio de Email de Contato | Ag.0 | Rate Limiting, LGPD (opt-out), Audit | 2-3 dias |
+| # | Item | Agentes | Compliance | Inteligência | Esforço |
+|---|------|---------|------------|-------------|---------|
+| P1.1 | Login funcional + rate limiting | — | Rate Limiting, Audit | — | 1 dia |
+| P1.2 | Import/Edição de Vaga do ATS | Ag.8 | FG L1-L2, Audit | Template Learning, Predictive | 2-3 dias |
+| P1.3 | Configurar Roteiro WSI | Ag.4 | FG L1-L2, Fact-Check | A/B Testing, Learning Loop | 2-3 dias |
+| P1.4 | Busca de Candidatos | Ag.2, Ag.3 | FG L1-L3, PII, Audit | Semantic Search, Calibration, Score Norm. | 5-7 dias |
+| P1.5 | Aprovação Kanban (Gate 1) | Ag.0, Ag.7, Ag.8 | check_rejection_fairness, Policy, Audit | Calibration, Learning Loop | 3-4 dias |
+| P1.6 | Envio de Email de Contato | Ag.0 | Rate Limiting, LGPD (opt-out), Audit | A/B Testing (templates) | 2-3 dias |
 
-### Fase 2: TRIAGEM + AUTOMAÇÃO (Semana 4-6) — Diferencial do produto
+### Fase 2: TRIAGEM + AUTOMAÇÃO (Semana 4-6)
 
-| # | Item | Agentes Envolvidos | Camadas a Ativar | Esforço |
-|---|------|-------------------|------------------|---------|
-| P2.1 | Chat Web Público para Triagem WSI | Ag.0, Ag.4, Ag.5 | FairnessGuard L1-L3, LGPD Consent, PII, Audit | 7-10 dias |
-| P2.2 | Follow-up Automático 7 dias | Ag.0 | Rate Limiting, Audit | 3-4 dias |
-| P2.3 | Timeout + Abandono de Triagem | Ag.4 | Scheduler, Audit | 2-3 dias |
-| P2.4 | Score WSI + Parecer Textual | Ag.5 | Fact-Checker, Bias Detection, Audit | 3-5 dias |
+| # | Item | Agentes | Compliance | Inteligência | Esforço |
+|---|------|---------|------------|-------------|---------|
+| P2.1 | Chat Web Público para Triagem WSI | Ag.0, Ag.4, Ag.5 | FG L1-L3, LGPD Consent, PII, Audit | Voice Analysis, Conv. Memory, Score Norm. | 7-10 dias |
+| P2.2 | Follow-up Automático 7 dias | Ag.0 | Rate Limiting, Audit | — | 3-4 dias |
+| P2.3 | Timeout + Abandono de Triagem | Ag.4 | Scheduler, Audit | — | 2-3 dias |
+| P2.4 | Score WSI + Parecer Textual | Ag.5 | Fact-Check, Bias Detection, Audit | Calibration, Model Drift | 3-5 dias |
 
-### Fase 3: GATES + SCHEDULING (Semana 6-8) — Fechamento do loop
+### Fase 3: GATES + SCHEDULING (Semana 6-8)
 
-| # | Item | Agentes Envolvidos | Camadas a Ativar | Esforço |
-|---|------|-------------------|------------------|---------|
-| P3.1 | Gate 2 (Aprovar/Reprovar Triados) | Ag.7, Ag.8 | FairnessGuard, Policy Engine, Audit | 3-4 dias |
-| P3.2 | Agendamento de Entrevista | Ag.6 | LGPD (dados calendário), Audit | 3-5 dias |
-| P3.3 | Feedback Automático (Reprovados) | Ag.7 | FairnessGuard (texto feedback), Audit | 2-3 dias |
-| P3.4 | Notificações Teams/Email/Bell | Todos | Audit | 3-5 dias |
+| # | Item | Agentes | Compliance | Inteligência | Esforço |
+|---|------|---------|------------|-------------|---------|
+| P3.1 | Gate 2 (Aprovar/Reprovar Triados) | Ag.7, Ag.8 | FG, Policy Engine, Audit | Learning Loop, Calibration | 3-4 dias |
+| P3.2 | Agendamento de Entrevista | Ag.6 | LGPD (dados calendário), Audit | Embedding Service | 3-5 dias |
+| P3.3 | Feedback Automático (Reprovados) | Ag.7 | FG (texto), Audit | A/B Testing, Template Learning | 2-3 dias |
+| P3.4 | Notificações Teams/Email/Bell | Todos | Audit | — | 3-5 dias |
 
-### Fase 4: COMPLIANCE PROFUNDO (Semana 8-10) — Produção real
+### Fase 4: COMPLIANCE + INTELIGÊNCIA PROFUNDA (Semana 8-10)
 
 | # | Item | Tipo | Esforço |
 |---|------|------|---------|
 | P4.1 | Bias Audit Dashboard (Four-Fifths Rule) | Frontend + Backend | 5-7 dias |
 | P4.2 | EU AI Act Risk Classification por agente | Docs + Backend | 3-5 dias |
 | P4.3 | LGPD DSR (Data Subject Requests) — export/delete | Backend | 3-5 dias |
-| P4.4 | Presidio NER Layer 4 ativado em produção | Backend | 2-3 dias |
-| P4.5 | SOX Audit Export (para auditoria externa) | Backend | 2-3 dias |
+| P4.4 | Criar primeiros A/B Tests (JD prompt, scoring prompt) | Backend | 2-3 dias |
+| P4.5 | Integrar Predictive Analytics na UI de vagas | Frontend + Backend | 3-4 dias |
+| P4.6 | Ativar Long-Term Memory compression (cron) | Infra | 1-2 dias |
+| P4.7 | SOX Audit Export (para auditoria externa) | Backend | 2-3 dias |
 
 ---
 
-## 6. GRAFO DE DEPENDÊNCIAS DOS AGENTES
+## 8. GRAFO DE DEPENDÊNCIAS DOS AGENTES
 
 ```
                     ┌──────────────┐
@@ -318,68 +667,96 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
                     └──────────┘
 ```
 
-### Camadas transversais (ativas em TODOS os nós):
+---
 
-```
-┌──────────────────────────────────────────────────────────┐
-│                    CAMADAS TRANSVERSAIS                   │
-├──────────────────────────────────────────────────────────┤
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │
-│  │ FairnessGuard│  │ PII Masking │  │ Fact-Checker │     │
-│  │  (L1-L2-L3) │  │ (4 layers)  │  │ (Numeric +  │     │
-│  │             │  │             │  │  Claims)    │     │
-│  └─────────────┘  └─────────────┘  └─────────────┘     │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │
-│  │ Audit Trail │  │Policy Engine│  │ LGPD/Consent│     │
-│  │ (SOX/EU AI) │  │(Escalation) │  │ (DSR/Anon)  │     │
-│  └─────────────┘  └─────────────┘  └─────────────┘     │
-│  ┌─────────────┐  ┌─────────────┐                       │
-│  │Rate Limiting│  │Bias Audit   │                       │
-│  │(Sliding Win)│  │(4/5 Rule)   │                       │
-│  └─────────────┘  └─────────────┘                       │
-└──────────────────────────────────────────────────────────┘
-```
+## 9. DETALHAMENTO FairnessGuard — ARQUITETURA 3 CAMADAS
+
+### Layer 1: Explicit Bias Block (350+ patterns, 13 categorias)
+- **Categorias:** gender, age, ethnicity, religion, disability, marital_status, sexual_orientation, pregnancy, appearance, social_class, political, nationality, health
+- **Ação:** BLOCK — impede processamento
+- **Integração ativa:** MainOrchestrator (pré-roteamento)
+- **Protected fields:** `_LEARNING_PROTECTED_FIELDS` = {gender, age, ethnicity, marital_status, photo, institution, address, religion, disability, cv_gaps}
+
+### Layer 2: Implicit Bias Soft Warning (proxy terms)
+- **Exemplos:** "dinâmico" → proxy para age, "boa aparência" → proxy para appearance
+- **Ação:** WARN — permite com alerta
+- **Integração ativa:** MainOrchestrator (pré-roteamento)
+
+### Layer 3: Semantic Analysis (LLM-based)
+- **Provider:** Gemini (análise semântica profunda)
+- **Ação:** WARN ou BLOCK dependendo da severidade
+- **Integração:** Condicionada por setor via `ALPHA1_SECTOR_RULES[sector].fairness_layer3_enabled`
+- **Setores com L3 ativo:** tech, financeiro, saude, rpo
+- **Setores sem L3:** varejo, logistica
+
+### FairnessGuard no Learning Loop (F1-02)
+- `validate_learning_batch()` — chamado ANTES de persistir patterns aprendidos
+- Bloqueia patterns que correlacionam com campos protegidos
+- Audit trail automático quando pattern é bloqueado
 
 ---
 
-## 7. RESPOSTA ÀS PERGUNTAS DO USUÁRIO
+## 10. ARQUIVOS-CHAVE DO CÓDIGO REFERENCIADOS
 
-### "Isso faz sentido?"
-**Sim, o fluxo Alpha 1 faz sentido e está bem estruturado.** A sequência Login → Editar Vaga → Roteiro WSI → Buscar → Aprovar → Contato → Triagem → Gate 2 → Agendar/Feedback é o caminho natural de um processo de recrutamento assistido por IA. O backend suporta esse fluxo.
-
-### "Falta informação?"
-**Sim, faltam 7 gaps estruturais e 7 gaps de compliance** detalhados nas seções 4.1 e 4.2. Os mais críticos são:
-1. **Scheduler** (sem ele, follow-up e timeouts não funcionam)
-2. **Chat Web Público** (sem ele, a triagem WSI não acontece)
-3. **Consentimento LGPD** (obrigatório legalmente)
-4. **Credenciais de produção** (sem elas, tudo é "dev mode")
-
-### "Faz sentido adicionar camadas de compliance por agente?"
-**Absolutamente.** A tabela da seção 3 mostra que a maioria das camadas está "código existe, precisa ser ligada". O mapa de prioridades (seção 5) já incorpora quais camadas precisam ser ativadas em cada fase. A prioridade é:
-1. **FairnessGuard em todos os pontos** (já tem código, só precisa de wiring)
-2. **Audit Trail completo** (já tem serviço, precisa ativar em cada endpoint)
-3. **LGPD Consent Flow** (precisa de implementação frontend + enforcement)
-4. **Fact-Checker como middleware** (já tem código, precisa virar middleware)
-5. **Bias Audit Dashboard** (precisa ser construído)
-
----
-
-## 8. ARQUIVOS-CHAVE DO CÓDIGO REFERENCIADOS
-
+### Backend Core
 | Arquivo | Responsabilidade |
 |---------|-----------------|
-| `lia-agent-system/app/orchestrator/main_orchestrator.py` | Orquestração central (3 fases) |
-| `lia-agent-system/app/orchestrator/intent_router.py` | Roteamento de intents por cascata de modelos |
-| `lia-agent-system/libs/agents-core/lia_agents_core/react_agent_registry.py` | Registry de agentes ReAct |
-| `lia-agent-system/libs/agents-core/lia_agents_core/langgraph_base.py` | Base LangGraph com checkpointer |
-| `lia-agent-system/libs/agents-core/lia_agents_core/langgraph_react_base.py` | Base ReAct LangGraph |
-| `lia-agent-system/app/shared/compliance/fairness_guard.py` | FairnessGuard (3 camadas, ~350 patterns) |
-| `lia-agent-system/app/shared/pii_masking.py` | PII Masking (4 camadas, Presidio opt-in) |
-| `lia-agent-system/app/shared/compliance/audit_service.py` | Audit Trail (SOX-compliant) |
-| `lia-agent-system/app/shared/compliance/fact_checker.py` | Fact-Checker (numeric claims) |
-| `lia-agent-system/app/services/policy_engine_service.py` | Policy Engine + Rate Limiting + Escalation |
-| `lia-agent-system/app/domains/communication/services/email_service.py` | Email (Resend/SendGrid) |
-| `lia-agent-system/app/domains/communication/services/whatsapp_service.py` | WhatsApp (Twilio) |
-| `lia-agent-system/app/domains/cv_screening/services/wsi_service.py` | WSI (CBI/Bloom/Dreyfus/Big Five) |
-| `lia-agent-system/app/domains/ats_integration/` | ATS (Gupy/Pandapé/Merge/StackOne) |
-| `lia-agent-system/app/domains/interview_scheduling/services/scheduling_service.py` | Scheduling (ICS + Teams) |
+| `app/orchestrator/main_orchestrator.py` | Orquestração central (3 fases) + FairnessGuard L1-L2 |
+| `app/orchestrator/intent_router.py` | Roteamento de intents por cascata de modelos |
+| `libs/agents-core/lia_agents_core/react_agent_registry.py` | Registry de agentes ReAct |
+| `libs/agents-core/lia_agents_core/langgraph_base.py` | Base LangGraph com checkpointer |
+
+### Compliance (6 camadas)
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| `app/shared/compliance/fairness_guard.py` | FairnessGuard (3 camadas, ~350 patterns, 13 categorias) |
+| `app/shared/pii_masking.py` | PII Masking (4 camadas, Presidio opt-in) |
+| `app/shared/compliance/audit_service.py` | Audit Trail (SOX-compliant, 730-1825d retention, human override) |
+| `app/shared/compliance/fact_checker.py` | Fact-Checker (salary, count, %, date + V5 granulares) |
+| `app/services/policy_engine_service.py` | Policy Engine + Rate Limiting + Escalation + Sector Rules |
+| `app/api/v1/lgpd.py` | LGPD endpoints (consent, DSR, anonymize) |
+
+### Inteligência (11 camadas)
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| `app/shared/learning/learning_loop_service.py` | Learning Loop (silent capture + FairnessGuard F1-02) |
+| `app/shared/learning/ab_testing_service.py` | A/B Testing (z-score, p-value, 95% CI) |
+| `app/services/routing_learning_service.py` | Routing Adaptativo (0.8x-1.2x confidence multipliers) |
+| `app/shared/learning/template_learning_service.py` | Template Learning (auto after 3 similar jobs) |
+| `app/services/calibration_service.py` | Calibration (explicit + implicit feedback → weight suggestions) |
+| `app/domains/cv_screening/services/score_normalization_service.py` | Score Normalization (difficulty coefficient) |
+| `app/services/ml/outcome_predictor.py` | Predictive Analytics (time-to-fill, optimal salary, skill success) |
+| `app/services/model_drift_service.py` | Model Drift (4 dimensions: score, approval, cost, latency) |
+| `app/shared/memory/conversation_state.py` | Conversation Memory (entity tracking, pronoun resolution) |
+| `app/shared/intelligence/semantic_search_service.py` | Semantic Search (Gemini 768-dim, Redis cache, domain expansion) |
+| `app/services/voice_service.py` | Voice Analysis (STT: Deepgram/Whisper, TTS: OpenAI) |
+| `app/shared/intelligence/embedding_service.py` | Embedding Service (Gemini text-embedding-004, 768-dim) |
+| `libs/agents-core/lia_agents_core/long_term_memory.py` | Long-Term Memory (episodes + LLM compression after 30d) |
+| `app/shared/learning/learning_snapshot_service.py` | Learning Snapshot (pre-learning rollback points, Z2-01) |
+
+### Communication
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| `app/domains/communication/services/email_service.py` | Email (Resend/SendGrid) |
+| `app/domains/communication/services/whatsapp_service.py` | WhatsApp (Twilio) |
+| `app/domains/cv_screening/services/wsi_service.py` | WSI (CBI/Bloom/Dreyfus/Big Five) |
+| `app/domains/ats_integration/` | ATS (Gupy/Pandapé/Merge/StackOne) |
+| `app/domains/interview_scheduling/services/scheduling_service.py` | Scheduling (ICS + Teams) |
+
+---
+
+## 11. RESPOSTAS ÀS PERGUNTAS DO USUÁRIO
+
+### "Isso faz sentido?"
+**Sim.** A sequência Login → Editar Vaga → Roteiro WSI → Buscar → Aprovar → Contato → Triagem → Gate 2 → Agendar/Feedback é o caminho natural de recrutamento assistido por IA. O backend suporta esse fluxo com 8 agentes, 30+ tools, 6 compliance layers e 11 intelligence layers.
+
+### "Falta informação?"
+**Sim, faltam 7 gaps estruturais, 7 gaps de compliance e 6 gaps de inteligência** detalhados na seção 6. Os mais críticos: Scheduler, Chat Web Público, Consentimento LGPD, Credenciais de produção.
+
+### "Faz sentido o mapa por camada?"
+**Absolutamente.** A matriz da seção 4 mostra que a maioria das intelligence layers está "implementada mas não integrada". O diferencial competitivo da plataforma está justamente nessas 11 camadas — Learning Loop silencioso, A/B Testing com significância estatística, Routing Adaptativo, Score Normalization, Predictive Analytics, e Voice Analysis são capacidades que concorrentes não têm.
+
+### "Prioridade de ativação?"
+1. **Compliance first:** FairnessGuard em todos os pontos + Audit Trail completo (sem isso não vai para produção)
+2. **Intelligence core:** Learning Loop já ativo + Calibration + Score Normalization (já funcionam, só precisam de validação)
+3. **Intelligence advanced:** A/B Testing (criar primeiros testes) + Predictive Analytics (integrar na UI) + Voice Analysis (integrar na triagem web)
