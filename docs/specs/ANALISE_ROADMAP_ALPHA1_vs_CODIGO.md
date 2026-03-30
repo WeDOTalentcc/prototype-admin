@@ -7,6 +7,189 @@
 
 ---
 
+## FLUXO ALPHA 1 — VISÃO DIDÁTICA COMPLETA
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                          FLUXO ALPHA 1 — TESTE INTERNO WEDOTALENT (v2)                         │
+│                                                                                                │
+│  PREMISSAS: ATS integrado | Vagas importadas | Login email/senha                              │
+└────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+    ┌──────────────────┐                                              ┌──────────────────┐
+    │    CONSULTOR      │                                              │       LIA         │
+    └────────┬─────────┘                                              └────────┬─────────┘
+             │                                                                  │
+             │  1. LOGIN                                                         │
+             │  ──────────────────────────────────────────────────────────────► │
+             │  • Login com email/senha                                         │
+             │  • Acessa dashboard de vagas                                     │
+             │                                                                  │
+             ├──────────────────────────────────────────────────────────────────┤
+             │                                                                  │
+             │  2. EDITAR VAGA (importada do ATS)                                │
+             │  ──────────────────────────────────────────────────────────────► │
+             │  • Acessa página de vagas WeDo, seleciona vaga existente        │
+             │  • NÃO cria vaga na WeDo — edita dados importados              │
+             │  • Define requisitos, benefícios, faixa salarial, modelo        │
+             │  • 🤖 Ag.8 IntegradorATS (sync dados do ATS)                     │
+             │                                                                  │
+             ├──────────────────────────────────────────────────────────────────┤
+             │                                                                  │
+             │  3. CONFIGURAR ROTEIRO WSI                                        │
+             │  ──────────────────────────────────────────────────────────────► │
+             │  • A partir do JD da vaga (importado do ATS ou gerado no modal) │
+             │  • Via modal: Preview Vaga → Revisar/Ajustar JD                 │
+             │  • Modal: Roteiro de Triagem → Criar (completo/compacto)        │
+             │  •   ou Editar roteiro existente                                │
+             │  • Selecionar/ajustar perguntas de triagem com ajuda da LIA     │
+             │  • 🤖 JD Generator Service (LLM) gera/ajusta JD                 │
+             │  • 🤖 Ag.4 EntrevistadorWSI (gera perguntas WSI)                │
+             │                                                                  │
+             │                              3B. GERAR PERGUNTAS WSI             │
+             │  ◄────────────────────────────────────────────────────────────── │
+             │  • LIA analisa JD/requisitos → gera perguntas WSI (Blocos 2-5)  │
+             │  • Consultor edita/ajusta via modal                              │
+             │                                                                  │
+             ├──────────────────────────────────────────────────────────────────┤
+             │                                                                  │
+             │  4. BUSCAR CANDIDATOS (Funil de Talentos)                          │
+             │  ──────────────────────────────────────────────────────────────► │
+             │  • Busca no Funil de Talentos: banco interno + Pearch           │
+             │  • Gera prompt no campo de busca do Funil de Talentos           │
+             │  • Metodologias de busca:                                        │
+             │    - Elasticsearch + PGVector + WRF (Weighted Rank Fusion)      │
+             │    - ES Score Drop Analyzer + PGV Gap Analyzer (pré-WRF)        │
+             │    - WRF Dynamic K (ajuste por nível de qualificação)           │
+             │    - LLM Job Classification para otimização de K values         │
+             │  • Modos de busca:                                              │
+             │    - IA Natural (linguagem livre)                               │
+             │    - Boolean (operadores AND/OR/NOT)                            │
+             │    - Perfil Similar (a partir de candidato referência)          │
+             │    - Job Description (busca por JD colada/importada)            │
+             │    - Archetypes (perfis pré-configurados por área)              │
+             │  • Filtros Avançados (MAP-003):                                 │
+             │    - Cargo: títulos, senioridade, tempo no cargo                │
+             │    - Empresa: nome, indústria, porte, funding, HQ              │
+             │    - Skills: técnicas + nível de expertise                      │
+             │    - Educação: universidade, grau, área, ano graduação          │
+             │    - Idiomas: idioma + nível proficiência                       │
+             │    - Geral: experiência mín/máx, ocultar perfis já vistos      │
+             │    - Perfil: decision maker, top universities, startup          │
+             │    - Pearch: fast/pro, exigir email/telefone, open to work     │
+             │  • Tabela de candidatos: 10 por vez, botão "Carregar +10"       │
+             │  • Preview do candidato inline na tabela (4 tabs):               │
+             │    - Perfil Completo: dados, experiência, skills, educação     │
+             │    - Atividades: timeline (triagens WSI, emails, entrevistas,  │
+             │      candidaturas, testes, ofertas + eventos do ATS)           │
+             │    - Arquivos: CVs e documentos anexados                       │
+             │    - Pareceres e Análises: análises LIA salvas + opiniões      │
+             │  • Like/Dislike feedback por candidato (otimiza busca)           │
+             │  • Prompt expandido da LIA (lado esquerdo da tabela):           │
+             │    - Análise de perfil, comparação, ranking, skills             │
+             │    - 🤖 Ag.2 SourcingAgent (busca/perfis similares)             │
+             │    - 🤖 Ag.3 TriagemCurricular (triagem/screening)              │
+             │    - 🤖 AvaliadorWSI (análise/comparação/ranking)               │
+             │  • Pearch + Apify (captura emails + enriquecimento)             │
+             │  • Email OBRIGATÓRIO | Telefone opcional                         │
+             │                                                                  │
+             ├──────────────────────────────────────────────────────────────────┤
+             │                                                                  │
+             │  5. APROVAR MAPEADOS (Gate 1)                                     │
+             │  ──────────────────────────────────────────────────────────────► │
+             │  • Candidatos vão para coluna FUNIL no Kanban ou Tabela         │
+             │  • Card do candidato no Kanban — ícones de score com modais:    │
+             │    - 🧠 Triagem (BrainCircuit) → Modal detalhes triagem WSI     │
+             │    - 🎯 CV (Target) → Modal análise de CV                       │
+             │    - ⚙️ Geral (Gauge) → Modal nota média geral                  │
+             │    - 👁️ Preview (Eye) → Abre preview do candidato (4 tabs)      │
+             │  • Aprovação INDIVIDUAL (card a card) ou EM MASSA (max 100)     │
+             │  • Drag-and-drop manual para qualquer coluna (incl. Reprovado) │
+             │  • Etapas críticas → SmartTransitionModal pede confirmação      │
+             │  • Aprovados → LIA inicia contato | Reprovados → Feedback       │
+             │  ⚡ Inscritos via web BYPASS Gate 1 → triagem automática          │
+             │  • 🤖 Ag.0 Orchestrator | 🤖 Ag.7 AnalistaFeedback              │
+             │  • 🤖 Ag.8 IntegradorATS (sync status)                          │
+             │                                                                  │
+             ├──────────────────────────────────────────────────────────────────┤
+             │                                                                  │
+             │                              6. CONTATO VIA EMAIL                 │
+             │  ◄────────────────────────────────────────────────────────────── │
+             │  • Contato primário: SEMPRE email                                │
+             │  • Email com 2 opções:                                           │
+             │    A) Link para triagem via CHAT WEB (canal principal)           │
+             │    B) Solicita nº celular → WhatsApp (canal secundário)         │
+             │  • 🤖 Ag.0 Orchestrator dispara contato                         │
+             │                                                                  │
+             ├──────────────────────────────────────────────────────────────────┤
+             │                                                                  │
+             │                              6B. FOLLOW-UP AUTOMÁTICO (7 DIAS)   │
+             │  ◄────────────────────────────────────────────────────────────── │
+             │  • Se candidato NÃO abre/clica email                             │
+             │  • Re-envio automático a cada 24h por 7 dias consecutivos       │
+             │  • Após 7 dias sem resposta → status "sem_resposta"             │
+             │  • Consultor notificado                                          │
+             │                                                                  │
+             ├──────────────────────────────────────────────────────────────────┤
+             │                                                                  │
+             │                              7. TRIAGEM WSI                       │
+             │  ◄────────────────────────────────────────────────────────────── │
+             │  • Via chat web (link do email) OU WhatsApp (se forneceu nº)    │
+             │  • LIA aplica perguntas WSI com agentes coordenados:            │
+             │    🤖 Ag.0 Orchestrator (coordenação geral)                      │
+             │    🤖 Ag.4 EntrevistadorWSI (conduz chat, aplica perguntas)      │
+             │    🤖 Ag.5 AvaliadorWSI (analisa respostas, calcula score)       │
+             │  • Score WSI calculado ao final | Parecer textual gerado        │
+             │                                                                  │
+             ├──────────────────────────────────────────────────────────────────┤
+             │                                                                  │
+             │                              7A. TRIAGEM ABANDONADA              │
+             │  ◄────────────────────────────────────────────────────────────── │
+             │  • Candidato inicia mas para de responder                        │
+             │  • Timeout: 48h sem atividade → 1º lembrete automático          │
+             │  • +48h sem retorno → 2º lembrete                               │
+             │  • Após 2º lembrete sem retorno → alerta ao consultor           │
+             │  • Progresso parcial SALVO                                       │
+             │                                                                  │
+             ├──────────────────────────────────────────────────────────────────┤
+             │                                                                  │
+             │                              7B. FEEDBACK PÓS-TRIAGEM           │
+             │  ◄────────────────────────────────────────────────────────────── │
+             │  • Ag.4 EntrevistadorWSI agradece, dá feedback,                 │
+             │    informa próximos passos                                       │
+             │  • Canal: mesmo da triagem (chat web ou WhatsApp)               │
+             │                                                                  │
+             ├──────────────────────────────────────────────────────────────────┤
+             │                                                                  │
+             │  8. APROVAR/REPROVAR TRIADOS (Gate 2)                             │
+             │  ──────────────────────────────────────────────────────────────► │
+             │  • Consultor recebeu alerta Teams (7B)                           │
+             │  • Revisa score WSI + parecer LIA na plataforma                 │
+             │  • Aprova → SHORT LIST | Reprova → FEEDBACK                     │
+             │  • 🤖 Ag.7 AnalistaFeedback | 🤖 Ag.8 IntegradorATS             │
+             │                                                                  │
+             ├──────────────────────────────────────────────────────────────────┤
+             │                                                                  │
+             │                              9A. AGENDAR ENTREVISTA              │
+             │  ◄────────────────────────────────────────────────────────────── │
+             │  (Se APROVADO) LIA agenda entrevista                             │
+             │  • Email + WhatsApp ao candidato (data/hora + link reunião)      │
+             │  • 🤖 Ag.6 SchedulingAgent                                       │
+             │  • Se NÃO encontra horário → alerta ao consultor via Teams      │
+             │                                                                  │
+             │                              9B. ENVIAR FEEDBACK                 │
+             │  ◄────────────────────────────────────────────────────────────── │
+             │  (Se REPROVADO) LIA envia feedback via email e/ou WhatsApp      │
+             │  • 🤖 Ag.7 AnalistaFeedback                                      │
+             │                                                                  │
+             ▼                                                                  ▼
+    ┌────────────────────────────────────────────────────────────────────────────────────────┐
+    │                               FIM DO ESCOPO ALPHA 1                                    │
+    └────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
 ## 0. MAPA IA — FLUXO ALPHA 1 (somente onde IA atua)
 
 **Regra:** Um componente só aparece se IA está envolvida. "IA" = LLM, embedding, modelo ML, heurística adaptativa, ou agente autônomo. Infraestrutura pura (auth, CRUD manual, PII masking, audit trail, LGPD) não aparece — são listados uma vez na seção de infraestrutura global.
