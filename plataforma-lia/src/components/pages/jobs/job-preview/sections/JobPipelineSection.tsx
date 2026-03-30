@@ -22,7 +22,7 @@ export function JobPipelineSection({
   isLoadingJobMetrics,
 }: JobPipelineSectionProps) {
   return (
-                    <div className="space-y-4">
+    <div className="space-y-4">
                       {/* Cards de Métricas Preditivas Principais */}
                       <div className="grid grid-cols-2 gap-2">
                         {/* Score de Sucesso */}
@@ -391,6 +391,6 @@ export function JobPipelineSection({
                           )}
                         </div>
                       </div>
-                    </div>
+    </div>
   )
 }

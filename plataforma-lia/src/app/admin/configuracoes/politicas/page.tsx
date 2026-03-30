@@ -257,7 +257,7 @@ export default function GlobalPoliciesPage() {
 
   if (isLoading && policies.length === 0) {
     return (
-      <div role="status" aria-live="polite" aria-busy={true} role="status" aria-live="polite" aria-busy={true} className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary flex items-center justify-center">
+      <div role="status" aria-live="polite" aria-busy={true} className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin lia-text-600 dark:text-lia-text-tertiary mx-auto mb-4" />
           <p className="lia-text-500">Carregando políticas...</p>

@@ -8,6 +8,7 @@ import {
   Calendar, Clock, MapPin, DollarSign, Heart, Shield, Building, Lock, Globe,
   Expand, X, ChevronRight, ClipboardList,
   ChevronDown, ChevronUp,
+  Target, TrendingUp, Lightbulb, BarChart3, Brain, Zap, CheckCircle, Star, AlertCircle,
 } from "lucide-react"
 import { type Job } from "@/components/jobs"
 import { type ScreeningConfig } from "@/hooks/useScreeningConfig"

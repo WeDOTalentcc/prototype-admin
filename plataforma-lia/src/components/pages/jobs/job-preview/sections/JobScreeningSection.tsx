@@ -42,8 +42,6 @@ export function JobScreeningSection({
   onToggleBlock,
 }: JobScreeningSectionProps) {
   return (
-                  {/* Tab: Roteiro de Triagem */}
-                  {activePreviewTab === 'screening' && (
                     <div className="space-y-4">
                       {/* Loading State Guard */}
                       {isLoadingScreeningConfig ? (

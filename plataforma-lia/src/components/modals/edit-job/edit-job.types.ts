@@ -1,10 +1,27 @@
 import { type JobVacancy } from "@/services/lia-api"
+import type { Job as PageJob } from "@/components/jobs/jobsPageTypes"
 
 export interface InterviewStage {
-  stageName: string
-  order: number
-  sla: number
-  type: automated | manual | hybrid
+  id?: string | number
+  stageName?: string
+  stage_name?: string
+  order?: number
+  sla?: number
+  type?: string
+  interviewers?: string[]
+  format?: string
+  duration?: number
+  [key: string]: unknown
+}
+
+export interface ScreeningQuestion {
+  id?: string
+  text: string
+  category: string
+  type?: string
+  weight?: number
+  is_eliminatory?: boolean
+  expected_answer?: string
 }
 
 export interface PipelineTemplate {
@@ -43,17 +60,17 @@ export interface Job {
   managerEmail: string
   recruiter: string
   recruiterEmail: string
-  funnel: { total: number; screening: number; interview: number; final: number; hired: number }
+  funnel?: Record<string, number>
   publishedLinkedIn: boolean
   publishedWebsite: boolean
   publishedIndeed?: boolean
   isConfidential: boolean
   isAffirmative?: boolean
-  affirmativeType?: pcd | racial | gender | age | lgbtqia+
+  affirmativeType?: 'pcd' | 'racial' | 'gender' | 'age' | 'lgbtqia+'
   nps: number
   budget?: number
   budgetUsed?: number
-  nextActions: string[]
+  nextActions?: string[]
   urgencyLevel: 1 | 2 | 3 | 4 | 5
   hiringProcess?: string[]
   targetAudience?: string
@@ -68,10 +85,10 @@ export interface Job {
   bonusMax?: number
   targetSector?: string
   targetSegment?: string
-  languages?: { language: string; level: string; required?: boolean }[]
-  technicalRequirements?: { category: string; technology: string; level: string; required: boolean }[]
-  behavioralCompetencies?: { competency: string; weight: string }[]
-  screeningQuestions?: { id?: string; text: string; category: string; type?: string; weight?: number; is_eliminatory?: boolean; expected_answer?: string }[]
+  languages?: { language: string; level: string; required?: boolean }[] | Record<string, unknown>[]
+  technicalRequirements?: { category: string; technology: string; level: string; required: boolean }[] | Record<string, unknown>[]
+  behavioralCompetencies?: { competency: string; weight: string }[] | Record<string, unknown>[]
+  screeningQuestions?: ScreeningQuestion[]
   eligibilityQuestions?: { id?: string; question: string; type?: string; category?: string; enabled?: boolean }[]
   confidentialityConfig?: {
     can_reveal_company_name?: boolean
@@ -84,12 +101,13 @@ export interface Job {
   createdByEmail?: string
   createdAt?: string
   publicSlug?: string
+  [key: string]: unknown
 }
 
 export interface EditJobModalProps {
   isOpen: boolean
   onClose: () => void
-  job: Job | null
+  job: PageJob | null
   onSave: (jobId: string, updates: Partial<JobVacancy>) => Promise<void>
 }
 
