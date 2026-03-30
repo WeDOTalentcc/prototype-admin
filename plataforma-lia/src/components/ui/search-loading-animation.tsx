@@ -1,12 +1,13 @@
 'use client'
 
+import React from "react"
 import { Search, Check } from 'lucide-react'
 
 interface SearchLoadingAnimationProps {
   isActive: boolean
 }
 
-export function SearchLoadingAnimation({ isActive }: SearchLoadingAnimationProps) {
+export const SearchLoadingAnimation = React.memo(function SearchLoadingAnimation({ isActive }: SearchLoadingAnimationProps) {
   if (!isActive) return null
 
   return (
@@ -93,3 +94,5 @@ export function SearchLoadingAnimation({ isActive }: SearchLoadingAnimationProps
     </div>
   )
 }
+)
+SearchLoadingAnimation.displayName = 'SearchLoadingAnimation'

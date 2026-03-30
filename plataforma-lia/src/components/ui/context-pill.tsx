@@ -17,7 +17,7 @@ export const ContextPill = React.memo(function ContextPill({
   primaryText,
   secondaryText,
   onDismiss,
-  className = 
+  className = ""
 }: ContextPillProps) {
   return (
     <div 
@@ -53,4 +53,4 @@ export const ContextPill = React.memo(function ContextPill({
     </div>
   )
 })
-ContextPill.displayName = ContextPill
+ContextPill.displayName = "ContextPill"

@@ -291,3 +291,7 @@ export function ScoreBreakdownBadge({
     </div>
   )
 }
+
+ScoreBreakdownBadge.displayName = 'ScoreBreakdownBadge'
+ScoreBreakdownBadgeLazy.displayName = 'ScoreBreakdownBadgeLazy'
+ProgressBar.displayName = 'ProgressBar'

@@ -1,5 +1,6 @@
 'use client';
 
+import React from "react"
 import { cn } from '@/lib/utils';
 
 interface LoadingProps {
@@ -9,7 +10,7 @@ interface LoadingProps {
   text?: string;
 }
 
-export function Loading({
+export const Loading = React.memo(function Loading({
   variant = 'spinner',
   size = 'md',
   className,
@@ -100,7 +101,10 @@ export function Loading({
   return null;
 }
 
-export function LoadingCard({ className }: { className?: string }) {
+)
+Loading.displayName = 'Loading'
+
+export const LoadingCard = React.memo(function LoadingCard({ className }: { className?: string }) {
   return (
     <div className={cn('wedo-card p-4 space-y-3', className)}>
       <div className="loading-skeleton h-4 rounded-md w-3/4"></div>
@@ -113,7 +117,10 @@ export function LoadingCard({ className }: { className?: string }) {
   );
 }
 
-export function LoadingList({ items = 3, className }: { items?: number; className?: string }) {
+)
+LoadingCard.displayName = 'LoadingCard'
+
+export const LoadingList = React.memo(function LoadingList({ items = 3, className }: { items?: number; className?: string }) {
   return (
     <div className={cn('space-y-3', className)}>
       {Array.from({ length: items }).map((_, i) => (
@@ -128,3 +135,5 @@ export function LoadingList({ items = 3, className }: { items?: number; classNam
     </div>
   );
 }
+)
+LoadingList.displayName = 'LoadingList'

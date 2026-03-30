@@ -600,4 +600,12 @@ export function AwaitingBadge({ className }: AwaitingBadgeProps) {
   )
 }
 
+StatusBadge.displayName = 'StatusBadge'
+ChannelBadge.displayName = 'ChannelBadge'
+SourceBadge.displayName = 'SourceBadge'
+WarningBadge.displayName = 'WarningBadge'
+DateTimeBadge.displayName = 'DateTimeBadge'
+OriginBadge.displayName = 'OriginBadge'
+AwaitingBadge.displayName = 'AwaitingBadge'
+
 export default StatusBadge

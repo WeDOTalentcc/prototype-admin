@@ -266,3 +266,6 @@ export function BulkSelectionBarInline({
     </div>
   )
 }
+
+BulkSelectionBar.displayName = 'BulkSelectionBar'
+BulkSelectionBarInline.displayName = 'BulkSelectionBarInline'
