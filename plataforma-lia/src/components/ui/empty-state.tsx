@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import type { ReactNode } from "react"
@@ -15,7 +16,7 @@ interface EmptyStateProps {
   className?: string
 }
 
-export function EmptyState({
+export const EmptyState = React.memo(function EmptyState({
   icon,
   title,
   description,
@@ -25,7 +26,7 @@ export function EmptyState({
   return (
     <div
       className={cn(
- "flex flex-col items-center justify-center py-12 px-6 text-center",
+        "flex flex-col items-center justify-center py-12 px-6 text-center",
         className
       )}
     >
@@ -54,4 +55,5 @@ export function EmptyState({
       )}
     </div>
   )
-}
+})
+EmptyState.displayName = EmptyState

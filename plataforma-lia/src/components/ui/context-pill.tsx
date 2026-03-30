@@ -1,8 +1,8 @@
 "use client"
 
-import React from 'react'
-import { MapPin, X } from 'lucide-react'
-import { Button } from './button'
+import React from react
+import { MapPin, X } from lucide-react
+import { Button } from ./button
 
 interface ContextPillProps {
   icon?: React.ReactNode
@@ -12,16 +12,16 @@ interface ContextPillProps {
   className?: string
 }
 
-export function ContextPill({
+export const ContextPill = React.memo(function ContextPill({
   icon = <MapPin className="w-3.5 h-3.5" />,
   primaryText,
   secondaryText,
   onDismiss,
-  className = ''
+  className = 
 }: ContextPillProps) {
   return (
     <div 
-      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm border transition-[width,height] duration-200 bg-lia-bg-primary border-lia-border-default lia-text-strong ${className}`}
+      className={}
     >
       <span className="text-lia-text-secondary dark:text-lia-text-tertiary flex-shrink-0">
         {icon}
@@ -52,4 +52,5 @@ export function ContextPill({
       )}
     </div>
   )
-}
+})
+ContextPill.displayName = ContextPill
