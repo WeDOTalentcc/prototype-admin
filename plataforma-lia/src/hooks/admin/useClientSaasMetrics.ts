@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from "react"
+import useSWR from swr
 import {
   saasMetricsClientService,
   ClientSaasMetrics,
@@ -9,7 +9,7 @@ import {
   ClientHealthMetrics,
   ClientPayment,
   ApiClientError,
-} from "@/services/admin/saas-metrics-service"
+} from @/services/admin/saas-metrics-service
 
 export interface UseClientSaasMetricsResult {
   metrics: ClientSaasMetrics | null
@@ -47,221 +47,81 @@ export interface UseClientPaymentsResult {
 }
 
 export function useClientSaasMetrics(clientId: string): UseClientSaasMetricsResult {
-  const [metrics, setMetrics] = useState<ClientSaasMetrics | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const isMountedRef = useRef(true)
-
-  const fetchMetrics = useCallback(async () => {
-    if (!clientId) {
-      if (isMountedRef.current) setIsLoading(false)
-      return
-    }
-
-    if (isMountedRef.current) setIsLoading(true)
-    if (isMountedRef.current) setError(null)
-
-    try {
-      const data = await saasMetricsClientService.getClientMetrics(clientId)
-      if (isMountedRef.current) setMetrics(data)
-    } catch (err) {
-      if (!isMountedRef.current) return
-      if (err instanceof ApiClientError) {
-        setError(err.message)
-      } else {
-        setError("Erro ao carregar métricas do cliente")
-      }
-    } finally {
-      if (isMountedRef.current) setIsLoading(false)
-    }
-  }, [clientId])
-
-  useEffect(() => {
-    isMountedRef.current = true
-    fetchMetrics()
-    return () => { isMountedRef.current = false }
-  }, [fetchMetrics])
+  const { data, error, isLoading, mutate } = useSWR(
+    clientId ? [adminClientSaasMetrics, clientId] : null,
+    ([, id]) => saasMetricsClientService.getClientMetrics(id)
+  )
 
   return {
-    metrics,
+    metrics: data ?? null,
     isLoading,
-    error,
-    refetch: fetchMetrics,
+    error: error instanceof ApiClientError ? error.message
+      : error instanceof Error ? error.message
+      : error ? String(error) : null,
+    refetch: () => mutate(),
   }
 }
 
 export function useClientRevenue(clientId: string): UseClientRevenueResult {
-  const [revenue, setRevenue] = useState<ClientRevenueMetrics | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const isMountedRef = useRef(true)
-
-  const fetchRevenue = useCallback(async () => {
-    if (!clientId) {
-      if (isMountedRef.current) setIsLoading(false)
-      return
-    }
-
-    if (isMountedRef.current) setIsLoading(true)
-    if (isMountedRef.current) setError(null)
-
-    try {
-      const data = await saasMetricsClientService.getClientRevenue(clientId)
-      if (isMountedRef.current) setRevenue(data)
-    } catch (err) {
-      if (!isMountedRef.current) return
-      if (err instanceof ApiClientError) {
-        setError(err.message)
-      } else {
-        setError("Erro ao carregar receita do cliente")
-      }
-    } finally {
-      if (isMountedRef.current) setIsLoading(false)
-    }
-  }, [clientId])
-
-  useEffect(() => {
-    isMountedRef.current = true
-    fetchRevenue()
-    return () => { isMountedRef.current = false }
-  }, [fetchRevenue])
+  const { data, error, isLoading, mutate } = useSWR(
+    clientId ? [adminClientRevenue, clientId] : null,
+    ([, id]) => saasMetricsClientService.getClientRevenue(id)
+  )
 
   return {
-    revenue,
+    revenue: data ?? null,
     isLoading,
-    error,
-    refetch: fetchRevenue,
+    error: error instanceof ApiClientError ? error.message
+      : error instanceof Error ? error.message
+      : error ? String(error) : null,
+    refetch: () => mutate(),
   }
 }
 
 export function useClientUsage(clientId: string): UseClientUsageResult {
-  const [usage, setUsage] = useState<ClientUsageMetrics | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const isMountedRef = useRef(true)
-
-  const fetchUsage = useCallback(async () => {
-    if (!clientId) {
-      if (isMountedRef.current) setIsLoading(false)
-      return
-    }
-
-    if (isMountedRef.current) setIsLoading(true)
-    if (isMountedRef.current) setError(null)
-
-    try {
-      const data = await saasMetricsClientService.getClientUsage(clientId)
-      if (isMountedRef.current) setUsage(data)
-    } catch (err) {
-      if (!isMountedRef.current) return
-      if (err instanceof ApiClientError) {
-        setError(err.message)
-      } else {
-        setError("Erro ao carregar uso do cliente")
-      }
-    } finally {
-      if (isMountedRef.current) setIsLoading(false)
-    }
-  }, [clientId])
-
-  useEffect(() => {
-    isMountedRef.current = true
-    fetchUsage()
-    return () => { isMountedRef.current = false }
-  }, [fetchUsage])
+  const { data, error, isLoading, mutate } = useSWR(
+    clientId ? [adminClientUsage, clientId] : null,
+    ([, id]) => saasMetricsClientService.getClientUsage(id)
+  )
 
   return {
-    usage,
+    usage: data ?? null,
     isLoading,
-    error,
-    refetch: fetchUsage,
+    error: error instanceof ApiClientError ? error.message
+      : error instanceof Error ? error.message
+      : error ? String(error) : null,
+    refetch: () => mutate(),
   }
 }
 
 export function useClientHealth(clientId: string): UseClientHealthResult {
-  const [health, setHealth] = useState<ClientHealthMetrics | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const isMountedRef = useRef(true)
-
-  const fetchHealth = useCallback(async () => {
-    if (!clientId) {
-      if (isMountedRef.current) setIsLoading(false)
-      return
-    }
-
-    if (isMountedRef.current) setIsLoading(true)
-    if (isMountedRef.current) setError(null)
-
-    try {
-      const data = await saasMetricsClientService.getClientHealth(clientId)
-      if (isMountedRef.current) setHealth(data)
-    } catch (err) {
-      if (!isMountedRef.current) return
-      if (err instanceof ApiClientError) {
-        setError(err.message)
-      } else {
-        setError("Erro ao carregar saúde do cliente")
-      }
-    } finally {
-      if (isMountedRef.current) setIsLoading(false)
-    }
-  }, [clientId])
-
-  useEffect(() => {
-    isMountedRef.current = true
-    fetchHealth()
-    return () => { isMountedRef.current = false }
-  }, [fetchHealth])
+  const { data, error, isLoading, mutate } = useSWR(
+    clientId ? [adminClientHealth, clientId] : null,
+    ([, id]) => saasMetricsClientService.getClientHealth(id)
+  )
 
   return {
-    health,
+    health: data ?? null,
     isLoading,
-    error,
-    refetch: fetchHealth,
+    error: error instanceof ApiClientError ? error.message
+      : error instanceof Error ? error.message
+      : error ? String(error) : null,
+    refetch: () => mutate(),
   }
 }
 
 export function useClientPayments(clientId: string): UseClientPaymentsResult {
-  const [payments, setPayments] = useState<ClientPayment[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const isMountedRef = useRef(true)
-
-  const fetchPayments = useCallback(async () => {
-    if (!clientId) {
-      if (isMountedRef.current) setIsLoading(false)
-      return
-    }
-
-    if (isMountedRef.current) setIsLoading(true)
-    if (isMountedRef.current) setError(null)
-
-    try {
-      const data = await saasMetricsClientService.getClientPayments(clientId)
-      if (isMountedRef.current) setPayments(data)
-    } catch (err) {
-      if (!isMountedRef.current) return
-      if (err instanceof ApiClientError) {
-        setError(err.message)
-      } else {
-        setError("Erro ao carregar pagamentos do cliente")
-      }
-    } finally {
-      if (isMountedRef.current) setIsLoading(false)
-    }
-  }, [clientId])
-
-  useEffect(() => {
-    isMountedRef.current = true
-    fetchPayments()
-    return () => { isMountedRef.current = false }
-  }, [fetchPayments])
+  const { data, error, isLoading, mutate } = useSWR(
+    clientId ? [adminClientPayments, clientId] : null,
+    ([, id]) => saasMetricsClientService.getClientPayments(id)
+  )
 
   return {
-    payments,
+    payments: data ?? [],
     isLoading,
-    error,
-    refetch: fetchPayments,
+    error: error instanceof ApiClientError ? error.message
+      : error instanceof Error ? error.message
+      : error ? String(error) : null,
+    refetch: () => mutate(),
   }
 }
