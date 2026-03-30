@@ -10,9 +10,15 @@
  * - Não faz fetch se user sem id
  */
 
+import React from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
+import { SWRConfig } from 'swr'
 import { useDailyBriefing } from '../use-daily-briefing'
+
+const swrWrapper = ({ children }: { children: React.ReactNode }) => (
+  React.createElement(SWRConfig, { value: { dedupingInterval: 0, provider: () => new Map(), revalidateOnFocus: false } }, children)
+)
 
 // Mock useJWTAuth
 const mockUser = { id: 'user-123', email: 'test@test.com', name: 'Test' }
@@ -49,7 +55,7 @@ describe('useDailyBriefing', () => {
 
   it('estado inicial: briefing=null, error=null (hook inicia fetch imediatamente)', async () => {
     mockFetch.mockResolvedValue({ ok: true, json: async () => mockBriefingData })
-    const { result } = renderHook(() => useDailyBriefing())
+    const { result } = renderHook(() => useDailyBriefing(), { wrapper: swrWrapper })
     // briefing e error são null antes da resposta chegar
     expect(result.current.briefing).toBeNull()
     expect(result.current.error).toBeNull()
@@ -59,7 +65,7 @@ describe('useDailyBriefing', () => {
 
   it('busca briefing no mount e popula estado', async () => {
     mockFetch.mockResolvedValue({ ok: true, json: async () => mockBriefingData })
-    const { result } = renderHook(() => useDailyBriefing())
+    const { result } = renderHook(() => useDailyBriefing(), { wrapper: swrWrapper })
 
     await waitFor(() => {
       expect(result.current.briefing).not.toBeNull()
@@ -75,7 +81,7 @@ describe('useDailyBriefing', () => {
 
   it('seta error quando fetch retorna status não-ok', async () => {
     mockFetch.mockResolvedValue({ ok: false, status: 503 })
-    const { result } = renderHook(() => useDailyBriefing())
+    const { result } = renderHook(() => useDailyBriefing(), { wrapper: swrWrapper })
 
     await waitFor(() => {
       expect(result.current.error).not.toBeNull()
@@ -87,7 +93,7 @@ describe('useDailyBriefing', () => {
 
   it('seta error quando fetch lança exceção de rede', async () => {
     mockFetch.mockRejectedValue(new Error('Network error'))
-    const { result } = renderHook(() => useDailyBriefing())
+    const { result } = renderHook(() => useDailyBriefing(), { wrapper: swrWrapper })
 
     await waitFor(() => {
       expect(result.current.error).not.toBeNull()
@@ -102,7 +108,7 @@ describe('useDailyBriefing', () => {
       .mockResolvedValueOnce({ ok: true, json: async () => ({}) })             // POST refresh
       .mockResolvedValueOnce({ ok: true, json: async () => ({ ...mockBriefingData, greeting: 'Atualizado' }) }) // GET pós-refresh
 
-    const { result } = renderHook(() => useDailyBriefing())
+    const { result } = renderHook(() => useDailyBriefing(), { wrapper: swrWrapper })
     await waitFor(() => expect(result.current.briefing).not.toBeNull())
 
     await act(async () => {
@@ -120,7 +126,7 @@ describe('useDailyBriefing', () => {
     const { useJWTAuth } = await import('@/contexts/auth-context')
     vi.mocked(useJWTAuth).mockReturnValueOnce({ user: null } as ReturnType<typeof useJWTAuth>)
 
-    const { result } = renderHook(() => useDailyBriefing())
+    const { result } = renderHook(() => useDailyBriefing(), { wrapper: swrWrapper })
     expect(mockFetch).not.toHaveBeenCalled()
     expect(result.current.briefing).toBeNull()
   })

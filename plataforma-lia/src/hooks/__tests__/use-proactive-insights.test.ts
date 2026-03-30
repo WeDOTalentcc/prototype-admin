@@ -1,5 +1,11 @@
+import React from 'react'
 import { renderHook, act } from '@testing-library/react'
+import { SWRConfig } from 'swr'
 import { useProactiveInsights } from '../use-proactive-insights'
+
+const swrWrapper = ({ children }: { children: React.ReactNode }) => (
+  React.createElement(SWRConfig, { value: { dedupingInterval: 0, provider: () => new Map(), revalidateOnFocus: false } }, children)
+)
 
 const MOCK_INSIGHTS = [
   { id: 'i1', title: 'Candidato inativo', message: 'Carlos não respondeu em 3 dias', urgency: 'high', type: 'candidate_follow_up', action_url: null, created_at: '2026-03-15T00:00:00' },
@@ -37,7 +43,8 @@ describe('useProactiveInsights', () => {
     })
 
     const { result } = renderHook(() =>
-      useProactiveInsights('job-1', 'company-1')
+      useProactiveInsights('job-1', 'company-1'),
+      { wrapper: swrWrapper }
     )
 
     await act(async () => {
@@ -52,7 +59,8 @@ describe('useProactiveInsights', () => {
 
   it('does not fetch when companyId is missing', async () => {
     const { result } = renderHook(() =>
-      useProactiveInsights('job-1', null)
+      useProactiveInsights('job-1', null),
+      { wrapper: swrWrapper }
     )
 
     await act(async () => { await Promise.resolve() })
@@ -67,7 +75,8 @@ describe('useProactiveInsights', () => {
     })
 
     const { result } = renderHook(() =>
-      useProactiveInsights('job-1', 'company-1')
+      useProactiveInsights('job-1', 'company-1'),
+      { wrapper: swrWrapper }
     )
 
     await act(async () => { await Promise.resolve() })
@@ -86,7 +95,7 @@ describe('useProactiveInsights', () => {
       json: async () => [],
     })
 
-    renderHook(() => useProactiveInsights('job-42', 'comp-1'))
+    renderHook(() => useProactiveInsights('job-42', 'comp-1'), { wrapper: swrWrapper })
     await act(async () => { await Promise.resolve() })
 
     expect(global.fetch).toHaveBeenCalledWith(
@@ -98,7 +107,8 @@ describe('useProactiveInsights', () => {
     ;(global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('Network'))
 
     const { result } = renderHook(() =>
-      useProactiveInsights('job-1', 'comp-1')
+      useProactiveInsights('job-1', 'comp-1'),
+      { wrapper: swrWrapper }
     )
     await act(async () => { await Promise.resolve() })
 
@@ -109,7 +119,7 @@ describe('useProactiveInsights', () => {
     ;(global.fetch as ReturnType<typeof vi.fn>)
       .mockResolvedValue({ ok: true, json: async () => [] })
 
-    renderHook(() => useProactiveInsights('job-1', 'comp-1'))
+    renderHook(() => useProactiveInsights('job-1', 'comp-1'), { wrapper: swrWrapper })
 
     await act(async () => { await Promise.resolve() })
     expect(global.fetch).toHaveBeenCalledTimes(1)

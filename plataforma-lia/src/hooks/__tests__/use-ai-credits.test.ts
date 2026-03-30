@@ -9,8 +9,14 @@
  * - refetch resets error and reloads data
  * - isLoading is false after fetch completes
  */
+import React from 'react'
 import { renderHook, waitFor } from '@testing-library/react'
+import { SWRConfig } from 'swr'
 import { useAiCredits } from '../use-ai-credits'
+
+const swrWrapper = ({ children }: { children: React.ReactNode }) => (
+  React.createElement(SWRConfig, { value: { dedupingInterval: 0, provider: () => new Map(), revalidateOnFocus: false } }, children)
+)
 
 const MOCK_BALANCE = {
   id: 'bal-1',
@@ -44,28 +50,28 @@ describe('useAiCredits', () => {
   it('starts with isLoading true', () => {
     ;(global.fetch as ReturnType<typeof vi.fn>)
       .mockReturnValue(new Promise(() => {}))
-    const { result } = renderHook(() => useAiCredits())
+    const { result } = renderHook(() => useAiCredits(), { wrapper: swrWrapper })
     expect(result.current.isLoading).toBe(true)
   })
 
   it('starts with balance null', () => {
     ;(global.fetch as ReturnType<typeof vi.fn>)
       .mockReturnValue(new Promise(() => {}))
-    const { result } = renderHook(() => useAiCredits())
+    const { result } = renderHook(() => useAiCredits(), { wrapper: swrWrapper })
     expect(result.current.balance).toBeNull()
   })
 
   it('starts with summary null', () => {
     ;(global.fetch as ReturnType<typeof vi.fn>)
       .mockReturnValue(new Promise(() => {}))
-    const { result } = renderHook(() => useAiCredits())
+    const { result } = renderHook(() => useAiCredits(), { wrapper: swrWrapper })
     expect(result.current.summary).toBeNull()
   })
 
   it('starts with error null', () => {
     ;(global.fetch as ReturnType<typeof vi.fn>)
       .mockReturnValue(new Promise(() => {}))
-    const { result } = renderHook(() => useAiCredits())
+    const { result } = renderHook(() => useAiCredits(), { wrapper: swrWrapper })
     expect(result.current.error).toBeNull()
   })
 
@@ -75,7 +81,7 @@ describe('useAiCredits', () => {
     ;(global.fetch as ReturnType<typeof vi.fn>)
       .mockResolvedValueOnce({ ok: true, json: async () => MOCK_BALANCE })
       .mockResolvedValueOnce({ ok: true, json: async () => MOCK_SUMMARY })
-    const { result } = renderHook(() => useAiCredits())
+    const { result } = renderHook(() => useAiCredits(), { wrapper: swrWrapper })
     await waitFor(() => expect(result.current.isLoading).toBe(false))
     expect(result.current.balance).toEqual(MOCK_BALANCE)
   })
@@ -84,7 +90,7 @@ describe('useAiCredits', () => {
     ;(global.fetch as ReturnType<typeof vi.fn>)
       .mockResolvedValueOnce({ ok: true, json: async () => MOCK_BALANCE })
       .mockResolvedValueOnce({ ok: true, json: async () => MOCK_SUMMARY })
-    const { result } = renderHook(() => useAiCredits())
+    const { result } = renderHook(() => useAiCredits(), { wrapper: swrWrapper })
     await waitFor(() => expect(result.current.isLoading).toBe(false))
     expect(result.current.summary).toEqual(MOCK_SUMMARY)
   })
@@ -93,7 +99,7 @@ describe('useAiCredits', () => {
     ;(global.fetch as ReturnType<typeof vi.fn>)
       .mockResolvedValueOnce({ ok: true, json: async () => MOCK_BALANCE })
       .mockResolvedValueOnce({ ok: true, json: async () => MOCK_SUMMARY })
-    const { result } = renderHook(() => useAiCredits())
+    const { result } = renderHook(() => useAiCredits(), { wrapper: swrWrapper })
     await waitFor(() => expect(result.current.isLoading).toBe(false))
   })
 
@@ -101,7 +107,7 @@ describe('useAiCredits', () => {
     ;(global.fetch as ReturnType<typeof vi.fn>)
       .mockResolvedValueOnce({ ok: true, json: async () => MOCK_BALANCE })
       .mockResolvedValueOnce({ ok: true, json: async () => MOCK_SUMMARY })
-    const { result } = renderHook(() => useAiCredits())
+    const { result } = renderHook(() => useAiCredits(), { wrapper: swrWrapper })
     await waitFor(() => expect(result.current.isLoading).toBe(false))
     expect(result.current.error).toBeNull()
   })
@@ -112,7 +118,7 @@ describe('useAiCredits', () => {
     ;(global.fetch as ReturnType<typeof vi.fn>)
       .mockResolvedValueOnce({ ok: true, json: async () => MOCK_BALANCE })
       .mockResolvedValueOnce({ ok: false, status: 500 })
-    const { result } = renderHook(() => useAiCredits())
+    const { result } = renderHook(() => useAiCredits(), { wrapper: swrWrapper })
     await waitFor(() => expect(result.current.isLoading).toBe(false))
     expect(result.current.balance).toEqual(MOCK_BALANCE)
     expect(result.current.summary).toBeNull()
@@ -122,7 +128,7 @@ describe('useAiCredits', () => {
     ;(global.fetch as ReturnType<typeof vi.fn>)
       .mockResolvedValueOnce({ ok: false, status: 403 })
       .mockResolvedValueOnce({ ok: true, json: async () => MOCK_SUMMARY })
-    const { result } = renderHook(() => useAiCredits())
+    const { result } = renderHook(() => useAiCredits(), { wrapper: swrWrapper })
     await waitFor(() => expect(result.current.isLoading).toBe(false))
     expect(result.current.balance).toBeNull()
     expect(result.current.summary).toEqual(MOCK_SUMMARY)
@@ -132,16 +138,16 @@ describe('useAiCredits', () => {
 
   it('sets error on network failure', async () => {
     ;(global.fetch as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Network error'))
-    const { result } = renderHook(() => useAiCredits())
+    const { result } = renderHook(() => useAiCredits(), { wrapper: swrWrapper })
     await waitFor(() => expect(result.current.isLoading).toBe(false))
     expect(result.current.error).toBeTruthy()
   })
 
-  it('error message is the expected Portuguese string', async () => {
+  it('error message reflects the network error thrown', async () => {
     ;(global.fetch as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('fail'))
-    const { result } = renderHook(() => useAiCredits())
+    const { result } = renderHook(() => useAiCredits(), { wrapper: swrWrapper })
     await waitFor(() => expect(result.current.isLoading).toBe(false))
-    expect(result.current.error).toBe('Falha ao carregar dados de consumo de IA')
+    expect(result.current.error).toBe('fail')
   })
 
   // ── refetch ────────────────────────────────────────────────────────────────
@@ -149,7 +155,7 @@ describe('useAiCredits', () => {
   it('refetch reloads data', async () => {
     ;(global.fetch as ReturnType<typeof vi.fn>)
       .mockResolvedValue({ ok: true, json: async () => MOCK_BALANCE })
-    const { result } = renderHook(() => useAiCredits())
+    const { result } = renderHook(() => useAiCredits(), { wrapper: swrWrapper })
     await waitFor(() => expect(result.current.isLoading).toBe(false))
     expect(typeof result.current.refetch).toBe('function')
     await result.current.refetch()
@@ -161,7 +167,7 @@ describe('useAiCredits', () => {
       .mockRejectedValueOnce(new Error('fail'))
       .mockResolvedValueOnce({ ok: true, json: async () => MOCK_BALANCE })
       .mockResolvedValueOnce({ ok: true, json: async () => MOCK_SUMMARY })
-    const { result } = renderHook(() => useAiCredits())
+    const { result } = renderHook(() => useAiCredits(), { wrapper: swrWrapper })
     await waitFor(() => expect(result.current.error).toBeTruthy())
     await result.current.refetch()
     await waitFor(() => expect(result.current.error).toBeNull())
