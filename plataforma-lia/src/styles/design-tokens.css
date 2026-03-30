@@ -182,6 +182,20 @@
     --space-lg: 24px;
     --space-xl: 32px;
     --space-2xl: 48px;
+  /* === Aliases: shadcn/ui → LIA Design System === */
+  /* Permite que componentes shadcn/ui usem automaticamente os tokens LIA */
+  --background: var(--lia-bg-primary);
+  --card: var(--lia-bg-elevated);
+  --popover: var(--lia-bg-elevated);
+  --muted: var(--lia-bg-secondary);
+  --foreground: var(--lia-text-primary);
+  --card-foreground: var(--lia-text-primary);
+  --popover-foreground: var(--lia-text-primary);
+  --muted-foreground: var(--lia-text-secondary);
+  --border: var(--lia-border-default);
+  --input: var(--lia-border-default);
+  --accent: var(--lia-bg-tertiary);
+  --accent-foreground: var(--lia-text-primary);
 }
 
 /* ========================================
@@ -265,6 +279,19 @@
     --lia-input-border-focus: #F9FAFB;
     --lia-input-text: #F9FAFB;
     --lia-input-placeholder: #6B7280;
+  /* === Aliases: shadcn/ui → LIA Design System (dark) === */
+  --background: var(--lia-bg-primary);
+  --card: var(--lia-bg-elevated);
+  --popover: var(--lia-bg-elevated);
+  --muted: var(--lia-bg-secondary);
+  --foreground: var(--lia-text-primary);
+  --card-foreground: var(--lia-text-primary);
+  --popover-foreground: var(--lia-text-primary);
+  --muted-foreground: var(--lia-text-secondary);
+  --border: var(--lia-border-default);
+  --input: var(--lia-border-default);
+  --accent: var(--lia-bg-tertiary);
+  --accent-foreground: var(--lia-text-primary);
 }
 
 /* ========================================

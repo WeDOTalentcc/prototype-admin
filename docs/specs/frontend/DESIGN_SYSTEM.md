@@ -753,3 +753,32 @@ O mapeamento completo React → Vuetify para futura migração está em `docs/PR
 | `plataforma-lia/src/lib/utils.ts` | `cn()` utility (clsx + tailwind-merge) |
 | `docs/PRODUCT_DESIGN_INVENTORY.md` | Inventário completo de 70 componentes, 35 modais, todas as telas |
 | `docs/JIRA_CARD_CHAT_DESIGN_FIX.md` | Design debt — chat LIA colors fix |
+
+---
+
+## 2.6 Unificação de Sistemas de Tokens
+
+O projeto mantinha dois sistemas CSS coexistentes:
+- **shadcn/ui** (HSL): variáveis como , , 
+- **LIA DS** (hex): variáveis como , 
+
+**Solução adotada:** aliases em  que fazem as variáveis shadcn apontarem para os tokens LIA.
+Isso garante que componentes shadcn/ui automaticamente usem o Design System LIA sem breaking changes.
+
+**Regra:** Novos componentes devem usar variáveis  e  diretamente.
+As variáveis shadcn (, etc.) são mantidas apenas para compatibilidade com a biblioteca.
+
+
+---
+
+## 2.6 Unificacao de Sistemas de Tokens
+
+O projeto mantinha dois sistemas CSS coexistentes:
+- **shadcn/ui** (HSL): variaveis como `--background`, `--foreground`, `--primary`
+- **LIA DS** (hex): variaveis como `--lia-bg-primary`, `--lia-text-primary`
+
+**Solucao adotada:** aliases em `design-tokens.css` que fazem as variaveis shadcn apontarem para os tokens LIA.
+Isso garante que componentes shadcn/ui automaticamente usem o Design System LIA sem breaking changes.
+
+**Regra:** Novos componentes devem usar variaveis `--lia-*` e `--wedo-*` diretamente.
+As variaveis shadcn (`--background`, etc.) sao mantidas apenas para compatibilidade com a biblioteca.
