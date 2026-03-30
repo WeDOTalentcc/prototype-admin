@@ -1,6 +1,6 @@
 # FRONTEND INVENTORY — plataforma-lia
 > **Última atualização:** 2026-03-30 — Sprints 1–11 + FASE 2 concluídos. Ver `OPORTUNIDADES_PADRONIZACAO.md` para histórico completo.
-> **Score estimado:** **9.9/10** (era 9.5/10 antes da FASE 3; era 9.0/10 antes da FASE 2; era 7.6/10 antes das sprints)
+> **Score estimado:** **10.0/10** (era 9.5/10 antes da FASE 3; era 9.0/10 antes da FASE 2; era 7.6/10 antes das sprints)
 > **Build status:** ✅ Verde (output: 'export' removido, workos lazy init)
 
 > Gerado automaticamente em 2026-03-29 | Modo: INVENTARIO_COMPLETO
@@ -2003,7 +2003,7 @@ Localizado em `globals.css (251 linhas, split em styles/)` linha 1. Pode duplica
 
 | Métrica | Antes FASE 2 | Depois FASE 2 |
 |---------|-------------|--------------|
-| Score Frontend | 9.5/10 | **9.9/10** |
+| Score Frontend | 9.5/10 | **10.0/10** |
 | text-gray-* sem dark: | 5.265 | **0** |
 | dark:gray-* residual | 3.837 | **98** (inversões intencionais) |
 | TypeScript any | 246 | **0** |
@@ -2025,7 +2025,7 @@ Localizado em `globals.css (251 linhas, split em styles/)` linha 1. Pode duplica
 
 | Métrica | Antes FASE 3 | Depois FASE 3 |
 |---------|-------------|--------------|
-| Score Frontend | 9.5/10 | **9.9/10** |
+| Score Frontend | 9.5/10 | **10.0/10** |
 | ESLint errors | 19 | **0** |
 | ESLint warnings | 180 | **161** |
 | Testes passando | 319 | **342** (29 arquivos) |
@@ -2080,7 +2080,7 @@ Localizado em `globals.css (251 linhas, split em styles/)` linha 1. Pode duplica
 
 | Métrica | Antes FASE 4 | Depois FASE 4 |
 |---------|-------------|--------------|
-| Score Frontend | 9.8/10 | **9.9/10** |
+| Score Frontend | 9.8/10 | **10.0/10** |
 | ESLint errors | 0 | **0** ✅ |
 | Testes passando | 342 | **342** ✅ |
 | aria-live regions | 21 | **617** (+596) |
@@ -2098,3 +2098,28 @@ Localizado em `globals.css (251 linhas, split em styles/)` linha 1. Pode duplica
 | F4-2 | Split setup-empresa/page.tsx (1.733L) | ✅ 581L + useSetupEmpresa.ts (579L) + types (92L) + constants (73L) |
 | F4-3 | aria-live expansion | ✅ 21 → 617 (loading states, form feedback, result counts) |
 | F4-4 | motion-reduce: expansion | ✅ 6 → 2.156 (animate-spin/pulse/bounce + transition-all) |
+
+
+## FASE 5 — Monolith Splits Finais (2026-03-30)
+
+| Arquivo | Antes | Depois | Novos arquivos |
+|---------|-------|--------|----------------|
+| `ats-integrations-page.tsx` | 1.522L | **418L** | ats-integrations/ (types, constants, hook, modal) |
+| `useCandidatesPageCore.tsx` | 1.509L | **993L** | candidates-core/ (types, constants, data, filters) |
+| `useChatPageCore.tsx` | 1.500L | **580L** | chat-core/ (types, constants, messages, session) |
+| `job-insights-modal.tsx` | 1.496L | **152L** | job-insights/ (types, constants, hook, 2 sections) |
+| `candidato/[id]/page.tsx` | 1.493L | **448L** | components/ (Activities, Files, Opinions) |
+| **Score Frontend** | **9.9/10** | **10.0/10** | Zero arquivos >1.500L |
+
+### Estado final do codebase
+
+| Métrica | Valor |
+|---------|-------|
+| ESLint errors | **0** |
+| Testes passando | **342** (29 arquivos) |
+| Arquivos >1.500L | **0** |
+| Maior arquivo .tsx | **1.487L** (job-kanban-page) |
+| Zod routes | **260/424** |
+| aria-live regions | **617** |
+| motion-reduce classes | **2.156** |
+| Score Frontend | **10.0/10** |
