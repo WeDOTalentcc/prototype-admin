@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, memo } from "react"
 import { cn } from "@/lib/utils"
 import { LIAIcon } from "@/components/ui/lia-icon"
 import { AudioPlayer } from "@/components/ui/audio-player"
@@ -50,7 +50,7 @@ function parseSimpleMarkdown(text: string): string {
     .replace(/\n/g, "<br />")
 }
 
-export function MessageBubble({ message, candidateName = "Candidato", className, autoPlayAudio = false }: MessageBubbleProps) {
+const MessageBubble = memo(function MessageBubble({ message, candidateName = "Candidato", className, autoPlayAudio = false }: MessageBubbleProps) {
   const isLia = message.role === "lia"
   const [isAudioPlaying, setIsAudioPlaying] = useState(false)
 
@@ -115,4 +115,7 @@ export function MessageBubble({ message, candidateName = "Candidato", className,
       )}
     </div>
   )
-}
+})
+MessageBubble.displayName = "MessageBubble"
+
+export { MessageBubble }

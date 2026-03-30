@@ -273,8 +273,8 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
                 { name: "Convite para entrevista", message: "Parabéns! Você foi selecionado(a) para a próxima etapa do processo seletivo para a vaga de {vaga}. 🎉" },
                 { name: "Lembrete de entrevista", message: "Olá! Lembrando que sua entrevista está agendada para amanhã às {horario}. 📅" },
                 { name: "Solicitação de documentos", message: "Para prosseguir com seu processo, precisamos que envie os seguintes documentos: {documentos}" }
-              ].map((template, index) => (
-                <div key={index} className="p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
+              ].map((template) => (
+                <div key={template.name} className="p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-medium text-sm">{template.name}</span>
                     <Button variant="outline" size="sm">Editar</Button>
@@ -351,7 +351,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
                 trigger: "30 dias de inatividade"
               }
             ].map((automation, index) => (
-              <div key={index} className="flex items-center justify-between p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
+              <div key={`auto-${index}`} className="flex items-center justify-between p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-md flex items-center justify-center ${
                     automation.status === 'ativo' ? 'bg-status-success/15 dark:bg-status-success/20' : 'bg-gray-100 dark:bg-lia-bg-secondary'
@@ -741,8 +741,8 @@ export function AssessmentTab({ onSettingsChange }: { onSettingsChange: (changed
               { categoria: 'Soft Skills', peso: 30, criterios: ['Comunicação', 'Liderança'] },
               { categoria: 'Fit Cultural', peso: 20, criterios: ['Alinhamento com valores', 'Adaptabilidade'] },
               { categoria: 'Potencial de Crescimento', peso: 10, criterios: ['Aprendizado contínuo', 'Ambição'] }
-            ].map((item, index) => (
-              <div key={index} className="p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
+            ].map((item) => (
+              <div key={item.categoria} className="p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-sm font-medium lia-text-950 dark:lia-text-50">
                     {item.categoria}

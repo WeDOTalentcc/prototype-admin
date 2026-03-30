@@ -385,8 +385,8 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                 <div>
                   <h5 className="font-medium font-sans text-lia-text-primary mb-3">Checklist de Requisitos Essenciais</h5>
                   <div className="space-y-2">
-                    {j.arr<string>('requirements').length > 0 ? j.arr<string>('requirements').map((requirement: string, index: number) => (
-                      <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                    {j.arr<string>('requirements').length > 0 ? j.arr<string>('requirements').map((requirement: string) => (
+                      <div key={requirement} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                         <input type="checkbox" className="rounded-md" />
                         <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">{requirement}</span>
                       </div>
@@ -440,7 +440,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                       <CardContent>
                         <div className="space-y-3">
                           {approachStrategy.structure.map((step, index) => (
-                            <div key={index} className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                            <div key={`step-${index}`} className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                               <div className="w-6 h-6 bg-status-success/15 dark:bg-status-success/20 rounded-full flex items-center justify-center text-status-success text-xs font-bold">
                                 {index + 1}
                               </div>
@@ -461,7 +461,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                       <CardContent>
                         <div className="space-y-2">
                           {approachStrategy.tips.map((tip, index) => (
-                            <div key={index} className="flex items-start gap-2">
+                            <div key={`tip-${index}`} className="flex items-start gap-2">
                               <Star className="w-3 h-3 text-status-warning mt-1 flex-shrink-0" />
                               <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">{tip}</span>
                             </div>
@@ -741,8 +741,8 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {jobPresentation.benefits.map((benefit: string, index: number) => (
-                        <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                      {jobPresentation.benefits.map((benefit: string) => (
+                        <div key={benefit} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                           <CheckCircle className="w-4 h-4 text-status-success" />
                           <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">{benefit}</span>
                         </div>
@@ -921,7 +921,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                   <CardContent>
                     <div className="space-y-3">
                       {feedbackStrategy.feedbackGuidelines.map((guideline, index) => (
-                        <div key={index} className="flex items-start gap-3 p-3 bg-status-warning/10 rounded-md">
+                        <div key={`fg-${index}`} className="flex items-start gap-3 p-3 bg-status-warning/10 rounded-md">
                           <Star className="w-4 h-4 text-status-warning mt-0.5" />
                           <span className="text-sm text-status-warning dark:text-status-warning">{guideline}</span>
                         </div>
@@ -1092,7 +1092,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                         "Documentar insights para equipe",
                         "Atualizar pipeline de candidatos"
                       ].map((item, index) => (
-                        <div key={index} className="flex items-center gap-3">
+                        <div key={`ci-${index}`} className="flex items-center gap-3">
                           <input type="checkbox" className="rounded-md border-lia-border-default" />
                           <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">{item}</span>
                         </div>

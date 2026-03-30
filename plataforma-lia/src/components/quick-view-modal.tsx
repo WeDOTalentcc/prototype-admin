@@ -229,8 +229,8 @@ export function QuickViewModal({
               <div>
                 <h3 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-3">Competências</h3>
                 <div className="flex flex-wrap gap-2">
-                  {candidate.skills.map((skill, index) => (
-                    <Badge key={index} variant="outline" className="text-micro border-lia-border-subtle dark:border-lia-border-default text-lia-text-secondary dark:text-lia-text-tertiary">
+                  {candidate.skills.map((skill) => (
+                    <Badge key={skill} variant="outline" className="text-micro border-lia-border-subtle dark:border-lia-border-default text-lia-text-secondary dark:text-lia-text-tertiary">
                       {skill}
                     </Badge>
                   ))}
@@ -242,8 +242,8 @@ export function QuickViewModal({
                 <div>
                   <h3 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-3">Tags</h3>
                   <div className="flex flex-wrap gap-2">
-                    {candidate.tags.map((tag, index) => (
-                      <Badge key={index} className="text-micro bg-gray-100 text-lia-text-primary dark:text-lia-text-primary border-lia-border-subtle">
+                    {candidate.tags.map((tag) => (
+                      <Badge key={tag} className="text-micro bg-gray-100 text-lia-text-primary dark:text-lia-text-primary border-lia-border-subtle">
                         {tag}
                       </Badge>
                     ))}
@@ -260,7 +260,7 @@ export function QuickViewModal({
                   <h3 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">Histórico Profissional</h3>
                   <div className="space-y-4">
                     {candidate.workHistory.map((job, index) => (
-                      <div key={index} className="border-l-2 border-lia-border-subtle pl-4 pb-4">
+                      <div key={`job-${index}-${job.company || job.title}`} className="border-l-2 border-lia-border-subtle pl-4 pb-4">
                         <div className="flex items-center gap-2 mb-2">
                           <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary text-xs">{job.position}</h4>
                           <Badge variant="outline" className="text-micro border-lia-border-subtle">{job.period}</Badge>
@@ -301,7 +301,7 @@ export function QuickViewModal({
                       </h3>
                       <ul className="space-y-2">
                         {candidate.liaAnalysis.strengths.map((strength, index) => (
-                          <li key={index} className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary flex items-start gap-2">
+                          <li key={`str-${index}`} className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary flex items-start gap-2">
                             <div className="w-1.5 h-1.5 bg-status-success rounded-full mt-2 flex-shrink-0" />
                             {strength}
                           </li>
@@ -316,7 +316,7 @@ export function QuickViewModal({
                       </h3>
                       <ul className="space-y-2">
                         {candidate.liaAnalysis.concerns.map((concern, index) => (
-                          <li key={index} className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary flex items-start gap-2">
+                          <li key={`con-${index}`} className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary flex items-start gap-2">
                             <div className="w-1.5 h-1.5 bg-status-warning rounded-full mt-2 flex-shrink-0" />
                             {concern}
                           </li>

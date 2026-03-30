@@ -103,7 +103,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
 
               return (
                 <circle
-                  key={index}
+                  key={`donut-${index}`}
                   cx="100"
                   cy="100"
                   r="80"
@@ -133,8 +133,8 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
 
         {/* Legenda */}
         <div className="ml-8 space-y-3">
-          {donutData.map((item, index) => (
-            <div key={index} className="flex items-center gap-3">
+          {donutData.map((item) => (
+            <div key={item.label || item.name} className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 <div className={`w-4 h-4 rounded-full ${item.color}`}></div>
                 {item.icon}
@@ -157,8 +157,8 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
   // Componente de gráfico de barras
   const BarChart = () => (
     <div className="space-y-6">
-      {cargoData.map((item, index) => (
-        <div key={index} className="space-y-2">
+      {cargoData.map((item) => (
+        <div key={item.label || item.cargo || item.name} className="space-y-2">
           <div className="flex items-center justify-between">
             <h4 className="font-medium text-lia-text-primary">
               {item.cargo}
@@ -232,8 +232,8 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
     return (
       <div className="space-y-4">
         <div className="grid grid-cols-5 gap-4">
-          {trendData.map((item, index) => (
-            <div key={index} className="text-center">
+          {trendData.map((item) => (
+            <div key={item.month || item.label || item.name} className="text-center">
               <div className="mb-2 text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary">
                 {item.period}
               </div>
@@ -304,9 +304,9 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
     return (
       <div className="space-y-4">
         <div className="grid grid-cols-3 gap-4">
-          {regionData.map((region, index) => (
+          {regionData.map((region) => (
             <div
-              key={index}
+              key={region.name || region.region}
               className={`p-4 rounded-md text-white text-center transition-transform motion-reduce:transition-none duration-300 hover:scale-105 ${getDensityColor(region.densidade)}`}
             >
               <div className="font-bold text-lg">{region.regiao}</div>

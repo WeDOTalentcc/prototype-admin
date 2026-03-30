@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { memo } from "react"
 import { LucideIcon } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -14,7 +14,7 @@ export interface MetricCardProps {
   subtitle?: string
 }
 
-export function MetricCard({
+const MetricCard = memo(function MetricCard({
   title,
   value,
   icon: Icon,
@@ -56,4 +56,7 @@ export function MetricCard({
       </CardContent>
     </Card>
   )
-}
+})
+MetricCard.displayName = "MetricCard"
+
+export { MetricCard }

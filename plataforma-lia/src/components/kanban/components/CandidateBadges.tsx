@@ -53,7 +53,7 @@ interface CandidateBadgesProps {
   compact?: boolean
 }
 
-export function CandidateBadges({
+const CandidateBadges = memo(function CandidateBadges({
   subStatus,
   actionBehavior,
   stageId,
@@ -83,4 +83,7 @@ export function CandidateBadges({
       })}
     </div>
   )
-}
+})
+CandidateBadges.displayName = CandidateBadges
+
+export { CandidateBadges }

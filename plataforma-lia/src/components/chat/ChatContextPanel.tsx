@@ -115,8 +115,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                     <div>
                       <h4 className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary mb-3">Pacote de Benefícios</h4>
                       <div className="grid grid-cols-2 gap-2">
-                        {Object.entries(contextData.data.recommended_package.benefits_package).map(([key, benefit]: [string, any], index) => (
-                          <div key={index} className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
+                        {Object.entries(contextData.data.recommended_package.benefits_package).map(([key, benefit]: [string, any]) => (
+                          <div key={key} className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
                             <span className="text-sm font-medium capitalize">{key.replace('_', ' ')}</span>
                             <span className="text-sm font-semibold lia-text-800 dark:text-lia-text-primary">{benefit.estimated_value}</span>
                           </div>
@@ -128,8 +128,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                     <div>
                       <h4 className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary mb-3">Benchmarking Competitivo</h4>
                       <div className="space-y-2">
-                        {(contextData.data.market_analysis as { benchmarking_companies: { company: string; notes: string; range: string }[] }).benchmarking_companies.map((company, index: number) => (
-                          <div key={index} className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
+                        {(contextData.data.market_analysis as { benchmarking_companies: { company: string; notes: string; range: string }[] }).benchmarking_companies.map((company) => (
+                          <div key={company.company} className="flex items-center justify-between p-3 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
                             <div>
                               <h5 className="font-medium lia-text-800 dark:text-lia-text-primary">{company.company}</h5>
                               <p className="text-sm lia-text-500 dark:text-lia-text-tertiary">{company.notes}</p>
@@ -282,8 +282,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                     <div>
                       <h4 className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary mb-3">Responsabilidades Principais</h4>
                       <div className="space-y-2">
-                        {contextData.data.key_responsibilities.map((responsibility: string, index: number) => (
-                          <div key={index} className="flex items-start space-x-3 p-3 rounded-md bg-status-success/10 dark:bg-status-success/20">
+                        {contextData.data.key_responsibilities.map((responsibility: string) => (
+                          <div key={responsibility} className="flex items-start space-x-3 p-3 rounded-md bg-status-success/10 dark:bg-status-success/20">
                             <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 bg-gray-500 dark:lia-bg-400"></div>
                             <span className="text-sm lia-text-800 dark:text-lia-text-primary">{responsibility}</span>
                           </div>
@@ -335,7 +335,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                         <h4 className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary mb-2">Dias Presenciais</h4>
                         <div className="flex flex-wrap gap-1">
                           {contextData.data.office_days.map((day: string, index: number) => (
-                            <Badge key={index} variant="outline" className="text-xs">{day}</Badge>
+                            <Badge key={`${index}-${day}`} variant="outline" className="text-xs">{day}</Badge>
                           ))}
                         </div>
                       </div>
@@ -343,7 +343,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                         <h4 className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary mb-2">Home Office</h4>
                         <div className="flex flex-wrap gap-1">
                           {contextData.data.home_office_days.map((day: string, index: number) => (
-                            <Badge key={index} variant="outline" className="text-xs">{day}</Badge>
+                            <Badge key={`${index}-${day}`} variant="outline" className="text-xs">{day}</Badge>
                           ))}
                         </div>
                       </div>
@@ -380,8 +380,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                       <div>
                         <h4 className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary mb-3">Responsabilidades Principais</h4>
                         <div className="space-y-2">
-                          {Object.entries(contextData.data.key_responsibilities).map(([key, items]: [string, any], index) => (
-                            <div key={index}>
+                          {Object.entries(contextData.data.key_responsibilities).map(([key, items]: [string, any]) => (
+                            <div key={key}>
                               <h5 className="text-xs font-medium lia-text-600 uppercase tracking-wide mb-1">{key.replace('_', ' ')}</h5>
                               {items.slice(0, 2).map((item: string, i: number) => (
                                 <div key={i} className="flex items-start space-x-2 text-sm mb-1">
@@ -397,8 +397,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                       <div>
                         <h4 className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary mb-3">Qualificações Essenciais</h4>
                         <div className="space-y-2">
-                          {Object.entries(contextData.data.required_qualifications).map(([key, items]: [string, any], index) => (
-                            <div key={index}>
+                          {Object.entries(contextData.data.required_qualifications).map(([key, items]: [string, any]) => (
+                            <div key={key}>
                               <h5 className="text-xs font-medium lia-text-600 uppercase tracking-wide mb-1">{key.replace('_', ' ')}</h5>
                               {items.slice(0, 2).map((item: string, i: number) => (
                                 <div key={i} className="flex items-start space-x-2 text-sm mb-1">
@@ -475,8 +475,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                     <div>
                       <h4 className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary mb-3">Canais de Publicação</h4>
                       <div className="space-y-2">
-                        {(contextData.data.publication_channels as { platform: string; reach: string; budget: string; status: string }[]).map((channel, index: number) => (
-                          <div key={index} className="flex items-center justify-between p-4 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
+                        {(contextData.data.publication_channels as { platform: string; reach: string; budget: string; status: string }[]).map((channel) => (
+                          <div key={channel.platform} className="flex items-center justify-between p-4 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
                             <div className="flex-1">
                               <h5 className="font-medium lia-text-800 dark:text-lia-text-primary">{channel.platform}</h5>
                               <p className="text-sm mt-1 lia-text-500 dark:text-lia-text-tertiary">
@@ -495,8 +495,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                     <div>
                       <h4 className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary mb-3">Metas de Sucesso</h4>
                       <div className="grid grid-cols-2 gap-3">
-                        {Object.entries(contextData.data.success_metrics.targets).map(([key, value]: [string, any], index) => (
-                          <div key={index} className="text-center p-4 rounded-md border bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle">
+                        {Object.entries(contextData.data.success_metrics.targets).map(([key, value]: [string, any]) => (
+                          <div key={key} className="text-center p-4 rounded-md border bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle">
                             <p className="text-lg font-bold lia-text-800 dark:text-lia-text-primary">{String(value)}</p>
                             <p className="text-xs mt-1 capitalize lia-text-500 dark:text-lia-text-tertiary">
                               {key.replace('_', ' ')}
@@ -566,8 +566,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                     <div>
                       <h4 className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary mb-3">Candidatos Top Performance</h4>
                       <div className="space-y-2">
-                        {(contextData.data.top_candidates as { name: string; current_role: string; score: number; highlights: string[]; status: string }[]).map((candidate, index: number) => (
-                          <div key={index} className="p-4 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
+                        {(contextData.data.top_candidates as { name: string; current_role: string; score: number; highlights: string[]; status: string }[]).map((candidate) => (
+                          <div key={candidate.name} className="p-4 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
                             <div className="flex items-center justify-between mb-3">
                               <div>
                                 <h5 className="font-medium lia-text-800 dark:text-lia-text-primary">{candidate.name}</h5>
@@ -623,8 +623,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                     <div>
                       <h4 className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary mb-3">Cronograma de Screening</h4>
                       <div className="space-y-3 font-open-sans">
-                        {(contextData.data.screening_schedule as { candidate: string; date: string; time: string; interviewer: string; status: string }[]).map((interview, index: number) => (
-                          <div key={index} className="flex items-center justify-between p-3 rounded-md">
+                        {(contextData.data.screening_schedule as { candidate: string; date: string; time: string; interviewer: string; status: string }[]).map((interview) => (
+                          <div key={`${interview.candidate}-${interview.date}`} className="flex items-center justify-between p-3 rounded-md">
                             <div>
                               <h5 className="font-medium lia-text-950 dark:lia-text-50">{interview.candidate}</h5>
                               <p className="text-sm lia-text-600">{interview.date} • {interview.time}</p>
@@ -644,8 +644,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                     <div>
                       <h4 className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary mb-3">Estrutura do Processo</h4>
                       <div className="grid grid-cols-2 gap-4">
-                        {Object.entries(contextData.data.interview_structure).map(([key, stage]: [string, any], index) => (
-                          <div key={index} className="p-3 bg-gray-50 dark:bg-lia-bg-elevated rounded-md">
+                        {Object.entries(contextData.data.interview_structure).map(([key, stage]: [string, any]) => (
+                          <div key={key} className="p-3 bg-gray-50 dark:bg-lia-bg-elevated rounded-md">
                             <h5 className="font-medium capitalize mb-2">{key.replace('stage_', 'Etapa ').replace('_', ' ')}</h5>
                             <div className="text-sm space-y-1">
                               <p><span className="lia-text-600">Duração:</span> {stage.duration}</p>
@@ -905,8 +905,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                     <div>
                       <h4 className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary mb-3">Fases da Jornada</h4>
                       <div className="grid grid-cols-2 gap-4">
-                        {Object.entries(contextData.data.journey_phases).map(([key, phase]: [string, any], index) => (
-                          <div key={index} className="p-3 rounded-md">
+                        {Object.entries(contextData.data.journey_phases).map(([key, phase]: [string, any]) => (
+                          <div key={key} className="p-3 rounded-md">
                             <h5 className="font-medium capitalize mb-2">{key.replace('phase_', 'Fase ').replace('_', ' ')}</h5>
                             <p className="text-sm lia-text-600 dark:text-lia-text-tertiary mb-2">Duração: {phase.duration}</p>
                             <div className="space-y-1">
@@ -926,8 +926,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                       <div>
                         <h4 className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary mb-3">Resultados Mensuráveis</h4>
                         <div className="space-y-2">
-                          {Object.entries(contextData.data.measurable_results).slice(0, 4).map(([key, value]: [string, any], index) => (
-                            <div key={index} className="flex justify-between">
+                          {Object.entries(contextData.data.measurable_results).slice(0, 4).map(([key, value]: [string, any]) => (
+                            <div key={key} className="flex justify-between">
                               <span className="text-sm lia-text-600 dark:text-lia-text-tertiary capitalize">{key.replace('_', ' ')}:</span>
                               <span className="text-sm font-medium">{String(value)}</span>
                             </div>
@@ -938,8 +938,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                       <div>
                         <h4 className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary mb-3">Inovações Principais</h4>
                         <div className="space-y-2">
-                          {Object.entries(contextData.data.key_innovations).map(([key, innovations]: [string, any], index) => (
-                            <div key={index}>
+                          {Object.entries(contextData.data.key_innovations).map(([key, innovations]: [string, any]) => (
+                            <div key={key}>
                               <h5 className="text-xs font-medium lia-text-600 uppercase tracking-wide mb-1">{key.replace('_', ' ')}</h5>
                               {innovations.slice(0, 2).map((innovation: string, i: number) => (
                                 <div key={i} className="flex items-start space-x-2 text-xs mb-1">
@@ -986,8 +986,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                     <div>
                       <h4 className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary mb-3">Predições de Melhoria</h4>
                       <div className="space-y-4 font-open-sans">
-                        {(contextData.data.predictions as { category: string; confidence: number; current_performance: string; predicted_improvement: string; actions: string[] }[]).map((prediction, index: number) => (
-                          <div key={index} className="p-4 rounded-md">
+                        {(contextData.data.predictions as { category: string; confidence: number; current_performance: string; predicted_improvement: string; actions: string[] }[]).map((prediction) => (
+                          <div key={prediction.category} className="p-4 rounded-md">
                             <div className="flex items-center justify-between mb-3">
                               <h5 className="font-medium lia-text-950 dark:lia-text-50">{prediction.category}</h5>
                               <Badge variant="outline" className="text-xs">
@@ -1023,8 +1023,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                     <div>
                       <h4 className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary mb-3">Roadmap de Implementação</h4>
                       <div className="space-y-2">
-                        {Object.entries(contextData.data.implementation_roadmap).map(([phase, description]: [string, any], index) => (
-                          <div key={index} className="flex items-center space-x-3 p-3 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
+                        {Object.entries(contextData.data.implementation_roadmap).map(([phase, description]: [string, any]) => (
+                          <div key={phase} className="flex items-center space-x-3 p-3 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
                             <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold bg-wedo-cyan/15 dark:bg-wedo-cyan/20 lia-text-800 dark:text-lia-text-primary">
                               {index + 1}
                             </div>
@@ -1118,8 +1118,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                     <div>
                       <h4 className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary mb-3">Candidatos Selecionados</h4>
                       <div className="space-y-3">
-                        {(contextData.data.candidates_to_schedule as { name: string; score: number; interview_type: string; preferred_times: string[] }[]).map((candidate, index: number) => (
-                          <div key={index} className="p-4 rounded-md border bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle">
+                        {(contextData.data.candidates_to_schedule as { name: string; score: number; interview_type: string; preferred_times: string[] }[]).map((candidate) => (
+                          <div key={candidate.name} className="p-4 rounded-md border bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle">
                             <div className="flex justify-between items-start mb-2">
                               <div>
                                 <h5 className="font-medium lia-text-800 dark:text-lia-text-primary">{candidate.name}</h5>
@@ -1144,8 +1144,8 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                     <div>
                       <h4 className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary mb-3">Horários Disponíveis</h4>
                       <div className="space-y-4">
-                        {Object.entries(contextData.data.available_slots as Record<string, { time: string; duration: string; available: boolean }[]>).map(([date, slots], index) => (
-                          <div key={index}>
+                        {Object.entries(contextData.data.available_slots as Record<string, { time: string; duration: string; available: boolean }[]>).map(([date, slots]) => (
+                          <div key={date}>
                             <h5 className="text-sm font-medium mb-2 lia-text-800 dark:text-lia-text-primary">{date}</h5>
                             <div className="grid grid-cols-3 gap-2">
                               {slots.map((slot, i: number) => (

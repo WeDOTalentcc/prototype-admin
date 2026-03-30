@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { memo } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Building2, Users, Calendar, UserCircle } from "lucide-react"
@@ -29,7 +29,7 @@ function formatCNPJ(cnpj: string) {
   return cleaned.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5')
 }
 
-export function ClientCard({ client, onSelect }: ClientCardProps) {
+const ClientCard = memo(function ClientCard({ client, onSelect }: ClientCardProps) {
   const status = statusConfig[client.status] || statusConfig.pending_setup
 
   return (
@@ -102,4 +102,7 @@ export function ClientCard({ client, onSelect }: ClientCardProps) {
       </CardContent>
     </Card>
   )
-}
+})
+ClientCard.displayName = "ClientCard"
+
+export { ClientCard }

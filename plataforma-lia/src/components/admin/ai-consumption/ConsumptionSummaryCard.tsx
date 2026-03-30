@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { memo } from "react"
 import { LucideIcon } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -15,7 +15,7 @@ export interface ConsumptionSummaryCardProps {
   valueColor?: string
 }
 
-export function ConsumptionSummaryCard({
+const ConsumptionSummaryCard = memo(function ConsumptionSummaryCard({
   title,
   value,
   subtitle,
@@ -57,6 +57,8 @@ export function ConsumptionSummaryCard({
       </CardContent>
     </Card>
   )
-}
+})
+ConsumptionSummaryCard.displayName = "ConsumptionSummaryCard"
 
+export { ConsumptionSummaryCard }
 export default ConsumptionSummaryCard

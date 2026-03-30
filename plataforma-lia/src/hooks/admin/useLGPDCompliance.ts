@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   lgpdService,
   LGPDStats,
@@ -35,6 +35,8 @@ export function useLGPDCompliance(clientId: string): UseLGPDComplianceResult {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
 
+  const isMountedRef = useRef(true)
+
   const fetchData = useCallback(async () => {
     if (!clientId) return
 
@@ -49,16 +51,16 @@ export function useLGPDCompliance(clientId: string): UseLGPDComplianceResult {
         lgpdService.getAutomatedDecisions(clientId, { limit: 10 }),
       ])
 
-      setStats(statsData)
-      setDpo(dpoData)
-      setBreaches(breachesData.breaches)
-      setTotalBreaches(breachesData.total)
-      setDecisions(decisionsData.decisions)
-      setTotalDecisions(decisionsData.total)
+      if (isMountedRef.current) setStats(statsData)
+      if (isMountedRef.current) setDpo(dpoData)
+      if (isMountedRef.current) setBreaches(breachesData.breaches)
+      if (isMountedRef.current) setTotalBreaches(breachesData.total)
+      if (isMountedRef.current) setDecisions(decisionsData.decisions)
+      if (isMountedRef.current) setTotalDecisions(decisionsData.total)
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch LGPD data'))
+      if (isMountedRef.current) setError(err instanceof Error ? err : new Error('Failed to fetch LGPD data'))
     } finally {
-      setIsLoading(false)
+      if (isMountedRef.current) setIsLoading(false)
     }
   }, [clientId])
 
@@ -85,7 +87,9 @@ export function useLGPDCompliance(clientId: string): UseLGPDComplianceResult {
   }, [clientId])
 
   useEffect(() => {
+    isMountedRef.current = true
     fetchData()
+    return () => { isMountedRef.current = false }
   }, [fetchData])
 
   return {

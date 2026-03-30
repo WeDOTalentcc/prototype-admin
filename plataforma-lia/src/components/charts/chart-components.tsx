@@ -33,8 +33,8 @@ export function BarChart({ data, maxValue }: BarChartProps) {
 
   return (
     <div className="space-y-3">
-      {data.map((item, index) => (
-        <div key={index} className="flex items-center gap-3">
+      {data.map((item) => (
+        <div key={item.label || item.name} className="flex items-center gap-3">
           <div className="w-20 text-xs text-lia-text-secondary font-medium">
             {item.label}
           </div>
@@ -137,7 +137,7 @@ export function DonutChart({ data, centerText }: DonutChartProps) {
 
             return (
               <circle
-                key={index}
+                key={`arc-${index}`}
                 cx="18"
                 cy="18"
                 r="15.5"
@@ -162,8 +162,8 @@ export function DonutChart({ data, centerText }: DonutChartProps) {
       </div>
 
       <div className="space-y-2">
-        {data.map((item, index) => (
-          <div key={index} className="flex items-center gap-2">
+        {data.map((item) => (
+          <div key={item.label || item.name} className="flex items-center gap-2">
             <div
               className="w-3 h-3 rounded-full"
               style={{backgroundColor: item.color}}
@@ -212,7 +212,7 @@ export function LineChart({ data, color = "var(--gray-500)" }: LineChartProps) {
           const y = 40 - ((item.value - minValue) / range) * 40
           return (
             <circle
-              key={index}
+              key={`pt-${index}`}
               cx={x}
               cy={y}
               r="3"
@@ -223,8 +223,8 @@ export function LineChart({ data, color = "var(--gray-500)" }: LineChartProps) {
         })}
       </svg>
       <div className="flex justify-between mt-2">
-        {data.map((item, index) => (
-          <div key={index} className="text-center">
+        {data.map((item) => (
+          <div key={item.label || item.month || item.name} className="text-center">
             <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
               {item.label}
             </div>

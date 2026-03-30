@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   auditLogsService,
   AuditLog,
@@ -85,13 +85,13 @@ export function useAuditLogs(initialFilters?: UseAuditLogsFilters): UseAuditLogs
       const apiFilters = buildFilters(filters, page, pageSize)
       const response = await auditLogsService.getAuditLogs(apiFilters)
       
-      setLogs(response.logs)
-      setTotalLogs(response.total)
-      setHasMore(response.hasMore)
+      if (isMountedRef.current) setLogs(response.logs)
+      if (isMountedRef.current) setTotalLogs(response.total)
+      if (isMountedRef.current) setHasMore(response.hasMore)
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch audit logs'))
+      if (isMountedRef.current) setError(err instanceof Error ? err : new Error('Failed to fetch audit logs'))
     } finally {
-      setIsLoading(false)
+      if (isMountedRef.current) setIsLoading(false)
     }
   }, [buildFilters])
 
@@ -143,6 +143,8 @@ export function useAuditLogs(initialFilters?: UseAuditLogsFilters): UseAuditLogs
     }
   }, [fetchRetentionPolicies])
 
+  const isMountedRef = useRef(true)
+
   const refetch = useCallback(async () => {
     setIsLoading(true)
     setError(null)
@@ -167,7 +169,9 @@ export function useAuditLogs(initialFilters?: UseAuditLogsFilters): UseAuditLogs
   }, [buildFilters, initialFilters])
 
   useEffect(() => {
+    isMountedRef.current = true
     refetch()
+    return () => { isMountedRef.current = false }
   }, [])
 
   return {

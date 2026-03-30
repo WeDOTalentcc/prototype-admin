@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { memo } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -93,7 +93,7 @@ const calculateGeneralScore = (candidate: KanbanCandidate): number | null => {
   return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
 }
 
-export function CandidateCard({
+const CandidateCard = memo(function CandidateCard({
   candidate,
   stageId,
   vacancyId,
@@ -421,6 +421,8 @@ export function CandidateCard({
       </div>
     </div>
   )
-}
+})
+CandidateCard.displayName = 'CandidateCard'
 
+export { CandidateCard }
 export default CandidateCard

@@ -470,8 +470,8 @@ Boa sorte com as triagens! 🚀`,
                   <div>
                     <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Critérios de Avaliação:</label>
                     <div className="space-y-1">
-                      {screeningData.overview.criteria.map((criterion, index) => (
-                        <div key={index} className="flex items-center justify-between text-sm">
+                      {screeningData.overview.criteria.map((criterion) => (
+                        <div key={criterion.name} className="flex items-center justify-between text-sm">
                           <span>{criterion.name}</span>
                           <Badge variant="outline">{criterion.weight}%</Badge>
                         </div>
@@ -504,7 +504,7 @@ Boa sorte com as triagens! 🚀`,
                     <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Estrutura:</label>
                     <div className="space-y-2">
                       {screeningData.approach.structure.map((step, index) => (
-                        <div key={index} className="flex items-center gap-2 text-sm">
+                        <div key={`step-${index}`} className="flex items-center gap-2 text-sm">
                           <div className="w-5 h-5 bg-status-success/15 rounded-full flex items-center justify-center text-status-success text-xs font-bold">
                             {index + 1}
                           </div>
@@ -561,7 +561,7 @@ Boa sorte com as triagens! 🚀`,
                       ]
                     }
                   ].map((section, index) => (
-                    <div key={index} className="border border-wedo-purple/30 rounded-md p-3">
+                    <div key={section.category} className="border border-wedo-purple/30 rounded-md p-3">
                       <h4 className="font-medium text-wedo-purple text-sm mb-2">{section.category}</h4>
                       <div className="space-y-1">
                         {section.questions.map((question, qIndex) => (
@@ -609,8 +609,8 @@ Boa sorte com as triagens! 🚀`,
                   <div>
                     <label className="text-xs font-medium lia-text-base">Benefícios:</label>
                     <div className="flex flex-wrap gap-1">
-                      {(jobData?.benefits || ['Benefícios competitivos']).map((benefit: string, index: number) => (
-                        <Badge key={index} variant="secondary" className="text-xs">{benefit}</Badge>
+                      {(jobData?.benefits || ['Benefícios competitivos']).map((benefit: string) => (
+                        <Badge key={benefit} variant="secondary" className="text-xs">{benefit}</Badge>
                       ))}
                     </div>
                   </div>
@@ -653,7 +653,7 @@ Boa sorte com as triagens! 🚀`,
                         "Sugerir desenvolvimento",
                         "Manter relacionamento positivo"
                       ].map((guideline, index) => (
-                        <div key={index} className="text-xs lia-text-base flex items-center gap-1">
+                        <div key={`gl-${index}`} className="text-xs lia-text-base flex items-center gap-1">
                           <Star className="w-3 h-3 text-wedo-magenta" />
                           {guideline}
                         </div>
@@ -683,8 +683,8 @@ Boa sorte com as triagens! 🚀`,
                     { step: "Triagem", time: "25-30 min", desc: "Conversa estruturada com candidato" },
                     { step: "Avaliação", time: "10 min após", desc: "Análise e decisão" },
                     { step: "Feedback", time: "24-48h após", desc: "Retorno personalizado" }
-                  ].map((item, index) => (
-                    <div key={index} className="flex items-start gap-3 p-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+                  ].map((item) => (
+                    <div key={item.step} className="flex items-start gap-3 p-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
                       <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center text-lia-text-secondary dark:text-lia-text-tertiary text-xs font-bold">
                         {index + 1}
                       </div>
@@ -727,7 +727,7 @@ Boa sorte com as triagens! 🚀`,
                       "✅ Estratégia de feedback",
                       "✅ Timeline estruturada"
                     ].map((item, index) => (
-                      <div key={index} className="text-xs lia-text-base">{item}</div>
+                      <div key={`ci-${index}`} className="text-xs lia-text-base">{item}</div>
                     ))}
                   </div>
                   <div className="pt-3 border-t">
@@ -805,7 +805,7 @@ Boa sorte com as triagens! 🚀`,
                       <div className="mt-3 space-y-2">
                         {message.options.map((option, index) => (
                           <button
-                            key={index}
+                            key={`opt-${index}`}
                             onClick={() => handleOptionSelect(option)}
                             className="block w-full text-left p-2 bg-lia-bg-primary bg-opacity-20 hover:bg-opacity-30 rounded-md text-sm transition-colors motion-reduce:transition-none"
                           >

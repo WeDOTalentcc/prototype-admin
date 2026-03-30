@@ -453,8 +453,8 @@ export function SuccessPredictionAnalytics() {
                 </tr>
               </thead>
               <tbody>
-                {historicalAnalysis.departmentMetrics.map((dept, index) => (
-                  <tr key={index} className="border-b border-lia-border-subtle">
+                {historicalAnalysis.departmentMetrics.map((dept) => (
+                  <tr key={dept.department || dept.name || dept.id} className="border-b border-lia-border-subtle">
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
                         <Briefcase className="w-4 h-4 lia-text-base" />
@@ -550,8 +550,8 @@ export function SuccessPredictionAnalytics() {
                 <div>
                   <p className="text-sm font-medium lia-text-base mb-2">Features Utilizadas</p>
                   <div className="flex flex-wrap gap-1">
-                    {model.features.map((feature, index) => (
-                      <Badge key={index} variant="outline" className="text-xs">
+                    {model.features.map((feature) => (
+                      <Badge key={feature} variant="outline" className="text-xs">
                         {feature}
                       </Badge>
                     ))}
@@ -787,7 +787,7 @@ function CandidatePredictionModal({ candidate, onClose }: CandidatePredictionMod
                       </h4>
                       <div className="space-y-1">
                         {candidate.factors.positive.map((factor, index) => (
-                          <div key={index} className="text-sm text-lia-text-primary dark:text-lia-text-primary bg-status-success/10 p-2 rounded-md">
+                          <div key={`pf-${index}`} className="text-sm text-lia-text-primary dark:text-lia-text-primary bg-status-success/10 p-2 rounded-md">
                             • {factor}
                           </div>
                         ))}
@@ -801,7 +801,7 @@ function CandidatePredictionModal({ candidate, onClose }: CandidatePredictionMod
                       </h4>
                       <div className="space-y-1">
                         {candidate.factors.negative.map((factor, index) => (
-                          <div key={index} className="text-sm text-lia-text-primary dark:text-lia-text-primary bg-status-error/10 p-2 rounded-md">
+                          <div key={`nf-${index}`} className="text-sm text-lia-text-primary dark:text-lia-text-primary bg-status-error/10 p-2 rounded-md">
                             • {factor}
                           </div>
                         ))}
@@ -824,7 +824,7 @@ function CandidatePredictionModal({ candidate, onClose }: CandidatePredictionMod
                 <CardContent>
                   <div className="space-y-3">
                     {candidate.recommendations.map((rec, index) => (
-                      <div key={index} className="p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+                      <div key={`rec-${index}`} className="p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
                         <p className="text-sm text-wedo-cyan-dark">{rec}</p>
                       </div>
                     ))}
@@ -842,7 +842,7 @@ function CandidatePredictionModal({ candidate, onClose }: CandidatePredictionMod
                 <CardContent>
                   <div className="space-y-3">
                     {candidate.riskFactors.map((risk, index) => (
-                      <div key={index} className="p-3 bg-wedo-orange/10 rounded-md">
+                      <div key={`risk-${index}`} className="p-3 bg-wedo-orange/10 rounded-md">
                         <p className="text-sm text-wedo-orange">{risk}</p>
                       </div>
                     ))}

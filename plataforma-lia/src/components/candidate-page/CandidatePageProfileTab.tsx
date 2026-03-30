@@ -140,8 +140,8 @@ export function CandidatePageProfileTab({
           <CardContent className="p-4">
             <h4 className="text-sm font-medium text-lia-text-primary mb-3">Skills Principais</h4>
             <div className="flex flex-wrap gap-1.5">
-              {(candidate.skills || ['Figma', 'Sketch', 'Design Systems', 'Prototipagem', 'User Research', 'Wireframing', 'Adobe XD', 'Prototyping', 'UI Design', 'UX Strategy']).map((skill: string, index: number) => (
-                <Badge key={index} variant="outline" className="text-xs px-2 py-0.5">
+              {(candidate.skills || ['Figma', 'Sketch', 'Design Systems', 'Prototipagem', 'User Research', 'Wireframing', 'Adobe XD', 'Prototyping', 'UI Design', 'UX Strategy']).map((skill: string) => (
+                <Badge key={skill} variant="outline" className="text-xs px-2 py-0.5">
                   {skill}
                 </Badge>
               ))}
@@ -255,7 +255,7 @@ export function CandidatePageProfileTab({
                 const isStartup = exp.is_startup
                 
                 return (
-<div key={index} className={`border-l-2 ${index === 0 ? 'border-gray-700' : 'border-lia-border-default dark:border-lia-border-default'} pl-3`}>
+<div key={`${index}-${company}`} className={`border-l-2 ${index === 0 ? 'border-gray-700' : 'border-lia-border-default dark:border-lia-border-default'} pl-3`}>
                     <div className="flex items-start justify-between gap-2 mb-1">
                       <div>
                         <h5 className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">{title || 'Cargo não informado'}</h5>
@@ -331,7 +331,7 @@ export function CandidatePageProfileTab({
           <CardContent className="p-4 space-y-3">
             {education.length > 0 ? (
               education.map((edu: EducationRecord, index: number) => (
-                <div key={index} className={`flex items-start justify-between gap-2 ${index < education.length - 1 ? 'pb-3 border-b border-lia-border-subtle' : ''}`}>
+                <div key={`edu-${index}-${String(edu.institution || edu.school || index)}`} className={`flex items-start justify-between gap-2 ${index < education.length - 1 ? 'pb-3 border-b border-lia-border-subtle' : ''}`}>
                   <div>
                     <h5 className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                       {edu.degree || edu.title || 'Formação'}

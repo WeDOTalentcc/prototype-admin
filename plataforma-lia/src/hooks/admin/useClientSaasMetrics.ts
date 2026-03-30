@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import {
   saasMetricsClientService,
   ClientSaasMetrics,
@@ -50,32 +50,36 @@ export function useClientSaasMetrics(clientId: string): UseClientSaasMetricsResu
   const [metrics, setMetrics] = useState<ClientSaasMetrics | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const isMountedRef = useRef(true)
 
   const fetchMetrics = useCallback(async () => {
     if (!clientId) {
-      setIsLoading(false)
+      if (isMountedRef.current) setIsLoading(false)
       return
     }
 
-    setIsLoading(true)
-    setError(null)
+    if (isMountedRef.current) setIsLoading(true)
+    if (isMountedRef.current) setError(null)
 
     try {
       const data = await saasMetricsClientService.getClientMetrics(clientId)
-      setMetrics(data)
+      if (isMountedRef.current) setMetrics(data)
     } catch (err) {
+      if (!isMountedRef.current) return
       if (err instanceof ApiClientError) {
         setError(err.message)
       } else {
         setError("Erro ao carregar métricas do cliente")
       }
     } finally {
-      setIsLoading(false)
+      if (isMountedRef.current) setIsLoading(false)
     }
   }, [clientId])
 
   useEffect(() => {
+    isMountedRef.current = true
     fetchMetrics()
+    return () => { isMountedRef.current = false }
   }, [fetchMetrics])
 
   return {
@@ -90,32 +94,36 @@ export function useClientRevenue(clientId: string): UseClientRevenueResult {
   const [revenue, setRevenue] = useState<ClientRevenueMetrics | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const isMountedRef = useRef(true)
 
   const fetchRevenue = useCallback(async () => {
     if (!clientId) {
-      setIsLoading(false)
+      if (isMountedRef.current) setIsLoading(false)
       return
     }
 
-    setIsLoading(true)
-    setError(null)
+    if (isMountedRef.current) setIsLoading(true)
+    if (isMountedRef.current) setError(null)
 
     try {
       const data = await saasMetricsClientService.getClientRevenue(clientId)
-      setRevenue(data)
+      if (isMountedRef.current) setRevenue(data)
     } catch (err) {
+      if (!isMountedRef.current) return
       if (err instanceof ApiClientError) {
         setError(err.message)
       } else {
         setError("Erro ao carregar receita do cliente")
       }
     } finally {
-      setIsLoading(false)
+      if (isMountedRef.current) setIsLoading(false)
     }
   }, [clientId])
 
   useEffect(() => {
+    isMountedRef.current = true
     fetchRevenue()
+    return () => { isMountedRef.current = false }
   }, [fetchRevenue])
 
   return {
@@ -130,32 +138,36 @@ export function useClientUsage(clientId: string): UseClientUsageResult {
   const [usage, setUsage] = useState<ClientUsageMetrics | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const isMountedRef = useRef(true)
 
   const fetchUsage = useCallback(async () => {
     if (!clientId) {
-      setIsLoading(false)
+      if (isMountedRef.current) setIsLoading(false)
       return
     }
 
-    setIsLoading(true)
-    setError(null)
+    if (isMountedRef.current) setIsLoading(true)
+    if (isMountedRef.current) setError(null)
 
     try {
       const data = await saasMetricsClientService.getClientUsage(clientId)
-      setUsage(data)
+      if (isMountedRef.current) setUsage(data)
     } catch (err) {
+      if (!isMountedRef.current) return
       if (err instanceof ApiClientError) {
         setError(err.message)
       } else {
         setError("Erro ao carregar uso do cliente")
       }
     } finally {
-      setIsLoading(false)
+      if (isMountedRef.current) setIsLoading(false)
     }
   }, [clientId])
 
   useEffect(() => {
+    isMountedRef.current = true
     fetchUsage()
+    return () => { isMountedRef.current = false }
   }, [fetchUsage])
 
   return {
@@ -170,32 +182,36 @@ export function useClientHealth(clientId: string): UseClientHealthResult {
   const [health, setHealth] = useState<ClientHealthMetrics | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const isMountedRef = useRef(true)
 
   const fetchHealth = useCallback(async () => {
     if (!clientId) {
-      setIsLoading(false)
+      if (isMountedRef.current) setIsLoading(false)
       return
     }
 
-    setIsLoading(true)
-    setError(null)
+    if (isMountedRef.current) setIsLoading(true)
+    if (isMountedRef.current) setError(null)
 
     try {
       const data = await saasMetricsClientService.getClientHealth(clientId)
-      setHealth(data)
+      if (isMountedRef.current) setHealth(data)
     } catch (err) {
+      if (!isMountedRef.current) return
       if (err instanceof ApiClientError) {
         setError(err.message)
       } else {
         setError("Erro ao carregar saúde do cliente")
       }
     } finally {
-      setIsLoading(false)
+      if (isMountedRef.current) setIsLoading(false)
     }
   }, [clientId])
 
   useEffect(() => {
+    isMountedRef.current = true
     fetchHealth()
+    return () => { isMountedRef.current = false }
   }, [fetchHealth])
 
   return {
@@ -210,32 +226,36 @@ export function useClientPayments(clientId: string): UseClientPaymentsResult {
   const [payments, setPayments] = useState<ClientPayment[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const isMountedRef = useRef(true)
 
   const fetchPayments = useCallback(async () => {
     if (!clientId) {
-      setIsLoading(false)
+      if (isMountedRef.current) setIsLoading(false)
       return
     }
 
-    setIsLoading(true)
-    setError(null)
+    if (isMountedRef.current) setIsLoading(true)
+    if (isMountedRef.current) setError(null)
 
     try {
       const data = await saasMetricsClientService.getClientPayments(clientId)
-      setPayments(data)
+      if (isMountedRef.current) setPayments(data)
     } catch (err) {
+      if (!isMountedRef.current) return
       if (err instanceof ApiClientError) {
         setError(err.message)
       } else {
         setError("Erro ao carregar pagamentos do cliente")
       }
     } finally {
-      setIsLoading(false)
+      if (isMountedRef.current) setIsLoading(false)
     }
   }, [clientId])
 
   useEffect(() => {
+    isMountedRef.current = true
     fetchPayments()
+    return () => { isMountedRef.current = false }
   }, [fetchPayments])
 
   return {

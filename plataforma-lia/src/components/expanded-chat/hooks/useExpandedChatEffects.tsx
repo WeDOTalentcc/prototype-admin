@@ -190,7 +190,8 @@ export function useExpandedChatEffects(ctx) {
         if (!isFieldRequiredForWizard('salario') || !isFieldRequiredForWizard('competencias')) {
           setShowAutoFilledNotification(true)
           // Auto-hide after 10 seconds
-          setTimeout(() => setShowAutoFilledNotification(false), 10000)
+          const autoHideTimer = setTimeout(() => setShowAutoFilledNotification(false), 10000)
+          return () => clearTimeout(autoHideTimer)
         }
       }
     }
@@ -633,9 +634,10 @@ export function useExpandedChatEffects(ctx) {
         }
         setMessages([initialMsg])
         setDisplayedText("")
-        setTimeout(() => {
+        const initTimer = setTimeout(() => {
           typeText(messageToShow, 'initial-lia')
         }, 100)
+        return () => clearTimeout(initTimer)
       }
     }
   }, [isOpen, messages.length, typeText, initialLiaMessage, initialMessages, isJobCreationMode])

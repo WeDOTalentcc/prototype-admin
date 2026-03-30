@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   biasAuditService,
   BiasAuditReport,
@@ -29,6 +29,8 @@ export function useBiasAudits(clientId: string): UseBiasAuditsResult {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
 
+  const isMountedRef = useRef(true)
+
   const fetchData = useCallback(async () => {
     if (!clientId) return
 
@@ -42,14 +44,14 @@ export function useBiasAudits(clientId: string): UseBiasAuditsResult {
         biasAuditService.getAudits(clientId, { limit: 10 }),
       ])
 
-      setSummary(summaryData)
-      setLatestAudit(latestData)
-      setAudits(auditsData.audits)
-      setTotalAudits(auditsData.total)
+      if (isMountedRef.current) setSummary(summaryData)
+      if (isMountedRef.current) setLatestAudit(latestData)
+      if (isMountedRef.current) setAudits(auditsData.audits)
+      if (isMountedRef.current) setTotalAudits(auditsData.total)
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch bias audit data'))
+      if (isMountedRef.current) setError(err instanceof Error ? err : new Error('Failed to fetch bias audit data'))
     } finally {
-      setIsLoading(false)
+      if (isMountedRef.current) setIsLoading(false)
     }
   }, [clientId])
 
@@ -75,7 +77,9 @@ export function useBiasAudits(clientId: string): UseBiasAuditsResult {
   }, [clientId])
 
   useEffect(() => {
+    isMountedRef.current = true
     fetchData()
+    return () => { isMountedRef.current = false }
   }, [fetchData])
 
   return {

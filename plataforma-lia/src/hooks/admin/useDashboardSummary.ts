@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { getDashboardSummary, DashboardSummary, ApiClientError } from '@/services/admin/dashboard-service'
 
 export interface UseDashboardSummaryResult {
@@ -14,14 +14,16 @@ export function useDashboardSummary(startDate?: Date, endDate?: Date): UseDashbo
   const [data, setData] = useState<DashboardSummary | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const isMountedRef = useRef(true)
 
   const fetchData = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
+    if (isMountedRef.current) setIsLoading(true)
+    if (isMountedRef.current) setError(null)
     try {
       const summary = await getDashboardSummary(startDate, endDate)
-      setData(summary)
+      if (isMountedRef.current) setData(summary)
     } catch (err) {
+      if (!isMountedRef.current) return
       if (err instanceof ApiClientError) {
         setError(err.message)
       } else if (err instanceof Error) {
@@ -30,12 +32,14 @@ export function useDashboardSummary(startDate?: Date, endDate?: Date): UseDashbo
         setError('Erro ao carregar resumo do dashboard')
       }
     } finally {
-      setIsLoading(false)
+      if (isMountedRef.current) setIsLoading(false)
     }
   }, [startDate?.getTime(), endDate?.getTime()])
 
   useEffect(() => {
+    isMountedRef.current = true
     fetchData()
+    return () => { isMountedRef.current = false }
   }, [fetchData])
 
   return { data, isLoading, error, refetch: fetchData }

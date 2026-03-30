@@ -251,7 +251,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
         <div className="absolute left-0 right-0 top-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-md z-50 max-h-48 overflow-y-auto">
           {autocompleteSuggestions.map((suggestion, index) => (
             <button
-              key={index}
+              key={`sug-${index}`}
               onClick={() => {
                 setNaturalSearchValue(prev => {
                   const words = prev.split(' ')
@@ -515,7 +515,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
           <div className="space-y-1.5">
             {searchAnalysis.alerts.slice(0, 2).map((alert, index) => (
               <div 
-                key={index}
+                key={`alert-${index}`}
                 className="flex items-start gap-2 px-2.5 py-2 rounded-full text-xs text-lia-text-tertiary dark:text-lia-text-tertiary"
                 style={{backgroundColor: alert.severity === 'warning'
                     ? 'var(--status-warning-bg-08)'
@@ -579,7 +579,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
   <div className="space-y-3">
     {/* URL inputs - up to 2 URLs */}
     {similarUrls.map((url, index) => (
-      <div key={index} className="relative">
+      <div key={`url-${index}`} className="relative">
         <div className="absolute left-3 top-1/2 -translate-y-1/2">
           <Linkedin className="w-4 h-4 lia-text-base" />
         </div>
@@ -640,7 +640,7 @@ export function EAPTabContent(props: EAPTabContentProps) {
         <div className="flex flex-wrap gap-2">
           {similarCvFiles.map((file, index) => (
             <div 
-              key={index}
+              key={`cv-${file.name || index}`}
               className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs"
               style={{backgroundColor: 'var(--gray-100)'}}
             >

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   type Department,
   type DepartmentMember,
@@ -108,6 +108,12 @@ export function useDepartmentManagement({
     role: "",
     level: 1,
   });
+
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
 
   useEffect(() => {
     if (initialDepartments.length > 0) {
@@ -228,10 +234,10 @@ export function useDepartmentManagement({
           prev.map((d) => (d.id === editingDepartment.id ? updatedDept : d)),
         );
         setSuccessMessage("Departamento atualizado com sucesso!");
-        setTimeout(() => setSuccessMessage(null), 3000);
+        { const _t = setTimeout(() => { if (isMountedRef.current) setSuccessMessage(null); }, 3000); }
       } catch (err) {
         setError("Erro ao atualizar departamento");
-        setTimeout(() => setError(null), 3000);
+        { const _t = setTimeout(() => { if (isMountedRef.current) setError(null); }, 3000); }
       }
       setEditingDepartment(null);
       setNewDepartment({ ...DEFAULT_NEW_DEPARTMENT });
@@ -255,7 +261,7 @@ export function useDepartmentManagement({
         if (result?.id) dept.id = result.id;
         setDepartments((prev) => [...prev, dept]);
         setSuccessMessage("Departamento criado com sucesso!");
-        setTimeout(() => setSuccessMessage(null), 3000);
+        { const _t = setTimeout(() => { if (isMountedRef.current) setSuccessMessage(null); }, 3000); }
       } catch (err) {
         setDepartments((prev) => [...prev, dept]);
       }
@@ -269,10 +275,10 @@ export function useDepartmentManagement({
     try {
       await deleteDepartmentFromAPI(id);
       setSuccessMessage("Departamento removido com sucesso!");
-      setTimeout(() => setSuccessMessage(null), 3000);
+      { const _t = setTimeout(() => { if (isMountedRef.current) setSuccessMessage(null); }, 3000); }
     } catch (err) {
       setError("Erro ao remover departamento");
-      setTimeout(() => setError(null), 3000);
+      { const _t = setTimeout(() => { if (isMountedRef.current) setError(null); }, 3000); }
     }
     setDepartmentToDelete(null);
   };
@@ -333,7 +339,7 @@ export function useDepartmentManagement({
             ? "Colaborador atualizado com sucesso!"
             : "Colaborador adicionado com sucesso!",
         );
-        setTimeout(() => setMemberSuccess(null), 3000);
+        { const _t = setTimeout(() => { if (isMountedRef.current) setMemberSuccess(null); }, 3000); }
       } else {
         const errorData = await res.json().catch(() => ({}));
         setMemberError(errorData.detail || "Erro ao salvar colaborador");
@@ -454,10 +460,10 @@ export function useDepartmentManagement({
         );
         setEditingApprover(null);
         setSuccessMessage("Aprovador atualizado com sucesso!");
-        setTimeout(() => setSuccessMessage(null), 3000);
+        { const _t = setTimeout(() => { if (isMountedRef.current) setSuccessMessage(null); }, 3000); }
       } catch (err) {
         setError("Erro ao atualizar aprovador");
-        setTimeout(() => setError(null), 3000);
+        { const _t = setTimeout(() => { if (isMountedRef.current) setError(null); }, 3000); }
       }
     } else if (newApprover.userName && newApprover.email) {
       try {
@@ -473,10 +479,10 @@ export function useDepartmentManagement({
         };
         setApprovers((prev) => [...prev, newApproverData]);
         setSuccessMessage("Aprovador criado com sucesso!");
-        setTimeout(() => setSuccessMessage(null), 3000);
+        { const _t = setTimeout(() => { if (isMountedRef.current) setSuccessMessage(null); }, 3000); }
       } catch (err) {
         setError("Erro ao criar aprovador");
-        setTimeout(() => setError(null), 3000);
+        { const _t = setTimeout(() => { if (isMountedRef.current) setError(null); }, 3000); }
       }
       setNewApprover({
         userName: "",
@@ -493,10 +499,10 @@ export function useDepartmentManagement({
     try {
       await deleteApproverFromAPI(id);
       setSuccessMessage("Aprovador removido com sucesso!");
-      setTimeout(() => setSuccessMessage(null), 3000);
+      { const _t = setTimeout(() => { if (isMountedRef.current) setSuccessMessage(null); }, 3000); }
     } catch (err) {
       setError("Erro ao remover aprovador");
-      setTimeout(() => setError(null), 3000);
+      { const _t = setTimeout(() => { if (isMountedRef.current) setError(null); }, 3000); }
     }
   };
 

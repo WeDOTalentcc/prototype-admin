@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react"
+import { useState, useMemo, useRef, useEffect } from "react"
 import type { AlertConfig, EmailTemplate, AiResultModal } from './CommunicationHub.types'
 import { DEFAULT_ALERTS, TEMPLATE_GROUPS } from './CommunicationHub.constants'
 
@@ -27,6 +27,12 @@ export function useCommunicationHub(activeSubsection?: string) {
   const [savingAlerts, setSavingAlerts] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
 
   const [alerts, setAlerts] = useState<AlertConfig[]>(DEFAULT_ALERTS)
   const [briefingFrequency, setBriefingFrequency] = useState<'twice_daily' | 'daily' | 'weekly' | 'monthly'>('daily')
@@ -218,10 +224,10 @@ export function useCommunicationHub(activeSubsection?: string) {
       }
 
       setSuccessMessage('Configurações salvas com sucesso!')
-      setTimeout(() => setSuccessMessage(null), 3000)
+      { const _t = setTimeout(() => { if (isMountedRef.current) setSuccessMessage(null); }, 3000); }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao salvar configurações')
-      setTimeout(() => setError(null), 5000)
+      { const _t = setTimeout(() => { if (isMountedRef.current) setError(null); }, 5000); }
     } finally {
       setSavingSettings(false)
     }
@@ -248,7 +254,7 @@ export function useCommunicationHub(activeSubsection?: string) {
       }
 
       setSuccessMessage('Template salvo com sucesso!')
-      setTimeout(() => setSuccessMessage(null), 3000)
+      { const _t = setTimeout(() => { if (isMountedRef.current) setSuccessMessage(null); }, 3000); }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao salvar')
     } finally {
@@ -295,10 +301,10 @@ export function useCommunicationHub(activeSubsection?: string) {
       }
 
       setSuccessMessage('Configuração de alertas salva com sucesso!')
-      setTimeout(() => setSuccessMessage(null), 3000)
+      { const _t = setTimeout(() => { if (isMountedRef.current) setSuccessMessage(null); }, 3000); }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao salvar')
-      setTimeout(() => setError(null), 5000)
+      { const _t = setTimeout(() => { if (isMountedRef.current) setError(null); }, 5000); }
     } finally {
       setSavingAlerts(false)
     }
@@ -334,11 +340,11 @@ export function useCommunicationHub(activeSubsection?: string) {
       } else {
         const errorData = await response.json().catch(() => ({}))
         setError(errorData.details?.detail || 'Erro ao ajustar template com a LIA')
-        setTimeout(() => setError(null), 5000)
+        { const _t = setTimeout(() => { if (isMountedRef.current) setError(null); }, 5000); }
       }
     } catch (_err) {
       setError('Erro ao conectar com o serviço de IA')
-      setTimeout(() => setError(null), 5000)
+      { const _t = setTimeout(() => { if (isMountedRef.current) setError(null); }, 5000); }
     } finally {
       setIsGenerating(false)
       setAiPrompt('')
@@ -353,7 +359,7 @@ export function useCommunicationHub(activeSubsection?: string) {
       body: aiResultModal.newBody
     } : null)
     setSuccessMessage('Ajustes da LIA aplicados. Clique em "Salvar" para confirmar as alterações.')
-    setTimeout(() => setSuccessMessage(null), 5000)
+    { const _t = setTimeout(() => { if (isMountedRef.current) setSuccessMessage(null); }, 5000); }
     setAiResultModal(null)
   }
 

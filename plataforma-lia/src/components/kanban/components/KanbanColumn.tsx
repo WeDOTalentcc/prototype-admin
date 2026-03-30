@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useMemo } from 'react'
+import React, { useMemo, useCallback, memo } from 'react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { CandidateCard, type QuickActionType } from './CandidateCard'
 import type { DynamicStage, KanbanCandidate } from '../types'
@@ -88,7 +88,7 @@ const sortScreeningCandidates = (candidates: KanbanCandidate[]): KanbanCandidate
   })
 }
 
-export function KanbanColumn({
+const KanbanColumn = memo(function KanbanColumn({
   stage,
   candidates,
   isDropTarget,
@@ -124,25 +124,25 @@ export function KanbanColumn({
     return sortedCandidates.every(c => selectedCandidates.has(c.id))
   }, [sortedCandidates, selectedCandidates])
 
-  const handleSelectAllChange = (checked: boolean | 'indeterminate') => {
+  const handleSelectAllChange = useCallback((checked: boolean | 'indeterminate') => {
     if (checked === true) {
       onSelectAll(stage.id, candidateIds)
     } else {
       onSelectAll(stage.id, [])
     }
-  }
+  }, [onSelectAll, stage.id, candidateIds])
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = useCallback((e: React.DragEvent) => {
     onDragOver(e, stage.id)
-  }
+  }, [onDragOver, stage.id])
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = useCallback((e: React.DragEvent) => {
     onDrop(e, stage.id)
-  }
+  }, [onDrop, stage.id])
 
-  const handleCandidateDragStart = (e: React.DragEvent, candidate: KanbanCandidate) => {
+  const handleCandidateDragStart = useCallback((e: React.DragEvent, candidate: KanbanCandidate) => {
     onDragStart(e, candidate, stage.id)
-  }
+  }, [onDragStart, stage.id])
 
   return (
     <div
@@ -205,5 +205,8 @@ export function KanbanColumn({
   )
 }
 
-export { getColumnStyle }
+})
+KanbanColumn.displayName = 'KanbanColumn'
+
+export { KanbanColumn, getColumnStyle }
 export default KanbanColumn

@@ -508,7 +508,7 @@ export function CandidatePreviewProfileTab({
               <CardContent className="p-2.5 space-y-2.5">
                 {(((candidate.workHistory as Record<string, unknown>[])?.length > 0) || ((candidate.work_history as Record<string, unknown>[])?.length > 0) || ((candidate.experiences as Record<string, unknown>[])?.length > 0) || ((candidate.additional_data as Record<string, unknown>)?.work_history as Record<string, unknown>[])?.length > 0 || ((candidate.additional_data as Record<string, unknown>)?.experiences as Record<string, unknown>[])?.length > 0) ? (
                   <div className="space-y-2.5">
-                    {((candidate.workHistory || candidate.work_history || candidate.experiences || (candidate.additional_data as Record<string, unknown>)?.work_history || (candidate.additional_data as Record<string, unknown>)?.experiences || []) as Record<string, unknown>[]).map((exp: Record<string, unknown>, index: number) => {
+                    {((candidate.workHistory || candidate.work_history || candidate.experiences || (candidate.additional_data as Record<string, unknown>)?.work_history || (candidate.additional_data as Record<string, unknown>)?.experiences || []) as Record<string, unknown>[]).map((exp: Record<string, unknown>, index: number) => { /* key below uses company+title combo */
                       const title = (exp.title || exp.position || exp.role || '') as string
                       const company = (exp.company || exp.company_name || exp.organization || '') as string
                       const location = (exp.location || exp.city || '') as string
@@ -544,7 +544,7 @@ export function CandidatePreviewProfileTab({
                       }
                       
                       return (
-                        <div key={index} className={`border-l-2 ${index === 0 ? 'border-gray-700' : 'border-lia-border-default dark:border-lia-border-default'} pl-3`}>
+                        <div key={`${index}-${company}`} className={`border-l-2 ${index === 0 ? 'border-gray-700' : 'border-lia-border-default dark:border-lia-border-default'} pl-3`}>
                           <div className="flex items-start justify-between gap-2 mb-1">
                             <div>
                               <h5 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">{title || 'Cargo não informado'}</h5>
@@ -623,7 +623,7 @@ export function CandidatePreviewProfileTab({
               <CardContent className="p-2.5 space-y-2">
                 {candidate.education && (candidate.education as Record<string, unknown>[]).length > 0 ? (
                   (candidate.education as Record<string, unknown>[]).map((edu: Record<string, unknown>, index: number) => (
-                    <div key={index} className={`flex items-start justify-between gap-2 ${index < (candidate.education as Record<string, unknown>[]).length - 1 ? 'pb-2 border-b border-lia-border-subtle' : ''}`}>
+                    <div key={`edu-${index}-${String(edu.institution || edu.school || index)}`} className={`flex items-start justify-between gap-2 ${index < (candidate.education as Record<string, unknown>[]).length - 1 ? 'pb-2 border-b border-lia-border-subtle' : ''}`}>
                       <div className="min-w-0 flex-1">
                         <h5 className={textStyles.label}>
                           {(edu.degree || edu.title || 'Formação') as string}{(edu.field_of_study || edu.fieldOfStudy) ? ` em ${(edu.field_of_study || edu.fieldOfStudy) as string}` : ''}
@@ -659,7 +659,7 @@ export function CandidatePreviewProfileTab({
                     const certIssuer = typeof cert === 'object' ? ((cert.issuer || cert.organization || '') as string) : ''
                     const certDate = typeof cert === 'object' ? ((cert.date || cert.year || '') as string) : ''
                     return (
-                      <div key={index} className="flex items-start justify-between gap-2">
+                      <div key={`cert-${index}-${certName || certIssuer}`} className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
                           <h5 className={`${textStyles.label} truncate`}>
                             {certName}
@@ -688,7 +688,7 @@ export function CandidatePreviewProfileTab({
               <CardContent className="p-2.5 space-y-1.5">
                 {languagesData.length > 0 ? (
                   languagesData.map((lang, index) => (
-                    <div key={index} className="flex items-center justify-between">
+                    <div key={`lang-${lang.language || lang.name || index}`} className="flex items-center justify-between">
                       <span className={`${textStyles.bodySmall} font-medium`}>
                         {lang.language}
                       </span>

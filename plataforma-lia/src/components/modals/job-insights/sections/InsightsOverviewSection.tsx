@@ -188,10 +188,10 @@ export function InsightsOverviewSection({
           Taxa de Conversão por Etapa
         </h3>
         <div className="grid grid-cols-2 gap-3">
-          {calculatedConversionRates.map((rate, index) => {
+          {calculatedConversionRates.map((rate) => {
             const colors = CONVERSION_STATUS_COLORS[rate.status]
             return (
-              <div key={index} className={`rounded-md p-3 border ${colors.bg} ${colors.border}`}>
+              <div key={rate.stage || rate.label} className={`rounded-md p-3 border ${colors.bg} ${colors.border}`}>
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-lia-text-secondary">{rate.from}</span>
@@ -370,7 +370,7 @@ export function InsightsOverviewSection({
             const styles = INSIGHT_TYPE_STYLES[insight.type]
             const IconComponent = insight.type === "action" ? Lightbulb : insight.type === "attention" ? AlertCircle : Eye
             return (
-              <div key={index} className={`rounded-md p-3 border ${styles.bg} ${styles.border}`}>
+              <div key={`insight-${insight.type}-${insight.title || index}`} className={`rounded-md p-3 border ${styles.bg} ${styles.border}`}>
                 <div className="flex items-start gap-2">
                   <IconComponent className={`w-4 h-4 mt-0.5 ${styles.iconColor}`} />
                   <div className="flex-1 min-w-0">
@@ -399,8 +399,8 @@ export function InsightsOverviewSection({
             Gargalos Identificados
           </h3>
           <div className="space-y-2">
-            {bottlenecks.map((b, index) => (
-              <div key={index} className="bg-lia-bg-primary rounded-md p-3 border border-status-warning/30">
+            {bottlenecks.map((b) => (
+              <div key={b.stage || b.title} className="bg-lia-bg-primary rounded-md p-3 border border-status-warning/30">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-semibold text-lia-text-primary">{b.stage}</span>
                   {b.stuckCount > 0 && (

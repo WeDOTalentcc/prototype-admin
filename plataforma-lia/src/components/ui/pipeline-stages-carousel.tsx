@@ -62,7 +62,7 @@ export function PipelineStagesCarousel({
     if (!container) return
 
     checkScrollButtons()
-    container.addEventListener('scroll', checkScrollButtons)
+    container.addEventListener('scroll', checkScrollButtons, { passive: true })
     window.addEventListener('resize', checkScrollButtons)
 
     const timer = setTimeout(checkScrollButtons, 200)

@@ -181,7 +181,7 @@ export function CandidateProfileTab({
               const isStartup = exp.is_startup
 
               return (
-                <div key={index} className={`border-l-2 ${index === 0 ? 'border-gray-700' : 'border-lia-border-default'} pl-3`}>
+                <div key={`${index}-${company}`} className={`border-l-2 ${index === 0 ? 'border-gray-700' : 'border-lia-border-default'} pl-3`}>
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <div>
                       <h5 className="text-sm font-medium lia-text-800">{title || 'Cargo não informado'}</h5>
@@ -258,7 +258,7 @@ export function CandidateProfileTab({
         <CardContent className="px-4 pb-4 space-y-3">
           {education.length > 0 ? (
             education.map((edu, index: number) => (
-              <div key={index} className={`flex items-start justify-between gap-2 ${index < education.length - 1 ? 'pb-3 border-b border-lia-border-subtle' : ''}`}>
+              <div key={`edu-${index}-${String(edu.institution || edu.school || index)}`} className={`flex items-start justify-between gap-2 ${index < education.length - 1 ? 'pb-3 border-b border-lia-border-subtle' : ''}`}>
                 <div>
                   <h5 className="text-sm font-medium lia-text-800">
                     {edu.degree || edu.title || 'Formação'}
@@ -372,7 +372,7 @@ export function CandidateProfileTab({
             languagesData.map((lang, index) => {
               const levelInfo = getLanguageLevel(lang.level)
               return (
-                <div key={index} className="space-y-1">
+                <div key={`lang-${lang.language || lang.name || index}`} className="space-y-1">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">{lang.language}</span>
                     <span className="text-xs lia-text-500">{levelInfo.label}</span>

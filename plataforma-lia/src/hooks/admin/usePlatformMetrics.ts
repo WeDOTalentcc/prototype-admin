@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import {
   saasMetricsClientService,
   PlatformAggregateMetrics,
@@ -55,27 +55,31 @@ export function usePlatformMetrics(): UsePlatformMetricsResult {
   const [metrics, setMetrics] = useState<PlatformMetrics | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const isMountedRef = useRef(true)
 
   const fetchMetrics = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
+    if (isMountedRef.current) setIsLoading(true)
+    if (isMountedRef.current) setError(null)
 
     try {
       const data: PlatformAggregateMetrics = await saasMetricsClientService.getPlatformMetrics()
-      setMetrics(data)
+      if (isMountedRef.current) setMetrics(data)
     } catch (err) {
+      if (!isMountedRef.current) return
       if (err instanceof ApiClientError) {
         setError(err.message)
       } else {
         setError("Erro ao carregar métricas da plataforma")
       }
     } finally {
-      setIsLoading(false)
+      if (isMountedRef.current) setIsLoading(false)
     }
   }, [])
 
   useEffect(() => {
+    isMountedRef.current = true
     fetchMetrics()
+    return () => { isMountedRef.current = false }
   }, [fetchMetrics])
 
   return {

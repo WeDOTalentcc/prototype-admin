@@ -178,7 +178,7 @@ export function JobDescriptionPreview({
             <h3 className="text-lg font-semibold mb-3">{SECTION_TITLES.what_you_will_do}</h3>
             <ul className="space-y-2">
               {data.responsibilities.map((resp, index) => (
-                <li key={index} className="flex items-start gap-2">
+                <li key={`resp-${index}`} className="flex items-start gap-2">
                   <span className="text-lia-text-secondary dark:text-lia-text-secondary mt-1">•</span>
                   <span className="flex-1">
                     {resp.description}
@@ -207,8 +207,8 @@ export function JobDescriptionPreview({
                     {SECTION_TITLES.technical}
                   </p>
                   <ul className="space-y-1">
-                    {requiredTech.map((comp, index) => (
-                      <li key={index} className="flex items-center gap-2">
+                    {requiredTech.map((comp) => (
+                      <li key={comp.name || comp.skill || String(comp)} className="flex items-center gap-2">
                         <span className="text-lia-text-secondary dark:text-lia-text-secondary">•</span>
                         <span>
                           {comp.name}
@@ -227,8 +227,8 @@ export function JobDescriptionPreview({
                     {SECTION_TITLES.behavioral}
                   </p>
                   <ul className="space-y-1">
-                    {requiredBeh.map((comp, index) => (
-                      <li key={index} className="flex items-center gap-2">
+                    {requiredBeh.map((comp) => (
+                      <li key={comp.name || comp.skill || String(comp)} className="flex items-center gap-2">
                         <span className="text-lia-text-secondary dark:text-lia-text-secondary">•</span>
                         <span>
                           {comp.name}
@@ -248,8 +248,8 @@ export function JobDescriptionPreview({
                 {SECTION_TITLES.nice_to_have}
               </h4>
               <ul className="space-y-1">
-                {niceTech.map((comp, index) => (
-                  <li key={index} className="flex items-center gap-2">
+                {niceTech.map((comp) => (
+                  <li key={comp.name || comp.skill || String(comp)} className="flex items-center gap-2">
                     <span className="text-lia-text-secondary dark:text-lia-text-secondary">•</span>
                     <span>
                       {comp.name}
@@ -332,8 +332,8 @@ export function JobDescriptionPreview({
           <section>
             <h3 className="text-lg font-semibold mb-3">{SECTION_TITLES.our_values}</h3>
             <ul className="space-y-1 text-sm">
-              {data.company.values.map((value, index) => (
-                <li key={index}>
+              {data.company.values.map((value) => (
+                <li key={value.name}>
                   <strong>{value.name}:</strong> {value.description}
                 </li>
               ))}
