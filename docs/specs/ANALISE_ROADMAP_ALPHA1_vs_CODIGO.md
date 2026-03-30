@@ -1,474 +1,234 @@
 # Análise Profunda: Roadmap Alpha 1 vs. Código Existente
 
 **Data:** 30/03/2026  
-**Versão:** 3.0 — Diagrama Vertical com Todas as Dimensões Laterais  
+**Versão:** 4.0 — Foco IA: somente componentes onde IA atua, com justificativa concreta  
 **Escopo:** Cruzamento do Fluxo Alpha 1 (v2) com a implementação real no Replit  
-**Objetivo:** Mapear TODAS as dimensões — agentes, domínios, serviços, tools, 6 camadas de compliance, 11 camadas de inteligência — por etapa do fluxo Alpha 1
+**Objetivo:** Listar APENAS componentes onde IA está envolvida (agente consome/produz algo via LLM, modelo, embedding ou heurística inteligente). Cada item explica concretamente a relação: qual agente consome o quê, produz o quê, e por quê.
 
 ---
 
-## 0. DIAGRAMA DE JORNADA VISUAL — FLUXO ALPHA 1 (VERTICAL)
+## 0. MAPA IA — FLUXO ALPHA 1 (somente onde IA atua)
 
-**Legenda:** ● Ativo | ◐ Disponivel (precisa ativar) | ○ A implementar | ⚠ Gap bloqueante | · N/A
+**Regra:** Um componente só aparece se IA está envolvida. "IA" = LLM, embedding, modelo ML, heurística adaptativa, ou agente autônomo. Infraestrutura pura (auth, CRUD manual, PII masking, audit trail, LGPD) não aparece — são listados uma vez na seção de infraestrutura global.
 
----
-
-### ETAPA 1 — LOGIN ↓
-
-| Grupo | Componente | Status |
-|-------|-----------|--------|
-| **Agente** | — (sem agente) | — |
-| **Dominio** | auth | ● |
-| **Servico** | AuthService (JWT + WorkOS SSO) | ● |
-| **LangGraph** | Nao | — |
-| **Metodologia** | — | — |
-| **Tools** | — | — |
-| | | |
-| **FairnessGuard L1** | — | · |
-| **FairnessGuard L2** | — | · |
-| **FairnessGuard L3** | — | · |
-| **PII Masking** | Logs de login mascarados | ● |
-| **Fact-Checker** | — | · |
-| **Audit Trail** | Login events | ◐ |
-| **Policy Engine** | — | · |
-| **Rate Limiting** | Tentativas de login | ◐ |
-| **LGPD** | Cookie consent | ◐ |
-| | | |
-| **Learning Loop** | — | · |
-| **A/B Testing** | — | · |
-| **Routing Adaptativo** | — | · |
-| **Template Learning** | — | · |
-| **Calibration** | — | · |
-| **Score Normalization** | — | · |
-| **Predictive Analytics** | — | · |
-| **Model Drift** | — | · |
-| **Conv. Memory** | — | · |
-| **Semantic Search** | — | · |
-| **Voice Analysis** | — | · |
-| | | |
-| **Email** | — | · |
-| **WhatsApp** | — | · |
-| **Chat Web** | — | · |
-| **Teams** | — | · |
-| **Telefone/VoIP** | — | · |
-| **Feedback Auto** | — | · |
-| **Notificacao** | — | · |
-
-> **GAP:** Rate limiting de login + Audit trail de autenticacao precisam ser ativados.
+**Legenda:** ● Ativo | ◐ Disponível (precisa ativar) | ○ A implementar | ⚠ Gap bloqueante
 
 ---
 
-### ↓ ETAPA 2 — EDITAR VAGA (importar do ATS) ↓
+### INFRAESTRUTURA GLOBAL (sem IA — presente em todas as etapas)
 
-| Grupo | Componente | Status |
-|-------|-----------|--------|
-| **Agente** | Ag.8 IntegradorATS | ● |
-| **Dominio** | ats_integration, job_management | ● |
-| **Servico** | ATSSyncService, GupyClient, PandapeClient | ● |
-| **LangGraph** | Sim (Ag.8) | ● |
-| **Metodologia** | — | — |
-| **Tools** | sync_candidate_to_ats, fetch_candidate_from_ats, validate_ats_fields | ● |
-| | | |
-| **FairnessGuard L1** | Bloquear requisitos discriminatorios no JD | ◐ |
-| **FairnessGuard L2** | Alertar termos proxy enviesados | ◐ |
-| **FairnessGuard L3** | — | · |
-| **PII Masking** | Strip PII antes de enviar ao LLM | ● |
-| **Fact-Checker** | — | · |
-| **Audit Trail** | Log de edicoes de vaga | ◐ |
-| **Policy Engine** | — | · |
-| **Rate Limiting** | — | · |
-| **LGPD** | Dados do ATS com consentimento | ◐ |
-| | | |
-| **Learning Loop** | Captura edicoes do wizard (salary, skills, benefits) | ● |
-| **A/B Testing** | Variantes de prompt para JD generation | ◐ |
-| **Routing Adaptativo** | — | · |
-| **Template Learning** | Aprende templates apos 3 vagas similares | ● |
-| **Calibration** | — | · |
-| **Score Normalization** | — | · |
-| **Predictive Analytics** | predict_time_to_fill, predict_optimal_salary | ◐ |
-| **Model Drift** | — | · |
-| **Conv. Memory** | Entity tracking (vaga mencionada) | ● |
-| **Semantic Search** | Expansao de skills para JD | ◐ |
-| **Voice Analysis** | — | · |
-| | | |
-| **Email** | — | · |
-| **WhatsApp** | — | · |
-| **Chat Web** | — | · |
-| **Teams** | — | · |
-| **Telefone/VoIP** | — | · |
-| **Feedback Auto** | — | · |
-| **Notificacao** | — | · |
+Estes componentes são infraestrutura de plataforma. Não envolvem IA e se aplicam globalmente:
 
-> **GAP:** ATS real depende de credenciais (API keys Gupy/Pandape). FG precisa virar middleware no save JD.
+| Componente | Descrição | Status |
+|-----------|-----------|--------|
+| **PII Masking** | Strip de dados pessoais antes de enviar qualquer texto ao LLM | ● |
+| **Audit Trail** | Log de ações (login, edições, aprovações, envios) — storage puro | ◐ |
+| **LGPD** | Consentimento, opt-out, minimização de dados — compliance jurídico | ◐ |
+| **Rate Limiting** | Limites de tentativas/envios por janela de tempo — regra fixa, sem ML | ◐ |
+
+> Estes não são componentes de IA. Aparecem aqui para evitar repetição nas tabelas por etapa.
 
 ---
 
-### ↓ ETAPA 3 — CONFIGURAR ROTEIRO WSI ↓
+### ETAPA 1 — LOGIN
 
-| Grupo | Componente | Status |
-|-------|-----------|--------|
-| **Agente** | Ag.4 EntrevistadorWSI | ● |
-| **Dominio** | cv_screening, wizard | ● |
-| **Servico** | WSIService, JDGeneratorService | ● |
-| **LangGraph** | Sim (Ag.4) | ● |
-| **Metodologia** | WSI (CBI/Bloom/Dreyfus/Big5) | ● |
-| **Tools** | generate_screening_questions, analyze_jd_and_suggest_competencies | ● |
-| | | |
-| **FairnessGuard L1** | Perguntas geradas sem vies | ◐ |
-| **FairnessGuard L2** | Alertar proxy terms | ◐ |
-| **FairnessGuard L3** | — | · |
-| **PII Masking** | Strip antes de enviar JD ao LLM | ● |
-| **Fact-Checker** | Validar claims nas perguntas | ◐ |
-| **Audit Trail** | Log de geracao de roteiro | ◐ |
-| **Policy Engine** | — | · |
-| **Rate Limiting** | — | · |
-| **LGPD** | — | · |
-| | | |
-| **Learning Loop** | Captura edicoes nas perguntas geradas | ● |
-| **A/B Testing** | Variantes de prompt para geracao de perguntas | ◐ |
-| **Routing Adaptativo** | — | · |
-| **Template Learning** | — | · |
-| **Calibration** | — | · |
-| **Score Normalization** | — | · |
-| **Predictive Analytics** | — | · |
-| **Model Drift** | — | · |
-| **Conv. Memory** | Tracking da vaga ativa na sessao | ● |
-| **Semantic Search** | Expansao de competencias sugeridas | ◐ |
-| **Voice Analysis** | — | · |
-| | | |
-| **Email** | — | · |
-| **WhatsApp** | — | · |
-| **Chat Web** | — | · |
-| **Teams** | — | · |
-| **Telefone/VoIP** | — | · |
-| **Feedback Auto** | — | · |
-| **Notificacao** | — | · |
-
-> **GAP:** FG e Fact-Checker precisam ser ativados como step pos-geracao nas perguntas WSI.
+**Nenhuma IA envolvida.** Login é email/senha via AuthService (JWT). Pré-requisito de infraestrutura.
 
 ---
 
-### ↓ ETAPA 4 — BUSCAR CANDIDATOS (Funil de Talentos) ↓
+### ETAPA 2 — EDITAR VAGA (importada do ATS)
 
-| Grupo | Componente | Status |
-|-------|-----------|--------|
-| **Agente** | Ag.2 SourcingAgent, Ag.3 TriagemCurricular, Ag.5 AvaliadorWSI | ● |
-| **Dominio** | sourcing, pipeline | ● |
-| **Servico** | SourcingPipelineService, CandidateEnrichmentService, CVScoringService | ● |
-| **LangGraph** | Sim (Ag.2, Ag.3, Ag.5) | ● |
-| **Metodologia** | WSI (scoring) | ● |
-| **Tools** | search_candidates, analyze_profile, score_candidate, enrich_profile | ● |
-| **Busca** | Elasticsearch + PGVector + WRF Dynamic K | ◐ |
-| | | |
-| **FairnessGuard L1** | Bloquear buscas discriminatorias | ● |
-| **FairnessGuard L2** | Alertar proxy terms na busca | ● |
-| **FairnessGuard L3** | Analise semantica (sector-dependent) | ◐ |
-| **PII Masking** | Strip PII de candidatos antes do LLM | ● |
-| **Fact-Checker** | Validar claims nas analises LIA | ◐ |
-| **Audit Trail** | Log de buscas + scores | ◐ |
-| **Policy Engine** | — | · |
-| **Rate Limiting** | — | · |
-| **LGPD** | Modo anonimo no Toon (Anonymize=True) | ● |
-| **Bias Detection** | _LEARNING_PROTECTED_FIELDS (bloqueia learning de campos protegidos) | ● |
-| | | |
-| **Learning Loop** | Captura accept/modify/reject de candidatos avaliados | ● |
-| **A/B Testing** | Variantes de prompt para scoring | ◐ |
-| **Routing Adaptativo** | Ajuste de confianca sourcing vs screening (0.8x-1.2x) | ● |
-| **Template Learning** | — | · |
-| **Calibration** | Feedback explicito/implicito sobre scores | ● |
-| **Score Normalization** | Normaliza scores por difficulty_coefficient | ● |
-| **Predictive Analytics** | predict_skill_success | ◐ |
-| **Model Drift** | Monitora score_drift + approval_drift | ● |
-| **Conv. Memory** | Tracking de candidatos mencionados + filtros | ● |
-| **Semantic Search** | Expansao semantica de skills/titulos/industrias (Gemini 768-dim) | ● |
-| **Voice Analysis** | — | · |
-| | | |
-| **Email** | — | · |
-| **WhatsApp** | — | · |
-| **Chat Web** | — | · |
-| **Teams** | — | · |
-| **Telefone/VoIP** | — | · |
-| **Feedback Auto** | — | · |
-| **Notificacao** | — | · |
+**Ação humana:** Consultor acessa página `/jobs`, seleciona vaga importada do ATS, edita manualmente requisitos/benefícios/faixa salarial/modelo de trabalho. Essa edição manual não envolve IA.
 
-> **GAP CRITICO:** WRF Dynamic K + LLM Job Classification precisa validacao e2e. FG L3 depende de sector rules. Apify API keys.
+**Ação IA (condicional):** Se o consultor abre o modal "Gerar JD" a partir dos dados preenchidos, a IA entra:
+
+| Componente IA | O que faz | Por quê | Status |
+|--------------|----------|---------|--------|
+| **JDGeneratorService** (Claude) | Recebe dados da vaga (título, skills, benefícios, responsabilidades) → gera JD estruturada em markdown (seções: Sobre, Responsabilidades, Requisitos, Benefícios, Diversidade) + SEO title + tags | Porque o consultor precisa de um JD profissional a partir de dados brutos; Claude redige e estrutura sem inventar conteúdo | ● |
+| **FairnessGuard L1/L2** | Pre-check no texto do JD gerado: L1 bloqueia requisitos discriminatórios (13 categorias: gênero, idade, etnia...); L2 alerta termos proxy enviesados (log only) | Porque o JD gerado por LLM pode conter viés inadvertido; FG filtra antes de salvar | ◐ |
+
+> **Nota MVP:** Ag.8 IntegradorATS NÃO atua nesta etapa. No MVP, vagas já foram importadas previamente. Ag.8 entra nas etapas de Gate (E5, E8) para sync de status de volta ao ATS.
+
+> **GAP:** FG precisa virar middleware no endpoint `POST /api/v1/jd/generate` (hoje é pre-check global no Orchestrator, não no endpoint de JD).
 
 ---
 
-### ↓ ETAPA 5 — APROVAR MAPEADOS (Gate 1) ↓
+### ETAPA 3 — CONFIGURAR ROTEIRO WSI
 
-| Grupo | Componente | Status |
-|-------|-----------|--------|
-| **Agente** | Ag.0 Orchestrator, Ag.7 AnalistaFeedback, Ag.8 IntegradorATS | ● |
-| **Dominio** | pipeline, kanban | ● |
-| **Servico** | KanbanService, PipelineTransitionService | ● |
-| **LangGraph** | Sim (Ag.0, Ag.7, Ag.8) | ● |
-| **Metodologia** | HITL (Human-in-the-Loop), BARS | ● |
-| **Tools** | suggest_movements, check_rejection_fairness, identify_bottlenecks | ● |
-| | | |
-| **FairnessGuard L1** | check_rejection_fairness como tool | ● |
-| **FairnessGuard L2** | Alertar proxy terms | ● |
-| **FairnessGuard L3** | — | · |
-| **PII Masking** | Ativo globalmente | ● |
-| **Fact-Checker** | — | · |
-| **Audit Trail** | Log de aprovacoes/rejeicoes + overrides | ◐ |
-| **Policy Engine** | Autonomy levels + HITL thresholds por setor | ● |
-| **Escalation** | Trigger quando AI confidence < threshold | ● |
-| **Rate Limiting** | — | · |
-| **LGPD** | Consentimento antes de contato | ◐ |
-| | | |
-| **Learning Loop** | Captura decisoes: aceitar/rejeitar/modificar AI suggestion | ● |
-| **A/B Testing** | — | · |
-| **Routing Adaptativo** | Correcoes de rota alimentam ajustes | ● |
-| **Template Learning** | — | · |
-| **Calibration** | Implicit feedback: avancar candidato low-score = sinal | ● |
-| **Score Normalization** | — | · |
-| **Predictive Analytics** | — | · |
-| **Model Drift** | Trigger se approval_drift > 10 p.p. | ● |
-| **Conv. Memory** | Tracking de acoes no kanban | ● |
-| **Semantic Search** | — | · |
-| **Voice Analysis** | — | · |
-| | | |
-| **Email** | — | · |
-| **WhatsApp** | — | · |
-| **Chat Web** | — | · |
-| **Teams** | — | · |
-| **Telefone/VoIP** | — | · |
-| **Feedback Auto** | — | · |
-| **Notificacao** | Sistema de alertas ao consultor | ○ |
+**Ação humana:** Consultor acessa modal "Roteiro de Triagem", escolhe criar (completo/compacto) ou editar roteiro existente, revisa/ajusta perguntas geradas.
 
-> **GAP:** check_rejection_fairness precisa ser automatica (nao sob demanda). Audit de overrides humanos.
+**Ação IA:**
+
+| Componente IA | O que faz | Por quê | Status |
+|--------------|----------|---------|--------|
+| **JDGeneratorService** (Claude) | Se o JD ainda não existe ou precisa ajuste, gera/melhora o JD a partir dos dados da vaga (mesmo serviço da E2) | Porque o roteiro WSI parte do JD — se não há JD, precisa gerar antes | ● |
+| **WSI Question Generator** (Gemini) | Recebe JD + competências técnicas + comportamentais + senioridade → gera perguntas WSI organizadas em Blocos 2 (elegibilidade), 3 (técnico), 4 (comportamental) via `POST /api/v1/wsi/generate-questions` | Porque as perguntas de triagem precisam ser calibradas por senioridade (Dreyfus), complexidade cognitiva (Bloom), traços de personalidade (Big Five) e competência (CBI) | ● |
+| **WSIScreeningQuestionGenerator** (heurístico + calibração) | Gera perguntas via templates Big5/CBI/Bloom/Dreyfus quando o LLM não está disponível; aplica `SeniorityContextCalibrator` para ajustar Dreyfus target e Bloom levels por área/indústria | Porque o fallback garante geração mesmo sem LLM, e a calibração contextual adapta a dificuldade ao perfil real da vaga | ● |
+| **FairnessGuard L1/L2** | Pre-check nas perguntas geradas: L1 bloqueia perguntas com padrões discriminatórios; L2 alerta proxy terms | Porque perguntas de triagem discriminatórias invalidam o processo seletivo inteiro | ◐ |
+
+> **GAP:** FG e Fact-Checker precisam ser ativados como step pós-geração no endpoint `/api/v1/wsi/generate-questions`.
 
 ---
 
-### ↓ ETAPA 6 — CONTATO VIA EMAIL + FOLLOW-UP ↓
+### ETAPA 4 — BUSCAR CANDIDATOS (Funil de Talentos)
 
-| Grupo | Componente | Status |
-|-------|-----------|--------|
-| **Agente** | Ag.0 Orchestrator | ● |
-| **Dominio** | communication | ● |
-| **Servico** | EmailService (Resend/SendGrid), WhatsAppService (Twilio) | ● |
-| **LangGraph** | Sim (Ag.0) | ● |
-| **Metodologia** | — | — |
-| **Tools** | send_email, send_whatsapp, send_bulk_email, send_feedback | ● |
-| | | |
-| **FairnessGuard L1** | — | · |
-| **FairnessGuard L2** | — | · |
-| **FairnessGuard L3** | — | · |
-| **PII Masking** | Emails nao logam dados pessoais | ● |
-| **Fact-Checker** | — | · |
-| **Audit Trail** | Log de envios + opens + clicks | ◐ |
-| **Policy Engine** | — | · |
-| **Rate Limiting** | Limite de envio por empresa/dia (sliding window) | ● |
-| **LGPD** | Opt-out link no email | ○ |
-| | | |
-| **Learning Loop** | — | · |
-| **A/B Testing** | Variantes de template de email | ◐ |
-| **Routing Adaptativo** | — | · |
-| **Template Learning** | Templates de email aprendidos | ◐ |
-| **Calibration** | — | · |
-| **Score Normalization** | — | · |
-| **Predictive Analytics** | — | · |
-| **Model Drift** | — | · |
-| **Conv. Memory** | Tracking de candidatos contatados | ● |
-| **Semantic Search** | — | · |
-| **Voice Analysis** | — | · |
-| | | |
-| **Email** | Resend/SendGrid — primeiro contato + follow-up | ● |
-| **WhatsApp** | Twilio — contato alternativo | ● |
-| **Chat Web** | — | · |
-| **Teams** | Integracao com consultor | ○ |
-| **Telefone/VoIP** | — | · |
-| **Feedback Auto** | — | · |
-| **Notificacao** | Alertas ao consultor | ○ |
+**Ação humana:** Consultor gera prompt de busca no campo de busca do Funil de Talentos, aplica filtros avançados, avalia candidatos na tabela (like/dislike), usa prompt expandido da LIA.
 
-> **GAP ⚠:** Follow-up 7d precisa de **SCHEDULER** (nao existe). Opt-out link LGPD. Webhook de tracking opens/clicks.
+**Ação IA:**
+
+| Componente IA | O que faz | Por quê | Status |
+|--------------|----------|---------|--------|
+| **CascadedRouter** (6 tiers) | Recebe mensagem do consultor → resolve intent via memory → Redis → pgvector → regex → LLM cascade (Haiku→Sonnet→Opus) → clarification | Porque o texto livre do consultor precisa ser roteado ao agente correto (sourcing, triagem, análise); o cascade otimiza custo (tiers baratos primeiro) | ● |
+| **Ag.2 SourcingAgent** (LangGraph) | Recebe intent de busca → executa search via Elasticsearch + PGVector + WRF Dynamic K → retorna candidatos ranqueados | Porque a busca híbrida (keyword + semântica) com fusão de rank ponderada encontra candidatos que busca simples perderia | ● |
+| **Ag.3 TriagemCurricular** (LangGraph) | Recebe perfil de candidato → analisa CV via LLM → gera score de aderência + parecer textual | Porque a triagem manual de CVs é o gargalo #1 do recrutador; o LLM compara skills/experiência contra os requisitos da vaga | ● |
+| **Ag.5 AvaliadorWSI** (LangGraph) | Recebe perfil + dados de triagem → calcula score WSI composto → gera ranking comparativo | Porque o ranking por score WSI padronizado permite comparação objetiva entre candidatos | ● |
+| **Semantic Search** (Gemini 768-dim) | Expande semanticamente skills/títulos/indústrias do prompt → busca por similaridade vetorial no PGVector | Porque "React developer" deve encontrar "frontend engineer com React" — a expansão semântica cobre sinônimos e variações | ● |
+| **FairnessGuard L1** | Bloqueia buscas com padrões discriminatórios explícitos (ex: "só homens", "menos de 30 anos") — pre-check no MainOrchestrator antes de rotear ao agente | Porque buscas discriminatórias violam legislação trabalhista e valores WeDO | ● |
+| **FairnessGuard L2** | Alerta (soft warning, log only) termos proxy que podem indicar viés indireto (ex: "boa aparência", "escola de primeira linha") | Porque viés indireto é sutil e precisa ser rastreado para auditoria | ● |
+| **Learning Loop** | Captura accept/modify/reject de candidatos avaliados → alimenta `RoutingFeedback` + score calibration | Porque o feedback do consultor melhora a precisão do scoring e do roteamento ao longo do tempo | ● |
+| **Routing Adaptativo** (E9) | `_apply_adaptive_adjustments` no CascadedRouter: ajusta confidence de roteamento com factor 0.8x-1.2x baseado em histórico de correções | Porque se o consultor corrige frequentemente o domínio roteado, o sistema aprende a ajustar | ● |
+| **Score Normalization** | Normaliza scores por `difficulty_coefficient` da vaga para comparação justa entre vagas de dificuldades diferentes | Porque uma vaga "Senior ML Engineer" tem baseline diferente de "Junior Admin" | ● |
+| **Model Drift** | Monitora `score_drift` + `approval_drift` — alerta quando distribuição de scores muda significativamente | Porque drift indica que o modelo ou o comportamento do consultor mudou, exigindo recalibração | ● |
+
+> **GAP CRITICO:** WRF Dynamic K + LLM Job Classification precisa validação e2e. FG L3 (análise semântica sector-dependent) depende de sector rules no PolicyEngine. Apify API keys para enriquecimento.
 
 ---
 
-### ↓ ETAPA 7 — TRIAGEM WSI (Chat Web / WhatsApp) ↓
+### ETAPA 5 — APROVAR MAPEADOS (Gate 1)
 
-| Grupo | Componente | Status |
-|-------|-----------|--------|
-| **Agente** | Ag.0 Orchestrator, Ag.4 EntrevistadorWSI, Ag.5 AvaliadorWSI | ● |
-| **Dominio** | cv_screening, communication | ● |
-| **Servico** | WSIService, WhatsAppService, VoiceService | ● |
-| **LangGraph** | Sim (Ag.0, Ag.4, Ag.5) | ● |
-| **Metodologia** | WSI completa (CBI/Bloom/Dreyfus/Big5) | ● |
-| **Tools** | generate_screening_questions, analyze_response, calculate_wsi | ● |
-| | | |
-| **FairnessGuard L1** | Perguntas e analises sem vies | ◐ |
-| **FairnessGuard L2** | Alertar proxy terms nas respostas | ◐ |
-| **FairnessGuard L3** | Analise semantica (sector-dependent: fairness_layer3_enabled) | ◐ |
-| **PII Masking** | Strip PII nas respostas antes do LLM | ● |
-| **Fact-Checker** | Validar scores e claims do WSI | ◐ |
-| **Audit Trail** | Log completo: cada pergunta/resposta/score | ◐ |
-| **Policy Engine** | Autonomy level por setor | ● |
-| **Rate Limiting** | — | · |
-| **LGPD** | Consentimento antes da triagem (tela de aceite) | ○ |
-| **Timeout** | Lembretes 48h + 48h (scheduler) | ○ |
-| | | |
-| **Learning Loop** | Captura padroes de resposta por competencia | ● |
-| **A/B Testing** | Variantes de prompt para analise de respostas | ◐ |
-| **Routing Adaptativo** | — | · |
-| **Template Learning** | — | · |
-| **Calibration** | Calibracao de scores WSI | ● |
-| **Score Normalization** | Normalizacao por versao do roteiro | ● |
-| **Predictive Analytics** | — | · |
-| **Model Drift** | Monitora drift em scores WSI | ● |
-| **Conv. Memory** | Estado da triagem por candidato | ● |
-| **Semantic Search** | — | · |
-| **Voice Analysis** | STT/TTS para triagem por voz (Deepgram + OpenAI) | ● |
-| | | |
-| **Email** | Notificar resultado ao consultor | ◐ |
-| **WhatsApp** | Twilio — canal principal de triagem | ● |
-| **Chat Web** | Pagina publica para candidato responder | ⚠ |
-| **Teams** | — | · |
-| **Telefone/VoIP** | VoiceService (STT Deepgram, TTS OpenAI) | ◐ |
-| **Feedback Auto** | — | · |
-| **Notificacao** | Alertas ao consultor | ○ |
+**Ação humana:** Consultor revisa candidatos no Kanban/Tabela, aprova individualmente ou em massa (max 100), arrasta cards entre colunas, confirma via SmartTransitionModal.
 
-> **GAP CRITICO ⚠:** Chat web publico NAO EXISTE. Timeouts 48h+48h precisam scheduler. Consentimento LGPD precisa tela frontend.
+**Ação IA:**
+
+| Componente IA | O que faz | Por quê | Status |
+|--------------|----------|---------|--------|
+| **Ag.0 Orchestrator** (LangGraph) | Coordena pós-aprovação: dispara contato para aprovados, feedback para reprovados, delega a Ag.7 e Ag.8 | Porque a ação de aprovar/reprovar desencadeia múltiplos fluxos paralelos que precisam de coordenação | ● |
+| **Ag.7 AnalistaFeedback** (LangGraph) | Gera parecer textual de feedback para candidatos reprovados baseado nos dados de triagem/score | Porque feedback personalizado e construtivo melhora employer branding e é requisito WeDO Talent Guide | ● |
+| **Ag.8 IntegradorATS** (LangGraph) | Sincroniza status de aprovação/reprovação de volta ao ATS (Gupy/Pandape) via `sync_candidate_to_ats` | Porque o ATS externo precisa refletir a decisão tomada na plataforma LIA para manter consistência | ● |
+| **Policy Engine** | Aplica `ALPHA1_SECTOR_RULES`: autonomy levels + HITL thresholds por setor determinam se a IA pode agir sozinha ou precisa confirmação humana | Porque em setores regulados (saúde, finanças) a IA não pode tomar decisão final sem HITL | ● |
+| **FairnessGuard L1** | `check_rejection_fairness` como tool: valida se motivo de rejeição contém padrão discriminatório | Porque rejeições discriminatórias são risco legal e reputacional | ● |
+| **Learning Loop** | Captura decisões consultor vs. sugestão IA (aceitar/rejeitar/modificar) → alimenta routing adjustments + score calibration | Porque o delta entre sugestão IA e decisão humana é o sinal mais forte para melhorar o modelo | ● |
+| **Calibration** | Implicit feedback: consultor avança candidato com low-score = sinal de que o score está subestimando | Porque calibração contínua corrige systematic bias nos scores | ● |
+| **Model Drift** | Trigger se `approval_drift` > 10 p.p. entre períodos → alerta para recalibração | Porque mudança brusca na taxa de aprovação indica problema no scoring ou mudança de critérios | ● |
+
+> **GAP:** `check_rejection_fairness` precisa ser automática no pipeline (hoje é tool sob demanda). Audit de overrides humanos sobre sugestão IA.
 
 ---
 
-### ↓ ETAPA 8 — APROVAR TRIADOS (Gate 2) ↓
+### ETAPA 6 — CONTATO VIA EMAIL + FOLLOW-UP
 
-| Grupo | Componente | Status |
-|-------|-----------|--------|
-| **Agente** | Ag.7 AnalistaFeedback, Ag.8 IntegradorATS | ● |
-| **Dominio** | pipeline, kanban, analytics | ● |
-| **Servico** | KanbanService, PipelineTransitionService | ● |
-| **LangGraph** | Sim (Ag.7, Ag.8) | ● |
-| **Metodologia** | HITL, BARS | ● |
-| **Tools** | suggest_movements, check_rejection_fairness | ● |
-| | | |
-| **FairnessGuard L1** | Validacao de rejeicao (motivo) | ● |
-| **FairnessGuard L2** | Alertar proxy terms | ● |
-| **FairnessGuard L3** | — | · |
-| **PII Masking** | Ativo | ● |
-| **Fact-Checker** | — | · |
-| **Audit Trail** | Log de aprovacao/rejeicao Gate 2 | ◐ |
-| **Policy Engine** | HITL thresholds por setor | ● |
-| **Rate Limiting** | — | · |
-| **LGPD** | Dados compartilhados com proxima etapa | ◐ |
-| | | |
-| **Learning Loop** | Feedback sobre decisoes Gate 2 | ● |
-| **A/B Testing** | — | · |
-| **Routing Adaptativo** | Correcoes de rota entre dominios | ● |
-| **Template Learning** | — | · |
-| **Calibration** | Implicit feedback: avancar candidato low-WSI | ● |
-| **Score Normalization** | — | · |
-| **Predictive Analytics** | — | · |
-| **Model Drift** | Monitora approval_drift Gate 2 | ● |
-| **Conv. Memory** | — | · |
-| **Semantic Search** | — | · |
-| **Voice Analysis** | — | · |
-| | | |
-| **Email** | — | · |
-| **WhatsApp** | — | · |
-| **Chat Web** | — | · |
-| **Teams** | — | · |
-| **Telefone/VoIP** | — | · |
-| **Feedback Auto** | Feedback automatico para reprovados | ◐ |
-| **Notificacao** | Alertas ao consultor | ○ |
+**Ação humana:** Consultor acompanha status de envios. Follow-up é automático.
 
-> **GAP:** Mesmo que Gate 1 — check_rejection_fairness precisa ser automatica. Feedback automatico para reprovados.
+**Ação IA:**
+
+| Componente IA | O que faz | Por quê | Status |
+|--------------|----------|---------|--------|
+| **Ag.0 Orchestrator** (LangGraph) | Dispara contato via EmailService/WhatsAppService: seleciona template, personaliza com dados do candidato/vaga, agenda follow-ups | Porque o contato inicial e follow-ups precisam ser personalizados por candidato e vaga sem intervenção manual | ● |
+| **Template Learning** | Aprende quais templates de email têm melhor taxa de abertura/resposta → prioriza em envios futuros | Porque otimizar o template por performance reduz "sem_resposta" | ◐ |
+| **A/B Testing** | Variantes de template de email testadas por cohort para medir taxa de abertura/clique | Porque decisões de template devem ser data-driven, não por opinião | ◐ |
+
+> **GAP ⚠:** Follow-up 7 dias precisa de **SCHEDULER** (não existe no MVP). Opt-out link LGPD. Webhook de tracking opens/clicks.
 
 ---
 
-### ↓ ETAPA 9 — AGENDAR ENTREVISTA + FEEDBACK
+### ETAPA 7 — TRIAGEM WSI (Chat Web / WhatsApp)
 
-| Grupo | Componente | Status |
-|-------|-----------|--------|
-| **Agente** | Ag.6 SchedulingAgent, Ag.7 AnalistaFeedback | ● |
-| **Dominio** | scheduling, analytics, communication | ● |
-| **Servico** | SchedulingService (ICS + Teams), EmailService, WhatsAppService | ● |
-| **LangGraph** | Sim (Ag.6, Ag.7) | ● |
-| **Metodologia** | — | — |
-| **Tools** | schedule_interview, send_feedback | ● |
-| | | |
-| **FairnessGuard L1** | Feedback sem vies | ◐ |
-| **FairnessGuard L2** | Alertar proxy terms | ◐ |
-| **FairnessGuard L3** | — | · |
-| **PII Masking** | Ativo | ● |
-| **Fact-Checker** | — | · |
-| **Audit Trail** | Log de aprovacao/rejeicao + feedback enviado | ◐ |
-| **Policy Engine** | — | · |
-| **Rate Limiting** | — | · |
-| **LGPD** | Minimizar dados no ICS + compartilhamento com calendario | ◐ |
-| | | |
-| **Learning Loop** | Feedback sobre qualidade do feedback gerado | ◐ |
-| **A/B Testing** | Variantes de template de feedback | ◐ |
-| **Routing Adaptativo** | — | · |
-| **Template Learning** | Templates de feedback aprendidos | ◐ |
-| **Calibration** | — | · |
-| **Score Normalization** | — | · |
-| **Predictive Analytics** | — | · |
-| **Model Drift** | — | · |
-| **Conv. Memory** | — | · |
-| **Semantic Search** | — | · |
-| **Voice Analysis** | — | · |
-| **Embedding Service** | Embedding do perfil para matching futuro (Gemini 768-dim) | ◐ |
-| **Long-Term Memory** | Armazena episodios da vaga para referencia | ◐ |
-| | | |
-| **Email** | Convite + ICS attachment | ● |
-| **WhatsApp** | Lembrete de entrevista | ● |
-| **Chat Web** | — | · |
-| **Teams** | Agendamento via Graph API | ◐ |
-| **Telefone/VoIP** | — | · |
-| **Feedback Auto** | Feedback automatico para reprovados | ◐ |
-| **Notificacao** | Alertas ao consultor | ○ |
+**Ação humana:** Candidato responde perguntas WSI via chat web (link do email) ou WhatsApp. Consultor revisa resultado.
 
-> **GAP:** Teams depende de configuracao Graph API (tenant). ICS funciona standalone. Feedback auto precisa integracao.
+**Ação IA:**
+
+| Componente IA | O que faz | Por quê | Status |
+|--------------|----------|---------|--------|
+| **Ag.0 Orchestrator** (LangGraph) | Coordena o fluxo de triagem: recebe mensagem do candidato → FairnessGuard pre-check → roteia para Ag.4 | Porque cada mensagem do candidato passa por compliance antes de ser processada | ● |
+| **Ag.4 EntrevistadorWSI** (LangGraph) | Conduz o chat de triagem: aplica perguntas WSI sequencialmente, faz follow-up contextual, encerra com feedback | Porque a triagem precisa ser conduzida de forma natural (conversacional) e seguindo a metodologia WSI | ● |
+| **Ag.5 AvaliadorWSI** (LangGraph) | Analisa cada resposta do candidato → calcula score por competência (0-100) → gera score WSI composto + parecer textual | Porque a avaliação objetiva por competência com scoring padronizado é o core da metodologia WSI | ● |
+| **FairnessGuard L1/L2** | Pre-check em CADA mensagem do candidato no MainOrchestrator: L1 bloqueia; L2 alerta. Aplicado nas respostas antes de enviar ao LLM avaliador | Porque respostas do candidato podem conter informações protegidas que não devem influenciar o scoring | ◐ |
+| **CascadedRouter** (6 tiers) | Roteia mensagens do candidato durante triagem para o domínio correto (cv_screening) | Porque mesmo dentro da triagem, o candidato pode fazer perguntas fora de escopo que precisam de roteamento | ● |
+| **Calibration** | Calibração de scores WSI usando `SeniorityContextCalibrator`: ajusta Dreyfus target + Bloom levels por área/indústria/senioridade | Porque "senior em fintech" tem baseline diferente de "senior em agro" | ● |
+| **Score Normalization** | Normaliza scores por versão do roteiro para comparação justa entre candidatos avaliados com roteiros diferentes | Porque se o roteiro mudou entre candidatos, scores brutos não são comparáveis | ● |
+| **Model Drift** | Monitora drift em scores WSI entre períodos → alerta se distribuição muda | Porque drift indica mudança no modelo de avaliação ou nos prompts | ● |
+| **Voice Analysis** | STT (Deepgram) + TTS (OpenAI): transcreve áudio do candidato → texto para avaliação; gera áudio da pergunta | Porque candidatos podem preferir responder por voz, e a plataforma precisa suportar multimodal | ● |
+| **Policy Engine** | Autonomy level por setor: define se Ag.5 pode auto-aprovar candidatos high-score ou precisa HITL | Porque em setores regulados a decisão final não pode ser 100% automática | ● |
+
+> **GAP CRITICO ⚠:** Chat web público NÃO EXISTE (frontend). Timeouts 48h+48h precisam scheduler. Consentimento LGPD precisa tela frontend.
 
 ---
 
-### MATRIZES DE RESUMO — Visao cruzada rapida
+### ETAPA 8 — APROVAR TRIADOS (Gate 2)
 
-**COMPLIANCE por etapa:**
+**Ação humana:** Consultor revisa score WSI + parecer LIA, aprova → Short List ou reprova → Feedback.
 
-| Etapa | FG L1 | FG L2 | FG L3 | PII | Fact-Check | Audit | Policy Eng | Rate Limit | LGPD |
-|-------|:-----:|:-----:|:-----:|:---:|:----------:|:-----:|:----------:|:----------:|:----:|
-| E1 Login | · | · | · | ● | · | ◐ | · | ◐ | ◐ |
-| E2 Editar Vaga | ◐ | ◐ | · | ● | · | ◐ | · | · | ◐ |
-| E3 Roteiro WSI | ◐ | ◐ | · | ● | ◐ | ◐ | · | · | · |
-| E4 Buscar Candidatos | ● | ● | ◐ | ● | ◐ | ◐ | · | · | ● |
-| E5 Aprovar Mapeados | ● | ● | · | ● | · | ◐ | ● | · | ◐ |
-| E6 Contato Email | · | · | · | ● | · | ◐ | · | ● | ○ |
-| E7 Triagem WSI | ◐ | ◐ | ◐ | ● | ◐ | ◐ | ● | · | ○ |
-| E8 Aprovar Triados | ● | ● | · | ● | · | ◐ | ● | · | ◐ |
-| E9 Agendar + Feedback | ◐ | ◐ | · | ● | · | ◐ | · | · | ◐ |
+**Ação IA:**
 
-**INTELIGENCIA por etapa:**
+| Componente IA | O que faz | Por quê | Status |
+|--------------|----------|---------|--------|
+| **Ag.7 AnalistaFeedback** (LangGraph) | Gera feedback personalizado para reprovados com base no score WSI + parecer + motivo de rejeição | Porque feedback genérico prejudica employer branding; o LLM personaliza por competência | ● |
+| **Ag.8 IntegradorATS** (LangGraph) | Sincroniza decisão Gate 2 (aprovado/reprovado + motivo) de volta ao ATS | Porque o ATS precisa refletir o status pós-triagem para o workflow do cliente | ● |
+| **Policy Engine** | HITL thresholds por setor: define se candidatos acima de threshold X podem ser auto-aprovados | Porque Gate 2 é decisão crítica e setores regulados exigem aprovação humana explícita | ● |
+| **FairnessGuard L1** | Valida motivo de rejeição: bloqueia se contém padrão discriminatório | Porque rejeição pós-triagem com motivo discriminatório é risco legal máximo | ● |
+| **Learning Loop** | Captura decisões Gate 2 vs. recomendação IA → alimenta calibration | Porque o delta Gate 2 é o sinal mais maduro (pós-triagem completa) para calibrar scoring | ● |
+| **Calibration** | Implicit feedback: consultor aprova candidato com low-WSI ou reprova high-WSI = sinal forte | Porque a calibração pós-WSI é mais precisa que a pós-sourcing (E5) | ● |
+| **Model Drift** | Monitora `approval_drift` Gate 2 separadamente do Gate 1 | Porque os dois gates têm dinâmicas diferentes e drift em um não implica drift no outro | ● |
+| **Routing Adaptativo** | Correções de rota entre domínios alimentam `RoutingFeedback` → ajustes de confidence futuros | Porque erros de roteamento no Gate 2 (ex: rota errada para feedback vs. agendamento) precisam ser corrigidos | ● |
 
-| Etapa | Learn Loop | A/B Test | Routing | Template Lrn | Calibr. | Score Norm | Predictive | Model Drift | Conv Mem | Semantic | Voice | Embedding | Long-Term |
-|-------|:----------:|:--------:|:-------:|:------------:|:-------:|:----------:|:----------:|:-----------:|:--------:|:--------:|:-----:|:---------:|:---------:|
-| E1 Login | · | · | · | · | · | · | · | · | · | · | · | · | · |
-| E2 Editar Vaga | ● | ◐ | · | ● | · | · | ◐ | · | ● | ◐ | · | · | · |
-| E3 Roteiro WSI | ● | ◐ | · | · | · | · | · | · | ● | ◐ | · | · | · |
-| E4 Buscar Candidatos | ● | ◐ | ● | · | ● | ● | ◐ | ● | ● | ● | · | ◐ | · |
-| E5 Aprovar Mapeados | ● | · | ● | · | ● | · | · | ● | ● | · | · | · | · |
-| E6 Contato Email | · | ◐ | · | ◐ | · | · | · | · | ● | · | · | · | · |
-| E7 Triagem WSI | ● | ◐ | · | · | ● | ● | · | ● | ● | · | ● | · | · |
-| E8 Aprovar Triados | ● | · | ● | · | ● | · | · | ● | · | · | · | · | · |
-| E9 Agendar + Feedback | ◐ | ◐ | · | ◐ | · | · | · | · | · | · | · | ◐ | ◐ |
+> **GAP:** `check_rejection_fairness` precisa ser automática. Feedback automático para reprovados precisa integração com EmailService.
 
-**COMUNICACAO por etapa:**
+---
 
-| Etapa | Email | WhatsApp | Chat Web | Teams | VoIP | Feedback Auto | Notificacao |
-|-------|:-----:|:--------:|:--------:|:-----:|:----:|:-------------:|:-----------:|
-| E1 Login | · | · | · | · | · | · | · |
-| E2 Editar Vaga | · | · | · | · | · | · | · |
-| E3 Roteiro WSI | · | · | · | · | · | · | · |
-| E4 Buscar Candidatos | · | · | · | · | · | · | · |
-| E5 Aprovar Mapeados | · | · | · | · | · | · | ○ |
-| E6 Contato Email | ● | ● | · | ○ | · | · | ○ |
-| E7 Triagem WSI | ◐ | ● | ⚠ | · | ◐ | · | ○ |
-| E8 Aprovar Triados | · | · | · | · | · | ◐ | ○ |
-| E9 Agendar + Feedback | ● | ● | · | ◐ | · | ◐ | ○ |
+### ETAPA 9 — AGENDAR ENTREVISTA + FEEDBACK
 
-> **Legenda:** ● Ativo | ◐ Disponivel (precisa ativar) | ○ A implementar | ⚠ Gap bloqueante | · N/A
+**Ação humana:** Consultor confirma short list. Para reprovados, feedback é automático.
+
+**Ação IA:**
+
+| Componente IA | O que faz | Por quê | Status |
+|--------------|----------|---------|--------|
+| **Ag.6 SchedulingAgent** (LangGraph) | Recebe candidato aprovado → busca slots disponíveis → gera convite (ICS + link reunião) → envia via email + WhatsApp | Porque agendamento manual de entrevistas é trabalho repetitivo que a IA elimina | ● |
+| **Ag.7 AnalistaFeedback** (LangGraph) | Gera texto de feedback para reprovados: estrutura motivo + pontos fortes + sugestões de desenvolvimento | Porque feedback construtivo é valor diferencial WeDO e o LLM personaliza por candidato | ● |
+| **FairnessGuard L1/L2** | Valida texto de feedback gerado: L1 bloqueia linguagem discriminatória; L2 alerta proxy terms | Porque feedback com viés prejudica o candidato e a marca do cliente | ◐ |
+| **Template Learning** | Aprende quais templates de feedback têm melhor recepção (NPS/reação) → prioriza variantes melhores | Porque feedback que o candidato valoriza melhora employer branding measurably | ◐ |
+| **Embedding Service** (Gemini 768-dim) | Gera embedding do perfil completo do candidato para matching futuro em outras vagas | Porque o candidato reprovado nesta vaga pode ser ideal para outra — o embedding permite re-discovery | ◐ |
+
+> **GAP:** Teams depende de configuração Graph API (tenant). ICS funciona standalone. Feedback auto precisa integração com pipeline de envio.
+
+---
+
+### MATRIZ DE RESUMO — Componentes IA por Etapa
+
+| Etapa | Agentes IA | LLM/Modelo | Serviço IA principal | Status |
+|-------|-----------|-----------|---------------------|--------|
+| E1 Login | — | — | — | sem IA |
+| E2 Editar Vaga | — | Claude (JDGenerator) | JDGeneratorService | ● (condicional) |
+| E3 Roteiro WSI | Ag.4 (indiretamente) | Claude + Gemini | JDGeneratorService + WSI Question Generator | ● |
+| E4 Buscar Candidatos | Ag.2, Ag.3, Ag.5 | LLM cascade + Gemini embeddings | CascadedRouter + SourcingPipeline + CVScoring | ● |
+| E5 Gate 1 | Ag.0, Ag.7, Ag.8 | LLM (feedback) | PolicyEngine + LearningLoop | ● |
+| E6 Contato Email | Ag.0 | LLM (template personalization) | EmailService + TemplateLearning | ● |
+| E7 Triagem WSI | Ag.0, Ag.4, Ag.5 | LLM (avaliação) + Deepgram + OpenAI TTS | WSIService + VoiceService | ● |
+| E8 Gate 2 | Ag.7, Ag.8 | LLM (feedback) | PolicyEngine + LearningLoop | ● |
+| E9 Agendar + Feedback | Ag.6, Ag.7 | LLM (feedback) + Gemini (embedding) | SchedulingService + EmbeddingService | ● |
+
+**FairnessGuard por etapa (somente onde IA gera conteúdo):**
+
+| Etapa | FG L1 (block) | FG L2 (warn) | Onde atua |
+|-------|:------------:|:------------:|----------|
+| E2 Editar Vaga | ◐ | ◐ | No JD gerado por Claude |
+| E3 Roteiro WSI | ◐ | ◐ | Nas perguntas geradas por Gemini |
+| E4 Buscar Candidatos | ● | ● | No texto de busca do consultor (pre-check no Orchestrator) |
+| E5 Gate 1 | ● | ● | No motivo de rejeição (check_rejection_fairness) |
+| E7 Triagem WSI | ◐ | ◐ | Nas respostas do candidato antes do LLM avaliador |
+| E8 Gate 2 | ● | ● | No motivo de rejeição Gate 2 |
+| E9 Feedback | ◐ | ◐ | No texto de feedback gerado por Ag.7 |
+
+**Inteligência adaptativa por etapa (somente onde há loop de aprendizado):**
+
+| Etapa | Learning Loop | Routing Adaptativo | Calibration | Score Norm | Model Drift |
+|-------|:------------:|:-----------------:|:-----------:|:----------:|:-----------:|
+| E4 Buscar | ● | ● | ● | ● | ● |
+| E5 Gate 1 | ● | ● | ● | — | ● |
+| E7 Triagem | ● | — | ● | ● | ● |
+| E8 Gate 2 | ● | ● | ● | — | ● |
+
+> **Legenda:** ● Ativo | ◐ Disponível (precisa ativar) | ○ A implementar | ⚠ Gap bloqueante
 
 ---
 
