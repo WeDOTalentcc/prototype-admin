@@ -108,7 +108,7 @@ export function InputEvaluationStage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p 
-                    className="text-xs font-medium lia-text-strong transition-colors duration-300"
+                    className="text-xs font-medium lia-text-strong transition-colors motion-reduce:transition-none duration-300"
                    
                   >
                     {item.label}

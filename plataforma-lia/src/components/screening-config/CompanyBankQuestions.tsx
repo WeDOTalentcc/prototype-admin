@@ -98,7 +98,7 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
     <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-primary overflow-hidden">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
       >
         <div className="flex items-center gap-2">
           <Building2 className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-tertiary" />
@@ -132,7 +132,7 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
                     <div key={category}>
                       <button
                         onClick={() => toggleCategory(category)}
-                        className="w-full flex items-center gap-2 px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                        className="w-full flex items-center gap-2 px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors motion-reduce:transition-none"
                       >
                         <span className="text-xs">{catInfo.icon}</span>
                         <span className="font-['Open_Sans',sans-serif] text-micro uppercase tracking-wider font-semibold text-lia-text-tertiary dark:text-lia-text-tertiary flex-1 text-left">
@@ -153,7 +153,7 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
                           {questions.map((q) => (
                             <div
                               key={q.id}
-                              className="flex items-start gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
+                              className="flex items-start gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none group"
                             >
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
@@ -168,7 +168,7 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
                               </div>
                               <button
                                 onClick={() => onToggleQuestion(q.id, true)}
-                                className="rounded-lg bg-gray-100 dark:bg-lia-bg-secondary hover:bg-gray-200 dark:hover:bg-gray-700 p-1 transition-colors opacity-60 group-hover:opacity-100 mt-0.5 shrink-0"
+                                className="rounded-lg bg-gray-100 dark:bg-lia-bg-secondary hover:bg-gray-200 dark:hover:bg-gray-700 p-1 transition-colors motion-reduce:transition-none opacity-60 group-hover:opacity-100 mt-0.5 shrink-0"
                                 title="Adicionar pergunta"
                               >
                                 <Plus className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-secondary" />
@@ -214,7 +214,7 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
                             </span>
                             <button
                               onClick={() => onToggleQuestion(question.id, false)}
-                              className="rounded-lg p-1 hover:bg-status-error/10 dark:hover:bg-status-error/20 text-lia-text-disabled hover:text-status-error dark:hover:text-status-error transition-colors shrink-0"
+                              className="rounded-lg p-1 hover:bg-status-error/10 dark:hover:bg-status-error/20 text-lia-text-disabled hover:text-status-error dark:hover:text-status-error transition-colors motion-reduce:transition-none shrink-0"
                               title="Remover pergunta"
                             >
                               <X className="w-3.5 h-3.5" />

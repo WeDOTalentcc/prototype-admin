@@ -70,12 +70,12 @@ export const ProgressSteps = ({ steps, currentStep }: {
           return (
             <div
               key={step.id}
-              className={`flex items-center gap-3 p-2 rounded-md transition-colors ${
+              className={`flex items-center gap-3 p-2 rounded-md transition-colors motion-reduce:transition-none ${
  isActive ? 'bg-gray-200 dark:bg-lia-bg-elevated' : ''
               }`}
               style={{animation: `fadeInRight 0.3s ease-out ${index * 0.1}s backwards`}}
             >
-              <div className={`flex items-center justify-center w-6 h-6 rounded-full transition-colors ${
+              <div className={`flex items-center justify-center w-6 h-6 rounded-full transition-colors motion-reduce:transition-none ${
  isCompleted ? 'bg-gray-700 text-white' :
                 isProcessing ? 'bg-gray-600 text-white' :
                 isError ? 'bg-gray-500 text-white dark:text-white' :
@@ -136,7 +136,7 @@ export const CommandExecution = ({
     >
       <div className="flex items-center gap-2 mb-2">
         <div className={`w-2 h-2 rounded-full ${
- status === "executing" ? 'bg-gray-500 animate-pulse' :
+ status === "executing" ? 'bg-gray-500 animate-pulse motion-reduce:animate-none' :
           status === "completed" ? 'bg-gray-700' :
           'bg-gray-600'
         }`} />
@@ -154,8 +154,8 @@ export const CommandExecution = ({
       )}
 
       {status === "executing" && (
-        <div className="flex items-center gap-2 mt-2">
-          <Loader2 className="w-3 h-3 animate-spin text-lia-text-secondary dark:text-lia-text-tertiary" />
+        <div className="flex items-center gap-2 mt-2" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
           <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">Processando...</span>
         </div>
       )}
@@ -177,7 +177,7 @@ export const FileCreationIndicator = ({
     <div
       className="flex items-center gap-3 p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle mb-3 animate-fade-in-up"
     >
-      <div className="flex items-center justify-center w-8 h-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-full">
+      <div className="flex items-center justify-center w-8 h-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-full" role="status" aria-live="polite" aria-label="Carregando...">
         {status === "creating" ? (
           <Loader2 className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
         ) : (
@@ -241,7 +241,7 @@ export const CompletionMessage = ({
 
       {/* Rating System */}
       <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
-        <p className="text-sm font-medium text-lia-text-primary mb-3">
+        <p className="text-sm font-medium text-lia-text-primary mb-3" aria-live="polite" aria-atomic="true">
           Como você avalia este resultado?
         </p>
         <div className="flex items-center gap-2 mb-4">
@@ -249,7 +249,7 @@ export const CompletionMessage = ({
             <button
               key={star}
               onClick={() => handleRating(star)}
-              className={`p-1 rounded-md transition-colors ${
+              className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${
  star <= rating ? 'text-lia-text-primary dark:text-lia-text-primary' : 'text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse'
               }`}
             >
@@ -275,7 +275,7 @@ export const CompletionMessage = ({
                 <button
                   key={action.id}
                   onClick={() => onFollowUp?.(action.id)}
-                  className="w-full flex items-center gap-3 p-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors group"
+                  className="w-full flex items-center gap-3 p-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors motion-reduce:transition-none group"
                 >
                   <Icon className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary group-hover:text-lia-text-secondary dark:group-hover:text-lia-text-disabled" />
                   <span className="text-sm text-lia-text-primary dark:text-lia-text-primary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-inverse">
@@ -308,9 +308,9 @@ export const ProgressiveDisclosure = ({
     <div className="mb-4">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center gap-2 w-full p-3 bg-gray-100 dark:bg-lia-bg-elevated rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+        className="flex items-center gap-2 w-full p-3 bg-gray-100 dark:bg-lia-bg-elevated rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors motion-reduce:transition-none"
       >
-        <ChevronRight className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+        <ChevronRight className={`w-4 h-4 transition-transform motion-reduce:transition-none ${isExpanded ? 'rotate-90' : ''}`} />
         <span className="text-sm font-medium text-lia-text-primary">
           {title}
         </span>

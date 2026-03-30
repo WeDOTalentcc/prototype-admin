@@ -371,7 +371,7 @@ export function CultureAnalyzer({
           <Button
             onClick={() => startAnalysis(false)}
             disabled={!websiteUrl}
-            className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 transition-colors motion-reduce:transition-none disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             <Brain className="w-4 h-4 text-wedo-cyan" />
             Analisar Empresa com IA
@@ -394,16 +394,16 @@ export function CultureAnalyzer({
     return (
       <Card className="rounded-xl bg-gray-50/50 dark:bg-lia-bg-primary/20 backdrop-blur-sm border border-lia-border-subtle dark:border-lia-border-subtle">
         <CardContent className="p-6">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-12 h-12 rounded-md flex items-center justify-center relative overflow-hidden bg-gray-900 dark:lia-bg-50">
-              <Loader2 className="w-6 h-6 text-white animate-spin" />
+          <div className="flex items-center gap-4 mb-6" role="status" aria-live="polite" aria-label="Carregando...">
+            <div className="w-12 h-12 rounded-md flex items-center justify-center relative overflow-hidden bg-gray-900 dark:lia-bg-50" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="w-6 h-6 text-white animate-spin motion-reduce:animate-none" />
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
             </div>
             <div className="flex-1">
               <h3 className={textStyles.h3}>
                 Analisando {websiteUrl}
               </h3>
-              <p className={`${textStyles.bodySmall} lia-text-600 dark:text-lia-text-tertiary transition-colors duration-300`}>
+              <p className={`${textStyles.bodySmall} lia-text-600 dark:text-lia-text-tertiary transition-colors motion-reduce:transition-none duration-300`}>
                 {currentStep || "Iniciando..."}
               </p>
             </div>
@@ -438,7 +438,7 @@ export function CultureAnalyzer({
               return (
                 <div
                   key={step.key}
-                  className={`flex flex-col items-center p-2 rounded-md transition-colors duration-300 ${
+                  className={`flex flex-col items-center p-2 rounded-md transition-colors motion-reduce:transition-none duration-300 ${
                     isActive
                       ? isLia 
                         ? "bg-gray-100 dark:bg-lia-bg-secondary ring-2 ring-gray-900/20 scale-105"
@@ -449,7 +449,7 @@ export function CultureAnalyzer({
                   }`}
                 >
                   <div 
-                    className={`w-7 h-7 rounded-md flex items-center justify-center mb-1.5 transition-colors duration-300 ${
+                    className={`w-7 h-7 rounded-md flex items-center justify-center mb-1.5 transition-colors motion-reduce:transition-none duration-300 ${
                       isCompleted
                         ? "bg-status-success text-white"
                         : isActive
@@ -462,7 +462,7 @@ export function CultureAnalyzer({
                     {isCompleted ? (
                       <CheckCircle2 className="w-4 h-4" />
                     ) : isActive ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                     ) : (
                       <StepIcon className="w-3.5 h-3.5" />
                     )}

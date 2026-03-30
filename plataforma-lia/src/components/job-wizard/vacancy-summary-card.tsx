@@ -57,7 +57,7 @@ function SectionHeader({
       {onEdit && (
         <button
           onClick={() => onEdit(fieldName)}
-          className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none"
           aria-label={`Editar ${label}`}
         >
           <svg className="w-3.5 h-3.5 lia-text-secondary hover:lia-text-base dark:hover:lia-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

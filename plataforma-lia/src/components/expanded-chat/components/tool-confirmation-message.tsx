@@ -147,11 +147,11 @@ export function ToolConfirmationMessage({
           data-testid="tool-confirm-button"
           aria-label="Confirmar execução"
           aria-busy={isExecuting}
-          className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200"
+          className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors motion-reduce:transition-none duration-200"
         >
           {isExecuting ? (
             <>
-              <Loader2 className="h-4 w-4 mr-1.5 animate-spin" aria-hidden="true" />
+              <Loader2 className="h-4 w-4 mr-1.5 animate-spin motion-reduce:animate-none" aria-hidden="true" />
               <span>Executando...</span>
             </>
           ) : (
@@ -168,7 +168,7 @@ export function ToolConfirmationMessage({
           size="sm"
           data-testid="tool-cancel-button"
           aria-label="Cancelar execução"
-          className="border-status-warning/30 dark:border-status-warning/30 hover:bg-status-warning/15 dark:hover:bg-status-warning/50 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-colors duration-200"
+          className="border-status-warning/30 dark:border-status-warning/30 hover:bg-status-warning/15 dark:hover:bg-status-warning/50 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-colors motion-reduce:transition-none duration-200"
         >
           <X className="h-4 w-4 mr-1.5" aria-hidden="true" />
           <span>Cancelar</span>

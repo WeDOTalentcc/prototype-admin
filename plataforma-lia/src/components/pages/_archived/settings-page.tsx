@@ -70,7 +70,7 @@ export function SettingsPage() {
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`w-full flex items-center gap-3 px-3 py-3 rounded-md text-left transition-colors font-open-sans settings-menu-item ${
+                      className={`w-full flex items-center gap-3 px-3 py-3 rounded-md text-left transition-colors motion-reduce:transition-none font-open-sans settings-menu-item ${
                         activeTab === tab.id
  ? 'bg-gray-50 dark:bg-lia-bg-secondary border border-gray-900 dark:border-lia-border-subtle text-gray-900 dark:text-lia-text-secondary'
                           : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-lia-text-primary'
@@ -92,13 +92,13 @@ export function SettingsPage() {
           <div
             className={cn(
               "absolute top-0 right-0 w-1 h-full cursor-col-resize group z-10",
-              "hover:w-1.5 transition-colors duration-200",
+              "hover:w-1.5 transition-colors motion-reduce:transition-none duration-200",
               isResizing ? "bg-gray-400 w-1.5" : "bg-transparent hover:bg-gray-500"
             )}
             onMouseDown={startResize}
             title="Arrastar para redimensionar menu de configurações"
           >
-            <div className="absolute inset-y-0 right-0 w-px bg-gray-200 dark:bg-lia-bg-elevated group-hover:bg-wedo-cyan/10 transition-colors duration-200" />
+            <div className="absolute inset-y-0 right-0 w-px bg-gray-200 dark:bg-lia-bg-elevated group-hover:bg-wedo-cyan/10 transition-colors motion-reduce:transition-none duration-200" />
             <div className="absolute top-0 -right-2 w-4 h-full" />
           </div>
         </div>

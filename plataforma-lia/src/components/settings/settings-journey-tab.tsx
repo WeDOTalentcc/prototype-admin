@@ -230,7 +230,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
               <div key={step.id} className="flex items-center">
                 <button
                   onClick={() => setCurrentStep(step.id)}
-                  className={`flex flex-col items-center transition-colors ${
+                  className={`flex flex-col items-center transition-colors motion-reduce:transition-none ${
                     currentStep === step.id
                       ? 'lia-text-600 dark:text-lia-text-tertiary'
                       : currentStep > step.id
@@ -280,7 +280,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm lia-text-800 dark:text-lia-text-primary">
+            <p className="text-sm lia-text-800 dark:text-lia-text-primary" aria-live="polite" aria-atomic="true">
               Descreva o fluxo típico de abertura de vagas na sua empresa.
             </p>
             <textarea
@@ -307,7 +307,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
                     setWizardData(prev => ({ ...prev, vagasAbertura: option.label + ': ' + option.desc }))
                     onSettingsChange(true)
                   }}
-                  className="p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors text-left"
+                  className="p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none text-left"
                 >
                   <div className="font-medium text-sm">{option.label}</div>
                   <div className="text-xs lia-text-600 mt-1">{option.desc}</div>
@@ -341,7 +341,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
                     <button
                       key={sistema.id}
                       onClick={() => toggleSistema(sistema.id)}
-                      className={`p-3 border rounded-md transition-colors ${
+                      className={`p-3 border rounded-md transition-colors motion-reduce:transition-none ${
                         wizardData.sistemasUsados.includes(sistema.id)
                           ? 'border-gray-900 dark:lia-border-50 bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary'
                           : 'border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default'
@@ -380,7 +380,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
                 <button
                   key={etapa}
                   onClick={() => toggleEtapa(etapa)}
-                  className={`p-3 border rounded-md transition-colors text-left ${
+                  className={`p-3 border rounded-md transition-colors motion-reduce:transition-none text-left ${
                     wizardData.etapasProcesso.includes(etapa)
                       ? 'border-gray-900 dark:lia-border-50 bg-gray-100 dark:bg-lia-bg-secondary'
                       : 'border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default'
@@ -437,7 +437,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
                   <button
                     key={automacao.id}
                     onClick={() => toggleAutomacao(automacao.id)}
-                    className={`p-4 border rounded-md transition-colors text-left ${
+                    className={`p-4 border rounded-md transition-colors motion-reduce:transition-none text-left ${
                       wizardData.automacoesDesejadas.includes(automacao.id)
                         ? 'border-gray-900 dark:lia-border-50 bg-gray-100 dark:bg-lia-bg-secondary'
                         : 'border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default'
@@ -470,7 +470,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm lia-text-800 dark:text-lia-text-primary">
+              <p className="text-sm lia-text-800 dark:text-lia-text-primary" aria-live="polite" aria-atomic="true">
                 Defina como a LIA poderá se comunicar com os candidatos durante o processo seletivo.
               </p>
 
@@ -479,7 +479,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
                   <button
                     key={canal.id}
                     onClick={() => toggleCanalComunicacaoCandidato(canal.id)}
-                    className={`p-4 border rounded-md transition-colors text-left ${
+                    className={`p-4 border rounded-md transition-colors motion-reduce:transition-none text-left ${
                       wizardData.canaisComunicacaoCandidatos.includes(canal.id)
                         ? 'border-gray-900 dark:lia-border-50 bg-gray-100 dark:bg-lia-bg-secondary'
                         : 'border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default'
@@ -514,7 +514,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
                     <p className="text-sm font-medium text-status-warning">
                       Atenção: Canais essenciais desativados
                     </p>
-                    <p className="text-xs text-status-warning mt-1">
+                    <p className="text-xs text-status-warning mt-1" aria-live="polite" aria-atomic="true">
                       Limitar os canais de comunicação pode comprometer a velocidade e eficiência do processo seletivo, 
                       reduzindo as chances de contato rápido com os melhores candidatos.
                     </p>
@@ -535,7 +535,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm lia-text-800 dark:text-lia-text-primary">
+            <p className="text-sm lia-text-800 dark:text-lia-text-primary" aria-live="polite" aria-atomic="true">
               Onde vocês publicam as vagas? Selecione os canais que sua empresa utiliza.
             </p>
 
@@ -544,7 +544,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
                 <button
                   key={canal.id}
                   onClick={() => toggleCanal(canal.id)}
-                  className={`p-4 border rounded-md transition-colors text-left ${
+                  className={`p-4 border rounded-md transition-colors motion-reduce:transition-none text-left ${
                     wizardData.canaisPublicacao.includes(canal.id)
                       ? 'border-gray-900 dark:lia-border-50 bg-gray-100 dark:bg-lia-bg-secondary'
                       : 'border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default'
@@ -657,7 +657,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
                 Salvando...
               </>
             ) : submitSuccess ? (

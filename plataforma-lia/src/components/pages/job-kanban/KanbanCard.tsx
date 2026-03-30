@@ -44,7 +44,7 @@ export const KanbanCard = React.memo(function KanbanCard({
 
   return (
     <Card
-      className="bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default dark:hover:border-gray-600 cursor-pointer transition-colors hover:group rounded-md"
+      className="bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default dark:hover:border-gray-600 cursor-pointer transition-colors motion-reduce:transition-none hover:group rounded-md"
       onClick={onClick}
       data-testid="candidate-card"
       data-candidate-id={candidate.id}
@@ -54,7 +54,7 @@ export const KanbanCard = React.memo(function KanbanCard({
         <div className="flex items-start gap-2">
           {!isDragDisabled && (
             <div 
-              className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab"
+              className="opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none cursor-grab"
               data-testid="drag-handle"
             >
               <GripVertical className="h-4 w-4 text-lia-text-disabled dark:text-lia-text-tertiary" />

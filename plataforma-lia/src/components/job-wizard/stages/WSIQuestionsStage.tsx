@@ -192,7 +192,7 @@ export function WSIQuestionsStage() {
           {/* Delete button */}
           <button
             onClick={() => deleteQuestion(question.id)}
-            className="p-1 lia-text-secondary hover:text-status-error transition-colors"
+            className="p-1 lia-text-secondary hover:text-status-error transition-colors motion-reduce:transition-none"
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
@@ -300,9 +300,9 @@ export function WSIQuestionsStage() {
 
       {/* Loading indicator */}
       {isGeneratingWSI && (
-        <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md border border-lia-border-default dark:border-lia-border-default flex items-center justify-center gap-2">
-          <Loader2 className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin" />
-          <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+        <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md border border-lia-border-default dark:border-lia-border-default flex items-center justify-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
+          <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
             Gerando perguntas personalizadas para esta vaga...
           </span>
         </div>
@@ -324,7 +324,7 @@ export function WSIQuestionsStage() {
       {/* Add Custom Question Button */}
       <button
         onClick={() => setShowCustomQuestionForm(true)}
-        className="w-full py-2 px-3 rounded-md border border-dashed border-gray-900 text-lia-text-secondary dark:text-lia-text-tertiary text-xs font-medium hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors flex items-center justify-center gap-1.5"
+        className="w-full py-2 px-3 rounded-md border border-dashed border-gray-900 text-lia-text-secondary dark:text-lia-text-tertiary text-xs font-medium hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5"
       >
         <Plus className="w-3.5 h-3.5" />
         Adicionar Pergunta Personalizada
@@ -386,7 +386,7 @@ export function WSIQuestionsStage() {
       {/* Instructions */}
       {wsiCandidates.length === 0 && !isGeneratingWSI && (
         <div className="p-4 bg-status-warning/10 rounded-md border border-status-warning/30 text-center">
-          <p className="text-xs text-status-warning">
+          <p className="text-xs text-status-warning" aria-live="polite" aria-atomic="true">
             Complete as etapas anteriores para que a LIA gere perguntas de triagem personalizadas para esta vaga.
           </p>
         </div>

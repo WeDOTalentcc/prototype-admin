@@ -31,7 +31,7 @@ export function TypingIndicator({ className }: TypingIndicatorProps) {
             />
           ))}
         </div>
-        <span className="text-xs font-['Open_Sans',sans-serif] lia-text-600 dark:text-lia-text-tertiary animate-pulse">
+        <span className="text-xs font-['Open_Sans',sans-serif] lia-text-600 dark:text-lia-text-tertiary animate-pulse motion-reduce:animate-none">
           LIA está pensando...
         </span>
       </div>

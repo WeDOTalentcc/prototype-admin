@@ -80,13 +80,13 @@ export function CreditConfirmationDialog({
             <div className="space-y-1.5">
               <div className="flex justify-between items-center text-xs">
                 <span className="lia-text-500">Limite:</span>
-                <span className="font-medium lia-text-950 dark:lia-text-50">
+                <span className="font-medium lia-text-950 dark:lia-text-50" aria-live="polite" aria-atomic="true">
                   {candidateLimit} candidatos
                 </span>
               </div>
               
               <div className="flex justify-between items-center text-xs">
-                <span className="lia-text-500">Custo por candidato:</span>
+                <span className="lia-text-500" aria-live="polite" aria-atomic="true">Custo por candidato:</span>
                 <span className="font-medium lia-text-950 dark:lia-text-50">
                   {creditPerCandidate} crédito
                 </span>
@@ -130,7 +130,7 @@ export function CreditConfirmationDialog({
           >
             {isLoading ? (
               <>
-                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin motion-reduce:animate-none" />
                 Buscando...
               </>
             ) : (

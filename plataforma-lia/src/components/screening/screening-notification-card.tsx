@@ -146,7 +146,7 @@ export function ScreeningNotificationCard({
         <div className="px-4 py-3 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-elevated/30 rounded-b-md">
           <button
             onClick={onViewDetails}
-            className="flex items-center gap-1.5 text-sm font-medium text-wedo-cyan-dark dark:text-wedo-cyan hover:text-wedo-cyan-dark dark:hover:text-wedo-cyan transition-colors"
+            className="flex items-center gap-1.5 text-sm font-medium text-wedo-cyan-dark dark:text-wedo-cyan hover:text-wedo-cyan-dark dark:hover:text-wedo-cyan transition-colors motion-reduce:transition-none"
           >
             Ver Detalhes
             <ChevronRight className="w-3.5 h-3.5" />

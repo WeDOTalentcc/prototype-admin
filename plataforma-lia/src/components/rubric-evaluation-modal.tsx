@@ -374,7 +374,7 @@ export function RubricEvaluationModal({
           </div>
           <button 
             onClick={onClose}
-            className="h-7 w-7 p-0 flex items-center justify-center transition-colors hover:bg-gray-100 rounded-full lia-text-secondary"
+            className="h-7 w-7 p-0 flex items-center justify-center transition-colors motion-reduce:transition-none hover:bg-gray-100 rounded-full lia-text-secondary"
           >
             <X className="w-4 h-4" />
           </button>
@@ -388,7 +388,7 @@ export function RubricEvaluationModal({
               <button
                 key={tab.id}
                 onClick={() => setActiveSection(tab.id)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none"
                 style={{backgroundColor: activeSection === tab.id ? 'var(--wedo-cyan-bg-12)' : 'transparent',
                   color: activeSection === tab.id ? 'var(--gray-950)' : 'var(--gray-400)'}}
               >
@@ -634,7 +634,7 @@ export function RubricEvaluationModal({
                     return (
                       <div 
                         key={idx} 
-                        className="p-2.5 rounded-md transition-colors"
+                        className="p-2.5 rounded-md transition-colors motion-reduce:transition-none"
                         style={{backgroundColor: rubricStyle.bg,
                           border: `1px solid ${rubricStyle.border}`}}
                       >
@@ -820,11 +820,11 @@ export function RubricEvaluationModal({
             <button
               onClick={handleReject}
               disabled={isLoading || !onReject}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors hover:bg-status-error/10 disabled:opacity-50 disabled:cursor-not-allowed bg-white border border-lia-border-default text-status-error dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 dark:text-status-error"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors motion-reduce:transition-none hover:bg-status-error/10 disabled:opacity-50 disabled:cursor-not-allowed bg-white border border-lia-border-default text-status-error dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 dark:text-status-error"
               
             >
               {isRejecting ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
               ) : (
                 <ThumbsDown className="w-3.5 h-3.5" />
               )}
@@ -833,11 +833,11 @@ export function RubricEvaluationModal({
             <button
               onClick={handleApprove}
               disabled={isLoading || !onApprove}
-              className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium rounded-md transition-colors hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed bg-gray-900 text-white dark:hover:bg-gray-200"
+              className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium rounded-md transition-colors motion-reduce:transition-none hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed bg-gray-900 text-white dark:hover:bg-gray-200"
               
             >
               {isApproving ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
               ) : (
                 <ThumbsUp className="w-3.5 h-3.5" />
               )}

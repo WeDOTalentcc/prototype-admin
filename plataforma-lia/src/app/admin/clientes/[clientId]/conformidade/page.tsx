@@ -43,7 +43,7 @@ const internalTabs: TabLink[] = [
 
 function LoadingSpinner({ size = 'sm' }: { size?: 'sm' | 'md' | 'lg' }) {
   const sizeClass = size === 'lg' ? 'w-8 h-8' : size === 'md' ? 'w-6 h-6' : 'w-4 h-4'
-  return <Loader2 className={`${sizeClass} animate-spin lia-text-600`} />
+  return <Loader2 className={`${sizeClass} animate-spin motion-reduce:animate-none lia-text-600`} />
 }
 
 export default function ConformidadePage({ params }: { params: Promise<{ clientId: string }> }) {

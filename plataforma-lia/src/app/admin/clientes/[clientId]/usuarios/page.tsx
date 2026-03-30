@@ -377,9 +377,9 @@ export default function ClientUsuariosPage({
             Gestão de usuários e permissões do cliente
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
           <Button variant="outline" size="sm" onClick={loadUsers} disabled={isLoading}>
-            <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin motion-reduce:animate-none' : ''}`} />
             Atualizar
           </Button>
           {!isScimEnabled && (
@@ -508,7 +508,7 @@ export default function ClientUsuariosPage({
           ) : filteredUsers.length === 0 ? (
             <div className="text-center py-8">
               <Users className="w-12 h-12 mx-auto mb-4 lia-text-300" />
-              <p className="text-sm lia-text-400 dark:lia-text-500">
+              <p className="text-sm lia-text-400 dark:lia-text-500" aria-live="polite" aria-atomic="true">
                 {searchQuery || roleFilter !== 'all' || statusFilter !== 'all' 
                   ? 'Nenhum usuário encontrado com os filtros aplicados' 
                   : 'Nenhum usuário cadastrado'}
@@ -524,7 +524,7 @@ export default function ClientUsuariosPage({
                 return (
                   <div 
                     key={user.id}
-                    className="flex items-center gap-4 p-3 rounded-md border hover:border-gray-900 dark:hover:border-gray-50 transition-colors border-lia-border-subtle dark:border-lia-border-subtle"
+                    className="flex items-center gap-4 p-3 rounded-md border hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none border-lia-border-subtle dark:border-lia-border-subtle"
                   >
                     <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center shrink-0">
                       <span className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary">
@@ -690,7 +690,7 @@ export default function ClientUsuariosPage({
             >
               {isSaving ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
                   Enviando...
                 </>
               ) : (
@@ -759,7 +759,7 @@ export default function ClientUsuariosPage({
             >
               {isSaving ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
                   Salvando...
                 </>
               ) : (
@@ -802,7 +802,7 @@ export default function ClientUsuariosPage({
               disabled={isSaving}
             >
               {isSaving ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
               ) : (
                 <UserX className="w-4 h-4 mr-2" />
               )}
@@ -843,7 +843,7 @@ export default function ClientUsuariosPage({
               disabled={isSaving}
             >
               {isSaving ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
               ) : (
                 <Trash2 className="w-4 h-4 mr-2" />
               )}

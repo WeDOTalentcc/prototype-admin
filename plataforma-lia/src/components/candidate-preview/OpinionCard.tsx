@@ -74,7 +74,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
     <div className={`${cardStyles.default} p-3 overflow-hidden dark:border-lia-border-subtle`}>
       <div
         onClick={onToggle}
-        className="w-full p-3 flex items-center justify-between hover:bg-gray-50 dark:bg-lia-bg-secondary transition-colors cursor-pointer"
+        className="w-full p-3 flex items-center justify-between hover:bg-gray-50 dark:bg-lia-bg-secondary transition-colors motion-reduce:transition-none cursor-pointer"
         role="button"
         tabIndex={0}
         onKeyDown={(e) => e.key === 'Enter' && onToggle()}
@@ -137,7 +137,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
                   e.stopPropagation()
                   onCopyOpinion(opinion, type)
                 }}
-                className="p-1 hover:bg-gray-100 rounded-md transition-colors"
+                className="p-1 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
               >
                 {copiedItemId === `opinion-${opinion.id}` ? (
                   <Check className="w-3.5 h-3.5 text-status-success" />

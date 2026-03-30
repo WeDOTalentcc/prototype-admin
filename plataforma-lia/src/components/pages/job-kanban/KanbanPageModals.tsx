@@ -390,7 +390,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
               </div>
               <button
                 onClick={cancelMove}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors motion-reduce:transition-none"
               >
                 <X className="w-5 h-5 text-lia-text-tertiary" />
               </button>
@@ -433,7 +433,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
                     Status Sugerido pela LIA
                   </label>
                   <div 
-                    className={`p-3 rounded-md border-2 cursor-pointer transition-colors ${
+                    className={`p-3 rounded-md border-2 cursor-pointer transition-colors motion-reduce:transition-none ${
                       selectedSubStatus === getSuggestedSubStatus(pendingMove.toColumn)
                         ? 'bg-gray-100 dark:bg-lia-bg-secondary border-gray-900 dark:border-lia-border-medium'
  : 'bg-gray-50 dark:bg-lia-bg-secondary/50 border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-default'
@@ -539,7 +539,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
                   setActiveModal(null)
                   setSelectedCandidateForModal(null)
                 }}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors motion-reduce:transition-none"
               >
                 <X className="w-5 h-5 text-lia-text-tertiary" />
               </button>
@@ -680,7 +680,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
                   setActiveModal(null)
                   setSelectedCandidateForModal(null)
                 }}
-                className="px-4 py-2 text-sm font-medium text-lia-text-primary dark:text-lia-text-primary bg-white dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-lia-text-primary dark:text-lia-text-primary bg-white dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none"
               >
                 Fechar
               </button>
@@ -719,7 +719,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
       {selectedForCompare.size >= 2 && (
         <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2">
           <button
-            className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-700 transition-colors shadow-lia-md"
+            className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-700 transition-colors motion-reduce:transition-none shadow-lia-md"
             onClick={() => {
               const selectedIds = Array.from(selectedForCompare)
               const resolvedCandidates = allTableCandidates
@@ -733,7 +733,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
             <span>Comparar ({selectedForCompare.size})</span>
           </button>
           <button
-            className="bg-lia-bg-primary border border-lia-border-subtle text-lia-text-secondary px-3 py-2 rounded-md text-sm hover:bg-gray-50 transition-colors shadow-lia-md"
+            className="bg-lia-bg-primary border border-lia-border-subtle text-lia-text-secondary px-3 py-2 rounded-md text-sm hover:bg-gray-50 transition-colors motion-reduce:transition-none shadow-lia-md"
             onClick={() => setSelectedForCompare(new Set())}
             aria-label="Limpar seleção de comparação"
           >
@@ -921,7 +921,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
                       })
                     }
                   }}
-                  className="p-2 rounded-md bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 transition-colors flex-shrink-0"
+                  className="p-2 rounded-md bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 transition-colors motion-reduce:transition-none flex-shrink-0"
                   title="Copiar link"
                 >
                   <Copy className="w-4 h-4" />
@@ -931,7 +931,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
             <div className="px-6 py-4 bg-gray-50 dark:bg-lia-bg-secondary/50 border-t border-lia-border-subtle dark:border-lia-border-subtle flex justify-end">
               <button
                 onClick={() => setShowPublishSuccess(false)}
-                className="px-4 py-2 text-sm font-medium rounded-md bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 transition-colors font-['Open_Sans',sans-serif]"
+                className="px-4 py-2 text-sm font-medium rounded-md bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
               >
                 Fechar
               </button>

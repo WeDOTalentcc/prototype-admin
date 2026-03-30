@@ -147,9 +147,9 @@ export default function ClientIntegracoesPage({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+      <div className="flex items-center justify-center h-64" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="flex flex-col items-center gap-3" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
           <p className="text-sm lia-text-400 dark:lia-text-500">
             Carregando integrações...
           </p>
@@ -181,7 +181,7 @@ export default function ClientIntegracoesPage({
           disabled={syncing || connectedCount === 0}
         >
           {syncing ? (
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
           ) : (
             <RefreshCw className="w-4 h-4 mr-2" />
           )}
@@ -264,7 +264,7 @@ export default function ClientIntegracoesPage({
           {integrations.map((integration) => (
             <Card 
               key={integration.id}
-              className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors"
+              className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none"
             >
               <CardContent className="p-4">
                 <div className="flex items-center gap-4">

@@ -461,7 +461,7 @@ export function UniversalTransitionModal({
                   <div className="w-8 h-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-micro font-semibold lia-text-600 dark:text-lia-text-secondary">{candidates.length}</span>
                   </div>
-                  <p className="text-xs font-medium lia-text-900 dark:lia-text-50">
+                  <p className="text-xs font-medium lia-text-900 dark:lia-text-50" aria-live="polite" aria-atomic="true">
                     {candidates.length} candidatos selecionados
                   </p>
                 </div>
@@ -494,7 +494,7 @@ export function UniversalTransitionModal({
                           type="button"
                           onClick={() => handleStageSelect(stage)}
                           className={cn(
-                            "w-full text-left px-3 py-1.5 text-xs hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors",
+                            "w-full text-left px-3 py-1.5 text-xs hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none",
                             stage.id === selectedToStage
                               ? "bg-gray-100 dark:bg-lia-bg-elevated font-semibold lia-text-900 dark:lia-text-50"
                               : "lia-text-700 dark:text-lia-text-secondary"
@@ -522,7 +522,7 @@ export function UniversalTransitionModal({
                       <span className="font-sans text-xs font-medium lia-text-700 dark:text-lia-text-primary flex items-center gap-1.5">
                         Motivo por candidato
                         {isBulkPredicting && (
-                          <Loader2 className="w-3 h-3 animate-spin text-wedo-cyan" />
+                          <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none text-wedo-cyan" />
                         )}
                         {!isBulkPredicting && Object.keys(predictedSubStatuses).length > 0 && (
                           <span className="inline-flex items-center gap-0.5 text-micro font-normal text-wedo-cyan">
@@ -531,7 +531,7 @@ export function UniversalTransitionModal({
                           </span>
                         )}
                       </span>
-                      <span className="flex items-center gap-1 text-micro lia-text-500 dark:text-lia-text-tertiary group-hover:lia-text-700 dark:group-hover:lia-text-200 transition-colors">
+                      <span className="flex items-center gap-1 text-micro lia-text-500 dark:text-lia-text-tertiary group-hover:lia-text-700 dark:group-hover:lia-text-200 transition-colors motion-reduce:transition-none">
                         {candidates.length} candidatos
                         {showAllPerCandidate ? (
                           <ChevronUp className="w-3.5 h-3.5" />
@@ -804,7 +804,7 @@ export function UniversalTransitionModal({
                 variant="outline"
                 onClick={onClose}
                 disabled={isSubmitting}
-                className="h-9 px-4 text-xs font-semibold rounded-md transition-colors duration-150 font-['Open_Sans'] bg-white lia-text-900 border border-lia-border-default hover:bg-gray-50 hover:border-gray-400 focus:ring-2 focus:ring-gray-900/20 focus:outline-none dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:border-lia-border-default dark:hover:bg-gray-700"
+                className="h-9 px-4 text-xs font-semibold rounded-md transition-colors motion-reduce:transition-none duration-150 font-['Open_Sans'] bg-white lia-text-900 border border-lia-border-default hover:bg-gray-50 hover:border-gray-400 focus:ring-2 focus:ring-gray-900/20 focus:outline-none dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:border-lia-border-default dark:hover:bg-gray-700"
               >
                 Cancelar
               </Button>
@@ -812,11 +812,11 @@ export function UniversalTransitionModal({
               <Button
                 onClick={handleConfirm}
                 disabled={isSubmitting || (isRejectedStage && !subStatus)}
-                className="h-9 px-4 text-xs font-semibold rounded-md transition-colors duration-150 font-['Open_Sans'] bg-gray-900 text-white hover:bg-gray-800 active:bg-gray-700 focus:ring-2 focus:ring-gray-900/20 focus:outline-none dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+                className="h-9 px-4 text-xs font-semibold rounded-md transition-colors motion-reduce:transition-none duration-150 font-['Open_Sans'] bg-gray-900 text-white hover:bg-gray-800 active:bg-gray-700 focus:ring-2 focus:ring-gray-900/20 focus:outline-none dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-1.5" />
                     Processando...
                   </>
                 ) : (

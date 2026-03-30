@@ -250,7 +250,7 @@ export function AlertSettingsModal({
               className="gap-2 text-xs font-['Open_Sans'] bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
             >
               {isSaving ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
               ) : (
                 <Save className="w-4 h-4" />
               )}
@@ -284,7 +284,7 @@ export function AlertSettingsModal({
                 {rules.map((rule) => (
                   <Card
                     key={rule.id}
-                    className={`transition-colors cursor-pointer hover:${
+                    className={`transition-colors motion-reduce:transition-none cursor-pointer hover:${
  editingRule?.id === rule.id ? 'ring-2 ring-gray-900/20 dark:ring-gray-50/20' : ''
                     }`}
                     onClick={() => handleEditRule(rule)}
@@ -304,11 +304,11 @@ export function AlertSettingsModal({
                               e.stopPropagation()
                               handleToggleRule(rule.id)
                             }}
-                            className={`w-8 h-4 rounded-full transition-colors ${
+                            className={`w-8 h-4 rounded-full transition-colors motion-reduce:transition-none ${
  rule.enabled ? 'bg-status-success' : 'bg-gray-300'
                             }`}
                           >
-                            <div className={`w-3 h-3 bg-lia-bg-secondary rounded-full transition-transform ${
+                            <div className={`w-3 h-3 bg-lia-bg-secondary rounded-full transition-transform motion-reduce:transition-none ${
  rule.enabled ? 'translate-x-4' : 'translate-x-0.5'
                             }`} />
                           </button>
@@ -520,11 +520,11 @@ export function AlertSettingsModal({
                               ...prev,
                               notifications: { ...prev.notifications, email: !prev.notifications.email }
                             } : null)}
-                            className={`w-8 h-4 rounded-full transition-colors ${
+                            className={`w-8 h-4 rounded-full transition-colors motion-reduce:transition-none ${
  editingRule.notifications.email ? 'bg-status-success' : 'bg-gray-300'
                             }`}
                           >
-                            <div className={`w-3 h-3 bg-lia-bg-secondary rounded-full transition-transform ${
+                            <div className={`w-3 h-3 bg-lia-bg-secondary rounded-full transition-transform motion-reduce:transition-none ${
  editingRule.notifications.email ? 'translate-x-4' : 'translate-x-0.5'
                             }`} />
                           </button>
@@ -540,11 +540,11 @@ export function AlertSettingsModal({
                               ...prev,
                               notifications: { ...prev.notifications, push: !prev.notifications.push }
                             } : null)}
-                            className={`w-8 h-4 rounded-full transition-colors ${
+                            className={`w-8 h-4 rounded-full transition-colors motion-reduce:transition-none ${
  editingRule.notifications.push ? 'bg-status-success' : 'bg-gray-300'
                             }`}
                           >
-                            <div className={`w-3 h-3 bg-lia-bg-secondary rounded-full transition-transform ${
+                            <div className={`w-3 h-3 bg-lia-bg-secondary rounded-full transition-transform motion-reduce:transition-none ${
  editingRule.notifications.push ? 'translate-x-4' : 'translate-x-0.5'
                             }`} />
                           </button>
@@ -560,11 +560,11 @@ export function AlertSettingsModal({
                               ...prev,
                               notifications: { ...prev.notifications, inApp: !prev.notifications.inApp }
                             } : null)}
-                            className={`w-8 h-4 rounded-full transition-colors ${
+                            className={`w-8 h-4 rounded-full transition-colors motion-reduce:transition-none ${
  editingRule.notifications.inApp ? 'bg-status-success' : 'bg-gray-300'
                             }`}
                           >
-                            <div className={`w-3 h-3 bg-lia-bg-secondary rounded-full transition-transform ${
+                            <div className={`w-3 h-3 bg-lia-bg-secondary rounded-full transition-transform motion-reduce:transition-none ${
  editingRule.notifications.inApp ? 'translate-x-4' : 'translate-x-0.5'
                             }`} />
                           </button>

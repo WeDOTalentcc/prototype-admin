@@ -398,7 +398,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
               <button
                 key={tab.id}
                 onClick={() => setActiveSubTab(tab.id as Parameters<typeof setActiveSubTab>[0])}
-                className={`flex items-center gap-2 px-4 py-3 rounded-md text-sm font-medium whitespace-nowrap transition-colors font-crimson ${
+                className={`flex items-center gap-2 px-4 py-3 rounded-md text-sm font-medium whitespace-nowrap transition-colors motion-reduce:transition-none font-crimson ${
                   activeSubTab === tab.id
  ? 'bg-gray-50 dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-secondary'
                     : 'hover:bg-gray-50 dark:hover:bg-gray-800 lia-text-800 dark:text-lia-text-primary'
@@ -1042,7 +1042,7 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
           <button
             key={tab.id}
             onClick={() => setSelectedView(tab.id as Parameters<typeof setSelectedView>[0])}
-            className={`flex items-center gap-2 px-3 py-3 rounded-md text-sm font-medium transition-colors font-crimson ${
+            className={`flex items-center gap-2 px-3 py-3 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none font-crimson ${
               selectedView === tab.id
                 ? 'bg-lia-bg-primary lia-text-950'
                 : 'lia-text-800 hover:lia-text-950'

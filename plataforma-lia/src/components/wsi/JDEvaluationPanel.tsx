@@ -613,7 +613,7 @@ export function JDEvaluationPanel({
       <div className={cn("mx-5 mt-4", className)}>
         <div className="border border-lia-border-subtle rounded-md overflow-hidden dark:border-lia-border-subtle">
           <div
-            className="flex items-center justify-between px-4 py-3 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors dark:bg-lia-bg-secondary dark:hover:bg-gray-700"
+            className="flex items-center justify-between px-4 py-3 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none dark:bg-lia-bg-secondary dark:hover:bg-gray-700"
             onClick={() => setIsExpanded(true)}
           >
             <div className="flex items-center gap-2">
@@ -678,7 +678,7 @@ export function JDEvaluationPanel({
     <div className={cn("mx-5 mt-4", className)}>
       <div className="border border-lia-border-subtle rounded-md overflow-hidden dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
         <div
-          className="flex items-center justify-between px-4 py-3 bg-white dark:bg-lia-bg-secondary cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          className="flex items-center justify-between px-4 py-3 bg-white dark:bg-lia-bg-secondary cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none"
           onClick={() => hasQuestions && setIsExpanded(false)}
         >
           <div className="flex items-center gap-2">
@@ -710,10 +710,10 @@ export function JDEvaluationPanel({
           </div>
         </div>
 
-        <div className="p-3">
+        <div className="p-3" role="status" aria-live="polite" aria-label="Carregando...">
           {isLoading ? (
-            <div className="flex items-center justify-center py-4">
-              <Loader2 className="h-5 w-5 animate-spin lia-text-secondary" />
+            <div className="flex items-center justify-center py-4" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none lia-text-secondary" />
               <span className="ml-2 text-xs lia-text-secondary">Avaliando Descrição do Cargo...</span>
             </div>
           ) : evaluation ? (
@@ -983,7 +983,7 @@ export function JDEvaluationPanel({
                                 <span className="text-xs text-lia-text-secondary dark:text-lia-text-secondary flex-1 leading-relaxed" >{item}</span>
                                 <button
                                   onClick={() => setEditResponsibilities(prev => prev.filter((_, i) => i !== idx))}
-                                  className="opacity-0 group-hover:opacity-100 lia-text-secondary hover:text-status-error shrink-0 transition-opacity"
+                                  className="opacity-0 group-hover:opacity-100 lia-text-secondary hover:text-status-error shrink-0 transition-opacity motion-reduce:transition-none"
                                 >
                                   <X className="h-3 w-3" />
                                 </button>
@@ -1018,9 +1018,9 @@ export function JDEvaluationPanel({
                           <button
                             onClick={fetchTechSuggestions}
                             disabled={isLoadingTechSuggestions}
-                            className="flex items-center gap-1 text-micro px-2 py-0.5 rounded-full border border-wedo-cyan/40 bg-wedo-cyan/[.06] transition-colors hover:opacity-80 disabled:opacity-50"
+                            className="flex items-center gap-1 text-micro px-2 py-0.5 rounded-full border border-wedo-cyan/40 bg-wedo-cyan/[.06] transition-colors motion-reduce:transition-none hover:opacity-80 disabled:opacity-50"
                           >
-                            {isLoadingTechSuggestions ? <Loader2 className="h-3 w-3 animate-spin" /> : <Brain className="h-3 w-3 text-wedo-cyan" />}
+                            {isLoadingTechSuggestions ? <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none" /> : <Brain className="h-3 w-3 text-wedo-cyan" />}
                             Sugerir com IA
                           </button>
                         </div>
@@ -1043,7 +1043,7 @@ export function JDEvaluationPanel({
                                   }
                                   setAiTechSuggestions(prev => prev.filter(x => x.skill !== s.skill))
                                 }}
-                                className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-colors hover:opacity-80 border-wedo-cyan/40 text-wedo-cyan-dark bg-wedo-cyan/[0.08]"
+                                className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-colors motion-reduce:transition-none hover:opacity-80 border-wedo-cyan/40 text-wedo-cyan-dark bg-wedo-cyan/[0.08]"
                               >
                                 <Plus className="h-3 w-3 lia-text-base" />
                                 {s.skill}
@@ -1078,9 +1078,9 @@ export function JDEvaluationPanel({
                           <button
                             onClick={fetchBehavSuggestions}
                             disabled={isLoadingBehavSuggestions}
-                            className="flex items-center gap-1 text-micro px-2 py-0.5 rounded-full border border-wedo-cyan/40 bg-wedo-cyan/[.06] transition-colors hover:opacity-80 disabled:opacity-50"
+                            className="flex items-center gap-1 text-micro px-2 py-0.5 rounded-full border border-wedo-cyan/40 bg-wedo-cyan/[.06] transition-colors motion-reduce:transition-none hover:opacity-80 disabled:opacity-50"
                           >
-                            {isLoadingBehavSuggestions ? <Loader2 className="h-3 w-3 animate-spin" /> : <Brain className="h-3 w-3 text-wedo-cyan" />}
+                            {isLoadingBehavSuggestions ? <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none" /> : <Brain className="h-3 w-3 text-wedo-cyan" />}
                             Sugerir com IA
                           </button>
                         </div>
@@ -1103,7 +1103,7 @@ export function JDEvaluationPanel({
                                   }
                                   setAiBehavSuggestions(prev => prev.filter(x => x.key !== c.key))
                                 }}
-                                className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-colors hover:opacity-80 border-wedo-cyan/40 text-wedo-cyan-dark bg-wedo-cyan/[0.08]"
+                                className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-colors motion-reduce:transition-none hover:opacity-80 border-wedo-cyan/40 text-wedo-cyan-dark bg-wedo-cyan/[0.08]"
                               >
                                 <Plus className="h-3 w-3 lia-text-base" />
                                 {c.name}
@@ -1149,19 +1149,19 @@ export function JDEvaluationPanel({
                           disabled={isGeneratingJD}
                         >
                           {isGeneratingJD ? (
-                            <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />
+                            <Loader2 className="h-3 w-3 mr-1.5 animate-spin motion-reduce:animate-none" />
                           ) : (
                             <Brain className="h-3 w-3 mr-1.5 text-wedo-cyan" />
                           )}
                           {isGeneratingJD ? 'Gerando...' : 'Gerar Descrição'}
                         </Button>
                       </div>
-                      <div className="bg-white rounded-md border border-lia-border-subtle dark:border-lia-border-subtle dark:bg-lia-bg-primary overflow-hidden min-h-[200px]">
+                      <div className="bg-white rounded-md border border-lia-border-subtle dark:border-lia-border-subtle dark:bg-lia-bg-primary overflow-hidden min-h-[200px]" role="status" aria-live="polite" aria-label="Carregando...">
                         {isGeneratingJD && (
-                          <div className="p-4 space-y-3">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-gray-100 dark:bg-lia-bg-secondary">
-                                <Loader2 className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin" />
+                          <div className="p-4 space-y-3" role="status" aria-live="polite" aria-label="Carregando...">
+                            <div className="flex items-center gap-3" role="status" aria-live="polite" aria-label="Carregando...">
+                              <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-gray-100 dark:bg-lia-bg-secondary" role="status" aria-live="polite" aria-label="Carregando...">
+                                <Loader2 className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">
@@ -1174,11 +1174,11 @@ export function JDEvaluationPanel({
                             </div>
                             {jdTypedMessage && (
                               <div className="flex items-center gap-2 pl-1">
-                                <div className="w-1.5 h-1.5 rounded-full bg-gray-900 animate-pulse" />
+                                <div className="w-1.5 h-1.5 rounded-full bg-gray-900 animate-pulse motion-reduce:animate-none" />
                                 <p className="text-xs text-lia-text-secondary dark:text-lia-text-secondary">
                                   {jdTypedMessage}
                                   {jdTypedMessage.length < jdDynamicMessage.length && (
-                                    <span className="inline-block w-[2px] h-[13px] bg-gray-900 ml-0.5 align-middle animate-pulse" />
+                                    <span className="inline-block w-[2px] h-[13px] bg-gray-900 ml-0.5 align-middle animate-pulse motion-reduce:animate-none" />
                                   )}
                                 </p>
                               </div>
@@ -1251,7 +1251,7 @@ export function JDEvaluationPanel({
                         onClick={handleSaveRascunho}
                         disabled={isSavingInline}
                       >
-                        {isSavingInline ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Save className="h-3 w-3 mr-1" />}
+                        {isSavingInline ? <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none mr-1" /> : <Save className="h-3 w-3 mr-1" />}
                         Salvar Rascunho
                       </Button>
                       <Button
@@ -1260,7 +1260,7 @@ export function JDEvaluationPanel({
                         onClick={handleSaveDefinitiva}
                         disabled={isSavingDefinitive}
                       >
-                        {isSavingDefinitive ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <CheckCircle className="h-3 w-3 mr-1" />}
+                        {isSavingDefinitive ? <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none mr-1" /> : <CheckCircle className="h-3 w-3 mr-1" />}
                         Salvar Versão Definitiva
                       </Button>
                       {generatedJD && onUpdateJobDescription && (
@@ -1270,7 +1270,7 @@ export function JDEvaluationPanel({
                           onClick={handleSaveAndUpdateJD}
                           disabled={isSavingWithJD}
                         >
-                          {isSavingWithJD ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <FileText className="h-3 w-3 mr-1" />}
+                          {isSavingWithJD ? <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none mr-1" /> : <FileText className="h-3 w-3 mr-1" />}
                           Salvar e Atualizar JD
                         </Button>
                       )}

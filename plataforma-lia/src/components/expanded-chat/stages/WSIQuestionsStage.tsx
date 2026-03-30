@@ -96,7 +96,7 @@ export function WSIQuestionsStage({
     >
       <button
         onClick={() => onDeleteQuestion(q.id)}
-        className="absolute top-2 right-2 lia-text-secondary hover:text-status-error transition-colors focus-visible:ring-2 focus-visible:ring-gray-400 rounded-md"
+        className="absolute top-2 right-2 lia-text-secondary hover:text-status-error transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-gray-400 rounded-md"
         title="Remover pergunta"
         aria-label="Remover pergunta de triagem"
       >
@@ -335,8 +335,8 @@ export function WSIQuestionsStage({
       )}
 
       {isGeneratingWSI && (
-        <div className="flex items-center justify-center py-4 bg-gray-50 rounded-md border border-lia-border-subtle">
-          <Loader2 className="w-5 h-5 animate-spin text-lia-text-secondary dark:text-lia-text-tertiary" />
+        <div className="flex items-center justify-center py-4 bg-gray-50 rounded-md border border-lia-border-subtle" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
           <span className="ml-2 text-xs lia-text-secondary">Gerando perguntas com metodologia WSI...</span>
         </div>
       )}
@@ -345,14 +345,14 @@ export function WSIQuestionsStage({
         <div className="flex gap-2">
           <button
             onClick={() => onGenerateWSIQuestions(3, 'technical')}
-            className="flex-1 py-2 border border-dashed border-gray-900 rounded-md text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-gray-400"
+            className="flex-1 py-2 border border-dashed border-gray-900 rounded-md text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-gray-400"
             aria-label="Gerar perguntas técnicas WSI"
           >
             <Code className="w-3.5 h-3.5" /> Gerar perguntas técnicas
           </button>
           <button
             onClick={() => onGenerateWSIQuestions(3, 'behavioral')}
-            className="flex-1 py-2 border border-dashed border-wedo-purple/30 rounded-md text-xs text-wedo-purple hover:bg-wedo-purple/5 transition-colors flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-gray-400"
+            className="flex-1 py-2 border border-dashed border-wedo-purple/30 rounded-md text-xs text-wedo-purple hover:bg-wedo-purple/5 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-gray-400"
             aria-label="Gerar perguntas de fit cultural WSI"
           >
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" /> Gerar Fit Cultural
@@ -431,7 +431,7 @@ export function WSIQuestionsStage({
       ) : (
         <button
           onClick={() => onSetShowCustomQuestionForm(true)}
-          className="w-full py-2 border border-dashed border-lia-border-subtle rounded-md text-xs lia-text-secondary hover:border-gray-900 dark:hover:border-gray-50 hover:lia-text-strong dark:hover:lia-text-subtle hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors flex items-center justify-center gap-2"
+          className="w-full py-2 border border-dashed border-lia-border-subtle rounded-md text-xs lia-text-secondary hover:border-gray-900 dark:hover:border-gray-50 hover:lia-text-strong dark:hover:lia-text-subtle hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
           aria-label="Adicionar pergunta de triagem customizada"
         >
           <Plus className="w-3.5 h-3.5" /> Adicionar pergunta customizada

@@ -211,7 +211,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
               <button
                 key={suggestion.id}
                 onClick={() => onSelect(suggestion.command)}
-                className="p-4 rounded-md transition-colors text-left group"
+                className="p-4 rounded-md transition-colors motion-reduce:transition-none text-left group"
                 style={{border: `1px solid ${colors.bg}`,
                   backgroundColor: 'var(--gray-50)'}}
                 onMouseEnter={(e) => {
@@ -264,7 +264,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
           size="sm"
           onClick={() => setIsExpanded(true)}
           onMouseDown={handleMouseDown}
-          className="fixed h-9 px-4 rounded-md transition-transform hover:scale-105 z-50 select-none opacity-80 hover:opacity-100 dark:text-lia-text-secondary"
+          className="fixed h-9 px-4 rounded-md transition-transform motion-reduce:transition-none hover:scale-105 z-50 select-none opacity-80 hover:opacity-100 dark:text-lia-text-secondary"
           style={{top: `${position.top}px`,
             right: `${position.right}px`,
             backgroundColor: 'var(--gray-50)',
@@ -332,7 +332,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                     onSelect(suggestion.command)
                     setIsExpanded(false)
                   }}
-                  className="w-full p-3 rounded-md transition-colors text-left group"
+                  className="w-full p-3 rounded-md transition-colors motion-reduce:transition-none text-left group"
                   style={{backgroundColor: 'var(--gray-50)',
                     border: `1px solid ${colors.bg}`}}
                   onMouseEnter={(e) => {

@@ -321,7 +321,7 @@ export function CompanyFilterInput({
         <div className="flex items-center gap-2">
           <Popover open={isTimeFilterOpen} onOpenChange={setIsTimeFilterOpen}>
             <PopoverTrigger asChild>
-              <button className="flex items-center gap-2 px-2.5 py-1 rounded-md border border-lia-border-subtle text-xs hover:bg-gray-50 transition-colors">
+              <button className="flex items-center gap-2 px-2.5 py-1 rounded-md border border-lia-border-subtle text-xs hover:bg-gray-50 transition-colors motion-reduce:transition-none">
                 <span className="lia-text-800 dark:text-lia-text-primary">{currentTimeOption?.label}</span>
                 <ChevronDown className="w-3.5 h-3.5 lia-text-400" />
               </button>
@@ -336,7 +336,7 @@ export function CompanyFilterInput({
                       setIsTimeFilterOpen(false)
                     }}
                     className={cn(
-                      "w-full text-left px-3 py-2 hover:bg-gray-50 transition-colors",
+                      "w-full text-left px-3 py-2 hover:bg-gray-50 transition-colors motion-reduce:transition-none",
                       timeFilter === option.value && "bg-gray-50"
                     )}
                   >
@@ -426,7 +426,7 @@ export function CompanyFilterInput({
         <button
           onClick={clearAll}
           disabled={value.length === 0}
-          className="text-xs lia-text-500 hover:text-status-error flex items-center gap-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:lia-text-500"
+          className="text-xs lia-text-500 hover:text-status-error flex items-center gap-1 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:lia-text-500"
         >
           <RotateCcw className="w-3 h-3" />
           Limpar tudo
@@ -466,8 +466,8 @@ export function CompanyFilterInput({
             disabled={isLoadingAI}
           />
           {isLoadingAI && (
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <Loader2 className="w-4 h-4 animate-spin lia-text-600" />
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-600" />
             </div>
           )}
         </div>
@@ -526,7 +526,7 @@ export function CompanyFilterInput({
                 )}
                 <button
                   onClick={() => removeCompany(company.name)}
-                  className="hover:bg-gray-200 rounded-md p-0.5 transition-colors ml-1"
+                  className="hover:bg-gray-200 rounded-md p-0.5 transition-colors motion-reduce:transition-none ml-1"
                   title="Remove"
                 >
                   <X className="w-3 h-3" />
@@ -543,7 +543,7 @@ export function CompanyFilterInput({
             className="text-xs gap-1.5 border-gray-900 dark:lia-border-50 lia-text-900 dark:lia-text-50 hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             {isFindingSimilar ? (
-              <Loader2 className="w-3 h-3 animate-spin" />
+              <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
             ) : (
               <Brain className="w-3 h-3 text-wedo-cyan" />
             )}

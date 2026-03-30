@@ -102,7 +102,7 @@ export function ReviewPublishStage({
             </div>
             <button
               onClick={() => onGoToStage('input-evaluation')}
-              className="p-1.5 text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-md transition-colors"
+              className="p-1.5 text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-md transition-colors motion-reduce:transition-none"
             >
               <Edit2 className="w-3.5 h-3.5" />
             </button>
@@ -127,7 +127,7 @@ export function ReviewPublishStage({
             </div>
             <button
               onClick={() => { onGoToStage('competencies'); onSetCompetenciesTab('technical') }}
-              className="p-1 text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-md transition-colors"
+              className="p-1 text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-md transition-colors motion-reduce:transition-none"
             >
               <Edit2 className="w-3 h-3" />
             </button>
@@ -165,7 +165,7 @@ export function ReviewPublishStage({
             </div>
             <button
               onClick={() => { onGoToStage('competencies'); onSetCompetenciesTab('behavioral') }}
-              className="p-1 text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-md transition-colors"
+              className="p-1 text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-md transition-colors motion-reduce:transition-none"
             >
               <Edit2 className="w-3 h-3" />
             </button>
@@ -194,7 +194,7 @@ export function ReviewPublishStage({
             </div>
             <button
               onClick={() => onGoToStage('salary')}
-              className="p-1 text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-md transition-colors"
+              className="p-1 text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-md transition-colors motion-reduce:transition-none"
             >
               <Edit2 className="w-3 h-3" />
             </button>
@@ -225,7 +225,7 @@ export function ReviewPublishStage({
             </div>
             <button
               onClick={() => onGoToStage('wsi-questions')}
-              className="p-1 text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-md transition-colors"
+              className="p-1 text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-md transition-colors motion-reduce:transition-none"
             >
               <Edit2 className="w-3 h-3" />
             </button>
@@ -252,7 +252,7 @@ export function ReviewPublishStage({
             </div>
             <button
               onClick={onGenerateJobDescription}
-              className="p-1 text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-md transition-colors"
+              className="p-1 text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-md transition-colors motion-reduce:transition-none"
               title="Regenerar descrição"
             >
               <RefreshCw className="w-3 h-3" />
@@ -260,8 +260,8 @@ export function ReviewPublishStage({
           </div>
 
           {isGeneratingDescription ? (
-            <div className="flex items-center gap-2 py-4">
-              <Loader2 className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin" />
+            <div className="flex items-center gap-2 py-4" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
               <span className="text-xs lia-text-secondary">Gerando descrição...</span>
             </div>
           ) : (
@@ -324,7 +324,7 @@ export function ReviewPublishStage({
             </h4>
             <div className="space-y-2">
               {publishingPlatforms.filter(p => p.type === 'ats').map(platform => (
-                <label key={platform.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-md cursor-pointer hover:bg-wedo-cyan/10 transition-colors">
+                <label key={platform.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-md cursor-pointer hover:bg-wedo-cyan/10 transition-colors motion-reduce:transition-none">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 bg-lia-bg-primary rounded-md flex items-center justify-center border border-lia-border-subtle">
                       <Building2 className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
@@ -356,7 +356,7 @@ export function ReviewPublishStage({
             </h4>
             <div className="space-y-2">
               {publishingPlatforms.filter(p => p.type === 'jobboard').map(platform => (
-                <label key={platform.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-md cursor-pointer hover:bg-wedo-cyan/10 transition-colors">
+                <label key={platform.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-md cursor-pointer hover:bg-wedo-cyan/10 transition-colors motion-reduce:transition-none">
                   <div className="flex items-center gap-2">
                     <div className={cn(
  "w-6 h-6 rounded-md flex items-center justify-center border border-lia-border-subtle",
@@ -395,7 +395,7 @@ export function ReviewPublishStage({
             </h4>
             <div className="space-y-2">
               {publishingPlatforms.filter(p => p.type === 'website').map(platform => (
-                <label key={platform.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-md cursor-pointer hover:bg-wedo-cyan/10 transition-colors">
+                <label key={platform.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-md cursor-pointer hover:bg-wedo-cyan/10 transition-colors motion-reduce:transition-none">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center border border-lia-border-default dark:border-lia-border-default">
                       <Globe className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
@@ -487,7 +487,7 @@ export function ReviewPublishStage({
                     ))}
                   </div>
                 </div>
-                <p className="text-micro lia-text-secondary">
+                <p className="text-micro lia-text-secondary" aria-live="polite" aria-atomic="true">
                   {jobConfig.visibility === 'public'
                     ? "Visível em job boards, LinkedIn e site de carreiras"
                     : jobConfig.visibility === 'internal'
@@ -500,7 +500,7 @@ export function ReviewPublishStage({
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1">
-                    <span className="text-xs lia-text-strong">Vaga Afirmativa</span>
+                    <span className="text-xs lia-text-strong" aria-live="polite" aria-atomic="true">Vaga Afirmativa</span>
                     <Info className="w-3 h-3 lia-text-secondary" />
                   </div>
                   <button
@@ -516,7 +516,7 @@ export function ReviewPublishStage({
                     )} />
                   </button>
                 </div>
-                <p className="text-micro lia-text-secondary">
+                <p className="text-micro lia-text-secondary" aria-live="polite" aria-atomic="true">
                   Vagas afirmativas priorizam grupos historicamente sub-representados (PcD, mulheres, LGBTQIA+, pessoas negras). Sua empresa deve estar preparada para acolher esses profissionais.
                 </p>
 
@@ -661,7 +661,7 @@ export function ReviewPublishStage({
                         const newLanguages = jobConfig.languages.filter((_, i) => i !== idx)
                         onUpdateLanguages(newLanguages)
                       }}
-                      className="w-5 h-5 flex items-center justify-center lia-text-secondary hover:text-status-error hover:bg-status-error/10 rounded-md transition-colors"
+                      className="w-5 h-5 flex items-center justify-center lia-text-secondary hover:text-status-error hover:bg-status-error/10 rounded-md transition-colors motion-reduce:transition-none"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -689,7 +689,7 @@ export function ReviewPublishStage({
                 <h4 className="text-xs font-medium lia-text-strong">
                   {publishingPlatforms.filter(p => p.enabled).length} plataforma(s) selecionada(s)
                 </h4>
-                <p className="text-micro lia-text-secondary">
+                <p className="text-micro lia-text-secondary" aria-live="polite" aria-atomic="true">
                   Clique em "Publicar Vaga" para ativar o recrutamento
                 </p>
               </div>

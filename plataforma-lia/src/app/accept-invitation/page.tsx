@@ -92,9 +92,9 @@ function AcceptInvitationContent() {
 
   if (isLoadingInfo) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 font-open-sans">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin lia-text-600 mx-auto mb-4" />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 font-open-sans" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="text-center" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-600 mx-auto mb-4" />
           <p className="lia-text-600">Carregando informações do convite...</p>
         </div>
       </div>
@@ -185,7 +185,7 @@ function AcceptInvitationContent() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Mínimo 8 caracteres"
-                  className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors"
+                  className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors motion-reduce:transition-none"
                   required
                 />
                 <button
@@ -208,7 +208,7 @@ function AcceptInvitationContent() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Digite a senha novamente"
-                  className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors"
+                  className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors motion-reduce:transition-none"
                   required
                 />
                 <button
@@ -230,11 +230,11 @@ function AcceptInvitationContent() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-md transition-colors font-medium"
+              className="w-full py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-md transition-colors motion-reduce:transition-none font-medium"
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mr-2" />
                   Ativando conta...
                 </>
               ) : (
@@ -251,8 +251,8 @@ function AcceptInvitationContent() {
 export default function AcceptInvitationPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 font-open-sans">
-        <Loader2 className="w-8 h-8 animate-spin lia-text-600" />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 font-open-sans" role="status" aria-live="polite" aria-label="Carregando...">
+        <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-600" />
       </div>
     }>
       <AcceptInvitationContent />

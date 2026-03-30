@@ -66,7 +66,7 @@ export function DegreeRequirementsInput({
                 setIsDropdownOpen(false)
               }}
               className={cn(
-                "w-full text-left px-4 py-3 transition-colors hover:bg-gray-50 rounded-t-lg",
+                "w-full text-left px-4 py-3 transition-colors motion-reduce:transition-none hover:bg-gray-50 rounded-t-lg",
                 mode === 'regular' && "bg-gray-50"
               )}
             >
@@ -94,7 +94,7 @@ export function DegreeRequirementsInput({
                 setIsDropdownOpen(false)
               }}
               className={cn(
-                "w-full text-left px-4 py-3 transition-colors hover:bg-gray-50 rounded-b-lg border-t border-lia-border-subtle",
+                "w-full text-left px-4 py-3 transition-colors motion-reduce:transition-none hover:bg-gray-50 rounded-b-lg border-t border-lia-border-subtle",
                 mode === 'nested' && "bg-gray-50 dark:bg-lia-bg-secondary/50"
               )}
             >
@@ -122,7 +122,7 @@ export function DegreeRequirementsInput({
       <div className="flex items-center gap-2">
         <Popover>
           <PopoverTrigger asChild>
-            <button className="lia-text-400 hover:lia-text-600 transition-colors">
+            <button className="lia-text-400 hover:lia-text-600 transition-colors motion-reduce:transition-none">
               <Info className="w-3.5 h-3.5" />
             </button>
           </PopoverTrigger>

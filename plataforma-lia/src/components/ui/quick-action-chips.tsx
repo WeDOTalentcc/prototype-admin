@@ -41,7 +41,7 @@ export function QuickActionChips({ actions, className = '' }: QuickActionChipsPr
             variant="outline"
             size="sm"
             onClick={action.onClick}
-            className={`inline-flex items-center gap-2 px-3 py-1.5 h-auto rounded-md text-sm font-medium transition-colors duration-200 border-lia-border-default ${getVariantStyles(action.variant)}`}
+            className={`inline-flex items-center gap-2 px-3 py-1.5 h-auto rounded-md text-sm font-medium transition-colors motion-reduce:transition-none duration-200 border-lia-border-default ${getVariantStyles(action.variant)}`}
           >
             <Icon className="w-3.5 h-3.5" />
             <span>{action.label}</span>

@@ -261,7 +261,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
             Arquivos e Documentos
             <Badge className="text-xs px-1 py-0">{candidateFiles.length}</Badge>
             {isLoadingFiles && (
-              <div className="animate-spin rounded-full h-3 w-3 border border-gray-400 border-t-gray-700"></div>
+              <div className="animate-spin motion-reduce:animate-none rounded-full h-3 w-3 border border-gray-400 border-t-gray-700"></div>
             )}
           </h4>
           <Button
@@ -311,7 +311,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
       <div className="flex-1 overflow-y-auto p-3 space-y-2">
         {/* Drag and Drop Area */}
         <div
-          className={`border-2 border-dashed rounded-md p-4 text-center transition-colors cursor-pointer group ${
+          className={`border-2 border-dashed rounded-md p-4 text-center transition-colors motion-reduce:transition-none cursor-pointer group ${
  isDragging
               ? 'border-gray-400 bg-gray-100'
               : 'border-lia-border-default hover:border-gray-400'
@@ -344,7 +344,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
             {isUploading ? (
               <>
                 <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mb-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-400 border-t-gray-700"></div>
+                  <div className="animate-spin motion-reduce:animate-none rounded-full h-5 w-5 border-2 border-gray-400 border-t-gray-700"></div>
                 </div>
                 <p className="text-xs text-lia-text-primary dark:text-lia-text-primary font-medium mb-1">
                   Enviando... {uploadProgress}%
@@ -358,7 +358,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
               </>
             ) : (
               <>
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-colors ${
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-colors motion-reduce:transition-none ${
  isDragging
                     ? 'bg-gray-200'
                     : 'bg-gray-100 group-hover:bg-gray-200'
@@ -382,7 +382,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
           .map((file) => {
             const colors = getCategoryColor(file.file_type)
             return (
-              <div key={file.id} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors">
+              <div key={file.id} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
                 <div className="p-2.5">
                   <div className="flex items-start gap-2">
                     <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
@@ -460,9 +460,9 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
         )}
 
         {/* Currículo com Preview PDF */}
-        <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors">
+        <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
           <div
-            className="p-2.5 cursor-pointer hover:bg-lia-bg-primary dark:hover:bg-gray-800 transition-colors"
+            className="p-2.5 cursor-pointer hover:bg-lia-bg-primary dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
             onClick={() => setExpandedActivity(expandedActivity === 'cv' ? null : 'cv')}
           >
             <div className="flex items-start gap-2">
@@ -511,7 +511,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <Download className="w-3 h-3" />
                     </Button>
                     <ChevronDown
-                      className={`w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary transition-transform ${
+                      className={`w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary transition-transform motion-reduce:transition-none ${
  expandedActivity === 'cv' ? 'rotate-180' : ''
                       }`}
                     />
@@ -559,7 +559,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
         </div>
 
         {/* Foto do Candidato com Preview de Imagem */}
-        <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors">
+        <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
           <div className="p-2.5">
             <div className="flex items-start gap-2">
               <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
@@ -611,7 +611,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                     <img
                       src={candidate.avatar_url || candidate.avatar}
                       alt="Preview"
-                      className="w-12 h-12 rounded-md object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                      className="w-12 h-12 rounded-md object-cover cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none"
                       onClick={() => {
                         setSelectedFile({ name: 'foto_perfil.jpg', type: 'image', url: candidate.avatar_url || candidate.avatar })
                         setPreviewType('image')
@@ -626,9 +626,9 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
         </div>
 
         {/* Vídeo de Apresentação */}
-        <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors">
+        <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
           <div
-            className="p-2.5 cursor-pointer hover:bg-lia-bg-primary dark:hover:bg-gray-800 transition-colors"
+            className="p-2.5 cursor-pointer hover:bg-lia-bg-primary dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
             onClick={() => setExpandedActivity(expandedActivity === 'video1' ? null : 'video1')}
           >
             <div className="flex items-start gap-2">
@@ -679,7 +679,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <Play className="w-3 h-3" />
                     </Button>
                     <ChevronDown
-                      className={`w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary transition-transform ${
+                      className={`w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary transition-transform motion-reduce:transition-none ${
  expandedActivity === 'video1' ? 'rotate-180' : ''
                       }`}
                     />
@@ -706,7 +706,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                          setPreviewType('video')
                          setShowPreview(true)
                        }}>
-                    <div className="absolute inset-0 bg-black/50 rounded-md flex items-center justify-center group-hover:bg-black/40 transition-colors">
+                    <div className="absolute inset-0 bg-black/50 rounded-md flex items-center justify-center group-hover:bg-black/40 transition-colors motion-reduce:transition-none">
                       <Play className="w-8 h-8 text-white" />
                     </div>
                     <span className="absolute bottom-1 right-1 text-xs text-white bg-black/70 px-1 rounded-full">
@@ -753,7 +753,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
         </div>
 
         {/* Vídeo de Case Técnico */}
-        <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors">
+        <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
           <div className="p-2.5">
             <div className="flex items-start gap-2">
               <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
@@ -809,7 +809,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
         </div>
 
         {/* Vídeo de Entrevista com Gestor - Novo */}
-        <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors">
+        <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
           <div className="p-2.5">
             <div className="flex items-start gap-2">
               <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
@@ -865,7 +865,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
         </div>
 
         {/* Áudio de Triagem por Voz - Card Compacto */}
-        <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors">
+        <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
           <div className="p-2.5">
             <div className="flex items-start gap-2">
               <div className="w-7 h-7 rounded-full bg-wedo-purple/15 flex items-center justify-center flex-shrink-0">
@@ -921,7 +921,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
         </div>
 
         {/* Áudio de Entrevista Gravada - Card Compacto */}
-        <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors">
+        <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
           <div className="p-2.5">
             <div className="flex items-start gap-2">
               <div className="w-7 h-7 rounded-full bg-wedo-purple/15 flex items-center justify-center flex-shrink-0">

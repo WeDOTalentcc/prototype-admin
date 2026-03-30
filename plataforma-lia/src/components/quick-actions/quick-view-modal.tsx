@@ -210,7 +210,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                 {isLiaAnalyzing ? (
                   <div className="flex items-center justify-center py-4">
                     <div className="text-center">
-                      <RefreshCw className="w-6 h-6 animate-spin text-status-success mx-auto mb-2" />
+                      <RefreshCw className="w-6 h-6 animate-spin motion-reduce:animate-none text-status-success mx-auto mb-2" />
                       <p className="text-xs text-status-success">LIA analisando perfil...</p>
                     </div>
                   </div>

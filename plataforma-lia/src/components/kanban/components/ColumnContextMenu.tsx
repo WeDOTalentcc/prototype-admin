@@ -102,7 +102,7 @@ export function ColumnContextMenu({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button className="p-0.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors opacity-0 group-hover:opacity-100">
+          <button className="p-0.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none opacity-0 group-hover:opacity-100">
             <Settings className="w-3.5 h-3.5 lia-text-400 dark:lia-text-500" />
           </button>
         </DropdownMenuTrigger>

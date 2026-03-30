@@ -145,7 +145,7 @@ export function InterviewSchedulingModal({
           {scheduledInterview ? (
             <div className="p-4 rounded-md border border-status-success/30 bg-status-success/10">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-2 h-2 bg-status-success rounded-full animate-pulse" />
+                <div className="w-2 h-2 bg-status-success rounded-full animate-pulse motion-reduce:animate-none" />
                 <span className="text-xs font-medium text-status-success">
                   Entrevista agendada com sucesso!
                 </span>
@@ -178,8 +178,8 @@ export function InterviewSchedulingModal({
                 </div>
 
                 {isGeneratingEmail ? (
-                  <div className="flex items-center justify-center p-8">
-                    <Loader2 className="w-6 h-6 animate-spin text-lia-text-secondary dark:text-lia-text-tertiary" />
+                  <div className="flex items-center justify-center p-8" role="status" aria-live="polite" aria-label="Carregando...">
+                    <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
                   </div>
                 ) : emailTemplate ? (
                   <div className="space-y-2">
@@ -254,7 +254,7 @@ export function InterviewSchedulingModal({
                 >
                   {isScheduling ? (
                     <>
-                      <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                      <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin motion-reduce:animate-none" />
                       Agendando...
                     </>
                   ) : (

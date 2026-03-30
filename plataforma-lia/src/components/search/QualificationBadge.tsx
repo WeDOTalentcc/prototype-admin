@@ -72,7 +72,7 @@ export function QualificationBadge({
   if (isClassifying) {
     return (
       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium lia-text-500 border border-lia-border-subtle bg-gray-50 dark:text-lia-text-tertiary dark:border-lia-border-default dark:bg-lia-bg-secondary">
-        <Loader2 className="w-3 h-3 animate-spin" />
+        <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
         Classificando...
       </span>
     )
@@ -82,7 +82,7 @@ export function QualificationBadge({
     return (
       <button
         onClick={onClassify}
-        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium lia-text-400 border border-dashed border-lia-border-default hover:border-gray-400 hover:lia-text-500 transition-colors cursor-pointer dark:lia-text-500 dark:border-lia-border-default dark:hover:border-gray-500"
+        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium lia-text-400 border border-dashed border-lia-border-default hover:border-gray-400 hover:lia-text-500 transition-colors motion-reduce:transition-none cursor-pointer dark:lia-text-500 dark:border-lia-border-default dark:hover:border-gray-500"
       >
         <Brain className="w-3 h-3 text-wedo-cyan" />
         Classificar
@@ -125,7 +125,7 @@ export function QualificationBadge({
             <span>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="inline-flex items-center gap-0.5 cursor-pointer hover:opacity-80 transition-opacity">
+                  <button className="inline-flex items-center gap-0.5 cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none">
                     {badge}
                     <ChevronDown className="w-2.5 h-2.5 lia-text-400" />
                   </button>

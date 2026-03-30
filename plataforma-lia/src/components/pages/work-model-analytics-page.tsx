@@ -159,7 +159,7 @@ export function WorkModelAnalyticsPage() {
                   <button
                     key={period}
                     onClick={() => setSelectedPeriod(period)}
-                    className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                    className={`px-3 py-1 text-xs font-medium rounded-md transition-colors motion-reduce:transition-none ${
                       selectedPeriod === period
                         ? 'bg-gray-900 dark:bg-gray-50 text-white dark:text-lia-text-disabled'
                         : 'text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse'

@@ -113,7 +113,7 @@ export default function AdminDashboard() {
   const metricsCards = [
     {
       title: "MRR",
-      value: isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : formatCurrency(kpis?.mrr || 0),
+      value: isLoading ? <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none" /> : formatCurrency(kpis?.mrr || 0),
       icon: DollarSign,
       subtitle: `ARR: ${formatCurrency(kpis?.arr || 0)}`,
       trend: kpis?.mrr ? "+12.5% vs mês anterior" : undefined,
@@ -121,7 +121,7 @@ export default function AdminDashboard() {
     },
     {
       title: "Clientes Ativos",
-      value: isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : (kpis?.activeClients ?? 0).toString(),
+      value: isLoading ? <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none" /> : (kpis?.activeClients ?? 0).toString(),
       icon: Building,
       subtitle: `${kpis?.totalClients || 0} total`,
       trend: kpis?.newClientsPeriod ? `+${kpis.newClientsPeriod} novos no período` : undefined,
@@ -129,13 +129,13 @@ export default function AdminDashboard() {
     },
     {
       title: "Em Trial",
-      value: isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : (kpis?.trialClients ?? 0).toString(),
+      value: isLoading ? <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none" /> : (kpis?.trialClients ?? 0).toString(),
       icon: Clock,
       subtitle: "Aguardando conversão",
     },
     {
       title: "Churn Rate",
-      value: isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : `${(kpis?.churnRate ?? 0).toFixed(1)}%`,
+      value: isLoading ? <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none" /> : `${(kpis?.churnRate ?? 0).toFixed(1)}%`,
       icon: TrendingDown,
       subtitle: `${kpis?.churnedClients || 0} cliente(s) churned`,
       trend: (kpis?.churnRate ?? 0) > 5 ? "Atenção: acima da meta" : "Dentro da meta",
@@ -238,8 +238,8 @@ export default function AdminDashboard() {
           </div>
           
           {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-6 h-6 animate-spin lia-text-400" />
+            <div className="flex items-center justify-center py-8" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none lia-text-400" />
             </div>
           ) : newClients.length === 0 ? (
             <p className="text-sm lia-text-500 text-center py-8">
@@ -251,10 +251,10 @@ export default function AdminDashboard() {
                 <Link 
                   key={client.id}
                   href={`/admin/clientes/${client.id}`}
-                  className="flex items-center justify-between p-3 rounded-md border border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors group"
+                  className="flex items-center justify-between p-3 rounded-md border border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none group"
                 >
                   <div>
-                    <p className="font-medium lia-text-950 dark:lia-text-50 group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors">
+                    <p className="font-medium lia-text-950 dark:lia-text-50 group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors motion-reduce:transition-none">
                       {client.name}
                     </p>
                     <p className="text-xs lia-text-500">
@@ -265,7 +265,7 @@ export default function AdminDashboard() {
                     <span className={`text-xs px-2 py-0.5 rounded-full ${getPlanBadgeColor(client.plan)}`}>
                       {client.plan}
                     </span>
-                    <ExternalLink className="w-4 h-4 lia-text-400 group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors" />
+                    <ExternalLink className="w-4 h-4 lia-text-400 group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors motion-reduce:transition-none" />
                   </div>
                 </Link>
               ))}
@@ -285,8 +285,8 @@ export default function AdminDashboard() {
           </div>
           
           {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-6 h-6 animate-spin lia-text-400" />
+            <div className="flex items-center justify-center py-8" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none lia-text-400" />
             </div>
           ) : trialClients.length === 0 ? (
             <p className="text-sm lia-text-500 text-center py-8">
@@ -298,10 +298,10 @@ export default function AdminDashboard() {
                 <Link 
                   key={client.id}
                   href={`/admin/clientes/${client.id}`}
-                  className="flex items-center justify-between p-3 rounded-md border border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors group"
+                  className="flex items-center justify-between p-3 rounded-md border border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none group"
                 >
                   <div>
-                    <p className="font-medium lia-text-950 dark:lia-text-50 group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors">
+                    <p className="font-medium lia-text-950 dark:lia-text-50 group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors motion-reduce:transition-none">
                       {client.name}
                     </p>
                     <p className="text-xs lia-text-500">
@@ -312,7 +312,7 @@ export default function AdminDashboard() {
                     <span className={`text-sm font-semibold ${getDaysRemainingColor(client.daysRemaining)}`}>
                       {client.daysRemaining} dias
                     </span>
-                    <ExternalLink className="w-4 h-4 lia-text-400 group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors" />
+                    <ExternalLink className="w-4 h-4 lia-text-400 group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors motion-reduce:transition-none" />
                   </div>
                 </Link>
               ))}
@@ -332,8 +332,8 @@ export default function AdminDashboard() {
           </div>
           
           {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-6 h-6 animate-spin lia-text-400" />
+            <div className="flex items-center justify-center py-8" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none lia-text-400" />
             </div>
           ) : churnedClients.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">

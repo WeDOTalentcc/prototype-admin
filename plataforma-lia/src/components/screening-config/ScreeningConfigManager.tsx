@@ -97,7 +97,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                 <button
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-md text-left transition-colors font-open-sans ${
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-md text-left transition-colors motion-reduce:transition-none font-open-sans ${
  activeSection === section.id
                       ? 'bg-gray-50 dark:bg-lia-bg-secondary border border-gray-900 dark:border-lia-border-subtle text-wedo-cyan-dark dark:text-lia-text-secondary'
                       : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-lia-text-primary dark:text-lia-text-primary border border-transparent'
@@ -249,10 +249,10 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           }
                           setShowScreeningToggleConfirm('activate')
                         }}
-                        className="relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 bg-gray-300"
+                        className="relative inline-flex h-5 w-9 items-center rounded-full transition-colors motion-reduce:transition-none duration-200 bg-gray-300"
                       >
                         <span
-                          className="inline-block h-3.5 w-3.5 transform rounded-full bg-lia-bg-secondary transition-transform duration-200"
+                          className="inline-block h-3.5 w-3.5 transform rounded-full bg-lia-bg-secondary transition-transform motion-reduce:transition-none duration-200"
                           style={{transform: 'translateX(2px)'}}
                         />
                       </button>
@@ -274,12 +274,12 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                             setShowScreeningToggleConfirm('activate')
                           }
                         }}
-                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 ${
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors motion-reduce:transition-none duration-200 ${
  job.screeningStatus === 'active' ? 'bg-status-success' : 'bg-gray-300'
                         }`}
                       >
                         <span
-                          className="inline-block h-3.5 w-3.5 transform rounded-full bg-lia-bg-secondary transition-transform duration-200"
+                          className="inline-block h-3.5 w-3.5 transform rounded-full bg-lia-bg-secondary transition-transform motion-reduce:transition-none duration-200"
                           style={{transform: job.screeningStatus === 'active' ? 'translateX(17px)' : 'translateX(2px)'}}
                         />
                       </button>
@@ -335,7 +335,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                         : <Pause className="w-3 h-3 text-status-warning" />
                       }
                     </div>
-                    <p className="text-xs leading-relaxed text-lia-text-secondary dark:text-lia-text-tertiary" >
+                    <p className="text-xs leading-relaxed text-lia-text-secondary dark:text-lia-text-tertiary"  aria-live="polite" aria-atomic="true">
                       {showScreeningToggleConfirm === 'activate'
                         ? 'A LIA começará a avaliar candidatos automaticamente conforme as configurações definidas neste roteiro.'
                         : 'Candidatos em avaliação serão mantidos no estado atual até a reativação. Nenhum novo candidato será triado enquanto a triagem estiver pausada.'

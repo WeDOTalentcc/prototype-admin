@@ -102,7 +102,7 @@ export default function SubprocessadoresPage() {
                 {subprocessors.map((sub, index) => (
                   <tr 
                     key={sub.id}
-                    className={`border-b hover:bg-gray-50 transition-colors border-lia-border-subtle dark:border-lia-border-subtle ${index % 2 !== 0 ? 'bg-gray-50 dark:bg-lia-bg-primary' : ''}`}
+                    className={`border-b hover:bg-gray-50 transition-colors motion-reduce:transition-none border-lia-border-subtle dark:border-lia-border-subtle ${index % 2 !== 0 ? 'bg-gray-50 dark:bg-lia-bg-primary' : ''}`}
                   >
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-2">

@@ -270,7 +270,7 @@ function CompensationBreakdownChart({
         {segments.map((segment, index) => (
           <div
             key={segment.label}
-            className={cn(segment.color, 'transition-colors')}
+            className={cn(segment.color, 'transition-colors motion-reduce:transition-none')}
             style={{width: `${segment.percentage}%`}}
           />
         ))}
@@ -299,7 +299,7 @@ export function CompensationAnalysisPanel({
     return (
       <Card className="border-dashed rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
         <CardContent className="flex flex-col items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground dark:text-lia-text-tertiary mb-3" />
+          <Loader2 className="h-8 w-8 animate-spin motion-reduce:animate-none text-muted-foreground dark:text-lia-text-tertiary mb-3" />
           <p className="text-sm text-muted-foreground dark:text-lia-text-tertiary">Analisando remuneração...</p>
         </CardContent>
       </Card>

@@ -307,10 +307,10 @@ export function PromptSuggestionsPopover({
                 <button
                   key={suggestion.id}
                   onClick={() => handleSelect(suggestion.command)}
-                  className="w-full p-2 rounded-md text-left transition-colors group hover:bg-gray-50 dark:bg-lia-bg-secondary/50 border border-transparent hover:border-lia-border-default dark:border-lia-border-default"
+                  className="w-full p-2 rounded-md text-left transition-colors motion-reduce:transition-none group hover:bg-gray-50 dark:bg-lia-bg-secondary/50 border border-transparent hover:border-lia-border-default dark:border-lia-border-default"
                 >
                   <div className="flex items-start gap-2.5">
-                    <div className="w-7 h-7 rounded-md bg-gray-100 flex items-center justify-center flex-shrink-0 group-hover:bg-gray-100 dark:bg-lia-bg-secondary transition-colors">
+                    <div className="w-7 h-7 rounded-md bg-gray-100 flex items-center justify-center flex-shrink-0 group-hover:bg-gray-100 dark:bg-lia-bg-secondary transition-colors motion-reduce:transition-none">
                       <Icon className="w-3.5 h-3.5 lia-text-base group-hover:lia-text-strong dark:group-hover:lia-text-subtle" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -318,7 +318,7 @@ export function PromptSuggestionsPopover({
                         <h4 className="text-xs font-medium truncate text-lia-text-primary dark:text-lia-text-primary">
                           {suggestion.title}
                         </h4>
-                        <ChevronRight className="w-3 h-3 lia-text-base opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <ChevronRight className="w-3 h-3 lia-text-base opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none" />
                       </div>
                       <p className="text-xs text-lia-text-primary dark:text-lia-text-primary line-clamp-1">
                         {suggestion.description}

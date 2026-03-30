@@ -263,7 +263,7 @@ const RecentItemRow = React.memo(({
     <div className="group relative flex items-center">
       <button
         onClick={() => onClick(item)}
-        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 text-sm-ui leading-tight min-h-8 hover:bg-gray-50 dark:hover:bg-gray-800 text-lia-text-secondary dark:text-lia-text-secondary"
+        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors motion-reduce:transition-none duration-200 text-sm-ui leading-tight min-h-8 hover:bg-gray-50 dark:hover:bg-gray-800 text-lia-text-secondary dark:text-lia-text-secondary"
         title={item.title}
       >
         <Icon className={cn("w-3.5 h-3.5 flex-shrink-0", config.color)} />
@@ -274,7 +274,7 @@ const RecentItemRow = React.memo(({
           e.stopPropagation()
           onRemove(item.id, item.type)
         }}
-        className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-0.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700"
+        className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none duration-150 p-0.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700"
         title="Remover dos recentes"
       >
         <X className="w-3 h-3 text-lia-text-disabled" />
@@ -402,7 +402,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             {recentItems.length >= 2 && onRecentItemsClear && (
               <button
                 onClick={onRecentItemsClear}
-                className="flex items-center gap-1.5 mt-2 px-2 py-1 text-xs text-lia-text-disabled hover:text-lia-text-secondary dark:hover:text-lia-text-disabled transition-colors duration-200"
+                className="flex items-center gap-1.5 mt-2 px-2 py-1 text-xs text-lia-text-disabled hover:text-lia-text-secondary dark:hover:text-lia-text-disabled transition-colors motion-reduce:transition-none duration-200"
               >
                 <Trash2 className="w-3 h-3" />
                 Limpar recentes
@@ -460,14 +460,14 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
         <div
           className={cn(
  "absolute top-0 right-0 w-1 h-full cursor-col-resize group z-10",
-            "hover:w-1.5 transition-colors duration-200",
+            "hover:w-1.5 transition-colors motion-reduce:transition-none duration-200",
             isResizing ? "bg-gray-700 w-1.5" : "bg-transparent hover:bg-gray-600 dark:hover:bg-gray-400"
           )}
           onMouseDown={startResize}
           title="Arrastar para redimensionar sidebar"
         >
           {/* Indicador visual mais sutil */}
-          <div className="absolute inset-y-0 right-0 w-px bg-gray-200 dark:bg-lia-bg-elevated group-hover:bg-gray-500 dark:group-hover:bg-gray-400 transition-colors duration-200" />
+          <div className="absolute inset-y-0 right-0 w-px bg-gray-200 dark:bg-lia-bg-elevated group-hover:bg-gray-500 dark:group-hover:bg-gray-400 transition-colors motion-reduce:transition-none duration-200" />
 
           {/* Área de hover expandida para facilitar o clique */}
           <div className="absolute top-0 -right-2 w-4 h-full" />
@@ -476,7 +476,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
 
       {/* Indicador visual de atalho */}
       {isCollapsed && !isTemporaryExpanded && (
-        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded-md opacity-0 hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded-md opacity-0 hover:opacity-100 transition-opacity motion-reduce:transition-none duration-200 pointer-events-none">
           Ctrl+B
         </div>
       )}

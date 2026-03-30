@@ -53,7 +53,7 @@ export function AlertsSection({
             onClick={fetchTechnicalAlerts}
             disabled={technicalAlertsLoading}
           >
-            <RefreshCw className={`w-4 h-4 ${technicalAlertsLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${technicalAlertsLoading ? 'animate-spin motion-reduce:animate-none' : ''}`} />
           </Button>
           {technicalAlertsHasChanges && (
             <Button
@@ -63,7 +63,7 @@ export function AlertsSection({
               size="sm"
             >
               {savingTechnicalAlerts ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
               ) : (
                 <Save className="w-4 h-4 mr-2" />
               )}
@@ -78,8 +78,8 @@ export function AlertsSection({
       </div>
 
       {technicalAlertsLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin lia-text-700 dark:text-lia-text-secondary" />
+        <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-700 dark:text-lia-text-secondary" />
           <span className="ml-3 text-sm lia-text-500 dark:text-lia-text-tertiary" >
             Carregando alertas técnicos...
           </span>
@@ -94,7 +94,7 @@ export function AlertsSection({
       ) : (
         <div className="space-y-3">
           {technicalAlerts.map(alert => (
-            <Card key={alert.id} className={`transition-opacity ${!alert.enabled ? 'opacity-60' : ''}`}>
+            <Card key={alert.id} className={`transition-opacity motion-reduce:transition-none ${!alert.enabled ? 'opacity-60' : ''}`}>
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -135,7 +135,7 @@ export function AlertsSection({
                         <Badge
                           key={channel}
                           variant={alert.channels.includes(channel) ? 'default' : 'outline'}
-                          className={`text-xs cursor-pointer transition-transform hover:scale-105 ${
+                          className={`text-xs cursor-pointer transition-transform motion-reduce:transition-none hover:scale-105 ${
                             alert.channels.includes(channel) 
                               ? channel === 'email' ? 'bg-gray-900 hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200' 
                                 : channel === 'slack' ? 'bg-wedo-purple hover:bg-wedo-purple' 
@@ -183,7 +183,7 @@ export function AlertsSection({
                 size="sm"
               >
                 {savingTechnicalAlerts ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
                 ) : (
                   <Save className="w-4 h-4 mr-2" />
                 )}

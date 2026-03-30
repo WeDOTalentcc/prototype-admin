@@ -93,7 +93,7 @@ export function SearchCalibrationStage({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
-                <span className="text-sm lia-text-secondary">
+                <span className="text-sm lia-text-secondary" aria-live="polite" aria-atomic="true">
                   Candidatos ideais:
                 </span>
               </div>
@@ -102,7 +102,7 @@ export function SearchCalibrationStage({
                   <button
                     key={num}
                     onClick={() => onSetPreferredCandidateCount(num)}
-                    className={`w-7 h-7 rounded-md text-sm font-medium transition-colors ${
+                    className={`w-7 h-7 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none ${
  preferredCandidateCount === num
                         ? 'bg-gray-900 text-white'
                         : 'bg-gray-100 lia-text-base hover:bg-gray-200'
@@ -125,9 +125,9 @@ export function SearchCalibrationStage({
             </div>
 
             {searchPhase === 'idle' || searchPhase === 'local-searching' ? (
-              <div className="flex flex-col items-center justify-center py-4">
-                <Loader2 className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin mb-2" />
-                <p className="text-xs lia-text-secondary">
+              <div className="flex flex-col items-center justify-center py-4" role="status" aria-live="polite" aria-label="Carregando...">
+                <Loader2 className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none mb-2" />
+                <p className="text-xs lia-text-secondary" aria-live="polite" aria-atomic="true">
                   Buscando candidatos na sua base de talentos...
                 </p>
               </div>
@@ -164,14 +164,14 @@ export function SearchCalibrationStage({
                         onSetGlobalSearchAuthorized(true)
                         onStartGlobalSearch()
                       }}
-                      className="px-3 py-1.5 bg-gray-900 text-white text-micro font-medium rounded-md hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors flex items-center gap-1"
+                      className="px-3 py-1.5 bg-gray-900 text-white text-micro font-medium rounded-md hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors motion-reduce:transition-none flex items-center gap-1"
                     >
                       <Globe className="w-3 h-3" />
                       Sim, expandir busca
                     </button>
                     <button
                       onClick={() => onSetSearchPhase('global-complete')}
-                      className="px-3 py-1.5 bg-gray-50 lia-text-secondary text-micro font-medium rounded-md hover:bg-gray-200 transition-colors"
+                      className="px-3 py-1.5 bg-gray-50 lia-text-secondary text-micro font-medium rounded-md hover:bg-gray-200 transition-colors motion-reduce:transition-none"
                     >
                       Não, usar só base local
                     </button>
@@ -190,8 +190,8 @@ export function SearchCalibrationStage({
                   Busca Global (Pearch AI)
                 </span>
               </div>
-              <div className="flex flex-col items-center justify-center py-4">
-                <Loader2 className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin mb-2" />
+              <div className="flex flex-col items-center justify-center py-4" role="status" aria-live="polite" aria-label="Carregando...">
+                <Loader2 className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none mb-2" />
                 <p className="text-xs lia-text-secondary">
                   Buscando em 800M+ perfis profissionais...
                 </p>
@@ -231,7 +231,7 @@ export function SearchCalibrationStage({
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-micro">
-                  <span className="lia-text-secondary">Total de candidatos:</span>
+                  <span className="lia-text-secondary" aria-live="polite" aria-atomic="true">Total de candidatos:</span>
                   <span className="font-semibold lia-text-strong">{localCandidateCount + (globalSearchAuthorized ? globalCandidateCount : 0)}</span>
                 </div>
                 <div className="flex items-center justify-between text-micro">
@@ -245,7 +245,7 @@ export function SearchCalibrationStage({
                   </div>
                 )}
                 <div className="pt-2 border-t border-lia-border-subtle">
-                  <p className="text-micro lia-text-secondary italic">
+                  <p className="text-micro lia-text-secondary italic" aria-live="polite" aria-atomic="true">
                     {localCandidateCount >= 10
                       ? 'Ótima quantidade! Você tem candidatos suficientes para uma boa seleção.'
                       : localCandidateCount >= 5
@@ -268,14 +268,14 @@ export function SearchCalibrationStage({
                   <h4 className="text-xs font-medium lia-text-strong">
                     Próximo passo: Calibração
                   </h4>
-                  <p className="text-micro lia-text-secondary">
+                  <p className="text-micro lia-text-secondary" aria-live="polite" aria-atomic="true">
                     Vou apresentar 3 candidatos para você avaliar e calibrar minha assertividade
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => onSetShowCalibrationModal(true)}
-                className="w-full py-2 bg-gray-900 text-white text-xs font-medium rounded-md hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+                className="w-full py-2 bg-gray-900 text-white text-xs font-medium rounded-md hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
               >
                 <Users className="w-4 h-4" />
                 Iniciar Calibração de Candidatos
@@ -287,12 +287,12 @@ export function SearchCalibrationStage({
 
       {/* Phase 2: Calibration (candidates available, not complete) */}
       {calibrationCandidates.length > 0 && !calibrationComplete && (
-        <div className="space-y-2.5">
+        <div className="space-y-2.5" role="status" aria-live="polite" aria-label="Carregando...">
           {/* Loading state */}
           {isLoadingCalibration && (
-            <div className="p-4 bg-gray-50 rounded-md border border-lia-border-subtle">
-              <div className="flex items-center gap-3">
-                <Loader2 className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin" />
+            <div className="p-4 bg-gray-50 rounded-md border border-lia-border-subtle" role="status" aria-live="polite" aria-label="Carregando...">
+              <div className="flex items-center gap-3" role="status" aria-live="polite" aria-label="Carregando...">
+                <Loader2 className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
                 <div>
                   <h4 className="text-xs font-medium lia-text-strong">
                     Buscando candidatos...
@@ -316,7 +316,7 @@ export function SearchCalibrationStage({
                   <h4 className="text-xs font-medium lia-text-strong">
                     Nenhum candidato encontrado
                   </h4>
-                  <p className="text-micro lia-text-base mt-1">
+                  <p className="text-micro lia-text-base mt-1" aria-live="polite" aria-atomic="true">
                     Não encontrei candidatos na base que correspondam aos critérios. Você pode tentar novamente ou prosseguir diretamente para a busca ativa.
                   </p>
                   <div className="flex gap-2 mt-3">
@@ -325,14 +325,14 @@ export function SearchCalibrationStage({
                         onSetHasAttemptedCalibrationGeneration(false)
                         onGenerateCalibrationCandidates()
                       }}
-                      className="flex-1 py-2 bg-lia-bg-primary lia-text-strong text-xs font-medium rounded-md border border-lia-border-default hover:bg-gray-50 transition-colors flex items-center justify-center gap-1.5"
+                      className="flex-1 py-2 bg-lia-bg-primary lia-text-strong text-xs font-medium rounded-md border border-lia-border-default hover:bg-gray-50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5"
                     >
                       <RefreshCw className="w-3.5 h-3.5" />
                       Tentar Novamente
                     </button>
                     <button
                       onClick={() => onSetCalibrationComplete(true)}
-                      className="flex-1 py-2 bg-gray-900 text-white text-xs font-medium rounded-md hover:bg-gray-800 transition-colors flex items-center justify-center gap-1.5"
+                      className="flex-1 py-2 bg-gray-900 text-white text-xs font-medium rounded-md hover:bg-gray-800 transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5"
                     >
                       <ChevronRight className="w-3.5 h-3.5" />
                       Prosseguir Mesmo Assim
@@ -355,7 +355,7 @@ export function SearchCalibrationStage({
                     <h4 className="text-xs font-medium lia-text-strong">
                       Calibração em andamento
                     </h4>
-                    <p className="text-micro lia-text-secondary">
+                    <p className="text-micro lia-text-secondary" aria-live="polite" aria-atomic="true">
                       Avalie os candidatos para calibrar a assertividade da LIA
                     </p>
                   </div>
@@ -380,7 +380,7 @@ export function SearchCalibrationStage({
               {!showCalibrationModal && (
                 <button
                   onClick={() => onSetShowCalibrationModal(true)}
-                  className="w-full py-2 bg-gray-900 text-white text-xs font-medium rounded-md hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-2 bg-gray-900 text-white text-xs font-medium rounded-md hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
                 >
                   <Users className="w-4 h-4" />
                   Abrir Modal de Candidatos
@@ -404,7 +404,7 @@ export function SearchCalibrationStage({
                 <h3 className="text-xs font-semibold lia-text-strong">
                   Perfeito! Vaga Configurada com Sucesso
                 </h3>
-                <p className="text-micro lia-text-secondary">
+                <p className="text-micro lia-text-secondary" aria-live="polite" aria-atomic="true">
                   A partir de agora os candidatos serão automaticamente adicionados na vaga.
                 </p>
               </div>
@@ -439,7 +439,7 @@ export function SearchCalibrationStage({
 
           {/* Nota final */}
           <div className="p-2.5 bg-gray-50 rounded-md">
-            <p className="text-micro lia-text-secondary text-center italic">
+            <p className="text-micro lia-text-secondary text-center italic" aria-live="polite" aria-atomic="true">
               *Todos estes detalhes serão enviados por e-mail junto com a confirmação de abertura da vaga.
             </p>
           </div>
@@ -450,7 +450,7 @@ export function SearchCalibrationStage({
               onJobCreated?.()
               onClose()
             }}
-            className="w-full py-2.5 bg-gray-900 text-white rounded-md text-xs font-semibold hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+            className="w-full py-2.5 bg-gray-900 text-white rounded-md text-xs font-semibold hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
           >
             <ExternalLink className="w-4 h-4" />
             Ver Candidatos no Kanban
@@ -509,7 +509,7 @@ export function SearchCalibrationNavButtons({
         >
           {isLoadingCalibration ? (
             <>
-              <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+              <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin motion-reduce:animate-none" />
               Carregando...
             </>
           ) : (

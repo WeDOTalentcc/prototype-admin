@@ -170,7 +170,7 @@ export function CandidatePage({
                         href={candidate.linkedin_url || candidate.linkedinUrl} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
+                        className="p-1.5 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
                       >
                         <Linkedin className="w-4 h-4 lia-text-base" />
                       </a>
@@ -185,7 +185,7 @@ export function CandidatePage({
                         href={candidate.github_url || candidate.githubUrl} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
+                        className="p-1.5 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
                       >
                         <Github className="w-4 h-4 text-lia-text-primary" />
                       </a>
@@ -200,7 +200,7 @@ export function CandidatePage({
                         href={candidate.portfolio_url || candidate.portfolioUrl || candidate.website} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
+                        className="p-1.5 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
                       >
                         <Globe className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                       </a>
@@ -362,7 +362,7 @@ export function CandidatePage({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as string)}
-              className={`flex items-center gap-2 px-3 py-2.5 text-xs font-medium whitespace-nowrap transition-colors ${
+              className={`flex items-center gap-2 px-3 py-2.5 text-xs font-medium whitespace-nowrap transition-colors motion-reduce:transition-none ${
  activeTab === tab.id
                   ? 'border-b-2 lia-text-secondary border-gray-400'
                   : 'text-lia-text-primary dark:text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse'
@@ -423,7 +423,7 @@ export function CandidatePage({
               <Card className="border-2 border-dashed border-lia-border-default dark:border-lia-border-default hover:border-gray-400 dark:hover:border-gray-500">
                 <CardContent className="p-6">
                   <div
-                    className={`text-center cursor-pointer transition-colors ${
+                    className={`text-center cursor-pointer transition-colors motion-reduce:transition-none ${
  isDragging ? 'opacity-50' : ''
                     }`}
                     onDragOver={(e) => {
@@ -646,7 +646,7 @@ export function CandidatePage({
                         <img
                           src={candidate.avatar_url || candidate.avatar}
                           alt="Preview"
-                          className="w-full h-24 rounded-md object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                          className="w-full h-24 rounded-md object-cover cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none"
                           onClick={() => {
                             setSelectedFile({
                               name: 'foto_perfil.jpg',
@@ -694,7 +694,7 @@ export function CandidatePage({
                 <div className="flex items-center gap-1 border-b border-lia-border-subtle dark:border-lia-border-subtle pb-2">
                   <button
                     onClick={() => setOpinionsSubTab('pareceres')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors motion-reduce:transition-none ${
  opinionsSubTab === 'pareceres'
                         ? 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary border-b-2 border-gray-900 dark:border-lia-border-subtle'
                         : 'text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-disabled hover:bg-gray-50 dark:hover:bg-gray-800'
@@ -710,7 +710,7 @@ export function CandidatePage({
                   </button>
                   <button
                     onClick={() => setOpinionsSubTab('analises')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors motion-reduce:transition-none ${
  opinionsSubTab === 'analises'
                         ? 'bg-wedo-purple/10 dark:bg-wedo-purple/20 text-wedo-purple dark:text-wedo-purple border-b-2 border-wedo-purple/30'
                         : 'text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-disabled hover:bg-gray-50 dark:hover:bg-gray-800'
@@ -733,7 +733,7 @@ export function CandidatePage({
                     {isLoadingHistory && (
                       <div className="space-y-3">
                         {[1, 2].map((i) => (
-                          <Card key={i} className="animate-pulse">
+                          <Card key={i} className="animate-pulse motion-reduce:animate-none">
                             <CardContent className="p-4">
                               <div className="flex items-center gap-3 mb-3">
                                 <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
@@ -820,7 +820,7 @@ export function CandidatePage({
                             <Card key={opinion.id} className="overflow-hidden">
                               <div
                                 onClick={() => setExpandedOpinionId(isExpanded ? null : opinion.id)}
-                                className="p-3 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer"
+                                className="p-3 flex items-center justify-between hover:bg-gray-50 transition-colors motion-reduce:transition-none cursor-pointer"
                               >
                                 <div className="flex items-center gap-2">
                                   <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
@@ -877,7 +877,7 @@ export function CandidatePage({
                                           e.stopPropagation()
                                           handleCopyOpinion(opinion, opinion.opinion_type || 'general')
                                         }}
-                                        className="p-1 hover:bg-gray-100 rounded-md transition-colors"
+                                        className="p-1 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
                                       >
                                         {copiedItemId === `opinion-${opinion.id}` ? (
                                           <Check className="w-3.5 h-3.5 text-status-success" />
@@ -985,7 +985,7 @@ export function CandidatePage({
                     {isLoadingAnalyses && (
                       <div className="space-y-3">
                         {[1, 2].map((i) => (
-                          <Card key={i} className="animate-pulse">
+                          <Card key={i} className="animate-pulse motion-reduce:animate-none">
                             <CardContent className="p-4">
                               <div className="flex items-center gap-3 mb-3">
                                 <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
@@ -1034,7 +1034,7 @@ export function CandidatePage({
                             <Card key={analysis.id} className="overflow-hidden hover:transition-shadow">
                               {/* Card Header */}
                               <div 
-                                className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50/50 transition-colors"
+                                className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50/50 transition-colors motion-reduce:transition-none"
                                 onClick={() => setExpandedAnalysisId(isExpanded ? null : analysis.id)}
                               >
                                 <div className="flex items-center gap-2.5">
@@ -1069,7 +1069,7 @@ export function CandidatePage({
                                           e.stopPropagation()
                                           handleCopyAnalysis(analysis)
                                         }}
-                                        className="p-1 hover:bg-gray-100 rounded-md transition-colors"
+                                        className="p-1 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
                                       >
                                         {copiedItemId === `analysis-${analysis.id}` ? (
                                           <Check className="w-3.5 h-3.5 text-status-success" />
@@ -1080,7 +1080,7 @@ export function CandidatePage({
                                     </TooltipTrigger>
                                     <TooltipContent side="top" className="text-micro">Copiar análise</TooltipContent>
                                   </Tooltip>
-                                  <ChevronDown className={`w-4 h-4 lia-text-secondary transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                                  <ChevronDown className={`w-4 h-4 lia-text-secondary transition-transform motion-reduce:transition-none ${isExpanded ? 'rotate-180' : ''}`} />
                                 </div>
                               </div>
                               
@@ -1099,7 +1099,7 @@ export function CandidatePage({
                                             e.stopPropagation()
                                             setAnalysisToDelete(analysis)
                                           }}
-                                          className="p-1.5 hover:bg-status-error/10 rounded-md transition-colors group"
+                                          className="p-1.5 hover:bg-status-error/10 rounded-md transition-colors motion-reduce:transition-none group"
                                         >
                                           <Trash2 className="w-4 h-4 lia-text-secondary group-hover:text-status-error" />
                                         </button>

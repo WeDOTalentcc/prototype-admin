@@ -112,7 +112,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
                   strokeWidth="20"
                   strokeDasharray={strokeDasharray}
                   strokeDashoffset={strokeDashoffset}
-                  className="transition-colors duration-300"
+                  className="transition-colors motion-reduce:transition-none duration-300"
                 />
               )
             })}
@@ -307,7 +307,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
           {regionData.map((region, index) => (
             <div
               key={index}
-              className={`p-4 rounded-md text-white text-center transition-transform duration-300 hover:scale-105 ${getDensityColor(region.densidade)}`}
+              className={`p-4 rounded-md text-white text-center transition-transform motion-reduce:transition-none duration-300 hover:scale-105 ${getDensityColor(region.densidade)}`}
             >
               <div className="font-bold text-lg">{region.regiao}</div>
               <div className="text-sm opacity-90">{region.total} candidatos</div>
@@ -349,7 +349,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
             <div className="flex bg-gray-100 dark:bg-lia-bg-secondary rounded-md p-1">
               <button
                 onClick={() => setSelectedChart('donut')}
-                className={`px-3 py-1 text-xs rounded-md transition-colors flex items-center gap-1 ${
+                className={`px-3 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none flex items-center gap-1 ${
  selectedChart === 'donut'
                     ? 'bg-gray-900 text-white'
                     : 'lia-text-base hover:lia-text-strong'
@@ -360,7 +360,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
               </button>
               <button
                 onClick={() => setSelectedChart('bar')}
-                className={`px-3 py-1 text-xs rounded-md transition-colors flex items-center gap-1 ${
+                className={`px-3 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none flex items-center gap-1 ${
  selectedChart === 'bar'
                     ? 'bg-gray-900 text-white'
                     : 'lia-text-base hover:lia-text-strong'
@@ -371,7 +371,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
               </button>
               <button
                 onClick={() => setSelectedChart('trend')}
-                className={`px-3 py-1 text-xs rounded-md transition-colors flex items-center gap-1 ${
+                className={`px-3 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none flex items-center gap-1 ${
  selectedChart === 'trend'
                     ? 'bg-gray-900 text-white'
                     : 'lia-text-base hover:lia-text-strong'
@@ -382,7 +382,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
               </button>
               <button
                 onClick={() => setSelectedChart('heatmap')}
-                className={`px-3 py-1 text-xs rounded-md transition-colors flex items-center gap-1 ${
+                className={`px-3 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none flex items-center gap-1 ${
  selectedChart === 'heatmap'
                     ? 'bg-gray-900 text-white'
                     : 'lia-text-base hover:lia-text-strong'

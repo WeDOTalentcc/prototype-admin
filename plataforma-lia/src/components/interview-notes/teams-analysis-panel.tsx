@@ -169,7 +169,7 @@ export function TeamsAnalysisPanel({
     return (
       <Card className="w-full rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
         <CardContent className="flex items-center justify-center py-8">
-          <Loader2 className="h-6 w-6 animate-spin lia-text-secondary" />
+          <Loader2 className="h-6 w-6 animate-spin motion-reduce:animate-none lia-text-secondary" />
           <span className="ml-2 text-sm text-lia-text-tertiary dark:text-lia-text-tertiary">Carregando status...</span>
         </CardContent>
       </Card>
@@ -203,7 +203,7 @@ export function TeamsAnalysisPanel({
               disabled={isLoading || isAnalyzing}
               className="h-8 w-8 p-0"
             >
-              <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+              <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin motion-reduce:animate-none")} />
             </Button>
           </div>
         </div>
@@ -251,7 +251,7 @@ export function TeamsAnalysisPanel({
             >
               {isAnalyzing ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />
                   Analisando...
                 </>
               ) : (
@@ -278,7 +278,7 @@ export function TeamsAnalysisPanel({
                 >
                   {isAnalyzing ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />
                       Reanalisando...
                     </>
                   ) : (

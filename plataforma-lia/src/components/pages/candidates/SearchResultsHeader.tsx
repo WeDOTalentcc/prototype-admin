@@ -179,7 +179,7 @@ export function SearchResultsHeader({
           <TooltipTrigger asChild>
             <button
               onClick={onBack}
-              className="flex items-center justify-center hover:opacity-70 transition-opacity flex-shrink-0"
+              className="flex items-center justify-center hover:opacity-70 transition-opacity motion-reduce:transition-none flex-shrink-0"
             >
               <ArrowLeft className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" strokeWidth={2.5} />
             </button>
@@ -220,7 +220,7 @@ export function SearchResultsHeader({
 
             <button
               onClick={onOpenAdvancedSearch}
-              className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse font-bold inline-flex items-center gap-1 transition-colors ml-2 font-sans"
+              className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse font-bold inline-flex items-center gap-1 transition-colors motion-reduce:transition-none ml-2 font-sans"
             >
               Editar Filtros
               <ChevronRight className="w-3 h-3" />

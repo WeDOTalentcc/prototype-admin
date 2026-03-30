@@ -146,7 +146,7 @@ export function ExpandedChatInput({
                   className="hidden"
                 />
                 <button
-                  className="p-1.5 lia-text-secondary hover:lia-text-base dark:hover:lia-text-muted transition-colors rounded-full"
+                  className="p-1.5 lia-text-secondary hover:lia-text-base dark:hover:lia-text-muted transition-colors motion-reduce:transition-none rounded-full"
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   title="Anexar arquivo para análise"
@@ -186,7 +186,7 @@ export function ExpandedChatInput({
                 type="button"
               >
                 {isLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                  <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
                 ) : (
                   <Send className="w-4 h-4" aria-hidden="true" />
                 )}
@@ -323,14 +323,14 @@ export function ExpandedChatInput({
           {/* Conteúdo da aba Job Description */}
           {activeInputTab === 'job-description' && (
             <div className="mt-3 p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary">
-              <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mb-2">
+              <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mb-2" aria-live="polite" aria-atomic="true">
                 Cole ou anexe uma descrição de vaga e eu vou criar a vaga automaticamente para você, configurando todos os detalhes.
               </p>
               <textarea
                 value={inputValue}
                 onChange={(e) => onSetInputValue(e.target.value)}
                 placeholder="Cole aqui o job description completo (requisitos, responsabilidades, benefícios...)."
-                className="w-full px-3 py-2.5 text-xs rounded-md border border-lia-border-subtle dark:border-lia-border-subtle focus:border-gray-400 dark:focus:border-gray-500 focus:outline-none resize-none transition-colors bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary min-h-20"
+                className="w-full px-3 py-2.5 text-xs rounded-md border border-lia-border-subtle dark:border-lia-border-subtle focus:border-gray-400 dark:focus:border-gray-500 focus:outline-none resize-none transition-colors motion-reduce:transition-none bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary min-h-20"
                 rows={4}
               />
               <div className="flex items-center justify-between mt-2">
@@ -370,7 +370,7 @@ export function ExpandedChatInput({
                 <h4 className="text-xs font-medium mb-1 text-lia-text-primary dark:text-lia-text-primary">
                   Criar Vaga a Partir de Template
                 </h4>
-                <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary mb-2">
+                <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary mb-2" aria-live="polite" aria-atomic="true">
                   Selecione um modelo pronto e eu inicio a criação da vaga para você
                 </p>
                 <div className="grid grid-cols-2 gap-1.5">
@@ -382,7 +382,7 @@ export function ExpandedChatInput({
                   ].map((template) => (
                     <div
                       key={template.title}
-                      className="cursor-pointer transition-colors rounded-md p-2 hover:border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary hover:border-gray-900 dark:hover:border-gray-50"
+                      className="cursor-pointer transition-colors motion-reduce:transition-none rounded-md p-2 hover:border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary hover:border-gray-900 dark:hover:border-gray-50"
                       onClick={() => {
                         onSetInternalJobCreationMode(true)
                         const dynamicGreeting = wizardGreeting?.greeting_message || INITIAL_JOB_CREATION_MESSAGE
@@ -415,7 +415,7 @@ export function ExpandedChatInput({
                 <h4 className="text-xs font-medium mb-1 text-lia-text-primary dark:text-lia-text-primary">
                   Criar a Partir de Vaga Existente
                 </h4>
-                <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary mb-2">
+                <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary mb-2" aria-live="polite" aria-atomic="true">
                   Copie uma vaga já criada e faça ajustes
                 </p>
                 <div className="relative">
@@ -423,7 +423,7 @@ export function ExpandedChatInput({
                   <input
                     type="text"
                     placeholder="Buscar vaga por título ou ID..."
-                    className="w-full pl-8 pr-3 py-2 text-xs rounded-md border border-lia-border-subtle dark:border-lia-border-subtle focus:border-gray-400 dark:focus:border-gray-500 focus:outline-none transition-colors bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary"
+                    className="w-full pl-8 pr-3 py-2 text-xs rounded-md border border-lia-border-subtle dark:border-lia-border-subtle focus:border-gray-400 dark:focus:border-gray-500 focus:outline-none transition-colors motion-reduce:transition-none bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary"
                   />
                 </div>
               </div>

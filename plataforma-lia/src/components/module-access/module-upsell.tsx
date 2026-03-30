@@ -189,7 +189,7 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
           <Button variant="ghost" className="gap-2" onClick={() => setShowDetails(!showDetails)}>
             <Settings className="w-4 h-4" />
             {showDetails ? 'Ocultar' : 'Ver'} Comparação de Planos
-            <ArrowRight className={`w-4 h-4 transition-transform ${showDetails ? 'rotate-90' : ''}`} />
+            <ArrowRight className={`w-4 h-4 transition-transform motion-reduce:transition-none ${showDetails ? 'rotate-90' : ''}`} />
           </Button>
 
           {showDetails && (

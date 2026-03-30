@@ -45,7 +45,7 @@ export function ContextualActionsBanner({
             <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
               <Users className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
-            <span className="text-sm font-semibold text-lia-text-primary">
+            <span className="text-sm font-semibold text-lia-text-primary" aria-live="polite" aria-atomic="true">
               {selectedCount} candidato{selectedCount > 1 ? 's' : ''} selecionado{selectedCount > 1 ? 's' : ''}
             </span>
           </div>
@@ -61,7 +61,7 @@ export function ContextualActionsBanner({
             title="Adicionar à Vaga"
           >
             <Briefcase className="w-3.5 h-3.5 lia-text-base" />
-            <span>Vaga</span>
+            <span aria-live="polite" aria-atomic="true">Vaga</span>
           </Button>
 
           <Button
@@ -73,7 +73,7 @@ export function ContextualActionsBanner({
             title="Adicionar à Lista"
           >
             {isAddingToList ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin lia-text-secondary" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none lia-text-secondary" />
             ) : (
               <List className="w-3.5 h-3.5 text-wedo-green" />
             )}
@@ -147,7 +147,7 @@ export function ContextualActionsBanner({
               title="Salvar na Base Local"
             >
               {isSavingToBase ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin lia-text-secondary" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none lia-text-secondary" />
               ) : (
                 <Database className="w-3.5 h-3.5 lia-text-base" />
               )}

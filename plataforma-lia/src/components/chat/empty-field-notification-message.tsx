@@ -111,7 +111,7 @@ export function EmptyFieldNotificationMessage({
                       className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
                     >
                       {isProcessing === 'fill_now' ? (
-                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                        <Loader2 className="w-4 h-4 mr-1 animate-spin motion-reduce:animate-none" />
                       ) : (
                         <Brain className="w-4 h-4 mr-1 text-wedo-cyan" />
                       )}
@@ -125,7 +125,7 @@ export function EmptyFieldNotificationMessage({
                       disabled={isProcessing !== null}
                     >
                       {isProcessing === 'remind_later' ? (
-                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                        <Loader2 className="w-4 h-4 mr-1 animate-spin motion-reduce:animate-none" />
                       ) : (
                         <Clock className="w-4 h-4 mr-1" />
                       )}
@@ -140,7 +140,7 @@ export function EmptyFieldNotificationMessage({
                       className="text-muted-foreground"
                     >
                       {isProcessing === 'dont_remind' ? (
-                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                        <Loader2 className="w-4 h-4 mr-1 animate-spin motion-reduce:animate-none" />
                       ) : (
                         <BellOff className="w-4 h-4 mr-1" />
                       )}
@@ -152,8 +152,8 @@ export function EmptyFieldNotificationMessage({
                     className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-150"
                   >
                     {isLoadingSuggestion ? (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground" role="status" aria-live="polite" aria-label="Carregando...">
+                        <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                         <span>Buscando sugestão...</span>
                       </div>
                     ) : suggestion ? (

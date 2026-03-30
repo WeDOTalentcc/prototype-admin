@@ -353,12 +353,12 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                       setShowScreeningToggleConfirm('activate')
                     }
                   }}
-                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 ${
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors motion-reduce:transition-none duration-200 ${
  job.screeningStatus === 'active' ? 'bg-status-success' : 'bg-gray-300'
                   }`}
                 >
                   <span
-                    className="inline-block h-3.5 w-3.5 transform rounded-full bg-lia-bg-secondary transition-transform duration-200"
+                    className="inline-block h-3.5 w-3.5 transform rounded-full bg-lia-bg-secondary transition-transform motion-reduce:transition-none duration-200"
                     style={{transform: job.screeningStatus === 'active' ? 'translateX(17px)' : 'translateX(2px)'}}
                   />
                 </button>
@@ -387,9 +387,9 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                   </div>
                   <button
                     onClick={() => setEditChannels(prev => ({ ...prev, [ch.key]: !prev[ch.key] }))}
-                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${enabled ? 'bg-gray-900' : 'bg-gray-300'}`}
+                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors motion-reduce:transition-none ${enabled ? 'bg-gray-900' : 'bg-gray-300'}`}
                   >
-                    <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white dark:bg-lia-bg-primary transition-transform ${enabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                    <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white dark:bg-lia-bg-primary transition-transform motion-reduce:transition-none ${enabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
                   </button>
                 </div>
               )
@@ -410,7 +410,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                 ].map((preset) => {
                   const isSelected = editMinScorePreset === preset.key
                   return (
-                    <button key={preset.key} onClick={() => setEditMinScorePreset(preset.key)} className={`p-2 rounded-md border text-left transition-colors ${isSelected ? 'border-gray-900 bg-gray-50 ring-1 ring-gray-900 dark:ring-gray-300' : 'border-lia-border-subtle bg-white hover:border-lia-border-default dark:border-lia-border-default dark:bg-lia-bg-secondary dark:hover:border-gray-500'}`}>
+                    <button key={preset.key} onClick={() => setEditMinScorePreset(preset.key)} className={`p-2 rounded-md border text-left transition-colors motion-reduce:transition-none ${isSelected ? 'border-gray-900 bg-gray-50 ring-1 ring-gray-900 dark:ring-gray-300' : 'border-lia-border-subtle bg-white hover:border-lia-border-default dark:border-lia-border-default dark:bg-lia-bg-secondary dark:hover:border-gray-500'}`}>
                       <div className="flex items-center justify-between mb-0.5">
                         <span className={`text-micro font-semibold ${isSelected ? 'text-lia-text-primary' : 'text-lia-text-secondary dark:text-lia-text-tertiary'}`} >{preset.label}</span>
                         {isSelected && <CheckCircle className="w-3 h-3 text-lia-text-primary dark:text-lia-text-secondary" />}
@@ -425,13 +425,13 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Timeout Resposta</label>
-                <select value={editTimeoutHours} onChange={(e) => setEditTimeoutHours(Number(e.target.value))} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-secondary focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors">
+                <select value={editTimeoutHours} onChange={(e) => setEditTimeoutHours(Number(e.target.value))} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-secondary focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors motion-reduce:transition-none">
                   {[12, 24, 48, 72].map(h => (<option key={h} value={h}>{h}h</option>))}
                 </select>
               </div>
               <div>
                 <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Re-tentativas</label>
-                <select value={editMaxRetries} onChange={(e) => setEditMaxRetries(Number(e.target.value))} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-secondary focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors">
+                <select value={editMaxRetries} onChange={(e) => setEditMaxRetries(Number(e.target.value))} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-secondary focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors motion-reduce:transition-none">
                   {[1, 2, 3, 4, 5].map(n => (<option key={n} value={n}>{n}x</option>))}
                 </select>
               </div>
@@ -456,7 +456,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                 ].map((preset) => {
                   const isSelected = editAutoApprovalPreset === preset.key
                   return (
-                    <button key={preset.key} onClick={() => setEditAutoApprovalPreset(preset.key)} className={`p-2 rounded-md border text-left transition-colors ${isSelected ? 'border-gray-900 bg-gray-50 ring-1 ring-gray-900 dark:ring-gray-300' : 'border-lia-border-subtle bg-white hover:border-lia-border-default dark:border-lia-border-default dark:bg-lia-bg-secondary dark:hover:border-gray-500'}`}>
+                    <button key={preset.key} onClick={() => setEditAutoApprovalPreset(preset.key)} className={`p-2 rounded-md border text-left transition-colors motion-reduce:transition-none ${isSelected ? 'border-gray-900 bg-gray-50 ring-1 ring-gray-900 dark:ring-gray-300' : 'border-lia-border-subtle bg-white hover:border-lia-border-default dark:border-lia-border-default dark:bg-lia-bg-secondary dark:hover:border-gray-500'}`}>
                       <div className="flex items-center justify-between mb-0.5">
                         <span className={`text-micro font-semibold ${isSelected ? 'text-lia-text-primary' : 'text-lia-text-secondary dark:text-lia-text-tertiary'}`} >{preset.label}</span>
                         {isSelected && <CheckCircle className="w-3 h-3 text-lia-text-primary dark:text-lia-text-secondary" />}
@@ -521,9 +521,9 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
             </div>
             <button
               onClick={() => setEditSchedulingEnabled(!editSchedulingEnabled)}
-              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${editSchedulingEnabled ? 'bg-gray-900' : 'bg-gray-300'}`}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors motion-reduce:transition-none ${editSchedulingEnabled ? 'bg-gray-900' : 'bg-gray-300'}`}
             >
-              <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white dark:bg-lia-bg-primary transition-transform ${editSchedulingEnabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
+              <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white dark:bg-lia-bg-primary transition-transform motion-reduce:transition-none ${editSchedulingEnabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
             </button>
           </div>
           {editSchedulingEnabled && (
@@ -538,7 +538,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                   ].map((preset) => {
                     const isSelected = editSchedulingMinScorePreset === preset.key
                     return (
-                      <button key={preset.key} onClick={() => setEditSchedulingMinScorePreset(preset.key)} className={`p-2 rounded-md border text-left transition-colors ${isSelected ? 'border-gray-900 bg-gray-50 ring-1 ring-gray-900 dark:ring-gray-300' : 'border-lia-border-subtle bg-white hover:border-lia-border-default dark:border-lia-border-default dark:bg-lia-bg-secondary dark:hover:border-gray-500'}`}>
+                      <button key={preset.key} onClick={() => setEditSchedulingMinScorePreset(preset.key)} className={`p-2 rounded-md border text-left transition-colors motion-reduce:transition-none ${isSelected ? 'border-gray-900 bg-gray-50 ring-1 ring-gray-900 dark:ring-gray-300' : 'border-lia-border-subtle bg-white hover:border-lia-border-default dark:border-lia-border-default dark:bg-lia-bg-secondary dark:hover:border-gray-500'}`}>
                         <div className="flex items-center justify-between mb-0.5">
                           <span className={`text-micro font-semibold ${isSelected ? 'text-lia-text-primary' : 'text-lia-text-secondary dark:text-lia-text-tertiary'}`} >{preset.label}</span>
                           {isSelected && <CheckCircle className="w-3 h-3 text-lia-text-primary dark:text-lia-text-secondary" />}
@@ -553,7 +553,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Calendário</label>
-                  <select value={editCalendarProvider} onChange={(e) => setEditCalendarProvider(e.target.value)} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-secondary focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors">
+                  <select value={editCalendarProvider} onChange={(e) => setEditCalendarProvider(e.target.value)} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-secondary focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors motion-reduce:transition-none">
                     <option value="Microsoft">Microsoft</option>
                     <option value="Google">Google</option>
                     <option value="Outlook">Outlook</option>
@@ -562,7 +562,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                 <div>
                   <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Horários</label>
                   <div className="flex items-center gap-2">
-                    <input type="text" value={editAvailableHours} onChange={(e) => { setEditAvailableHours(e.target.value); setEditAvailableHoursInherited(false) }} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-secondary focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors" />
+                    <input type="text" value={editAvailableHours} onChange={(e) => { setEditAvailableHours(e.target.value); setEditAvailableHoursInherited(false) }} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-secondary focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors motion-reduce:transition-none" />
                   </div>
                   {editAvailableHoursInherited && (
                     <span className="text-micro text-lia-text-disabled mt-0.5 block">Conforme config. da empresa</span>
@@ -570,7 +570,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                 </div>
                 <div>
                   <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Duração</label>
-                  <select value={editInterviewDuration} onChange={(e) => setEditInterviewDuration(Number(e.target.value))} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-secondary focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors">
+                  <select value={editInterviewDuration} onChange={(e) => setEditInterviewDuration(Number(e.target.value))} className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-secondary focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors motion-reduce:transition-none">
                     {[30, 45, 60, 90].map(d => (<option key={d} value={d}>{d}min</option>))}
                   </select>
                 </div>
@@ -836,10 +836,10 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
           }
           return null
         })()}
-        <div className="flex items-center gap-2">
-          <button onClick={handleGenerateWSI('compact')} disabled={isGeneratingWSI} className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 rounded-md border transition-colors disabled:opacity-50 ${wsiGenerationMode === 'compact' ? 'bg-gray-900 text-white border-gray-900 ring-2 ring-gray-900/20 ring-offset-1 dark:ring-gray-100/20' : 'bg-white lia-text-strong border-lia-border-default hover:bg-gray-50 hover:border-gray-400 dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:border-lia-border-default dark:hover:bg-gray-700'}`}>
+        <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
+          <button onClick={handleGenerateWSI('compact')} disabled={isGeneratingWSI} className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 rounded-md border transition-colors motion-reduce:transition-none disabled:opacity-50 ${wsiGenerationMode === 'compact' ? 'bg-gray-900 text-white border-gray-900 ring-2 ring-gray-900/20 ring-offset-1 dark:ring-gray-100/20' : 'bg-white lia-text-strong border-lia-border-default hover:bg-gray-50 hover:border-gray-400 dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:border-lia-border-default dark:hover:bg-gray-700'}`}>
             {isGeneratingWSI && wsiGenerationMode === 'compact' ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
             ) : (
               <>
                 <span className="text-xs font-semibold">Gerar WSI Compacto</span>
@@ -847,10 +847,10 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
               </>
             )}
           </button>
-          <div className="relative flex-1 group/full">
-            <button onClick={handleGenerateWSI('full')} disabled={isGeneratingWSI || (job?.technicalRequirements || []).filter(Boolean).length < 5} className={`w-full flex items-center justify-center gap-2 px-3 py-1.5 rounded-md border transition-colors disabled:opacity-50 ${wsiGenerationMode === 'full' ? 'bg-gray-900 text-white border-gray-900 ring-2 ring-gray-900/20 ring-offset-1 dark:ring-gray-100/20' : 'bg-white lia-text-strong border-lia-border-default hover:bg-gray-50 hover:border-gray-400 dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:border-lia-border-default dark:hover:bg-gray-700'}`}>
+          <div className="relative flex-1 group/full" role="status" aria-live="polite" aria-label="Carregando...">
+            <button onClick={handleGenerateWSI('full')} disabled={isGeneratingWSI || (job?.technicalRequirements || []).filter(Boolean).length < 5} className={`w-full flex items-center justify-center gap-2 px-3 py-1.5 rounded-md border transition-colors motion-reduce:transition-none disabled:opacity-50 ${wsiGenerationMode === 'full' ? 'bg-gray-900 text-white border-gray-900 ring-2 ring-gray-900/20 ring-offset-1 dark:ring-gray-100/20' : 'bg-white lia-text-strong border-lia-border-default hover:bg-gray-50 hover:border-gray-400 dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:border-lia-border-default dark:hover:bg-gray-700'}`}>
               {isGeneratingWSI && wsiGenerationMode === 'full' ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
               ) : (
                 <>
                   <span className="text-xs font-semibold">Gerar WSI Completo</span>
@@ -859,7 +859,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
               )}
             </button>
             {(job?.technicalRequirements || []).filter(Boolean).length < 5 && (
-              <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-52 p-2 bg-gray-900 text-white text-micro rounded-md opacity-0 invisible group-hover/full:opacity-100 group-hover/full:visible transition-opacity z-50 text-center">
+              <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-52 p-2 bg-gray-900 text-white text-micro rounded-md opacity-0 invisible group-hover/full:opacity-100 group-hover/full:visible transition-opacity motion-reduce:transition-none z-50 text-center">
                 <p className="leading-relaxed">Adicione pelo menos 5 competências técnicas na seção Job Description para habilitar o modo Completo.</p>
                 <div className="absolute top-full left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900"></div>
               </div>
@@ -867,8 +867,8 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
           </div>
           <div className="relative group">
             <Brain className="w-5 h-5 cursor-help text-wedo-cyan" />
-            <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 w-64 p-3 bg-gray-900 text-white text-xs rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity z-50">
-              <p className="leading-relaxed">A LIA gera perguntas seguindo a metodologia WeDoTalent Skill Index, calibrando complexidade conforme senioridade e skills da vaga.</p>
+            <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 w-64 p-3 bg-gray-900 text-white text-xs rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity motion-reduce:transition-none z-50">
+              <p className="leading-relaxed" aria-live="polite" aria-atomic="true">A LIA gera perguntas seguindo a metodologia WeDoTalent Skill Index, calibrando complexidade conforme senioridade e skills da vaga.</p>
               <div className="absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900"></div>
             </div>
           </div>
@@ -876,11 +876,11 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
 
         {/* WSI Generation Progress */}
         {(isGeneratingWSI || wsiGenerationCompleted) && wsiGenerationStep > 0 && (
-          <div className="mt-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary overflow-hidden">
+          <div className="mt-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary overflow-hidden" role="status" aria-live="polite" aria-label="Carregando...">
             <div className="flex items-center gap-3 px-5 py-3 cursor-pointer" onClick={() => setWsiProgressCollapsed(!wsiProgressCollapsed)}>
-              <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" role="status" aria-live="polite" aria-label="Carregando...">
                 {wsiGenerationStep < 4 ? (
-                  <Loader2 className="w-5 h-5 text-lia-text-primary dark:text-lia-text-primary animate-spin" />
+                  <Loader2 className="w-5 h-5 text-lia-text-primary dark:text-lia-text-primary animate-spin motion-reduce:animate-none" />
                 ) : (
                   <Brain className="w-5 h-5 text-wedo-cyan" />
                 )}
@@ -898,7 +898,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
                 {wsiGenerationStep >= 4 && (
-                  <button onClick={(e) => { e.stopPropagation(); setWsiGenerationCompleted(false); setWsiGenerationStep(0); setWsiDynamicMessage(''); setWsiGenerationContext(null) }} className="p-1 hover:bg-gray-100 rounded-md transition-colors">
+                  <button onClick={(e) => { e.stopPropagation(); setWsiGenerationCompleted(false); setWsiGenerationStep(0); setWsiDynamicMessage(''); setWsiGenerationContext(null) }} className="p-1 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none">
                     <X className="w-3.5 h-3.5 lia-text-secondary" />
                   </button>
                 )}
@@ -926,12 +926,12 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                         {(wsiGenerationStep > step.num || (wsiGenerationStep === step.num && wsiGenerationCompleted)) ? (
                           <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                         ) : wsiGenerationStep === step.num ? (
-                          <Loader2 className="w-3 h-3 animate-spin text-wedo-cyan" />
+                          <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none text-wedo-cyan" />
                         ) : (
                           <span className="text-micro font-semibold lia-text-secondary">{step.num}</span>
                         )}
                       </div>
-                      <span className={`text-micro mt-1.5 font-medium whitespace-nowrap transition-colors duration-300 ${wsiGenerationStep >= step.num ? 'text-wedo-cyan-dark' : 'lia-text-secondary'}`}>
+                      <span className={`text-micro mt-1.5 font-medium whitespace-nowrap transition-colors motion-reduce:transition-none duration-300 ${wsiGenerationStep >= step.num ? 'text-wedo-cyan-dark' : 'lia-text-secondary'}`}>
                         {step.label}
                       </span>
                     </div>
@@ -947,11 +947,11 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
 
             {wsiGenerationStep < 4 && wsiTypedMessage && (
               <div className="px-5 pb-3 flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-gray-900 animate-pulse" />
+                <div className="w-1.5 h-1.5 rounded-full bg-gray-900 animate-pulse motion-reduce:animate-none" />
                 <p className="text-base-ui lia-text-strong">
                   {wsiTypedMessage}
                   {wsiTypedMessage.length < wsiDynamicMessage.length && (
-                    <span className="inline-block w-[2px] h-[14px] bg-gray-900 ml-0.5 align-middle animate-pulse" />
+                    <span className="inline-block w-[2px] h-[14px] bg-gray-900 ml-0.5 align-middle animate-pulse motion-reduce:animate-none" />
                   )}
                 </p>
               </div>
@@ -1034,7 +1034,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                       <p className="text-base-ui lia-text-strong">
                         {wsiSummaryTypedText}
                         {!wsiSummaryTypingDone && (
-                          <span className="inline-block w-[2px] h-[14px] bg-gray-900 ml-0.5 align-middle animate-pulse" />
+                          <span className="inline-block w-[2px] h-[14px] bg-gray-900 ml-0.5 align-middle animate-pulse motion-reduce:animate-none" />
                         )}
                       </p>
                     </div>
@@ -1077,7 +1077,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                       </div>
 
                       {!wsiSummaryExpanded ? (
-                        <button onClick={() => setWsiSummaryExpanded(true)} className="flex items-center gap-1.5 text-xs font-medium text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-secondary dark:hover:text-lia-text-inverse transition-colors">
+                        <button onClick={() => setWsiSummaryExpanded(true)} className="flex items-center gap-1.5 text-xs font-medium text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-secondary dark:hover:text-lia-text-inverse transition-colors motion-reduce:transition-none">
                           <ChevronDown className="w-3.5 h-3.5" />
                           Ver detalhes completos
                         </button>
@@ -1097,7 +1097,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                               <div className="flex items-start gap-2"><span className="lia-text-secondary mt-0.5">•</span><p className="text-base-ui lia-text-base">Metodologias de avaliação (CBI, Bloom, Big Five e Dreyfus)</p></div>
                             </div>
                           </div>
-                          <p className="text-base-ui lia-text-base">
+                          <p className="text-base-ui lia-text-base" aria-live="polite" aria-atomic="true">
                             As perguntas estão organizadas em ordem de prioridade, mas você pode escolher aquelas que julgar mais adequadas ao contexto da vaga.
                           </p>
                           <p className="text-base-ui lia-text-strong font-semibold">
@@ -1109,7 +1109,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                             <div className="space-y-0.5 pl-1">
                               <div className="flex items-start gap-2"><span className="lia-text-secondary mt-0.5">1.</span><p className="text-base-ui lia-text-base">Salve as alterações</p></div>
                               <div className="flex items-start gap-2"><span className="lia-text-secondary mt-0.5">2.</span><p className="text-base-ui lia-text-base">Inicie o disparo da triagem</p></div>
-                              <div className="flex items-start gap-2"><span className="lia-text-secondary mt-0.5">3.</span><p className="text-base-ui lia-text-base">A LIA realizará a avaliação inicial e sinalizará os candidatos aprovados para a próxima etapa</p></div>
+                              <div className="flex items-start gap-2"><span className="lia-text-secondary mt-0.5">3.</span><p className="text-base-ui lia-text-base" aria-live="polite" aria-atomic="true">A LIA realizará a avaliação inicial e sinalizará os candidatos aprovados para a próxima etapa</p></div>
                             </div>
                           </div>
                           {wsiGenerationContext.companyStandardFound && (
@@ -1118,7 +1118,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                               <span className="text-xs lia-text-base">Perguntas padrão da empresa incluídas</span>
                             </div>
                           )}
-                          <button onClick={() => setWsiSummaryExpanded(false)} className="flex items-center gap-1.5 text-xs font-medium text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-secondary dark:hover:text-lia-text-inverse transition-colors pt-1">
+                          <button onClick={() => setWsiSummaryExpanded(false)} className="flex items-center gap-1.5 text-xs font-medium text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-secondary dark:hover:text-lia-text-inverse transition-colors motion-reduce:transition-none pt-1">
                             <ChevronUp className="w-3.5 h-3.5" />
                             Recolher detalhes
                           </button>
@@ -1174,7 +1174,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
 
             return (
               <div key={block.id} className={`border rounded-md overflow-hidden ${block.editable ? 'border-lia-border-subtle' : 'border-lia-border-subtle bg-gray-50/50 dark:bg-lia-bg-secondary/30'}`}>
-                <div className={`flex items-center justify-between p-3 cursor-pointer transition-colors ${block.editable ? 'bg-gray-50 hover:bg-gray-100 dark:bg-lia-bg-secondary dark:hover:bg-gray-700' : 'bg-gray-100/80 dark:bg-lia-bg-secondary/50'}`} onClick={() => {
+                <div className={`flex items-center justify-between p-3 cursor-pointer transition-colors motion-reduce:transition-none ${block.editable ? 'bg-gray-50 hover:bg-gray-100 dark:bg-lia-bg-secondary dark:hover:bg-gray-700' : 'bg-gray-100/80 dark:bg-lia-bg-secondary/50'}`} onClick={() => {
                   if (isExpanded) {
                     setExpandedBlocks(prev => prev.filter(id => id !== block.id))
                   } else {
@@ -1199,7 +1199,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                     {blockGenerated.length > 0 && (
                       <>
                         <Badge className="text-micro px-2 py-0.5 bg-gray-100 lia-text-base border border-lia-border-subtle">{acceptedCountForBlock}/{blockGenerated.length} aceitas</Badge>
-                        {acceptedCountForBlock < blockGenerated.length && <span className="w-2 h-2 rounded-full bg-status-warning animate-pulse"></span>}
+                        {acceptedCountForBlock < blockGenerated.length && <span className="w-2 h-2 rounded-full bg-status-warning animate-pulse motion-reduce:animate-none"></span>}
                       </>
                     )}
                     {isExpanded ? <ChevronUp className="w-4 h-4 lia-text-base" /> : <ChevronDown className="w-4 h-4 lia-text-base" />}
@@ -1268,7 +1268,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                               const complexity = getBloomComplexity(item.bloom_level || 3)
                               const estTime = getEstimatedTime(item.question_type || 'open')
                               return (
-                                <div key={item.id || idx} className={`p-3 bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md group hover:border-lia-border-default dark:hover:border-gray-600 transition-colors ${isDeactivated ? 'opacity-50' : ''}`}>
+                                <div key={item.id || idx} className={`p-3 bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md group hover:border-lia-border-default dark:hover:border-gray-600 transition-colors motion-reduce:transition-none ${isDeactivated ? 'opacity-50' : ''}`}>
                                   <div className="flex items-start gap-3">
                                     <SCMQuestionDetailView
                                       item={item}
@@ -1276,7 +1276,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                                       onToggleDetails={(id) => setExpandedQuestionDetails(prev => { const next = new Set(prev); if (next.has(id)) { next.delete(id) } else { next.add(id) } return next })}
                                       helpers={{ getBloomComplexity, getBloomLabelPTBR, getDreyfusLabelPTBR, getBigFiveLabelPTBR, getEstimatedTime }}
                                     />
-                                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none shrink-0">
                                       {isDeactivated ? (
                                         <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-gray-100 text-lia-text-tertiary border border-lia-border-subtle dark:bg-lia-bg-elevated dark:text-lia-text-tertiary dark:border-lia-border-default">Inativa</Badge>
                                       ) : (
@@ -1285,8 +1285,8 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                                         </Badge>
                                       )}
                                     </div>
-                                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                      <button className={`p-1.5 rounded-md transition-colors ${isDeactivated ? 'hover:bg-status-success/10' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`} onClick={() => {
+                                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none">
+                                      <button className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${isDeactivated ? 'hover:bg-status-success/10' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`} onClick={() => {
                                         setDeactivatedQuestions(prev => {
                                           const next = new Set(prev)
                                           if (next.has(item.id)) { next.delete(item.id); toast.success('Pergunta reativada') } else { next.add(item.id); toast.success('Pergunta arquivada') }
@@ -1307,7 +1307,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                               const genEstTime = getEstimatedTime(item.question_type || 'open')
                               const genDetailsExpanded = expandedQuestionDetails.has(item.id)
                               return (
-                                <div key={item.id || `gen-${idx}`} className={`p-3 rounded-md transition-colors ${isAccepted ? 'bg-gray-50 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default' : 'bg-white dark:bg-lia-bg-secondary border border-dashed border-lia-border-default dark:border-lia-border-default'}`}>
+                                <div key={item.id || `gen-${idx}`} className={`p-3 rounded-md transition-colors motion-reduce:transition-none ${isAccepted ? 'bg-gray-50 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default' : 'bg-white dark:bg-lia-bg-secondary border border-dashed border-lia-border-default dark:border-lia-border-default'}`}>
                                   <div className="flex items-start gap-3">
                                     <SCMQuestionDetailView
                                       item={item}
@@ -1317,7 +1317,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                                     />
                                     <div className="flex items-center gap-1.5 shrink-0">
                                       {isAccepted ? (
-                                        <button className="border border-lia-border-subtle lia-text-secondary text-micro px-2 py-1 rounded-full hover:bg-status-error/10 transition-colors" onClick={() => {
+                                        <button className="border border-lia-border-subtle lia-text-secondary text-micro px-2 py-1 rounded-full hover:bg-status-error/10 transition-colors motion-reduce:transition-none" onClick={() => {
                                           if (confirm('Remover pergunta aceita?')) {
                                             setAcceptedQuestions(prev => { const next = new Set(prev); next.delete(item.id); return next })
                                             setGeneratedQuestions(prev => ({ ...prev, [block.id]: (prev[block.id] || []).filter((q: ScreeningQuestionItem) => q.id !== item.id) }))
@@ -1325,8 +1325,8 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                                         }}>Remover</button>
                                       ) : (
                                         <>
-                                          <button className="bg-gray-900 text-white text-micro px-2 py-1 rounded-full hover:bg-gray-800 transition-colors" onClick={() => setAcceptedQuestions(prev => new Set(prev).add(item.id))}>Aceitar</button>
-                                          <button className="border border-lia-border-subtle lia-text-secondary text-micro px-2 py-1 rounded-full hover:bg-status-error/10 transition-colors" onClick={() => setGeneratedQuestions(prev => ({ ...prev, [block.id]: (prev[block.id] || []).filter((q: ScreeningQuestionItem) => q.id !== item.id) }))}>Descartar</button>
+                                          <button className="bg-gray-900 text-white text-micro px-2 py-1 rounded-full hover:bg-gray-800 transition-colors motion-reduce:transition-none" onClick={() => setAcceptedQuestions(prev => new Set(prev).add(item.id))}>Aceitar</button>
+                                          <button className="border border-lia-border-subtle lia-text-secondary text-micro px-2 py-1 rounded-full hover:bg-status-error/10 transition-colors motion-reduce:transition-none" onClick={() => setGeneratedQuestions(prev => ({ ...prev, [block.id]: (prev[block.id] || []).filter((q: ScreeningQuestionItem) => q.id !== item.id) }))}>Descartar</button>
                                         </>
                                       )}
                                     </div>
@@ -1473,7 +1473,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
   <div className="flex items-center gap-2 px-3 py-1.5 bg-status-warning/10 border border-status-warning/30 rounded-md dark:bg-status-warning/10 dark:border-status-warning/30">
     <AlertTriangle className="w-3.5 h-3.5 text-status-warning dark:text-status-warning shrink-0" />
     <p className="text-xs text-status-warning dark:text-status-warning">
-      <span className="font-bold">Triagem em andamento</span> — <span className="font-semibold">{job.liaMetrics?.triagens_realizadas} candidatos</span> já triados. Alterar perguntas pode afetar a comparabilidade entre candidatos.
+      <span className="font-bold">Triagem em andamento</span> — <span className="font-semibold" aria-live="polite" aria-atomic="true">{job.liaMetrics?.triagens_realizadas} candidatos</span> já triados. Alterar perguntas pode afetar a comparabilidade entre candidatos.
     </p>
   </div>
 )}

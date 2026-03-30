@@ -206,7 +206,7 @@ export function DashboardsPage({ onNavigate }: DashboardsPageProps = {}) {
     <div className="flex gap-3 h-full px-3 pt-3 pb-6 bg-gray-50 dark:bg-lia-bg-primary overflow-hidden">
       {/* Menu Lateral de Dashboards - Retrátil com Auto-Expand */}
       <div 
-        className={`bg-gray-50 dark:bg-gray-850 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4 space-y-4 shrink-0 transition-colors duration-300 ${
+        className={`bg-gray-50 dark:bg-gray-850 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4 space-y-4 shrink-0 transition-colors motion-reduce:transition-none duration-300 ${
           shouldExpand ? 'w-64' : 'w-16'
         }`}
         onMouseEnter={handleMouseEnter}
@@ -228,7 +228,7 @@ export function DashboardsPage({ onNavigate }: DashboardsPageProps = {}) {
               )}
               <button
                 onClick={toggleLock}
-                className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
                 title={isMenuLocked ? "Destravar menu (auto-expand habilitado)" : "Travar menu expandido"}
               >
                 {isMenuLocked ? (
@@ -249,7 +249,7 @@ export function DashboardsPage({ onNavigate }: DashboardsPageProps = {}) {
                     key={item.id}
                     onClick={() => setActiveDashboard(item.id)}
                     title={!shouldExpand ? item.label : undefined}
-                    className={`w-full ${!shouldExpand ? 'flex justify-center' : 'text-left'} p-2 rounded-md transition-colors ${
+                    className={`w-full ${!shouldExpand ? 'flex justify-center' : 'text-left'} p-2 rounded-md transition-colors motion-reduce:transition-none ${
                       isActive
                         ? 'bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default'
                         : 'hover:bg-gray-50 dark:hover:bg-gray-800/50 border border-transparent'

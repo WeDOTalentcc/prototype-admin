@@ -71,7 +71,7 @@ function ScoreCircle({ score }: { score: number }) {
           r={normalizedRadius}
           cx={radius}
           cy={radius}
-          className="text-wedo-cyan transition-colors duration-700 ease-out"
+          className="text-wedo-cyan transition-colors motion-reduce:transition-none duration-700 ease-out"
         />
       </svg>
       <span className={cn("absolute font-['Inter',sans-serif] text-sm font-semibold tabular-nums", scoreColor)}>
@@ -167,7 +167,7 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
         onClick={() => setExpanded(!expanded)}
         aria-expanded={expanded}
         aria-label={expanded ? "Ocultar detalhes do parecer LIA" : "Ver análise completa do parecer LIA"}
-        className="mt-3 flex items-center gap-1.5 text-xs font-medium lia-text-600 dark:text-lia-text-tertiary hover:lia-text-800 dark:hover:lia-text-200 transition-colors font-['Open_Sans',sans-serif] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-400 rounded-md"
+        className="mt-3 flex items-center gap-1.5 text-xs font-medium lia-text-600 dark:text-lia-text-tertiary hover:lia-text-800 dark:hover:lia-text-200 transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-400 rounded-md"
       >
         {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
         {expanded ? "Ocultar detalhes" : "Ver análise completa"}

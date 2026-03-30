@@ -195,7 +195,7 @@ export function EventsSection() {
   const renderEventCard = (event: typeof morningEvents[number], index: number) => (
     <div
       key={event.id}
-      className={`flex items-start gap-3 p-4 rounded-md transition-colors duration-200 cursor-pointer border ${
+      className={`flex items-start gap-3 p-4 rounded-md transition-colors motion-reduce:transition-none duration-200 cursor-pointer border ${
  event.isSuggested
  ? 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-default'
           : 'bg-gray-50 dark:bg-lia-bg-elevated border-lia-border-subtle dark:border-lia-border-default'
@@ -232,7 +232,7 @@ export function EventsSection() {
               {event.time}
             </span>
             {isExpanded && (
-              <ChevronRight className={`w-3 h-3 lia-text-base transition-transform ${selectedEvent === event.id ? 'rotate-90' : ''}`} />
+              <ChevronRight className={`w-3 h-3 lia-text-base transition-transform motion-reduce:transition-none ${selectedEvent === event.id ? 'rotate-90' : ''}`} />
             )}
           </div>
         </div>
@@ -261,7 +261,7 @@ export function EventsSection() {
               key={actionIndex}
               size="sm"
               variant="outline"
-              className="h-7 px-2 text-xs border-lia-border-default dark:border-lia-border-medium hover:border-gray-400 dark:hover:border-gray-400 text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
+              className="h-7 px-2 text-xs border-lia-border-default dark:border-lia-border-medium hover:border-gray-400 dark:hover:border-gray-400 text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors motion-reduce:transition-none duration-200"
             >
               <action.icon className="w-3 h-3 mr-1" />
               {action.label}
@@ -273,7 +273,7 @@ export function EventsSection() {
   )
 
   return (
-    <div className="w-full transition-colors duration-300">
+    <div className="w-full transition-colors motion-reduce:transition-none duration-300">
       <Card className="border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">

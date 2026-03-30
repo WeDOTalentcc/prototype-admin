@@ -546,7 +546,7 @@ export function JobUnpublishModal({
                 <Bell className="w-3 h-3 text-lia-text-secondary" />
                 Notificar candidatos
               </Label>
-              <p className="text-micro text-lia-text-secondary">
+              <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                 Todos os candidatos do processo receberão uma mensagem
               </p>
               {notifyApplicants && (
@@ -564,10 +564,10 @@ export function JobUnpublishModal({
             <div className="flex items-start gap-2">
               <AlertCircle className="w-4 h-4 text-status-warning flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-xs font-medium text-status-warning">
+                <p className="text-xs font-medium text-status-warning" aria-live="polite" aria-atomic="true">
                   {candidatesInProposal.length} candidato(s) em etapa de Proposta
                 </p>
-                <p className="text-micro text-status-warning mt-0.5">
+                <p className="text-micro text-status-warning mt-0.5" aria-live="polite" aria-atomic="true">
                   Finalize o status destes candidatos antes de despublicar a vaga:
                 </p>
                 <ul className="mt-1 space-y-0.5">
@@ -664,7 +664,7 @@ export function JobUnpublishModal({
           placeholder="Conteúdo da mensagem..."
           className="min-h-[100px] text-xs border-lia-border-subtle resize-none"
         />
-        <p className="text-micro text-lia-text-tertiary mt-1">
+        <p className="text-micro text-lia-text-tertiary mt-1" aria-live="polite" aria-atomic="true">
           Variáveis disponíveis: {'{{candidato_nome}}'}, {'{{vaga}}'}, {'{{empresa_nome}}'}
         </p>
       </div>
@@ -693,14 +693,14 @@ export function JobUnpublishModal({
         </div>
         <ScrollArea className="h-[120px] border border-lia-border-subtle rounded-md p-2">
           {loadingCandidates ? (
-            <div className="flex items-center justify-center h-full py-8">
-              <Loader2 className="w-5 h-5 animate-spin text-lia-text-secondary" />
-              <span className="ml-2 text-xs text-lia-text-tertiary">Carregando candidatos...</span>
+            <div className="flex items-center justify-center h-full py-8" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
+              <span className="ml-2 text-xs text-lia-text-tertiary" aria-live="polite" aria-atomic="true">Carregando candidatos...</span>
             </div>
           ) : jobCandidates.length === 0 ? (
             <div className="flex items-center justify-center h-full py-8">
               <Users className="w-4 h-4 text-lia-text-disabled mr-2" />
-              <span className="text-xs text-lia-text-tertiary">Nenhum candidato encontrado</span>
+              <span className="text-xs text-lia-text-tertiary" aria-live="polite" aria-atomic="true">Nenhum candidato encontrado</span>
             </div>
           ) : (
             <div className="space-y-1">
@@ -791,13 +791,13 @@ export function JobUnpublishModal({
         <CheckCircle2 className="w-8 h-8 text-status-success" />
       </div>
       <h3 className="text-sm font-semibold text-lia-text-primary mb-2">Processo finalizado!</h3>
-      <p className="text-xs text-lia-text-secondary mb-4">
+      <p className="text-xs text-lia-text-secondary mb-4" aria-live="polite" aria-atomic="true">
         A vaga foi despublicada e congelada com sucesso.
       </p>
       <div className="bg-gray-50 rounded-md p-3 border border-lia-border-subtle text-left space-y-2">
         <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
           <Check className="w-3.5 h-3.5 text-status-success" />
-          <span>Vaga despublicada dos job boards</span>
+          <span aria-live="polite" aria-atomic="true">Vaga despublicada dos job boards</span>
         </div>
         <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
           <Check className="w-3.5 h-3.5 text-status-success" />
@@ -805,7 +805,7 @@ export function JobUnpublishModal({
         </div>
         <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
           <Check className="w-3.5 h-3.5 text-status-success" />
-          <span>{selectedCandidateIds.size} candidatos notificados</span>
+          <span aria-live="polite" aria-atomic="true">{selectedCandidateIds.size} candidatos notificados</span>
         </div>
         <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
           <Check className="w-3.5 h-3.5 text-status-success" />
@@ -838,7 +838,7 @@ export function JobUnpublishModal({
               className="h-9 px-4 text-xs font-medium bg-gray-800 hover:bg-gray-900 text-white"
             >
               {isSubmitting ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-1.5" />
               ) : notifyApplicants ? (
                 <ArrowRight className="w-3.5 h-3.5 mr-1.5" />
               ) : (
@@ -866,7 +866,7 @@ export function JobUnpublishModal({
               className="h-9 px-4 text-xs font-medium bg-gray-800 hover:bg-gray-900 text-white"
             >
               {isSubmitting ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-1.5" />
               ) : freezeJob ? (
                 <ArrowRight className="w-3.5 h-3.5 mr-1.5" />
               ) : (
@@ -894,7 +894,7 @@ export function JobUnpublishModal({
               className="h-9 px-4 text-xs font-medium bg-gray-800 hover:bg-gray-900 text-white"
             >
               {isSubmitting ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-1.5" />
               ) : (
                 <Check className="w-3.5 h-3.5 mr-1.5" />
               )}
@@ -932,7 +932,7 @@ export function JobUnpublishModal({
               <DialogTitle className="text-sm font-semibold text-lia-text-primary">
                 {currentStep === 'complete' ? 'Processo Finalizado' : 'Despublicar Vagas'}
               </DialogTitle>
-              <p className="text-xs text-lia-text-secondary mt-0.5">
+              <p className="text-xs text-lia-text-secondary mt-0.5" aria-live="polite" aria-atomic="true">
                 {jobs.length} vaga{jobs.length > 1 ? 's' : ''} selecionada{jobs.length > 1 ? 's' : ''}
               </p>
             </div>

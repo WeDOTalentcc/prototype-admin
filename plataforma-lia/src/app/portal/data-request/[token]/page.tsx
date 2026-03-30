@@ -621,7 +621,7 @@ export default function CandidatePortalPage() {
             ) : (
               <label
                 htmlFor={`file-${field.name}`}
-                className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-lia-border-default rounded-md cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 dark:lia-border-600 transition-colors"
+                className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-lia-border-default rounded-md cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 dark:lia-border-600 transition-colors motion-reduce:transition-none"
               >
                 <Upload className="w-8 h-8 lia-text-400 dark:lia-text-500 mb-2" />
                 <span className="text-sm lia-text-500 dark:lia-text-400">
@@ -759,9 +759,9 @@ export default function CandidatePortalPage() {
 
   if (step === "loading") {
     return (
-      <div className="min-h-screen bg-gray-50 dark:lia-bg-900 flex items-center justify-center p-4">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin lia-text-400 dark:lia-text-500 mx-auto mb-4" />
+      <div className="min-h-screen bg-gray-50 dark:lia-bg-900 flex items-center justify-center p-4" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="text-center" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-12 h-12 animate-spin motion-reduce:animate-none lia-text-400 dark:lia-text-500 mx-auto mb-4" />
           <p className="lia-text-500 dark:lia-text-400">Carregando...</p>
         </div>
       </div>
@@ -836,7 +836,7 @@ export default function CandidatePortalPage() {
                   <div className="space-y-3">
                     <button
                       onClick={() => setOtpChannel("email")}
-                      className={`w-full p-4 rounded-md border-2 flex items-center gap-3 transition-colors ${
+                      className={`w-full p-4 rounded-md border-2 flex items-center gap-3 transition-colors motion-reduce:transition-none ${
                         otpChannel === "email"
                           ? "border-gray-900 dark:lia-border-500 bg-gray-50 dark:lia-bg-700"
                           : "border-lia-border-subtle hover:border-lia-border-default"
@@ -859,7 +859,7 @@ export default function CandidatePortalPage() {
                     style={{backgroundColor: primaryColor}}
                   >
                     {otpLoading ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none" />
                     ) : (
                       "Enviar Código"
                     )}
@@ -905,7 +905,7 @@ export default function CandidatePortalPage() {
                     style={{backgroundColor: primaryColor}}
                   >
                     {otpLoading ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none" />
                     ) : (
                       "Verificar"
                     )}
@@ -967,7 +967,7 @@ export default function CandidatePortalPage() {
               </p>
               {portalData?.vacancy_info && (
                 <div className="bg-gray-50 dark:lia-bg-800 rounded-md p-4 text-left">
-                  <p className="text-xs lia-text-500 dark:lia-text-400 uppercase tracking-wider mb-1">
+                  <p className="text-xs lia-text-500 dark:lia-text-400 uppercase tracking-wider mb-1" aria-live="polite" aria-atomic="true">
                     Vaga
                   </p>
                   <p className="text-sm font-medium lia-text-900 dark:lia-text-100">
@@ -1054,7 +1054,7 @@ export default function CandidatePortalPage() {
             >
               {submitting ? (
                 <>
-                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                  <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none mr-2" />
                   Enviando...
                 </>
               ) : (
@@ -1070,7 +1070,7 @@ export default function CandidatePortalPage() {
             >
               {saving ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mr-2" />
                   Salvando...
                 </>
               ) : (

@@ -53,7 +53,7 @@ const mockData = {
 
 // Componente de KPI memoizado
 const KPICard = React.memo(({ kpi, index }: { kpi: { label: string; value: number; change: number; trend: string; color: string }; index: number }) => (
-  <Card key={index} className="bg-white dark:bg-lia-bg-secondary border-2 transition-colors">
+  <Card key={index} className="bg-white dark:bg-lia-bg-secondary border-2 transition-colors motion-reduce:transition-none">
     <CardContent className="p-8 text-center">
       <div className="text-5xl font-bold text-lia-text-primary mb-4">
         {kpi.value}

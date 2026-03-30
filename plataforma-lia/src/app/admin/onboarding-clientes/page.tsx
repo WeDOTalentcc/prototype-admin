@@ -162,7 +162,7 @@ function ClientRow({ data, onResendEmail }: { data: ClientOnboardingData; onRese
   return (
     <>
       <tr 
-        className={`border-b border-lia-border-subtle hover:bg-gray-50/50 transition-colors cursor-pointer ${
+        className={`border-b border-lia-border-subtle hover:bg-gray-50/50 transition-colors motion-reduce:transition-none cursor-pointer ${
           data.status === "stalled" ? "bg-status-error/10/30" : ""
         }`}
         onClick={() => setShowSteps(!showSteps)}
@@ -320,7 +320,7 @@ export default function OnboardingClientesPage() {
   if (!mounted) {
     return (
       <div className="p-8">
-        <div className="animate-pulse">
+        <div className="animate-pulse motion-reduce:animate-none">
           <div className="h-8 bg-gray-200 rounded-md w-1/3 mb-4" />
           <div className="h-4 bg-gray-200 rounded-md w-1/2 mb-8" />
           <div className="h-64 bg-gray-100 rounded-md" />
@@ -348,42 +348,42 @@ export default function OnboardingClientesPage() {
           disabled={isRefreshing}
           className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
         >
-          <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin motion-reduce:animate-none' : ''}`} />
           Atualizar
         </Button>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
         <Card 
-          className={`p-4 cursor-pointer transition-colors ${filter === 'all' ? 'ring-2 ring-gray-900/20' : ''}`}
+          className={`p-4 cursor-pointer transition-colors motion-reduce:transition-none ${filter === 'all' ? 'ring-2 ring-gray-900/20' : ''}`}
           onClick={() => setFilter('all')}
         >
           <p className="text-xs lia-text-500 uppercase tracking-wider">Total</p>
           <p className="text-2xl font-bold lia-text-950 dark:lia-text-50">{stats.total}</p>
         </Card>
         <Card 
-          className={`p-4 cursor-pointer transition-colors ${filter === 'pending' ? 'ring-2 ring-gray-900/20' : ''}`}
+          className={`p-4 cursor-pointer transition-colors motion-reduce:transition-none ${filter === 'pending' ? 'ring-2 ring-gray-900/20' : ''}`}
           onClick={() => setFilter('pending')}
         >
           <p className="text-xs lia-text-500 uppercase tracking-wider">Pendentes</p>
           <p className="text-2xl font-bold text-wedo-orange">{stats.pending}</p>
         </Card>
         <Card 
-          className={`p-4 cursor-pointer transition-colors ${filter === 'in_progress' ? 'ring-2 ring-gray-900/20' : ''}`}
+          className={`p-4 cursor-pointer transition-colors motion-reduce:transition-none ${filter === 'in_progress' ? 'ring-2 ring-gray-900/20' : ''}`}
           onClick={() => setFilter('in_progress')}
         >
           <p className="text-xs lia-text-500 uppercase tracking-wider">Em Progresso</p>
           <p className="text-2xl font-bold lia-text-900 dark:lia-text-50">{stats.inProgress}</p>
         </Card>
         <Card 
-          className={`p-4 cursor-pointer transition-colors ${filter === 'complete' ? 'ring-2 ring-gray-900/20' : ''}`}
+          className={`p-4 cursor-pointer transition-colors motion-reduce:transition-none ${filter === 'complete' ? 'ring-2 ring-gray-900/20' : ''}`}
           onClick={() => setFilter('complete')}
         >
           <p className="text-xs lia-text-500 uppercase tracking-wider">Completos</p>
           <p className="text-2xl font-bold text-status-success">{stats.complete}</p>
         </Card>
         <Card 
-          className={`p-4 cursor-pointer transition-colors ${filter === 'stalled' ? 'ring-2 ring-gray-900/20' : ''}`}
+          className={`p-4 cursor-pointer transition-colors motion-reduce:transition-none ${filter === 'stalled' ? 'ring-2 ring-gray-900/20' : ''}`}
           onClick={() => setFilter('stalled')}
         >
           <p className="text-xs lia-text-500 uppercase tracking-wider">Parados (+7 dias)</p>
@@ -422,7 +422,7 @@ export default function OnboardingClientesPage() {
 
         {isLoading ? (
           <div className="p-8 text-center">
-            <RefreshCw className="w-8 h-8 animate-spin mx-auto lia-text-400 mb-4" />
+            <RefreshCw className="w-8 h-8 animate-spin motion-reduce:animate-none mx-auto lia-text-400 mb-4" />
             <p className="lia-text-500">Carregando clientes...</p>
           </div>
         ) : error ? (

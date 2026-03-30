@@ -242,20 +242,20 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
           <button
             onClick={() => handleUnlock("increase_threshold")}
             disabled={actionLoading}
-            className="w-full px-3 py-1.5 rounded-md text-xs font-medium font-['Open_Sans'] lia-text-700 bg-gray-50 border border-lia-border-subtle hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-3 py-1.5 rounded-md text-xs font-medium font-['Open_Sans'] lia-text-700 bg-gray-50 border border-lia-border-subtle hover:bg-gray-100 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Aumentar limite (+{data.unlock_increment})
           </button>
           <button
             onClick={() => handleUnlock("disable_temporarily")}
             disabled={actionLoading}
-            className="w-full px-3 py-1.5 rounded-md text-xs font-medium font-['Open_Sans'] lia-text-700 bg-gray-50 border border-lia-border-subtle hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-3 py-1.5 rounded-md text-xs font-medium font-['Open_Sans'] lia-text-700 bg-gray-50 border border-lia-border-subtle hover:bg-gray-100 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Desbloquear por {data.unlock_hours}h
           </button>
           <button
             onClick={() => router.push('/configuracoes')}
-            className="w-full px-3 py-1.5 rounded-md text-xs font-medium font-['Open_Sans'] text-wedo-cyan-dark bg-wedo-cyan/10 border border-wedo-cyan/30 hover:bg-wedo-cyan/15 transition-colors flex items-center justify-center gap-1"
+            className="w-full px-3 py-1.5 rounded-md text-xs font-medium font-['Open_Sans'] text-wedo-cyan-dark bg-wedo-cyan/10 border border-wedo-cyan/30 hover:bg-wedo-cyan/15 transition-colors motion-reduce:transition-none flex items-center justify-center gap-1"
           >
             <Settings className="w-3 h-3" />
             Ver configurações

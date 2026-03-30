@@ -148,7 +148,7 @@ export function AddToListModal({
             <div>
               <span className="flex items-center gap-2 mt-1">
                 <Users className="w-4 h-4 text-lia-text-tertiary" />
-                <span>
+                <span aria-live="polite" aria-atomic="true">
                   {candidateCount} candidato{candidateCount !== 1 ? 's' : ''} selecionado{candidateCount !== 1 ? 's' : ''}
                 </span>
               </span>
@@ -162,10 +162,10 @@ export function AddToListModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-4 space-y-4">
+        <div className="py-4 space-y-4" role="status" aria-live="polite" aria-label="Carregando...">
           {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-6 h-6 animate-spin text-lia-text-tertiary" />
+            <div className="flex items-center justify-center py-8" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
             </div>
           ) : (
             <>
@@ -183,7 +183,7 @@ export function AddToListModal({
                       <div
                         key={list.id}
                         className={cn(
-                          "flex items-center space-x-3 p-3 rounded-md border border-lia-border-subtle cursor-pointer transition-colors hover:border-lia-border-default",
+                          "flex items-center space-x-3 p-3 rounded-md border border-lia-border-subtle cursor-pointer transition-colors motion-reduce:transition-none hover:border-lia-border-default",
                           selectedListId === list.id && "border-gray-800 bg-gray-50"
                         )}
                         onClick={() => setSelectedListId(list.id)}
@@ -200,7 +200,7 @@ export function AddToListModal({
                           >
                             {list.name}
                           </Label>
-                          <span className={textStyles.bodySmall}>
+                          <span className={textStyles.bodySmall} aria-live="polite" aria-atomic="true">
                             {list.candidate_count} candidato{list.candidate_count !== 1 ? 's' : ''}
                           </span>
                         </div>
@@ -318,7 +318,7 @@ export function AddToListModal({
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
                 Adicionando...
               </>
             ) : (

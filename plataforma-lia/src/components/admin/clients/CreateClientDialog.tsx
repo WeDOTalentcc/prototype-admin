@@ -207,7 +207,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
           >
             {creating ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
                 Criando...
               </>
             ) : (

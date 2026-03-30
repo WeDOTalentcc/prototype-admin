@@ -230,10 +230,10 @@ function VariableGroupComponent({ group, onSelect }: VariableGroupComponentProps
           <button
             key={variable.key}
             onClick={() => onSelect(variable)}
-            className="w-full p-2 rounded-md text-left transition-colors group hover:bg-gray-50 dark:hover:bg-gray-800 border border-transparent hover:border-lia-border-subtle dark:hover:border-gray-700"
+            className="w-full p-2 rounded-md text-left transition-colors motion-reduce:transition-none group hover:bg-gray-50 dark:hover:bg-gray-800 border border-transparent hover:border-lia-border-subtle dark:hover:border-gray-700"
           >
             <div className="flex items-start gap-2.5">
-              <div className="w-7 h-7 rounded-md bg-gray-100 flex items-center justify-center flex-shrink-0 group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors">
+              <div className="w-7 h-7 rounded-md bg-gray-100 flex items-center justify-center flex-shrink-0 group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors motion-reduce:transition-none">
                 <code className="text-micro font-mono text-lia-text-secondary dark:text-lia-text-tertiary">
                   {"{{}}"}
                 </code>
@@ -246,7 +246,7 @@ function VariableGroupComponent({ group, onSelect }: VariableGroupComponentProps
                   <span className="text-xs font-medium lia-text-strong truncate">
                     {variable.label}
                   </span>
-                  <ChevronRight className="w-3 h-3 lia-text-secondary opacity-0 group-hover:opacity-100 transition-opacity ml-auto flex-shrink-0" />
+                  <ChevronRight className="w-3 h-3 lia-text-secondary opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none ml-auto flex-shrink-0" />
                 </div>
                 <p className="text-micro lia-text-secondary line-clamp-1">
                   {variable.description}

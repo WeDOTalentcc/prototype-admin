@@ -136,7 +136,7 @@ export function LanguagesPanel({
                   {languages.map((lang) => (
                     <tr
                       key={lang.id}
-                      className="transition-colors dark:hover:bg-gray-700"
+                      className="transition-colors motion-reduce:transition-none dark:hover:bg-gray-700"
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--lia-interactive-hover)'}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                     >
@@ -247,7 +247,7 @@ export function LanguagesPanel({
       >
         {isLoading ? (
           <>
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none mr-2" />
             Salvando...
           </>
         ) : (
@@ -366,7 +366,7 @@ function LanguageAutocomplete({
             <button
               key={lang.code}
               type="button"
-              className="w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors dark:hover:bg-gray-700 text-lia-text-primary"
+              className="w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors motion-reduce:transition-none dark:hover:bg-gray-700 text-lia-text-primary"
               style={{backgroundColor: index === selectedIndex ? 'var(--lia-interactive-hover)' : 'transparent'}}
               onClick={() => handleAdd(lang)}
               onMouseEnter={() => setSelectedIndex(index)}

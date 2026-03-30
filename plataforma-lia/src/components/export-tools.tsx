@@ -141,7 +141,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
                   key={format.format}
                   onClick={() => handleExport(format.format)}
                   disabled={isExporting}
-                  className={`relative p-4 border rounded-md text-left transition-opacity duration-200 hover:disabled:opacity-50 disabled:cursor-not-allowed ${
+                  className={`relative p-4 border rounded-md text-left transition-opacity motion-reduce:transition-none duration-200 hover:disabled:opacity-50 disabled:cursor-not-allowed ${
  format.format === exportConfig.format
  ? 'border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary'
                       : 'border-lia-border-subtle hover:border-lia-border-default'
@@ -171,7 +171,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
 
                     {isExporting ? (
                       <div className="flex items-center gap-1 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
-                        <div className="w-3 h-3 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
+                        <div className="w-3 h-3 border-2 border-gray-900 border-t-transparent rounded-full animate-spin motion-reduce:animate-none"></div>
                         Exportando...
                       </div>
                     ) : (
@@ -201,7 +201,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
                     <button
                       key={period}
                       onClick={() => setExportConfig(prev => ({ ...prev, dateRange: period }))}
-                      className={`px-3 py-2 text-xs rounded-md border transition-colors ${
+                      className={`px-3 py-2 text-xs rounded-md border transition-colors motion-reduce:transition-none ${
  exportConfig.dateRange === period
                           ? 'border-gray-900 bg-gray-50 dark:bg-lia-bg-primary text-wedo-cyan-dark'
                           : 'border-lia-border-subtle lia-text-base hover:border-lia-border-default'

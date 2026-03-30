@@ -48,6 +48,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@replit/connectors-sdk": "^0.2.0",
     "@tanstack/react-virtual": "^3.13.19",
+    "@testing-library/dom": "^10.4.1",
     "canvg": "^4.0.3",
     "chart.js": "^4.5.0",
     "chartjs-adapter-date-fns": "^3.0.0",

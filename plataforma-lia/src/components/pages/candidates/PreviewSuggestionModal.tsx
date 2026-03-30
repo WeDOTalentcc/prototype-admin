@@ -114,7 +114,7 @@ export function PreviewSuggestionModal({
                   {tag}
                   <button
                     onClick={() => setPreviewTags(prev => prev.filter((_, i) => i !== index))}
-                    className="ml-0.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-0.5 transition-colors"
+                    className="ml-0.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-0.5 transition-colors motion-reduce:transition-none"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -270,7 +270,7 @@ export function PreviewSuggestionModal({
           >
             {isSavingPreviewArchetype ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
                 {previewingUserArchetype ? 'Atualizando...' : 'Salvando...'}
               </>
             ) : previewingUserArchetype ? (

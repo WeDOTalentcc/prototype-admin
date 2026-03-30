@@ -390,7 +390,7 @@ export function CandidateDetailSidebar({
                     href={candidate.linkedin_url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    className="flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none"
                   >
                     <div className="flex items-center gap-2">
                       <Linkedin className="h-4 w-4 lia-text-600" />

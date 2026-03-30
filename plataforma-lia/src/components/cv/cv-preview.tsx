@@ -253,7 +253,7 @@ export function CVPreview({
           <div className="flex items-start gap-3 p-3 bg-status-warning/10 border border-status-warning/30 rounded-md">
             <AlertTriangle className="w-5 h-5 text-status-warning flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-status-warning">
+              <p className="text-sm font-medium text-status-warning" aria-live="polite" aria-atomic="true">
                 Possível candidato duplicado
               </p>
               <p className="text-xs text-status-warning mt-1">
@@ -624,7 +624,7 @@ export function CVPreview({
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                 Criando...
               </>
             ) : (

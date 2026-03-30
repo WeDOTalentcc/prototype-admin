@@ -221,7 +221,7 @@ export function DepartmentsTab({
                 >
                   {saving ? (
                     <>
-                      <Loader2 className={`${actionButtonStyles.icon} animate-spin`} />
+                      <Loader2 className={`${actionButtonStyles.icon} animate-spin motion-reduce:animate-none`} />
                       Salvando...
                     </>
                   ) : (
@@ -292,7 +292,7 @@ export function DepartmentsTab({
                     onChange={(e) =>
                       setNewDepartment((prev) => ({ ...prev, name: e.target.value }))
                     }
-                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
+                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none"
                     placeholder="Ex: Engenharia"
                   />
                 </div>
@@ -306,7 +306,7 @@ export function DepartmentsTab({
                     onChange={(e) =>
                       setNewDepartment((prev) => ({ ...prev, manager: e.target.value }))
                     }
-                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
+                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none"
                     placeholder="Nome do gestor"
                   />
                 </div>
@@ -322,7 +322,7 @@ export function DepartmentsTab({
                     onChange={(e) =>
                       setNewDepartment((prev) => ({ ...prev, manager_title: e.target.value }))
                     }
-                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
+                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none"
                     placeholder="Ex: Diretor de Engenharia"
                   />
                 </div>
@@ -336,7 +336,7 @@ export function DepartmentsTab({
                     onChange={(e) =>
                       setNewDepartment((prev) => ({ ...prev, manager_email: e.target.value }))
                     }
-                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
+                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none"
                     placeholder="gestor@empresa.com"
                   />
                 </div>
@@ -350,7 +350,7 @@ export function DepartmentsTab({
                     onChange={(e) =>
                       setNewDepartment((prev) => ({ ...prev, manager_phone: e.target.value }))
                     }
-                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
+                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none"
                     placeholder="+55 11 99999-0000"
                   />
                 </div>
@@ -364,7 +364,7 @@ export function DepartmentsTab({
                   onChange={(e) =>
                     setNewDepartment((prev) => ({ ...prev, description: e.target.value }))
                   }
-                  className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
+                  className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none"
                   rows={2}
                   placeholder="Descrição do departamento"
                 />
@@ -473,7 +473,7 @@ export function DepartmentsTab({
                           onChange={(e) =>
                             setNewMember((prev) => ({ ...prev, name: e.target.value }))
                           }
-                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
+                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none"
                         />
                         <input
                           type="text"
@@ -482,7 +482,7 @@ export function DepartmentsTab({
                           onChange={(e) =>
                             setNewMember((prev) => ({ ...prev, title: e.target.value }))
                           }
-                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
+                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none"
                         />
                         <input
                           type="email"
@@ -491,7 +491,7 @@ export function DepartmentsTab({
                           onChange={(e) =>
                             setNewMember((prev) => ({ ...prev, email: e.target.value }))
                           }
-                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
+                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none"
                         />
                         <input
                           type="text"
@@ -500,7 +500,7 @@ export function DepartmentsTab({
                           onChange={(e) =>
                             setNewMember((prev) => ({ ...prev, phone: e.target.value }))
                           }
-                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors"
+                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none"
                         />
                         <input
                           type="url"
@@ -509,14 +509,14 @@ export function DepartmentsTab({
                           onChange={(e) =>
                             setNewMember((prev) => ({ ...prev, linkedin_url: e.target.value }))
                           }
-                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors col-span-2"
+                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none col-span-2"
                         />
                         <select
                           value={newMember.level}
                           onChange={(e) =>
                             setNewMember((prev) => ({ ...prev, level: e.target.value }))
                           }
-                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors col-span-2"
+                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none col-span-2"
                         >
                           <option value="ceo">CEO</option>
                           <option value="vp">VP</option>
@@ -566,7 +566,7 @@ export function DepartmentsTab({
                         >
                           {savingMember ? (
                             <>
-                              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                              <Loader2 className="w-3 h-3 mr-1 animate-spin motion-reduce:animate-none" />
                               Salvando...
                             </>
                           ) : (
@@ -752,10 +752,10 @@ export function DepartmentsTab({
               </div>
             </DialogHeader>
 
-            <div className="overflow-y-auto max-h-[60vh] mt-4">
+            <div className="overflow-y-auto max-h-[60vh] mt-4" role="status" aria-live="polite" aria-label="Carregando...">
               {loadingOrgChart ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="w-6 h-6 animate-spin lia-text-500 dark:text-lia-text-tertiary" />
+                <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
+                  <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none lia-text-500 dark:text-lia-text-tertiary" />
                 </div>
               ) : orgChartMembers.length === 0 ? (
                 <div className="text-center py-12">
@@ -927,7 +927,7 @@ function ApproverSection({
                 <Crown className="w-3.5 h-3.5 lia-text-500" />
                 Fluxo de Aprovação de Vagas
               </CardTitle>
-              <p className="text-xs lia-text-600 mt-1">
+              <p className="text-xs lia-text-600 mt-1" aria-live="polite" aria-atomic="true">
                 Configure os níveis de aprovação para abertura de vagas
               </p>
             </div>
@@ -1135,7 +1135,7 @@ function ApproverSection({
                 <p className="text-xs font-semibold lia-text-700 dark:text-lia-text-secondary">
                   Fluxo de Aprovação
                 </p>
-                <p className="text-micro mt-0.5 lia-text-600 dark:text-lia-text-tertiary">
+                <p className="text-micro mt-0.5 lia-text-600 dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
                   Vagas serão enviadas para aprovação sequencial, do nível 1 ao
                   nível final. Cada aprovador receberá notificação por email e
                   pode aprovar diretamente na plataforma.

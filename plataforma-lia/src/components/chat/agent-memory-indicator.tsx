@@ -94,7 +94,7 @@ export function AgentMemoryIndicator({
         onClick={handleExpand}
         onKeyDown={(e) => e.key === "Enter" && handleExpand()}
         // [OPT-023] py-[5px] px arbitrário — sem canônico Tailwind
-        className="flex items-center gap-2.5 px-2.5 py-[5px] rounded-md border border-lia-border-subtle bg-gray-50 cursor-pointer text-xs lia-text-500 select-none transition-colors"
+        className="flex items-center gap-2.5 px-2.5 py-[5px] rounded-md border border-lia-border-subtle bg-gray-50 cursor-pointer text-xs lia-text-500 select-none transition-colors motion-reduce:transition-none"
       >
         <Brain
           className="text-wedo-cyan flex-shrink-0 w-3.5 h-3.5"
@@ -247,7 +247,7 @@ export function AgentMemoryIndicator({
                   e.stopPropagation();
                   handleReset();
                 }}
-                className={cn("border flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs cursor-pointer transition-colors", confirmReset ? "bg-gray-100 lia-text-600 border-wedo-cyan" : "bg-transparent lia-text-400 border-lia-border-subtle")}
+                className={cn("border flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs cursor-pointer transition-colors motion-reduce:transition-none", confirmReset ? "bg-gray-100 lia-text-600 border-wedo-cyan" : "bg-transparent lia-text-400 border-lia-border-subtle")}
               >
                 <Trash2 className="w-3 h-3" />
                 {confirmReset ? "Confirmar limpeza?" : "Limpar memória"}

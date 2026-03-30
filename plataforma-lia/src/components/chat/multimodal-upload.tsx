@@ -191,7 +191,7 @@ export function MultimodalUpload({
           aria-label="Anexar arquivo para análise"
         >
           {isAnalyzing ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />
           ) : (
             <Upload className="h-4 w-4" />
           )}

@@ -293,7 +293,7 @@ export function AddToJobModal({
         title: "Candidatos adicionados!",
         description: (
           <div className="flex flex-col gap-1">
-            <span>{addedCount} candidato{addedCount !== 1 ? 's' : ''} adicionado{addedCount !== 1 ? 's' : ''} à vaga &quot;{jobTitle}&quot;{skippedMsg}</span>
+            <span aria-live="polite" aria-atomic="true">{addedCount} candidato{addedCount !== 1 ? 's' : ''} adicionado{addedCount !== 1 ? 's' : ''} à vaga &quot;{jobTitle}&quot;{skippedMsg}</span>
             {onNavigateToJob && (
               <button
                 onClick={() => onNavigateToJob(selectedJobId)}
@@ -355,7 +355,7 @@ export function AddToJobModal({
             </div>
             <button
               onClick={onClose}
-              className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-disabled transition-colors"
+              className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-disabled transition-colors motion-reduce:transition-none"
               aria-label="Fechar modal"
             >
               <X className="w-4 h-4" />
@@ -368,7 +368,7 @@ export function AddToJobModal({
             <div className="flex items-start gap-2 p-3 bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-md">
               <AlertTriangle className="w-4 h-4 text-status-warning dark:text-status-warning mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-xs font-medium text-status-warning dark:text-status-warning">
+                <p className="text-xs font-medium text-status-warning dark:text-status-warning" aria-live="polite" aria-atomic="true">
                   Limite de {MAX_BULK_CANDIDATES} candidatos por operação
                 </p>
                 <p className="text-xs text-status-warning dark:text-status-warning mt-0.5">
@@ -381,7 +381,7 @@ export function AddToJobModal({
           <div className={`${cardStyles.flat} p-3`}>
             <div className="flex items-center gap-2 mb-2">
               <Users className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
-              <span className={textStyles.label}>
+              <span className={textStyles.label} aria-live="polite" aria-atomic="true">
                 {effectiveCandidateIds.length} candidato{effectiveCandidateIds.length !== 1 ? 's' : ''} selecionado{effectiveCandidateIds.length !== 1 ? 's' : ''}
               </span>
             </div>
@@ -422,14 +422,14 @@ export function AddToJobModal({
 
           <ScrollArea className="flex-1 border border-lia-border-subtle rounded-md min-h-[180px] max-h-[220px]">
             {isLoading ? (
-              <div className="flex flex-col items-center justify-center h-[180px] text-lia-text-secondary">
-                <Loader2 className="w-6 h-6 animate-spin text-lia-text-tertiary mb-2" />
+              <div className="flex flex-col items-center justify-center h-[180px] text-lia-text-secondary" role="status" aria-live="polite" aria-label="Carregando...">
+                <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none text-lia-text-tertiary mb-2" />
                 <p className={textStyles.bodySmall}>Carregando...</p>
               </div>
             ) : filteredJobs.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-[180px] text-lia-text-secondary">
                 <Briefcase className="w-8 h-8 mb-2 opacity-50" />
-                <p className={textStyles.bodySmall}>Nenhuma vaga encontrada</p>
+                <p className={textStyles.bodySmall} aria-live="polite" aria-atomic="true">Nenhuma vaga encontrada</p>
                 {searchTerm && (
                   <p className={`${textStyles.caption} mt-1`}>
                     Tente buscar com outros termos
@@ -491,7 +491,7 @@ export function AddToJobModal({
             <div className="flex items-start gap-2 p-3 bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-md">
               <AlertTriangle className="w-4 h-4 text-status-warning dark:text-status-warning mt-0.5 flex-shrink-0" />
               <div className="flex-1">
-                <p className="text-xs font-medium text-status-warning dark:text-status-warning">
+                <p className="text-xs font-medium text-status-warning dark:text-status-warning" aria-live="polite" aria-atomic="true">
                   {duplicateIds.length} candidato{duplicateIds.length > 1 ? 's' : ''} já {duplicateIds.length > 1 ? 'estão' : 'está'} nesta vaga
                 </p>
                 <div className="flex items-center gap-2 mt-2">
@@ -586,7 +586,7 @@ export function AddToJobModal({
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
                   Adicionando...
                 </>
               ) : (

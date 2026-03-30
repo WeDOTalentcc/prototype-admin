@@ -65,10 +65,10 @@ export function CalibrationStage() {
   // Loading state
   if (isLoading || (totalCandidates === 0 && !calibrationComplete)) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 gap-4">
-        <Loader2 className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin" />
+      <div className="flex flex-col items-center justify-center py-12 gap-4" role="status" aria-live="polite" aria-label="Carregando...">
+        <Loader2 className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
         <div className="text-center">
-          <p className="text-sm lia-text-strong font-medium">
+          <p className="text-sm lia-text-strong font-medium" aria-live="polite" aria-atomic="true">
             Buscando candidatos compatíveis...
           </p>
           <p className="text-xs lia-text-secondary mt-1">
@@ -104,7 +104,7 @@ export function CalibrationStage() {
             <span className="text-xs font-medium text-status-error">{rejectedCandidates.length}</span>
           </div>
         </div>
-        <p className="text-micro lia-text-secondary text-center max-w-xs">
+        <p className="text-micro lia-text-secondary text-center max-w-xs" aria-live="polite" aria-atomic="true">
           O algoritmo de busca foi calibrado com suas preferências. 
           Os candidatos no kanban serão priorizados de acordo.
         </p>
@@ -116,7 +116,7 @@ export function CalibrationStage() {
     return (
       <div className="text-center py-8 lia-text-secondary">
         <User className="w-8 h-8 mx-auto mb-2 opacity-50" />
-        <p className="text-sm">Nenhum candidato disponível</p>
+        <p className="text-sm" aria-live="polite" aria-atomic="true">Nenhum candidato disponível</p>
       </div>
     )
   }
@@ -310,7 +310,7 @@ export function CalibrationStage() {
       </div>
 
       {/* Feedback note */}
-      <p className="text-micro lia-text-secondary text-center">
+      <p className="text-micro lia-text-secondary text-center" aria-live="polite" aria-atomic="true">
         Suas avaliações ajudam a LIA a entender melhor o perfil ideal para esta vaga
       </p>
     </div>

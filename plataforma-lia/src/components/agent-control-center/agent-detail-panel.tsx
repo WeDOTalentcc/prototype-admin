@@ -202,7 +202,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as 'activity' | 'health' | 'settings')}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors ${activeTab !== tab.id ? 'text-lia-text-tertiary dark:text-lia-text-tertiary' : ''}`}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors motion-reduce:transition-none ${activeTab !== tab.id ? 'text-lia-text-tertiary dark:text-lia-text-tertiary' : ''}`}
                   style={{color: activeTab === tab.id ? 'var(--gray-950)' : undefined,
                     backgroundColor: activeTab === tab.id ? 'var(--gray-bg-20)' : 'transparent',
                     borderBottom: activeTab === tab.id ? '2px solid var(--gray-300)' : '2px solid transparent'}}
@@ -220,7 +220,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                 <div className="p-4 space-y-3">
                   {isLoading ? (
                     <div className="flex items-center justify-center py-8 text-lia-text-disabled">
-                      <Clock className="w-4 h-4 animate-spin mr-2" />
+                      <Clock className="w-4 h-4 animate-spin motion-reduce:animate-none mr-2" />
                       Carregando...
                     </div>
                   ) : activities.length === 0 ? (
@@ -235,7 +235,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                       >
                         <div className="flex-shrink-0 mt-0.5">
                           {activity.status === 'success' && <CheckCircle className="w-4 h-4 text-status-success" />}
-                          {activity.status === 'in_progress' && <Clock className="w-4 h-4 text-status-warning animate-pulse" />}
+                          {activity.status === 'in_progress' && <Clock className="w-4 h-4 text-status-warning animate-pulse motion-reduce:animate-none" />}
                           {activity.status === 'pending' && <Clock className="w-4 h-4 lia-text-base" />}
                           {activity.status === 'error' && <XCircle className="w-4 h-4 text-status-error" />}
                         </div>

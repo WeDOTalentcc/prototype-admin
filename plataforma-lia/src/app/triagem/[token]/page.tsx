@@ -20,7 +20,7 @@ function LoadingSkeleton() {
   return (
     <ChatContainer>
       <div className="flex-1 flex items-center justify-center px-4">
-        <div className="w-full max-w-md space-y-4 animate-pulse">
+        <div className="w-full max-w-md space-y-4 animate-pulse motion-reduce:animate-none">
           <div className="h-12 bg-gray-200 dark:bg-lia-bg-elevated rounded-md w-2/3 mx-auto" />
           <div className="h-6 bg-gray-200 dark:bg-lia-bg-elevated rounded-md w-1/2 mx-auto" />
           <div className="h-32 bg-gray-200 dark:bg-lia-bg-elevated rounded-md" />
@@ -300,7 +300,7 @@ function LGPDFooter() {
           href="/privacidade"
           target="_blank"
           rel="noopener noreferrer"
-          className="underline hover:lia-text-500 dark:hover:lia-text-400 transition-colors"
+          className="underline hover:lia-text-500 dark:hover:lia-text-400 transition-colors motion-reduce:transition-none"
           aria-label="Saiba mais sobre avaliação por IA"
         >
           Política de Privacidade

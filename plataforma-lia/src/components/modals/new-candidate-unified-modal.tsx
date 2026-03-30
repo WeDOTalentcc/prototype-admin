@@ -835,7 +835,7 @@ export function NewCandidateUnifiedModal({
           >
             {isProcessing ? (
               <>
-                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin motion-reduce:animate-none" />
                 Processando...
               </>
             ) : (
@@ -854,7 +854,7 @@ export function NewCandidateUnifiedModal({
             <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
               <Linkedin className="w-6 h-6 text-lia-text-secondary" />
             </div>
-            <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+            <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
               Cole a URL do perfil do LinkedIn do candidato
             </p>
           </div>
@@ -875,7 +875,7 @@ export function NewCandidateUnifiedModal({
 
           <div className="flex items-center gap-2 p-2.5 bg-gray-50 dark:bg-lia-bg-secondary/50 border border-lia-border-default dark:border-lia-border-default rounded-md">
             <Brain className="w-4 h-4 text-wedo-cyan" />
-            <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary font-sans">
+            <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary font-sans" aria-live="polite" aria-atomic="true">
               A LIA irá buscar os dados do candidato
             </p>
           </div>
@@ -887,7 +887,7 @@ export function NewCandidateUnifiedModal({
           >
             {isProcessing ? (
               <>
-                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin motion-reduce:animate-none" />
                 Cadastrando...
               </>
             ) : (
@@ -978,7 +978,7 @@ export function NewCandidateUnifiedModal({
           >
             {isProcessing ? (
               <>
-                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin motion-reduce:animate-none" />
                 Cadastrando...
               </>
             ) : (
@@ -1078,7 +1078,7 @@ export function NewCandidateUnifiedModal({
         >
           {isProcessing ? (
             <>
-              <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+              <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin motion-reduce:animate-none" />
               Cadastrando...
             </>
           ) : (
@@ -1097,18 +1097,18 @@ export function NewCandidateUnifiedModal({
   )
 
   const renderProcessing = () => (
-    <div className="py-8 text-center">
-      <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center mx-auto mb-4">
+    <div className="py-8 text-center" role="status" aria-live="polite" aria-label="Carregando...">
+      <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center mx-auto mb-4" role="status" aria-live="polite" aria-label="Carregando...">
         {isEnriching ? (
-          <Brain className="w-6 h-6 text-wedo-cyan animate-pulse" />
+          <Brain className="w-6 h-6 text-wedo-cyan animate-pulse motion-reduce:animate-none" />
         ) : (
-          <Loader2 className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin" />
+          <Loader2 className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
         )}
       </div>
       <h3 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary mb-2">
         {isEnriching ? 'Enriquecendo perfil...' : 'Processando...'}
       </h3>
-      <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+      <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
         {isEnriching 
           ? 'Buscando dados adicionais via LinkedIn...'
           : activeTab === 'cv' 

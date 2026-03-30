@@ -411,7 +411,7 @@ export default function RiscosPage() {
             return (
               <Link key={page.href} href={page.href}>
                 <Card 
-                  className="cursor-pointer transition-colors hover:h-full"
+                  className="cursor-pointer transition-colors motion-reduce:transition-none hover:h-full"
                   
                 >
                   <CardContent className="p-4">

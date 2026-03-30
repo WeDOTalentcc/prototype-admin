@@ -203,9 +203,9 @@ export default function ISO27001Page() {
 
   if (isLoading) {
     return (
-      <div className="p-6">
-        <div className="max-w-7xl mx-auto flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+      <div className="p-6" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="max-w-7xl mx-auto flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
           <span className="ml-3 text-sm lia-text-400 dark:lia-text-500">
             Carregando controles ISO 27001...
           </span>
@@ -242,7 +242,7 @@ export default function ISO27001Page() {
             </div>
           </div>
           <Button variant="outline" size="sm" onClick={fetchData} disabled={isRefreshing}>
-            <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin motion-reduce:animate-none' : ''}`} />
             {isRefreshing ? 'Atualizando...' : 'Atualizar'}
           </Button>
         </div>
@@ -390,7 +390,7 @@ export default function ISO27001Page() {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={5} className="text-center py-8">
-                        <p className="lia-text-400 dark:lia-text-500">
+                        <p className="lia-text-400 dark:lia-text-500" aria-live="polite" aria-atomic="true">
                           {controls.length === 0 
                             ? 'Nenhum controle ISO 27001 configurado.' 
                             : 'Nenhum controle encontrado com os filtros aplicados.'

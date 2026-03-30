@@ -369,9 +369,9 @@ export default function SeguroCiberneticoPage() {
 
   if (loading) {
     return (
-      <div className="p-6 flex items-center justify-center min-h-[400px]">
-        <div className="flex items-center gap-3">
-          <Loader2 className="w-6 h-6 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+      <div className="p-6 flex items-center justify-center min-h-[400px]" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="flex items-center gap-3" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
           <span className="lia-text-500 dark:text-lia-text-tertiary" >Carregando dados do seguro...</span>
         </div>
       </div>
@@ -1015,7 +1015,7 @@ export default function SeguroCiberneticoPage() {
               onClick={editingPolicy ? handleUpdatePolicy : handleCreatePolicy}
               disabled={submitting}
             >
-              {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />}
               {editingPolicy ? 'Salvar' : 'Criar Apólice'}
             </Button>
           </DialogFooter>
@@ -1098,7 +1098,7 @@ export default function SeguroCiberneticoPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setCoverageModalOpen(false)}>Cancelar</Button>
             <Button onClick={handleAddCoverage} disabled={submitting}>
-              {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />}
               Adicionar Cobertura
             </Button>
           </DialogFooter>
@@ -1146,7 +1146,7 @@ export default function SeguroCiberneticoPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setClaimModalOpen(false)}>Cancelar</Button>
             <Button onClick={handleCreateClaim} disabled={submitting}>
-              {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />}
               Registrar Sinistro
             </Button>
           </DialogFooter>

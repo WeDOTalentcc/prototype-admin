@@ -222,7 +222,7 @@ export function ApprovalsHub({ companyId, currentUserEmail = 'admin@example.com'
             disabled={isLoading}
             className="text-xs"
           >
-            <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isLoading ? 'animate-spin motion-reduce:animate-none' : ''}`} />
             Atualizar
           </Button>
         </div>
@@ -259,7 +259,7 @@ export function ApprovalsHub({ companyId, currentUserEmail = 'admin@example.com'
         <CardContent className="p-0">
           {isLoading ? (
             <div className="flex items-center justify-center py-10">
-              <RefreshCw className="w-4 h-4 animate-spin lia-text-400" />
+              <RefreshCw className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-400" />
             </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center py-10 text-center">
@@ -289,7 +289,7 @@ export function ApprovalsHub({ companyId, currentUserEmail = 'admin@example.com'
                 return (
                   <div 
                     key={approval.id} 
-                    className="p-3 hover:bg-gray-50 transition-colors"
+                    className="p-3 hover:bg-gray-50 transition-colors motion-reduce:transition-none"
                   >
                     <div className="flex items-start gap-3">
                       <div className={`p-1.5 rounded-md ${statusConfig.color}`}>
@@ -501,7 +501,7 @@ export function ApprovalsHub({ companyId, currentUserEmail = 'admin@example.com'
               }`}
             >
               {isSubmitting ? (
-                <RefreshCw className="w-3.5 h-3.5 animate-spin mr-1.5" />
+                <RefreshCw className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-1.5" />
               ) : actionType === 'approve' ? (
                 <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
               ) : (

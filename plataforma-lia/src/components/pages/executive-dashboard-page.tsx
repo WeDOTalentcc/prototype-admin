@@ -156,7 +156,7 @@ export function ExecutiveDashboardPage() {
                 disabled={refreshing}
                 className="gap-2"
               >
-                <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin motion-reduce:animate-none' : ''}`} />
                 Atualizar
               </Button>
 

@@ -56,7 +56,7 @@ export function SearchPreviewCard({
             Preview da Busca
           </span>
           {isStillSearching && (
-            <Loader2 className="w-4 h-4 animate-spin ml-auto lia-text-700" />
+            <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none ml-auto lia-text-700" />
           )}
         </div>
 
@@ -98,20 +98,20 @@ export function SearchPreviewCard({
                     Banco Proprietário
                   </span>
                   {data.isSearchingLocal ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin lia-text-700" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none lia-text-700" />
                   ) : (
                     <span 
                       className="text-xs font-medium px-2 py-0.5 rounded-full"
                       style={{backgroundColor: hasLocalResults ? "var(--status-success-bg)" : "var(--status-error-bg)",
                         color: hasLocalResults ? "var(--status-success)" : "var(--status-error)"}}
-                    >
+                     aria-live="polite" aria-atomic="true">
                       {data.localCount} encontrados
                     </span>
                   )}
                 </div>
                 <p 
                   className="text-xs mt-1 lia-text-400 dark:lia-text-500"
-                >
+                 aria-live="polite" aria-atomic="true">
                   Candidatos já cadastrados na sua base - sem custo
                 </p>
               </div>
@@ -144,7 +144,7 @@ export function SearchPreviewCard({
                     Busca Híbrida (Local + Global)
                   </span>
                   {data.isEstimatingPearch ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin lia-text-700" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none lia-text-700" />
                   ) : (
                     <span 
                       className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 lia-text-700"

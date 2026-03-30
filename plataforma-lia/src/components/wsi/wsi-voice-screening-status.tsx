@@ -255,7 +255,7 @@ export function WSIVoiceScreeningStatus({
             <CardContent className="p-6">
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className={`w-16 h-16 rounded-full flex items-center justify-center ${statusConfig.bgColor} border-2 border-current ${statusConfig.color}`}>
-                  <StatusIcon className={`w-8 h-8 ${statusConfig.color} ${statusConfig.animate ? 'animate-pulse' : ''}`} />
+                  <StatusIcon className={`w-8 h-8 ${statusConfig.color} ${statusConfig.animate ? 'animate-pulse motion-reduce:animate-none' : ''}`} />
                 </div>
 
                 <div>

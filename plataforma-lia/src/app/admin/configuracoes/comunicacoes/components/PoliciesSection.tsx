@@ -105,7 +105,7 @@ export function PoliciesSection({
             onClick={fetchPolicies}
             disabled={policiesLoading}
           >
-            <RefreshCw className={`w-4 h-4 ${policiesLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${policiesLoading ? 'animate-spin motion-reduce:animate-none' : ''}`} />
           </Button>
           <Button
             size="sm"
@@ -120,8 +120,8 @@ export function PoliciesSection({
       </div>
 
       {policiesLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin lia-text-700 dark:text-lia-text-secondary" />
+        <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-700 dark:text-lia-text-secondary" />
           <span className="ml-3 text-sm lia-text-500 dark:text-lia-text-tertiary" >
             Carregando políticas...
           </span>
@@ -162,7 +162,7 @@ export function PoliciesSection({
                       disabled={savingPolicy}
                     >
                       {savingPolicy ? (
-                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                        <Loader2 className="w-4 h-4 mr-1 animate-spin motion-reduce:animate-none" />
                       ) : (
                         <Save className="w-4 h-4 mr-1" />
                       )}
@@ -481,7 +481,7 @@ export function PoliciesSection({
                   disabled={savingPolicy || !newPolicy.name.trim()}
                 >
                   {savingPolicy ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
                   ) : (
                     <Plus className="w-4 h-4 mr-2" />
                   )}

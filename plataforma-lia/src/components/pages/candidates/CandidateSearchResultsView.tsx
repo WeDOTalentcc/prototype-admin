@@ -485,7 +485,7 @@ export function CandidateSearchResultsView({
                 <h3 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-1">
                   🎯 Filtro Aplicado: {crossTabFilter.type === 'company' ? 'Empresa' : 'Inteligência Competitiva'}
                 </h3>
-                <p className="text-sm text-lia-text-primary dark:text-lia-text-tertiary mb-3">
+                <p className="text-sm text-lia-text-primary dark:text-lia-text-tertiary mb-3" aria-live="polite" aria-atomic="true">
                   {crossTabFilter.type === 'company' && crossTabFilter.company && (
                     `Mostrando candidatos da empresa "${crossTabFilter.company}" mapeada`
                   )}
@@ -527,7 +527,7 @@ export function CandidateSearchResultsView({
                 <h3 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-1">
                   📋 Visualizando Lista: {viewingList.name}
                 </h3>
-                <p className="text-sm text-lia-text-primary dark:text-lia-text-tertiary">
+                <p className="text-sm text-lia-text-primary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
                   {candidates.length} {candidates.length === 1 ? 'candidato' : 'candidatos'} nesta lista
                 </p>
               </div>
@@ -567,7 +567,7 @@ export function CandidateSearchResultsView({
           {/* Prompt LIA - Compacto (max 300px) - Design Specs v3.1 */}
           <div className="flex-1 max-w-panel-sm">
             <div
-              className={`relative flex items-center h-10 rounded-md bg-lia-bg-primary transition-colors ${
+              className={`relative flex items-center h-10 rounded-md bg-lia-bg-primary transition-colors motion-reduce:transition-none ${
                 isLIAThinking ? 'cursor-wait' : ''
               } border border-lia-border-subtle`} style={{paddingLeft: '16px', paddingRight: '80px'}} /* [OPT-043] paddingLeft:16px=pl-4, paddingRight:80px=pr-20 */
             >
@@ -608,7 +608,7 @@ export function CandidateSearchResultsView({
               {/* Botões: Maximize + Send */}
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                 <button
-                  className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+                  className="p-1.5 rounded-full hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                   onClick={() => setShowExpandedLIA(true)}
                   title="Expandir"
                   aria-label="Expandir chat da LIA"
@@ -616,7 +616,7 @@ export function CandidateSearchResultsView({
                   <Maximize2 className="w-4 h-4 text-lia-text-secondary" aria-hidden="true" />
                 </button>
                 <button
-                  className={`p-1.5 rounded-full transition-colors ${
+                  className={`p-1.5 rounded-full transition-colors motion-reduce:transition-none ${
                     isLIAThinking ? 'cursor-wait opacity-50' : 'hover:bg-gray-100'
                   }`}
                   onClick={() => {
@@ -630,7 +630,7 @@ export function CandidateSearchResultsView({
                   aria-label="Enviar mensagem para a LIA"
                 >
                   {isLIAThinking ? (
-                    <div className="w-4 h-4 border-2 border-gray-900 dark:border-lia-border-medium border-t-transparent rounded-full animate-spin" aria-hidden="true" />
+                    <div className="w-4 h-4 border-2 border-gray-900 dark:border-lia-border-medium border-t-transparent rounded-full animate-spin motion-reduce:animate-none" aria-hidden="true" />
                   ) : (
                     <Send className="w-4 h-4 text-lia-text-secondary" aria-hidden="true" />
                   )}
@@ -641,12 +641,12 @@ export function CandidateSearchResultsView({
             {/* Indicador de Thinking - Aparece quando LIA está processando */}
             {isLIAThinking && (
               <div className="mt-2 flex items-center gap-2 text-xs px-3 py-1.5 rounded-md animate-fade-in bg-gray-200/30 border border-wedo-cyan/20">
-                <Brain className="w-3 h-3 animate-pulse text-wedo-cyan" />
+                <Brain className="w-3 h-3 animate-pulse motion-reduce:animate-none text-wedo-cyan" />
                 <span className="font-medium text-lia-text-primary">LIA está pensando</span>
                 <div className="flex gap-0.5">
-                  <span className="w-1 h-1 bg-gray-600 rounded-full animate-bounce" style={{animationDelay: '0ms'}}></span>
-                  <span className="w-1 h-1 bg-gray-600 rounded-full animate-bounce" style={{animationDelay: '150ms'}}></span>
-                  <span className="w-1 h-1 bg-gray-600 rounded-full animate-bounce" style={{animationDelay: '300ms'}}></span>
+                  <span className="w-1 h-1 bg-gray-600 rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '0ms'}}></span>
+                  <span className="w-1 h-1 bg-gray-600 rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '150ms'}}></span>
+                  <span className="w-1 h-1 bg-gray-600 rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '300ms'}}></span>
                 </div>
               </div>
             )}
@@ -677,7 +677,7 @@ export function CandidateSearchResultsView({
           {selectedCandidatesForBatch.size === 0 && sortedCandidates.length > 0 && (
             <button
               onClick={selectAllCandidates}
-              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-lia-text-primary bg-lia-bg-primary border border-lia-border-subtle rounded-full hover:bg-gray-50 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-lia-text-primary bg-lia-bg-primary border border-lia-border-subtle rounded-full hover:bg-gray-50 transition-colors motion-reduce:transition-none"
 
             >
               <CheckCircle className="w-4 h-4 text-lia-text-tertiary" />
@@ -688,7 +688,7 @@ export function CandidateSearchResultsView({
           {/* Botões de controle - Filtros da Tabela (tableFilters) - Padronizado */}
           <button
             onClick={() => setShowTableFiltersPanel(!showTableFiltersPanel)}
-            className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors ${
+            className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors motion-reduce:transition-none ${
               showTableFiltersPanel
                 ? 'bg-gray-900 text-white hover:bg-gray-800'
                 : 'text-lia-text-primary bg-lia-bg-primary border border-lia-border-subtle hover:bg-gray-50'
@@ -707,7 +707,7 @@ export function CandidateSearchResultsView({
           <button
             onClick={onToggleColumnConfig}
             title="Configurar colunas da tabela"
-            className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors ${
+            className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors motion-reduce:transition-none ${
               showColumnConfig
                 ? 'bg-gray-900 text-white hover:bg-gray-800'
                 : 'text-lia-text-primary bg-lia-bg-primary border border-lia-border-subtle hover:bg-gray-50'
@@ -747,7 +747,7 @@ export function CandidateSearchResultsView({
 
       {/* Results Layout with Sidebars - Layout flex responsivo */}
       {/* ORDEM: LIA à esquerda, Filtros à direita, Tabela ao centro */}
-      <div className="flex gap-4 overflow-hidden transition-colors duration-300 flex-1 min-h-0 w-full">
+      <div className="flex gap-4 overflow-hidden transition-colors motion-reduce:transition-none duration-300 flex-1 min-h-0 w-full">
         {/* LIA Sidebar Expandida - Sistema de Pesquisa Avançada */}
         {showExpandedLIA && (
           <LIASearchSidebar
@@ -822,7 +822,7 @@ export function CandidateSearchResultsView({
 
 
         {/* Main Content Area - Candidatos Table with Superchat collapse support */}
-        <div className={`bg-white dark:bg-lia-bg-secondary rounded-md transition-colors duration-300 ${
+        <div className={`bg-white dark:bg-lia-bg-secondary rounded-md transition-colors motion-reduce:transition-none duration-300 ${
           isLiaSuperChat
             ? 'w-14 flex-shrink-0'
             : 'flex-1 min-w-0 h-full'
@@ -844,7 +844,7 @@ export function CandidateSearchResultsView({
               {/* Ícone da tabela */}
               <div className="flex flex-col items-center gap-2 text-lia-text-primary">
                 <Users className="w-5 h-5" />
-                <span className="text-xs font-medium" style={{writingMode: 'vertical-rl', textOrientation: 'mixed'}}>
+                <span className="text-xs font-medium" style={{writingMode: 'vertical-rl', textOrientation: 'mixed'}} aria-live="polite" aria-atomic="true">
                   Candidatos ({sortedCandidates.length})
                 </span>
               </div>
@@ -866,10 +866,10 @@ export function CandidateSearchResultsView({
           >
             {/* Loading Overlay */}
             {isLoading && (
-              <div className="flex items-center justify-center h-full absolute inset-0 z-20 bg-white dark:bg-lia-bg-primary">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-wedo-cyan/30 mx-auto mb-4"></div>
-                  <p className="text-lia-text-primary text-sm">Carregando candidatos...</p>
+              <div className="flex items-center justify-center h-full absolute inset-0 z-20 bg-white dark:bg-lia-bg-primary" role="status" aria-live="polite" aria-label="Carregando...">
+                <div className="text-center" role="status" aria-live="polite" aria-label="Carregando...">
+                  <div className="animate-spin motion-reduce:animate-none rounded-full h-10 w-10 border-b-2 border-wedo-cyan/30 mx-auto mb-4" role="status" aria-live="polite" aria-label="Carregando..."></div>
+                  <p className="text-lia-text-primary text-sm" aria-live="polite" aria-atomic="true">Carregando candidatos...</p>
                 </div>
               </div>
             )}
@@ -1028,20 +1028,20 @@ export function CandidateSearchResultsView({
                   disabled={isLoadingMore}
                 >
                   {isLoadingMore ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                   ) : (
                     <ChevronDown className="w-4 h-4" />
                   )}
                   {isLoadingMore ? 'Carregando...' : 'Carregar mais 10 candidatos'}
                 </Button>
-                <span className="text-xs text-lia-text-tertiary">
+                <span className="text-xs text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
                   {Math.min(displayedResultsCount, sortedCandidates.length)} de {sortedCandidates.length} candidatos
                 </span>
               </div>
             </div>
           )}
           {showSearchResults && displayedResultsCount >= sortedCandidates.length && sortedCandidates.length > 10 && (
-            <p className="flex-shrink-0 text-center text-sm text-lia-text-tertiary py-3">
+            <p className="flex-shrink-0 text-center text-sm text-lia-text-tertiary py-3" aria-live="polite" aria-atomic="true">
               Todos os {sortedCandidates.length} candidatos carregados
             </p>
           )}
@@ -1051,7 +1051,7 @@ export function CandidateSearchResultsView({
 
           {/* Column Configuration Sidebar - Right - WeDOTalent Light Design */}
           {showColumnConfig && (
-            <div className="flex-shrink-0 w-80 transition-colors duration-300">
+            <div className="flex-shrink-0 w-80 transition-colors motion-reduce:transition-none duration-300">
               <div className="bg-lia-bg-primary rounded-md h-[calc(100vh-6rem)] overflow-hidden">
                 {/* Header */}
                 <div className="p-4 flex items-center justify-between border-b border-lia-border-subtle">
@@ -1071,7 +1071,7 @@ export function CandidateSearchResultsView({
                   </div>
                   <button
                     onClick={() => setShowColumnConfig(false)}
-                    className="h-8 w-8 rounded-md flex items-center justify-center transition-colors text-lia-text-primary hover:text-lia-text-primary hover:bg-gray-100"
+                    className="h-8 w-8 rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none text-lia-text-primary hover:text-lia-text-primary hover:bg-gray-100"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -1092,7 +1092,7 @@ export function CandidateSearchResultsView({
                   </div>
                   <div className="flex gap-2">
                     <button
-                      className="flex-1 text-xs h-8 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors text-lia-text-secondary"
+                      className="flex-1 text-xs h-8 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors motion-reduce:transition-none text-lia-text-secondary"
                       onClick={() => {
                         setTableColumns(prev => prev.map((col, idx) => ({
                           ...col,
@@ -1104,7 +1104,7 @@ export function CandidateSearchResultsView({
                       Restaurar Padrão
                     </button>
                     <button
-                      className="text-xs h-8 px-4 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors text-lia-text-secondary"
+                      className="text-xs h-8 px-4 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors motion-reduce:transition-none text-lia-text-secondary"
                       onClick={() => {
                         setTableColumns(prev => prev.map(col => ({ ...col, visible: true })))
                       }}
@@ -1185,13 +1185,13 @@ export function CandidateSearchResultsView({
                                     c.id === col.id ? { ...c, visible: !c.visible } : c
                                   ))
                                 }}
-                                className="flex items-center gap-3 p-2.5 rounded-md cursor-pointer transition-colors hover:bg-gray-100"
+                                className="flex items-center gap-3 p-2.5 rounded-md cursor-pointer transition-colors motion-reduce:transition-none hover:bg-gray-100"
                                 style={{backgroundColor: col.visible ? 'var(--gray-50)' : 'var(--gray-50)',
                                   border: col.visible ? '1px solid var(--gray-300)' : '1px solid var(--gray-200)'}}
                               >
                                 {/* Custom Checkbox - Monocromático */}
                                 <div
-                                  className="w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-colors"
+                                  className="w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-colors motion-reduce:transition-none"
                                   style={{backgroundColor: col.visible ? 'var(--gray-600)' : 'transparent',
                                     border: col.visible ? 'none' : '2px solid var(--gray-300)'}}
                                 >
@@ -1226,12 +1226,12 @@ export function CandidateSearchResultsView({
             <div className="flex-shrink-0 relative" style={{width: `${previewWidth}px`}}>
               {/* Resize Handle */}
               <div
-                className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors z-10 group"
+                className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors motion-reduce:transition-none z-10 group"
                 onMouseDown={onPreviewResize}
                 title="Arraste para redimensionar"
               >
                 <div className="absolute inset-0 -left-1 -right-1"></div>
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-gray-300 dark:bg-lia-bg-elevated group-hover:bg-gray-400 dark:group-hover:bg-gray-500 rounded-full transition-colors"></div>
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-gray-300 dark:bg-lia-bg-elevated group-hover:bg-gray-400 dark:group-hover:bg-gray-500 rounded-full transition-colors motion-reduce:transition-none"></div>
               </div>
               <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
                 <CandidatePreview

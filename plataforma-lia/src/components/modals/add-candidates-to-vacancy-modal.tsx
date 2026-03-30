@@ -391,13 +391,13 @@ export function AddCandidatesToVacancyModal({
             </div>
             <button
               onClick={onClose}
-              className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-disabled transition-colors"
+              className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-disabled transition-colors motion-reduce:transition-none"
               aria-label="Fechar modal"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
-          <p className={`${textStyles.bodySmall} mt-1`}>
+          <p className={`${textStyles.bodySmall} mt-1`} aria-live="polite" aria-atomic="true">
             Selecione uma vaga para adicionar {candidateIds.length} candidato{candidateIds.length > 1 ? 's' : ''}
           </p>
         </div>
@@ -425,9 +425,9 @@ export function AddCandidatesToVacancyModal({
 
           <ScrollArea className="flex-1 border border-lia-border-subtle rounded-md min-h-[250px]">
             {isLoading ? (
-              <div className="flex flex-col items-center justify-center h-[250px] text-lia-text-secondary">
-                <Loader2 className="w-6 h-6 animate-spin text-lia-text-tertiary mb-2" />
-                <p className={textStyles.bodySmall}>Carregando vagas...</p>
+              <div className="flex flex-col items-center justify-center h-[250px] text-lia-text-secondary" role="status" aria-live="polite" aria-label="Carregando...">
+                <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none text-lia-text-tertiary mb-2" />
+                <p className={textStyles.bodySmall} aria-live="polite" aria-atomic="true">Carregando vagas...</p>
               </div>
             ) : loadError ? (
               <div className="flex flex-col items-center justify-center h-[250px] text-lia-text-secondary">
@@ -445,7 +445,7 @@ export function AddCandidatesToVacancyModal({
             ) : sortedAndFilteredVacancies.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-[250px] text-lia-text-secondary">
                 <Briefcase className="w-8 h-8 mb-2 opacity-50" />
-                <p className={textStyles.bodySmall}>Nenhuma vaga encontrada</p>
+                <p className={textStyles.bodySmall} aria-live="polite" aria-atomic="true">Nenhuma vaga encontrada</p>
                 {searchTerm && (
                   <p className={`${textStyles.caption} mt-1`}>
                     Tente buscar com outros termos
@@ -458,7 +458,7 @@ export function AddCandidatesToVacancyModal({
                   <div>
                     <div className="flex items-center gap-2 px-2 py-1.5 mb-1">
                       <Star className="w-3 h-3 text-status-warning" fill="var(--status-warning)" />
-                      <span className={`${textStyles.caption} font-medium uppercase tracking-wider`}>
+                      <span className={`${textStyles.caption} font-medium uppercase tracking-wider`} aria-live="polite" aria-atomic="true">
                         Suas Vagas
                       </span>
                     </div>
@@ -475,7 +475,7 @@ export function AddCandidatesToVacancyModal({
                     {recruiterVacancies.length > 0 && (
                       <div className="flex items-center gap-2 px-2 py-1.5 mb-1 mt-2">
                         <Briefcase className="w-3 h-3 text-lia-text-tertiary" />
-                        <span className={`${textStyles.caption} font-medium uppercase tracking-wider`}>
+                        <span className={`${textStyles.caption} font-medium uppercase tracking-wider`} aria-live="polite" aria-atomic="true">
                           Outras Vagas
                         </span>
                       </div>
@@ -508,7 +508,7 @@ export function AddCandidatesToVacancyModal({
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
                 Adicionando...
               </>
             ) : (

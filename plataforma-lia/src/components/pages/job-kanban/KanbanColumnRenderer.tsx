@@ -304,7 +304,7 @@ export function KanbanColumnRenderer({
 
   return (
     <div
-      className={`flex flex-col flex-1 bg-lia-bg-primary rounded-md min-w-[275px] max-w-[368px] border border-lia-border-subtle transition-colors duration-300 ${
+      className={`flex flex-col flex-1 bg-lia-bg-primary rounded-md min-w-[275px] max-w-[368px] border border-lia-border-subtle transition-colors motion-reduce:transition-none duration-300 ${
         isDropping ? "ring-2 ring-gray-400 bg-gray-50/20" : ""
       } h-[calc(100vh-16rem)]`}
       onDragOver={(e) => onDragOver(e, stageId)}
@@ -316,7 +316,7 @@ export function KanbanColumnRenderer({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 group">
             <div
-              className={`w-2 h-2 rounded-full ${columnStyle.dot} transition-transform duration-300 ${
+              className={`w-2 h-2 rounded-full ${columnStyle.dot} transition-transform motion-reduce:transition-none duration-300 ${
                 isDropping ? "scale-150" : ""
               }`}
             ></div>
@@ -416,12 +416,12 @@ export function KanbanColumnRenderer({
 
             <div className="p-2 relative">
               {/* Ações rápidas - Posicionadas no canto direito */}
-              <div className="absolute right-2 top-8 flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+              <div className="absolute right-2 top-8 flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none z-10">
                 {/* Menu de opções - Primeiro */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
-                      className="p-1 hover:bg-gray-100 rounded-md transition-opacity bg-lia-bg-primary/80"
+                      className="p-1 hover:bg-gray-100 rounded-md transition-opacity motion-reduce:transition-none bg-lia-bg-primary/80"
                       onClick={(e) => e.stopPropagation()}
                       title="Mais opções"
                       aria-label="Mais opções do candidato"
@@ -522,7 +522,7 @@ export function KanbanColumnRenderer({
 
                 {/* Botão de Preview */}
                 <button
-                  className="p-1 hover:bg-gray-100 rounded-md transition-colors bg-lia-bg-primary/80"
+                  className="p-1 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none bg-lia-bg-primary/80"
                   onClick={(e) => {
                     e.stopPropagation()
                     onOpenPreview(candidate)
@@ -1025,12 +1025,12 @@ export function KanbanColumnRenderer({
               stageId === "screening" ||
               stageId.startsWith("interview_") ||
               stageId === "offer") && (
-              <div className="border-t border-lia-border-subtle p-2 max-h-0 overflow-hidden opacity-0 group-hover:max-h-20 group-hover:opacity-100 transition-opacity duration-200 ease-out relative z-20 bg-gray-50">
+              <div className="border-t border-lia-border-subtle p-2 max-h-0 overflow-hidden opacity-0 group-hover:max-h-20 group-hover:opacity-100 transition-opacity motion-reduce:transition-none duration-200 ease-out relative z-20 bg-gray-50">
                 {/* Botões para FUNIL */}
                 {stageId === "sourcing" && (
                   <div className="flex gap-1">
                     <button
-                      className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 rounded-full text-micro font-medium transition-colors"
+                      className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
                       onClick={(e) => {
                         e.stopPropagation()
                         onOpenDecisionFlowModal(candidate, "approve")
@@ -1040,7 +1040,7 @@ export function KanbanColumnRenderer({
                       <span>Aprovar</span>
                     </button>
                     <button
-                      className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-status-error hover:bg-status-error text-white rounded-full text-micro font-medium transition-colors"
+                      className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-status-error hover:bg-status-error text-white rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
                       onClick={(e) => {
                         e.stopPropagation()
                         onOpenDecisionFlowModal(candidate, "reject")
@@ -1056,7 +1056,7 @@ export function KanbanColumnRenderer({
                 {stageId === "screening" && (
                   <div className="flex gap-1">
                     <button
-                      className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 rounded-full text-micro font-medium transition-colors"
+                      className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
                       onClick={(e) => {
                         e.stopPropagation()
                         onApproveFromScreening(candidate)
@@ -1066,7 +1066,7 @@ export function KanbanColumnRenderer({
                       <span>Aprovar</span>
                     </button>
                     <button
-                      className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-status-error hover:bg-status-error text-white rounded-full text-micro font-medium transition-colors"
+                      className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-status-error hover:bg-status-error text-white rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
                       onClick={(e) => {
                         e.stopPropagation()
                         onRejectFromScreening(candidate)
@@ -1086,7 +1086,7 @@ export function KanbanColumnRenderer({
                     {candidate.agendada ? (
                       <>
                         <button
-                          className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 rounded-full text-micro font-medium transition-colors"
+                          className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
                           onClick={(e) => {
                             e.stopPropagation()
                             const teamsUrl =
@@ -1110,7 +1110,7 @@ export function KanbanColumnRenderer({
                           </span>
                         </button>
                         <button
-                          className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-status-warning hover:bg-status-warning text-white rounded-full text-micro font-medium transition-colors"
+                          className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-status-warning hover:bg-status-warning text-white rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
                           onClick={(e) => {
                             e.stopPropagation()
                             const dateStr =
@@ -1133,7 +1133,7 @@ export function KanbanColumnRenderer({
                           <span>Alterar</span>
                         </button>
                         <button
-                          className="flex-shrink-0 flex items-center justify-center gap-1 px-2 py-1.5 bg-status-error/10 hover:bg-status-error/15 text-status-error border border-status-error/30 rounded-full text-micro font-medium transition-colors"
+                          className="flex-shrink-0 flex items-center justify-center gap-1 px-2 py-1.5 bg-status-error/10 hover:bg-status-error/15 text-status-error border border-status-error/30 rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
                           onClick={(e) => {
                             e.stopPropagation()
                             const dateStr =
@@ -1160,7 +1160,7 @@ export function KanbanColumnRenderer({
                     ) : (
                       <>
                         <button
-                          className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-status-warning hover:bg-status-warning text-white rounded-full text-micro font-medium transition-colors"
+                          className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-status-warning hover:bg-status-warning text-white rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
                           onClick={(e) => {
                             e.stopPropagation()
                             setDecisionFlowCandidate(candidate)
@@ -1172,7 +1172,7 @@ export function KanbanColumnRenderer({
                           <span>Urgência</span>
                         </button>
                         <button
-                          className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 rounded-full text-micro font-medium transition-colors"
+                          className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
                           onClick={(e) => {
                             e.stopPropagation()
                             setDecisionFlowCandidate(candidate)
@@ -1190,7 +1190,7 @@ export function KanbanColumnRenderer({
 
                 {stageId === "offer" && (
                   <button
-                    className="w-full flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:hover:bg-gray-200 dark:text-lia-text-disabled rounded-full text-micro transition-colors"
+                    className="w-full flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:hover:bg-gray-200 dark:text-lia-text-disabled rounded-full text-micro transition-colors motion-reduce:transition-none"
                     onClick={(e) => {
                       e.stopPropagation()
                     }}

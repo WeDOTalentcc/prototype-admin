@@ -479,7 +479,7 @@ export function UniversityPresetsModal({
           <h2 className="text-base font-semibold lia-text-800 dark:text-lia-text-primary">University Presets</h2>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-gray-100 rounded-md transition-colors"
+            className="p-1 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
           >
             <X className="w-5 h-5 lia-text-500" />
           </button>
@@ -553,7 +553,7 @@ export function UniversityPresetsModal({
                   {filteredCustomPresets.map(preset => (
                     <div
                       key={preset.id}
-                      className="w-full text-left p-3 rounded-md border border-lia-border-subtle hover:border-gray-400 hover:bg-gray-50 dark:border-lia-border-default dark:hover:border-gray-500 dark:hover:bg-gray-700 transition-colors group"
+                      className="w-full text-left p-3 rounded-md border border-lia-border-subtle hover:border-gray-400 hover:bg-gray-50 dark:border-lia-border-default dark:hover:border-gray-500 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none group"
                     >
                       <div className="flex items-start justify-between">
                         <button
@@ -579,7 +579,7 @@ export function UniversityPresetsModal({
                               e.stopPropagation()
                               handleDeleteCustomPreset(preset.id)
                             }}
-                            className="p-1 opacity-0 group-hover:opacity-100 hover:bg-status-error/10 rounded-md transition-colors"
+                            className="p-1 opacity-0 group-hover:opacity-100 hover:bg-status-error/10 rounded-md transition-colors motion-reduce:transition-none"
                             title="Excluir preset"
                           >
                             <Trash2 className="w-3.5 h-3.5 text-status-error" />
@@ -619,7 +619,7 @@ export function UniversityPresetsModal({
                         onSelectPreset(preset.universities)
                         onClose()
                       }}
-                      className="w-full text-left p-3 rounded-md border border-lia-border-subtle hover:border-gray-400 hover:bg-gray-50 dark:border-lia-border-default dark:hover:border-gray-500 dark:hover:bg-gray-700 transition-colors"
+                      className="w-full text-left p-3 rounded-md border border-lia-border-subtle hover:border-gray-400 hover:bg-gray-50 dark:border-lia-border-default dark:hover:border-gray-500 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none"
                     >
                       <div className="flex items-start justify-between">
                         <div>
@@ -696,7 +696,7 @@ export function UniversityPresetsModal({
                       onSelectPreset(preset.universities)
                       onClose()
                     }}
-                    className="w-full text-left p-3 rounded-md border border-lia-border-subtle hover:border-gray-400 hover:bg-gray-50 dark:border-lia-border-default dark:hover:border-gray-500 dark:hover:bg-gray-700 transition-colors"
+                    className="w-full text-left p-3 rounded-md border border-lia-border-subtle hover:border-gray-400 hover:bg-gray-50 dark:border-lia-border-default dark:hover:border-gray-500 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">

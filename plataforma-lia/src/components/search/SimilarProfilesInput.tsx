@@ -75,7 +75,7 @@ export function SimilarProfilesInput({
             {index > 0 && (
               <button
                 onClick={() => onRemoveSimilarUrl(index)}
-                className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-status-error/10 transition-colors"
+                className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-status-error/10 transition-colors motion-reduce:transition-none"
               >
                 <X className="w-3.5 h-3.5 text-status-error" />
               </button>
@@ -86,7 +86,7 @@ export function SimilarProfilesInput({
                   <TooltipTrigger asChild>
                     <button
                       onClick={onAddSimilarUrl}
-                      className="h-8 px-3 rounded-md text-sm font-bold hover:bg-gray-800 hover:text-white transition-colors lia-text-700 bg-gray-100"
+                      className="h-8 px-3 rounded-md text-sm font-bold hover:bg-gray-800 hover:text-white transition-colors motion-reduce:transition-none lia-text-700 bg-gray-100"
                     >
                       + URL
                     </button>
@@ -136,7 +136,7 @@ export function SimilarProfilesInput({
             {similarCvFiles.length < MAX_CV_FILES && (
               <button
                 onClick={() => cvFileInputRef.current?.click()}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium hover:bg-gray-100 transition-colors border border-lia-border-subtle"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium hover:bg-gray-100 transition-colors motion-reduce:transition-none border border-lia-border-subtle"
                 style={{backgroundColor: "var(--gray-100)"}}
               >
                 <Upload className="w-3 h-3" />
@@ -147,7 +147,7 @@ export function SimilarProfilesInput({
         ) : (
           <button
             onClick={() => cvFileInputRef.current?.click()}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md text-xs lia-text-800 dark:text-lia-text-primary hover:bg-gray-100 transition-colors border border-lia-border-subtle"
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md text-xs lia-text-800 dark:text-lia-text-primary hover:bg-gray-100 transition-colors motion-reduce:transition-none border border-lia-border-subtle"
             style={{backgroundColor: "var(--gray-100)"}}
           >
             <Upload className="w-3.5 h-3.5" />
@@ -165,7 +165,7 @@ export function SimilarProfilesInput({
         >
           {isAnalyzingProfiles ? (
             <>
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
               Analisando perfis...
             </>
           ) : (
@@ -205,7 +205,7 @@ export function SimilarProfilesInput({
                 <span className="lia-text-700">{keyword}</span>
                 <button
                   onClick={() => onRemoveSuggestion(keyword)}
-                  className="opacity-50 group-hover:opacity-100 hover:text-status-error transition-opacity"
+                  className="opacity-50 group-hover:opacity-100 hover:text-status-error transition-opacity motion-reduce:transition-none"
                 >
                   <X className="w-3 h-3" />
                 </button>

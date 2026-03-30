@@ -206,7 +206,7 @@ export function UserCommandsSection({ searchTerm, selectedCategory }: UserComman
           <button
             key={star}
             onClick={() => rateCommand(command.id, star)}
-            className="hover:scale-110 transition-transform"
+            className="hover:scale-110 transition-transform motion-reduce:transition-none"
           >
             <Star
               className={`w-3 h-3 ${

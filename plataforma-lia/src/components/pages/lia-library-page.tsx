@@ -312,7 +312,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
               return (
                 <div
                   key={command.id}
-                  className="group bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle p-4 hover:border-lia-border-default dark:hover:border-gray-700 transition-colors"
+                  className="group bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle p-4 hover:border-lia-border-default dark:hover:border-gray-700 transition-colors motion-reduce:transition-none"
                   style={{borderLeftWidth: '3px', borderLeftColor: categoryInfo.color}}
                 >
                   {/* Header do Card */}
@@ -322,7 +322,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                     </h3>
                     <button
                       onClick={() => toggleFavorite(command.id)}
-                      className="shrink-0 p-1 -m-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                      className="shrink-0 p-1 -m-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
                     >
                       <Star 
                         className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`}
@@ -356,7 +356,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => copyCommand(command.id, command.command)}
-                        className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors opacity-0 group-hover:opacity-100"
+                        className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none opacity-0 group-hover:opacity-100"
                         title="Copiar comando"
                       >
                         <Copy className={`w-3.5 h-3.5 ${isCopied ? 'text-status-success' : 'text-lia-text-primary'}`} />

@@ -103,7 +103,7 @@ const statusLabels: Record<string, string> = {
 
 function LoadingSpinner({ size = 'sm' }: { size?: 'sm' | 'md' | 'lg' }) {
   const sizeClass = size === 'lg' ? 'w-8 h-8' : size === 'md' ? 'w-6 h-6' : 'w-4 h-4'
-  return <Loader2 className={`${sizeClass} animate-spin lia-text-600 dark:text-lia-text-tertiary`} />
+  return <Loader2 className={`${sizeClass} animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary`} />
 }
 
 function ComplianceTab({ clientId }: { clientId: string }) {
@@ -276,7 +276,7 @@ function ComplianceTab({ clientId }: { clientId: string }) {
             </div>
           ) : (
             <div className="text-center py-6">
-              <p className="text-sm lia-text-400 dark:lia-text-500">Nenhum controle encontrado</p>
+              <p className="text-sm lia-text-400 dark:lia-text-500" aria-live="polite" aria-atomic="true">Nenhum controle encontrado</p>
             </div>
           )}
         </CardContent>
@@ -980,13 +980,13 @@ export default function ObservabilidadePage({
     return (
       <div className="space-y-6">
         <div>
-          <div className="h-7 w-64 bg-gray-200 rounded-md animate-pulse" />
-          <div className="h-5 w-96 bg-gray-100 rounded-md animate-pulse mt-2" />
+          <div className="h-7 w-64 bg-gray-200 rounded-md animate-pulse motion-reduce:animate-none" />
+          <div className="h-5 w-96 bg-gray-100 rounded-md animate-pulse motion-reduce:animate-none mt-2" />
         </div>
-        <div className="h-12 w-full bg-gray-100 rounded-md animate-pulse" />
+        <div className="h-12 w-full bg-gray-100 rounded-md animate-pulse motion-reduce:animate-none" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-32 bg-gray-100 rounded-md animate-pulse" />
+            <div key={i} className="h-32 bg-gray-100 rounded-md animate-pulse motion-reduce:animate-none" />
           ))}
         </div>
       </div>

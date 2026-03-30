@@ -203,7 +203,7 @@ export function ScheduledInterviewActivityCard({
         <div className="flex gap-2 pt-1">
           <Button
             onClick={() => onPrepareNotes(interview.id)}
-            className="flex-1 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 font-medium rounded-md px-3 py-1.5 transition-colors text-xs h-auto"
+            className="flex-1 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 font-medium rounded-md px-3 py-1.5 transition-colors motion-reduce:transition-none text-xs h-auto"
           >
             <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
             Preparar Notas
@@ -211,7 +211,7 @@ export function ScheduledInterviewActivityCard({
           <Button
             onClick={() => onViewSuggestedQuestions(interview.id)}
             variant="outline"
-            className="flex-1 border border-lia-border-subtle hover:bg-gray-50 dark:border-lia-border-subtle dark:hover:bg-gray-900/50 text-lia-text-primary dark:text-lia-text-primary font-medium rounded-md px-3 py-1.5 transition-colors text-xs h-auto"
+            className="flex-1 border border-lia-border-subtle hover:bg-gray-50 dark:border-lia-border-subtle dark:hover:bg-gray-900/50 text-lia-text-primary dark:text-lia-text-primary font-medium rounded-md px-3 py-1.5 transition-colors motion-reduce:transition-none text-xs h-auto"
           >
             <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
             Perguntas

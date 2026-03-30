@@ -240,7 +240,7 @@ export function LiaSuperPrompt() {
                 <div className="flex rounded-lg overflow-hidden border" style={{borderColor: "var(--gray-200)"}}>
                   <button
                     onClick={() => setActiveTab("conversa")}
-                    className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium transition-colors"
+                    className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium transition-colors motion-reduce:transition-none"
                     style={{backgroundColor: activeTab === "conversa" ? "var(--gray-50)" : "transparent",
                       color: activeTab === "conversa" ? "var(--chat-cyan)" : "var(--gray-400)",
                       borderRight: "1px solid var(--gray-200)"}}
@@ -250,7 +250,7 @@ export function LiaSuperPrompt() {
                   </button>
                   <button
                     onClick={() => setActiveTab("controle")}
-                    className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium transition-colors"
+                    className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium transition-colors motion-reduce:transition-none"
                     style={{backgroundColor: activeTab === "controle" ? "var(--gray-50)" : "transparent",
                       color: activeTab === "controle" ? "var(--chat-cyan)" : "var(--gray-400)"}}
                   >
@@ -263,7 +263,7 @@ export function LiaSuperPrompt() {
               <div className="flex items-center gap-1">
                 <button
                   onClick={handleNewChat}
-                  className="p-2 rounded-lg lia-text-secondary hover:lia-text-base hover:bg-gray-100 transition-colors"
+                  className="p-2 rounded-lg lia-text-secondary hover:lia-text-base hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                   title="Novo chat"
                   aria-label="Iniciar novo chat"
                 >
@@ -272,7 +272,7 @@ export function LiaSuperPrompt() {
                 <button
                   onClick={handleClear}
                   disabled={messages.length === 0}
-                  className="p-2 rounded-lg lia-text-secondary hover:lia-text-base hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="p-2 rounded-lg lia-text-secondary hover:lia-text-base hover:bg-gray-100 transition-colors motion-reduce:transition-none disabled:opacity-30 disabled:cursor-not-allowed"
                   title="Limpar mensagens"
                   aria-label="Limpar mensagens"
                 >
@@ -280,7 +280,7 @@ export function LiaSuperPrompt() {
                 </button>
                 <button
                   onClick={handleToggleHistory}
-                  className={`p-2 rounded-lg transition-colors ${
+                  className={`p-2 rounded-lg transition-colors motion-reduce:transition-none ${
  showHistory
                       ? "text-chat-cyan bg-gray-100"
                       : "lia-text-secondary hover:lia-text-base hover:bg-gray-100"
@@ -293,7 +293,7 @@ export function LiaSuperPrompt() {
                 <div className="w-px h-5 bg-gray-200 mx-1" />
                 <button
                   onClick={collapse}
-                  className="p-2 rounded-lg lia-text-secondary hover:lia-text-base hover:bg-gray-100 transition-colors"
+                  className="p-2 rounded-lg lia-text-secondary hover:lia-text-base hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                   title="Minimizar para chat pequeno"
                   aria-label="Minimizar"
                 >
@@ -301,7 +301,7 @@ export function LiaSuperPrompt() {
                 </button>
                 <button
                   onClick={closeAll}
-                  className="p-2 rounded-lg lia-text-secondary hover:lia-text-base hover:bg-gray-100 transition-colors"
+                  className="p-2 rounded-lg lia-text-secondary hover:lia-text-base hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                   title="Fechar"
                   aria-label="Fechar"
                 >
@@ -329,11 +329,11 @@ export function LiaSuperPrompt() {
                             <button
                               key={chat.id}
                               onClick={() => handleLoadConversation(chat.id)}
-                              className="w-full flex items-start gap-3 px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors text-left group"
+                              className="w-full flex items-start gap-3 px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors motion-reduce:transition-none text-left group"
                             >
                               <Clock className="w-4 h-4 lia-text-secondary flex-shrink-0 mt-0.5" />
                               <div className="flex-1 min-w-0">
-                                <p className="text-base-ui lia-text-base truncate group-hover:lia-text-strong transition-colors">
+                                <p className="text-base-ui lia-text-base truncate group-hover:lia-text-strong transition-colors motion-reduce:transition-none">
                                   {chat.title}
                                 </p>
                                 <p className="text-xs lia-text-secondary mt-0.5">
@@ -378,7 +378,7 @@ export function LiaSuperPrompt() {
                                 <button
                                   key={suggestion.id}
                                   onClick={() => handleSuggestionClick(suggestion)}
-                                  className="p-4 rounded-lg transition-colors text-left group"
+                                  className="p-4 rounded-lg transition-colors motion-reduce:transition-none text-left group"
                                   style={{border: `1px solid ${colors.bg}`,
                                     backgroundColor: "var(--white)"}}
                                   onMouseEnter={(e) => {
@@ -450,9 +450,9 @@ export function LiaSuperPrompt() {
                               </div>
                               <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-[14px] rounded-bl-[4px] p-4">
                                 <div className="flex items-center gap-1.5">
-                                  <div className="w-2 h-2 rounded-full bg-chat-cyan animate-bounce" style={{animationDelay: "0ms"}} />
-                                  <div className="w-2 h-2 rounded-full bg-chat-cyan animate-bounce" style={{animationDelay: "150ms"}} />
-                                  <div className="w-2 h-2 rounded-full bg-chat-cyan animate-bounce" style={{animationDelay: "300ms"}} />
+                                  <div className="w-2 h-2 rounded-full bg-chat-cyan animate-bounce motion-reduce:animate-none" style={{animationDelay: "0ms"}} />
+                                  <div className="w-2 h-2 rounded-full bg-chat-cyan animate-bounce motion-reduce:animate-none" style={{animationDelay: "150ms"}} />
+                                  <div className="w-2 h-2 rounded-full bg-chat-cyan animate-bounce motion-reduce:animate-none" style={{animationDelay: "300ms"}} />
                                 </div>
                               </div>
                             </div>
@@ -488,7 +488,7 @@ export function LiaSuperPrompt() {
                         <button
                           onClick={() => handleSendMessage()}
                           disabled={!input.trim() || isCreating || isStreaming}
-                          className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+                          className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none ${
  input.trim() && !isCreating && !isStreaming
                               ? "bg-chat-cyan text-white hover:opacity-90"
                               : "bg-gray-200 lia-text-secondary cursor-not-allowed"
@@ -602,7 +602,7 @@ function SuperPromptStreamingBubble({ content }: { content: string }) {
          
           dangerouslySetInnerHTML={{ __html: html }}
         />
-        <span className="inline-block w-1.5 h-3.5 bg-chat-cyan ml-0.5 animate-pulse align-middle" />
+        <span className="inline-block w-1.5 h-3.5 bg-chat-cyan ml-0.5 animate-pulse motion-reduce:animate-none align-middle" />
       </div>
     </div>
   )

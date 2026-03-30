@@ -161,7 +161,7 @@ export function EnrichedJDStage({
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center p-8 space-y-4">
-        <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center animate-pulse">
+        <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center animate-pulse motion-reduce:animate-none">
           <Brain className="w-6 h-6 text-wedo-cyan" />
         </div>
         <div className="text-center">
@@ -235,7 +235,7 @@ export function EnrichedJDStage({
         {enrichedData.totalSuggestions > 0 && (
           <button
             onClick={handleAcceptAll}
-            className="px-3 py-1.5 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-gray-400"
+            className="px-3 py-1.5 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 rounded-md transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-gray-400"
            
           >
             Aceitar todas
@@ -272,7 +272,7 @@ export function EnrichedJDStage({
           >
             <button
               onClick={() => toggleSection(sectionKey)}
-              className="w-full flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+              className="w-full flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors motion-reduce:transition-none"
             >
               <div className="flex items-center gap-2">
                 <Lightbulb className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
@@ -380,7 +380,7 @@ export function EnrichedJDStage({
                               <div className="flex items-center gap-1">
                                 <button
                                   onClick={() => handleAccept(suggestion.id)}
-                                  className="w-7 h-7 rounded-md bg-status-success/15 hover:bg-status-success/20 dark:bg-status-success/30 dark:hover:bg-status-success/50 flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-gray-400"
+                                  className="w-7 h-7 rounded-md bg-status-success/15 hover:bg-status-success/20 dark:bg-status-success/30 dark:hover:bg-status-success/50 flex items-center justify-center transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-gray-400"
                                   title="Aceitar sugestão"
                                   aria-label="Aceitar sugestão"
                                 >
@@ -388,7 +388,7 @@ export function EnrichedJDStage({
                                 </button>
                                 <button
                                   onClick={() => handleReject(suggestion.id)}
-                                  className="w-7 h-7 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-lia-bg-elevated dark:hover:bg-gray-600 flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-gray-400"
+                                  className="w-7 h-7 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-lia-bg-elevated dark:hover:bg-gray-600 flex items-center justify-center transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-gray-400"
                                   title="Rejeitar sugestão"
                                   aria-label="Rejeitar sugestão"
                                 >

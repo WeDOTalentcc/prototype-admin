@@ -74,7 +74,7 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
     <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-primary overflow-hidden">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
       >
         <div className="flex items-center gap-2">
           <PenLine className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-tertiary" />
@@ -160,7 +160,7 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
                   )}
                 </div>
               ) : (
-                <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group">
+                <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none group">
                   <div className="flex-1 flex flex-col gap-0.5">
                     <span className={`${textStyles.bodySmall}`}>
                       {question.question}
@@ -179,16 +179,16 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
                     </span>
                   )}
                   {isEditing && (
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none">
                       <button
                         onClick={() => handleStartEdit(question)}
-                        className="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-lia-text-tertiary dark:text-lia-text-tertiary transition-colors"
+                        className="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-lia-text-tertiary dark:text-lia-text-tertiary transition-colors motion-reduce:transition-none"
                       >
                         <PenLine className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => onRemoveQuestion(question.id)}
-                        className="p-1 rounded-md hover:bg-status-error/10 dark:hover:bg-status-error/30 text-lia-text-tertiary dark:text-lia-text-tertiary hover:text-status-error dark:hover:text-status-error transition-colors"
+                        className="p-1 rounded-md hover:bg-status-error/10 dark:hover:bg-status-error/30 text-lia-text-tertiary dark:text-lia-text-tertiary hover:text-status-error dark:hover:text-status-error transition-colors motion-reduce:transition-none"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -262,7 +262,7 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
           {isEditing && !isAdding && (
             <button
               onClick={() => setIsAdding(true)}
-              className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-lia-border-default dark:border-lia-border-default rounded-md text-lia-text-tertiary dark:text-lia-text-tertiary hover:border-gray-400 dark:hover:border-gray-500 hover:lia-text-base dark:hover:text-lia-text-disabled transition-colors font-['Open_Sans',sans-serif] text-xs font-medium"
+              className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-lia-border-default dark:border-lia-border-default rounded-md text-lia-text-tertiary dark:text-lia-text-tertiary hover:border-gray-400 dark:hover:border-gray-500 hover:lia-text-base dark:hover:text-lia-text-disabled transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif] text-xs font-medium"
             >
               <Plus className="w-3.5 h-3.5" />
               Adicionar Pergunta

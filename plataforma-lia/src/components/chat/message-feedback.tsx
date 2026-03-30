@@ -204,7 +204,7 @@ export function MessageFeedback({
                   >
                     {isSubmitting ? (
                       <>
-                        <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                        <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none mr-1" />
                         Enviando...
                       </>
                     ) : (

@@ -429,7 +429,7 @@ export function FieldsOfStudyInput({
                   setIsModeDropdownOpen(false)
                 }}
                 className={cn(
-                  "w-full text-left px-4 py-3 transition-colors hover:bg-gray-50 rounded-t-lg",
+                  "w-full text-left px-4 py-3 transition-colors motion-reduce:transition-none hover:bg-gray-50 rounded-t-lg",
                   mode === 'regular' && "bg-gray-50"
                 )}
               >
@@ -457,7 +457,7 @@ export function FieldsOfStudyInput({
                   setIsModeDropdownOpen(false)
                 }}
                 className={cn(
-                  "w-full text-left px-4 py-3 transition-colors hover:bg-gray-50 rounded-b-lg border-t border-lia-border-subtle",
+                  "w-full text-left px-4 py-3 transition-colors motion-reduce:transition-none hover:bg-gray-50 rounded-b-lg border-t border-lia-border-subtle",
                   mode === 'nested' && "bg-gray-50 dark:bg-lia-bg-secondary/50"
                 )}
               >
@@ -484,7 +484,7 @@ export function FieldsOfStudyInput({
 
         <Popover>
           <PopoverTrigger asChild>
-            <button className="lia-text-400 hover:lia-text-600 transition-colors">
+            <button className="lia-text-400 hover:lia-text-600 transition-colors motion-reduce:transition-none">
               <Info className="w-3.5 h-3.5" />
             </button>
           </PopoverTrigger>
@@ -522,8 +522,8 @@ export function FieldsOfStudyInput({
             disabled={isLoadingAI}
           />
           {isLoadingAI && (
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <Loader2 className="w-4 h-4 animate-spin lia-text-600" />
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-600" />
             </div>
           )}
         </div>
@@ -573,7 +573,7 @@ export function FieldsOfStudyInput({
               <span>{field}</span>
               <button
                 onClick={() => removeField(field)}
-                className="hover:bg-gray-200 rounded-md p-0.5 transition-colors ml-1"
+                className="hover:bg-gray-200 rounded-md p-0.5 transition-colors motion-reduce:transition-none ml-1"
                 title="Remove"
               >
                 <X className="w-3 h-3" />

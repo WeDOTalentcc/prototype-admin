@@ -267,7 +267,7 @@ export function CompetenciesStage() {
           </button>
           <button 
             onClick={() => removeTechnicalSkill(skill.id)}
-            className="p-0.5 lia-text-secondary hover:text-status-error transition-colors"
+            className="p-0.5 lia-text-secondary hover:text-status-error transition-colors motion-reduce:transition-none"
           >
             <Trash2 className="w-3 h-3" />
           </button>
@@ -275,7 +275,7 @@ export function CompetenciesStage() {
         <div className="flex items-center gap-1 ml-0.5">
           <span className="text-micro lia-text-secondary mr-1">Peso:</span>
           {[1, 2, 3, 4, 5].map((w) => (
-            <button key={w} onClick={() => updateSkillWeight(skill.id, w)} className="transition-colors">
+            <button key={w} onClick={() => updateSkillWeight(skill.id, w)} className="transition-colors motion-reduce:transition-none">
               <Star className={cn(
  "w-3.5 h-3.5 transition-colors",
                 w <= skill.weight ? "fill-gray-700 dark:fill-gray-300 text-lia-text-secondary dark:text-lia-text-tertiary" : "text-lia-text-inverse"
@@ -332,7 +332,7 @@ export function CompetenciesStage() {
           <div className="flex items-center gap-1 ml-6">
             <span className="text-micro lia-text-secondary mr-1">Peso:</span>
             {[1, 2, 3, 4, 5].map((w) => (
-              <button key={w} onClick={() => updateBehavioralWeight(comp.id, w)} className="transition-colors">
+              <button key={w} onClick={() => updateBehavioralWeight(comp.id, w)} className="transition-colors motion-reduce:transition-none">
                 <Star className={cn(
  "w-3.5 h-3.5 transition-colors",
                   w <= comp.weight ? "fill-gray-700 dark:fill-gray-300 text-lia-text-secondary dark:text-lia-text-tertiary" : "text-lia-text-inverse"
@@ -404,7 +404,7 @@ export function CompetenciesStage() {
           {/* Add Skill Button */}
           <button
             onClick={() => setShowAddSkillModal(true)}
-            className="w-full py-2 px-3 rounded-md border border-dashed border-gray-900 text-lia-text-secondary dark:text-lia-text-tertiary text-xs font-medium hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors flex items-center justify-center gap-1.5"
+            className="w-full py-2 px-3 rounded-md border border-dashed border-gray-900 text-lia-text-secondary dark:text-lia-text-tertiary text-xs font-medium hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5"
           >
             <Plus className="w-3.5 h-3.5" />
             Adicionar Competência Técnica

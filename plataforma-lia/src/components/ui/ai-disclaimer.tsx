@@ -42,7 +42,7 @@ export function AIDisclaimer({ variant = "icon", className = "" }: AIDisclaimerP
       <PopoverTrigger asChild>
         <button
           type="button"
-          className={`inline-flex items-center justify-center h-5 w-5 rounded-full text-status-warning hover:text-status-warning hover:bg-status-warning/15 dark:hover:bg-status-warning/30 transition-colors ${className}`}
+          className={`inline-flex items-center justify-center h-5 w-5 rounded-full text-status-warning hover:text-status-warning hover:bg-status-warning/15 dark:hover:bg-status-warning/30 transition-colors motion-reduce:transition-none ${className}`}
           aria-label="Informações sobre dados gerados por IA"
         >
           <HelpCircle className="h-4 w-4" />

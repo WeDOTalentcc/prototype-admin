@@ -212,8 +212,8 @@ export default function ClientComunicacoesPage({
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-6 h-6 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+            <div className="flex items-center justify-center py-8" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
               <span className="ml-2 text-sm lia-text-400 dark:lia-text-500">
                 Carregando templates...
               </span>
@@ -221,7 +221,7 @@ export default function ClientComunicacoesPage({
           ) : filteredTemplates.length === 0 ? (
             <div className="text-center py-8">
               <FileText className="w-12 h-12 mx-auto mb-4 lia-text-300" />
-              <p className="text-sm lia-text-400 dark:lia-text-500">
+              <p className="text-sm lia-text-400 dark:lia-text-500" aria-live="polite" aria-atomic="true">
                 Nenhum template encontrado para este canal
               </p>
             </div>
@@ -230,7 +230,7 @@ export default function ClientComunicacoesPage({
               {filteredTemplates.map((template) => (
                 <div
                   key={template.id}
-                  className="p-4 border rounded-md hover:border-gray-900 dark:hover:border-gray-50 transition-colors bg-gray-100 dark:bg-lia-bg-secondary"
+                  className="p-4 border rounded-md hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none bg-gray-100 dark:bg-lia-bg-secondary"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -300,7 +300,7 @@ export default function ClientComunicacoesPage({
           return (
             <Card 
               key={module.id}
-              className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors cursor-pointer group"
+              className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none cursor-pointer group"
             >
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between">
@@ -323,7 +323,7 @@ export default function ClientComunicacoesPage({
                 >
                   {module.description}
                 </p>
-                <div className="flex items-center text-sm lia-text-600 dark:text-lia-text-tertiary group-hover:translate-x-1 transition-transform">
+                <div className="flex items-center text-sm lia-text-600 dark:text-lia-text-tertiary group-hover:translate-x-1 transition-transform motion-reduce:transition-none">
                   Configurar
                   <ArrowRight className="w-4 h-4 ml-1" />
                 </div>

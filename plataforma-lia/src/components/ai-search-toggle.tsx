@@ -205,7 +205,7 @@ export function AISearchToggle({
       <div className="relative w-full max-w-md">
         <div
           onClick={handleExpand}
-          className="flex items-center gap-3 px-4 py-2.5 bg-white dark:bg-lia-bg-secondary rounded-md cursor-pointer transition-colors duration-200"
+          className="flex items-center gap-3 px-4 py-2.5 bg-white dark:bg-lia-bg-secondary rounded-md cursor-pointer transition-colors motion-reduce:transition-none duration-200"
         >
           <Brain className="w-4 h-4 text-status-success dark:text-status-success" />
           <span className="text-sm text-lia-text-primary dark:text-lia-text-primary flex-1">
@@ -271,7 +271,7 @@ export function AISearchToggle({
                 onClick={handleVoiceInput}
                 className={`${isListening ? 'text-status-error' : 'text-status-success'}`}
               >
-                <Mic className={`w-4 h-4 ${isListening ? 'animate-pulse' : ''}`} />
+                <Mic className={`w-4 h-4 ${isListening ? 'animate-pulse motion-reduce:animate-none' : ''}`} />
               </Button>
               <Button
                 onClick={() => handleSubmit()}
@@ -293,7 +293,7 @@ export function AISearchToggle({
                 <button
                   key={index}
                   onClick={() => handleSubmit(suggestion.command)}
-                  className="text-left p-3 bg-white dark:bg-lia-bg-secondary rounded-md transition-colors duration-200 group"
+                  className="text-left p-3 bg-white dark:bg-lia-bg-secondary rounded-md transition-colors motion-reduce:transition-none duration-200 group"
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <suggestion.icon className="w-4 h-4 text-status-success group-hover:text-status-success" />
@@ -320,7 +320,7 @@ export function AISearchToggle({
                   <button
                     key={index}
                     onClick={() => handleSubmit(command)}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success rounded-md text-xs hover:bg-status-success/20 dark:hover:bg-status-success/50 transition-colors whitespace-nowrap"
+                    className="flex items-center gap-2 px-3 py-1.5 bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success rounded-md text-xs hover:bg-status-success/20 dark:hover:bg-status-success/50 transition-colors motion-reduce:transition-none whitespace-nowrap"
                   >
                     <Clock className="w-3 h-3" />
                     {command}
@@ -392,7 +392,7 @@ export function AISearchToggle({
               onClick={handleVoiceInput}
               className={`${isListening ? 'text-status-error' : 'text-status-success'}`}
             >
-              <Mic className={`w-5 h-5 ${isListening ? 'animate-pulse' : ''}`} />
+              <Mic className={`w-5 h-5 ${isListening ? 'animate-pulse motion-reduce:animate-none' : ''}`} />
             </Button>
             <Button
               onClick={() => handleSubmit()}
@@ -414,7 +414,7 @@ export function AISearchToggle({
               <button
                 key={index}
                 onClick={() => handleSubmit(suggestion.command)}
-                className="text-left p-4 bg-white dark:bg-lia-bg-secondary rounded-md transition-colors duration-200 group"
+                className="text-left p-4 bg-white dark:bg-lia-bg-secondary rounded-md transition-colors motion-reduce:transition-none duration-200 group"
               >
                 <div className="flex items-center gap-3 mb-2">
                   <suggestion.icon className="w-5 h-5 text-status-success group-hover:text-status-success" />
@@ -444,7 +444,7 @@ export function AISearchToggle({
                 <button
                   key={index}
                   onClick={() => handleSubmit(command)}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success rounded-md text-sm hover:bg-status-success/20 dark:hover:bg-status-success/50 transition-colors"
+                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success rounded-md text-sm hover:bg-status-success/20 dark:hover:bg-status-success/50 transition-colors motion-reduce:transition-none"
                 >
                   <Clock className="w-3 h-3" />
                   {command}

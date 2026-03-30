@@ -101,7 +101,7 @@ export default function CertificacoesPage() {
                 {certifications.map((cert, index) => (
                   <tr 
                     key={cert.id}
-                    className={`border-b hover:bg-gray-50 transition-colors border-lia-border-subtle dark:border-lia-border-subtle ${index % 2 !== 0 ? 'bg-gray-50 dark:bg-lia-bg-primary' : ''}`}
+                    className={`border-b hover:bg-gray-50 transition-colors motion-reduce:transition-none border-lia-border-subtle dark:border-lia-border-subtle ${index % 2 !== 0 ? 'bg-gray-50 dark:bg-lia-bg-primary' : ''}`}
                   >
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-2">
@@ -132,7 +132,7 @@ export default function CertificacoesPage() {
                     <td className="px-4 py-4 text-center">
                       {cert.hasDocument ? (
                         <button 
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-white hover:opacity-90 transition-opacity bg-gray-900"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-white hover:opacity-90 transition-opacity motion-reduce:transition-none bg-gray-900"
                           onClick={() => toast.info('Funcionalidade de download em implementação', { description: 'Em breve você poderá baixar os certificados.' })}
                         >
                           <Download className="w-3.5 h-3.5" />

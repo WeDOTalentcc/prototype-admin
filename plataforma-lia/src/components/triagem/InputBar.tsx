@@ -112,7 +112,7 @@ export function InputBar({
               onClick={onEndConversation}
               disabled={isDisabled}
               aria-label="Finalizar conversa"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-status-error/10 dark:bg-status-error/20 text-status-error dark:text-status-error hover:bg-status-error/15 dark:hover:bg-status-error/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-['Open_Sans',sans-serif]"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-status-error/10 dark:bg-status-error/20 text-status-error dark:text-status-error hover:bg-status-error/15 dark:hover:bg-status-error/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
             >
               <PhoneOff className="w-3.5 h-3.5" />
               Finalizar Conversa
@@ -145,7 +145,7 @@ export function InputBar({
           onClick={handleSend}
           disabled={isDisabled || !text.trim()}
           aria-label="Enviar mensagem"
-          className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-md bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:outline-none"
+          className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-md bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:outline-none"
         >
           <Send className="w-4 h-4" />
         </button>

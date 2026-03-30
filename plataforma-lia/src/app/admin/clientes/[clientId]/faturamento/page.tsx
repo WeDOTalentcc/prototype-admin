@@ -436,7 +436,7 @@ export default function ClientFaturamentoPage({
                 disabled={actionLoading === 'change_plan'}
               >
                 {actionLoading === 'change_plan' ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
                 ) : (
                   <ArrowUpRight className="w-4 h-4 mr-2" />
                 )}
@@ -450,7 +450,7 @@ export default function ClientFaturamentoPage({
                 disabled={actionLoading === 'cancel' || billingData.subscription.status === 'cancelled'}
               >
                 {actionLoading === 'cancel' ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
                 ) : (
                   <Ban className="w-4 h-4 mr-2" />
                 )}
@@ -529,7 +529,7 @@ export default function ClientFaturamentoPage({
               return (
                 <div 
                   key={invoice.id}
-                  className="flex items-center justify-between p-3 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors border-lia-border-subtle dark:border-lia-border-subtle"
+                  className="flex items-center justify-between p-3 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors motion-reduce:transition-none border-lia-border-subtle dark:border-lia-border-subtle"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
@@ -566,7 +566,7 @@ export default function ClientFaturamentoPage({
                       disabled={actionLoading === `download_${invoice.id}`}
                     >
                       {actionLoading === `download_${invoice.id}` ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                       ) : (
                         <Download className="w-4 h-4" />
                       )}

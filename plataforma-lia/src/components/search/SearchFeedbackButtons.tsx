@@ -78,7 +78,7 @@ export function SearchFeedbackButtons({
         disabled={isSubmitting}
         className={cn(
           btnSize,
-          "rounded-full flex items-center justify-center hover:opacity-80 transition-opacity",
+          "rounded-full flex items-center justify-center hover:opacity-80 transition-opacity motion-reduce:transition-none",
           isSubmitting && "opacity-50 pointer-events-none"
         , "bg-gray-800")}
         title="Aprovar candidato"
@@ -90,7 +90,7 @@ export function SearchFeedbackButtons({
         disabled={isSubmitting}
         className={cn(
           btnSize,
-          "rounded-full flex items-center justify-center hover:opacity-80 transition-opacity bg-wedo-coral",
+          "rounded-full flex items-center justify-center hover:opacity-80 transition-opacity motion-reduce:transition-none bg-wedo-coral",
           isSubmitting && "opacity-50 pointer-events-none"
         )}
         title="Reprovar candidato"

@@ -55,7 +55,7 @@ export default function IntegracoesPage() {
         <h1 className="text-lg font-semibold lia-text-900 dark:lia-text-50 font-['Open_Sans',sans-serif]">
           Integrações de Calendário
         </h1>
-        <p className="text-xs lia-text-500 mt-1 font-['Open_Sans',sans-serif]">
+        <p className="text-xs lia-text-500 mt-1 font-['Open_Sans',sans-serif]" aria-live="polite" aria-atomic="true">
           Conecte seu calendário para agendar entrevistas automaticamente com candidatos.
         </p>
       </div>
@@ -79,7 +79,7 @@ export default function IntegracoesPage() {
             </div>
             {microsoftStatus === "loading" ? (
               <Badge variant="outline" className="text-micro gap-1">
-                <Loader2 className="w-3 h-3 animate-spin" /> Verificando...
+                <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" /> Verificando...
               </Badge>
             ) : microsoftStatus === "connected" ? (
               <Badge variant="outline" className="text-micro gap-1 border-status-success/30 text-status-success dark:text-status-success dark:border-status-success/30">
@@ -148,7 +148,7 @@ export default function IntegracoesPage() {
               className="rounded-md text-xs gap-2 font-['Open_Sans',sans-serif]"
             >
               {googleStatus === "loading" ? (
-                <><Loader2 className="w-3 h-3 animate-spin" /> Conectando...</>
+                <><Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" /> Conectando...</>
               ) : (
                 <><Chrome className="w-3 h-3" /> Conectar com Google</>
               )}

@@ -139,7 +139,7 @@ export default function RecursosPage() {
                     </p>
                     {resource.downloadable ? (
                       <button 
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-white hover:opacity-90 transition-opacity bg-gray-900"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-white hover:opacity-90 transition-opacity motion-reduce:transition-none bg-gray-900"
                         onClick={() => handleDownload(resource.name)}
                       >
                         <Download className="w-3.5 h-3.5" />
@@ -147,7 +147,7 @@ export default function RecursosPage() {
                       </button>
                     ) : (
                       <button 
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border hover:bg-gray-50 transition-colors text-status-warning" style={{
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border hover:bg-gray-50 transition-colors motion-reduce:transition-none text-status-warning" style={{
                           borderColor: 'var(--status-warning)'
                         }}
                         onClick={() => handleRequest(resource.name)}

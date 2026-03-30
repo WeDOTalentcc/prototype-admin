@@ -356,7 +356,7 @@ export function StatusBadge({
  'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full',
         'bg-[var(--badge-bg)] dark:bg-[var(--badge-bg-dark)]',
         'border border-[var(--badge-border)] dark:border-[var(--badge-border-dark)]',
-        shouldPulse && 'motion-safe:animate-pulse',
+        shouldPulse && 'motion-safe:animate-pulse motion-reduce:animate-none',
         onClick && 'cursor-pointer hover:opacity-80',
         className
       )}

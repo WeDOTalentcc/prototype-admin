@@ -205,9 +205,9 @@ export default function ClientTestesPage({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 lia-text-600 dark:text-lia-text-tertiary" />
+      <div className="flex items-center justify-center min-h-[400px]" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="text-center" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none mx-auto mb-4 lia-text-600 dark:text-lia-text-tertiary" />
           <p className="text-sm lia-text-400 dark:lia-text-500">
             Carregando testes técnicos...
           </p>
@@ -249,9 +249,9 @@ export default function ClientTestesPage({
             Biblioteca de testes e avaliações técnicas para este cliente
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
           <Button variant="outline" size="sm" onClick={refetch} disabled={isUpdating}>
-            <RefreshCw className={`w-4 h-4 mr-2 ${isUpdating ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 mr-2 ${isUpdating ? 'animate-spin motion-reduce:animate-none' : ''}`} />
             Atualizar
           </Button>
           <Button variant="outline" size="sm">
@@ -481,7 +481,7 @@ export default function ClientTestesPage({
               {filteredTests.length === 0 ? (
                 <div className="text-center py-8">
                   <FileCode className="w-12 h-12 mx-auto mb-4 lia-text-300" />
-                  <p className="text-sm mb-4 lia-text-400 dark:lia-text-500">
+                  <p className="text-sm mb-4 lia-text-400 dark:lia-text-500" aria-live="polite" aria-atomic="true">
                     {tests.length === 0 
                       ? 'Nenhum teste configurado para este cliente'
                       : 'Nenhum teste encontrado com os filtros aplicados'
@@ -495,7 +495,7 @@ export default function ClientTestesPage({
                       disabled={isUpdating}
                     >
                       {isUpdating ? (
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
                       ) : (
                         <Plus className="w-4 h-4 mr-2" />
                       )}
@@ -514,7 +514,7 @@ export default function ClientTestesPage({
                   return (
                     <div 
                       key={test.id}
-                      className={`flex items-center gap-4 p-4 rounded-md border hover:border-gray-900 dark:hover:border-gray-50 transition-colors border-lia-border-subtle dark:border-lia-border-subtle ${
+                      className={`flex items-center gap-4 p-4 rounded-md border hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none border-lia-border-subtle dark:border-lia-border-subtle ${
                         !test.enabled ? 'opacity-60' : ''
                       }`}
                     >
@@ -587,12 +587,12 @@ export default function ClientTestesPage({
                           {status.label}
                         </Badge>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
                           <span className="text-xs lia-text-400 dark:lia-text-500">
                             {test.enabled ? 'Habilitado' : 'Desabilitado'}
                           </span>
                           {isToggling ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                           ) : (
                             <Switch
                               checked={test.enabled}

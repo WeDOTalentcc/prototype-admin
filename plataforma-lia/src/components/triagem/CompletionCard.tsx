@@ -65,7 +65,7 @@ export function CompletionCard({ candidateName, summary, onClose, className }: C
             type="button"
             onClick={onClose}
             aria-label="Fechar triagem"
-            className="w-full h-10 flex items-center justify-center rounded-md bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary text-sm font-medium border border-lia-border-default dark:border-lia-border-default hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:outline-none font-['Open_Sans',sans-serif]"
+            className="w-full h-10 flex items-center justify-center rounded-md bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary text-sm font-medium border border-lia-border-default dark:border-lia-border-default hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:outline-none font-['Open_Sans',sans-serif]"
           >
             Fechar
           </button>

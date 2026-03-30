@@ -162,7 +162,7 @@ export function ScreeningStatusModal({
               <p className="text-base-ui text-lia-text-secondary dark:text-lia-text-tertiary mb-1">
                 Triagem não configurada
               </p>
-              <p className="text-xs text-lia-text-disabled">
+              <p className="text-xs text-lia-text-disabled" aria-live="polite" aria-atomic="true">
                 Configure as perguntas de triagem na aba &quot;Roteiro de Triagem&quot; da vaga para poder iniciar.
               </p>
             </div>
@@ -171,7 +171,7 @@ export function ScreeningStatusModal({
           {screeningStatus === 'not_started' && !showPauseForm && (
             <div className="space-y-4">
               <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-4">
-                <p className="text-xs text-lia-text-secondary dark:text-lia-text-secondary mb-3">
+                <p className="text-xs text-lia-text-secondary dark:text-lia-text-secondary mb-3" aria-live="polite" aria-atomic="true">
                   A triagem está configurada mas ainda não foi iniciada. Ao ativar, candidatos poderão ser triados automaticamente.
                 </p>
                 
@@ -198,7 +198,7 @@ export function ScreeningStatusModal({
                 className="w-full h-10 text-base-ui font-medium bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 gap-2"
               >
                 {isUpdating ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                 ) : (
                   <Play className="w-4 h-4" />
                 )}
@@ -328,7 +328,7 @@ export function ScreeningStatusModal({
                   disabled={isUpdating}
                   className="flex-1 h-8 text-xs bg-status-warning hover:bg-status-warning text-white"
                 >
-                  {isUpdating ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Confirmar Pausa'}
+                  {isUpdating ? <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" /> : 'Confirmar Pausa'}
                 </Button>
               </div>
             </div>
@@ -365,7 +365,7 @@ export function ScreeningStatusModal({
               disabled={isUpdating}
               className="w-full h-9 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 gap-1.5"
             >
-              {isUpdating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
+              {isUpdating ? <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" /> : <Play className="w-3.5 h-3.5" />}
               Retomar Triagem
             </Button>
           )}

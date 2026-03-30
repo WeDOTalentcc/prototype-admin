@@ -163,7 +163,7 @@ export function CompanyDataSection({
 
   if (loading) {
     return (
-      <div className="space-y-4 animate-pulse">
+      <div className="space-y-4 animate-pulse motion-reduce:animate-none">
         {[1, 2, 3, 4].map((i) => (
           <div key={i} className="h-24 bg-gray-100 rounded-md" />
         ))}
@@ -247,7 +247,7 @@ export function CompanyDataSection({
               >
                 {saving ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
                     Salvando...
                   </>
                 ) : (
@@ -271,7 +271,7 @@ export function CompanyDataSection({
         <div className="grid grid-cols-1 gap-3">
           {/* Logo - Card especial com logo antes do nome e largura auto */}
           <div className="inline-flex items-center gap-3 bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md px-4 py-3 w-fit">
-            <div className="w-14 h-14 rounded-md bg-gray-100 dark:bg-lia-bg-secondary border-2 border-dashed border-lia-border-default flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors hover:border-gray-900 dark:hover:border-gray-50 flex-shrink-0">
+            <div className="w-14 h-14 rounded-md bg-gray-100 dark:bg-lia-bg-secondary border-2 border-dashed border-lia-border-default flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors motion-reduce:transition-none hover:border-gray-900 dark:hover:border-gray-50 flex-shrink-0">
               {companyData.logo ? (
                 <img src={companyData.logo} alt="Logo" className="w-full h-full object-cover rounded-md" />
               ) : (
@@ -535,7 +535,7 @@ export function CompanyDataSection({
               <Button
                 onClick={handleLiaAnalysis}
                 disabled={!isEditingCompanyData || !companyData.website}
-                className="gap-2 text-white hover:opacity-90 transition-opacity text-xs bg-gray-900 hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+                className="gap-2 text-white hover:opacity-90 transition-opacity motion-reduce:transition-none text-xs bg-gray-900 hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
               >
                 <Brain className="w-4 h-4 text-wedo-cyan" />
                 Analisar com LIA
@@ -847,7 +847,7 @@ export function CompanyDataSection({
                         : [...current, type]
                       setCompanyData((prev) => ({ ...prev, employment_types: updated }))
                     }}
-                    className={`px-2.5 py-1.5 text-micro rounded-full border transition-colors ${
+                    className={`px-2.5 py-1.5 text-micro rounded-full border transition-colors motion-reduce:transition-none ${
                       isSelected
                         ? 'bg-gray-900 border-gray-900 text-white dark:lia-bg-50 dark:lia-border-50 dark:lia-text-900'
                         : 'bg-white border-lia-border-subtle lia-text-600 hover:border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-lia-text-secondary'
@@ -906,7 +906,7 @@ export function CompanyDataSection({
                           seniority_levels: [...(prev.seniority_levels || []), level],
                         }))
                       }}
-                      className={`text-micro px-2 py-0.5 border border-dashed border-lia-border-default dark:border-lia-border-default rounded-full lia-text-500 dark:text-lia-text-tertiary hover:border-wedo-purple/30 hover:text-wedo-purple transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
+                      className={`text-micro px-2 py-0.5 border border-dashed border-lia-border-default dark:border-lia-border-default rounded-full lia-text-500 dark:text-lia-text-tertiary hover:border-wedo-purple/30 hover:text-wedo-purple transition-colors motion-reduce:transition-none ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
                     >
                       + {level}
                     </button>
@@ -1016,7 +1016,7 @@ export function CompanyDataSection({
           >
             {saving ? (
               <>
-                <Loader2 className="w-3 h-3 mr-1.5 animate-spin" />
+                <Loader2 className="w-3 h-3 mr-1.5 animate-spin motion-reduce:animate-none" />
                 Salvando...
               </>
             ) : (

@@ -167,8 +167,8 @@ export function SidePanelContainer({
             </div>
           </div>
           {isLoading && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground dark:text-lia-text-tertiary mt-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
+            <div className="flex items-center gap-2 text-sm text-muted-foreground dark:text-lia-text-tertiary mt-2" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />
               Salvando...
             </div>
           )}

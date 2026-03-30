@@ -137,7 +137,7 @@ export function SaveAsArchetypeModal({
                     <button
                       key={emoji}
                       onClick={() => setEmojiInput(emoji)}
-                      className={`w-10 h-10 rounded-md text-xl flex items-center justify-center transition-colors ${
+                      className={`w-10 h-10 rounded-md text-xl flex items-center justify-center transition-colors motion-reduce:transition-none ${
                         emojiInput === emoji
                           ? 'bg-gray-100 dark:bg-lia-bg-secondary border-2 border-gray-900 dark:border-lia-border-medium'
                           : 'bg-gray-100 dark:bg-lia-bg-elevated hover:bg-gray-200 dark:hover:bg-gray-600'

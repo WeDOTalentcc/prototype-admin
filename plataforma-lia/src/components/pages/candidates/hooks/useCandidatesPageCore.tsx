@@ -162,7 +162,7 @@ const SmartSearchInput = dynamic(
   () => import("@/components/search/smart-search-input").then(m => ({ default: m.SmartSearchInput })).catch(() => {
     return { default: () => null as unknown }
   }),
-  { ssr: false, loading: () => <div className="h-12 bg-gray-100 dark:bg-lia-bg-secondary rounded-lg animate-pulse" /> }
+  { ssr: false, loading: () => <div className="h-12 bg-gray-100 dark:bg-lia-bg-secondary rounded-lg animate-pulse motion-reduce:animate-none" /> }
 )
 const AdvancedFiltersModal = dynamic(() => import("@/components/search/advanced-filters-modal").then(m => ({ default: m.AdvancedFiltersModal })), { ssr: false })
 // Tipo para controle de origem de busca (local, global ou híbrido)

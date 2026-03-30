@@ -236,9 +236,9 @@
                     </div>
                     <div className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-[14px] rounded-bl-[4px] p-3 inline-block">
                       <div className="flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{animationDelay: '0ms'}} />
-                        <span className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{animationDelay: '150ms'}} />
-                        <span className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{animationDelay: '300ms'}} />
+                        <span className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '0ms'}} />
+                        <span className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '150ms'}} />
+                        <span className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '300ms'}} />
                       </div>
                     </div>
                   </div>

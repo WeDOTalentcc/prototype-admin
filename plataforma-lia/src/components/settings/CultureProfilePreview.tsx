@@ -257,7 +257,7 @@ export function CultureProfilePreview({
                   {isEditing && (
                     <button
                       onClick={() => removeValue(index)}
-                      className="ml-1 p-0.5 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                      className="ml-1 p-0.5 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors motion-reduce:transition-none"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -305,7 +305,7 @@ export function CultureProfilePreview({
                   {isEditing && (
                     <button
                       onClick={() => removeEvp(index)}
-                      className="p-0.5 rounded-full hover:bg-status-warning/20 dark:hover:bg-status-warning transition-colors"
+                      className="p-0.5 rounded-full hover:bg-status-warning/20 dark:hover:bg-status-warning transition-colors motion-reduce:transition-none"
                     >
                       <X className="w-3 h-3 text-status-warning" />
                     </button>
@@ -357,7 +357,7 @@ export function CultureProfilePreview({
                 {isEditing && (
                   <button
                     onClick={() => removeCompetency(index)}
-                    className="ml-1 p-0.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                    className="ml-1 p-0.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -393,7 +393,7 @@ export function CultureProfilePreview({
             Perfil Organizacional (Big Five)
             <Popover>
               <PopoverTrigger asChild>
-                <button className="ml-1 p-0.5 rounded-full hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors">
+                <button className="ml-1 p-0.5 rounded-full hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors motion-reduce:transition-none">
                   <HelpCircle className="w-3.5 h-3.5 lia-text-500 dark:text-lia-text-tertiary" />
                 </button>
               </PopoverTrigger>
@@ -646,16 +646,16 @@ export function CultureProfilePreview({
               }, 800)
             }}
             disabled={isLoading || acceptedAll}
-            className={`gap-2 bg-gray-900 text-white hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 transition-colors duration-300 ease-in-out ${
+            className={`gap-2 bg-gray-900 text-white hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 transition-colors motion-reduce:transition-none duration-300 ease-in-out ${
               acceptedAll ? 'scale-105 ring-2 ring-gray-900/50 ring-offset-2 dark:lia-ring-50/50' : 'hover:scale-[1.02]'
             }`}
           >
             <CheckCircle2 
-              className={`w-4 h-4 transition-colors duration-300 ${
+              className={`w-4 h-4 transition-colors motion-reduce:transition-none duration-300 ${
                 acceptedAll ? 'scale-125' : ''
               }`} 
             />
-            <span className="transition-colors duration-300">
+            <span className="transition-colors motion-reduce:transition-none duration-300">
               {acceptedAll 
                 ? "Aceito! ✓" 
                 : hasChanges 

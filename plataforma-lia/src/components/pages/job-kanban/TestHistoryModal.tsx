@@ -48,7 +48,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-lia-bg-primary/20 rounded-md transition-colors"
+              className="p-2 hover:bg-lia-bg-primary/20 rounded-md transition-colors motion-reduce:transition-none"
             >
               <X className="w-5 h-5" />
             </button>
@@ -86,10 +86,10 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                   {[6.8, 7.0, 7.1, 7.2, 7.1, 7.4].map((value, i) => (
                     <div
                       key={i}
-                      className="flex-1 bg-lia-bg-primary/30 rounded-t hover:bg-lia-bg-primary/40 transition-colors relative group"
+                      className="flex-1 bg-lia-bg-primary/30 rounded-t hover:bg-lia-bg-primary/40 transition-colors motion-reduce:transition-none relative group"
                       style={{height: `${((value - 6) / 2) * 100}%`}}
                     >
-                      <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-xs opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none">
                         {value}
                       </span>
                     </div>

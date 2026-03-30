@@ -42,7 +42,7 @@ export function GlobalExpansionConfirmModal({
             Expandir para Busca Global
           </AlertDialogTitle>
           <AlertDialogDescription className="space-y-4">
-            <p className="text-sm text-lia-text-primary dark:text-lia-text-tertiary">
+            <p className="text-sm text-lia-text-primary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
               A Busca Global encontra candidatos além da sua base local em um pool de mais de 800 milhões de perfis profissionais.
             </p>
 
@@ -52,12 +52,12 @@ export function GlobalExpansionConfirmModal({
                 <span className="font-medium text-xs max-w-sidebar-content truncate">{lastSuccessfulQuery || lastSearchQuery || 'N/A'}</span>
               </div>
               <div className="flex justify-between items-center text-sm">
-                <span className="text-lia-text-primary">Resultados locais:</span>
-                <span className="font-medium">{localResultsCount} candidatos</span>
+                <span className="text-lia-text-primary" aria-live="polite" aria-atomic="true">Resultados locais:</span>
+                <span className="font-medium" aria-live="polite" aria-atomic="true">{localResultsCount} candidatos</span>
               </div>
               <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-2">
                 <div className="flex justify-between items-center">
-                  <span className="font-medium">Custo por candidato:</span>
+                  <span className="font-medium" aria-live="polite" aria-atomic="true">Custo por candidato:</span>
                   <span className="font-bold text-lg text-lia-text-secondary">
                     1 crédito
                   </span>
@@ -67,7 +67,7 @@ export function GlobalExpansionConfirmModal({
 
             <div className="flex items-center gap-2 text-xs text-status-warning dark:text-status-warning bg-status-warning/10 dark:bg-status-warning/20 p-2 rounded-md">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              <span>Você será cobrado apenas pelos candidatos que visualizar/revelar contatos.</span>
+              <span aria-live="polite" aria-atomic="true">Você será cobrado apenas pelos candidatos que visualizar/revelar contatos.</span>
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -82,7 +82,7 @@ export function GlobalExpansionConfirmModal({
           >
             {isExpandingToGlobal ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                 Expandindo...
               </>
             ) : (

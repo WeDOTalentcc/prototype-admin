@@ -197,9 +197,9 @@ export default function GuardrailsPage() {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
           <Button variant="outline" size="sm" onClick={fetchGuardrails} disabled={loading}>
-            {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+            {loading ? <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none" /> : <RefreshCw className="h-3 w-3" />}
           </Button>
           <Button size="sm" onClick={openCreateDialog} className="bg-gray-900 hover:bg-gray-800 text-white">
             <Plus className="h-3 w-3 mr-1" />
@@ -268,10 +268,10 @@ export default function GuardrailsPage() {
       </div>
 
       {/* Lista */}
-      <div className="space-y-2">
+      <div className="space-y-2" role="status" aria-live="polite" aria-label="Carregando...">
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-6 w-6 animate-spin lia-text-400" />
+          <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
+            <Loader2 className="h-6 w-6 animate-spin motion-reduce:animate-none lia-text-400" />
           </div>
         ) : guardrails.length === 0 ? (
           <div className="text-center py-12 lia-text-400 text-sm">
@@ -423,7 +423,7 @@ export default function GuardrailsPage() {
               onClick={handleSave}
               disabled={saving}
             >
-              {saving && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
+              {saving && <Loader2 className="h-3 w-3 mr-1 animate-spin motion-reduce:animate-none" />}
               {editingGuardrail ? "Salvar" : "Criar"}
             </Button>
           </DialogFooter>

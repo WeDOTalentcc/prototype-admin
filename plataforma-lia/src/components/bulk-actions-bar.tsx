@@ -362,7 +362,7 @@ const BulkActionsBar = memo(function BulkActionsBar({
       >
         <div className="flex items-center gap-3 px-4 py-3 bg-gray-900 text-white rounded-md border border-gray-700">
           <div className="flex items-center gap-2 pr-3 border-r border-gray-600">
-            <span className="text-sm font-medium">
+            <span className="text-sm font-medium" aria-live="polite" aria-atomic="true">
               {selectedCount} candidato{selectedCount !== 1 ? 's' : ''} selecionado{selectedCount !== 1 ? 's' : ''}
             </span>
             <Button
@@ -653,7 +653,7 @@ const BulkActionsBar = memo(function BulkActionsBar({
                 )
               ) : (
                 <span className="flex items-center gap-2">
-                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none" />
                   Processando...
                 </span>
               )}

@@ -226,7 +226,7 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
 
   if (loading) {
     return (
-      <div className="space-y-6 animate-pulse">
+      <div className="space-y-6 animate-pulse motion-reduce:animate-none">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map(i => (
             <div key={i} className="h-28 bg-gray-200 rounded-md" />
@@ -436,7 +436,7 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
                   return (
                     <tr 
                       key={recruiter.recruiter_id} 
-                      className="border-b border-lia-border-subtle hover:bg-gray-50 transition-colors"
+                      className="border-b border-lia-border-subtle hover:bg-gray-50 transition-colors motion-reduce:transition-none"
                     >
                       <td className="py-3 px-2">
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${

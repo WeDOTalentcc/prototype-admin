@@ -21,12 +21,12 @@ export function ReactThinkingStream({ steps, isThinking }: ReactThinkingStreamPr
   return (
     <div className="bg-gray-50 border border-lia-border-subtle rounded-md text-xs lia-text-secondary my-2">
       <button
-        className="flex items-center gap-2 w-full px-3 py-2 hover:bg-gray-100 transition-colors rounded-md"
+        className="flex items-center gap-2 w-full px-3 py-2 hover:bg-gray-100 transition-colors motion-reduce:transition-none rounded-md"
         onClick={() => setExpanded(!expanded)}
         aria-expanded={expanded}
       >
         {isThinking ? (
-          <Loader2 className="h-3 w-3 animate-spin lia-text-secondary" />
+          <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none lia-text-secondary" />
         ) : (
           <span className="h-3 w-3 rounded-full bg-status-success inline-block" />
         )}

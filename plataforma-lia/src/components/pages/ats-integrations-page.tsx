@@ -242,7 +242,7 @@ export function ATSIntegrationsPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'connected': return <CheckCircle className="w-4 h-4 text-status-success" />
-      case 'connecting': return <RotateCw className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin" />
+      case 'connecting': return <RotateCw className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
       case 'error': return <XCircle className="w-4 h-4 text-status-error" />
       case 'disabled': return <Minus className="w-4 h-4 text-lia-text-secondary" />
       default: return <AlertTriangle className="w-4 h-4 text-status-warning" />
@@ -282,7 +282,7 @@ export function ATSIntegrationsPage() {
                 </p>
                 <p className={textStyles.caption}>de {atsystems.length} configurados</p>
               </div>
-              <div className="w-12 h-12 bg-status-success/15 rounded-md flex items-center justify-center">
+              <div className="w-12 h-12 bg-status-success/15 rounded-md flex items-center justify-center" aria-live="polite" aria-atomic="true">
                 <Link2 className="w-6 h-6 text-status-success" />
               </div>
             </div>
@@ -523,7 +523,7 @@ export function ATSIntegrationsPage() {
                     system.status === 'connected' ? 'default' :
                     system.status === 'connecting' ? 'secondary' :
                     system.status === 'error' ? 'destructive' : 'outline'
-                  } className="text-xs">
+                  } className="text-xs" aria-live="polite">
                     {system.status === 'connected' ? 'Conectado' :
                      system.status === 'connecting' ? 'Conectando' :
                      system.status === 'error' ? 'Erro' : 'Desabilitado'}
@@ -576,7 +576,7 @@ export function ATSIntegrationsPage() {
                 )}
 
                 {system.status === 'error' && (
-                  <div className="p-3 bg-status-error/10 border border-status-error/30 rounded-md">
+                  <div className="p-3 bg-status-error/10 border border-status-error/30 rounded-md" aria-live="polite" aria-atomic="true">
                     <p className="text-sm text-status-error">
                       <AlertTriangle className="w-4 h-4 inline mr-1" />
                       Token de acesso expirado - requer renovação manual
@@ -762,7 +762,7 @@ export function ATSIntegrationsPage() {
                           log.status === 'warning' ? 'bg-status-warning/15 text-status-warning' :
                           log.status === 'error' ? 'bg-status-error/15 text-status-error' :
                           'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary'
-                        }`}>
+                        }`} aria-live="polite">
                           {log.status === 'success' ? 'Sucesso' :
                            log.status === 'warning' ? 'Aviso' :
                            log.status === 'error' ? 'Erro' : 'Info'}
@@ -846,7 +846,7 @@ export function ATSIntegrationsPage() {
               <button
                 key={tab.id}
                 onClick={() => setSelectedView(tab.id as Parameters<typeof setSelectedView>[0])}
-                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none ${
                   selectedView === tab.id
                     ? 'bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary'
                     : 'text-lia-text-secondary hover:text-lia-text-primary'
@@ -1208,10 +1208,10 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
         </>
       )}
 
-      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-md">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-md" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="flex items-center gap-3" role="status" aria-live="polite" aria-label="Carregando...">
           {connectionStatus === 'idle' && <Wifi className="w-5 h-5 text-lia-text-secondary" />}
-          {connectionStatus === 'testing' && <RefreshCw className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin" />}
+          {connectionStatus === 'testing' && <RefreshCw className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />}
           {connectionStatus === 'success' && <CheckCircle className="w-5 h-5 text-status-success" />}
           {connectionStatus === 'error' && <XCircle className="w-5 h-5 text-status-error" />}
 
@@ -1238,7 +1238,7 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
         >
           {isConnecting ? (
             <>
-              <RefreshCw className="w-4 h-4 animate-spin" />
+              <RefreshCw className="w-4 h-4 animate-spin motion-reduce:animate-none" />
               Testando...
             </>
           ) : (
@@ -1261,7 +1261,7 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
           {mappingTemplates.map(template => (
             <div
               key={template.id}
-              className={`p-4 border rounded-md cursor-pointer transition-colors ${
+              className={`p-4 border rounded-md cursor-pointer transition-colors motion-reduce:transition-none ${
                 selectedTemplate === template.id
                   ? 'border-gray-900 dark:border-lia-border-medium bg-gray-100 dark:bg-lia-bg-secondary'
                   : 'border-lia-border-subtle hover:border-lia-border-default'
@@ -1294,7 +1294,7 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
                     key={field.id}
                     draggable
                     onDragStart={() => handleDragStart(field)}
-                    className={`p-3 border rounded-md cursor-move transition-colors ${
+                    className={`p-3 border rounded-md cursor-move transition-colors motion-reduce:transition-none ${
                       isMapped
                         ? 'border-status-success/30 bg-status-success/10'
                         : 'border-lia-border-subtle bg-lia-bg-primary hover:border-gray-900 dark:hover:border-gray-50 hover:'
@@ -1310,7 +1310,7 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
                       </div>
                       <div className="flex items-center gap-1">
                         {field.required && (
-                          <span className="text-xs bg-status-error/15 text-status-error px-1.5 py-0.5 rounded-md">
+                          <span className="text-xs bg-status-error/15 text-status-error px-1.5 py-0.5 rounded-md" aria-live="polite">
                             Obrigatório
                           </span>
                         )}
@@ -1339,7 +1339,7 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
                     key={field.id}
                     onDragOver={handleDragOver}
                     onDrop={(e) => handleDrop(e, field)}
-                    className={`p-3 border rounded-md transition-colors min-h-[60px] ${
+                    className={`p-3 border rounded-md transition-colors motion-reduce:transition-none min-h-[60px] ${
                       mapping
                         ? 'border-lia-border-default dark:border-lia-border-default bg-gray-100 dark:bg-lia-bg-secondary'
                         : 'border-dashed border-lia-border-default bg-gray-50 hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-100 dark:bg-lia-bg-secondary'
@@ -1360,7 +1360,7 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
                       </div>
                       <div className="flex items-center gap-2">
                         {field.required && (
-                          <span className="text-xs bg-status-error/15 text-status-error px-1.5 py-0.5 rounded-md">
+                          <span className="text-xs bg-status-error/15 text-status-error px-1.5 py-0.5 rounded-md" aria-live="polite">
                             Obrigatório
                           </span>
                         )}
@@ -1491,7 +1491,7 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
             <button
               key={tab.id}
               onClick={() => setSelectedTab(tab.id as Parameters<typeof setSelectedTab>[0])}
-              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors motion-reduce:transition-none ${
                 selectedTab === tab.id
                   ? 'border-gray-900 dark:border-lia-border-medium text-lia-text-secondary dark:text-lia-text-tertiary bg-lia-bg-primary'
                   : 'border-transparent text-lia-text-secondary hover:text-lia-text-primary'

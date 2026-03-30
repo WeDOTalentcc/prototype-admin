@@ -15,7 +15,7 @@ export function BriefingsSection() {
           Templates de briefings automáticos da LIA
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors cursor-pointer">
+          <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none cursor-pointer">
             <CardHeader className="pb-2">
               <div className="flex items-center gap-3">
  <div className="w-10 h-10 rounded-md bg-gray-100 flex items-center justify-center">
@@ -44,7 +44,7 @@ export function BriefingsSection() {
             </CardContent>
           </Card>
           
-          <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors cursor-pointer">
+          <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none cursor-pointer">
             <CardHeader className="pb-2">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md bg-status-warning/15 dark:bg-status-warning/30 flex items-center justify-center">
@@ -83,7 +83,7 @@ export function BriefingsSection() {
           Estrutura dos pareceres gerados pela LIA
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors cursor-pointer">
+          <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none cursor-pointer">
             <CardHeader className="pb-2">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md bg-status-success/15 dark:bg-status-success/30 flex items-center justify-center">
@@ -112,7 +112,7 @@ export function BriefingsSection() {
             </CardContent>
           </Card>
           
-          <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors cursor-pointer">
+          <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none cursor-pointer">
             <CardHeader className="pb-2">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md bg-wedo-purple/15 dark:bg-wedo-purple/30 flex items-center justify-center">

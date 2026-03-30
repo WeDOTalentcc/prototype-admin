@@ -171,7 +171,7 @@ export function FileUploadButton({
               className="h-8 w-8 lia-text-secondary hover:lia-text-strong dark:hover:lia-text-subtle hover:bg-gray-100"
             >
               {isAnalyzing ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />
               ) : (
                 <Paperclip className="h-4 w-4" />
               )}
@@ -197,7 +197,7 @@ export function FileUploadButton({
               )}
             >
               {uf.status === "uploading" ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
+                <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none" />
               ) : (
                 <FileText className="h-3 w-3" />
               )}

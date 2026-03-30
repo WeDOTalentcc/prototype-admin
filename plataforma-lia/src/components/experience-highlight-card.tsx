@@ -232,7 +232,7 @@ export function ExperienceHighlightCard({ candidate, companyId = "demo_company" 
                 disabled={isRegenerating}
                 className="h-5 w-5 p-0 lia-text-secondary hover:lia-text-strong dark:hover:lia-text-subtle"
               >
-                <RefreshCw className={`h-3 w-3 ${isRegenerating ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`h-3 w-3 ${isRegenerating ? 'animate-spin motion-reduce:animate-none' : ''}`} />
               </Button>
             </TooltipTrigger>
             <TooltipContent className="text-xs py-1 px-2">

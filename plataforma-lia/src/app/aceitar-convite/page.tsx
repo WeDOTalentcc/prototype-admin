@@ -129,10 +129,10 @@ function AceitarConviteContent() {
 
   if (pageState === "loading") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50" role="status" aria-live="polite" aria-label="Carregando...">
         <Card className="w-full max-w-md mx-4 border-0">
           <CardContent className="p-8 text-center">
-            <Loader2 className="w-10 h-10 animate-spin lia-text-600 dark:text-lia-text-tertiary mx-auto mb-4" />
+            <Loader2 className="w-10 h-10 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary mx-auto mb-4" />
             <p className="lia-text-600 text-sm">Validando seu convite...</p>
           </CardContent>
         </Card>
@@ -251,8 +251,8 @@ function AceitarConviteContent() {
                 Redirecionando para o login...
               </p>
               
-              <div className="mt-6">
-                <Loader2 className="w-5 h-5 animate-spin lia-text-600 dark:text-lia-text-tertiary mx-auto" />
+              <div className="mt-6" role="status" aria-live="polite" aria-label="Carregando...">
+                <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary mx-auto" />
               </div>
             </div>
           </CardContent>
@@ -347,7 +347,7 @@ function AceitarConviteContent() {
           >
             {isAccepting ? (
               <span className="flex items-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                 Aceitando...
               </span>
             ) : (
@@ -375,10 +375,10 @@ export default function AceitarConvitePage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50" role="status" aria-live="polite" aria-label="Carregando...">
           <Card className="w-full max-w-md mx-4 border-0">
             <CardContent className="p-8 text-center">
-              <Loader2 className="w-10 h-10 animate-spin lia-text-600 dark:text-lia-text-tertiary mx-auto mb-4" />
+              <Loader2 className="w-10 h-10 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary mx-auto mb-4" />
               <p className="lia-text-600 text-sm">Carregando...</p>
             </CardContent>
           </Card>

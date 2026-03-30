@@ -106,7 +106,7 @@ export function LiaFieldToggle({
                 </div>
                 <button
                   onClick={() => setIsPopoverOpen(false)}
-                  className="lia-text-500 hover:lia-text-700 transition-colors"
+                  className="lia-text-500 hover:lia-text-700 transition-colors motion-reduce:transition-none"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -134,7 +134,7 @@ export function LiaFieldToggle({
                       <button
                         key={idx}
                         onClick={() => setInstruction(example)}
-                        className="block w-full text-left text-xs lia-text-600 hover:lia-text-700 dark:hover:lia-text-300 p-1.5 rounded-md hover:bg-lia-bg-primary transition-colors"
+                        className="block w-full text-left text-xs lia-text-600 hover:lia-text-700 dark:hover:lia-text-300 p-1.5 rounded-md hover:bg-lia-bg-primary transition-colors motion-reduce:transition-none"
                       >
                         "{example}"
                       </button>
@@ -160,7 +160,7 @@ export function LiaFieldToggle({
                 >
                   {isSaving ? (
                     <span className="flex items-center gap-1.5">
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
                       Salvando...
                     </span>
                   ) : (
@@ -231,7 +231,7 @@ export function LiaFieldToggle({
               </div>
               <button
                 onClick={() => setIsPopoverOpen(false)}
-                className="lia-text-500 hover:lia-text-700 transition-colors"
+                className="lia-text-500 hover:lia-text-700 transition-colors motion-reduce:transition-none"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -259,7 +259,7 @@ export function LiaFieldToggle({
                     <button
                       key={idx}
                       onClick={() => setInstruction(example)}
-                      className="block w-full text-left text-xs lia-text-600 hover:lia-text-700 dark:hover:lia-text-300 p-1.5 rounded-md hover:bg-lia-bg-primary transition-colors"
+                      className="block w-full text-left text-xs lia-text-600 hover:lia-text-700 dark:hover:lia-text-300 p-1.5 rounded-md hover:bg-lia-bg-primary transition-colors motion-reduce:transition-none"
                     >
                       "{example}"
                     </button>
@@ -285,7 +285,7 @@ export function LiaFieldToggle({
               >
                 {isSaving ? (
                   <span className="flex items-center gap-1.5">
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
                     Salvando...
                   </span>
                 ) : (

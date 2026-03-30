@@ -206,12 +206,12 @@ export function AddColumnPopover({
             value={columnName}
             onChange={(e) => { setColumnName(e.target.value); setInferredBehavior(null) }}
             placeholder="Ex: Teste de Lógica, Entrevista Cultural..."
-            className="w-full px-3 py-2 text-sm border border-lia-border-subtle dark:border-lia-border-subtle dark:bg-lia-bg-secondary dark:text-lia-text-primary rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors"
+            className="w-full px-3 py-2 text-sm border border-lia-border-subtle dark:border-lia-border-subtle dark:bg-lia-bg-secondary dark:text-lia-text-primary rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors motion-reduce:transition-none"
           />
           {columnName.length >= 3 && !inferredBehavior && (
             <button
               onClick={handleInferBehavior}
-              className="text-xs px-3 py-2 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800 text-lia-text-secondary dark:text-lia-text-tertiary transition-colors"
+              className="text-xs px-3 py-2 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800 text-lia-text-secondary dark:text-lia-text-tertiary transition-colors motion-reduce:transition-none"
             >
               Sugerir tipo de ação
             </button>
@@ -231,7 +231,7 @@ export function AddColumnPopover({
         <button
           disabled={columnName.length < 2 || isAddingColumn}
           onClick={handleAddCustom}
-          className="w-full py-2.5 rounded-md text-sm font-medium text-white transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+          className="w-full py-2.5 rounded-md text-sm font-medium text-white transition-opacity motion-reduce:transition-none disabled:opacity-40 disabled:cursor-not-allowed"
           style={{backgroundColor: columnName.length >= 2 && !isAddingColumn ? 'var(--gray-950)' : 'var(--gray-400)'}}
         >
           {isAddingColumn ? 'Adicionando...' : 'Adicionar Coluna'}
@@ -246,7 +246,7 @@ export function AddColumnPopover({
                   key={cat.name}
                   disabled={isAddingColumn}
                   onClick={() => handleAddCatalog(cat)}
-                  className="flex items-center gap-2 p-2 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 p-2 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none text-left disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <div className="w-3 h-3 rounded-full flex-shrink-0" style={{backgroundColor: cat.color}} />
                   <span className="text-xs text-lia-text-secondary dark:text-lia-text-secondary font-medium">{cat.name}</span>

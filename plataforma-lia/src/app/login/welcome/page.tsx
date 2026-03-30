@@ -156,8 +156,8 @@ export default function WelcomePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-lia-bg-primary">
-        <Loader2 className="h-8 w-8 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+      <div className="min-h-screen flex items-center justify-center bg-lia-bg-primary" role="status" aria-live="polite" aria-label="Carregando...">
+        <Loader2 className="h-8 w-8 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
       </div>
     )
   }
@@ -219,14 +219,14 @@ export default function WelcomePage() {
                   <p className="text-2xl lia-text-800 font-['Open_Sans',sans-serif] font-light">
                     {typedText1}
                     {typedText1.length < text1.length && (
-                      <span className="animate-pulse">|</span>
+                      <span className="animate-pulse motion-reduce:animate-none">|</span>
                     )}
                   </p>
                   {typedText2 && (
                     <p className="text-lg lia-text-600">
                       {typedText2}
                       {typedText2.length < text2.length && typedText1.length === text1.length && (
-                        <span className="animate-pulse">|</span>
+                        <span className="animate-pulse motion-reduce:animate-none">|</span>
                       )}
                     </p>
                   )}
@@ -234,7 +234,7 @@ export default function WelcomePage() {
                     <p className="text-lg lia-text-600">
                       {typedText3}
                       {typedText3.length < text3.length && typedText2.length === text2.length && (
-                        <span className="animate-pulse">|</span>
+                        <span className="animate-pulse motion-reduce:animate-none">|</span>
                       )}
                     </p>
                   )}
@@ -302,14 +302,14 @@ export default function WelcomePage() {
                   </p>
                   <Button
                     onClick={handleStart}
-                    className="bg-gray-900 hover:bg-gray-800 text-white px-8 py-6 text-lg font-medium rounded-md transition-colors duration-300"
+                    className="bg-gray-900 hover:bg-gray-800 text-white px-8 py-6 text-lg font-medium rounded-md transition-colors motion-reduce:transition-none duration-300"
                   >
                     Clique aqui para começar →
                   </Button>
                   
                   <label className="flex items-center gap-2 cursor-pointer group mt-2">
                     <div 
-                      className={`w-4 h-4 rounded-md border-2 transition-colors duration-200 flex items-center justify-center ${
+                      className={`w-4 h-4 rounded-md border-2 transition-colors motion-reduce:transition-none duration-200 flex items-center justify-center ${
                         dontShowAgain 
                           ? 'bg-gray-900 text-white dark:lia-bg-50 dark:lia-text-900 border-gray-900 dark:lia-border-50' 
                           : 'border-gray-400 hover:border-gray-500'
@@ -323,7 +323,7 @@ export default function WelcomePage() {
                       )}
                     </div>
                     <span 
-                      className={`text-sm transition-colors duration-200 ${
+                      className={`text-sm transition-colors motion-reduce:transition-none duration-200 ${
                         dontShowAgain ? 'lia-text-800 dark:text-lia-text-primary' : 'lia-text-500 group-hover:lia-text-600'
                       }`}
                       onClick={() => setDontShowAgain(!dontShowAgain)}

@@ -506,7 +506,7 @@ export function UnifiedCommunicationModal({
           </div>
           <button 
             onClick={onClose} 
-            className="p-2 rounded-md text-lia-text-secondary hover:text-lia-text-primary hover:bg-gray-100 transition-colors"
+            className="p-2 rounded-md text-lia-text-secondary hover:text-lia-text-primary hover:bg-gray-100 transition-colors motion-reduce:transition-none"
           >
             <X className="w-4 h-4" />
           </button>
@@ -525,7 +525,7 @@ export function UnifiedCommunicationModal({
                 <div className="grid grid-cols-3 gap-2">
                   <button
                     onClick={() => setChannel('email')}
-                    className={`flex items-center gap-2 p-3 rounded-md border transition-colors ${
+                    className={`flex items-center gap-2 p-3 rounded-md border transition-colors motion-reduce:transition-none ${
                       channel === 'email'
                         ? 'border-gray-900 bg-gray-50 text-lia-text-primary'
                         : 'border-lia-border-subtle hover:border-lia-border-default text-lia-text-primary'
@@ -540,7 +540,7 @@ export function UnifiedCommunicationModal({
                   </button>
                   <button
                     onClick={() => setChannel('whatsapp')}
-                    className={`flex items-center gap-2 p-3 rounded-md border transition-colors ${
+                    className={`flex items-center gap-2 p-3 rounded-md border transition-colors motion-reduce:transition-none ${
                       channel === 'whatsapp'
                         ? 'border-status-success/30 bg-status-success/10 text-status-success'
                         : 'border-lia-border-subtle hover:border-lia-border-default text-lia-text-primary'
@@ -555,7 +555,7 @@ export function UnifiedCommunicationModal({
                   </button>
                   <button
                     onClick={() => setChannel('both')}
-                    className={`flex items-center gap-2 p-3 rounded-md border transition-colors ${
+                    className={`flex items-center gap-2 p-3 rounded-md border transition-colors motion-reduce:transition-none ${
                       channel === 'both'
                         ? 'border-gray-900 bg-gray-50 text-lia-text-primary'
                         : 'border-lia-border-subtle hover:border-lia-border-default text-lia-text-primary'
@@ -590,7 +590,7 @@ export function UnifiedCommunicationModal({
                         <button
                           key={iType.id}
                           onClick={() => setInterviewSettings(prev => ({ ...prev, interviewType: iType.id as typeof prev.interviewType }))}
-                          className={`p-2 rounded-md border text-left transition-colors ${
+                          className={`p-2 rounded-md border text-left transition-colors motion-reduce:transition-none ${
                             interviewSettings.interviewType === iType.id
                               ? 'border-gray-900 bg-gray-50'
                               : 'border-lia-border-subtle hover:border-lia-border-default'
@@ -613,7 +613,7 @@ export function UnifiedCommunicationModal({
                         <button
                           key={plat.id}
                           onClick={() => setInterviewSettings(prev => ({ ...prev, platform: plat.id as typeof prev.platform }))}
-                          className={`p-2 rounded-md border text-center transition-colors ${
+                          className={`p-2 rounded-md border text-center transition-colors motion-reduce:transition-none ${
                             interviewSettings.platform === plat.id
                               ? 'border-gray-900 bg-gray-50'
                               : 'border-lia-border-subtle hover:border-lia-border-default'
@@ -971,7 +971,7 @@ export function UnifiedCommunicationModal({
             >
               {isSending ? (
                 <>
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
                   Enviando...
                 </>
               ) : (

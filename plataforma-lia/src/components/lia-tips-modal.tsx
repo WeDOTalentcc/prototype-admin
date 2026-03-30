@@ -203,7 +203,7 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
 
   // Componente para botões de ação de cada dica
   const TipActionButtons = ({ tip, isCommand = false }: { tip: string, isCommand?: boolean }) => (
-    <div className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+    <div className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none">
       <Button
         size="sm"
         variant="ghost"
@@ -288,7 +288,7 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
                   <button
                     key={category.id}
                     onClick={() => setActiveCategory(category.id)}
-                    className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-md text-left transition-colors ${
+                    className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-md text-left transition-colors motion-reduce:transition-none ${
  activeCategory === category.id
                         ? 'bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle'
                         : 'hover:bg-lia-bg-primary dark:hover:bg-gray-800 border border-transparent'
@@ -319,7 +319,7 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
                   <CardContent className="px-4 pb-3">
                     <div className="space-y-2">
                       {currentContextTips.map((tip, index) => (
-                        <div key={index} className="group p-2.5 bg-gray-50 dark:bg-lia-bg-primary/50 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:bg-white dark:hover:bg-gray-800 transition-colors">
+                        <div key={index} className="group p-2.5 bg-gray-50 dark:bg-lia-bg-primary/50 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:bg-white dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none">
                           <div className="flex items-start gap-2">
                             <span className="lia-text-base mt-0.5 text-xs">•</span>
                             <div className="flex-1">
@@ -350,7 +350,7 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
                         {category.tips.map((tip, index) => (
                           <div
                             key={index}
-                            className="group p-2.5 bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle transition-colors duration-200"
+                            className="group p-2.5 bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle transition-colors motion-reduce:transition-none duration-200"
                           >
                             <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">
                               {tip}

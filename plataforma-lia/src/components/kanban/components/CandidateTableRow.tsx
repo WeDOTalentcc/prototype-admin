@@ -61,7 +61,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
 
   return (
     <tr
-      className={`border-b border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors ${
+      className={`border-b border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors motion-reduce:transition-none ${
         isSelected ? 'bg-gray-100 dark:bg-lia-bg-secondary/10' : ''
       }`}
       onMouseEnter={() => setShowActions(true)}
@@ -73,7 +73,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
           onClick={() => onToggleSelect && onToggleSelect(candidate.id)}
           className="cursor-pointer"
         >
-          <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${
+          <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors motion-reduce:transition-none ${
             isSelected
               ? 'bg-gray-900 border-gray-900 dark:lia-bg-200 dark:border-lia-border-subtle'
               : 'bg-white dark:bg-lia-bg-elevated border-lia-border-default dark:border-lia-border-default hover:border-gray-500 dark:hover:border-gray-500'
@@ -151,7 +151,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
           <div className="flex items-center gap-1 justify-center group">
             <Badge
               variant="secondary"
-              className="text-xs px-2 py-0.5 font-semibold border-0 cursor-pointer hover:opacity-80 transition-opacity lia-text-950 dark:lia-text-50"
+              className="text-xs px-2 py-0.5 font-semibold border-0 cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none lia-text-950 dark:lia-text-50"
               style={{backgroundColor: candidate.technicalTestScore >= 80 ? 'var(--status-success)' :
                                  candidate.technicalTestScore >= 60 ? 'var(--status-warning)' :
                                  candidate.technicalTestScore >= 40 ? 'var(--gray-400)' :
@@ -163,7 +163,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
             >
               {formatScorePercent(candidate.technicalTestScore, 0)}
             </Badge>
-            <Eye className="w-3 h-3 lia-text-600 dark:lia-text-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <Eye className="w-3 h-3 lia-text-600 dark:lia-text-500 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none" />
           </div>
         ) : (
           <span className="text-xs lia-text-600 dark:lia-text-500">—</span>
@@ -175,7 +175,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
           <div className="flex items-center gap-1 justify-center group">
             <Badge
               variant="secondary"
-              className="text-xs px-2 py-0.5 font-semibold border-0 cursor-pointer hover:opacity-80 transition-opacity lia-text-950 dark:lia-text-50"
+              className="text-xs px-2 py-0.5 font-semibold border-0 cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none lia-text-950 dark:lia-text-50"
               style={{backgroundColor: candidate.englishTestScore >= 80 ? 'var(--status-success)' :
                                  candidate.englishTestScore >= 60 ? 'var(--status-warning)' :
                                  candidate.englishTestScore >= 40 ? 'var(--gray-400)' :
@@ -187,7 +187,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
             >
               {formatScorePercent(candidate.englishTestScore, 0)}
             </Badge>
-            <Eye className="w-3 h-3 lia-text-600 dark:lia-text-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <Eye className="w-3 h-3 lia-text-600 dark:lia-text-500 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none" />
           </div>
         ) : (
           <span className="text-xs lia-text-600 dark:lia-text-500">—</span>
@@ -213,7 +213,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
                 title={`${key}: ${value}%`}
               >
                 <div 
-                  className="w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold transition-opacity group-hover:opacity-80 lia-text-950 dark:lia-text-50"
+                  className="w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold transition-opacity motion-reduce:transition-none group-hover:opacity-80 lia-text-950 dark:lia-text-50"
                   style={{backgroundColor: value >= 70 ? (index === 0 ? 'var(--status-success)' : index === 1 ? 'var(--gray-400)' : 'var(--gray-300)') :
                                      value >= 40 ? (index === 0 ? 'var(--gray-500)' : index === 1 ? 'var(--gray-300)' : 'var(--gray-500)') :
                                      'var(--gray-600)'}}
@@ -222,7 +222,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
                 </div>
               </div>
             ))}
-            <Eye className="w-3 h-3 lia-text-600 dark:lia-text-500 opacity-0 group-hover:opacity-100 transition-opacity self-center ml-1" />
+            <Eye className="w-3 h-3 lia-text-600 dark:lia-text-500 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none self-center ml-1" />
           </div>
         ) : (
           <span className="text-xs lia-text-600 dark:lia-text-500">—</span>
@@ -234,7 +234,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
           <Popover>
             <PopoverTrigger asChild>
               <button 
-                className="relative flex items-center justify-center w-8 h-8 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors group"
+                className="relative flex items-center justify-center w-8 h-8 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors motion-reduce:transition-none group"
                 aria-label={`${alerts.length} alerta${alerts.length > 1 ? 's' : ''} da LIA`}
               >
                 <Bell className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary group-hover:lia-text-900 dark:group-hover:lia-text-100" />

@@ -46,7 +46,7 @@ function formatRelativeDate(dateStr?: string): string {
 
 function SkeletonRow() {
   return (
-    <tr className="border-b border-lia-border-subtle dark:border-lia-border-subtle animate-pulse">
+    <tr className="border-b border-lia-border-subtle dark:border-lia-border-subtle animate-pulse motion-reduce:animate-none">
       <td className="w-12 p-4">
         <div className="h-4 w-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md" />
       </td>
@@ -229,7 +229,7 @@ const CandidatesTableComponent = memo(function CandidatesTable({
           {candidates.map((candidate) => (
             <tr
               key={candidate.id}
-              className="border-b border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors"
+              className="border-b border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors motion-reduce:transition-none"
               onClick={() => onCandidateClick(candidate)}
             >
               <td className="w-12 p-4" onClick={(e) => e.stopPropagation()}>

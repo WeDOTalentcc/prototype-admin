@@ -256,9 +256,9 @@ export function TriagemDetailsModal({
 
   if (loading) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-        <div className="w-full max-w-3xl p-8 flex flex-col items-center gap-3 rounded-md bg-white dark:bg-lia-bg-secondary" >
-          <Loader2 className="w-8 h-8 animate-spin text-wedo-cyan" />
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="w-full max-w-3xl p-8 flex flex-col items-center gap-3 rounded-md bg-white dark:bg-lia-bg-secondary"  role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none text-wedo-cyan" />
           <p className="text-sm lia-text-secondary">Carregando dados da triagem...</p>
         </div>
       </div>
@@ -340,12 +340,12 @@ export function TriagemDetailsModal({
                 printWindow.document.close()
                 printWindow.print()
               }}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-gray-100 text-lia-text-primary dark:text-lia-text-primary border border-lia-border-subtle bg-gray-50 rounded-md"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium transition-colors motion-reduce:transition-none hover:bg-gray-100 text-lia-text-primary dark:text-lia-text-primary border border-lia-border-subtle bg-gray-50 rounded-md"
             >
               <Download className="w-3 h-3" />
               Exportar
             </button>
-            <button onClick={onClose} className="h-7 w-7 p-0 flex items-center justify-center transition-colors hover:bg-gray-100 rounded-full lia-text-secondary">
+            <button onClick={onClose} className="h-7 w-7 p-0 flex items-center justify-center transition-colors motion-reduce:transition-none hover:bg-gray-100 rounded-full lia-text-secondary">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -412,7 +412,7 @@ export function TriagemDetailsModal({
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={cn("px-3 py-1.5 text-xs font-medium transition-colors flex items-center gap-1.5 rounded-full", activeTab === tab.key ? "bg-gray-800 text-white" : "bg-transparent lia-text-secondary hover:bg-gray-100")}
+                className={cn("px-3 py-1.5 text-xs font-medium transition-colors motion-reduce:transition-none flex items-center gap-1.5 rounded-full", activeTab === tab.key ? "bg-gray-800 text-white" : "bg-transparent lia-text-secondary hover:bg-gray-100")}
               >
                 <tab.icon className="w-3 h-3" />
                 {tab.label}
@@ -487,7 +487,7 @@ export function TriagemDetailsModal({
 
 
               <div className="border border-lia-border-subtle bg-gray-50 rounded-lg overflow-hidden">
-                <div className={cn("cursor-pointer p-3 flex items-center justify-between hover:bg-gray-50 transition-colors", expandedSections.has('responses') && "border-b border-lia-border-subtle")} onClick={() => toggleSection('responses')}>
+                <div className={cn("cursor-pointer p-3 flex items-center justify-between hover:bg-gray-50 transition-colors motion-reduce:transition-none", expandedSections.has('responses') && "border-b border-lia-border-subtle")} onClick={() => toggleSection('responses')}>
                   <h3 className="text-xs font-semibold flex items-center gap-2 text-lia-text-primary">
                     <MessageSquare className="w-4 h-4 lia-text-base" />
                     Respostas por Competência ({responses.length})
@@ -519,7 +519,7 @@ export function TriagemDetailsModal({
                       return (
                         <div key={idx}>
                           <button
-                            className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+                            className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors motion-reduce:transition-none text-left"
                             onClick={() => toggleSection(`resp-${idx}`)}
                           >
                             <div className="flex items-center gap-2 flex-wrap">
@@ -547,7 +547,7 @@ export function TriagemDetailsModal({
                                   <p className="text-xs lia-text-base leading-relaxed">{resp.question?.text || f11.question_text}</p>
                                 </div>
                                 <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-lg p-3">
-                                  <p className="text-micro lia-text-secondary uppercase tracking-wide mb-1">Resposta do Candidato</p>
+                                  <p className="text-micro lia-text-secondary uppercase tracking-wide mb-1" aria-live="polite" aria-atomic="true">Resposta do Candidato</p>
                                   <p className="text-xs lia-text-strong leading-relaxed">{resp.response_text}</p>
                                 </div>
                               </div>
@@ -576,7 +576,7 @@ export function TriagemDetailsModal({
                                     )
                                   })}
                                   {!starData.R && (
-                                    <span className="text-micro text-status-warning bg-status-warning/10 border border-status-warning/20 px-2 py-0.5 rounded-full">
+                                    <span className="text-micro text-status-warning bg-status-warning/10 border border-status-warning/20 px-2 py-0.5 rounded-full" aria-live="polite" aria-atomic="true">
                                       Resultado não evidenciado
                                     </span>
                                   )}
@@ -600,7 +600,7 @@ export function TriagemDetailsModal({
                               <div className={`flex items-center justify-between rounded-lg border px-3 py-2.5 ${gap.bg} ${gap.border}`}>
                                 <div className="flex items-center gap-2">
                                   <GapIcon className={`w-3.5 h-3.5 ${gap.color}`} />
-                                  <span className={`text-xs font-medium ${gap.color}`}>Esperado pela vaga</span>
+                                  <span className={`text-xs font-medium ${gap.color}`} aria-live="polite" aria-atomic="true">Esperado pela vaga</span>
                                 </div>
                                 <div className="flex items-center gap-4 text-xs">
                                   <div className="text-right">
@@ -793,14 +793,14 @@ export function TriagemDetailsModal({
                                 <div className="flex items-center gap-2 flex-wrap">
                                   <span className="text-xs font-medium lia-text-strong">{traitName}</span>
                                   {val.is_critical && (
-                                    <span className="text-micro font-semibold px-1.5 py-0.5 rounded-full border text-wedo-purple bg-wedo-purple/10 border-wedo-purple/30">Crítica para esta vaga</span>
+                                    <span className="text-micro font-semibold px-1.5 py-0.5 rounded-full border text-wedo-purple bg-wedo-purple/10 border-wedo-purple/30" aria-live="polite" aria-atomic="true">Crítica para esta vaga</span>
                                   )}
                                   {status === "gap"   && <span className="text-micro font-bold text-status-warning bg-status-warning/10 px-1.5 py-0.5 rounded-full border border-status-warning/30">⚠️ Diferença</span>}
                                   {status === "acima" && <span className="text-micro font-bold text-wedo-cyan-dark bg-wedo-cyan/10 px-1.5 py-0.5 rounded-full border border-wedo-cyan/30">↑ Acima</span>}
                                   {status === "ok"    && <span className="text-micro font-bold text-status-success bg-status-success/10 px-1.5 py-0.5 rounded-full border border-status-success/30">✓ Alinhado</span>}
                                   {hint && (
                                     <button className="ml-auto" onClick={() => setBigFiveHint(showHint ? null : key)}>
-                                      <Info className="w-3 h-3 lia-text-muted hover:lia-text-secondary transition-colors" />
+                                      <Info className="w-3 h-3 lia-text-muted hover:lia-text-secondary transition-colors motion-reduce:transition-none" />
                                     </button>
                                   )}
                                 </div>
@@ -812,8 +812,8 @@ export function TriagemDetailsModal({
                                   <div className={`absolute inset-y-0 left-0 h-1.5 top-0.5 rounded-full ${status === "gap" ? "bg-status-warning" : status === "acima" ? "bg-wedo-cyan" : "bg-gray-800"}`} style={{width: `${candidato}%`}} />
                                 </div>
                                 <div className="flex items-center justify-between text-micro lia-text-secondary">
-                                  <span>Candidato: <span className="font-semibold lia-text-base">{candidato}%</span></span>
-                                  <span>Vaga espera: <span className="font-semibold lia-text-base">{vagaEsperado}%</span></span>
+                                  <span>Candidato: <span className="font-semibold lia-text-base" aria-live="polite" aria-atomic="true">{candidato}%</span></span>
+                                  <span>Vaga espera: <span className="font-semibold lia-text-base" aria-live="polite" aria-atomic="true">{vagaEsperado}%</span></span>
                                 </div>
                                 <DreyfusRow dreyfusEsperado={dreyfusEsperado} dreyfusDemonstrado={dreyfusDemonstrado} senioridade={seniority} />
                               </div>
@@ -885,7 +885,7 @@ export function TriagemDetailsModal({
                   <h3 className="text-xs font-semibold flex items-center gap-2 text-lia-text-primary">
                     <BookOpen className="w-4 h-4 text-wedo-cyan-dark" /> Feedback para o Candidato
                   </h3>
-                  <p className="text-xs lia-text-secondary italic">Aguardando decisão do recrutador para liberar feedback ao candidato.</p>
+                  <p className="text-xs lia-text-secondary italic" aria-live="polite" aria-atomic="true">Aguardando decisão do recrutador para liberar feedback ao candidato.</p>
                   <div className="bg-gray-50 border border-lia-border-subtle rounded-lg p-3">
                     <p className="text-micro lia-text-secondary font-medium mb-0.5">Prévia do feedback (rascunho)</p>
                     <p className="text-xs lia-text-base">Agradecemos sua participação na triagem. Suas respostas foram analisadas e entraremos em contato em breve com o próximo passo do processo.</p>
@@ -899,7 +899,7 @@ export function TriagemDetailsModal({
                     <MessageSquare className="w-4 h-4 text-wedo-cyan" />
                     Envio de Feedback Automático
                   </h3>
-                  <p className="text-xs lia-text-base mb-3">
+                  <p className="text-xs lia-text-base mb-3" aria-live="polite" aria-atomic="true">
                     O candidato obteve classificação "{scores.classification}" e pode receber feedback construtivo automaticamente.
                   </p>
                   {feedbackSuccess && (
@@ -917,10 +917,10 @@ export function TriagemDetailsModal({
                   <button
                     onClick={handleSendFeedback}
                     disabled={sendingFeedback || feedbackAlreadySent}
-                    className={cn("flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed", feedbackAlreadySent ? "bg-gray-200 lia-text-secondary" : "bg-gray-800 text-white")}
+                    className={cn("flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-md transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed", feedbackAlreadySent ? "bg-gray-200 lia-text-secondary" : "bg-gray-800 text-white")}
                   >
                     {sendingFeedback ? (
-                      <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Enviando...</>
+                      <><Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" /> Enviando...</>
                     ) : feedbackAlreadySent ? (
                       <><CheckCircle className="w-3.5 h-3.5" /> Feedback já Enviado</>
                     ) : (
@@ -955,7 +955,7 @@ export function TriagemDetailsModal({
                         setCopiedFeedback(true)
                         setTimeout(() => setCopiedFeedback(false), 2000)
                       }}
-                      className="flex items-center gap-1 px-2 py-1 text-micro font-medium lia-text-secondary hover:lia-text-base border border-lia-border-subtle rounded-md hover:bg-gray-50 transition-colors"
+                      className="flex items-center gap-1 px-2 py-1 text-micro font-medium lia-text-secondary hover:lia-text-base border border-lia-border-subtle rounded-md hover:bg-gray-50 transition-colors motion-reduce:transition-none"
                      
                     >
                       {copiedFeedback ? <CheckCircle className="w-3 h-3 text-status-success" /> : <Copy className="w-3 h-3" />}
@@ -1058,7 +1058,7 @@ export function TriagemDetailsModal({
                     <div className="bg-gray-50 dark:bg-lia-bg-secondary px-3 py-2 flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
                         <Trophy className="w-3.5 h-3.5 lia-text-secondary" />
-                        <span className="text-xs font-semibold text-lia-text-secondary dark:text-lia-text-secondary">
+                        <span className="text-xs font-semibold text-lia-text-secondary dark:text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                           Ranking — {vacancyRanking.total_screened} candidato{vacancyRanking.total_screened !== 1 ? 's' : ''} avaliado{vacancyRanking.total_screened !== 1 ? 's' : ''}
                         </span>
                       </div>
@@ -1117,7 +1117,7 @@ export function TriagemDetailsModal({
                   </div>
                   <div className="text-center max-w-xs">
                     <p className="text-sm font-semibold lia-text-base">Ranking e Comparativo</p>
-                    <p className="text-xs lia-text-secondary mt-1">
+                    <p className="text-xs lia-text-secondary mt-1" aria-live="polite" aria-atomic="true">
                       O comparativo entre candidatos estará disponível quando houver 2 ou mais candidatos avaliados nesta vaga.
                     </p>
                   </div>
@@ -1144,14 +1144,14 @@ export function TriagemDetailsModal({
                     setConfirmReject(false)
                   }}
                   disabled={rejecting}
-                  className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-full transition-colors disabled:opacity-50 bg-status-error lia-text-subtle"
+                  className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-full transition-colors motion-reduce:transition-none disabled:opacity-50 bg-status-error lia-text-subtle"
                 >
-                  {rejecting ? <Loader2 className="w-3 h-3 animate-spin" /> : <ThumbsDown className="w-3 h-3" />}
+                  {rejecting ? <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" /> : <ThumbsDown className="w-3 h-3" />}
                   Sim, reprovar
                 </button>
                 <button
                   onClick={() => setConfirmReject(false)}
-                  className="px-2.5 py-1.5 text-xs font-medium rounded-full transition-colors hover:bg-gray-100 border border-lia-border-subtle bg-gray-50"
+                  className="px-2.5 py-1.5 text-xs font-medium rounded-full transition-colors motion-reduce:transition-none hover:bg-gray-100 border border-lia-border-subtle bg-gray-50"
                 >
                   Cancelar
                 </button>
@@ -1159,7 +1159,7 @@ export function TriagemDetailsModal({
             ) : (
               <button
                 onClick={() => setConfirmReject(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors hover:bg-status-error/10 border border-lia-border-subtle text-status-error"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors motion-reduce:transition-none hover:bg-status-error/10 border border-lia-border-subtle text-status-error"
               >
                 <ThumbsDown className="w-3.5 h-3.5" />
                 Reprovar
@@ -1172,9 +1172,9 @@ export function TriagemDetailsModal({
                 setApproving(false)
               }}
               disabled={approving}
-              className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium rounded-md transition-colors hover:bg-gray-800 disabled:opacity-50 bg-gray-800 lia-text-subtle"
+              className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium rounded-md transition-colors motion-reduce:transition-none hover:bg-gray-800 disabled:opacity-50 bg-gray-800 lia-text-subtle"
             >
-              {approving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ThumbsUp className="w-3.5 h-3.5" />}
+              {approving ? <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" /> : <ThumbsUp className="w-3.5 h-3.5" />}
               Aprovar para Entrevista
             </button>
           </div>

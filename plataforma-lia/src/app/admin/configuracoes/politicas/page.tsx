@@ -259,7 +259,7 @@ export default function GlobalPoliciesPage() {
     return (
       <div role="status" aria-live="polite" aria-busy={true} className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin lia-text-600 dark:text-lia-text-tertiary mx-auto mb-4" />
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary mx-auto mb-4" />
           <p className="lia-text-500">Carregando políticas...</p>
         </div>
       </div>
@@ -323,7 +323,7 @@ export default function GlobalPoliciesPage() {
               className="gap-2"
             >
               {isLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
               ) : (
                 <RefreshCw className="w-4 h-4" />
               )}
@@ -366,7 +366,7 @@ export default function GlobalPoliciesPage() {
                 className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 gap-2 sm:w-auto"
               >
                 {isApplyingSector ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                 ) : (
                   <Zap className="w-4 h-4" />
                 )}
@@ -383,7 +383,7 @@ export default function GlobalPoliciesPage() {
             return (
               <Card
                 key={key}
-                className={`cursor-pointer transition-colors ${activeTab === key ? 'ring-2 ring-gray-900/20' : ''}`}
+                className={`cursor-pointer transition-colors motion-reduce:transition-none ${activeTab === key ? 'ring-2 ring-gray-900/20' : ''}`}
                 onClick={() => setActiveTab(activeTab === key ? 'all' : key)}
               >
                 <CardContent className="p-4">
@@ -491,7 +491,7 @@ export default function GlobalPoliciesPage() {
                         return (
                           <tr 
                             key={policy.id}
-                            className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                            className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors motion-reduce:transition-none"
                           >
                             <td className="px-6 py-4">
                               <div>
@@ -649,7 +649,7 @@ export default function GlobalPoliciesPage() {
                 disabled={isUpdating}
               >
                 {isUpdating ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
                 ) : (
                   <Save className="w-4 h-4 mr-2" />
                 )}

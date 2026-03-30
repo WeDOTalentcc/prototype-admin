@@ -114,7 +114,7 @@ export function LIATaskStepItem({
             : config.bgColor
         )}>
           {isActive && !step.isCompleted ? (
-            <Loader2 className={cn("w-4 h-4 animate-spin", config.color)} />
+            <Loader2 className={cn("w-4 h-4 animate-spin motion-reduce:animate-none", config.color)} />
           ) : (
             <Icon className={cn(
  "w-4 h-4",
@@ -203,7 +203,7 @@ export function LIAProcessingCard({
       {isCollapsible && (
         <button
           onClick={() => setIsCardExpanded(!isCardExpanded)}
-          className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 rounded-t-2xl transition-colors"
+          className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 rounded-t-2xl transition-colors motion-reduce:transition-none"
         >
           <div className="flex items-center gap-3">
             <div className={cn(
@@ -332,7 +332,7 @@ export function LIACommandBadge({
       className
     )}>
       {status === 'running' && (
-        <Loader2 className="w-3 h-3 animate-spin text-lia-text-secondary dark:text-lia-text-tertiary" />
+        <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
       )}
       {status === 'completed' && (
         <Check className="w-3 h-3 text-status-success" />
@@ -370,7 +370,7 @@ export function LIAFileBadge({
   return (
     <div className={cn(
  "inline-flex items-center gap-3 px-3 py-2 rounded-md bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle",
-      onDownload && "cursor-pointer hover:border-gray-900 dark:hover:border-gray-50 transition-colors",
+      onDownload && "cursor-pointer hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none",
       className
     )}
     onClick={onDownload}
@@ -391,7 +391,7 @@ export function LIAFileBadge({
         <Check className="w-5 h-5 text-status-success" />
       )}
       {status === 'processing' && (
-        <Loader2 className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin" />
+        <Loader2 className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
       )}
     </div>
   )
@@ -415,8 +415,8 @@ export function LIASimpleProcessing({
       config.bgColor,
       className
     )}>
-      <div className="w-7 h-7 rounded-md bg-white dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
-        <Loader2 className={cn("w-4 h-4 animate-spin", config.color)} />
+      <div className="w-7 h-7 rounded-md bg-white dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0" role="status" aria-live="polite" aria-label="Carregando...">
+        <Loader2 className={cn("w-4 h-4 animate-spin motion-reduce:animate-none", config.color)} />
       </div>
       <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
         {message || config.label}

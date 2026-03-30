@@ -273,7 +273,7 @@ export function ColumnConfigurationModal({
                   onDragStart={(e) => handleDragStart(e, column)}
                   onDragOver={handleDragOver}
                   onDrop={(e) => handleDrop(e, column)}
-                  className={`flex items-center gap-3 p-2 rounded-md border-2 transition-colors cursor-move ${
+                  className={`flex items-center gap-3 p-2 rounded-md border-2 transition-colors motion-reduce:transition-none cursor-move ${
  column.visible
                       ? 'bg-gray-100 dark:bg-lia-bg-elevated border-lia-border-default dark:border-lia-border-default'
                       : 'bg-gray-50 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle'

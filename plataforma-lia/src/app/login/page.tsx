@@ -55,8 +55,8 @@ export default function LoginPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-lia-bg-primary">
-        <Loader2 className="h-8 w-8 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-lia-bg-primary" role="status" aria-live="polite" aria-label="Carregando...">
+        <Loader2 className="h-8 w-8 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
       </div>
     )
   }
@@ -112,7 +112,7 @@ export default function LoginPage() {
               href="https://www.wedotalent.cc"
               target="_blank"
               rel="noopener noreferrer"
-              className="lia-text-400 hover:lia-text-600 transition-colors"
+              className="lia-text-400 hover:lia-text-600 transition-colors motion-reduce:transition-none"
               title="Website"
             >
               <Globe className="w-4 h-4" />
@@ -121,14 +121,14 @@ export default function LoginPage() {
               href="https://www.linkedin.com/company/wedotalent/"
               target="_blank"
               rel="noopener noreferrer"
-              className="lia-text-400 hover:lia-text-600 transition-colors"
+              className="lia-text-400 hover:lia-text-600 transition-colors motion-reduce:transition-none"
               title="LinkedIn"
             >
               <Linkedin className="w-4 h-4" />
             </a>
             <a
               href="mailto:tech@wedotalent.cc"
-              className="lia-text-400 hover:lia-text-600 transition-colors"
+              className="lia-text-400 hover:lia-text-600 transition-colors motion-reduce:transition-none"
               title="Contato"
             >
               <Mail className="w-4 h-4" />
@@ -184,7 +184,7 @@ export default function LoginPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2.5 text-sm border border-lia-border-subtle rounded-xl bg-lia-bg-primary lia-text-950 placeholder:lia-text-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400 transition-colors"
+                    className="w-full pl-9 pr-3 py-2.5 text-sm border border-lia-border-subtle rounded-xl bg-lia-bg-primary lia-text-950 placeholder:lia-text-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400 transition-colors motion-reduce:transition-none"
                     placeholder="seu@email.com"
                     required
                     autoFocus
@@ -213,7 +213,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={handleBack}
-                  className="flex items-center gap-1 text-xs lia-text-500 hover:lia-text-800 transition-colors ml-2 shrink-0"
+                  className="flex items-center gap-1 text-xs lia-text-500 hover:lia-text-800 transition-colors motion-reduce:transition-none ml-2 shrink-0"
                 >
                   <Pencil className="w-3 h-3" />
                   Alterar
@@ -231,7 +231,7 @@ export default function LoginPage() {
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-9 pr-10 py-2.5 text-sm border border-lia-border-subtle rounded-xl bg-lia-bg-primary lia-text-950 placeholder:lia-text-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400 transition-colors"
+                    className="w-full pl-9 pr-10 py-2.5 text-sm border border-lia-border-subtle rounded-xl bg-lia-bg-primary lia-text-950 placeholder:lia-text-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400 transition-colors motion-reduce:transition-none"
                     placeholder="••••••••"
                     required
                     autoFocus
@@ -261,7 +261,7 @@ export default function LoginPage() {
                 </label>
                 <Link
                   href="/forgot-password"
-                  className="lia-text-600 hover:text-wedo-cyan font-medium transition-colors"
+                  className="lia-text-600 hover:text-wedo-cyan font-medium transition-colors motion-reduce:transition-none"
                 >
                   Esqueceu a senha?
                 </Link>
@@ -275,7 +275,7 @@ export default function LoginPage() {
               >
                 {isSubmitting ? (
                   <span className="flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                     Entrando...
                   </span>
                 ) : (

@@ -208,7 +208,7 @@ export function LinkedInCell({ url, onClick }: { url?: string; onClick?: (e: Rea
         e.stopPropagation()
         onClick?.(e)
       }}
-      className="text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary transition-colors"
+      className="text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary transition-colors motion-reduce:transition-none"
     >
       <Linkedin className="w-3.5 h-3.5" />
     </a>
@@ -348,7 +348,7 @@ export function SelectionCheckbox({
       }}
       className="cursor-pointer"
     >
-      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${
+      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors motion-reduce:transition-none ${
  isSelected
           ? 'bg-gray-900 border-gray-900 dark:border-lia-border-subtle'
           : 'bg-white dark:bg-lia-bg-elevated border-lia-border-default dark:border-lia-border-default hover:border-gray-500'
@@ -469,7 +469,7 @@ export function InteractiveSubStatusCell({
       <PopoverTrigger asChild>
         <button
           onClick={(e) => e.stopPropagation()}
-          className="flex items-center gap-1 hover:opacity-80 transition-opacity cursor-pointer"
+          className="flex items-center gap-1 hover:opacity-80 transition-opacity motion-reduce:transition-none cursor-pointer"
           disabled={isUpdating}
         >
           <Badge 
@@ -493,7 +493,7 @@ export function InteractiveSubStatusCell({
               <button
                 key={status.name}
                 onClick={() => handleStatusChange(status.name)}
-                className={`w-full text-left px-2 py-1.5 rounded-md text-xs transition-colors ${
+                className={`w-full text-left px-2 py-1.5 rounded-md text-xs transition-colors motion-reduce:transition-none ${
  isSelected 
                     ? 'bg-gray-100 dark:bg-lia-bg-secondary' 
                     : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
@@ -591,7 +591,7 @@ export function InteractiveStageCell({
           e.stopPropagation()
           setOpen(true)
         }}
-        className="hover:opacity-80 transition-opacity cursor-pointer"
+        className="hover:opacity-80 transition-opacity motion-reduce:transition-none cursor-pointer"
       >
         <Badge 
           className="text-micro px-1.5 py-0.5 flex items-center gap-0.5 font-medium"
@@ -669,7 +669,7 @@ export function InteractiveStageCell({
             <div className="flex gap-2 pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
               <Button 
                 variant="outline" 
-                className="flex-1 text-xs font-semibold rounded-md transition-colors duration-150 font-['Open_Sans'] bg-white lia-text-strong border border-lia-border-default hover:bg-gray-50 hover:border-gray-400 dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:border-lia-border-default dark:hover:bg-gray-700"
+                className="flex-1 text-xs font-semibold rounded-md transition-colors motion-reduce:transition-none duration-150 font-['Open_Sans'] bg-white lia-text-strong border border-lia-border-default hover:bg-gray-50 hover:border-gray-400 dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:border-lia-border-default dark:hover:bg-gray-700"
                 onClick={() => {
                   setOpen(false)
                   setSelectedStage('')
@@ -678,7 +678,7 @@ export function InteractiveStageCell({
                 Cancelar
               </Button>
               <Button 
-                className="flex-1 text-xs font-semibold rounded-md transition-colors duration-150 font-['Open_Sans'] bg-gray-900 text-white hover:bg-gray-800 active:bg-gray-700 dark:hover:bg-gray-200"
+                className="flex-1 text-xs font-semibold rounded-md transition-colors motion-reduce:transition-none duration-150 font-['Open_Sans'] bg-gray-900 text-white hover:bg-gray-800 active:bg-gray-700 dark:hover:bg-gray-200"
                 disabled={!selectedStage}
                 onClick={handleConfirm}
               >
@@ -728,11 +728,11 @@ export function ActionButtons({
     <div className="flex items-center justify-end gap-1 relative" onClick={(e) => e.stopPropagation()}>
       {/* Indicador "Ação Necessária" - visível fora do hover, escondido no hover */}
       {needsAction && (
-        <div className="absolute inset-0 flex items-center justify-end pr-1 group-hover:opacity-0 group-hover:pointer-events-none transition-opacity duration-200">
+        <div className="absolute inset-0 flex items-center justify-end pr-1 group-hover:opacity-0 group-hover:pointer-events-none transition-opacity motion-reduce:transition-none duration-200">
           <div 
             className="flex items-center gap-1 px-2 py-1 rounded-full bg-gray-800/[.08]"
           >
-            <Zap className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary animate-pulse" />
+            <Zap className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary animate-pulse motion-reduce:animate-none" />
             <span className="text-micro font-semibold text-lia-text-primary dark:text-lia-text-primary">
               Ação Necessária
             </span>
@@ -741,7 +741,7 @@ export function ActionButtons({
       )}
 
       {/* Botões de ação - escondidos fora do hover, visíveis no hover */}
-      <div className={`flex items-center gap-1 ${needsAction ? 'opacity-0 group-hover:opacity-100 transition-opacity duration-200' : ''}`}>
+      <div className={`flex items-center gap-1 ${needsAction ? 'opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none duration-200' : ''}`}>
         {onToggleFavorite && (
           <Button
             variant="ghost"

@@ -272,7 +272,7 @@ export function AdvancedReportExporter({
                 {getTemplatesForRole().map((template) => (
                   <Card
                     key={template.id}
-                    className={`cursor-pointer transition-colors hover:${
+                    className={`cursor-pointer transition-colors motion-reduce:transition-none hover:${
  selectedTemplate?.id === template.id ? 'ring-2 ring-gray-900/20 dark:ring-gray-50/20 bg-gray-100 dark:bg-lia-bg-secondary' : ''
                     }`}
                     onClick={() => setSelectedTemplate(template)}

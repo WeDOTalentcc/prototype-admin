@@ -61,7 +61,7 @@ const CollapsibleSection = ({
   <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md overflow-hidden">
     <button
       onClick={onToggle}
-      className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+      className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none"
     >
       <div className="flex items-center gap-2">
         <Icon className="w-4 h-4 lia-text-700 dark:text-lia-text-secondary" />
@@ -197,11 +197,11 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4" role="status" aria-live="polite" aria-label="Carregando...">
         <Card className="border-0 rounded-md">
           <CardContent className="flex items-center justify-center py-12">
-            <div className="flex flex-col items-center gap-3">
-              <Loader2 className="w-8 h-8 lia-text-700 dark:text-lia-text-secondary animate-spin" />
+            <div className="flex flex-col items-center gap-3" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="w-8 h-8 lia-text-700 dark:text-lia-text-secondary animate-spin motion-reduce:animate-none" />
               <p className="text-xs lia-text-500 dark:text-lia-text-tertiary">Carregando configurações...</p>
             </div>
           </CardContent>
@@ -228,7 +228,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                 <ClipboardList className="w-4 h-4 lia-text-700 dark:text-lia-text-secondary" />
                 Solicitação de Dados
               </CardTitle>
-              <p className={`mt-1 ${textStyles.description}`}>
+              <p className={`mt-1 ${textStyles.description}`} aria-live="polite" aria-atomic="true">
                 Configure como e quando solicitar informações adicionais dos candidatos.
               </p>
             </div>
@@ -439,7 +439,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                       {config.collectionMode === 'chat_only' && 'Apenas Chat'}
                       {config.collectionMode === 'candidate_choice' && 'Candidato Escolhe'}
                     </Badge>
-                    <span className="text-micro lia-text-500 dark:text-lia-text-tertiary">
+                    <span className="text-micro lia-text-500 dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
                       {config.collectionMode === 'portal_only' && '- Envia link direto para formulário'}
                       {config.collectionMode === 'chat_only' && '- Coleta via conversa no WhatsApp'}
                       {config.collectionMode === 'candidate_choice' && '- LIA pergunta preferência ao candidato'}
@@ -583,7 +583,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
               <div className="p-3 bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-md">
                 <div className="flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 text-status-warning mt-0.5 flex-shrink-0" />
-                  <p className="text-micro text-status-warning dark:text-status-warning">
+                  <p className="text-micro text-status-warning dark:text-status-warning" aria-live="polite" aria-atomic="true">
                     A Lei Geral de Proteção de Dados (Lei nº 13.709/2018) exige consentimento explícito do candidato antes da coleta de dados pessoais.
                   </p>
                 </div>
@@ -604,7 +604,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                       </Badge>
                     )}
                   </div>
-                  <p className="text-micro lia-text-500 dark:text-lia-text-tertiary">Candidato deve autorizar antes de enviar dados</p>
+                  <p className="text-micro lia-text-500 dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">Candidato deve autorizar antes de enviar dados</p>
                 </div>
 
                 <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
@@ -621,7 +621,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                       </Badge>
                     )}
                   </div>
-                  <p className="text-micro lia-text-500 dark:text-lia-text-tertiary">Candidato pode solicitar exclusão dos dados</p>
+                  <p className="text-micro lia-text-500 dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">Candidato pode solicitar exclusão dos dados</p>
                 </div>
               </div>
 
@@ -816,7 +816,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                           {isEditing && (
                             <button
                               onClick={() => removeCustomField(field.id)}
-                              className="p-0.5 lia-text-400 dark:lia-text-500 hover:text-status-error transition-colors"
+                              className="p-0.5 lia-text-400 dark:lia-text-500 hover:text-status-error transition-colors motion-reduce:transition-none"
                             >
                               <Trash2 className="w-3 h-3" />
                             </button>

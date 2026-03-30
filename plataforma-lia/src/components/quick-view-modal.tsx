@@ -194,7 +194,7 @@ export function QuickViewModal({
                     <div className="flex items-center gap-2 text-xs">
                       <Linkedin className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                       <a href={candidate.linkedin} target="_blank" rel="noopener noreferrer"
-                         className="text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary transition-colors">
+                         className="text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary transition-colors motion-reduce:transition-none">
                         LinkedIn Profile
                       </a>
                     </div>

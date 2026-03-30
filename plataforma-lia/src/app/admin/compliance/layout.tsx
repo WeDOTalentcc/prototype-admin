@@ -84,7 +84,7 @@ export default function ComplianceLayout({
           <nav className="flex items-center gap-2 py-3 text-sm">
             <Link 
               href="/admin"
-              className="hover:lia-text-900 dark:hover:lia-text-50 transition-colors lia-text-400 dark:lia-text-500"
+              className="hover:lia-text-900 dark:hover:lia-text-50 transition-colors motion-reduce:transition-none lia-text-400 dark:lia-text-500"
             >
               Admin
             </Link>

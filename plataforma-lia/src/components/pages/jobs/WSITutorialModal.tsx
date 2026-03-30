@@ -48,7 +48,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
+            className="p-1.5 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
           >
             <X className="w-4 h-4 text-lia-text-secondary" />
           </button>

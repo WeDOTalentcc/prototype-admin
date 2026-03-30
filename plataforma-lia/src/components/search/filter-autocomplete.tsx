@@ -167,7 +167,7 @@ export function FilterAutocomplete({
                 e.stopPropagation()
                 onRemove(value)
               }}
-              className="hover:text-status-error transition-colors"
+              className="hover:text-status-error transition-colors motion-reduce:transition-none"
               disabled={disabled}
             >
               <X className="w-3 h-3" />
@@ -189,18 +189,18 @@ export function FilterAutocomplete({
            
           />
           {isLoading && (
-            <div className="absolute right-0 top-1/2 -translate-y-1/2">
-              <Loader2 className="w-3 h-3 lia-text-600 dark:text-lia-text-tertiary animate-spin" />
+            <div className="absolute right-0 top-1/2 -translate-y-1/2" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="w-3 h-3 lia-text-600 dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
             </div>
           )}
         </div>
       </div>
 
       {showDropdown && (
-        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-lia-bg-secondary rounded-md max-h-60 overflow-auto">
+        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-lia-bg-secondary rounded-md max-h-60 overflow-auto" role="status" aria-live="polite" aria-label="Carregando...">
           {isLoading ? (
-            <div className="flex items-center justify-center gap-2 p-3 text-xs lia-text-800 dark:text-lia-text-primary">
-              <Loader2 className="w-4 h-4 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+            <div className="flex items-center justify-center gap-2 p-3 text-xs lia-text-800 dark:text-lia-text-primary" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
               <span>Buscando...</span>
             </div>
           ) : suggestions.length > 0 ? (
@@ -264,7 +264,7 @@ export function FilterAutocomplete({
             </div>
           ) : query.length >= 2 ? (
             <div className="p-3 text-center">
-              <p className="text-xs lia-text-800 dark:text-lia-text-primary mb-2">Nenhum resultado encontrado</p>
+              <p className="text-xs lia-text-800 dark:text-lia-text-primary mb-2" aria-live="polite" aria-atomic="true">Nenhum resultado encontrado</p>
               <button
                 onClick={() => {
                   if (!selectedValues.includes(query.trim())) {
@@ -335,7 +335,7 @@ export function TagInput({
               e.stopPropagation()
               onRemove(val)
             }}
-            className="hover:text-status-error transition-colors"
+            className="hover:text-status-error transition-colors motion-reduce:transition-none"
             disabled={disabled}
           >
             <X className="w-3 h-3" />

@@ -66,7 +66,7 @@ export function WelcomeCard({ config, onStart, isStarting = false, className }: 
             onClick={() => onStart(false)}
             disabled={isStarting}
             aria-label="Iniciar conversa de triagem por texto"
-            className="w-full h-11 flex items-center justify-center rounded-md bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:outline-none font-['Open_Sans',sans-serif]"
+            className="w-full h-11 flex items-center justify-center rounded-md bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:outline-none font-['Open_Sans',sans-serif]"
           >
             {isStarting ? "Iniciando..." : "Iniciar Conversa"}
           </button>
@@ -77,7 +77,7 @@ export function WelcomeCard({ config, onStart, isStarting = false, className }: 
               onClick={() => onStart(true)}
               disabled={isStarting}
               aria-label="Iniciar conversa de triagem por voz"
-              className="w-full h-11 flex items-center justify-center gap-2 rounded-md border border-gray-900 bg-transparent text-lia-text-primary text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:outline-none font-['Open_Sans',sans-serif]"
+              className="w-full h-11 flex items-center justify-center gap-2 rounded-md border border-gray-900 bg-transparent text-lia-text-primary text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:outline-none font-['Open_Sans',sans-serif]"
             >
               <Mic className="w-4 h-4" />
               {isStarting ? "Iniciando..." : "Iniciar Conversa por Voz"}
@@ -89,7 +89,7 @@ export function WelcomeCard({ config, onStart, isStarting = false, className }: 
           href={config.privacyPolicyUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center gap-1.5 text-xs text-lia-text-disabled hover:text-lia-text-secondary dark:hover:text-lia-text-disabled transition-colors font-['Open_Sans',sans-serif]"
+          className="flex items-center justify-center gap-1.5 text-xs text-lia-text-disabled hover:text-lia-text-secondary dark:hover:text-lia-text-disabled transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
           aria-label="Política de privacidade"
         >
           <Shield className="w-3 h-3" />

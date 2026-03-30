@@ -244,7 +244,7 @@ export function SearchResultsCard({
           {paginatedCandidates.map((candidate) => (
             <TooltipProvider key={candidate.id}>
               <div 
-                className={`flex items-center gap-3 p-3 rounded-md border transition-colors cursor-pointer
+                className={`flex items-center gap-3 p-3 rounded-md border transition-colors motion-reduce:transition-none cursor-pointer
                   ${selectedIds.has(candidate.id) 
                     ? "bg-gray-50 border-lia-border-default" 
                     : "bg-lia-bg-primary border-lia-border-subtle hover:bg-gray-50"

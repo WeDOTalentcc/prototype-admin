@@ -347,9 +347,9 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
   // Renderização apenas no cliente para evitar erros de hidratação SSR
   if (!isClient) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
-        <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
+      <div className="flex items-center justify-center h-screen bg-gray-50" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="flex flex-col items-center gap-4" role="status" aria-live="polite" aria-label="Carregando...">
+          <div className="animate-spin motion-reduce:animate-none rounded-full h-8 w-8 border-b-2 border-gray-600" role="status" aria-live="polite" aria-label="Carregando..."></div>
           <span className="text-sm text-lia-text-tertiary font-['Open_Sans']">Carregando...</span>
         </div>
       </div>
@@ -414,7 +414,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                   )}
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-xs px-2 py-0.5 cursor-pointer hover:bg-gray-100 transition-colors select-none">
+                      <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-xs px-2 py-0.5 cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none select-none">
                         {jobEditForm.status || currentJob.status}
                       </Badge>
                     </PopoverTrigger>
@@ -422,14 +422,14 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                       {(() => { const st = jobEditForm.status || currentJob.status; return st === 'Ativa' || st === 'active' })() ? (
                         <>
                           <button
-                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-lia-text-secondary hover:bg-gray-100 transition-colors"
+                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-lia-text-secondary hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                             onClick={() => { setJobStatusModalMode('pause'); setShowJobStatusModal(true) }}
                           >
                             <PauseCircle className="w-3.5 h-3.5 text-status-warning" />
                             Pausar vaga
                           </button>
                           <button
-                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-status-error hover:bg-status-error/10 transition-colors"
+                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-status-error hover:bg-status-error/10 transition-colors motion-reduce:transition-none"
                             onClick={() => setShowCloseVacancyModal(true)}
                           >
                             <Archive className="w-3.5 h-3.5" />
@@ -439,14 +439,14 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                       ) : (
                         <>
                           <button
-                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-status-success hover:bg-status-success/10 transition-colors"
+                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-status-success hover:bg-status-success/10 transition-colors motion-reduce:transition-none"
                             onClick={() => { setJobStatusModalMode('activate'); setShowJobStatusModal(true) }}
                           >
                             <PlayCircle className="w-3.5 h-3.5" />
                             Reativar vaga
                           </button>
                           <button
-                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-status-error hover:bg-status-error/10 transition-colors"
+                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-status-error hover:bg-status-error/10 transition-colors motion-reduce:transition-none"
                             onClick={() => setShowCloseVacancyModal(true)}
                           >
                             <Archive className="w-3.5 h-3.5" />
@@ -479,7 +479,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                       }
                     }
                     const badge = (
-                      <Badge className={`font-semibold whitespace-nowrap text-xs px-2 py-0.5 cursor-pointer hover:opacity-80 transition-opacity select-none ${scrStyles[scrStatus] || scrStyles.not_configured}`}>
+                      <Badge className={`font-semibold whitespace-nowrap text-xs px-2 py-0.5 cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none select-none ${scrStyles[scrStatus] || scrStyles.not_configured}`}>
                         {scrLabels[scrStatus] || 'Triagem: N/C'}
                       </Badge>
                     )
@@ -490,7 +490,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                         <PopoverContent className="w-48 p-1" align="start">
                           {scrStatus === 'not_configured' && (
                             <button
-                              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-lia-text-secondary hover:bg-gray-100 transition-colors"
+                              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-lia-text-secondary hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                               onClick={() => setActiveTab('edit')}
                             >
                               <Settings className="w-3.5 h-3.5 text-lia-text-tertiary" />
@@ -500,14 +500,14 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                           {scrStatus === 'not_started' && (
                             <>
                               <button
-                                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-status-success hover:bg-status-success/10 transition-colors"
+                                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-status-success hover:bg-status-success/10 transition-colors motion-reduce:transition-none"
                                 onClick={() => handleScreeningStatusChange('active')}
                               >
                                 <PlayCircle className="w-3.5 h-3.5" />
                                 Iniciar Triagem
                               </button>
                               <button
-                                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-lia-text-secondary hover:bg-gray-100 transition-colors"
+                                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-lia-text-secondary hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                                 onClick={() => setActiveTab('edit')}
                               >
                                 <Settings className="w-3.5 h-3.5 text-lia-text-tertiary" />
@@ -517,7 +517,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                           )}
                           {scrStatus === 'active' && (
                             <button
-                              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-status-warning hover:bg-status-warning/10 transition-colors"
+                              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-status-warning hover:bg-status-warning/10 transition-colors motion-reduce:transition-none"
                               onClick={() => handleScreeningStatusChange('paused')}
                             >
                               <PauseCircle className="w-3.5 h-3.5" />
@@ -527,14 +527,14 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                           {scrStatus === 'paused' && (
                             <>
                               <button
-                                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-status-success hover:bg-status-success/10 transition-colors"
+                                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-status-success hover:bg-status-success/10 transition-colors motion-reduce:transition-none"
                                 onClick={() => handleScreeningStatusChange('active')}
                               >
                                 <PlayCircle className="w-3.5 h-3.5" />
                                 Retomar Triagem
                               </button>
                               <button
-                                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-lia-text-secondary hover:bg-gray-100 transition-colors"
+                                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-lia-text-secondary hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                                 onClick={() => setActiveTab('edit')}
                               >
                                 <Settings className="w-3.5 h-3.5 text-lia-text-tertiary" />
@@ -620,7 +620,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                   )}
                   {computedSuggestions.length > 0 && (
                     <Badge 
-                      className="bg-wedo-cyan text-white border-0 font-semibold whitespace-nowrap text-micro px-1.5 py-0 cursor-pointer hover:bg-wedo-cyan-dark transition-colors"
+                      className="bg-wedo-cyan text-white border-0 font-semibold whitespace-nowrap text-micro px-1.5 py-0 cursor-pointer hover:bg-wedo-cyan-dark transition-colors motion-reduce:transition-none"
                       onClick={() => {
                         setShowExpandedLIA(true)
                         setShowLiaSuggestionsPanel(true)
@@ -670,7 +670,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
           <div className="flex items-center gap-1 px-4 mt-2">
             <button
               onClick={() => { setActiveTab('management'); setShowJobEditor(false); }}
-              className={`flex items-center gap-2 px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
+              className={`flex items-center gap-2 px-3 py-2 text-xs font-medium border-b-2 transition-colors motion-reduce:transition-none ${
                 activeTab === 'management'
                   ? 'border-gray-900 text-lia-text-primary dark:border-lia-border-subtle dark:text-lia-text-primary'
                   : 'border-transparent text-lia-text-tertiary hover:text-lia-text-secondary dark:text-lia-text-tertiary dark:hover:text-lia-text-disabled'
@@ -684,7 +684,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
             </button>
             <button
               onClick={() => { setActiveTab('edit'); setShowJobEditor(true); }}
-              className={`flex items-center gap-2 px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
+              className={`flex items-center gap-2 px-3 py-2 text-xs font-medium border-b-2 transition-colors motion-reduce:transition-none ${
                 activeTab === 'edit'
                   ? 'border-gray-900 text-lia-text-primary dark:border-lia-border-subtle dark:text-lia-text-primary'
                   : 'border-transparent text-lia-text-tertiary hover:text-lia-text-secondary dark:text-lia-text-tertiary dark:hover:text-lia-text-disabled'
@@ -709,7 +709,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                       }
                     }}
                     disabled={pipelineInheritance.isLoading}
-                    className="inline-flex items-center gap-1 px-2 py-1 text-micro font-medium text-lia-text-tertiary hover:text-lia-text-secondary dark:text-lia-text-tertiary dark:hover:text-lia-text-disabled bg-gray-100 dark:bg-lia-bg-secondary hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors"
+                    className="inline-flex items-center gap-1 px-2 py-1 text-micro font-medium text-lia-text-tertiary hover:text-lia-text-secondary dark:text-lia-text-tertiary dark:hover:text-lia-text-disabled bg-gray-100 dark:bg-lia-bg-secondary hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors motion-reduce:transition-none"
                    
                   >
                     <RotateCcw className="w-3 h-3" />
@@ -854,7 +854,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                         placeholder="Ex: Analisar candidatos com maior fit..."
                         value={liaPromptValue}
                         onChange={(e) => setLiaPromptValue(e.target.value)}
-                        className="w-full h-10 pl-10 pr-20 text-base-ui rounded-md focus:outline-none placeholder:text-lia-text-secondary transition-colors border"
+                        className="w-full h-10 pl-10 pr-20 text-base-ui rounded-md focus:outline-none placeholder:text-lia-text-secondary transition-colors motion-reduce:transition-none border"
                         style={{backgroundColor: 'var(--gray-50)',
                           color: 'var(--gray-950)'}}
                         onFocus={(e) => {
@@ -874,7 +874,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                       />
                       <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                         <button
-                          className="p-1.5 rounded-md transition-colors hover:bg-gray-100"
+                          className="p-1.5 rounded-md transition-colors motion-reduce:transition-none hover:bg-gray-100"
                           onClick={() => setShowExpandedLIA(true)}
                           title="Expandir chat"
                           aria-label="Expandir chat da LIA"
@@ -882,7 +882,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                           <Maximize2 className="w-4 h-4 text-lia-text-secondary" aria-hidden="true" />
                         </button>
                         <button
-                          className="p-1.5 rounded-md transition-colors hover:bg-gray-100"
+                          className="p-1.5 rounded-md transition-colors motion-reduce:transition-none hover:bg-gray-100"
                           onClick={() => {
                             if (liaPromptValue.trim()) {
                               handleAICommand(liaPromptValue)
@@ -926,7 +926,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                 <div className="bg-gray-100 dark:bg-lia-bg-elevated rounded-md p-0.5 flex">
                   <button
                     onClick={() => setViewMode("kanban")}
-                    className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                    className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none ${
                       viewMode === "kanban"
                         ? "bg-white dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary font-bold"
                         : "text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
@@ -939,7 +939,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                   </button>
                   <button
                     onClick={() => setViewMode("table")}
-                    className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                    className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none ${
                       viewMode === "table"
                         ? "bg-white dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary font-bold"
                         : "text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
@@ -1026,7 +1026,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                       setSelectedCandidates(allIds)
                     }
                   }}
-                  className="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-lia-text-primary dark:text-lia-text-primary bg-lia-bg-primary border border-lia-border-subtle rounded-full hover:bg-gray-50 transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-lia-text-primary dark:text-lia-text-primary bg-lia-bg-primary border border-lia-border-subtle rounded-full hover:bg-gray-50 transition-colors motion-reduce:transition-none"
                  
                 >
                   {/* Calcular candidatos visíveis para o texto do botão */}
@@ -1112,7 +1112,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                       setShowTableFiltersPanel(!showTableFiltersPanel)
                     }
                   }}
-                  className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors ${
+                  className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors motion-reduce:transition-none ${
                     (viewMode === "kanban" ? showKanbanFiltersPanel : showTableFiltersPanel)
                       ? 'bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200' 
                       : 'text-lia-text-primary dark:text-lia-text-primary bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-default hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -1127,7 +1127,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                   <button
                     onClick={() => setShowColumnConfig(!showColumnConfig)}
                     title="Configurar colunas da tabela"
-                    className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors ${
+                    className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors motion-reduce:transition-none ${
                       showColumnConfig 
                         ? 'bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200' 
                         : 'text-lia-text-primary dark:text-lia-text-primary bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-default hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -1136,7 +1136,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                   >
                     <ChevronsLeftRight className="w-4 h-4" />
                     Colunas
-                    <span className={`text-xs font-medium ${showColumnConfig ? 'text-lia-text-disabled' : 'text-lia-text-tertiary'}`}>
+                    <span className={`text-xs font-medium ${showColumnConfig ? 'text-lia-text-disabled' : 'text-lia-text-tertiary'}`} aria-live="polite" aria-atomic="true">
                       {tableColumns.filter(col => col.visible).length}
                     </span>
                   </button>
@@ -1152,7 +1152,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
             {showSuperChat && (
               <>
               <div 
-                className="flex-1 transition-colors duration-300 pl-4 py-4 pr-0 min-w-0"
+                className="flex-1 transition-colors motion-reduce:transition-none duration-300 pl-4 py-4 pr-0 min-w-0"
                 style={{maxWidth: 'calc(100% - 48px)'}}
               >
                 <div className="h-full flex flex-col">
@@ -1180,7 +1180,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
               </div>
 
               {/* Barra Vertical de Navegação - Estilo colapsado com ícones */}
-              <div className="flex-shrink-0 w-12 transition-colors duration-300 py-4 pr-2">
+              <div className="flex-shrink-0 w-12 transition-colors motion-reduce:transition-none duration-300 py-4 pr-2">
                 <div className="h-[calc(100vh-12rem)] flex flex-col items-center bg-lia-bg-primary border border-lia-border-subtle rounded-md py-3 gap-2">
                   {/* Botão Expandir */}
                   <Button
@@ -1196,14 +1196,14 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                   <div className="w-6 h-px bg-gray-200 my-1" />
                   
                   {/* Ícone HubSpot/Integração */}
-                  <div className="flex flex-col items-center gap-1 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-colors">
+                  <div className="flex flex-col items-center gap-1 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-colors motion-reduce:transition-none">
                     <div className="w-6 h-6 rounded-full bg-wedo-orange flex items-center justify-center">
                       <span className="text-white text-micro font-bold">H</span>
                     </div>
                   </div>
                   
                   {/* Ícone Ações/Automação */}
-                  <div className="flex flex-col items-center gap-1 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-colors">
+                  <div className="flex flex-col items-center gap-1 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-colors motion-reduce:transition-none">
                     <div className="w-6 h-6 rounded-full bg-status-warning flex items-center justify-center">
                       <Brain className="w-3.5 h-3.5 text-white" />
                     </div>
@@ -1213,14 +1213,14 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                   
                   {/* Candidatos - Texto Vertical */}
                   <div 
-                    className="flex flex-col items-center gap-1 py-3 cursor-pointer hover:bg-gray-50 rounded-md px-1 transition-colors border-r-2 border-gray-900 dark:border-lia-border-medium"
+                    className="flex flex-col items-center gap-1 py-3 cursor-pointer hover:bg-gray-50 rounded-md px-1 transition-colors motion-reduce:transition-none border-r-2 border-gray-900 dark:border-lia-border-medium"
                     onClick={() => setShowSuperChat(false)}
                   >
                     <Users className="w-4 h-4 text-lia-text-secondary" />
                     <span 
                       className="text-micro font-medium text-lia-text-secondary tracking-wide"
                       style={{writingMode: 'vertical-rl', textOrientation: 'mixed'}}
-                    >
+                     aria-live="polite" aria-atomic="true">
                       Candidatos ({Object.values(candidatesData).flat().length})
                     </span>
                   </div>
@@ -1283,13 +1283,13 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                         <div key={stage.id} className="flex flex-col flex-1 bg-lia-bg-primary rounded-md min-w-[250px] max-w-[320px] border border-lia-border-subtle h-[calc(100vh-16rem)]" suppressHydrationWarning>
                           <div className="flex-shrink-0 p-2.5 pb-1.5">
                             <div className="flex items-center gap-1.5">
-                              <div className="w-2 h-2 rounded-full animate-pulse" style={{backgroundColor: stage.color}}></div>
+                              <div className="w-2 h-2 rounded-full animate-pulse motion-reduce:animate-none" style={{backgroundColor: stage.color}}></div>
                               <h3 className="font-medium text-xs text-lia-text-disabled">{stage.displayName}</h3>
-                              <span className="text-micro text-lia-text-disabled bg-gray-100 px-1.5 py-0.5 rounded-full animate-pulse">...</span>
+                              <span className="text-micro text-lia-text-disabled bg-gray-100 px-1.5 py-0.5 rounded-full animate-pulse motion-reduce:animate-none">...</span>
                             </div>
                           </div>
                           <div className="flex-1 flex items-center justify-center">
-                            <div className="animate-pulse text-lia-text-disabled text-xs" suppressHydrationWarning>Carregando...</div>
+                            <div className="animate-pulse motion-reduce:animate-none text-lia-text-disabled text-xs" suppressHydrationWarning>Carregando...</div>
                           </div>
                         </div>
                       ))}
@@ -1325,13 +1325,13 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                       ))}
                       <div className="flex-shrink-0 w-[280px]">
                         <div 
-                          className="h-full min-h-[200px] rounded-md border-2 border-dashed border-lia-border-default hover:border-gray-400 flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors hover:bg-gray-50/50 group"
+                          className="h-full min-h-[200px] rounded-md border-2 border-dashed border-lia-border-default hover:border-gray-400 flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors motion-reduce:transition-none hover:bg-gray-50/50 group"
                           onClick={() => setShowAddColumnPopover(true)}
                         >
-                          <div className="w-10 h-10 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors">
+                          <div className="w-10 h-10 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors motion-reduce:transition-none">
                             <Plus className="w-5 h-5 text-lia-text-disabled group-hover:text-lia-text-secondary" />
                           </div>
-                          <span className="text-xs text-lia-text-disabled group-hover:text-lia-text-secondary font-medium transition-colors">
+                          <span className="text-xs text-lia-text-disabled group-hover:text-lia-text-secondary font-medium transition-colors motion-reduce:transition-none">
                             Adicionar Coluna
                           </span>
                         </div>
@@ -1359,7 +1359,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
 
               {/* Preview do Candidato - Painel Lateral Direito (KANBAN) */}
               {isPreviewOpen && previewCandidate && (
-                <div className={`flex-shrink-0 transition-colors duration-300 ${isPreviewMaximized ? 'w-[600px]' : 'w-panel-lg'}`}>
+                <div className={`flex-shrink-0 transition-colors motion-reduce:transition-none duration-300 ${isPreviewMaximized ? 'w-[600px]' : 'w-panel-lg'}`}>
                   <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
                   <CandidatePreview
                     candidate={previewCandidate}

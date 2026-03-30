@@ -117,7 +117,7 @@ const LIARulesInfo: React.FC<{ type: 'triage' | 'interview' }> = ({ type }) => {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <button className="inline-flex items-center gap-1 text-xs lia-text-secondary hover:lia-text-strong dark:hover:lia-text-subtle transition-colors">
+          <button className="inline-flex items-center gap-1 text-xs lia-text-secondary hover:lia-text-strong dark:hover:lia-text-subtle transition-colors motion-reduce:transition-none">
             <Info className="w-3 h-3" />
             <span>Como funciona?</span>
           </button>
@@ -348,7 +348,7 @@ Equipe de Recrutamento`
                   <p className="text-base-ui font-medium text-lia-text-primary mb-0.5">
                     {flowType === 'approve_to_triage' ? 'LIA vai iniciar a triagem' : 'LIA vai agendar a entrevista'}
                   </p>
-                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary mb-1.5">
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary mb-1.5" aria-live="polite" aria-atomic="true">
                     {flowType === 'approve_to_triage' 
                       ? `Contato via ${contactChannels.join(' e ') || 'WhatsApp e Email'}`
                       : 'Candidato receberá link para escolher horário'
@@ -385,7 +385,7 @@ Equipe de Recrutamento`
                   <AlertCircle className="w-3.5 h-3.5 text-wedo-coral" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-base-ui font-medium text-lia-text-primary mb-0.5">
+                  <p className="text-base-ui font-medium text-lia-text-primary mb-0.5" aria-live="polite" aria-atomic="true">
                     Candidato será reprovado
                   </p>
                   <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
@@ -403,10 +403,10 @@ Equipe de Recrutamento`
                   <MessageSquare className="w-3.5 h-3.5 text-wedo-coral" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-base-ui font-medium text-lia-text-primary mb-0.5">
+                  <p className="text-base-ui font-medium text-lia-text-primary mb-0.5" aria-live="polite" aria-atomic="true">
                     Candidato participou da triagem
                   </p>
-                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
                     Recomendamos enviar feedback para manter boa experiência do candidato.
                   </p>
                 </div>
@@ -424,7 +424,7 @@ Equipe de Recrutamento`
                   <p className="text-base-ui font-medium text-lia-text-primary mb-0.5">
                     Solicitação de Urgência
                   </p>
-                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
                     A LIA enviará uma nova mensagem de agendamento com prioridade alta para o candidato, solicitando retorno imediato.
                   </p>
                 </div>
@@ -442,7 +442,7 @@ Equipe de Recrutamento`
                   <p className="text-base-ui font-medium text-lia-text-primary mb-0.5">
                     Alterar Horário da Entrevista
                   </p>
-                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
                     A LIA vai buscar novos horários disponíveis na sua agenda e enviar as opções para o candidato escolher.
                   </p>
                 </div>
@@ -500,7 +500,7 @@ Equipe de Recrutamento`
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin motion-reduce:animate-none" />
                   Processando...
                 </>
               ) : (

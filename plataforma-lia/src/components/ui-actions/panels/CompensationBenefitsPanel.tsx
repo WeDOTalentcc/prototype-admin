@@ -252,8 +252,8 @@ export function CompensationBenefitsPanel({
         </CardHeader>
         <CardContent className="space-y-6">
           {isLoadingBenefits && benefits.length === 0 ? (
-            <div className="flex items-center gap-2 py-4">
-              <Loader2 className="h-4 w-4 animate-spin lia-text-secondary" />
+            <div className="flex items-center gap-2 py-4" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none lia-text-secondary" />
               <span className="text-sm text-muted-foreground">Carregando benefícios...</span>
             </div>
           ) : (
@@ -312,7 +312,7 @@ export function CompensationBenefitsPanel({
       >
         {isLoading ? (
           <>
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none mr-2" />
             Salvando...
           </>
         ) : (

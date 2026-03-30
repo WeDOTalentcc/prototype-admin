@@ -100,7 +100,7 @@ function VacancyCard({
 
   return (
     <div 
-      className="p-3 rounded-md bg-gray-50 dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer group"
+      className="p-3 rounded-md bg-gray-50 dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none cursor-pointer group"
       onClick={onClick}
     >
       <div className="flex items-start gap-3">
@@ -108,7 +108,7 @@ function VacancyCard({
         
         <div className="flex-1 min-w-0 space-y-2">
           <div className="flex items-center justify-between gap-2">
-            <h4 className="text-sm font-semibold text-lia-text-primary dark:text-white truncate group-hover:text-lia-text-primary dark:group-hover:text-lia-text-inverse transition-colors">
+            <h4 className="text-sm font-semibold text-lia-text-primary dark:text-white truncate group-hover:text-lia-text-primary dark:group-hover:text-lia-text-inverse transition-colors motion-reduce:transition-none">
               {vacancy.title}
             </h4>
             <Badge 
@@ -172,10 +172,10 @@ export function VacancySearchResults({
             LIA
           </AvatarFallback>
         </Avatar>
-        <div className="rounded-xl rounded-tl-sm bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle p-4">
-          <div className="flex items-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin text-lia-text-secondary dark:text-lia-text-tertiary" />
-            <span className="text-sm text-muted-foreground">Buscando vagas anteriores...</span>
+        <div className="rounded-xl rounded-tl-sm bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle p-4" role="status" aria-live="polite" aria-label="Carregando...">
+          <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
+            <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <span className="text-sm text-muted-foreground" aria-live="polite" aria-atomic="true">Buscando vagas anteriores...</span>
           </div>
         </div>
       </div>
@@ -192,7 +192,7 @@ export function VacancySearchResults({
           </AvatarFallback>
         </Avatar>
         <div className="rounded-xl rounded-tl-sm bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle p-4">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground" aria-live="polite" aria-atomic="true">
             Não encontrei vagas anteriores com esses critérios. Podemos criar uma vaga do zero! Me diga o cargo e vou te ajudar.
           </p>
         </div>
@@ -227,7 +227,7 @@ export function VacancySearchResults({
           </div>
 
           <div className="pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
-            <p className="text-xs text-muted-foreground italic">
+            <p className="text-xs text-muted-foreground italic" aria-live="polite" aria-atomic="true">
               Digite o número (ex: "1" ou "2") ou parte do título para selecionar uma vaga. 
               Se preferir criar do zero, digite "criar nova".
             </p>

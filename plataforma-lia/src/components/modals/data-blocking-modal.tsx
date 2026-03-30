@@ -139,7 +139,7 @@ export function DataBlockingModal({
 
         <div className="space-y-4 py-4">
           <div className="bg-status-warning/10 dark:bg-status-warning/30 border border-status-warning/30 dark:border-status-warning/30 rounded-md p-3">
-            <p className="text-sm text-status-warning dark:text-status-warning">
+            <p className="text-sm text-status-warning dark:text-status-warning" aria-live="polite" aria-atomic="true">
               Esta etapa requer informações adicionais do candidato. 
               Você pode solicitar os dados ou avançar mesmo assim.
             </p>
@@ -200,7 +200,7 @@ export function DataBlockingModal({
           >
             {isResending ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mr-2" />
                 Enviando...
               </>
             ) : (
@@ -218,7 +218,7 @@ export function DataBlockingModal({
           >
             {isProceeding ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mr-2" />
                 Processando...
               </>
             ) : (

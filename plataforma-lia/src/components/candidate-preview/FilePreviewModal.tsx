@@ -164,7 +164,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                 src={selectedFile.url || candidate.avatar_url || candidate.avatar}
                 alt={selectedFile.name}
                 style={{width: `${imageZoom}%`, maxWidth: '100%'}}
-                className="rounded-md transition-colors duration-300 "
+                className="rounded-md transition-colors motion-reduce:transition-none duration-300 "
               />
             </div>
           )}

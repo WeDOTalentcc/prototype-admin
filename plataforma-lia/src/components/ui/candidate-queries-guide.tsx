@@ -170,7 +170,7 @@ export function CandidateQueriesGuide({
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
-                className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+                className="p-1 rounded-full hover:bg-gray-200 transition-colors motion-reduce:transition-none"
                 aria-label="Limpar busca"
               >
                 <X className="w-3.5 h-3.5 lia-text-secondary" />
@@ -216,7 +216,7 @@ export function CandidateQueriesGuide({
               <button
                 key={query.id}
                 onClick={() => handleSelectQuery(query.question)}
-                className="w-full px-4 py-3 text-left transition-colors rounded-md group flex items-start gap-3"
+                className="w-full px-4 py-3 text-left transition-colors motion-reduce:transition-none rounded-md group flex items-start gap-3"
                 style={{backgroundColor: 'var(--gray-50)',
                   border: '1px solid var(--gray-100)'}}
               >

@@ -43,7 +43,7 @@ export function Breadcrumbs({
             {item.href && !isLast ? (
               <Link
                 href={item.href}
-                className="hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors shrink-0 text-lia-text-disabled"
+                className="hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors motion-reduce:transition-none shrink-0 text-lia-text-disabled"
               >
                 {item.label}
               </Link>

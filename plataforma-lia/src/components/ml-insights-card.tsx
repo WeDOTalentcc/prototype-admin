@@ -83,7 +83,7 @@ export function MLInsightsCard({ companyId, jobData, className = "" }: MLInsight
       {/* Header — sempre visível */}
       <button
         onClick={handleToggle}
-        className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+        className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
        
       >
         <span className="flex items-center gap-1.5">
@@ -91,7 +91,7 @@ export function MLInsightsCard({ companyId, jobData, className = "" }: MLInsight
           Previsões IA
         </span>
         <span className="flex items-center gap-1">
-          {loading && <Loader2 className="w-3 h-3 animate-spin lia-text-secondary" />}
+          {loading && <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none lia-text-secondary" />}
           {isOpen ? <ChevronUp className="w-3.5 h-3.5 lia-text-secondary" /> : <ChevronDown className="w-3.5 h-3.5 lia-text-secondary" />}
         </span>
       </button>
@@ -114,8 +114,8 @@ export function MLInsightsCard({ companyId, jobData, className = "" }: MLInsight
           )}
 
           {loading && !timeToFill && !salary && (
-            <div className="flex items-center justify-center py-3">
-              <Loader2 className="w-4 h-4 animate-spin lia-text-secondary" />
+            <div className="flex items-center justify-center py-3" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-secondary" />
               <span className="ml-2 text-xs lia-text-secondary">
                 Calculando previsões...
               </span>
@@ -166,7 +166,7 @@ export function MLInsightsCard({ companyId, jobData, className = "" }: MLInsight
             <div className="flex justify-end pt-0.5">
               <button
                 onClick={handleRefresh}
-                className="flex items-center gap-1 text-micro lia-text-secondary hover:lia-text-base dark:hover:lia-text-muted transition-colors"
+                className="flex items-center gap-1 text-micro lia-text-secondary hover:lia-text-base dark:hover:lia-text-muted transition-colors motion-reduce:transition-none"
                
               >
                 <RefreshCw className="w-2.5 h-2.5" />

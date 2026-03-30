@@ -51,7 +51,7 @@ export function ClientCard({ client, onSelect }: ClientCardProps) {
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-medium text-lia-text-primary truncate group-hover:text-lia-text-primary dark:group-hover:text-lia-text-inverse transition-colors">
+            <h3 className="text-sm font-medium text-lia-text-primary truncate group-hover:text-lia-text-primary dark:group-hover:text-lia-text-inverse transition-colors motion-reduce:transition-none">
               {client.name}
             </h3>
             <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary truncate">

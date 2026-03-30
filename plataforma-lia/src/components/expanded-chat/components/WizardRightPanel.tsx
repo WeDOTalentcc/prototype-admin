@@ -403,7 +403,7 @@ export function WizardRightPanel({
         {stageTransition === 'loading' && (
           <div className="absolute inset-0 bg-white/90 dark:bg-lia-bg-primary/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center gap-4">
             <div className="relative">
-              <div className="w-12 h-12 rounded-full border-3 border-lia-border-default dark:border-lia-border-default border-t-gray-300 dark:border-t-gray-600 animate-spin" />
+              <div className="w-12 h-12 rounded-full border-3 border-lia-border-default dark:border-lia-border-default border-t-gray-300 dark:border-t-gray-600 animate-spin motion-reduce:animate-none" />
               <div className="absolute inset-0 flex items-center justify-center">
                 <Brain className="w-5 h-5 text-chat-cyan" />
               </div>

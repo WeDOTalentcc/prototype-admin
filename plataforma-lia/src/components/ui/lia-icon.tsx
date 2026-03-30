@@ -39,7 +39,7 @@ export function LIAIcon({ className, size = "md", animate = false, speaking = fa
   return (
     <div className={cn(
  "relative inline-flex items-center justify-center rounded-full",
-      animate && "animate-pulse",
+      animate && "animate-pulse motion-reduce:animate-none",
       speaking && "lia-speaking-glow",
       sizeClasses[size],
       className

@@ -357,7 +357,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
               >
                 {/* Block Header */}
                 <div 
-                  className={`flex items-center justify-between p-2.5 cursor-pointer transition-colors ${
+                  className={`flex items-center justify-between p-2.5 cursor-pointer transition-colors motion-reduce:transition-none ${
  block.editable 
                       ? 'bg-gray-50 hover:bg-gray-100' 
                       : 'bg-gray-100/80'
@@ -457,7 +457,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                           blockQuestions.map((item: ScreeningQuestion, idx: number) => (
                             <div 
                               key={item.id || idx} 
-                              className="p-2 bg-lia-bg-primary border border-lia-border-subtle rounded-md transition-colors"
+                              className="p-2 bg-lia-bg-primary border border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none"
                             >
                               <div className="flex items-start gap-2">
                                 <div className="flex-1 min-w-0">

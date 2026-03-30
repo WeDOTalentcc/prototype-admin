@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import {
   Calendar, Clock, MapPin, DollarSign, Heart, Shield, Building, Lock, Globe,
   ChevronRight, ClipboardList, Lightbulb,
-  Brain, CheckCircle,
+  Brain, CheckCircle, Target, BarChart3,
   FileText, Layers3, CalendarCheck, Settings, MessageSquare, Phone,
   ChevronDown, ChevronUp
 } from "lucide-react"
@@ -101,9 +101,9 @@ export function JobScreeningSection({
                               Descrição da Vaga
                             </h5>
                             {collapsedPreviewSections.includes('descricao') ? (
-                              <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
+                              <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
                             ) : (
-                              <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
+                              <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
                             )}
                           </div>
                           {!collapsedPreviewSections.includes('descricao') && (
@@ -122,9 +122,9 @@ export function JobScreeningSection({
                             Competências Avaliadas
                           </h5>
                           {collapsedPreviewSections.includes('competencias') ? (
-                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
+                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
                           ) : (
-                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
+                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
                           )}
                         </div>
                         {!collapsedPreviewSections.includes('competencias') && (<>
@@ -202,9 +202,9 @@ export function JobScreeningSection({
                             Idiomas
                           </h5>
                           {collapsedPreviewSections.includes('idiomas') ? (
-                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
+                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
                           ) : (
-                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
+                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
                           )}
                         </div>
                         {!collapsedPreviewSections.includes('idiomas') && (
@@ -243,9 +243,9 @@ export function JobScreeningSection({
                             Remuneração e Benefícios
                           </h5>
                           {collapsedPreviewSections.includes('remuneracao') ? (
-                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
+                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
                           ) : (
-                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
+                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
                           )}
                         </div>
                         {!collapsedPreviewSections.includes('remuneracao') && (
@@ -311,9 +311,9 @@ export function JobScreeningSection({
                             Etapas do Processo
                           </h5>
                           {collapsedPreviewSections.includes('etapas') ? (
-                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
+                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
                           ) : (
-                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
+                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
                           )}
                         </div>
                         {!collapsedPreviewSections.includes('etapas') && (
@@ -385,9 +385,9 @@ export function JobScreeningSection({
                             </Badge>
                           </h5>
                           {collapsedPreviewSections.includes('fluxo-resumido') ? (
-                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
+                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
                           ) : (
-                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
+                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
                           )}
                         </div>
                         {!collapsedPreviewSections.includes('fluxo-resumido') && (
@@ -417,9 +417,9 @@ export function JobScreeningSection({
                             </Badge>
                           </h5>
                           {collapsedPreviewSections.includes('fluxo-wsi') ? (
-                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
+                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
                           ) : (
-                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
+                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
                           )}
                         </div>
 
@@ -474,7 +474,7 @@ export function JobScreeningSection({
                               >
                                 {/* Block Header */}
                                 <div 
-                                  className={`flex items-center justify-between p-2.5 cursor-pointer transition-colors ${
+                                  className={`flex items-center justify-between p-2.5 cursor-pointer transition-colors motion-reduce:transition-none ${
                                     block.editable 
                                       ? 'bg-gray-50 hover:bg-gray-100' 
                                       : 'bg-gray-100/80'
@@ -644,9 +644,9 @@ export function JobScreeningSection({
                               {(screeningConfig?.scheduling?.auto_enabled ?? true) ? 'Ativo' : 'Inativo'}
                             </Badge>
                             {collapsedPreviewSections.includes('agendamento') ? (
-                              <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
+                              <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
                             ) : (
-                              <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
+                              <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
                             )}
                           </div>
                         </div>
@@ -689,9 +689,9 @@ export function JobScreeningSection({
                             Canais de Comunicação
                           </h5>
                           {collapsedPreviewSections.includes('canais') ? (
-                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
+                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
                           ) : (
-                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform" />
+                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
                           )}
                         </div>
 

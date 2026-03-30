@@ -73,7 +73,7 @@ export function KanbanColumnConfigPanel({
   }
 
   return (
-    <div className="flex-shrink-0 w-80 transition-colors duration-300">
+    <div className="flex-shrink-0 w-80 transition-colors motion-reduce:transition-none duration-300">
       <Card className="h-[calc(100vh-12rem)] flex flex-col overflow-hidden border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
         {/* Header */}
         <div className="flex-shrink-0 p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
@@ -105,13 +105,13 @@ export function KanbanColumnConfigPanel({
             </div>
             <div className="flex gap-2">
               <button
-                className="flex-1 text-xs h-8 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors text-lia-text-secondary"
+                className="flex-1 text-xs h-8 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors motion-reduce:transition-none text-lia-text-secondary"
                 onClick={onResetColumns}
               >
                 Restaurar Padrão
               </button>
               <button
-                className="text-xs h-8 px-4 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors text-lia-text-secondary"
+                className="text-xs h-8 px-4 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors motion-reduce:transition-none text-lia-text-secondary"
                 onClick={showAll}
               >
                 Todas
@@ -145,10 +145,10 @@ export function KanbanColumnConfigPanel({
                     <div
                       key={col.id}
                       onClick={() => toggleColumn(col.id)}
-                      className={`flex items-center gap-3 p-2.5 rounded-md cursor-pointer transition-colors border ${col.visible ? 'bg-gray-900/5 border-gray-900/20' : 'bg-gray-50 border-lia-border-subtle'}`}
+                      className={`flex items-center gap-3 p-2.5 rounded-md cursor-pointer transition-colors motion-reduce:transition-none border ${col.visible ? 'bg-gray-900/5 border-gray-900/20' : 'bg-gray-50 border-lia-border-subtle'}`}
                     >
                       <div
-                        className="w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-colors"
+                        className="w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-colors motion-reduce:transition-none"
                         style={{backgroundColor: col.visible ? 'var(--gray-800)' : 'transparent',
                           border: col.visible ? 'none' : '2px solid var(--gray-300)'}}
                       >

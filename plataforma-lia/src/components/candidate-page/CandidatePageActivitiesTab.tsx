@@ -135,7 +135,7 @@ export function CandidatePageActivitiesTab({
               <div className="flex items-center bg-white dark:bg-lia-bg-elevated rounded-md p-0.5 border border-lia-border-subtle dark:border-lia-border-default">
                 <button
                   onClick={() => setViewMode('timeline')}
-                  className={`p-1.5 rounded-md transition-colors ${
+                  className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
  viewMode === 'timeline'
                       ? 'bg-gray-200 text-lia-text-primary dark:text-lia-text-primary'
                       : 'text-lia-text-secondary dark:text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse'
@@ -146,7 +146,7 @@ export function CandidatePageActivitiesTab({
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-1.5 rounded-md transition-colors ${
+                  className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
  viewMode === 'list'
                       ? 'bg-gray-200 text-lia-text-primary dark:text-lia-text-primary'
                       : 'text-lia-text-secondary dark:text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse'
@@ -171,7 +171,7 @@ export function CandidatePageActivitiesTab({
           <div className="flex gap-1 flex-wrap">
             <button
               onClick={() => setActivityFilter('all')}
-              className={`px-2 py-1 text-xs rounded-md transition-colors ${
+              className={`px-2 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none ${
  activityFilter === 'all'
                   ? 'bg-gray-600 text-white'
                   : 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-200'
@@ -181,7 +181,7 @@ export function CandidatePageActivitiesTab({
             </button>
             <button
               onClick={() => setActivityFilter('emails')}
-              className={`px-2 py-1 text-xs rounded-md transition-colors ${
+              className={`px-2 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none ${
  activityFilter === 'emails'
                   ? 'bg-gray-900 text-white'
                   : 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -191,7 +191,7 @@ export function CandidatePageActivitiesTab({
             </button>
             <button
               onClick={() => setActivityFilter('interviews')}
-              className={`px-2 py-1 text-xs rounded-md transition-colors ${
+              className={`px-2 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none ${
  activityFilter === 'interviews'
                   ? 'bg-wedo-purple text-white'
                   : 'bg-wedo-purple/15 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple hover:bg-wedo-purple/10'
@@ -201,7 +201,7 @@ export function CandidatePageActivitiesTab({
             </button>
             <button
               onClick={() => setActivityFilter('tests')}
-              className={`px-2 py-1 text-xs rounded-md transition-colors ${
+              className={`px-2 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none ${
  activityFilter === 'tests'
                   ? 'bg-wedo-purple text-white'
                   : 'bg-wedo-purple/15 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple hover:bg-wedo-purple'
@@ -211,7 +211,7 @@ export function CandidatePageActivitiesTab({
             </button>
             <button
               onClick={() => setActivityFilter('lia')}
-              className={`px-2 py-1 text-xs rounded-md transition-colors ${
+              className={`px-2 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none ${
  activityFilter === 'lia'
                   ? 'bg-status-error text-white'
                   : 'bg-status-error/15 dark:bg-status-error/30 text-status-error dark:text-status-error hover:bg-status-error/20'
@@ -221,7 +221,7 @@ export function CandidatePageActivitiesTab({
             </button>
             <button
               onClick={() => setActivityFilter('offers')}
-              className={`px-2 py-1 text-xs rounded-md transition-colors ${
+              className={`px-2 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none ${
  activityFilter === 'offers'
                   ? 'bg-status-success text-white'
                   : 'bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success hover:bg-status-success/20'
@@ -235,7 +235,7 @@ export function CandidatePageActivitiesTab({
 
       <Card className="bg-gray-50 dark:bg-lia-bg-secondary/50">
         <CardHeader
-          className="pb-3 cursor-pointer hover:bg-wedo-purple/15/30 dark:hover:bg-wedo-purple/30 transition-colors"
+          className="pb-3 cursor-pointer hover:bg-wedo-purple/15/30 dark:hover:bg-wedo-purple/30 transition-colors motion-reduce:transition-none"
           onClick={() => setShowAIPredictions(!showAIPredictions)}
         >
           <div className="flex items-center justify-between">
@@ -247,7 +247,7 @@ export function CandidatePageActivitiesTab({
               </Badge>
             </div>
             <ChevronDown
-              className={`w-4 h-4 text-wedo-purple transition-transform ${
+              className={`w-4 h-4 text-wedo-purple transition-transform motion-reduce:transition-none ${
  showAIPredictions ? 'rotate-180' : ''
               }`}
             />
@@ -305,7 +305,7 @@ export function CandidatePageActivitiesTab({
                     <div className="ml-12 flex-1">
                       <Card className="border border-lia-border-subtle dark:border-lia-border-subtle">
                         <CardContent
-                          className="p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                          className="p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
                           onClick={() => setExpandedActivity(expandedActivity === activity.id ? null : activity.id)}
                         >
                           <div className="flex items-start gap-3">
@@ -340,7 +340,7 @@ export function CandidatePageActivitiesTab({
                                     </Badge>
                                   )}
                                   <ChevronDown
-                                    className={`w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary transition-transform ${
+                                    className={`w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary transition-transform motion-reduce:transition-none ${
  expandedActivity === activity.id ? 'rotate-180' : ''
                                     }`}
                                   />

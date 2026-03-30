@@ -70,12 +70,12 @@ function InlineFieldEditor({
         <button
           onClick={() => { onSave(!currentValue) }}
           disabled={isSaving}
-          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors motion-reduce:transition-none ${
             currentValue ? 'bg-gray-900 dark:lia-bg-100' : 'bg-gray-300 dark:lia-bg-600'
           }`}
         >
           <span
-            className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white dark:bg-lia-bg-primary transition-transform ${
+            className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white dark:bg-lia-bg-primary transition-transform motion-reduce:transition-none ${
               currentValue ? 'translate-x-4' : 'translate-x-0.5'
             }`}
           />
@@ -148,7 +148,7 @@ function InlineFieldEditor({
         className="p-0.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
       >
         {isSaving ? (
-          <Loader2 className="w-3 h-3 animate-spin lia-text-400" />
+          <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none lia-text-400" />
         ) : (
           <Check className="w-3 h-3 text-status-success" />
         )}
@@ -187,8 +187,8 @@ export function HiringPoliciesHub() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-5 h-5 animate-spin lia-text-400 dark:lia-text-500" />
+      <div className="flex items-center justify-center h-64" role="status" aria-live="polite" aria-label="Carregando...">
+        <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none lia-text-400 dark:lia-text-500" />
         <span className={`ml-2 ${textStyles.body}`}>
           Carregando politicas...
         </span>
@@ -246,20 +246,20 @@ export function HiringPoliciesHub() {
                   <p
                     className="text-xs leading-tight truncate mt-0.5 lia-text-500"
                    
-                  >
+                   aria-live="polite" aria-atomic="true">
                     Posso criar vagas, buscar candidatos, analisar ...
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-1 flex-shrink-0">
                 <button
-                  className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors flex items-center justify-center"
+                  className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors motion-reduce:transition-none flex items-center justify-center"
                   aria-label="Expandir chat"
                 >
                   <Maximize2 className="w-3.5 h-3.5 lia-text-500" />
                 </button>
                 <button
-                  className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors flex items-center justify-center"
+                  className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors motion-reduce:transition-none flex items-center justify-center"
                   aria-label="Fechar chat"
                 >
                   <X className="w-4 h-4 lia-text-500" />
@@ -315,7 +315,7 @@ export function HiringPoliciesHub() {
               >
                 <button
                   onClick={() => toggleBlock(block.key)}
-                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150"
+                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none duration-150"
                   aria-expanded={isExpanded}
                   aria-label={`${block.title} - ${isCompleted ? 'Configurado' : 'Pendente'}`}
                 >
@@ -354,7 +354,7 @@ export function HiringPoliciesHub() {
                         return (
                           <div
                             key={field}
-                            className={`group flex items-center justify-between gap-2 py-1.5 px-1.5 rounded-md transition-colors duration-300 ${
+                            className={`group flex items-center justify-between gap-2 py-1.5 px-1.5 rounded-md transition-colors motion-reduce:transition-none duration-300 ${
                               isUpdated ? 'bg-status-success/10 dark:bg-status-success/10' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
                             }`}
                           >
@@ -371,7 +371,7 @@ export function HiringPoliciesHub() {
                               />
                             ) : (
                               <div className="flex items-center gap-1">
-                                <span className={`${textStyles.metricSmall} text-right transition-colors duration-300 ${
+                                <span className={`${textStyles.metricSmall} text-right transition-colors motion-reduce:transition-none duration-300 ${
                                   isUpdated ? 'text-status-success dark:text-status-success' : ''
                                 }`}>
                                   {formatFieldValue(value)}
@@ -381,7 +381,7 @@ export function HiringPoliciesHub() {
                                     e.stopPropagation()
                                     startEditing(block.key, field)
                                   }}
-                                  className="opacity-0 group-hover:opacity-100 p-0.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-opacity"
+                                  className="opacity-0 group-hover:opacity-100 p-0.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-opacity motion-reduce:transition-none"
                                   aria-label={`Editar ${FIELD_LABELS[field] || field}`}
                                 >
                                   <Pencil className="w-3 h-3 lia-text-400" />

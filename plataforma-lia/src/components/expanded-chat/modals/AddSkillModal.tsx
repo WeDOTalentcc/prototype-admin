@@ -341,7 +341,7 @@ function CustomSkillForm({ onAddCustomSkill, selectedSkills }: CustomSkillFormPr
               key={w}
               type="button"
               onClick={() => setWeight(w)}
-              className="transition-colors focus-visible:ring-2 focus-visible:ring-gray-400 rounded-full"
+              className="transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-gray-400 rounded-full"
               aria-label={`Peso ${w} de 5`}
             >
               <Star

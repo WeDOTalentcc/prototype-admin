@@ -166,7 +166,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                       <div className="flex items-center gap-1.5 mb-3 flex-wrap">
                         <button
                           onClick={() => setPendingTaskFilter('all')}
-                          className={`px-2 py-1 text-xs font-open-sans rounded-full transition-colors ${
+                          className={`px-2 py-1 text-xs font-open-sans rounded-full transition-colors motion-reduce:transition-none ${
                             pendingTaskFilter === 'all'
                               ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-lia-text-primary font-medium'
                               : 'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary hover:bg-gray-200 dark:hover:bg-gray-700'
@@ -176,7 +176,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                         </button>
                         <button
                           onClick={() => setPendingTaskFilter('feedback')}
-                          className={`px-2 py-1 text-xs font-open-sans rounded-full transition-colors flex items-center gap-1 ${
+                          className={`px-2 py-1 text-xs font-open-sans rounded-full transition-colors motion-reduce:transition-none flex items-center gap-1 ${
                             pendingTaskFilter === 'feedback'
                               ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-lia-text-primary font-medium'
                               : 'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary hover:bg-gray-200 dark:hover:bg-gray-700'
@@ -187,7 +187,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                         </button>
                         <button
                           onClick={() => setPendingTaskFilter('entrevista')}
-                          className={`px-2 py-1 text-xs font-open-sans rounded-full transition-colors flex items-center gap-1 ${
+                          className={`px-2 py-1 text-xs font-open-sans rounded-full transition-colors motion-reduce:transition-none flex items-center gap-1 ${
                             pendingTaskFilter === 'entrevista'
                               ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-lia-text-primary font-medium'
                               : 'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary hover:bg-gray-200 dark:hover:bg-gray-700'
@@ -198,7 +198,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                         </button>
                         <button
                           onClick={() => setPendingTaskFilter('sourcing')}
-                          className={`px-2 py-1 text-xs font-open-sans rounded-full transition-colors flex items-center gap-1 ${
+                          className={`px-2 py-1 text-xs font-open-sans rounded-full transition-colors motion-reduce:transition-none flex items-center gap-1 ${
                             pendingTaskFilter === 'sourcing'
                               ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-lia-text-primary font-medium'
                               : 'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary hover:bg-gray-200 dark:hover:bg-gray-700'
@@ -225,7 +225,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                 {morningTasks.map((task) => (
                                   <div
                                     key={task.id}
-                                    className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-2.5 transition-colors bg-white dark:bg-lia-bg-primary"
+                                    className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-2.5 transition-colors motion-reduce:transition-none bg-white dark:bg-lia-bg-primary"
                                   >
                                     <div className="flex items-start justify-between gap-2">
                                       <div className="flex items-start gap-2 flex-1">
@@ -374,7 +374,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                 {afternoonTasks.map((task) => (
                                   <div
                                     key={task.id}
-                                    className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-2.5 transition-colors bg-white dark:bg-lia-bg-primary"
+                                    className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-2.5 transition-colors motion-reduce:transition-none bg-white dark:bg-lia-bg-primary"
                                   >
                                     <div className="flex items-start justify-between gap-2">
                                       <div className="flex items-start gap-2 flex-1">
@@ -563,7 +563,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                     {activeAlerts.map((alert) => (
                       <div
                         key={alert.id}
-                        className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-2.5 transition-colors"
+                        className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-2.5 transition-colors motion-reduce:transition-none"
                         style={{backgroundColor: getAlertSeverityStyle(alert.severity).backgroundColor + '40'}}
                       >
                         <div className="flex items-start justify-between gap-2">
@@ -696,7 +696,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                       </Button>
 
                       {/* Menu de Ordenação */}
-                      <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-200 z-10">
+                      <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity motion-reduce:transition-none duration-200 z-10">
                         <div className="py-1">
                           <button
                             onClick={() => setJobSortBy('urgency')}
@@ -965,39 +965,39 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                               <MoreVertical className="w-3.5 h-3.5" />
                             </Button>
                             {/* Dropdown Menu */}
-                            <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-200 z-10">
+                            <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity motion-reduce:transition-none duration-200 z-10">
                               <div className="py-1">
                                 <button
                                   onClick={() => handleLIAAction('kanban', job)}
-                                  className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors flex items-center gap-2"
+                                  className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors motion-reduce:transition-none flex items-center gap-2"
                                 >
                                   <Eye className="w-3 h-3" />
                                   Ver Kanban Completo
                                 </button>
                                 <button
                                   onClick={() => handleLIAAction('report', job)}
-                                  className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors flex items-center gap-2"
+                                  className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors motion-reduce:transition-none flex items-center gap-2"
                                 >
                                   <FileText className="w-3 h-3" />
                                   Gerar Relatório
                                 </button>
                                 <button
                                   onClick={() => handleLIAAction('share', job)}
-                                  className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors flex items-center gap-2"
+                                  className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors motion-reduce:transition-none flex items-center gap-2"
                                 >
                                   <Share2 className="w-3 h-3" />
                                   Compartilhar Vaga
                                 </button>
                                 <button
                                   onClick={() => handleLIAAction('edit', job)}
-                                  className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors flex items-center gap-2"
+                                  className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors motion-reduce:transition-none flex items-center gap-2"
                                 >
                                   <Edit className="w-3 h-3" />
                                   Editar Requisitos
                                 </button>
                                 <button
                                   onClick={() => handleLIAAction('duplicate', job)}
-                                  className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors flex items-center gap-2"
+                                  className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors motion-reduce:transition-none flex items-center gap-2"
                                 >
                                   <Copy className="w-3 h-3" />
                                   Duplicar Vaga
@@ -1005,7 +1005,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                 <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle my-1"></div>
                                 <button
                                   onClick={() => handleLIAAction('cancel', job)}
-                                  className="w-full px-3 py-2 text-left text-xs hover:bg-status-error/10 dark:hover:bg-status-error/20 text-status-error hover:text-status-error dark:hover:text-status-error transition-colors flex items-center gap-2"
+                                  className="w-full px-3 py-2 text-left text-xs hover:bg-status-error/10 dark:hover:bg-status-error/20 text-status-error hover:text-status-error dark:hover:text-status-error transition-colors motion-reduce:transition-none flex items-center gap-2"
                                 >
                                   <Trash2 className="w-3 h-3" />
                                   Cancelar Vaga
@@ -1131,7 +1131,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                             <span className="text-xs font-medium truncate flex-1">{job.alert.message}</span>
                             <Button
                               size="sm"
-                              className="gap-0.5 h-4 text-xs px-1 hover:scale-105 transition-transform flex-shrink-0"
+                              className="gap-0.5 h-4 text-xs px-1 hover:scale-105 transition-transform motion-reduce:transition-none flex-shrink-0"
                               onClick={() => {
                                 const actionPrompt = `${job.alert.action} para a vaga ${job.title} (${job.jobId})`
                                 if (typeof window !== 'undefined') {

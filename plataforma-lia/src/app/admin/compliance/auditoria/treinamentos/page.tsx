@@ -258,7 +258,7 @@ export default function TreinamentosPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:lia-divide-700">
                       {trainings.map((training) => (
-                        <tr key={training.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                        <tr key={training.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors motion-reduce:transition-none">
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-medium lia-text-950 dark:lia-text-50">
@@ -337,7 +337,7 @@ export default function TreinamentosPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:lia-divide-700">
                       {userTrainingStatus.map((record) => (
-                        <tr key={record.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                        <tr key={record.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors motion-reduce:transition-none">
                           <td className="px-6 py-4">
                             <div>
                               <p className="text-sm font-medium lia-text-950 dark:lia-text-50">{record.user}</p>
@@ -390,7 +390,7 @@ export default function TreinamentosPage() {
                   {upcomingTrainings.map((training) => (
                     <div 
                       key={training.id} 
-                      className="p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-900 dark:hover:border-gray-50 transition-colors cursor-pointer"
+                      className="p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none cursor-pointer"
                     >
                       <div className="flex items-start justify-between">
                         <div>

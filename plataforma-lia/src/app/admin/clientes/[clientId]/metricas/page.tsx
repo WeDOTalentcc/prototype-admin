@@ -206,7 +206,7 @@ export default function ClientMetricasPage({
             onClick={() => refetch()}
             disabled={isLoading}
           >
-            <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin motion-reduce:animate-none' : ''}`} />
             Atualizar
           </Button>
           <Button variant="outline" size="sm">

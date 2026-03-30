@@ -47,10 +47,10 @@ export function FastTrackSuggestions({
   
   if (isLoading) {
     return (
-      <div className="p-4 border border-lia-border-default dark:border-lia-border-default rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
-        <div className="flex items-center gap-2 text-lia-text-secondary dark:text-lia-text-secondary">
-          <Loader2 className="w-4 h-4 animate-spin" />
-          <span className="text-sm">Buscando vagas similares...</span>
+      <div className="p-4 border border-lia-border-default dark:border-lia-border-default rounded-md bg-gray-100 dark:bg-lia-bg-secondary" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="flex items-center gap-2 text-lia-text-secondary dark:text-lia-text-secondary" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
+          <span className="text-sm" aria-live="polite" aria-atomic="true">Buscando vagas similares...</span>
         </div>
       </div>
     )
@@ -257,7 +257,7 @@ export function FastTrackSuggestions({
                     </div>
                   )}
                   
-                  <p className="text-xs text-neutral-500 italic mt-2">
+                  <p className="text-xs text-neutral-500 italic mt-2" aria-live="polite" aria-atomic="true">
                     Responda no chat se quiser usar esta vaga como base
                   </p>
                 </div>
@@ -269,7 +269,7 @@ export function FastTrackSuggestions({
       
       <button
         onClick={onDismiss}
-        className="text-xs text-neutral-500 hover:text-neutral-400 transition-colors"
+        className="text-xs text-neutral-500 hover:text-neutral-400 transition-colors motion-reduce:transition-none"
       >
         Criar do zero
       </button>

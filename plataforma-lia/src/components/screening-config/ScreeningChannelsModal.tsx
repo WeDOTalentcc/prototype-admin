@@ -77,7 +77,7 @@ export function ScreeningChannelsModal({
               <DialogTitle className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
                 Canais de Comunicação
               </DialogTitle>
-              <p className="text-xs lia-text-base mt-0.5">
+              <p className="text-xs lia-text-base mt-0.5" aria-live="polite" aria-atomic="true">
                 Defina por onde a LIA pode contatar candidatos
               </p>
             </div>
@@ -150,7 +150,7 @@ export function ScreeningChannelsModal({
           >
             {isSaving ? (
               <>
-                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin motion-reduce:animate-none" />
                 Salvando...
               </>
             ) : (

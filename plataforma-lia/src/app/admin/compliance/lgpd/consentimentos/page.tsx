@@ -420,8 +420,8 @@ export default function ConsentimentosPage() {
               </CardHeader>
               <CardContent>
                 {isLoadingVersions ? (
-                  <div className="flex items-center justify-center py-12">
-                    <Loader2 className="w-6 h-6 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+                  <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
+                    <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
                     <span className="ml-2 lia-text-500 dark:text-lia-text-tertiary" >Carregando...</span>
                   </div>
                 ) : filteredVersions.length === 0 ? (
@@ -575,14 +575,14 @@ export default function ConsentimentosPage() {
               </CardHeader>
               <CardContent>
                 {isLoadingEvents ? (
-                  <div className="flex items-center justify-center py-12">
-                    <Loader2 className="w-6 h-6 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+                  <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
+                    <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
                     <span className="ml-2 lia-text-500 dark:text-lia-text-tertiary" >Carregando...</span>
                   </div>
                 ) : filteredEvents.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12">
                     <AlertCircle className="w-12 h-12 lia-text-300 mb-4" />
-                    <p className="lia-text-500 dark:text-lia-text-tertiary" >Nenhum evento de consentimento encontrado</p>
+                    <p className="lia-text-500 dark:text-lia-text-tertiary"  aria-live="polite" aria-atomic="true">Nenhum evento de consentimento encontrado</p>
                   </div>
                 ) : (
                   <Table>
@@ -680,8 +680,8 @@ export default function ConsentimentosPage() {
                 </CardHeader>
                 <CardContent>
                   {isLoadingStats ? (
-                    <div className="flex items-center justify-center py-8">
-                      <Loader2 className="w-6 h-6 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+                    <div className="flex items-center justify-center py-8" role="status" aria-live="polite" aria-label="Carregando...">
+                      <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
                     </div>
                   ) : stats && Object.keys(stats.byType).length > 0 ? (
                     <div className="space-y-4">
@@ -723,8 +723,8 @@ export default function ConsentimentosPage() {
                 </CardHeader>
                 <CardContent>
                   {isLoadingStats ? (
-                    <div className="flex items-center justify-center py-8">
-                      <Loader2 className="w-6 h-6 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+                    <div className="flex items-center justify-center py-8" role="status" aria-live="polite" aria-label="Carregando...">
+                      <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
                     </div>
                   ) : stats ? (
                     <div className="space-y-4">
@@ -1004,8 +1004,8 @@ export default function ConsentimentosPage() {
                 </div>
               </div>
             ) : (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+              <div className="flex items-center justify-center py-8" role="status" aria-live="polite" aria-label="Carregando...">
+                <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
               </div>
             )}
             <DialogFooter>

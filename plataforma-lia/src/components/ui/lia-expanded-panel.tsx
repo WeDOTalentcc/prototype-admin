@@ -49,7 +49,7 @@ export function LiaExpandedPanel({
 }: LiaExpandedPanelProps) {
   return (
     <div 
-      className={`flex-shrink-0 transition-colors duration-300 relative group ${className}`}
+      className={`flex-shrink-0 transition-colors motion-reduce:transition-none duration-300 relative group ${className}`}
       style={{width: width ? `${width}px` : undefined}}
     >
       <Card 
@@ -88,7 +88,7 @@ export function LiaExpandedPanel({
               {onNewChat && (
                 <button
                   onClick={onNewChat}
-                  className="p-1.5 rounded-lg lia-text-secondary hover:lia-text-base hover:bg-gray-100 transition-colors"
+                  className="p-1.5 rounded-lg lia-text-secondary hover:lia-text-base hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                   title="Novo chat"
                   aria-label="Iniciar novo chat"
                 >
@@ -98,7 +98,7 @@ export function LiaExpandedPanel({
               {onClearChat && (
                 <button
                   onClick={onClearChat}
-                  className="p-1.5 rounded-lg lia-text-secondary hover:lia-text-base hover:bg-gray-100 transition-colors"
+                  className="p-1.5 rounded-lg lia-text-secondary hover:lia-text-base hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                   title="Limpar mensagens"
                   aria-label="Limpar mensagens"
                 >
@@ -108,7 +108,7 @@ export function LiaExpandedPanel({
               {onToggleHistory && (
                 <button
                   onClick={onToggleHistory}
-                  className="p-1.5 rounded-lg lia-text-secondary hover:lia-text-base hover:bg-gray-100 transition-colors"
+                  className="p-1.5 rounded-lg lia-text-secondary hover:lia-text-base hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                   title="Histórico"
                   aria-label="Ver histórico de conversas"
                 >
@@ -122,7 +122,7 @@ export function LiaExpandedPanel({
                 variant="ghost"
                 size="sm"
                 onClick={onClose}
-                className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
+                className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors motion-reduce:transition-none flex-shrink-0"
               >
                 <X className="w-4 h-4 lia-text-secondary" />
               </Button>
@@ -184,7 +184,7 @@ export function LiaExpandedPanel({
           className="absolute right-0 top-0 w-2 h-full cursor-ew-resize group/resize flex items-center justify-center z-10"
           onMouseDown={onResize}
         >
-          <div className="w-0.5 h-12 bg-gray-300 group-hover/resize:bg-gray-500 rounded-full transition-colors" />
+          <div className="w-0.5 h-12 bg-gray-300 group-hover/resize:bg-gray-500 rounded-full transition-colors motion-reduce:transition-none" />
         </div>
       )}
     </div>
@@ -226,7 +226,7 @@ export function LiaTabButton({
   return (
     <button
       onClick={onClick}
-      className="pb-2.5 text-xs font-medium transition-colors relative"
+      className="pb-2.5 text-xs font-medium transition-colors motion-reduce:transition-none relative"
      
     >
       <div className={`flex items-center gap-1.5 ${active ? 'lia-text-strong' : 'lia-text-secondary hover:lia-text-base'}`}>
@@ -340,7 +340,7 @@ export function LiaChatInput({
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
           data-testid="chat-input"
-          className="w-full h-32 p-4 text-sm rounded-md border focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 transition-colors resize-none text-lia-text-primary"
+          className="w-full h-32 p-4 text-sm rounded-md border focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 transition-colors motion-reduce:transition-none resize-none text-lia-text-primary"
           style={{border: '1px solid var(--gray-200)',
             backgroundColor: 'var(--gray-50)'}}
         />
@@ -410,7 +410,7 @@ export function LiaChatInput({
           type="button"
           onClick={onSubmit}
           disabled={!value.trim() || isLoading}
-          className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-colors ${
+          className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none ${
  value.trim() && !isLoading
               ? 'bg-chat-cyan text-white hover:opacity-90'
               : 'bg-gray-200 dark:bg-lia-bg-elevated lia-text-secondary cursor-not-allowed'
@@ -518,9 +518,9 @@ export function LiaLoadingIndicator() {
         </div>
         <div className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-[14px] rounded-bl-[4px] p-3 inline-block">
           <div className="flex items-center gap-1">
-            <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{animationDelay: '0ms'}} />
-            <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{animationDelay: '150ms'}} />
-            <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{animationDelay: '300ms'}} />
+            <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '0ms'}} />
+            <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '150ms'}} />
+            <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '300ms'}} />
           </div>
         </div>
       </div>

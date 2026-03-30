@@ -196,7 +196,7 @@ export function IndustrySingleSelect({
             </span>
             <button
               onClick={handleClear}
-              className="p-0.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+              className="p-0.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors motion-reduce:transition-none"
             >
               <X className="w-3.5 h-3.5 lia-text-400" />
             </button>
@@ -219,7 +219,7 @@ export function IndustrySingleSelect({
              
             />
             {isLoadingAI && (
-              <Loader2 className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary animate-spin flex-shrink-0" />
+              <Loader2 className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none flex-shrink-0" />
             )}
             <ChevronDown className={cn(
               "w-3.5 h-3.5 lia-text-400 transition-transform flex-shrink-0",

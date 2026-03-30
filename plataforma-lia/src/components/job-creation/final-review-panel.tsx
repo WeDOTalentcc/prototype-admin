@@ -169,7 +169,7 @@ function MissingFieldCard({
   const SourceIcon = sourceInfo?.icon || Brain
 
   return (
-    <div className="border rounded-md p-3 bg-white dark:bg-lia-bg-secondary dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+    <div className="border rounded-md p-3 bg-white dark:bg-lia-bg-secondary dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none">
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1">
           <div className="font-medium text-sm text-lia-text-primary dark:text-lia-text-primary">{label}</div>
@@ -336,7 +336,7 @@ export function FinalReviewPanel({
               onOpenChange={() => toggleSection("critical")}
               className="mb-4"
             >
-              <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded-md bg-status-error/10 dark:bg-status-error/30 hover:bg-status-error/15 dark:hover:bg-status-error/50 transition-colors">
+              <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded-md bg-status-error/10 dark:bg-status-error/30 hover:bg-status-error/15 dark:hover:bg-status-error/50 transition-colors motion-reduce:transition-none">
                 <div className="flex items-center gap-2">
                   <XCircle className="h-4 w-4 text-status-error dark:text-status-error" />
                   <span className="font-medium text-status-error dark:text-status-error">
@@ -370,7 +370,7 @@ export function FinalReviewPanel({
               onOpenChange={() => toggleSection("important")}
               className="mb-4"
             >
-              <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded-md bg-status-warning/10 dark:bg-status-warning/30 hover:bg-status-warning/15 dark:hover:bg-status-warning/50 transition-colors">
+              <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded-md bg-status-warning/10 dark:bg-status-warning/30 hover:bg-status-warning/15 dark:hover:bg-status-warning/50 transition-colors motion-reduce:transition-none">
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-status-warning dark:text-status-warning" />
                   <span className="font-medium text-status-warning dark:text-status-warning">
@@ -404,7 +404,7 @@ export function FinalReviewPanel({
               onOpenChange={() => toggleSection("filled")}
               className="mb-4"
             >
-              <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded-md bg-status-success/10 dark:bg-status-success/30 hover:bg-status-success/15 dark:hover:bg-status-success/50 transition-colors">
+              <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded-md bg-status-success/10 dark:bg-status-success/30 hover:bg-status-success/15 dark:hover:bg-status-success/50 transition-colors motion-reduce:transition-none">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-status-success dark:text-status-success" />
                   <span className="font-medium text-status-success dark:text-status-success">
@@ -438,7 +438,7 @@ export function FinalReviewPanel({
               onOpenChange={() => toggleSection("toggled_off")}
               className="mb-4"
             >
-              <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded-md bg-gray-50 dark:bg-lia-bg-primary hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded-md bg-gray-50 dark:bg-lia-bg-primary hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none">
                 <div className="flex items-center gap-2">
                   <Info className="h-4 w-4 text-lia-text-tertiary dark:text-lia-text-tertiary" />
                   <span className="font-medium text-lia-text-secondary dark:text-lia-text-secondary">
@@ -476,7 +476,7 @@ export function FinalReviewPanel({
           >
             {isPublishing ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin motion-reduce:animate-none" />
                 Publicando...
               </>
             ) : (
@@ -488,7 +488,7 @@ export function FinalReviewPanel({
           </Button>
           
           {!can_publish && (
-            <p className="text-xs text-center text-status-error dark:text-status-error mt-2">
+            <p className="text-xs text-center text-status-error dark:text-status-error mt-2" aria-live="polite" aria-atomic="true">
               Preencha todos os campos críticos para publicar a vaga
             </p>
           )}

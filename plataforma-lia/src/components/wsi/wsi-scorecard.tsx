@@ -86,7 +86,7 @@ export function WSIScorecard({
     return (
       <Card className="border-dashed">
         <CardContent className="py-6 flex items-center justify-center">
-          <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+          <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none text-muted-foreground" />
           <span className="ml-2 text-sm text-muted-foreground">Carregando WSI...</span>
         </CardContent>
       </Card>
@@ -124,7 +124,7 @@ export function WSIScorecard({
   if (compact && !expanded) {
     return (
       <Card 
-        className="cursor-pointer hover:bg-muted/50 transition-colors"
+        className="cursor-pointer hover:bg-muted/50 transition-colors motion-reduce:transition-none"
         onClick={() => setExpanded(true)}
       >
         <CardContent className="py-3 px-4">
@@ -247,7 +247,7 @@ export function WSIScorecard({
               {results.results.slice(1, 4).map((result, idx) => (
                 <div 
                   key={result.result_id}
-                  className="flex items-center justify-between text-sm p-2 bg-muted/50 rounded-md cursor-pointer hover:bg-muted transition-colors"
+                  className="flex items-center justify-between text-sm p-2 bg-muted/50 rounded-md cursor-pointer hover:bg-muted transition-colors motion-reduce:transition-none"
                   onClick={() => onViewDetails?.(result.result_id)}
                 >
                   <div className="flex items-center gap-2">

@@ -129,7 +129,7 @@ export default function AgentHealthDashboardPage() {
             className="h-8 text-xs rounded-md"
           >
             {loading ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
+              <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none" />
             ) : (
               <RefreshCw className="h-3 w-3" />
             )}
@@ -156,8 +156,8 @@ export default function AgentHealthDashboardPage() {
 
       {/* Estado de carregamento / erro */}
       {loading && (
-        <div className="flex justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin lia-text-400" />
+        <div className="flex justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="h-6 w-6 animate-spin motion-reduce:animate-none lia-text-400" />
         </div>
       )}
 
@@ -200,7 +200,7 @@ export default function AgentHealthDashboardPage() {
                   return (
                     <tr
                       key={domain.domain}
-                      className="border-b border-gray-50 dark:lia-border-800/50 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors"
+                      className="border-b border-gray-50 dark:lia-border-800/50 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors motion-reduce:transition-none"
                     >
                       <td className="px-4 py-3 font-medium lia-text-900 dark:text-lia-text-primary">
                         <span className="flex items-center gap-1.5">

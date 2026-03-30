@@ -302,13 +302,13 @@ export function CandidateComparison({
               <h4 className="text-lg font-semibold text-status-success dark:text-status-success">
                 Análise Comparativa da LIA
               </h4>
-              {isAnalyzing && <RefreshCw className="w-4 h-4 animate-spin text-status-success" />}
+              {isAnalyzing && <RefreshCw className="w-4 h-4 animate-spin motion-reduce:animate-none text-status-success" />}
             </div>
 
             {isAnalyzing ? (
               <div className="flex items-center justify-center py-12">
                 <div className="text-center">
-                  <RefreshCw className="w-12 h-12 animate-spin text-status-success mx-auto mb-4" />
+                  <RefreshCw className="w-12 h-12 animate-spin motion-reduce:animate-none text-status-success mx-auto mb-4" />
                   <h5 className="text-lg font-medium text-status-success dark:text-status-success mb-2">
                     LIA analisando candidatos...
                   </h5>
@@ -359,7 +359,7 @@ export function CandidateComparison({
                       <button
                         key={key}
                         onClick={() => setSelectedScenario(key as 'shortTerm' | 'longTerm' | 'leadership' | 'innovation' | 'stability')}
-                        className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        className={`px-3 py-2 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none ${
  selectedScenario === key
                             ? 'bg-status-success/15 text-status-success border border-status-success/30'
                             : 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-200 dark:hover:bg-gray-600'

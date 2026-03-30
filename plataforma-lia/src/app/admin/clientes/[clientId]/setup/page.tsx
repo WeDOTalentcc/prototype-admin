@@ -149,9 +149,9 @@ export default function ClientSetupPage({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+      <div className="flex items-center justify-center min-h-[400px]" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="flex flex-col items-center gap-3" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
           <p className="text-sm lia-text-400 dark:lia-text-500">
             Carregando setup...
           </p>
@@ -251,7 +251,7 @@ export default function ClientSetupPage({
           return (
             <Card 
               key={section.id}
-              className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors cursor-pointer"
+              className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none cursor-pointer"
             >
               <CardContent className="p-4">
                 <div className="flex items-center gap-4">

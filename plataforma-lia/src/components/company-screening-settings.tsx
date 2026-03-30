@@ -182,7 +182,7 @@ Equipe de Recrutamento`
                 <button
                   key={section.id}
                   onClick={() => setActiveSection(section.id as Parameters<typeof setActiveSection>[0])}
-                  className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-colors ${
+                  className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-colors motion-reduce:transition-none ${
  activeSection === section.id
                       ? 'bg-gray-100 dark:bg-lia-bg-secondary text-wedo-cyan-dark dark:text-lia-text-tertiary'
                       : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-lia-text-primary dark:text-lia-text-primary'
@@ -210,7 +210,7 @@ Equipe de Recrutamento`
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {companyTemplates.map((template) => (
-                    <Card key={template.id} className={`cursor-pointer transition-colors ${
+                    <Card key={template.id} className={`cursor-pointer transition-colors motion-reduce:transition-none ${
  selectedTemplate === template.id ? 'ring-2 ring-gray-900/20 dark:ring-gray-50/20' : ''
                     }`}>
                       <CardHeader className="pb-3">

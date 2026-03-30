@@ -236,7 +236,7 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
             <div className="flex items-center justify-between mb-4">
               <button
                 onClick={prevMonth}
-                className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
+                className="p-1.5 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
               >
                 <ChevronLeft className="w-4 h-4 lia-text-base" />
               </button>
@@ -245,7 +245,7 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
               </span>
               <button
                 onClick={nextMonth}
-                className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
+                className="p-1.5 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
               >
                 <ChevronRight className="w-4 h-4 lia-text-base" />
               </button>

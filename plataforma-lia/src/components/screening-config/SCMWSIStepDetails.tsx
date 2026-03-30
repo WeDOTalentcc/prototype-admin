@@ -109,7 +109,7 @@ export function SCMWSIStepDetails({
             <p className="text-base-ui lia-text-strong">
               {wsiSummaryTypedText}
               {!wsiSummaryTypingDone && (
-                <span className="inline-block w-[2px] h-[14px] bg-gray-900 ml-0.5 align-middle animate-pulse" />
+                <span className="inline-block w-[2px] h-[14px] bg-gray-900 ml-0.5 align-middle animate-pulse motion-reduce:animate-none" />
               )}
             </p>
           </div>
@@ -152,7 +152,7 @@ export function SCMWSIStepDetails({
             </div>
 
             {!wsiSummaryExpanded ? (
-              <button onClick={() => setWsiSummaryExpanded(true)} className="flex items-center gap-1.5 text-xs font-medium text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-secondary dark:hover:text-lia-text-inverse transition-colors">
+              <button onClick={() => setWsiSummaryExpanded(true)} className="flex items-center gap-1.5 text-xs font-medium text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-secondary dark:hover:text-lia-text-inverse transition-colors motion-reduce:transition-none">
                 <ChevronDown className="w-3.5 h-3.5" />
                 Ver detalhes completos
               </button>
@@ -193,7 +193,7 @@ export function SCMWSIStepDetails({
                     <span className="text-xs lia-text-base">Perguntas padrão da empresa incluídas</span>
                   </div>
                 )}
-                <button onClick={() => setWsiSummaryExpanded(false)} className="flex items-center gap-1.5 text-xs font-medium text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-secondary dark:hover:text-lia-text-inverse transition-colors pt-1">
+                <button onClick={() => setWsiSummaryExpanded(false)} className="flex items-center gap-1.5 text-xs font-medium text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-secondary dark:hover:text-lia-text-inverse transition-colors motion-reduce:transition-none pt-1">
                   <ChevronUp className="w-3.5 h-3.5" />
                   Recolher detalhes
                 </button>

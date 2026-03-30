@@ -364,7 +364,7 @@ export const JobFiltersSection = ({
           <div className="flex items-center gap-3">
             <button 
               onClick={handleClearAllJobFilters}
-              className="text-xs lia-text-500 hover:text-status-error flex items-center gap-1 transition-colors"
+              className="text-xs lia-text-500 hover:text-status-error flex items-center gap-1 transition-colors motion-reduce:transition-none"
             >
               <RotateCcw className="w-3 h-3" />
               Limpar tudo
@@ -411,8 +411,8 @@ export const JobFiltersSection = ({
               className="border border-lia-border-subtle focus:ring-1 focus:ring-gray-400 pr-10"
             />
             {isLoadingTitles && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <Loader2 className="w-4 h-4 lia-text-500 animate-spin" />
+              <div className="absolute right-3 top-1/2 -translate-y-1/2" role="status" aria-live="polite" aria-label="Carregando...">
+                <Loader2 className="w-4 h-4 lia-text-500 animate-spin motion-reduce:animate-none" />
               </div>
             )}
           </div>
@@ -484,7 +484,7 @@ export const JobFiltersSection = ({
               )}
             >
               {isLoadingSimilar ? (
-                <Loader2 className="w-3 h-3 animate-spin" />
+                <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
               ) : (
                 <Brain className="w-3 h-3 text-wedo-cyan" />
               )}
@@ -507,7 +507,7 @@ export const JobFiltersSection = ({
               {selectedAiTitles.length > 0 && (
                 <button
                   onClick={handleAddSelectedAiTitles}
-                  className="px-2 py-1 rounded-md text-xs bg-gray-900 text-white hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 transition-colors flex items-center gap-1"
+                  className="px-2 py-1 rounded-md text-xs bg-gray-900 text-white hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 transition-colors motion-reduce:transition-none flex items-center gap-1"
                 >
                   <Check className="w-3 h-3" />
                   Adicionar {selectedAiTitles.length} selecionado{selectedAiTitles.length > 1 ? 's' : ''}
@@ -645,7 +645,7 @@ export const JobFiltersSection = ({
             <button 
               onClick={() => updateFilter("job", "pastTitles", [] as string[])}
               disabled={(filters.job?.pastTitles?.length || 0) === 0}
-              className="text-xs lia-text-500 hover:text-status-error flex items-center gap-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="text-xs lia-text-500 hover:text-status-error flex items-center gap-1 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <RotateCcw className="w-3 h-3" />
               Limpar tudo
@@ -691,8 +691,8 @@ export const JobFiltersSection = ({
               className="border border-lia-border-subtle focus:ring-1 focus:ring-gray-400 pr-10"
             />
             {isLoadingTitles && showPastTitleSuggestions && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <Loader2 className="w-4 h-4 lia-text-500 animate-spin" />
+              <div className="absolute right-3 top-1/2 -translate-y-1/2" role="status" aria-live="polite" aria-label="Carregando...">
+                <Loader2 className="w-4 h-4 lia-text-500 animate-spin motion-reduce:animate-none" />
               </div>
             )}
           </div>
@@ -761,7 +761,7 @@ export const JobFiltersSection = ({
               )}
             >
               {isLoadingSimilarPastTitles ? (
-                <Loader2 className="w-3 h-3 animate-spin" />
+                <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
               ) : (
                 <Brain className="w-3 h-3 text-wedo-cyan" />
               )}
@@ -783,7 +783,7 @@ export const JobFiltersSection = ({
               {selectedAiPastTitles.length > 0 && (
                 <button
                   onClick={handleAddSelectedAiPastTitles}
-                  className="px-2 py-1 rounded-md text-xs bg-gray-900 text-white hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 transition-colors flex items-center gap-1"
+                  className="px-2 py-1 rounded-md text-xs bg-gray-900 text-white hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 transition-colors motion-reduce:transition-none flex items-center gap-1"
                 >
                   <Check className="w-3 h-3" />
                   Adicionar {selectedAiPastTitles.length} selecionado{selectedAiPastTitles.length > 1 ? 's' : ''}
@@ -894,8 +894,8 @@ export const JobFiltersSection = ({
                 className="h-7 text-xs border border-lia-border-subtle focus:ring-1 focus:ring-gray-400"
               />
               {isLoadingRoles && (
-                <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                  <Loader2 className="w-3 h-3 lia-text-500 animate-spin" />
+                <div className="absolute right-2 top-1/2 -translate-y-1/2" role="status" aria-live="polite" aria-label="Carregando...">
+                  <Loader2 className="w-3 h-3 lia-text-500 animate-spin motion-reduce:animate-none" />
                 </div>
               )}
             </div>
@@ -1040,7 +1040,7 @@ export const JobFiltersSection = ({
                           <button
                             key={preset.id}
                             onClick={() => setSelectedPreset(preset)}
-                            className="w-full text-left p-3 rounded-md border border-wedo-purple/30 hover:border-wedo-purple/30 hover:bg-wedo-purple/10/50 transition-colors"
+                            className="w-full text-left p-3 rounded-md border border-wedo-purple/30 hover:border-wedo-purple/30 hover:bg-wedo-purple/10/50 transition-colors motion-reduce:transition-none"
                           >
                             <div className="flex items-center justify-between">
                               <div>
@@ -1080,7 +1080,7 @@ export const JobFiltersSection = ({
                         <button
                           key={preset.id}
                           onClick={() => setSelectedPreset(preset)}
-                          className="w-full text-left p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-subtle hover:bg-gray-50 transition-colors"
+                          className="w-full text-left p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-subtle hover:bg-gray-50 transition-colors motion-reduce:transition-none"
                         >
                           <div className="flex items-center justify-between">
                             <div>

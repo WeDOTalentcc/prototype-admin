@@ -154,10 +154,10 @@ export function VacancyFullSummary({
             LIA
           </AvatarFallback>
         </Avatar>
-        <div className="rounded-xl rounded-tl-sm bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle p-4">
-          <div className="flex items-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin text-lia-text-secondary dark:text-lia-text-tertiary" />
-            <span className="text-sm text-muted-foreground">Carregando detalhes da vaga...</span>
+        <div className="rounded-xl rounded-tl-sm bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle p-4" role="status" aria-live="polite" aria-label="Carregando...">
+          <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
+            <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <span className="text-sm text-muted-foreground" aria-live="polite" aria-atomic="true">Carregando detalhes da vaga...</span>
           </div>
         </div>
       </div>
@@ -182,7 +182,7 @@ export function VacancyFullSummary({
         <div className="rounded-xl rounded-tl-sm bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle p-4 space-y-4">
           <div className="pb-2 border-b border-lia-border-subtle dark:border-lia-border-subtle">
             <h3 className="text-sm font-bold text-lia-text-primary dark:text-white">{vacancy.title}</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5" aria-live="polite" aria-atomic="true">
               Resumo completo da vaga baseada em processo anterior
             </p>
           </div>

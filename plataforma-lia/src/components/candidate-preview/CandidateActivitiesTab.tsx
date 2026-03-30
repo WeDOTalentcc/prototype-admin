@@ -934,9 +934,9 @@ export function CandidateActivitiesTab({
             className="absolute -left-6 w-3 h-3 rounded-full border-2 border-white z-10"
             style={{backgroundColor: activity.iconColor, marginTop: '14px'}}
           ></div>
-          <div className="flex-1 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors">
+          <div className="flex-1 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
             <div
-              className="p-3 cursor-pointer hover:bg-lia-bg-primary dark:hover:bg-gray-800 transition-colors"
+              className="p-3 cursor-pointer hover:bg-lia-bg-primary dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
               onClick={() => setExpandedActivity(isExpanded ? null : activity.id)}
             >
               <div className="flex items-start gap-3">
@@ -976,7 +976,7 @@ export function CandidateActivitiesTab({
                           {activity.statusLabel}
                         </Badge>
                       )}
-                      <ChevronDown className={`w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                      <ChevronDown className={`w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary transition-transform motion-reduce:transition-none ${isExpanded ? 'rotate-180' : ''}`} />
                     </div>
                   </div>
                 </div>
@@ -989,9 +989,9 @@ export function CandidateActivitiesTab({
     }
 
     return (
-      <div key={activity.id} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors">
+      <div key={activity.id} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
         <div
-          className="p-2.5 cursor-pointer hover:bg-lia-bg-primary dark:hover:bg-gray-800 transition-colors"
+          className="p-2.5 cursor-pointer hover:bg-lia-bg-primary dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
           onClick={() => setExpandedActivity(isExpanded ? null : activity.id)}
         >
           <div className="flex items-start gap-2">
@@ -1032,7 +1032,7 @@ export function CandidateActivitiesTab({
                       {activity.statusLabel}
                     </Badge>
                   )}
-                  <ChevronDown className={`w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary transition-transform motion-reduce:transition-none ${isExpanded ? 'rotate-180' : ''}`} />
                 </div>
               </div>
             </div>
@@ -1066,14 +1066,14 @@ export function CandidateActivitiesTab({
             <div className="flex items-center bg-lia-bg-primary rounded-md p-0.5 border border-lia-border-subtle dark:border-lia-border-subtle">
               <button
                 onClick={() => setActivityView('timeline')}
-                className={`p-1 rounded-md transition-colors ${activityView === 'timeline' ? 'bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary' : 'text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary'}`}
+                className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${activityView === 'timeline' ? 'bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary' : 'text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary'}`}
                 title="Visualização Timeline"
               >
                 <GitBranch className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => setActivityView('list')}
-                className={`p-1 rounded-md transition-colors ${activityView === 'list' ? 'bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary' : 'text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary'}`}
+                className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${activityView === 'list' ? 'bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary' : 'text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary'}`}
                 title="Visualização Lista"
               >
                 <List className="w-3.5 h-3.5" />
@@ -1092,31 +1092,31 @@ export function CandidateActivitiesTab({
         <div className="flex gap-1 flex-wrap">
           <button
             onClick={() => setActivityFilter('all')}
-            className={`px-2 py-1 text-xs rounded-full transition-colors ${activityFilter === 'all' ? 'bg-gray-600 text-white' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-200'}`}
+            className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'all' ? 'bg-gray-600 text-white' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-200'}`}
           >
             Todas
           </button>
           <button
             onClick={() => setActivityFilter('emails')}
-            className={`px-2 py-1 text-xs rounded-full transition-colors ${activityFilter === 'emails' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-200'}`}
+            className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'emails' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-200'}`}
           >
             📧 Emails
           </button>
           <button
             onClick={() => setActivityFilter('interviews')}
-            className={`px-2 py-1 text-xs rounded-full transition-colors ${activityFilter === 'interviews' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-200'}`}
+            className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'interviews' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-200'}`}
           >
             🎤 Entrevistas
           </button>
           <button
             onClick={() => setActivityFilter('tests')}
-            className={`px-2 py-1 text-xs rounded-full transition-colors ${activityFilter === 'tests' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-200'}`}
+            className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'tests' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-200'}`}
           >
             📝 Testes
           </button>
           <button
             onClick={() => setActivityFilter('lia')}
-            className={`px-2 py-1 text-xs rounded-full transition-colors ${activityFilter === 'lia' ? 'text-white font-semibold' : 'hover:opacity-80'}`}
+            className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'lia' ? 'text-white font-semibold' : 'hover:opacity-80'}`}
             style={{backgroundColor: activityFilter === 'lia' ? 'var(--gray-950)' : 'var(--wedo-cyan-bg-15)',
               color: activityFilter === 'lia' ? 'white' : 'var(--gray-600)'}}
           >
@@ -1124,19 +1124,19 @@ export function CandidateActivitiesTab({
           </button>
           <button
             onClick={() => setActivityFilter('offers')}
-            className={`px-2 py-1 text-xs rounded-full transition-colors ${activityFilter === 'offers' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-200'}`}
+            className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'offers' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-200'}`}
           >
             💼 Ofertas
           </button>
           <button
             onClick={() => setActivityFilter('applications')}
-            className={`px-2 py-1 text-xs rounded-full transition-colors ${activityFilter === 'applications' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-200'}`}
+            className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'applications' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-200'}`}
           >
             📋 Inscrições
           </button>
           <button
             onClick={() => setActivityFilter('evaluations')}
-            className={`px-2 py-1 text-xs rounded-full transition-colors ${activityFilter === 'evaluations' ? 'bg-gray-700 text-white font-semibold' : 'lia-text-base hover:dark:bg-lia-bg-secondary dark:hover:bg-gray-700'}`}
+            className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'evaluations' ? 'bg-gray-700 text-white font-semibold' : 'lia-text-base hover:dark:bg-lia-bg-secondary dark:hover:bg-gray-700'}`}
           >
             🎯 Avaliações
           </button>

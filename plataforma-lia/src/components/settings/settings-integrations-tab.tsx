@@ -240,7 +240,7 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'connected': return <CheckCircle className="w-4 h-4 text-status-success" />
-      case 'connecting': return <RefreshCw className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary animate-spin" />
+      case 'connecting': return <RefreshCw className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
       case 'error': return <XCircle className="w-4 h-4 text-status-error" />
       case 'disabled': return <Minus className="w-4 h-4 lia-text-800" />
       default: return <AlertCircle className="w-4 h-4 text-status-warning" />
@@ -463,7 +463,7 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
       <div className="flex space-x-1 bg-gray-100 p-1 rounded-md w-fit">
         <button
           onClick={() => setSelectedIntegrationType('ats')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none ${
             selectedIntegrationType === 'ats'
               ? 'bg-lia-bg-primary lia-text-600 dark:text-lia-text-tertiary'
               : 'lia-text-800 hover:lia-text-950'
@@ -474,7 +474,7 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
         </button>
         <button
           onClick={() => setSelectedIntegrationType('communication')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none ${
             selectedIntegrationType === 'communication'
               ? 'bg-lia-bg-primary lia-text-600 dark:text-lia-text-tertiary'
               : 'lia-text-800 hover:lia-text-950'
@@ -508,7 +508,7 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
                   <button
                     key={tab.id}
                     onClick={() => setSelectedView(tab.id as 'overview' | 'systems' | 'mapping' | 'logs')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none ${
                       selectedView === tab.id
                         ? 'bg-lia-bg-primary lia-text-600 dark:text-lia-text-tertiary'
                         : 'lia-text-800 hover:lia-text-950'
@@ -703,7 +703,7 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
           <button
             key={tab.id}
             onClick={() => setSelectedView(tab.id as 'overview' | 'systems' | 'mapping' | 'logs')}
-            className={`flex items-center gap-2 px-3 py-3 rounded-md text-sm font-medium transition-colors font-crimson ${
+            className={`flex items-center gap-2 px-3 py-3 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none font-crimson ${
               selectedView === tab.id
                 ? 'bg-lia-bg-primary lia-text-950'
                 : 'lia-text-800 hover:lia-text-950'

@@ -174,7 +174,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                       <button
                         key={avatar}
                         onClick={() => setPersonaData(prev => ({ ...prev, avatar }))}
-                        className={`text-2xl p-2 rounded-md hover:bg-gray-50 transition-colors ${
+                        className={`text-2xl p-2 rounded-md hover:bg-gray-50 transition-colors motion-reduce:transition-none ${
                           personaData.avatar === avatar ? 'bg-wedo-cyan/10' : 'bg-lia-bg-primary'
                         }`}
                       >

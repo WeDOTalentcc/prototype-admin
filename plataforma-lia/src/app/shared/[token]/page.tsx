@@ -353,9 +353,9 @@ export default function SharedSearchPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center font-['Open_Sans']">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-8 h-8 lia-text-600 dark:text-lia-text-tertiary animate-spin" />
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center font-['Open_Sans']" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="flex flex-col items-center gap-4" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-8 h-8 lia-text-600 dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
           <p className="text-zinc-400">Carregando...</p>
         </div>
       </div>
@@ -429,7 +429,7 @@ export default function SharedSearchPage() {
           <div className="flex flex-wrap gap-4 text-sm text-zinc-400">
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4" />
-              <span>{totalCount} candidato{totalCount !== 1 ? 's' : ''}</span>
+              <span aria-live="polite" aria-atomic="true">{totalCount} candidato{totalCount !== 1 ? 's' : ''}</span>
             </div>
             {sharedData?.shared_by_name && (
               <div className="flex items-center gap-2">
@@ -458,7 +458,7 @@ export default function SharedSearchPage() {
                 <Mail className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
                 <h3 className="text-lg font-medium text-white">Acesso Necessário</h3>
               </div>
-              <p className="text-zinc-400 text-sm mb-4">
+              <p className="text-zinc-400 text-sm mb-4" aria-live="polite" aria-atomic="true">
                 Para avaliar os candidatos, insira seu email para receber um código de acesso.
               </p>
 
@@ -480,7 +480,7 @@ export default function SharedSearchPage() {
                     className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
                   >
                     {authLoading ? (
-                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mr-2" />
                     ) : (
                       <Send className="w-4 h-4 mr-2" />
                     )}
@@ -509,7 +509,7 @@ export default function SharedSearchPage() {
                     className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
                   >
                     {authLoading ? (
-                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mr-2" />
                     ) : (
                       <Check className="w-4 h-4 mr-2" />
                     )}
@@ -578,7 +578,7 @@ export default function SharedSearchPage() {
                   <button
                     key={key}
                     onClick={() => setActiveFilter(key)}
-                    className={`px-4 py-2 rounded-md text-sm transition-colors ${
+                    className={`px-4 py-2 rounded-md text-sm transition-colors motion-reduce:transition-none ${
                       activeFilter === key
                         ? 'bg-gray-900 text-white dark:lia-bg-50 dark:lia-text-900'
                         : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800 border border-zinc-800'
@@ -593,7 +593,7 @@ export default function SharedSearchPage() {
             <section className="space-y-4">
               {filteredCandidates.length === 0 ? (
                 <div className="bg-zinc-900 rounded-md p-8 text-center border border-zinc-800">
-                  <p className="text-zinc-400">Nenhum candidato encontrado para este filtro.</p>
+                  <p className="text-zinc-400" aria-live="polite" aria-atomic="true">Nenhum candidato encontrado para este filtro.</p>
                 </div>
               ) : (
                 filteredCandidates.map((candidate) => {
@@ -660,7 +660,7 @@ export default function SharedSearchPage() {
                                   href={candidate.linkedin_url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="flex items-center gap-1 text-brand-linkedin hover:text-brand-linkedin-hover transition-colors"
+                                  className="flex items-center gap-1 text-brand-linkedin hover:text-brand-linkedin-hover transition-colors motion-reduce:transition-none"
                                 >
                                   <Linkedin className="w-3.5 h-3.5" />
                                   LinkedIn
@@ -671,7 +671,7 @@ export default function SharedSearchPage() {
                                   href={candidate.resume_url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="flex items-center gap-1 text-zinc-400 hover:text-zinc-200 transition-colors"
+                                  className="flex items-center gap-1 text-zinc-400 hover:text-zinc-200 transition-colors motion-reduce:transition-none"
                                 >
                                   <FileText className="w-3.5 h-3.5" />
                                   Currículo
@@ -704,7 +704,7 @@ export default function SharedSearchPage() {
 
                         <button
                           onClick={() => toggleCardExpanded(candidate.id)}
-                          className="flex items-center gap-1 lia-text-600 dark:text-lia-text-tertiary text-sm mt-4 hover:text-wedo-cyan-dark transition-colors"
+                          className="flex items-center gap-1 lia-text-600 dark:text-lia-text-tertiary text-sm mt-4 hover:text-wedo-cyan-dark transition-colors motion-reduce:transition-none"
                         >
                           {isExpanded ? (
                             <>
@@ -870,7 +870,7 @@ export default function SharedSearchPage() {
                                     className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
                                   >
                                     {isSaving ? (
-                                      <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                                      <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mr-1" />
                                     ) : (
                                       <Check className="w-4 h-4 mr-1" />
                                     )}
@@ -907,7 +907,7 @@ export default function SharedSearchPage() {
             href="/privacidade"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-zinc-500 text-sm hover:lia-text-900 dark:hover:lia-text-50 transition-colors"
+            className="text-zinc-500 text-sm hover:lia-text-900 dark:hover:lia-text-50 transition-colors motion-reduce:transition-none"
           >
             Política de Privacidade
           </a>

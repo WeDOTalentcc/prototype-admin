@@ -264,7 +264,7 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="!animate-none !duration-0">
-                  <p className="text-xs font-medium">Ir para Resultados</p>
+                  <p className="text-xs font-medium" aria-live="polite" aria-atomic="true">Ir para Resultados</p>
                   <p className="text-xs lia-text-300">Buscar direto na tabela expandida</p>
                 </TooltipContent>
               </Tooltip>
@@ -283,7 +283,7 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
       {mode === "natural" && filledCount === 0 && value.length > 0 && (
         <p 
           className="text-xs px-1 lia-text-500 dark:text-lia-text-tertiary"
-        >
+         aria-live="polite" aria-atomic="true">
           Dica: Inclua cargo, localização e skills para melhores resultados
         </p>
       )}
@@ -391,11 +391,11 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
               )}
               <div className="flex justify-between text-xs">
                 <span className="lia-text-600">Global:</span>
-                <span className="font-medium text-status-warning">1 cr/candidato</span>
+                <span className="font-medium text-status-warning" aria-live="polite" aria-atomic="true">1 cr/candidato</span>
               </div>
               <div className="flex justify-between text-xs pt-2 border-t border-lia-border-subtle">
                 <span className="font-medium lia-text-800 dark:text-lia-text-primary">Total estimado:</span>
-                <span className="font-semibold text-status-warning">1 cr/candidato</span>
+                <span className="font-semibold text-status-warning" aria-live="polite" aria-atomic="true">1 cr/candidato</span>
               </div>
             </div>
             
@@ -405,13 +405,13 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
                   setShowSourceChangeModal(false)
                   setPendingSourceChange(null)
                 }}
-                className="flex-1 h-8 text-xs px-3 rounded-md bg-lia-bg-primary border border-lia-border-subtle lia-text-600 hover:bg-gray-50 font-medium transition-colors"
+                className="flex-1 h-8 text-xs px-3 rounded-md bg-lia-bg-primary border border-lia-border-subtle lia-text-600 hover:bg-gray-50 font-medium transition-colors motion-reduce:transition-none"
               >
                 Cancelar
               </button>
               <button
                 onClick={confirmSourceChange}
-                className="flex-1 h-8 text-xs px-3 rounded-md text-white flex items-center justify-center gap-1.5 font-medium transition-colors hover:opacity-90 bg-gray-900"
+                className="flex-1 h-8 text-xs px-3 rounded-md text-white flex items-center justify-center gap-1.5 font-medium transition-colors motion-reduce:transition-none hover:opacity-90 bg-gray-900"
               >
                 {pendingSourceChange === 'hybrid' ? (
                   <>

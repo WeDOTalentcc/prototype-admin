@@ -212,8 +212,8 @@ export function ExcludedUniversitiesInput({
             disabled={isLoadingAI}
           />
           {isLoadingAI && (
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <Loader2 className="w-4 h-4 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
             </div>
           )}
         </div>
@@ -263,7 +263,7 @@ export function ExcludedUniversitiesInput({
               <span>{university}</span>
               <button
                 onClick={() => removeUniversity(university)}
-                className="hover:bg-status-warning/15 rounded-md p-0.5 transition-colors ml-1"
+                className="hover:bg-status-warning/15 rounded-md p-0.5 transition-colors motion-reduce:transition-none ml-1"
                 title="Remove"
               >
                 <X className="w-3 h-3" />

@@ -203,7 +203,7 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
                 {campaigns.map((campaign) => (
                   <Card
                     key={campaign.id}
-                    className={`cursor-pointer transition-colors ${
+                    className={`cursor-pointer transition-colors motion-reduce:transition-none ${
  selectedCampaign === campaign.id ? 'border-gray-900 bg-gray-100 dark:bg-lia-bg-secondary' : ''
                     }`}
                     onClick={() => setSelectedCampaign(campaign.id)}

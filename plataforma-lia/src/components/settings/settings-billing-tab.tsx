@@ -270,7 +270,7 @@ export function SettingsBillingTab({ onSettingsChange }: { onSettingsChange: (ch
               <button
                 key={section.id}
                 onClick={() => setActiveSection(section.id)}
-                className={`flex items-center gap-2 px-4 py-3 rounded-md text-sm font-medium transition-colors font-crimson ${
+                className={`flex items-center gap-2 px-4 py-3 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none font-crimson ${
                   activeSection === section.id
  ? 'bg-gray-50 dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-secondary'
                     : 'hover:bg-gray-50 dark:hover:bg-gray-800 lia-text-800 dark:text-lia-text-primary'

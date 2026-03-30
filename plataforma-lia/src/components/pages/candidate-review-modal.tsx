@@ -230,7 +230,7 @@ const EditCriteriaPopup: React.FC<{
           </h3>
           <button
             onClick={onClose}
-            className="p-1 rounded-md hover:bg-gray-100 transition-colors"
+            className="p-1 rounded-md hover:bg-gray-100 transition-colors motion-reduce:transition-none"
           >
             <X className="w-5 h-5 text-lia-text-secondary" />
           </button>
@@ -244,7 +244,7 @@ const EditCriteriaPopup: React.FC<{
               onDragStart={() => handleDragStart(index)}
               onDragOver={(e) => handleDragOver(e, index)}
               onDragEnd={handleDragEnd}
-              className={`flex items-center gap-3 p-3 bg-gray-50 rounded-md border transition-colors ${
+              className={`flex items-center gap-3 p-3 bg-gray-50 rounded-md border transition-colors motion-reduce:transition-none ${
                 draggedIndex === index ? 'border-gray-900 dark:border-lia-border-medium bg-gray-50 dark:bg-lia-bg-secondary/50' : 'border-lia-border-subtle'
               }`}
             >
@@ -262,7 +262,7 @@ const EditCriteriaPopup: React.FC<{
               />
               <button
                 onClick={() => handleRemove(criterion.id)}
-                className="p-1 rounded-md hover:bg-status-error/10 transition-colors"
+                className="p-1 rounded-md hover:bg-status-error/10 transition-colors motion-reduce:transition-none"
               >
                 <XIcon className="w-4 h-4 text-status-error" />
               </button>
@@ -422,7 +422,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
             <div className="flex items-center gap-3">
               <button
                 onClick={onClose}
-                className="flex items-center gap-2 text-lia-text-secondary hover:text-lia-text-primary transition-colors"
+                className="flex items-center gap-2 text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none"
               >
                 <ChevronLeft className="w-5 h-5" />
                 <span className="text-sm font-medium">Review Profiles</span>
@@ -451,7 +451,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                         href={currentCandidate.linkedinUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-lia-text-secondary hover:text-lia-text-secondary transition-colors"
+                        className="text-lia-text-secondary hover:text-lia-text-secondary transition-colors motion-reduce:transition-none"
                       >
                         <Linkedin className="w-5 h-5" />
                       </a>
@@ -499,7 +499,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                     <button
                       key={tab}
                       onClick={() => setActiveProfileTab(tab.toLowerCase().replace(' ', '-'))}
-                      className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
+                      className={`px-4 py-3 text-sm font-medium transition-colors motion-reduce:transition-none border-b-2 ${
                         activeProfileTab === tab.toLowerCase().replace(' ', '-')
                           ? 'text-lia-text-primary dark:text-lia-text-primary border-gray-950 dark:border-lia-border-medium'
                           : 'text-lia-text-secondary border-transparent hover:text-lia-text-primary dark:hover:text-lia-text-inverse'
@@ -665,7 +665,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                   </h3>
                   <button
                     onClick={() => setShowEditCriteria(true)}
-                    className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary transition-colors"
+                    className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary transition-colors motion-reduce:transition-none"
                   >
                     Edit Criteria
                   </button>
@@ -726,7 +726,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                   <button
                     onClick={() => onIndexChange(Math.max(0, currentIndex - 1))}
                     disabled={currentIndex === 0}
-                    className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ChevronLeft className="w-5 h-5 text-lia-text-secondary" />
                   </button>
@@ -736,7 +736,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                   <button
                     onClick={() => onIndexChange(Math.min(candidates.length - 1, currentIndex + 1))}
                     disabled={currentIndex === candidates.length - 1}
-                    className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ChevronRight className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                   </button>

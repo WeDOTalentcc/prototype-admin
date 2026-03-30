@@ -62,8 +62,8 @@ export function LiaSuggestionCards({
 }: LiaSuggestionCardsProps) {
   if (loading) {
     return (
-      <div className={`flex items-center justify-center py-8 ${className}`}>
-        <Loader2 className="w-5 h-5 animate-spin text-lia-text-secondary dark:text-lia-text-tertiary" />
+      <div className={`flex items-center justify-center py-8 ${className}`} role="status" aria-live="polite" aria-label="Carregando...">
+        <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
         <span className="ml-2 text-xs lia-text-secondary">Carregando sugestões...</span>
       </div>
     )
@@ -115,7 +115,7 @@ export function LiaSuggestionCards({
           return (
             <Card
               key={suggestion.id}
-              className={`p-3 cursor-pointer transition-colors ${styles.bg} border ${styles.border}`}
+              className={`p-3 cursor-pointer transition-colors motion-reduce:transition-none ${styles.bg} border ${styles.border}`}
               onClick={() => onAction(suggestion.action, suggestion.metadata)}
             >
               <div className="flex items-start gap-3">

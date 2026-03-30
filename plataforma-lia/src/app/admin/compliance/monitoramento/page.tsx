@@ -353,7 +353,7 @@ export default function MonitoramentoPage() {
                       
                     >
                       <div className="flex items-center gap-3">
-                        <div className={`w-2 h-2 rounded-full ${severityConfig.dot} ${alert.severity === 'high' || alert.severity === 'critical' ? 'animate-pulse' : ''}`} />
+                        <div className={`w-2 h-2 rounded-full ${severityConfig.dot} ${alert.severity === 'high' || alert.severity === 'critical' ? 'animate-pulse motion-reduce:animate-none' : ''}`} />
                         <div>
                           <div className="flex items-center gap-2">
                             <Badge variant="outline" className="font-mono text-xs">
@@ -486,7 +486,7 @@ export default function MonitoramentoPage() {
                 href={getWorkOSLinks().logStreams}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 transition-colors"
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 transition-colors motion-reduce:transition-none"
               >
                 Configurar no WorkOS
                 <ExternalLink className="w-3 h-3" />

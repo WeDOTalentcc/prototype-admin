@@ -99,13 +99,13 @@ export default function LGPDPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <Card >
             <CardContent className="p-6">
-              <div className="flex items-start justify-between">
-                <div>
+              <div className="flex items-start justify-between" role="status" aria-live="polite" aria-label="Carregando...">
+                <div role="status" aria-live="polite" aria-label="Carregando...">
                   <p className="text-sm lia-text-400 dark:lia-text-500" >
                     DPO Registrado
                   </p>
                   <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary" >
-                    {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : (stats?.dpoRegistered ? 'Sim' : 'Não')}
+                    {isLoading ? <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none" /> : (stats?.dpoRegistered ? 'Sim' : 'Não')}
                   </p>
                 </div>
                 <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
@@ -159,13 +159,13 @@ export default function LGPDPage() {
 
           <Card >
             <CardContent className="p-6">
-              <div className="flex items-start justify-between">
-                <div>
+              <div className="flex items-start justify-between" role="status" aria-live="polite" aria-label="Carregando...">
+                <div role="status" aria-live="polite" aria-label="Carregando...">
                   <p className="text-sm lia-text-400 dark:lia-text-500" >
                     Incidentes LGPD
                   </p>
                   <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary" >
-                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : incidentesLGPD}
+                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" /> : incidentesLGPD}
                   </p>
                   {stats?.breachesPendingAnpd ? (
                     <p className="text-xs mt-1 text-status-error">
@@ -183,7 +183,7 @@ export default function LGPDPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <Link href="/admin/compliance/lgpd/dpo">
-            <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors cursor-pointer h-full" >
+            <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none cursor-pointer h-full" >
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
@@ -200,7 +200,7 @@ export default function LGPDPage() {
           </Link>
 
           <Link href="/admin/compliance/lgpd/portal-titular">
-            <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors cursor-pointer h-full" >
+            <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none cursor-pointer h-full" >
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
@@ -217,7 +217,7 @@ export default function LGPDPage() {
           </Link>
 
           <Link href="/admin/compliance/lgpd/consentimentos">
-            <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors cursor-pointer h-full" >
+            <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none cursor-pointer h-full" >
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
@@ -234,7 +234,7 @@ export default function LGPDPage() {
           </Link>
 
           <Link href="/admin/compliance/lgpd/transferencias">
-            <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors cursor-pointer h-full" >
+            <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none cursor-pointer h-full" >
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">

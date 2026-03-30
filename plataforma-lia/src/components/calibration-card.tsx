@@ -116,7 +116,7 @@ export function CalibrationCard({
                     Calibração completa! Sourcing liberado.
                   </span>
                 ) : (
-                  <span>
+                  <span aria-live="polite" aria-atomic="true">
                     Candidato {progress.currentIndex + 1} de {progress.totalRequired} - Avalie para eu aprender seu perfil
                   </span>
                 )}
@@ -170,7 +170,7 @@ export function CalibrationCard({
                       href={candidate.linkedin_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="lia-text-base hover:lia-text-base transition-colors"
+                      className="lia-text-base hover:lia-text-base transition-colors motion-reduce:transition-none"
                       title="Ver perfil no LinkedIn"
                     >
                       <Linkedin className="w-3.5 h-3.5" />
@@ -249,7 +249,7 @@ export function CalibrationCard({
                   disabled={isLoading}
                 >
                   {isLoading ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
                   ) : (
                     <ThumbsUp className="w-3.5 h-3.5" />
                   )}
@@ -263,7 +263,7 @@ export function CalibrationCard({
                   disabled={isLoading}
                 >
                   {isLoading ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
                   ) : (
                     <ThumbsDown className="w-3.5 h-3.5" />
                   )}

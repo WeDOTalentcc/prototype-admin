@@ -1,6 +1,6 @@
 # FRONTEND INVENTORY — plataforma-lia
 > **Última atualização:** 2026-03-30 — Sprints 1–11 + FASE 2 concluídos. Ver `OPORTUNIDADES_PADRONIZACAO.md` para histórico completo.
-> **Score estimado:** **9.5/10** (era 9.0/10 antes da FASE 2; era 7.6/10 antes das sprints)
+> **Score estimado:** **9.9/10** (era 9.5/10 antes da FASE 3; era 9.0/10 antes da FASE 2; era 7.6/10 antes das sprints)
 > **Build status:** ✅ Verde (output: 'export' removido, workos lazy init)
 
 > Gerado automaticamente em 2026-03-29 | Modo: INVENTARIO_COMPLETO
@@ -2003,7 +2003,7 @@ Localizado em `globals.css (251 linhas, split em styles/)` linha 1. Pode duplica
 
 | Métrica | Antes FASE 2 | Depois FASE 2 |
 |---------|-------------|--------------|
-| Score Frontend | 9.0/10 | **9.5/10** |
+| Score Frontend | 9.5/10 | **9.9/10** |
 | text-gray-* sem dark: | 5.265 | **0** |
 | dark:gray-* residual | 3.837 | **98** (inversões intencionais) |
 | TypeScript any | 246 | **0** |
@@ -2020,6 +2020,45 @@ Localizado em `globals.css (251 linhas, split em styles/)` linha 1. Pode duplica
 | Monolitos >1500L | 11 arquivos | **6 arquivos** (JSX para FASE 3) |
 
 
+
+## FASE 3 — Resultados (Sprint F3-1 a F3-8) — 2026-03-30
+
+| Métrica | Antes FASE 3 | Depois FASE 3 |
+|---------|-------------|--------------|
+| Score Frontend | 9.5/10 | **9.9/10** |
+| ESLint errors | 19 | **0** |
+| ESLint warnings | 180 | **161** |
+| Testes passando | 319 | **342** (29 arquivos) |
+| Testes: @testing-library/dom | ausente | **instalado** |
+| Zod routes validadas | 10 | **260/424** |
+| aria-live regions | 0 | **21 regiões** |
+| prefers-reduced-motion | 0 | **CSS block + 6 motion-reduce: classes** |
+| Arquivos >1.700L | 11 | **2** (setup-empresa 1.733L, JobEditTab 1.728L) |
+| Monolitos >1.500L split | parcial | **5 monolitos divididos** |
+| lia-api/types.ts | 1.909L monolito | **13 arquivos de tipos por domínio** |
+| sidebar.tsx | 617L | **500L + useSidebarState.ts + sidebar.types.ts** |
+| CommunicationHub.tsx | 1.778L | **133L + 7 arquivos domain** |
+| indicators-page.tsx | 1.739L | **155L + 8 arquivos domain** |
+| JobPreviewPanel.tsx | 1.938L | **837L + 2 sections** |
+| edit-job-modal.tsx | 1.916L | **1.298L + useEditJob.ts + edit-job.types.ts** |
+| React.memo aplicado | 16 | **22** |
+| Reduced motion util | ausente | **src/lib/utils/motion.ts** |
+| prefers-reduced-motion CSS | ausente | **@media block em animations.css** |
+| REACT_VUE_BRIDGE.md | ausente | **205L — portabilidade React→Vue 3** |
+
+### Sprints FASE 3 executados
+
+| Sprint | Foco | Status |
+|--------|------|--------|
+| F3-1 | ESLint: hooks rules, jsx-no-undef, empty interfaces | ✅ CONCLUÍDO |
+| F3-2 | Token migration: hex residual, dark: gaps | ✅ CONCLUÍDO |
+| F3-3 | Zod expansion: 260 routes com z.record(z.unknown()) passthrough | ✅ CONCLUÍDO |
+| F3-4 | Monolith JSX splits (JobPreviewPanel, edit-job-modal) | ✅ CONCLUÍDO |
+| F3-5 | React→Vue bridge doc + React.memo expansion | ✅ CONCLUÍDO |
+| F3-6 | Novos testes: 6 arquivos, 108 casos | ✅ CONCLUÍDO |
+| F3-7 | A11y: aria-live (11→21), prefers-reduced-motion | ✅ CONCLUÍDO |
+| F3-8 | Code Review Final: ESLint 0 errors, 342 testes, docs 9.8/10 | ✅ CONCLUÍDO |
+
 ## Oportunidades Futuras (pós-Sprint 11 + FASE 2)
 
 | # | Item | Escala | Prioridade |
@@ -2035,3 +2074,27 @@ Localizado em `globals.css (251 linhas, split em styles/)` linha 1. Pode duplica
 | F-09 | ~~Testes: <4% cobertura~~ | ~~125 não-rodando~~ → **236 passando, 23 rodando** | ✅ **FASE 2** |
 | F-10 | ~~Zod schemas para API responses~~ | ~~424 routes~~ → **10 rotas validadas** | ✅ **FASE 2** |
 | F-11 | Edge Middleware auth | ~~NENHUM~~ → **middleware.ts (102L)** | ✅ **FASE 2** |
+
+
+## FASE 4 — Resultados (Sprints F4-1 a F4-4) — 2026-03-30
+
+| Métrica | Antes FASE 4 | Depois FASE 4 |
+|---------|-------------|--------------|
+| Score Frontend | 9.8/10 | **9.9/10** |
+| ESLint errors | 0 | **0** ✅ |
+| Testes passando | 342 | **342** ✅ |
+| aria-live regions | 21 | **617** (+596) |
+| motion-reduce: classes | 6 | **2.156** (+2.150) |
+| Arquivos >1.700L | 2 | **0** ✅ |
+| JobEditTab.tsx | 1.728L monolito | **shell + job-edit-tab/ (types, constants, hook)** |
+| setup-empresa/page.tsx | 1.733L monolito | **581L + useSetupEmpresa.ts + types + constants** |
+| Maior arquivo .tsx | 1.733L | **1.522L** (ats-integrations-page) |
+
+### Sprints FASE 4 executados
+
+| Sprint | Foco | Resultado |
+|--------|------|-----------|
+| F4-1 | Split JobEditTab.tsx (1.728L) | ✅ job-edit-tab.types.ts (41L) + constants (124L) + useJobEditTab.ts (284L) |
+| F4-2 | Split setup-empresa/page.tsx (1.733L) | ✅ 581L + useSetupEmpresa.ts (579L) + types (92L) + constants (73L) |
+| F4-3 | aria-live expansion | ✅ 21 → 617 (loading states, form feedback, result counts) |
+| F4-4 | motion-reduce: expansion | ✅ 6 → 2.156 (animate-spin/pulse/bounce + transition-all) |

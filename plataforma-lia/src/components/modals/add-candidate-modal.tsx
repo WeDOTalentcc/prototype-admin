@@ -396,7 +396,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
 
               <div className="space-y-2">
                 <Label htmlFor="resume">Upload do Currículo</Label>
-                <div className="rounded-md p-4 text-center bg-gray-50 dark:bg-lia-bg-secondary hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer border border-lia-border-subtle dark:border-lia-border-subtle">
+                <div className="rounded-md p-4 text-center bg-gray-50 dark:bg-lia-bg-secondary hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none cursor-pointer border border-lia-border-subtle dark:border-lia-border-subtle">
                   <Upload className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary mx-auto mb-2" />
                   <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">Clique para fazer upload ou arraste o arquivo</p>
                   <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-1">PDF, DOC ou DOCX (máx. 10MB)</p>
@@ -510,7 +510,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                       <Button onClick={handleLIAAnalysis} disabled={isAnalyzing}>
                         {isAnalyzing ? (
                           <>
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin motion-reduce:animate-none mr-2" />
                             Analisando...
                           </>
                         ) : (

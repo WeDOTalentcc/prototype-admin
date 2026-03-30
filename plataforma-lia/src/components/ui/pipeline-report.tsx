@@ -111,7 +111,7 @@ const CandidateCard = ({
   const styles = getUrgencyStyles(candidate.urgency)
   
   return (
-    <div className={`p-4 rounded-md border ${styles.bg} ${styles.border} transition-colors`}>
+    <div className={`p-4 rounded-md border ${styles.bg} ${styles.border} transition-colors motion-reduce:transition-none`}>
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
@@ -186,7 +186,7 @@ const JobGroup = ({
     <div className="border rounded-md overflow-hidden border-lia-border-subtle dark:border-lia-border-subtle">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors bg-gray-100 dark:bg-lia-bg-secondary"
+        className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors motion-reduce:transition-none bg-gray-100 dark:bg-lia-bg-secondary"
       >
         <div className="flex items-center gap-3">
           <Briefcase className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />

@@ -113,13 +113,13 @@ export function EditQueryModal({
         <div className="flex-shrink-0 border-t border-lia-border-subtle dark:border-lia-border-subtle p-6 pt-4 flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors border border-lia-border-subtle dark:border-lia-border-subtle"
+            className="px-4 py-2 text-sm text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors motion-reduce:transition-none border border-lia-border-subtle dark:border-lia-border-subtle"
           >
             Cancelar
           </button>
           <button
             onClick={handleSaveAndSearch}
-            className="px-4 py-2 text-sm text-white rounded-md transition-colors bg-gray-900 hover:bg-gray-800"
+            className="px-4 py-2 text-sm text-white rounded-md transition-colors motion-reduce:transition-none bg-gray-900 hover:bg-gray-800"
           >
             Salvar e Buscar
           </button>

@@ -120,7 +120,7 @@ export function TasksSection() {
           {activeTasks.slice(0, 6).map((task) => (
             <Card
               key={task.id}
-              className="group cursor-pointer transition-colors duration-200 hover:border-lia-border-default dark:border-lia-border-default border"
+              className="group cursor-pointer transition-colors motion-reduce:transition-none duration-200 hover:border-lia-border-default dark:border-lia-border-default border"
               onClick={() => handleTaskClick(task)}
             >
               <CardContent className="p-2">
@@ -132,7 +132,7 @@ export function TasksSection() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
- <h3 className="text-xs font-medium text-lia-text-primary group-hover:text-lia-text-secondary dark:text-lia-text-tertiary transition-colors">
+ <h3 className="text-xs font-medium text-lia-text-primary group-hover:text-lia-text-secondary dark:text-lia-text-tertiary transition-colors motion-reduce:transition-none">
                           {task.title}
                         </h3>
                         <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-0.5 line-clamp-2">
@@ -147,7 +147,7 @@ export function TasksSection() {
                         >
                           {task.priority === "high" ? "Alta" : task.priority === "medium" ? "Média" : "Baixa"}
                         </Badge>
-                        <ArrowRight className="w-2.5 h-2.5 text-lia-text-secondary group-hover:text-lia-text-secondary dark:text-lia-text-tertiary transition-colors" />
+                        <ArrowRight className="w-2.5 h-2.5 text-lia-text-secondary group-hover:text-lia-text-secondary dark:text-lia-text-tertiary transition-colors motion-reduce:transition-none" />
                       </div>
                     </div>
                   </div>

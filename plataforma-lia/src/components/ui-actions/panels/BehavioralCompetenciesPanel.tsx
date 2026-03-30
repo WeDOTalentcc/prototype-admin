@@ -137,7 +137,7 @@ export function BehavioralCompetenciesPanel({
       >
         {isLoading ? (
           <>
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none mr-2" />
             Salvando...
           </>
         ) : (
@@ -163,7 +163,7 @@ function CompetencyCard({
     <div className="border rounded-md overflow-hidden dark:border-lia-border-subtle dark:bg-lia-bg-secondary">
       <button
         type="button"
-        className="w-full text-left p-3 hover:bg-muted/50 dark:hover:bg-gray-700/50 transition-colors"
+        className="w-full text-left p-3 hover:bg-muted/50 dark:hover:bg-gray-700/50 transition-colors motion-reduce:transition-none"
         onClick={onToggleExpand}
       >
         <div className="flex items-start justify-between gap-3">
@@ -201,7 +201,7 @@ function CompetencyCard({
                   e.stopPropagation()
                   onLevelChange(level)
                 }}
-                className="flex-1 h-8 rounded-md text-xs font-medium transition-colors"
+                className="flex-1 h-8 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none"
                 style={
                   level === competency.level
                     ? { backgroundColor: 'var(--lia-btn-primary-bg)', color: 'var(--lia-btn-primary-text)', boxShadow: 'var(--lia-)' }

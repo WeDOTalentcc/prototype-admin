@@ -136,7 +136,7 @@ export function JobsTable({
           {jobs.map((job) => (
             <tr
               key={job.id}
-              className="border-b border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors"
+              className="border-b border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors motion-reduce:transition-none"
               onClick={() => onJobClick(job)}
             >
               <td className="p-4">

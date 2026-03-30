@@ -320,7 +320,7 @@ export function AddCandidateToListModal({
                 className="pl-10 bg-gray-50 dark:bg-lia-bg-secondary border-0 focus:ring-1 focus:ring-gray-300"
               />
               {searching && (
-                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin lia-text-secondary" />
+                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin motion-reduce:animate-none lia-text-secondary" />
               )}
             </div>
 
@@ -335,13 +335,13 @@ export function AddCandidateToListModal({
                       key={candidateId}
                       type="button"
                       onClick={() => candidateId && toggleCandidate(candidateId)}
-                      className={`w-full flex items-center gap-3 p-2 rounded-md transition-colors text-left ${
+                      className={`w-full flex items-center gap-3 p-2 rounded-md transition-colors motion-reduce:transition-none text-left ${
  isSelected 
                           ? 'bg-gray-50' 
                           : 'hover:bg-gray-100 dark:hover:bg-gray-700'
                       }`}
                     >
-                      <div className={`flex-shrink-0 w-5 h-5 rounded-md flex items-center justify-center transition-colors ${
+                      <div className={`flex-shrink-0 w-5 h-5 rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none ${
  isSelected 
                           ? 'bg-gray-800' 
                           : 'bg-gray-200'
@@ -377,14 +377,14 @@ export function AddCandidateToListModal({
             )}
 
             {searchQuery.length >= 2 && !searching && searchResults.length === 0 && (
-              <p className="text-sm text-lia-text-tertiary dark:text-lia-text-tertiary text-center py-3">
+              <p className="text-sm text-lia-text-tertiary dark:text-lia-text-tertiary text-center py-3" aria-live="polite" aria-atomic="true">
                 Nenhum candidato encontrado para "{searchQuery}"
               </p>
             )}
 
             {selectedCandidates.size > 0 && (
               <div className="flex items-center justify-between pt-2">
-                <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
+                <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
                   {selectedCandidates.size} candidato(s) selecionado(s)
                 </span>
                 <Button
@@ -395,7 +395,7 @@ export function AddCandidateToListModal({
                 >
                   {adding ? (
                     <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
                       Adicionando...
                     </>
                   ) : (
@@ -439,10 +439,10 @@ export function AddCandidateToListModal({
                     <button
                       onClick={handleLinkedInImport}
                       disabled={importingLinkedin}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none"
                     >
                       {importingLinkedin ? (
-                        <Loader2 className="w-4 h-4 animate-spin lia-text-secondary" />
+                        <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-secondary" />
                       ) : (
                         <ArrowRight className="w-4 h-4 lia-text-secondary" />
                       )}
@@ -469,7 +469,7 @@ export function AddCandidateToListModal({
                 >
                   {uploadingCV ? (
                     <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
                       Enviando...
                     </>
                   ) : (
@@ -494,7 +494,7 @@ export function AddCandidateToListModal({
 
           <button
             onClick={handleGoToSearch}
-            className="w-full flex items-center justify-between p-4 rounded-md bg-gray-50 dark:bg-lia-bg-secondary hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+            className="w-full flex items-center justify-between p-4 rounded-md bg-gray-50 dark:bg-lia-bg-secondary hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none group"
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-100 dark:bg-lia-bg-elevated">
@@ -509,7 +509,7 @@ export function AddCandidateToListModal({
                 </p>
               </div>
             </div>
-            <ArrowRight className="w-5 h-5 lia-text-secondary group-hover:lia-text-strong dark:group-hover:lia-text-subtle transition-colors" />
+            <ArrowRight className="w-5 h-5 lia-text-secondary group-hover:lia-text-strong dark:group-hover:lia-text-subtle transition-colors motion-reduce:transition-none" />
           </button>
         </div>
       </DialogContent>

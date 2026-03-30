@@ -146,7 +146,7 @@ export function KanbanColumn({
 
   return (
     <div
-      className={`flex flex-col flex-1 bg-white dark:bg-lia-bg-primary rounded-md min-w-[275px] max-w-[368px] border border-lia-border-subtle dark:border-lia-border-subtle transition-colors duration-300 ${
+      className={`flex flex-col flex-1 bg-white dark:bg-lia-bg-primary rounded-md min-w-[275px] max-w-[368px] border border-lia-border-subtle dark:border-lia-border-subtle transition-colors motion-reduce:transition-none duration-300 ${
         isDropTarget ? 'ring-2 ring-gray-400 bg-gray-50 dark:bg-lia-bg-secondary' : ''
       } h-[calc(100vh-16rem)]`}
       onDragOver={handleDragOver}
@@ -157,7 +157,7 @@ export function KanbanColumn({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <div 
-              className={`w-2 h-2 rounded-full ${columnStyle.dot} transition-transform duration-300 ${
+              className={`w-2 h-2 rounded-full ${columnStyle.dot} transition-transform motion-reduce:transition-none duration-300 ${
                 isDropTarget ? 'scale-150' : ''
               }`}
             />

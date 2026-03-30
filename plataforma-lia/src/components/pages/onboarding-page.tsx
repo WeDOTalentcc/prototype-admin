@@ -314,7 +314,7 @@ export function OnboardingPage() {
         <CardContent>
           <div className="space-y-4">
             {onboardingCandidates.filter(c => c.status === 'in_progress' || c.status === 'delayed').map(candidate => (
-              <div key={candidate.id} className="p-4 border border-lia-border-subtle rounded-md hover:bg-gray-50 transition-colors">
+              <div key={candidate.id} className="p-4 border border-lia-border-subtle rounded-md hover:bg-gray-50 transition-colors motion-reduce:transition-none">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <Avatar className="w-12 h-12">
@@ -636,7 +636,7 @@ export function OnboardingPage() {
               <button
                 key={tab.id}
                 onClick={() => setSelectedView(tab.id as Parameters<typeof setSelectedView>[0])}
-                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none ${
                   selectedView === tab.id
                     ? 'bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary'
                     : 'text-lia-text-secondary hover:text-lia-text-primary'

@@ -68,7 +68,7 @@ export function TableFiltersPanel({
   const activeCount = getActiveFiltersCount()
 
   return (
-    <div className="w-80 flex-shrink-0 transition-colors duration-300">
+    <div className="w-80 flex-shrink-0 transition-colors motion-reduce:transition-none duration-300">
       <Card className="h-full max-h-[calc(100vh-180px)] flex flex-col overflow-hidden bg-white dark:bg-lia-bg-primary border border-lia-border-subtle">
         {/* Header */}
         <div className="flex-shrink-0 p-4 border-b border-b-gray-100 bg-gray-50 dark:bg-lia-bg-secondary/50">
@@ -90,7 +90,7 @@ export function TableFiltersPanel({
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="h-7 w-7 p-0 rounded-full hover:opacity-70 transition-opacity"
+              className="h-7 w-7 p-0 rounded-full hover:opacity-70 transition-opacity motion-reduce:transition-none"
             >
               <X className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
             </Button>
@@ -106,7 +106,7 @@ export function TableFiltersPanel({
               placeholder="Buscar por título, ID, departamento..."
               value={searchTerm}
               onChange={(e) => onSearchTermChange(e.target.value)}
-              className="w-full pl-9 pr-8 py-2 text-xs rounded-md border focus:outline-none focus:border-gray-900 transition-colors border border-lia-border-subtle bg-white dark:bg-lia-bg-secondary"
+              className="w-full pl-9 pr-8 py-2 text-xs rounded-md border focus:outline-none focus:border-gray-900 transition-colors motion-reduce:transition-none border border-lia-border-subtle bg-white dark:bg-lia-bg-secondary"
             />
             {searchTerm && (
               <button
@@ -179,7 +179,7 @@ export function TableFiltersPanel({
                 <Badge
                   key={status}
                   variant="outline"
-                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
+                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none ${
                     jobFilters.status?.statuses?.includes(status)
                       ? 'bg-gray-100 border-gray-900 text-lia-text-primary font-medium dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-lia-text-primary'
                       : 'bg-lia-bg-primary text-lia-text-primary'
@@ -203,7 +203,7 @@ export function TableFiltersPanel({
                 <Badge
                   key={stage}
                   variant="outline"
-                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
+                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none ${
                     jobFilters.status?.stages?.includes(stage)
                       ? 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-secondary dark:text-lia-text-secondary font-medium'
                       : 'bg-lia-bg-primary text-lia-text-primary'
@@ -231,7 +231,7 @@ export function TableFiltersPanel({
                 <Badge
                   key={priority.value}
                   variant="outline"
-                  className={`text-xs cursor-pointer hover:opacity-80 transition-opacity ${
+                  className={`text-xs cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none ${
                     jobFilters.status?.priorities?.includes(priority.value)
                       ? priority.color + ' font-medium'
                       : 'bg-lia-bg-primary text-lia-text-primary'
@@ -255,7 +255,7 @@ export function TableFiltersPanel({
                 <Badge
                   key={model}
                   variant="outline"
-                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors capitalize ${
+                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none capitalize ${
                     jobFilters.position?.workModels?.includes(model)
                       ? 'bg-gray-100 border-gray-900 text-lia-text-primary font-medium dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-lia-text-primary'
                       : 'bg-lia-bg-primary text-lia-text-primary'
@@ -279,7 +279,7 @@ export function TableFiltersPanel({
                 <Badge
                   key={level}
                   variant="outline"
-                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
+                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none ${
                     jobFilters.position?.levels?.includes(level)
                       ? 'bg-gray-100 border-gray-900 text-lia-text-primary font-medium dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-lia-text-primary'
                       : 'bg-lia-bg-primary text-lia-text-primary'
@@ -303,7 +303,7 @@ export function TableFiltersPanel({
                 <Badge
                   key={loc}
                   variant="outline"
-                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
+                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none ${
                     jobFilters.position?.locations?.includes(loc)
                       ? 'bg-gray-100 border-gray-900 text-lia-text-primary font-medium dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-lia-text-primary'
                       : 'bg-lia-bg-primary text-lia-text-primary'
@@ -327,7 +327,7 @@ export function TableFiltersPanel({
                 <Badge
                   key={dept}
                   variant="outline"
-                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
+                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none ${
                     jobFilters.team?.departments?.includes(dept)
                       ? 'bg-gray-100 border-gray-900 text-lia-text-primary font-medium dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-lia-text-primary'
                       : 'bg-lia-bg-primary text-lia-text-primary'
@@ -355,7 +355,7 @@ export function TableFiltersPanel({
                 <Badge
                   key={channel.value}
                   variant="outline"
-                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors flex items-center gap-1 ${
+                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none flex items-center gap-1 ${
                     jobFilters.publishing?.channels?.includes(channel.value)
                       ? 'bg-gray-100 border-gray-900 text-lia-text-primary font-medium dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-lia-text-primary'
                       : 'bg-lia-bg-primary text-lia-text-primary'
@@ -368,7 +368,7 @@ export function TableFiltersPanel({
               ))}
               <Badge
                 variant="outline"
-                className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
+                className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none ${
                   jobFilters.publishing?.unpublished
                     ? 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-secondary dark:text-lia-text-secondary font-medium'
                     : 'bg-lia-bg-primary text-lia-text-primary'
@@ -435,7 +435,7 @@ export function TableFiltersPanel({
                 {savedSearches.map((search) => (
                   <div
                     key={search.id}
-                    className="group flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                    className="group flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none cursor-pointer"
                     onClick={() => onApplySavedSearch(search.id)}
                   >
                     <div className="flex-1 min-w-0">
@@ -450,7 +450,7 @@ export function TableFiltersPanel({
                         {search.query && ` - "${search.query}"`}
                       </p>
                     </div>
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none">
                       <Button
                         variant="ghost"
                         size="sm"

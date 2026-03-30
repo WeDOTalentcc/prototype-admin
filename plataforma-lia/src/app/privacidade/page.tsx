@@ -251,7 +251,7 @@ export default function PrivacidadePage() {
                           return (
                             <div
                               key={type.value}
-                              className={`p-4 rounded-md border-2 cursor-pointer transition-colors ${
+                              className={`p-4 rounded-md border-2 cursor-pointer transition-colors motion-reduce:transition-none ${
                                 requestType === type.value
                                   ? 'border-gray-900 dark:lia-border-50 bg-gray-50 dark:bg-lia-bg-secondary/50'
                                   : 'border-lia-border-subtle hover:border-lia-border-default'
@@ -367,7 +367,7 @@ export default function PrivacidadePage() {
                       >
                         {submitting ? (
                           <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
                             Enviando...
                           </>
                         ) : (
@@ -410,7 +410,7 @@ export default function PrivacidadePage() {
                     disabled={tracking || !trackingId}
                   >
                     {tracking ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                     ) : (
                       <>
                         <Search className="w-4 h-4 mr-2" />

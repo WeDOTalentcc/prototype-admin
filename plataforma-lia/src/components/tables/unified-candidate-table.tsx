@@ -312,9 +312,9 @@ export function UnifiedCandidateTable({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin lia-text-secondary" />
-        <span className="ml-2 text-sm lia-text-secondary">Carregando candidatos...</span>
+      <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
+        <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none lia-text-secondary" />
+        <span className="ml-2 text-sm lia-text-secondary" aria-live="polite" aria-atomic="true">Carregando candidatos...</span>
       </div>
     )
   }
@@ -341,7 +341,7 @@ export function UnifiedCandidateTable({
                 <th className="px-3 py-2.5 w-[50px]">
                   <div
                     onClick={handleSelectAll}
-                    className="cursor-pointer w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors border-lia-border-default dark:border-lia-border-default hover:border-gray-500"
+                    className="cursor-pointer w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors motion-reduce:transition-none border-lia-border-default dark:border-lia-border-default hover:border-gray-500"
                   >
                     {paginatedCandidates.length > 0 && paginatedCandidates.every(c => selectedIds.has(c.id)) && (
                       <div className="w-2.5 h-2.5 bg-gray-900 rounded-sm" />
@@ -376,7 +376,7 @@ export function UnifiedCandidateTable({
                   >
                     <div className="flex items-center gap-1">
                       {enableColumnReorder && (
-                        <GripVertical className="w-3 h-3 lia-text-secondary opacity-0 group-hover:opacity-100 transition-opacity cursor-grab" />
+                        <GripVertical className="w-3 h-3 lia-text-secondary opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none cursor-grab" />
                       )}
                       {renderCustomHeader?.(column.id, column.label) ?? (
                         column.id === 'acoes' || column.id === 'actions' ? (
@@ -399,7 +399,7 @@ export function UnifiedCandidateTable({
                     {/* Resize Handle - Sempre visível */}
                     {enableColumnResize && (
                       <div
-                        className={`absolute right-0 top-0 h-full w-2 cursor-col-resize transition-colors ${
+                        className={`absolute right-0 top-0 h-full w-2 cursor-col-resize transition-colors motion-reduce:transition-none ${
  resizingColumnId === column.id 
                             ? 'bg-gray-400 w-1' 
                             : 'bg-transparent hover:bg-gray-300 group-hover:bg-gray-200'

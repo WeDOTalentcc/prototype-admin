@@ -437,7 +437,7 @@ export function CVUploadModal({ isOpen, onClose, onParsed }: CVUploadModalProps)
             >
               {isUploading ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                   Processando...
                 </>
               ) : (
@@ -455,7 +455,7 @@ export function CVUploadModal({ isOpen, onClose, onParsed }: CVUploadModalProps)
             >
               {isUploading ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                   Processando...
                 </>
               ) : (

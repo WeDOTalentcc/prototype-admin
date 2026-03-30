@@ -436,7 +436,7 @@ export function ValidationSystem({ data, section, onValidationChange, onAutoCorr
           <CardTitle className="flex items-center gap-2 text-xs">
             <Shield className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
             Sistema de Validação
-            {isValidating && <RefreshCw className="w-4 h-4 animate-spin lia-text-600 dark:text-lia-text-tertiary" />}
+            {isValidating && <RefreshCw className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />}
           </CardTitle>
           <div className="flex items-center gap-2">
             <Button
@@ -558,7 +558,7 @@ export function ValidationSystem({ data, section, onValidationChange, onAutoCorr
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={validateData} disabled={isValidating}>
-              <RefreshCw className={`w-3 h-3 mr-1 ${isValidating ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-3 h-3 mr-1 ${isValidating ? 'animate-spin motion-reduce:animate-none' : ''}`} />
               Revalidar
             </Button>
             <Button size="sm" disabled={errorResults.length > 0}>

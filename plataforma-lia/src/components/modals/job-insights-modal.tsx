@@ -659,7 +659,7 @@ export function JobInsightsModal({
       </head>
       <body>
         <h1>Relatório de Insights</h1>
-        <p class="subtitle">${jobs.length} vaga(s) selecionada(s) • Gerado em ${reportDate}</p>
+        <p class="subtitle" aria-live="polite" aria-atomic="true">${jobs.length} vaga(s) selecionada(s) • Gerado em ${reportDate}</p>
         
         <div class="metric-grid">
           <div class="metric-card">
@@ -707,7 +707,7 @@ export function JobInsightsModal({
       const reportDate = new Date().toLocaleDateString('pt-BR')
       const reportHtml = `
         <h2>Relatório de Insights</h2>
-        <p>${jobs.length} vaga(s) analisada(s) • ${reportDate}</p>
+        <p aria-live="polite" aria-atomic="true">${jobs.length} vaga(s) analisada(s) • ${reportDate}</p>
         <ul>
           <li>Total de Candidatos: ${aggregateMetrics.totalCandidates}</li>
           <li>Aprovados: ${aggregateMetrics.totalApproved}</li>
@@ -738,12 +738,12 @@ export function JobInsightsModal({
               <DialogTitle className="text-sm font-semibold text-lia-text-primary">
                 Relatório de Insights
               </DialogTitle>
-              <p className="text-xs text-lia-text-secondary mt-0.5">
+              <p className="text-xs text-lia-text-secondary mt-0.5" aria-live="polite" aria-atomic="true">
                 {jobs.length} vaga{jobs.length !== 1 ? "s" : ""} selecionada{jobs.length !== 1 ? "s" : ""} • Gerado em {new Date().toLocaleDateString('pt-BR')}
               </p>
             </div>
           </div>
-          <span id="insights-modal-description" className="sr-only">
+          <span id="insights-modal-description" className="sr-only" aria-live="polite" aria-atomic="true">
             Relatório de insights com métricas, funil, e análises das vagas selecionadas
           </span>
         </DialogHeader>
@@ -758,7 +758,7 @@ export function JobInsightsModal({
               <div className="bg-lia-bg-primary rounded-md p-3 border border-lia-border-subtle">
                 <div className="flex items-center gap-1.5 mb-1">
                   <Users className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
-                  <span className="text-xs text-lia-text-secondary">Total Candidatos</span>
+                  <span className="text-xs text-lia-text-secondary" aria-live="polite" aria-atomic="true">Total Candidatos</span>
                 </div>
                 <p className="text-xl font-bold text-lia-text-primary">{aggregateMetrics.totalCandidates}</p>
               </div>
@@ -930,7 +930,7 @@ export function JobInsightsModal({
                   {trendData.candidatesTrend.map((val, i) => (
                     <div key={i} className="flex-1 flex flex-col items-center">
                       <div 
-                        className="w-full bg-gray-900 dark:bg-gray-50 rounded-t transition-colors"
+                        className="w-full bg-gray-900 dark:bg-gray-50 rounded-t transition-colors motion-reduce:transition-none"
                         style={{height: `${(val / trendData.maxCandidates) * 100}%`}}
                       />
                       <span className="text-micro text-lia-text-tertiary mt-1">{trendData.weeks[i]}</span>
@@ -946,7 +946,7 @@ export function JobInsightsModal({
                   {trendData.conversionTrend.map((val, i) => (
                     <div key={i} className="flex-1 flex flex-col items-center">
                       <div 
-                        className="w-full bg-status-success rounded-t transition-colors"
+                        className="w-full bg-status-success rounded-t transition-colors motion-reduce:transition-none"
                         style={{height: `${(val / 100) * 100}%`}}
                       />
                       <span className="text-micro text-lia-text-tertiary mt-1">{trendData.weeks[i]}</span>
@@ -1149,7 +1149,7 @@ export function JobInsightsModal({
                 <Users className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 Dados Demográficos
               </h3>
-              <p className="text-xs text-lia-text-tertiary italic">
+              <p className="text-xs text-lia-text-tertiary italic" aria-live="polite" aria-atomic="true">
                 Dados demográficos não disponíveis para as vagas selecionadas.
               </p>
             </div>
@@ -1202,14 +1202,14 @@ export function JobInsightsModal({
           )}
 
           {bottlenecks && bottlenecks.length > 0 && (
-            <div className="bg-status-warning/10 rounded-md p-4 border border-status-warning/30">
+            <div className="bg-status-warning/10 rounded-md p-4 border border-status-warning/30" aria-live="polite">
               <h3 className="text-xs font-semibold text-status-warning uppercase tracking-wide mb-3 flex items-center gap-1.5">
                 <AlertOctagon className="w-3.5 h-3.5 text-status-warning" />
                 Gargalos Identificados
               </h3>
               <div className="space-y-2">
                 {bottlenecks.map((b, index) => (
-                  <div key={index} className="bg-lia-bg-primary rounded-md p-3 border border-status-warning/30">
+                  <div key={index} className="bg-lia-bg-primary rounded-md p-3 border border-status-warning/30" aria-live="polite">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-semibold text-lia-text-primary">{b.stage}</span>
                       {b.stuckCount > 0 && (
@@ -1239,14 +1239,14 @@ export function JobInsightsModal({
           )}
 
           {jobs.some(job => (job.days_open || 0) > 30 && (job.approved_count || 0) === 0) && (
-            <div className="bg-status-error/10 rounded-md p-4 border border-status-error/30">
+            <div className="bg-status-error/10 rounded-md p-4 border border-status-error/30" aria-live="polite">
               <h3 className="text-xs font-semibold text-status-error uppercase tracking-wide mb-3 flex items-center gap-1.5">
                 <AlertCircle className="w-3.5 h-3.5 text-status-error" />
                 Vagas Sem Aprovação
               </h3>
               <div className="space-y-2">
                 {jobs.filter(job => (job.days_open || 0) > 30 && (job.approved_count || 0) === 0).map(job => (
-                  <div key={job.id} className="bg-lia-bg-primary rounded-md p-3 border border-status-error/30">
+                  <div key={job.id} className="bg-lia-bg-primary rounded-md p-3 border border-status-error/30" aria-live="polite">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         {job.code && (
@@ -1261,7 +1261,7 @@ export function JobInsightsModal({
                         </span>
                       </div>
                     </div>
-                    <p className="text-micro text-lia-text-tertiary mt-1">
+                    <p className="text-micro text-lia-text-tertiary mt-1" aria-live="polite" aria-atomic="true">
                       {job.candidates_count || 0} candidatos • {job.screening_count || 0} em triagem • Nenhum aprovado
                     </p>
                   </div>
@@ -1278,19 +1278,19 @@ export function JobInsightsModal({
               </h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between bg-lia-bg-primary rounded-md p-2.5 border border-lia-border-subtle">
-                  <span className="text-xs text-lia-text-secondary">Faixa da Vaga</span>
-                  <span className="text-xs font-semibold text-lia-text-primary">
+                  <span className="text-xs text-lia-text-secondary" aria-live="polite" aria-atomic="true">Faixa da Vaga</span>
+                  <span className="text-xs font-semibold text-lia-text-primary" aria-live="polite" aria-atomic="true">
                     R$ {salaryData.vagaMin.toLocaleString()} - R$ {salaryData.vagaMax.toLocaleString()}
                   </span>
                 </div>
                 <div className="flex items-center justify-between bg-lia-bg-primary rounded-md p-2.5 border border-lia-border-subtle">
-                  <span className="text-xs text-lia-text-secondary">Média Pretensão Candidatos</span>
+                  <span className="text-xs text-lia-text-secondary" aria-live="polite" aria-atomic="true">Média Pretensão Candidatos</span>
                   <span className="text-xs font-semibold text-lia-text-primary">
                     R$ {salaryData.mediaInscritos.toLocaleString()}
                   </span>
                 </div>
                 <div className="flex items-center justify-between bg-lia-bg-primary rounded-md p-2.5 border border-lia-border-subtle">
-                  <span className="text-xs text-lia-text-secondary">Candidatos Dentro da Faixa</span>
+                  <span className="text-xs text-lia-text-secondary" aria-live="polite" aria-atomic="true">Candidatos Dentro da Faixa</span>
                   <span className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">
                     {salaryData.dentroFaixa} ({salaryData.percentualDentro}%)
                   </span>

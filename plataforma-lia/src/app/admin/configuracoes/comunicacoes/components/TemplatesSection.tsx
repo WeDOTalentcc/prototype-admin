@@ -143,7 +143,7 @@ export function TemplatesSection({
             onClick={fetchTemplates}
             disabled={templatesLoading}
           >
-            <RefreshCw className={`w-4 h-4 ${templatesLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${templatesLoading ? 'animate-spin motion-reduce:animate-none' : ''}`} />
           </Button>
         </div>
         <Button
@@ -158,8 +158,8 @@ export function TemplatesSection({
       </div>
 
       {templatesLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin lia-text-700 dark:text-lia-text-secondary" />
+        <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-700 dark:text-lia-text-secondary" />
           <span className="ml-3 text-sm lia-text-500 dark:text-lia-text-tertiary" >
             Carregando templates...
           </span>
@@ -173,7 +173,7 @@ export function TemplatesSection({
             {filteredTemplates.length === 0 ? (
               <Card className="flex flex-col items-center justify-center py-12">
                 <FileText className="w-12 h-12 mb-3 lia-text-400 dark:lia-text-500"  />
-                <p className="text-sm font-medium mb-1 lia-text-500 dark:text-lia-text-tertiary" >
+                <p className="text-sm font-medium mb-1 lia-text-500 dark:text-lia-text-tertiary"  aria-live="polite" aria-atomic="true">
                   Nenhum template encontrado
                 </p>
                 <p className="text-xs mb-4 lia-text-400 dark:lia-text-500" >
@@ -192,7 +192,7 @@ export function TemplatesSection({
               filteredTemplates.map(template => (
                 <Card
                   key={template.id}
-                  className={`cursor-pointer transition-colors ${selectedTemplate?.id === template.id ? 'ring-2 ring-gray-900/20 dark:lia-ring-50/20' : 'hover:border-lia-border-default'}`}
+                  className={`cursor-pointer transition-colors motion-reduce:transition-none ${selectedTemplate?.id === template.id ? 'ring-2 ring-gray-900/20 dark:lia-ring-50/20' : 'hover:border-lia-border-default'}`}
                   onClick={() => {
                     setSelectedTemplate(template)
                     setEditingTemplate(null)
@@ -255,7 +255,7 @@ export function TemplatesSection({
                         disabled={savingTemplate}
                       >
                         {savingTemplate ? (
-                          <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                          <Loader2 className="w-4 h-4 mr-1 animate-spin motion-reduce:animate-none" />
                         ) : (
                           <Save className="w-4 h-4 mr-1" />
                         )}
@@ -330,7 +330,7 @@ export function TemplatesSection({
                         title={!selectedTemplate.isActive ? 'Ative o template para publicar' : 'Publicar para todas as empresas'}
                       >
                         {publishingTemplate === selectedTemplate.id ? (
-                          <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                          <Loader2 className="w-4 h-4 mr-1 animate-spin motion-reduce:animate-none" />
                         ) : (
                           <Send className="w-4 h-4 mr-1" />
                         )}

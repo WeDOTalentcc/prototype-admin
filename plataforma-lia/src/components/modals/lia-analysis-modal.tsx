@@ -168,8 +168,8 @@ export function LiaAnalysisModal({
       return (
         <div className="flex flex-col items-center justify-center py-6 space-y-2">
           <div className="relative">
-            <Brain className="w-6 h-6 text-wedo-cyan animate-pulse" />
-            <div className="absolute inset-0 w-6 h-6 border-2 border-gray-900 dark:border-lia-border-medium border-t-transparent rounded-full animate-spin" />
+            <Brain className="w-6 h-6 text-wedo-cyan animate-pulse motion-reduce:animate-none" />
+            <div className="absolute inset-0 w-6 h-6 border-2 border-gray-900 dark:border-lia-border-medium border-t-transparent rounded-full animate-spin motion-reduce:animate-none" />
           </div>
           <p className="text-micro text-lia-text-secondary">
             LIA está gerando a análise...
@@ -246,7 +246,7 @@ export function LiaAnalysisModal({
             </div>
             <button
               onClick={onClose}
-              className="p-1 hover:bg-gray-200 rounded-md transition-colors"
+              className="p-1 hover:bg-gray-200 rounded-md transition-colors motion-reduce:transition-none"
             >
               <X className="w-4 h-4 text-lia-text-secondary" />
             </button>
@@ -257,7 +257,7 @@ export function LiaAnalysisModal({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
+                className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors motion-reduce:transition-none ${
                   activeTab === tab.id
                     ? 'bg-gray-800 text-white'
                     : 'text-lia-text-primary hover:bg-gray-100'

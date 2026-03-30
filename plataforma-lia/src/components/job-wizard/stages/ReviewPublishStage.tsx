@@ -134,7 +134,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
     <div className="rounded-md border border-lia-border-subtle overflow-hidden">
       <button
         onClick={() => setActiveSection(activeSection === id ? null : id)}
-        className="w-full px-3 py-2 bg-gray-50 flex items-center justify-between hover:bg-gray-100 transition-colors"
+        className="w-full px-3 py-2 bg-gray-50 flex items-center justify-between hover:bg-gray-100 transition-colors motion-reduce:transition-none"
       >
         <div className="flex items-center gap-2">
           <Icon className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
@@ -164,27 +164,27 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
         <div className="px-3 py-2 bg-gray-50 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileText className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
-            <span className="text-xs font-semibold lia-text-strong">
+            <span className="text-xs font-semibold lia-text-strong" aria-live="polite" aria-atomic="true">
               Descrição da Vaga
             </span>
           </div>
           <button
             onClick={generateDescription}
             disabled={isGeneratingDescription}
-            className="flex items-center gap-1 px-2 py-1 text-micro text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-full transition-colors"
+            className="flex items-center gap-1 px-2 py-1 text-micro text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-full transition-colors motion-reduce:transition-none"
           >
             {isGeneratingDescription ? (
-              <Loader2 className="w-3 h-3 animate-spin" />
+              <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
             ) : (
               <RefreshCw className="w-3 h-3" />
             )}
             {jobDescription ? 'Regenerar' : 'Gerar'}
           </button>
         </div>
-        <div className="p-3 bg-lia-bg-primary border-t border-lia-border-subtle">
+        <div className="p-3 bg-lia-bg-primary border-t border-lia-border-subtle" role="status" aria-live="polite" aria-label="Carregando...">
           {isGeneratingDescription ? (
-            <div className="flex items-center justify-center py-8 gap-2">
-              <Loader2 className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin" />
+            <div className="flex items-center justify-center py-8 gap-2" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
               <span className="text-sm lia-text-secondary">Gerando descrição...</span>
             </div>
           ) : jobDescription ? (
@@ -196,10 +196,10 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
           ) : (
             <button
               onClick={generateDescription}
-              className="w-full py-6 border-2 border-dashed border-lia-border-subtle rounded-md text-lia-text-secondary dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors flex flex-col items-center gap-2"
+              className="w-full py-6 border-2 border-dashed border-lia-border-subtle rounded-md text-lia-text-secondary dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex flex-col items-center gap-2"
             >
               <FileText className="w-6 h-6" />
-              <span className="text-xs font-medium">Clique para gerar a descrição da vaga</span>
+              <span className="text-xs font-medium" aria-live="polite" aria-atomic="true">Clique para gerar a descrição da vaga</span>
             </button>
           )}
         </div>

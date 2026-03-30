@@ -310,14 +310,14 @@ export function EmailTemplatesManager() {
           </SelectContent>
         </Select>
         <Button variant="outline" size="icon" onClick={loadTemplates} disabled={loading}>
-          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin motion-reduce:animate-none" : ""}`} />
         </Button>
       </div>
 
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <Card key={i} className="animate-pulse">
+            <Card key={i} className="animate-pulse motion-reduce:animate-none">
               <CardContent className="pt-6">
                 <div className="h-4 bg-gray-200 rounded-md w-3/4 mb-3" />
                 <div className="h-3 bg-gray-200 rounded-md w-full mb-2" />
@@ -381,7 +381,7 @@ export function EmailTemplatesManager() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none"
                       >
                         <MoreVertical className="w-4 h-4" />
                       </Button>
@@ -543,7 +543,7 @@ export function EmailTemplatesManager() {
             >
               {deleting ? (
                 <>
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
                   Excluindo...
                 </>
               ) : (

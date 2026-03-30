@@ -175,7 +175,7 @@ export function ExcludedCompaniesInput({
       <div className="flex items-center gap-2">
         <Popover open={isTimeFilterOpen} onOpenChange={setIsTimeFilterOpen}>
           <PopoverTrigger asChild>
-            <button className="flex items-center gap-2 px-2.5 py-1 rounded-md border border-lia-border-subtle text-xs hover:bg-gray-50 transition-colors">
+            <button className="flex items-center gap-2 px-2.5 py-1 rounded-md border border-lia-border-subtle text-xs hover:bg-gray-50 transition-colors motion-reduce:transition-none">
               <span className="lia-text-800 dark:text-lia-text-primary">{currentTimeOption?.label}</span>
               <ChevronDown className="w-3.5 h-3.5 lia-text-400" />
             </button>
@@ -190,7 +190,7 @@ export function ExcludedCompaniesInput({
                     setIsTimeFilterOpen(false)
                   }}
                   className={cn(
-                    "w-full text-left px-3 py-2 hover:bg-gray-50 transition-colors",
+                    "w-full text-left px-3 py-2 hover:bg-gray-50 transition-colors motion-reduce:transition-none",
                     timeFilter === option.value && "bg-gray-50"
                   )}
                 >
@@ -235,7 +235,7 @@ export function ExcludedCompaniesInput({
         <div className="flex items-center gap-3">
           <button 
             onClick={clearAll}
-            className="text-xs lia-text-500 hover:text-status-error flex items-center gap-1 transition-colors"
+            className="text-xs lia-text-500 hover:text-status-error flex items-center gap-1 transition-colors motion-reduce:transition-none"
           >
             <RotateCcw className="w-3 h-3" />
             Limpar tudo
@@ -313,7 +313,7 @@ export function ExcludedCompaniesInput({
               )}
               <button
                 onClick={() => removeCompany(company.name)}
-                className="hover:bg-status-warning/15 rounded-md p-0.5 transition-colors ml-1"
+                className="hover:bg-status-warning/15 rounded-md p-0.5 transition-colors motion-reduce:transition-none ml-1"
                 title="Remove"
               >
                 <X className="w-3 h-3" />

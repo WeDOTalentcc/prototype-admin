@@ -478,9 +478,9 @@ export default function HealthCheckPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6">
-        <div className="max-w-7xl mx-auto flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+      <div className="p-6" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="max-w-7xl mx-auto flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
           <span className="ml-3 text-sm lia-text-400 dark:lia-text-500">
             Carregando Health Check...
           </span>
@@ -512,7 +512,7 @@ export default function HealthCheckPage() {
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={handleSeedData} disabled={isSeedingData}>
-              <Database className={`w-4 h-4 mr-2 ${isSeedingData ? 'animate-pulse' : ''}`} />
+              <Database className={`w-4 h-4 mr-2 ${isSeedingData ? 'animate-pulse motion-reduce:animate-none' : ''}`} />
               {isSeedingData ? 'Carregando...' : 'Seed Data'}
             </Button>
             <Button variant="outline" size="sm" onClick={handleExport}>
@@ -520,7 +520,7 @@ export default function HealthCheckPage() {
               Exportar
             </Button>
             <Button variant="outline" size="sm" onClick={fetchData} disabled={isRefreshing}>
-              <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin motion-reduce:animate-none' : ''}`} />
               {isRefreshing ? 'Atualizando...' : 'Atualizar'}
             </Button>
           </div>
@@ -739,7 +739,7 @@ export default function HealthCheckPage() {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={8} className="text-center py-8">
-                        <p className="lia-text-400 dark:lia-text-500">
+                        <p className="lia-text-400 dark:lia-text-500" aria-live="polite" aria-atomic="true">
                           {items.length === 0 
                             ? 'Nenhum requisito cadastrado. Clique em "Seed Data" para carregar dados de demonstração.'
                             : 'Nenhum requisito encontrado com os filtros aplicados.'
@@ -880,7 +880,7 @@ export default function HealthCheckPage() {
               >
                 {isVerifying ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
                     Verificando...
                   </>
                 ) : (

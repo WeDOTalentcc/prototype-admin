@@ -213,7 +213,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
           {splitView.page && onNavigate && (
             <button
               onClick={handleNavigatePage}
-              className="p-1.5 rounded-md lia-text-secondary hover:lia-text-base dark:hover:lia-text-muted hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="p-1.5 rounded-md lia-text-secondary hover:lia-text-base dark:hover:lia-text-muted hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
               title={`Ir para ${splitView.page}`}
               aria-label={`Navegar para ${splitView.page}`}
             >
@@ -222,7 +222,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
           )}
           <button
             onClick={handleClose}
-            className="p-1.5 rounded-md lia-text-secondary hover:lia-text-base dark:hover:lia-text-muted hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-1.5 rounded-md lia-text-secondary hover:lia-text-base dark:hover:lia-text-muted hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
             title="Fechar painel lateral"
             aria-label="Fechar painel lateral"
           >
@@ -244,10 +244,10 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
       )}
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4" role="status" aria-live="polite" aria-label="Carregando...">
         {isFetchingHistory ? (
-          <div className="flex justify-center items-center h-full">
-            <Loader2 className="w-5 h-5 animate-spin lia-text-secondary" />
+          <div className="flex justify-center items-center h-full" role="status" aria-live="polite" aria-label="Carregando...">
+            <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none lia-text-secondary" />
           </div>
         ) : isEmpty ? (
           <SplitEmptyState page={splitView.page} />
@@ -296,7 +296,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
             )}
           >
             {isCreating || isStreaming ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
             ) : (
               <Send className="w-4 h-4" />
             )}
@@ -365,9 +365,9 @@ function SplitStreamingBubble({ content }: { content: string }) {
       <div className="max-w-[85%] px-3 py-2 rounded-md text-base-ui leading-relaxed bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-primary">
         {content === "..." ? (
           <span className="flex gap-1 items-center h-5">
-            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{animationDelay: "0ms"}} />
-            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{animationDelay: "150ms"}} />
-            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{animationDelay: "300ms"}} />
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce motion-reduce:animate-none" style={{animationDelay: "0ms"}} />
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce motion-reduce:animate-none" style={{animationDelay: "150ms"}} />
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce motion-reduce:animate-none" style={{animationDelay: "300ms"}} />
           </span>
         ) : (
           <p className="whitespace-pre-wrap">{content}</p>

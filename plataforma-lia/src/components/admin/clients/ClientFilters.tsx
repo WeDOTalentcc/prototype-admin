@@ -75,9 +75,9 @@ export function ClientFilters({
             </>
           ) : (
             <>
-              <div className="w-full sm:w-[180px] h-10 bg-gray-100 dark:bg-lia-bg-elevated rounded-md animate-pulse" />
+              <div className="w-full sm:w-[180px] h-10 bg-gray-100 dark:bg-lia-bg-elevated rounded-md animate-pulse motion-reduce:animate-none" />
               {onPlanFilterChange && (
-                <div className="w-full sm:w-[180px] h-10 bg-gray-100 dark:bg-lia-bg-elevated rounded-md animate-pulse" />
+                <div className="w-full sm:w-[180px] h-10 bg-gray-100 dark:bg-lia-bg-elevated rounded-md animate-pulse motion-reduce:animate-none" />
               )}
             </>
           )}

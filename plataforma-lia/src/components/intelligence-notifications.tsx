@@ -225,7 +225,7 @@ export function IntelligenceNotifications({
       >
         <Bell className="w-4 h-4" />
         {unreadCount > 0 && (
-          <div className={`absolute -top-1 -right-1 w-5 h-5 text-white text-xs rounded-full flex items-center justify-center ${urgentCount > 0 ? 'bg-status-error animate-pulse' : 'bg-status-error'}`}>
+          <div className={`absolute -top-1 -right-1 w-5 h-5 text-white text-xs rounded-full flex items-center justify-center ${urgentCount > 0 ? 'bg-status-error animate-pulse motion-reduce:animate-none' : 'bg-status-error'}`}>
             {unreadCount > 99 ? '99+' : unreadCount}
           </div>
         )}
@@ -247,7 +247,7 @@ export function IntelligenceNotifications({
                   className="h-6 w-6 p-0"
                   title="Atualizar notificações"
                 >
-                  <RefreshCw className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} />
+                  <RefreshCw className={`w-3 h-3 ${isLoading ? 'animate-spin motion-reduce:animate-none' : ''}`} />
                 </Button>
                 {unreadCount > 0 && (
                   <Button
@@ -277,10 +277,10 @@ export function IntelligenceNotifications({
             )}
           </div>
 
-          <div className="max-h-80 overflow-y-auto">
+          <div className="max-h-80 overflow-y-auto" role="status" aria-live="polite" aria-label="Carregando...">
             {isLoading && notifications.length === 0 ? (
-              <div className="p-6 text-center">
-                <Loader2 className="w-8 h-8 lia-text-base mx-auto mb-2 animate-spin" />
+              <div className="p-6 text-center" role="status" aria-live="polite" aria-label="Carregando...">
+                <Loader2 className="w-8 h-8 lia-text-base mx-auto mb-2 animate-spin motion-reduce:animate-none" />
                 <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">Carregando notificações...</p>
               </div>
             ) : error ? (
@@ -306,7 +306,7 @@ export function IntelligenceNotifications({
               notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`p-4 border-b border-lia-border-subtle transition-colors ${
+                  className={`p-4 border-b border-lia-border-subtle transition-colors motion-reduce:transition-none ${
  !notification.read ? 'bg-wedo-cyan/10 dark:bg-wedo-cyan/15' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 >

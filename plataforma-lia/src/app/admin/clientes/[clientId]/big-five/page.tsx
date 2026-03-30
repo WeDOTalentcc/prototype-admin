@@ -414,7 +414,7 @@ export default function ClientBigFivePage({
                         {[1, 2, 3, 4, 5].map(n => (
                           <button 
                             key={n} 
-                            className={`flex-1 h-8 rounded-md text-xs font-medium transition-colors ${
+                            className={`flex-1 h-8 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none ${
                               n === 4 
                                 ? 'bg-wedo-purple/15 dark:bg-wedo-purple/50 text-wedo-purple dark:text-wedo-purple border-2 border-wedo-purple/30' 
                                 : 'bg-gray-100 dark:bg-lia-bg-elevated hover:bg-gray-200 dark:hover:bg-gray-600'

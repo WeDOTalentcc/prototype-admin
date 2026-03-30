@@ -249,9 +249,9 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
 
   if (loading) {
     return (
-      <div className={`flex items-center justify-center py-8 ${className}`}>
-        <div className="flex flex-col items-center gap-2">
-          <Loader2 className="w-5 h-5 animate-spin lia-text-base" />
+      <div className={`flex items-center justify-center py-8 ${className}`} role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="flex flex-col items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none lia-text-base" />
           <p className={textStyles.bodySmall}>Carregando atividades...</p>
         </div>
       </div>
@@ -276,7 +276,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
           <Clock className="w-5 h-5 lia-text-base mx-auto mb-2" />
           <p className={textStyles.bodySmall}>Nenhuma atividade registrada ainda</p>
           {candidateId && (
-            <p className={`${textStyles.description} mt-1`}>
+            <p className={`${textStyles.description} mt-1`} aria-live="polite" aria-atomic="true">
               As atividades relacionadas a este candidato aparecerão aqui
             </p>
           )}
@@ -290,7 +290,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
       {activities.map((activity, index) => (
         <div
           key={activity.id}
-          className="rounded-md p-2 border border-lia-border-subtle dark:border-lia-border-subtle transition-colors cursor-pointer"
+          className="rounded-md p-2 border border-lia-border-subtle dark:border-lia-border-subtle transition-colors motion-reduce:transition-none cursor-pointer"
           style={{backgroundColor: getActivityCardBackground(activity.activity_type)}}
         >
           <div className="flex items-start gap-2">
@@ -318,7 +318,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
               {activity.activity_type === 'voice_screening' && activity.extra_data && (
                 <div className="space-y-1.5">
                   {/* Candidate + Job */}
-                  <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>
+                  <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`} aria-live="polite" aria-atomic="true">
                     {activity.target?.name} • {activity.extra_data.screening_id ? 'Backend Sênior' : 'Vaga'}
                   </p>
 

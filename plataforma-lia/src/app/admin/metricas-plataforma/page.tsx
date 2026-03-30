@@ -139,7 +139,7 @@ function LoadingSkeleton() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Card key={i} className="animate-pulse">
+          <Card key={i} className="animate-pulse motion-reduce:animate-none">
             <CardHeader className="pb-2">
               <div className="h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md w-24" />
             </CardHeader>
@@ -152,7 +152,7 @@ function LoadingSkeleton() {
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {Array.from({ length: 2 }).map((_, i) => (
-          <Card key={i} className="animate-pulse">
+          <Card key={i} className="animate-pulse motion-reduce:animate-none">
             <CardHeader>
               <div className="h-5 bg-gray-200 dark:bg-lia-bg-elevated rounded-md w-40" />
             </CardHeader>
@@ -212,7 +212,7 @@ export default function MetricasPlataformaPage() {
               disabled={isLoading}
             >
               <RefreshCw
-                className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+                className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin motion-reduce:animate-none" : ""}`}
               />
               Atualizar
             </Button>

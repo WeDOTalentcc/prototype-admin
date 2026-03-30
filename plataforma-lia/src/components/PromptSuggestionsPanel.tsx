@@ -190,7 +190,7 @@ export function PromptSuggestionsPanel({
         {commandHistory.length > 0 && (
           <button
             onClick={() => setShowHistory(!showHistory)}
-            className="text-xs lia-text-base hover:lia-text-base flex items-center gap-1 transition-colors"
+            className="text-xs lia-text-base hover:lia-text-base flex items-center gap-1 transition-colors motion-reduce:transition-none"
           >
             📜 Histórico ({commandHistory.length})
           </button>
@@ -206,7 +206,7 @@ export function PromptSuggestionsPanel({
                 key={index}
                 onClick={() => onHistoryCommand(command)}
                 disabled={isProcessing}
-                className={`w-full text-left text-xs p-2 rounded-md hover:bg-lia-bg-primary transition-colors ${
+                className={`w-full text-left text-xs p-2 rounded-md hover:bg-lia-bg-primary transition-colors motion-reduce:transition-none ${
  isProcessing ? 'opacity-50' : 'lia-text-base hover:lia-text-strong'
                 }`}
               >
@@ -223,7 +223,7 @@ export function PromptSuggestionsPanel({
             key={suggestion.id}
             onClick={() => onSuggestionClick(suggestion)}
             disabled={isProcessing}
-            className={`flex items-start gap-3 p-3 text-left rounded-md border border-lia-border-subtle bg-lia-bg-primary transition-colors group ${
+            className={`flex items-start gap-3 p-3 text-left rounded-md border border-lia-border-subtle bg-lia-bg-primary transition-colors motion-reduce:transition-none group ${
  isProcessing
                 ? 'opacity-50 cursor-not-allowed'
                 : 'hover:border-gray-400 hover:'

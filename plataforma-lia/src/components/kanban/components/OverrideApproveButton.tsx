@@ -75,7 +75,7 @@ export function OverrideApproveButton({
           aria-label={`Confirmar aprovação de ${candidateName}`}
         >
           {isLoading ? (
-            <Loader2 className="w-3 h-3 animate-spin" />
+            <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
           ) : (
             'Sim'
           )}

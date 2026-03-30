@@ -92,7 +92,7 @@ export function ChatInputBar({
         <button
           type="button"
           onClick={onMicClick}
-          className="flex-shrink-0 p-1.5 rounded-full lia-text-400 dark:lia-text-500 hover:lia-text-600 dark:hover:lia-text-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors mb-0.5"
+          className="flex-shrink-0 p-1.5 rounded-full lia-text-400 dark:lia-text-500 hover:lia-text-600 dark:hover:lia-text-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none mb-0.5"
           aria-label="Gravar áudio"
         >
           <Mic className="w-4 h-4" />
@@ -112,7 +112,7 @@ export function ChatInputBar({
         aria-label="Enviar mensagem"
       >
         {isLoading ? (
-          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
         ) : (
           <Send className="w-3.5 h-3.5" />
         )}

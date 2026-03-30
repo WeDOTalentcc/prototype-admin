@@ -426,7 +426,7 @@ export function RecruitmentMLDashboard({
       <Card className="w-full">
         <CardContent className="p-8">
           <div className="flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            <div className="animate-spin motion-reduce:animate-none rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
             <span className="ml-3 lia-text-base">Processando dados com ML...</span>
           </div>
         </CardContent>

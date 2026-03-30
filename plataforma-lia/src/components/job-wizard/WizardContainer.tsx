@@ -132,7 +132,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
           {onMinimize && (
             <button
               onClick={onMinimize}
-              className="p-1.5 lia-text-secondary hover:lia-text-base transition-colors"
+              className="p-1.5 lia-text-secondary hover:lia-text-base transition-colors motion-reduce:transition-none"
               aria-label="Minimizar"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -140,7 +140,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
           )}
           <button
             onClick={onClose}
-            className="p-1.5 lia-text-secondary hover:lia-text-base transition-colors"
+            className="p-1.5 lia-text-secondary hover:lia-text-base transition-colors motion-reduce:transition-none"
             aria-label="Fechar"
           >
             ✕
@@ -156,7 +156,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
       {/* Main content area */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left side - Chat area (placeholder - will be passed as children or props) */}
-        <div className="flex flex-col transition-colors duration-300 flex-1" style={{width: isPanelOpen ? `${100 - panelWidth}%` : '100%'}}>
+        <div className="flex flex-col transition-colors motion-reduce:transition-none duration-300 flex-1" style={{width: isPanelOpen ? `${100 - panelWidth}%` : '100%'}}>
           <div className="flex-1 overflow-y-auto p-4">
             {/* Stage content will be rendered here */}
             <div className="text-center lia-text-secondary py-8">
@@ -231,7 +231,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
               if (onJobCreated) onJobCreated()
               onClose()
             }}
-            className="flex items-center gap-1.5 px-4 py-2 bg-status-success text-white rounded-md text-xs font-medium hover:bg-status-success transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 bg-status-success text-white rounded-md text-xs font-medium hover:bg-status-success transition-colors motion-reduce:transition-none"
            
           >
             <Check className="w-4 h-4" />
@@ -239,7 +239,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
           </button>
         ) : isReviewStage ? (
           <button
-            className="flex items-center gap-1.5 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 rounded-md text-xs font-medium transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none"
            
           >
             Publicar Vaga

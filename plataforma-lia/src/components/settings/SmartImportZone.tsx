@@ -229,7 +229,7 @@ export function SmartImportZone({
 
   const renderIdleState = () => (
     <Card 
-      className={`${cardStyles.interactive} border-2 border-dashed rounded-xl transition-colors duration-200 ${
+      className={`${cardStyles.interactive} border-2 border-dashed rounded-xl transition-colors motion-reduce:transition-none duration-200 ${
         disabled 
           ? 'opacity-50 cursor-not-allowed' 
           : 'cursor-pointer'
@@ -245,7 +245,7 @@ export function SmartImportZone({
     >
       <CardContent className="p-4">
         <div className="flex flex-col items-center justify-center text-center gap-2">
-          <div className="w-10 h-10 rounded-md flex items-center justify-center transition-transform duration-200 bg-gray-100 dark:bg-lia-bg-secondary">
+          <div className="w-10 h-10 rounded-md flex items-center justify-center transition-transform motion-reduce:transition-none duration-200 bg-gray-100 dark:bg-lia-bg-secondary">
             <Brain className="w-4 h-4 text-wedo-cyan" />
           </div>
           <h3 className={`${textStyles.title} dark:text-lia-text-primary`}>
@@ -327,9 +327,9 @@ export function SmartImportZone({
   const renderUploadingState = () => (
     <Card className="border border-lia-border-default dark:border-lia-border-default rounded-md bg-gray-50/50 dark:bg-lia-bg-secondary/30">
       <CardContent className="p-4">
-        <div className="flex flex-col items-center justify-center text-center gap-2">
-          <div className="w-10 h-10 rounded-md flex items-center justify-center bg-white dark:bg-lia-bg-secondary">
-            <Loader2 className="w-4 h-4 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+        <div className="flex flex-col items-center justify-center text-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
+          <div className="w-10 h-10 rounded-md flex items-center justify-center bg-white dark:bg-lia-bg-secondary" role="status" aria-live="polite" aria-label="Carregando...">
+            <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
           </div>
           <h3 className={`${textStyles.title} dark:text-lia-text-primary`}>
             Enviando arquivo...
@@ -346,7 +346,7 @@ export function SmartImportZone({
     <Card className="rounded-md bg-gray-50 dark:bg-lia-bg-secondary/50 border border-lia-border-default dark:border-lia-border-default">
       <CardContent className="p-4">
         <div className="flex flex-col items-center justify-center text-center gap-2">
-          <div className="w-10 h-10 rounded-md flex items-center justify-center bg-white dark:bg-lia-bg-secondary animate-pulse">
+          <div className="w-10 h-10 rounded-md flex items-center justify-center bg-white dark:bg-lia-bg-secondary animate-pulse motion-reduce:animate-none">
             <Brain className="w-4 h-4 text-wedo-cyan" />
           </div>
           <h3 className={`${textStyles.title} dark:text-lia-text-primary`}>
@@ -356,9 +356,9 @@ export function SmartImportZone({
             Identificando campos e validando dados
           </p>
           <div className="flex items-center gap-2 mt-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-gray-900 dark:lia-bg-50 animate-bounce" style={{animationDelay: '0ms'}} />
-            <div className="w-1.5 h-1.5 rounded-full bg-gray-900 dark:lia-bg-50 animate-bounce" style={{animationDelay: '150ms'}} />
-            <div className="w-1.5 h-1.5 rounded-full bg-gray-900 dark:lia-bg-50 animate-bounce" style={{animationDelay: '300ms'}} />
+            <div className="w-1.5 h-1.5 rounded-full bg-gray-900 dark:lia-bg-50 animate-bounce motion-reduce:animate-none" style={{animationDelay: '0ms'}} />
+            <div className="w-1.5 h-1.5 rounded-full bg-gray-900 dark:lia-bg-50 animate-bounce motion-reduce:animate-none" style={{animationDelay: '150ms'}} />
+            <div className="w-1.5 h-1.5 rounded-full bg-gray-900 dark:lia-bg-50 animate-bounce motion-reduce:animate-none" style={{animationDelay: '300ms'}} />
           </div>
         </div>
       </CardContent>
@@ -377,7 +377,7 @@ export function SmartImportZone({
               <h3 className={`${textStyles.title} dark:text-lia-text-primary`}>
                 Pré-visualização dos Dados
               </h3>
-              <p className={textStyles.caption}>
+              <p className={textStyles.caption} aria-live="polite" aria-atomic="true">
                 {previewData?.totalRows || 0} registros encontrados em {file?.name}
               </p>
             </div>
@@ -413,7 +413,7 @@ export function SmartImportZone({
               {previewData.unmatchedFields.length > 0 && (
                 <div className="flex items-center gap-1.5 mt-1">
                   <AlertCircle className="w-3.5 h-3.5 text-status-warning" />
-                  <span className={`${textStyles.labelSmall} dark:text-lia-text-tertiary`}>
+                  <span className={`${textStyles.labelSmall} dark:text-lia-text-tertiary`} aria-live="polite" aria-atomic="true">
                     Não encontrados:
                   </span>
                   {previewData.unmatchedFields.map((field) => (
@@ -493,9 +493,9 @@ export function SmartImportZone({
   const renderImportingState = () => (
     <Card className="border border-lia-border-default dark:border-lia-border-default rounded-md bg-gray-50 dark:bg-lia-bg-secondary/50">
       <CardContent className="p-4">
-        <div className="flex flex-col items-center justify-center text-center gap-2">
-          <div className="w-10 h-10 rounded-md flex items-center justify-center bg-white dark:bg-lia-bg-secondary">
-            <Loader2 className="w-4 h-4 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+        <div className="flex flex-col items-center justify-center text-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
+          <div className="w-10 h-10 rounded-md flex items-center justify-center bg-white dark:bg-lia-bg-secondary" role="status" aria-live="polite" aria-label="Carregando...">
+            <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
           </div>
           <h3 className={`${textStyles.title} dark:text-lia-text-primary`}>
             Importando dados...

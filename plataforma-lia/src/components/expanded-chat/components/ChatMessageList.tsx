@@ -399,14 +399,14 @@ export function ChatMessageList({
                 <div className="flex items-center gap-2 mt-1.5">
                   <button
                     onClick={() => onProactiveAccept(message.proactiveData!.actionId, message.id)}
-                    className="px-3 py-1 text-xs font-medium rounded-md bg-chat-cyan/15 text-chat-cyan hover:bg-chat-cyan/25 transition-colors"
+                    className="px-3 py-1 text-xs font-medium rounded-md bg-chat-cyan/15 text-chat-cyan hover:bg-chat-cyan/25 transition-colors motion-reduce:transition-none"
                     style={{fontFamily: '"Inter", sans-serif'}}
                   >
                     {message.proactiveData.actionLabel}
                   </button>
                   <button
                     onClick={() => onProactiveReject(message.proactiveData!.actionId, message.id)}
-                    className="px-3 py-1 text-xs rounded-md lia-text-secondary hover:lia-text-base hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    className="px-3 py-1 text-xs rounded-md lia-text-secondary hover:lia-text-base hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
                     style={{fontFamily: '"Inter", sans-serif'}}
                   >
                     Ignorar
@@ -442,7 +442,7 @@ export function ChatMessageList({
             >
               <div className="flex items-center gap-2">
                 {message.processingState !== 'completed' && (
-                  <div className="w-3 h-3 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-3 h-3 border-2 border-gray-900 border-t-transparent rounded-full animate-spin motion-reduce:animate-none" />
                 )}
                 <span>{message.content}</span>
               </div>
@@ -466,7 +466,7 @@ export function ChatMessageList({
                     <div className="text-base-ui text-lia-text-secondary dark:text-lia-text-primary space-y-1 leading-relaxed break-words overflow-wrap-anywhere">
                       {formatMessageContent(message.content, message.isTyping || false, message.id)}
                       {message.isTyping && messages[messages.length - 1]?.id === message.id && isTypingEffect && (
-                        <span className="inline-block w-1.5 h-3.5 bg-chat-cyan animate-pulse ml-0.5" />
+                        <span className="inline-block w-1.5 h-3.5 bg-chat-cyan animate-pulse motion-reduce:animate-none ml-0.5" />
                       )}
                     </div>
                   </div>
@@ -482,7 +482,7 @@ export function ChatMessageList({
                     />
                   )}
                   {!message.isTyping && (
-                    <div className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none">
                       <MessageFeedback
                         sessionId={conversationId || 'default-session'}
                         messageId={message.id}

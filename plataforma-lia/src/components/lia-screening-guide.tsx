@@ -259,7 +259,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                 <button
                   key={section.id}
                   onClick={() => setActiveSection(section.id as typeof activeSection)}
-                  className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-colors ${
+                  className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-colors motion-reduce:transition-none ${
  activeSection === section.id
                       ? 'bg-status-success/15 dark:bg-status-success/20 text-status-success dark:text-status-success'
                       : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-lia-text-primary dark:text-lia-text-primary'

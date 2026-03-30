@@ -112,7 +112,7 @@ export function CandidatesFilterPanel({
   onClose,
 }: CandidatesFilterPanelProps) {
   return (
-    <div className="flex-shrink-0 w-80 transition-colors duration-300">
+    <div className="flex-shrink-0 w-80 transition-colors motion-reduce:transition-none duration-300">
       <div className="bg-lia-bg-primary rounded-md h-[calc(100vh-9rem)] overflow-hidden">
         {/* Header */}
         <div className="p-4 flex items-center justify-between border-b border-lia-border-subtle">
@@ -128,7 +128,7 @@ export function CandidatesFilterPanel({
           </div>
           <button
             onClick={onClose}
-            className="h-8 w-8 rounded-md flex items-center justify-center transition-colors text-lia-text-primary hover:text-lia-text-primary hover:bg-gray-100"
+            className="h-8 w-8 rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none text-lia-text-primary hover:text-lia-text-primary hover:bg-gray-100"
           >
             <X className="w-4 h-4" />
           </button>
@@ -796,7 +796,7 @@ export function CandidatesFilterPanel({
                               : (opt.value as TableFilters["availabilityWindow"]),
                         }))
                       }
-                      className="px-2 py-1.5 text-micro rounded-md transition-colors"
+                      className="px-2 py-1.5 text-micro rounded-md transition-colors motion-reduce:transition-none"
                       style={{backgroundColor:
                           tableFilters.availabilityWindow === opt.value ? "var(--gray-950)" : "var(--gray-50)",
                         color: tableFilters.availabilityWindow === opt.value ? "white" : "var(--gray-500)",
@@ -1001,7 +1001,7 @@ export function CandidatesFilterPanel({
           {/* Botões de ação */}
           <div className="pt-4 border-t border-lia-border-subtle space-y-2">
             <button
-              className="w-full h-9 text-xs rounded-md transition-colors border border-lia-border-subtle"
+              className="w-full h-9 text-xs rounded-md transition-colors motion-reduce:transition-none border border-lia-border-subtle"
              
               onClick={onClearAll}
             >
@@ -1026,10 +1026,10 @@ function CheckableItem({ label, checked, onClick }: CheckableItemProps) {
   return (
     <div
       onClick={onClick}
-      className={`flex items-center gap-2.5 p-2 rounded-md cursor-pointer transition-colors hover:bg-gray-50 ${checked ? "bg-wedo-cyan/[0.08] border border-wedo-cyan/20" : "bg-transparent border border-transparent"}`}
+      className={`flex items-center gap-2.5 p-2 rounded-md cursor-pointer transition-colors motion-reduce:transition-none hover:bg-gray-50 ${checked ? "bg-wedo-cyan/[0.08] border border-wedo-cyan/20" : "bg-transparent border border-transparent"}`}
     >
       <div
-        className="w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-colors"
+        className="w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-colors motion-reduce:transition-none"
         style={{backgroundColor: checked ? "var(--gray-950)" : "transparent",
           border: checked ? "none" : "2px solid var(--gray-300)"}}
       >
@@ -1099,7 +1099,7 @@ function TriStateButtons({ value, onChange }: TriStateButtonsProps) {
         <button
           key={String(opt.value)}
           onClick={() => onChange(opt.value)}
-          className="flex-1 px-2 py-1.5 text-micro rounded-md transition-colors"
+          className="flex-1 px-2 py-1.5 text-micro rounded-md transition-colors motion-reduce:transition-none"
           style={{backgroundColor: value === opt.value ? "var(--gray-950)" : "var(--gray-50)",
             color: value === opt.value ? "white" : "var(--gray-500)",
             border: value === opt.value ? "none" : "1px solid var(--gray-200)"}}

@@ -286,7 +286,7 @@ export default function ClientOverviewPage({
             className={client?.status === 'suspended' ? 'bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200' : ''}
           >
             {togglingStatus ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
             ) : client?.status === 'suspended' ? (
               <Play className="w-4 h-4 mr-2" />
             ) : (
@@ -334,7 +334,7 @@ export default function ClientOverviewPage({
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm lia-text-400 dark:lia-text-500">
+                <p className="text-sm lia-text-400 dark:lia-text-500" aria-live="polite" aria-atomic="true">
                   Vagas Abertas
                 </p>
                 <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
@@ -356,7 +356,7 @@ export default function ClientOverviewPage({
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm lia-text-400 dark:lia-text-500">
+                <p className="text-sm lia-text-400 dark:lia-text-500" aria-live="polite" aria-atomic="true">
                   Candidatos
                 </p>
                 <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">

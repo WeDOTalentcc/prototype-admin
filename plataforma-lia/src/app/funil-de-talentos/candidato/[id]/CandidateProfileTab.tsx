@@ -607,7 +607,7 @@ export function CandidateProfileTab({
                   href={candidate.resume_url} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100 rounded-md text-sm lia-text-800 dark:text-lia-text-primary transition-colors"
+                  className="inline-flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100 rounded-md text-sm lia-text-800 dark:text-lia-text-primary transition-colors motion-reduce:transition-none"
                 >
                   <Download className="w-4 h-4" />
                   Baixar Currículo

@@ -453,7 +453,7 @@ export function IntegrationsPage() {
                             className="gap-2"
                           >
                             {testingIntegration === integration.id ? (
-                              <RefreshCw className="w-4 h-4 animate-spin" />
+                              <RefreshCw className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                             ) : (
                               <PlayCircle className="w-4 h-4" />
                             )}

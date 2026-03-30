@@ -150,7 +150,7 @@ export default function BiasAuditPage() {
                 className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
               >
                 {loading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                  <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
                 ) : (
                   <RefreshCw className="w-4 h-4" aria-hidden="true" />
                 )}
@@ -198,7 +198,7 @@ export default function BiasAuditPage() {
         {loading && (
           <Card className="mb-6" role="status" aria-label="Carregando auditoria">
             <CardContent className="p-8 text-center">
-              <Loader2 className="w-8 h-8 lia-text-400 animate-spin mx-auto mb-3" aria-hidden="true" />
+              <Loader2 className="w-8 h-8 lia-text-400 animate-spin motion-reduce:animate-none mx-auto mb-3" aria-hidden="true" />
               <p className="text-sm lia-text-500">Calculando auditoria de viés…</p>
             </CardContent>
           </Card>
@@ -292,7 +292,7 @@ export default function BiasAuditPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:lia-divide-700">
                       {auditData.dimensions.map((dim) => (
-                        <tr key={dim.dimension} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                        <tr key={dim.dimension} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors motion-reduce:transition-none">
                           <td className="px-6 py-4">
                             <p className="text-sm font-medium lia-text-950 dark:lia-text-50">
                               {DIMENSION_LABELS[dim.dimension] ?? dim.dimension}

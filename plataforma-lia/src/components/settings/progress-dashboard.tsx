@@ -296,7 +296,7 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
                   return (
                     <div
                       key={section.id}
-                      className="flex items-center gap-4 p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
+                      className="flex items-center gap-4 p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors motion-reduce:transition-none"
                       onClick={() => onSectionSelect(section.id)}
                     >
                       <div className="flex items-center gap-3">
@@ -389,7 +389,7 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
                   return (
                     <div
                       key={section.id}
-                      className="flex items-center gap-4 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
+                      className="flex items-center gap-4 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors motion-reduce:transition-none"
                       onClick={() => onSectionSelect(section.id)}
                     >
                       <div className="w-10 h-10 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">

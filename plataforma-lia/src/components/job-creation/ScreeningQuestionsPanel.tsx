@@ -517,7 +517,7 @@ export function ScreeningQuestionsPanel({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none"
                   onClick={() => toggleQuestion(question.id)}
                 >
                   <Trash2 className="h-3 w-3 lia-text-secondary hover:text-status-error" />
@@ -692,7 +692,7 @@ export function ScreeningQuestionsPanel({
     return (
       <div
         key={question.id}
-        className="p-3 rounded-md border border-lia-border-subtle bg-lia-bg-primary transition-colors cursor-pointer group"
+        className="p-3 rounded-md border border-lia-border-subtle bg-lia-bg-primary transition-colors motion-reduce:transition-none cursor-pointer group"
         onClick={() => handleAddSuggestion(question)}
       >
         <div className="flex items-start gap-3">
@@ -722,8 +722,8 @@ export function ScreeningQuestionsPanel({
     return (
       <Card className={cn("w-full", className)}>
         <CardContent className="flex items-center justify-center py-12">
-          <div className="text-center space-y-3">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto lia-text-base" />
+          <div className="text-center space-y-3" role="status" aria-live="polite" aria-label="Carregando...">
+            <Loader2 className="h-8 w-8 animate-spin motion-reduce:animate-none mx-auto lia-text-base" />
             <p className="text-xs lia-text-base">
               Gerando perguntas de triagem com metodologia WSI...
             </p>
@@ -810,7 +810,7 @@ export function ScreeningQuestionsPanel({
                 <Brain className="h-4 w-4 mt-0.5 flex-shrink-0 text-wedo-cyan" />
                 <div>
                   <p className="text-xs font-medium lia-text-strong">Metodologia WSI</p>
-                  <p className="text-micro lia-text-base leading-relaxed mt-0.5">
+                  <p className="text-micro lia-text-base leading-relaxed mt-0.5" aria-live="polite" aria-atomic="true">
                     A LIA gera perguntas seguindo a metodologia WeDoTalent Skill Index, 
                     calibrando complexidade conforme senioridade e skills da vaga.
                   </p>
@@ -865,7 +865,7 @@ export function ScreeningQuestionsPanel({
                     disabled={isGeneratingMore}
                   >
                     {isGeneratingMore ? (
-                      <Loader2 className="h-3 w-3 animate-spin" />
+                      <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none" />
                     ) : (
                       <>
                         <RefreshCw className="h-3 w-3 mr-1" />

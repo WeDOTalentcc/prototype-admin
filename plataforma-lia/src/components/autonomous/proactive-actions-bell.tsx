@@ -160,7 +160,7 @@ export function ProactiveActionsBell({
     return (
       <div
         key={action.id}
-        className="p-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+        className="p-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors motion-reduce:transition-none"
       >
         <div className="flex items-start gap-2">
           {candidate ? (
@@ -243,7 +243,7 @@ export function ProactiveActionsBell({
                 disabled={isProcessing}
               >
                 {isProcessing ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
+                  <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none" />
                 ) : (
                   <>
                     <Check className="h-3 w-3 mr-0.5" />
@@ -266,7 +266,7 @@ export function ProactiveActionsBell({
           size="sm"
           className={cn(
  "relative h-9 w-9 p-0 rounded-full",
-            hasUrgent && "animate-pulse",
+            hasUrgent && "animate-pulse motion-reduce:animate-none",
             className
           )}
         >
@@ -305,10 +305,10 @@ export function ProactiveActionsBell({
           </div>
         </div>
 
-        <div className="max-h-[400px] overflow-y-auto">
+        <div className="max-h-[400px] overflow-y-auto" role="status" aria-live="polite" aria-label="Carregando...">
           {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-5 w-5 animate-spin text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <div className="flex items-center justify-center py-8" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
           ) : visibleActions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 px-4">

@@ -337,7 +337,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded-md lia-text-secondary hover:lia-text-base dark:hover:lia-text-muted hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+          <button onClick={onClose} className="p-1 rounded-md lia-text-secondary hover:lia-text-base dark:hover:lia-text-muted hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -364,11 +364,11 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                 <button
                   onClick={generateLiaRecommendations}
                   disabled={isLiaAnalyzing}
-                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 transition-colors motion-reduce:transition-none disabled:opacity-50"
                 >
                   {isLiaAnalyzing ? (
                     <>
-                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <RefreshCw className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                       Analisando...
                     </>
                   ) : (
@@ -387,7 +387,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                 {isLiaAnalyzing ? (
                   <div className="flex items-center justify-center py-6">
                     <div className="text-center">
-                      <RefreshCw className="w-8 h-8 animate-spin text-lia-text-secondary dark:text-lia-text-tertiary mx-auto mb-2" />
+                      <RefreshCw className="w-8 h-8 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary mx-auto mb-2" />
                       <p className="text-xs lia-text-base">LIA analisando perfil para recomendações...</p>
                     </div>
                   </div>
@@ -516,7 +516,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                 <button
                   key={type.id}
                   onClick={() => setScheduleType(type.id as 'phone' | 'video' | 'presential')}
-                  className={`p-4 border rounded-md text-left transition-colors ${
+                  className={`p-4 border rounded-md text-left transition-colors motion-reduce:transition-none ${
  scheduleType === type.id
                       ? 'border-lia-border-default bg-gray-100'
                       : 'border-lia-border-subtle hover:bg-gray-50 hover:border-lia-border-subtle'
@@ -584,7 +584,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                   <button
                     key={plat.id}
                     onClick={() => setPlatform(plat.id)}
-                    className={`p-3 border rounded-md text-center transition-colors ${
+                    className={`p-3 border rounded-md text-center transition-colors motion-reduce:transition-none ${
  platform === plat.id
                         ? 'border-lia-border-default bg-gray-100'
                         : 'border-lia-border-subtle hover:bg-gray-50 hover:border-lia-border-subtle'
@@ -659,14 +659,14 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
           <div className="flex justify-end gap-3 pt-5 border-t border-lia-border-subtle">
             <button
               onClick={onClose}
-              className="px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 transition-colors"
+              className="px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 transition-colors motion-reduce:transition-none"
             >
               Cancelar
             </button>
             {createdInterviewId && (
               <button
                 onClick={handleDownloadIcs}
-                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 transition-colors motion-reduce:transition-none"
               >
                 <Download className="w-4 h-4" />
                 Baixar .ICS
@@ -675,11 +675,11 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
             <button
               onClick={handleSchedule}
               disabled={!date || !time || !interviewer || isScheduling}
-              className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md bg-gray-900 hover:bg-gray-800 text-white transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md bg-gray-900 hover:bg-gray-800 text-white transition-colors motion-reduce:transition-none disabled:opacity-50"
             >
               {isScheduling ? (
                 <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <RefreshCw className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                   Agendando...
                 </>
               ) : (

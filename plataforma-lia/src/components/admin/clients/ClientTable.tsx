@@ -21,7 +21,7 @@ export interface ClientTableProps {
 
 function ClientSkeleton() {
   return (
-    <Card className="overflow-hidden animate-pulse">
+    <Card className="overflow-hidden animate-pulse motion-reduce:animate-none">
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
           <div className="w-12 h-12 rounded-md bg-gray-200 dark:bg-lia-bg-elevated" />

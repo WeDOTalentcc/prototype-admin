@@ -282,7 +282,7 @@ export function NotificationCenter({ userId = 'default_user', onNavigate }: Noti
         <ScrollArea className="h-[400px]">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-6 w-6 border-2 border-lia-border-default border-t-gray-400 dark:border-t-gray-500" />
+              <div className="animate-spin motion-reduce:animate-none rounded-full h-6 w-6 border-2 border-lia-border-default border-t-gray-400 dark:border-t-gray-500" />
             </div>
           ) : filteredNotifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
@@ -302,7 +302,7 @@ export function NotificationCenter({ userId = 'default_user', onNavigate }: Noti
                   <div
                     key={notification.id}
                     className={cn(
- "px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer",
+ "px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors motion-reduce:transition-none cursor-pointer",
                       !notification.is_read && "bg-gray-100 dark:bg-lia-bg-secondary"
                     )}
                     onClick={() => handleAction(notification)}

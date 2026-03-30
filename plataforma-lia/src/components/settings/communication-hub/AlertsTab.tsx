@@ -77,7 +77,7 @@ export function AlertsTab({
           {alerts.map((alert) => (
             <div
               key={alert.id}
-              className={`p-2.5 rounded-md border transition-colors ${
+              className={`p-2.5 rounded-md border transition-colors motion-reduce:transition-none ${
                 alert.enabled
                   ? 'bg-white dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle'
                   : 'bg-gray-50 dark:bg-lia-bg-secondary/50 border-lia-border-subtle dark:lia-border-800'
@@ -112,10 +112,10 @@ export function AlertsTab({
                   <button
                     onClick={() => isEditingAlerts && handleToggleAlert(alert.id)}
                     disabled={!isEditingAlerts}
-                    className="relative w-9 h-5 rounded-full transition-colors disabled:opacity-60"
+                    className="relative w-9 h-5 rounded-full transition-colors motion-reduce:transition-none disabled:opacity-60"
                     style={{backgroundColor: alert.enabled ? 'var(--gray-600)' : 'var(--gray-200)'}}
                   >
-                    <span className={`absolute top-0.5 w-4 h-4 bg-lia-bg-secondary rounded-full transition-transform ${alert.enabled ? 'left-4' : 'left-0.5'}`} />
+                    <span className={`absolute top-0.5 w-4 h-4 bg-lia-bg-secondary rounded-full transition-transform motion-reduce:transition-none ${alert.enabled ? 'left-4' : 'left-0.5'}`} />
                   </button>
                 </div>
               </div>
@@ -143,7 +143,7 @@ export function AlertsTab({
                 key={key}
                 onClick={() => setBriefingFrequency(key)}
                 disabled={!isEditingAlerts}
-                className={`p-2.5 rounded-md border-2 transition-colors text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''}`}
+                className={`p-2.5 rounded-md border-2 transition-colors motion-reduce:transition-none text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''}`}
                 style={{
                   borderColor: briefingFrequency === key ? 'var(--gray-600)' : 'var(--gray-200)',
                   backgroundColor: briefingFrequency === key ? 'var(--gray-600-bg-10)' : undefined

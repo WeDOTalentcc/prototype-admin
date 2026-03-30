@@ -353,7 +353,7 @@ export function EmailTemplateFormModal({
                           <button
                             key={variable.name}
                             onClick={() => insertVariable(variable.name)}
-                            className="flex items-center justify-between p-2 rounded-md border hover:bg-gray-50 transition-colors text-left"
+                            className="flex items-center justify-between p-2 rounded-md border hover:bg-gray-50 transition-colors motion-reduce:transition-none text-left"
                           >
                             <div>
                               <code className="text-sm font-mono text-lia-text-primary">
@@ -399,7 +399,7 @@ export function EmailTemplateFormModal({
           <Button onClick={handleSubmit} disabled={!isValid || saving} className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200">
             {saving ? (
               <>
-                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                <RefreshCw className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
                 Salvando...
               </>
             ) : (

@@ -70,7 +70,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
           }
         }}
         placeholder={getPlaceholder()}
-        className={cn("w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-14 transition-colors border relative lia-text-950 caret-gray-950 z-[2]", ghostTextSuffix && !showAutocomplete ? "bg-transparent" : "bg-lia-bg-primary")}
+        className={cn("w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-14 transition-colors motion-reduce:transition-none border relative lia-text-950 caret-gray-950 z-[2]", ghostTextSuffix && !showAutocomplete ? "bg-transparent" : "bg-lia-bg-primary")}
         onFocus={(e) => {
           e.currentTarget.style.borderColor = "var(--gray-300)"
           e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)"
@@ -131,7 +131,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="!animate-none !duration-0">
                   <p className="text-xs font-medium">Expanda sua busca</p>
-                  <p className="text-xs lia-text-300">Local + Global • 1 crédito/candidato</p>
+                  <p className="text-xs lia-text-300" aria-live="polite" aria-atomic="true">Local + Global • 1 crédito/candidato</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -157,7 +157,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="!animate-none !duration-0">
                   <p className="text-xs font-medium">Alcance global</p>
-                  <p className="text-xs lia-text-300">800M+ candidatos • 1 crédito/candidato</p>
+                  <p className="text-xs lia-text-300" aria-live="polite" aria-atomic="true">800M+ candidatos • 1 crédito/candidato</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -242,7 +242,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
         onClick={handleSubmit}
         disabled={!canSubmit()}
         size="sm"
-        className={cn("absolute right-2.5 bottom-2.5 h-8 w-8 p-0 rounded-md transition-transform hover:scale-105 z-10", canSubmit() ? "bg-gray-950 text-white" : "bg-gray-100 lia-text-500")}
+        className={cn("absolute right-2.5 bottom-2.5 h-8 w-8 p-0 rounded-md transition-transform motion-reduce:transition-none hover:scale-105 z-10", canSubmit() ? "bg-gray-950 text-white" : "bg-gray-100 lia-text-500")}
       >
         <Search className="w-4 h-4" />
       </Button>
@@ -261,7 +261,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setAutocompleteEnabled(false)}
-              className="text-micro lia-text-400 hover:lia-text-600 transition-colors"
+              className="text-micro lia-text-400 hover:lia-text-600 transition-colors motion-reduce:transition-none"
               title="Desativar sugestões"
             >
               Desativar
@@ -271,7 +271,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
                 setShowAutocomplete(false)
                 setAutocompleteItems([])
               }}
-              className="p-0.5 rounded-md hover:bg-gray-100 transition-colors"
+              className="p-0.5 rounded-md hover:bg-gray-100 transition-colors motion-reduce:transition-none"
               title="Fechar lista"
             >
               <X className="w-3 h-3 lia-text-400" />
@@ -383,14 +383,14 @@ export function SSIModeContent(props: SSIModeContentProps) {
         <div className="flex items-center gap-1 flex-shrink-0">
           <button
             onClick={handleAcceptEnhancement}
-            className="flex items-center gap-1 px-2 py-1 rounded-full text-micro font-medium hover:bg-wedo-cyan/15 transition-colors lia-text-700"
+            className="flex items-center gap-1 px-2 py-1 rounded-full text-micro font-medium hover:bg-wedo-cyan/15 transition-colors motion-reduce:transition-none lia-text-700"
           >
             <kbd className="px-1 py-0.5 rounded-full bg-gray-100 text-micro font-mono">Tab</kbd>
             <span>Aceitar</span>
           </button>
           <button
             onClick={handleDismissEnhancement}
-            className="flex items-center justify-center w-5 h-5 rounded-md hover:bg-gray-100 transition-colors lia-text-400"
+            className="flex items-center justify-center w-5 h-5 rounded-md hover:bg-gray-100 transition-colors motion-reduce:transition-none lia-text-400"
           >
             <X className="w-3 h-3" />
           </button>
@@ -518,7 +518,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
           className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-200/30"
         >
           <div 
-            className="w-3 h-3 border-2 border-t-transparent rounded-full animate-spin"
+            className="w-3 h-3 border-2 border-t-transparent rounded-full animate-spin motion-reduce:animate-none"
           />
           <span>Analisando...</span>
         </div>
@@ -684,7 +684,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
         <span 
           className="text-xs font-medium"
 
-        >
+         aria-live="polite" aria-atomic="true">
           Buscar vaga existente
         </span>
         <span className="text-micro lia-text-400">opcional</span>
@@ -709,16 +709,16 @@ export function SSIModeContent(props: SSIModeContentProps) {
           </div>
           <button
             onClick={clearSelectedVacancy}
-            className="p-1 rounded-md hover:bg-gray-100 transition-colors"
+            className="p-1 rounded-md hover:bg-gray-100 transition-colors motion-reduce:transition-none"
           >
             <X className="w-3.5 h-3.5 lia-text-400" />
           </button>
         </div>
       ) : (
-        <div className="relative">
-          <div className="absolute left-3 top-1/2 -translate-y-1/2">
+        <div className="relative" role="status" aria-live="polite" aria-label="Carregando...">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2" role="status" aria-live="polite" aria-label="Carregando...">
             {isSearchingVacancies ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin lia-text-400" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none lia-text-400" />
             ) : (
               <Search className="w-3.5 h-3.5 lia-text-400" />
             )}
@@ -728,7 +728,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
             value={jdVacancySearch}
             onChange={(e) => setJdVacancySearch(e.target.value)}
             placeholder="Digite o nome ou ID da vaga..."
-            className="w-full pl-9 pr-4 py-2.5 text-base-ui rounded-md border focus:outline-none transition-colors bg-gray-50 lia-text-950"
+            className="w-full pl-9 pr-4 py-2.5 text-base-ui rounded-md border focus:outline-none transition-colors motion-reduce:transition-none bg-gray-50 lia-text-950"
             onFocus={(e) => {
               e.currentTarget.style.borderColor = "var(--gray-300)"
               e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)"
@@ -749,7 +749,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
                 <button
                   key={vacancy.id}
                   onClick={() => handleSelectVacancy(vacancy)}
-                  className="w-full p-2.5 text-left hover:bg-gray-50 transition-colors border-b last:border-b-0 border border-lia-border-subtle"
+                  className="w-full p-2.5 text-left hover:bg-gray-50 transition-colors motion-reduce:transition-none border-b last:border-b-0 border border-lia-border-subtle"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
@@ -788,7 +788,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
               className="absolute z-50 top-full left-0 right-0 mt-1 p-2.5 rounded-md border text-center"
               style={{backgroundColor: 'var(--gray-50)'}}
             >
-              <p className="text-base-ui lia-text-500">Nenhuma vaga encontrada</p>
+              <p className="text-base-ui lia-text-500" aria-live="polite" aria-atomic="true">Nenhuma vaga encontrada</p>
             </div>
           )}
         </div>
@@ -807,7 +807,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
       <span 
         className="text-xs font-medium"
 
-      >
+       aria-live="polite" aria-atomic="true">
         Cole a descrição da vaga
       </span>
       <input
@@ -840,7 +840,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
           }
         }}
         placeholder={getPlaceholder()}
-        className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[100px] transition-colors border bg-lia-bg-primary"
+        className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[100px] transition-colors motion-reduce:transition-none border bg-lia-bg-primary"
         style={{color: "var(--gray-950)"}}
         onFocus={(e) => {
           e.currentTarget.style.borderColor = "var(--gray-300)"
@@ -900,7 +900,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="!animate-none !duration-0">
                     <p className="text-xs font-medium">Expanda sua busca</p>
-                    <p className="text-xs lia-text-300">Local + Global • 1 crédito/candidato</p>
+                    <p className="text-xs lia-text-300" aria-live="polite" aria-atomic="true">Local + Global • 1 crédito/candidato</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -926,7 +926,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="!animate-none !duration-0">
                     <p className="text-xs font-medium">Alcance global</p>
-                    <p className="text-xs lia-text-300">800M+ candidatos • 1 crédito/candidato</p>
+                    <p className="text-xs lia-text-300" aria-live="polite" aria-atomic="true">800M+ candidatos • 1 crédito/candidato</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -1000,7 +1000,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
                     )}
                   >
                     {isLoading ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                     ) : (
                       <Search className="w-4 h-4" />
                     )}
@@ -1008,7 +1008,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="!animate-none !duration-0">
                   <p className="text-xs font-medium">Extrair e Buscar</p>
-                  <p className="text-xs lia-text-300">Extrai requisitos e busca candidatos</p>
+                  <p className="text-xs lia-text-300" aria-live="polite" aria-atomic="true">Extrai requisitos e busca candidatos</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -1134,7 +1134,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="!animate-none !duration-0">
                   <p className="text-xs font-medium">Expanda sua busca</p>
-                  <p className="text-xs lia-text-300">Local + Global • 1 crédito/candidato</p>
+                  <p className="text-xs lia-text-300" aria-live="polite" aria-atomic="true">Local + Global • 1 crédito/candidato</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -1160,7 +1160,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="!animate-none !duration-0">
                   <p className="text-xs font-medium">Alcance global</p>
-                  <p className="text-xs lia-text-300">800M+ candidatos • 1 crédito/candidato</p>
+                  <p className="text-xs lia-text-300" aria-live="polite" aria-atomic="true">800M+ candidatos • 1 crédito/candidato</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -1231,7 +1231,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
             )}
           >
             {isLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
             ) : (
               <Search className="w-4 h-4" />
             )}
@@ -1253,7 +1253,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
         <button
           key={op}
           onClick={() => onChange(value + (value ? " " : "") + op + " ")}
-          className="px-2 py-0.5 rounded-md text-xs font-mono hover:bg-gray-100 transition-colors"
+          className="px-2 py-0.5 rounded-md text-xs font-mono hover:bg-gray-100 transition-colors motion-reduce:transition-none"
           style={{backgroundColor: 'var(--gray-100)',
             color: 'var(--gray-500)'}}
         >

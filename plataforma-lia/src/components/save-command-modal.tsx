@@ -248,7 +248,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
                 <button
                   key={category.id}
                   onClick={() => setSelectedCategory(category.id)}
-                  className={`p-3 rounded-md border transition-colors ${
+                  className={`p-3 rounded-md border transition-colors motion-reduce:transition-none ${
  selectedCategory === category.id
                       ? 'border-wedo-purple/30 bg-wedo-purple/10 dark:bg-wedo-purple/20'
                       : 'border-lia-border-subtle dark:border-lia-border-default hover:border-wedo-purple/30'
@@ -380,7 +380,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
             >
               {isSaving ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin motion-reduce:animate-none" />
                   Salvando...
                 </>
               ) : (

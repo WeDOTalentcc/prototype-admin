@@ -578,7 +578,7 @@ export function StageTransitionActionsModal({
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-md text-lia-text-secondary hover:text-lia-text-primary hover:bg-gray-100 transition-colors">
+          <button onClick={onClose} className="p-2 rounded-md text-lia-text-secondary hover:text-lia-text-primary hover:bg-gray-100 transition-colors motion-reduce:transition-none">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -633,7 +633,7 @@ export function StageTransitionActionsModal({
 
               {job && (
                 <div className="flex items-center gap-2 text-lia-text-secondary">
-                  <span className={textStyles.caption}>Vaga:</span>
+                  <span className={textStyles.caption} aria-live="polite" aria-atomic="true">Vaga:</span>
                   <span className={textStyles.label}>{job.title}</span>
                   {job.department && (
                     <span className={textStyles.caption}>• {job.department}</span>
@@ -773,7 +773,7 @@ export function StageTransitionActionsModal({
               {needsMessageComposition && (
                 <div className="flex items-center gap-2 p-2 bg-status-warning/10 rounded-md border border-status-warning/30">
                   <AlertCircle className="h-4 w-4 text-status-warning shrink-0" />
-                  <p className="text-xs text-status-warning">
+                  <p className="text-xs text-status-warning" aria-live="polite" aria-atomic="true">
                     {channel === 'both' && candidate.email && candidate.phone
                       ? `Email para: ${candidate.email} + WhatsApp para: ${candidate.phone}`
                       : channel === 'both'
@@ -801,7 +801,7 @@ export function StageTransitionActionsModal({
                       <p className="text-xs text-lia-text-primary dark:text-lia-text-primary font-medium">
                         LIA personalizou esta mensagem considerando:
                       </p>
-                      <p className="text-micro text-lia-text-secondary mt-0.5">
+                      <p className="text-micro text-lia-text-secondary mt-0.5" aria-live="polite" aria-atomic="true">
                         nome, cargo, vaga e contexto do candidato
                       </p>
                       {isMessageEdited && (
@@ -830,22 +830,22 @@ export function StageTransitionActionsModal({
                       disabled={isRegenerating}
                       className="h-7 text-xs"
                     >
-                      <RefreshCw className={cn("h-3 w-3 mr-1", isRegenerating && "animate-spin")} />
+                      <RefreshCw className={cn("h-3 w-3 mr-1", isRegenerating && "animate-spin motion-reduce:animate-none")} />
                       Regenerar
                     </Button>
                   </div>
 
                   {isLoadingTemplates ? (
-                    <div className="flex items-center justify-center py-8">
-                      <Loader2 className="h-5 w-5 animate-spin text-lia-text-disabled" />
+                    <div className="flex items-center justify-center py-8" role="status" aria-live="polite" aria-label="Carregando...">
+                      <Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none text-lia-text-disabled" />
                     </div>
                   ) : (
-                    <div className="relative">
+                    <div className="relative" role="status" aria-live="polite" aria-label="Carregando...">
                       {/* Regenerating Overlay */}
                       {isRegenerating && (
-                        <div className="absolute inset-0 bg-lia-bg-primary/80 rounded-md flex items-center justify-center z-10">
-                          <div className="flex items-center gap-2">
-                            <Loader2 className="h-4 w-4 animate-spin text-lia-text-secondary" />
+                        <div className="absolute inset-0 bg-lia-bg-primary/80 rounded-md flex items-center justify-center z-10" role="status" aria-live="polite" aria-label="Carregando...">
+                          <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
+                            <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
                             <span className="text-xs text-lia-text-secondary font-medium">LIA regenerando mensagem...</span>
                           </div>
                         </div>
@@ -853,7 +853,7 @@ export function StageTransitionActionsModal({
 
                       <div className={cn(
                         "space-y-3 transition-colors",
-                        showPulse && "animate-pulse"
+                        showPulse && "animate-pulse motion-reduce:animate-none"
                       )}>
                         {(channel === 'email' || channel === 'both' || selectedAction === 'triagem_wsi' || selectedAction === 'agendar_entrevista') && (
                           <div>
@@ -884,8 +884,8 @@ export function StageTransitionActionsModal({
                   <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
                     <ArrowRight className="w-6 h-6 text-lia-text-disabled" />
                   </div>
-                  <p className={textStyles.subtitle}>Apenas mover candidato</p>
-                  <p className={cn(textStyles.caption, "mt-1 max-w-[250px]")}>
+                  <p className={textStyles.subtitle} aria-live="polite" aria-atomic="true">Apenas mover candidato</p>
+                  <p className={cn(textStyles.caption, "mt-1 max-w-[250px]")} aria-live="polite" aria-atomic="true">
                     O candidato será movido para a nova etapa sem envio de comunicação
                   </p>
                 </div>
@@ -916,7 +916,7 @@ export function StageTransitionActionsModal({
           >
             {isLoading ? (
               <>
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
                 Processando...
               </>
             ) : (

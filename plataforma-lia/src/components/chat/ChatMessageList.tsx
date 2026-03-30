@@ -530,7 +530,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                           key={idx}
                           variant="ghost"
                           size="sm"
-                          className="text-xs transition-transform duration-200 hover:scale-105 font-medium"
+                          className="text-xs transition-transform motion-reduce:transition-none duration-200 hover:scale-105 font-medium"
                           style={{backgroundColor: buttonStyle.backgroundColor,
                             color: buttonStyle.color,
                             border: `1px solid ${buttonStyle.borderColor}`}}
@@ -563,8 +563,8 @@ const ChatMessageListComponent = memo(function ChatMessageList({
             <div
               className="rounded-md p-5 flex-1 bg-gray-100 dark:bg-lia-bg-secondary"
             >
-              <div className="flex items-center space-x-2">
-                <Loader2 className="w-4 h-4 animate-spin" />
+              <div className="flex items-center space-x-2" role="status" aria-live="polite" aria-label="Carregando...">
+                <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                 <span
                   className="text-sm lia-text-500 dark:text-lia-text-tertiary"
                 >

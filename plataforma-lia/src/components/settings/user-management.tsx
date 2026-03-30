@@ -634,7 +634,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
         <div className="flex bg-gray-100 dark:bg-lia-bg-secondary rounded-md p-0.5">
           <button
             onClick={() => setViewMode('cards')}
-            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors motion-reduce:transition-none ${
               viewMode === 'cards'
                 ? 'bg-lia-bg-primary lia-text-950 dark:lia-text-50'
                 : 'lia-text-600 dark:text-lia-text-tertiary hover:lia-text-900 dark:hover:lia-text-100'
@@ -644,7 +644,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
           </button>
           <button
             onClick={() => setViewMode('table')}
-            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors motion-reduce:transition-none ${
               viewMode === 'table'
                 ? 'bg-lia-bg-primary lia-text-950 dark:lia-text-50'
                 : 'lia-text-600 dark:text-lia-text-tertiary hover:lia-text-900 dark:hover:lia-text-100'
@@ -738,7 +738,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                     >
                       {resendingInvite === user.id ? (
                         <>
-                          <Loader2 className="w-3 h-3 animate-spin" />
+                          <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
                           Enviando...
                         </>
                       ) : (

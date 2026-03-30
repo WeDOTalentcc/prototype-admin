@@ -55,7 +55,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-lia-bg-primary/20 rounded-md transition-colors"
+              className="p-2 hover:bg-lia-bg-primary/20 rounded-md transition-colors motion-reduce:transition-none"
             >
               <X className="w-5 h-5" />
             </button>
@@ -80,7 +80,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
               ].map((category) => (
                 <button
                   key={category.label}
-                  className={`w-full flex items-center justify-between p-2.5 rounded-md transition-colors ${
+                  className={`w-full flex items-center justify-between p-2.5 rounded-md transition-colors motion-reduce:transition-none ${
                     category.active
                       ? 'bg-white dark:bg-lia-bg-primary border border-lia-border-default dark:border-lia-border-subtle'
                       : 'hover:bg-lia-bg-primary dark:hover:bg-gray-900'
@@ -136,7 +136,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
 
             <div className="grid grid-cols-2 gap-4">
               {/* Teste 1 */}
-              <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500 transition-colors">
+              <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500 transition-colors motion-reduce:transition-none">
                 <div className="p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div>
@@ -294,7 +294,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
               </div>
 
               {/* Teste 2 */}
-              <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500 transition-colors">
+              <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500 transition-colors motion-reduce:transition-none">
                 <div className="p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div>
@@ -362,7 +362,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
               </div>
 
               {/* Teste 3 */}
-              <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500 transition-colors">
+              <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500 transition-colors motion-reduce:transition-none">
                 <div className="p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div>
@@ -430,7 +430,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
               </div>
 
               {/* Teste 4 */}
-              <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500 transition-colors">
+              <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500 transition-colors motion-reduce:transition-none">
                 <div className="p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div>

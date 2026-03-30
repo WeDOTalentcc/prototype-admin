@@ -86,9 +86,9 @@ export default function ClientJornadaPage({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin lia-text-600 dark:text-lia-text-tertiary mx-auto mb-4" />
+      <div className="flex items-center justify-center py-16" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="text-center" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary mx-auto mb-4" />
           <p className="text-sm lia-text-400 dark:lia-text-500">
             Carregando jornada...
           </p>

@@ -31,7 +31,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
   if (!contextData || !isPanelOpen) return null
 
   return (
-      <div className="w-2/5 p-4 flex transition-colors duration-300 overflow-hidden bg-gray-50 dark:bg-lia-bg-primary">
+      <div className="w-2/5 p-4 flex transition-colors motion-reduce:transition-none duration-300 overflow-hidden bg-gray-50 dark:bg-lia-bg-primary">
         {/* Card Container com bordas suaves e arredondadas */}
         <Card className="w-full border-0 rounded-md overflow-hidden flex flex-col bg-white dark:lia-bg-950">
           {/* Header sem linha divisória */}
@@ -1152,7 +1152,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                                 <button
                                   key={i}
                                   disabled={!slot.available}
-                                  className={`p-2 rounded-md text-xs transition-transform ${slot.available ? 'hover:scale-105' : 'opacity-50 cursor-not-allowed'}`}
+                                  className={`p-2 rounded-md text-xs transition-transform motion-reduce:transition-none ${slot.available ? 'hover:scale-105' : 'opacity-50 cursor-not-allowed'}`}
                                   style={{backgroundColor: slot.available ? 'var(--green-50, #f0fdf4)' : 'var(--gray-100)',
                                     color: 'inherit',
                                     border: `1px solid ${slot.available ? 'var(--gray-200)' : 'var(--gray-100)'}`}}

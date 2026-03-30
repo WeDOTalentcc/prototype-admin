@@ -172,12 +172,12 @@ export function AudioRecordButton({
         className={cn(
  "h-8 w-8 transition-colors",
           isRecording
-            ? "text-status-error hover:text-status-error hover:bg-status-error/10 animate-pulse"
+            ? "text-status-error hover:text-status-error hover:bg-status-error/10 animate-pulse motion-reduce:animate-none"
             : "lia-text-secondary hover:lia-text-strong dark:hover:lia-text-subtle hover:bg-gray-100"
         )}
       >
         {isTranscribing ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />
         ) : isRecording ? (
           <Square className="h-4 w-4 fill-current" />
         ) : (
@@ -187,7 +187,7 @@ export function AudioRecordButton({
 
       {isRecording && (
         <div className="flex items-center gap-2 text-xs text-status-error">
-          <span className="w-2 h-2 rounded-full bg-status-error animate-pulse" />
+          <span className="w-2 h-2 rounded-full bg-status-error animate-pulse motion-reduce:animate-none" />
           <span>{formatTime(recordingTime)}</span>
         </div>
       )}

@@ -301,7 +301,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
               />
               {isLoading && (
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <div className="w-3.5 h-3.5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-3.5 h-3.5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin motion-reduce:animate-none"></div>
                 </div>
               )}
             </div>
@@ -316,7 +316,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
               <button
                 key={type.id}
                 onClick={() => setSelectedType(type.id)}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs whitespace-nowrap transition-colors ${
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs whitespace-nowrap transition-colors motion-reduce:transition-none ${
  selectedType === type.id
                     ? 'bg-gray-900 text-white'
                     : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-lia-text-secondary dark:text-lia-text-tertiary'
@@ -350,7 +350,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
                   <button
                     key={index}
                     onClick={() => handleSuggestionClick(suggestion)}
-                    className="flex items-center gap-2 p-2 text-left text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-lia-bg-primary dark:hover:bg-gray-800 rounded-md transition-colors border border-transparent hover:border-lia-border-subtle dark:hover:border-gray-700"
+                    className="flex items-center gap-2 p-2 text-left text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-lia-bg-primary dark:hover:bg-gray-800 rounded-md transition-colors motion-reduce:transition-none border border-transparent hover:border-lia-border-subtle dark:hover:border-gray-700"
                   >
                     <ArrowRight className="w-3 h-3 opacity-40" />
                     {suggestion}

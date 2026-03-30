@@ -81,11 +81,11 @@ export function WizardHeader({
             </span>
           )}
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="flex items-center gap-1 text-micro">
+        <div className="flex items-center gap-1.5" role="status" aria-live="polite" aria-label="Carregando...">
+          <div className="flex items-center gap-1 text-micro" role="status" aria-live="polite" aria-label="Carregando...">
             {isAutoSaving ? (
               <>
-                <Loader2 className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin" />
+                <Loader2 className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
                 <span className="lia-text-secondary">Salvando...</span>
               </>
             ) : autoSaveLastSaved ? (
@@ -103,27 +103,27 @@ export function WizardHeader({
           {(autoSaveLastSaved || hasRestoredDraft) && (
             <button
               onClick={onClearDraft}
-              className="p-1 rounded-md hover:bg-status-error/10 transition-colors group focus-visible:ring-2 focus-visible:ring-gray-400"
+              className="p-1 rounded-md hover:bg-status-error/10 transition-colors motion-reduce:transition-none group focus-visible:ring-2 focus-visible:ring-gray-400"
               title="Começar do zero"
               aria-label="Limpar rascunho e começar do zero"
             >
-              <RefreshCw className="w-3.5 h-3.5 lia-text-secondary group-hover:text-status-error transition-colors" />
+              <RefreshCw className="w-3.5 h-3.5 lia-text-secondary group-hover:text-status-error transition-colors motion-reduce:transition-none" />
             </button>
           )}
           <button
             onClick={() => onFullscreenChange(!isFullscreen)}
-            className="p-1 rounded-md hover:bg-gray-100 dark:bg-lia-bg-secondary transition-colors group focus-visible:ring-2 focus-visible:ring-gray-400"
+            className="p-1 rounded-md hover:bg-gray-100 dark:bg-lia-bg-secondary transition-colors motion-reduce:transition-none group focus-visible:ring-2 focus-visible:ring-gray-400"
             title={isFullscreen ? "Reduzir chat" : "Expandir tela cheia"}
             aria-label={isFullscreen ? "Reduzir chat" : "Expandir para tela cheia"}
           >
             {isFullscreen 
-              ? <Minimize2 className="w-3.5 h-3.5 lia-text-secondary group-hover:lia-text-strong dark:group-hover:lia-text-subtle transition-colors" />
-              : <Maximize2 className="w-3.5 h-3.5 lia-text-secondary group-hover:lia-text-strong dark:group-hover:lia-text-subtle transition-colors" />
+              ? <Minimize2 className="w-3.5 h-3.5 lia-text-secondary group-hover:lia-text-strong dark:group-hover:lia-text-subtle transition-colors motion-reduce:transition-none" />
+              : <Maximize2 className="w-3.5 h-3.5 lia-text-secondary group-hover:lia-text-strong dark:group-hover:lia-text-subtle transition-colors motion-reduce:transition-none" />
             }
           </button>
           <button 
             onClick={onPanelClose}
-            className="p-1 rounded-md hover:bg-gray-100 transition-colors focus-visible:ring-2 focus-visible:ring-gray-400"
+            className="p-1 rounded-md hover:bg-gray-100 transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-gray-400"
             title="Fechar painel"
             aria-label="Fechar painel de etapas"
           >

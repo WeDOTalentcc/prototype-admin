@@ -512,7 +512,7 @@ export default function SettingsPageEnhanced() {
                           handleToggleSection(section.id)
                         }
                       }}
-                      className={`w-full flex items-center gap-2 p-2.5 rounded-md text-left transition-colors ${
+                      className={`w-full flex items-center gap-2 p-2.5 rounded-md text-left transition-colors motion-reduce:transition-none ${
                         isActive && !activeSubsection
                           ? 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary'
                           : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 text-lia-text-secondary dark:text-lia-text-secondary'
@@ -550,7 +550,7 @@ export default function SettingsPageEnhanced() {
                             <button
                               key={subsection.id}
                               onClick={() => handleSelectSubsection(section.id, subsection.id)}
-                              className={`w-full text-left px-2 py-1.5 rounded-md transition-colors ${
+                              className={`w-full text-left px-2 py-1.5 rounded-md transition-colors motion-reduce:transition-none ${
                                 activeSubsection === subsection.id
                                   ? 'bg-gray-100 dark:bg-lia-bg-elevated'
                                   : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'

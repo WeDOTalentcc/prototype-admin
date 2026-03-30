@@ -236,7 +236,7 @@ export function KanbanTableView({
     <>
     {/* Painel de Filtros - TABLE */}
     {showTableFiltersPanel && (
-      <div className="flex-shrink-0 w-72 transition-colors duration-300">
+      <div className="flex-shrink-0 w-72 transition-colors motion-reduce:transition-none duration-300">
         <Card className="h-[calc(100vh-12rem)] flex flex-col overflow-hidden border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
           {/* Header do Painel de Filtros */}
           <div className="flex-shrink-0 p-4 border-b border-lia-border-subtle">
@@ -356,14 +356,14 @@ export function KanbanTableView({
                 onClick={() => {
                   onTableStageFilterChange([])
                 }}
-                className="flex-1 px-3 py-2 text-xs font-medium text-lia-text-secondary bg-lia-bg-primary border border-lia-border-subtle rounded-md hover:bg-gray-50 transition-colors"
+                className="flex-1 px-3 py-2 text-xs font-medium text-lia-text-secondary bg-lia-bg-primary border border-lia-border-subtle rounded-md hover:bg-gray-50 transition-colors motion-reduce:transition-none"
 
               >
                 Limpar
               </button>
               <button
                 onClick={() => onShowTableFiltersPanelChange(false)}
-                className="flex-1 px-3 py-2 text-xs font-medium text-white rounded-md transition-colors bg-gray-800"
+                className="flex-1 px-3 py-2 text-xs font-medium text-white rounded-md transition-colors motion-reduce:transition-none bg-gray-800"
               >
                 Aplicar
               </button>
@@ -603,7 +603,7 @@ export function KanbanTableView({
                     <div className="relative flex items-center justify-center">
                       {/* Indicador "Ação Necessária" - aparece quando não está em hover */}
                       {showNeedsAction && (
-                        <div className="flex items-center gap-1 group-hover:hidden transition-opacity">
+                        <div className="flex items-center gap-1 group-hover:hidden transition-opacity motion-reduce:transition-none">
                           <Flag className="w-3.5 h-3.5 text-status-warning" strokeWidth={2} />
                         </div>
                       )}
@@ -618,7 +618,7 @@ export function KanbanTableView({
                               openDecisionFlowModal(candidate, 'approve')
                             }
                           }}
-                          className="w-7 h-7 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity bg-gray-800"
+                          className="w-7 h-7 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity motion-reduce:transition-none bg-gray-800"
                           title="Aprovar candidato"
                         >
                           <ThumbsUp className="w-3.5 h-3.5 text-white" strokeWidth={2} />
@@ -632,7 +632,7 @@ export function KanbanTableView({
                               openDecisionFlowModal(candidate, 'reject')
                             }
                           }}
-                          className="w-7 h-7 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity bg-wedo-coral"
+                          className="w-7 h-7 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity motion-reduce:transition-none bg-wedo-coral"
                           title="Reprovar candidato"
                         >
                           <XCircle className="w-3.5 h-3.5 text-white" strokeWidth={2} />
@@ -723,7 +723,7 @@ export function KanbanTableView({
                           >
                             {currentStageObj?.displayName || candidate.stage}
                           </Badge>
-                          <ChevronDown className="w-3 h-3 text-lia-text-disabled group-hover/stage:text-lia-text-secondary transition-colors" />
+                          <ChevronDown className="w-3 h-3 text-lia-text-disabled group-hover/stage:text-lia-text-secondary transition-colors motion-reduce:transition-none" />
                         </button>
                       </PopoverTrigger>
                       <PopoverContent className="w-44 p-1.5" align="start" sideOffset={4}>
@@ -733,7 +733,7 @@ export function KanbanTableView({
                             return (
                               <button
                                 key={stage.id}
-                                className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs transition-colors ${
+                                className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs transition-colors motion-reduce:transition-none ${
                                   isCurrent
                                     ? 'bg-gray-100 dark:bg-lia-bg-secondary font-bold'
                                     : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
@@ -785,7 +785,7 @@ export function KanbanTableView({
                             onSetTransitionInterviewAlert({ name: candidate.name, date: dateStr })
                             openTransition([candidate], stage, stage)
                           }}
-                          className="w-5 h-5 rounded-md flex items-center justify-center text-wedo-cyan-dark hover:bg-wedo-cyan/10 dark:hover:bg-wedo-cyan-dark/20 transition-colors flex-shrink-0"
+                          className="w-5 h-5 rounded-md flex items-center justify-center text-wedo-cyan-dark hover:bg-wedo-cyan/10 dark:hover:bg-wedo-cyan-dark/20 transition-colors motion-reduce:transition-none flex-shrink-0"
                           title={`Gerenciar entrevista — ${candidate.interviewDate || new Date(candidate.agendada).toLocaleDateString('pt-BR')}`}
                         >
                           <Video className="w-3 h-3" />
@@ -1019,7 +1019,7 @@ export function KanbanTableView({
                         <PopoverTrigger asChild>
                           <button
                             onClick={(e) => e.stopPropagation()}
-                            className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                            className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
                             title="Mais ações"
                           >
                             <MoreVertical className="w-4 h-4 text-lia-text-tertiary" />
@@ -1280,7 +1280,7 @@ export function KanbanTableView({
 
     {/* Preview do Candidato - Painel Lateral Direito */}
     {isPreviewOpen && previewCandidate && (
-      <div className={`flex-shrink-0 transition-colors duration-300 ${isPreviewMaximized ? 'w-[600px]' : 'w-panel-lg'}`}>
+      <div className={`flex-shrink-0 transition-colors motion-reduce:transition-none duration-300 ${isPreviewMaximized ? 'w-[600px]' : 'w-panel-lg'}`}>
         <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
         <React.Suspense fallback={null}>
           <CandidatePreviewDynamic

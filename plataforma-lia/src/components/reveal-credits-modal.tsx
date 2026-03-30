@@ -73,7 +73,7 @@ export function RevealCreditsModal({
                     <p className="font-semibold text-status-warning">
                       Custo: {creditsRequired} créditos
                     </p>
-                    <p className="text-sm text-status-warning mt-1">
+                    <p className="text-sm text-status-warning mt-1" aria-live="polite" aria-atomic="true">
                       {revealType === "email" 
                         ? "O custo será cobrado apenas se o candidato tiver email disponível."
                         : "O custo será cobrado apenas se o candidato tiver telefone disponível."}
@@ -107,7 +107,7 @@ export function RevealCreditsModal({
           >
             {isLoading ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                 Revelando...
               </>
             ) : (

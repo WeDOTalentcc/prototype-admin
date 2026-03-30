@@ -205,7 +205,7 @@ export function SavedSearchesTab({
     const isAIMode = search.mode === 'natural' || search.mode === 'similar'
 
     return (
-      <Card className="group transition-colors border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500">
+      <Card className="group transition-colors motion-reduce:transition-none border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500">
         <CardContent className="p-4">
           <div className="flex items-start gap-4">
             <div 
@@ -265,7 +265,7 @@ export function SavedSearchesTab({
               </div>
             </div>
 
-            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none">
               <Button
                 size="sm"
                 className="h-8 bg-gray-900 hover:bg-gray-800 text-white"

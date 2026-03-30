@@ -106,9 +106,9 @@ export function CandidateSearchBar({
 
           {/* CV Upload Loading */}
           {cvUploadLoading && (
-            <div className="absolute inset-0 z-50 bg-white/90 dark:bg-lia-bg-primary/90 rounded-md flex items-center justify-center">
-              <div className="text-center">
-                <Loader2 className="w-8 h-8 text-lia-text-primary dark:text-lia-text-primary mx-auto mb-2 animate-spin" />
+            <div className="absolute inset-0 z-50 bg-white/90 dark:bg-lia-bg-primary/90 rounded-md flex items-center justify-center" role="status" aria-live="polite" aria-label="Carregando...">
+              <div className="text-center" role="status" aria-live="polite" aria-label="Carregando...">
+                <Loader2 className="w-8 h-8 text-lia-text-primary dark:text-lia-text-primary mx-auto mb-2 animate-spin motion-reduce:animate-none" />
                 <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">Analisando CV...</p>
               </div>
             </div>

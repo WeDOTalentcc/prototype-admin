@@ -273,7 +273,7 @@ export function CompetenciesStage({
           </button>
           <button
             onClick={() => onSetTechnicalSkills(technicalSkills.filter(s => s.id !== skill.id))}
-            className="p-0.5 lia-text-secondary hover:text-status-error transition-colors"
+            className="p-0.5 lia-text-secondary hover:text-status-error transition-colors motion-reduce:transition-none"
             aria-label={`Remover competência: ${skill.name}`}
           >
             <Trash2 className="w-3 h-3" />
@@ -287,7 +287,7 @@ export function CompetenciesStage({
               onClick={() => onSetTechnicalSkills(
                 technicalSkills.map(s => s.id === skill.id ? { ...s, weight: w, isWeightInferred: false } : s)
               )}
-              className="transition-colors focus-visible:ring-2 focus-visible:ring-gray-400 rounded-md"
+              className="transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-gray-400 rounded-md"
               aria-label={`Definir peso ${w}`}
             >
               <Star
@@ -304,7 +304,7 @@ export function CompetenciesStage({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button className="ml-1 p-0.5 text-status-warning hover:text-status-warning transition-colors focus-visible:ring-2 focus-visible:ring-gray-400 rounded-md" aria-label="Ver sugestão de peso da LIA">
+                  <button className="ml-1 p-0.5 text-status-warning hover:text-status-warning transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-gray-400 rounded-md" aria-label="Ver sugestão de peso da LIA">
                     <Lightbulb className="w-3.5 h-3.5 fill-amber-100" />
                   </button>
                 </TooltipTrigger>
@@ -349,7 +349,7 @@ export function CompetenciesStage({
             </div>
             <button
               onClick={handleToggleExpand}
-              className="p-1.5 hover:bg-lia-bg-primary/50 rounded-md transition-colors"
+              className="p-1.5 hover:bg-lia-bg-primary/50 rounded-md transition-colors motion-reduce:transition-none"
               aria-label={isExpanded ? 'Recolher painel de competências' : 'Expandir painel de competências'}
             >
               <ChevronDown className={cn(
@@ -461,7 +461,7 @@ export function CompetenciesStage({
                     {technicalSkills.filter(s => s.category === 'language').map(renderSkillItem)}
                     <button
                       onClick={() => onShowAddSkillModal?.('language')}
-                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors flex items-center justify-center gap-2"
+                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
                       aria-label="Adicionar linguagem de programação"
                     >
                       <Plus className="w-3.5 h-3.5" /> Adicionar linguagem
@@ -480,7 +480,7 @@ export function CompetenciesStage({
                     {technicalSkills.filter(s => s.category === 'framework').map(renderSkillItem)}
                     <button
                       onClick={() => onShowAddSkillModal?.('framework')}
-                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors flex items-center justify-center gap-2"
+                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
                       aria-label="Adicionar framework"
                     >
                       <Plus className="w-3.5 h-3.5" /> Adicionar framework
@@ -499,7 +499,7 @@ export function CompetenciesStage({
                     {technicalSkills.filter(s => s.category === 'database').map(renderSkillItem)}
                     <button
                       onClick={() => onShowAddSkillModal?.('database')}
-                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors flex items-center justify-center gap-2"
+                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
                       aria-label="Adicionar banco de dados"
                     >
                       <Plus className="w-3.5 h-3.5" /> Adicionar banco
@@ -518,7 +518,7 @@ export function CompetenciesStage({
                     {technicalSkills.filter(s => s.category === 'tool').map(renderSkillItem)}
                     <button
                       onClick={() => onShowAddSkillModal?.('tool')}
-                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors flex items-center justify-center gap-2"
+                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
                       aria-label="Adicionar ferramenta ou plataforma"
                     >
                       <Plus className="w-3.5 h-3.5" /> Adicionar ferramenta
@@ -537,7 +537,7 @@ export function CompetenciesStage({
                     {technicalSkills.filter(s => s.category === 'general').map(renderSkillItem)}
                     <button
                       onClick={() => onShowAddSkillModal?.('general')}
-                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors flex items-center justify-center gap-2"
+                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
                       aria-label="Adicionar competência técnica geral"
                     >
                       <Plus className="w-3.5 h-3.5" /> Adicionar competência geral
@@ -557,7 +557,7 @@ export function CompetenciesStage({
                   {technicalSkills.map(renderSkillItem)}
                   <button
                     onClick={() => onShowAddSkillModal?.('tool')}
-                    className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
                     aria-label="Adicionar conhecimento técnico específico"
                   >
                     <Plus className="w-3.5 h-3.5" /> Adicionar conhecimento técnico
@@ -634,7 +634,7 @@ export function CompetenciesStage({
                           onClick={() => onSetBehavioralCompetencies(
                             behavioralCompetencies.map(c => c.id === comp.id ? { ...c, weight: w, isWeightInferred: false } : c)
                           )}
-                          className="transition-colors focus-visible:ring-2 focus-visible:ring-gray-400 rounded-md"
+                          className="transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-gray-400 rounded-md"
                           aria-label={`Definir peso ${w}`}
                         >
                           <Star
@@ -651,7 +651,7 @@ export function CompetenciesStage({
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <button className="ml-0.5 p-0.5 text-status-warning hover:text-status-warning transition-colors focus-visible:ring-2 focus-visible:ring-gray-400 rounded-md" aria-label="Ver sugestão de peso da LIA">
+                              <button className="ml-0.5 p-0.5 text-status-warning hover:text-status-warning transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-gray-400 rounded-md" aria-label="Ver sugestão de peso da LIA">
                                 <Lightbulb className="w-3.5 h-3.5 fill-amber-100" />
                               </button>
                             </TooltipTrigger>
@@ -670,14 +670,14 @@ export function CompetenciesStage({
                     </div>
                     <button
                       onClick={() => onEditCompetency?.(comp)}
-                      className="p-1 lia-text-secondary hover:lia-text-strong dark:hover:lia-text-subtle transition-colors"
+                      className="p-1 lia-text-secondary hover:lia-text-strong dark:hover:lia-text-subtle transition-colors motion-reduce:transition-none"
                       aria-label={`Editar competência: ${comp.name}`}
                     >
                       <Edit2 className="w-3 h-3" />
                     </button>
                     <button
                       onClick={() => onSetBehavioralCompetencies(behavioralCompetencies.filter(c => c.id !== comp.id))}
-                      className="p-1 lia-text-secondary hover:text-status-error transition-colors"
+                      className="p-1 lia-text-secondary hover:text-status-error transition-colors motion-reduce:transition-none"
                       aria-label={`Remover competência: ${comp.name}`}
                     >
                       <Trash2 className="w-3 h-3" />
@@ -692,7 +692,7 @@ export function CompetenciesStage({
 
             <button
               onClick={onShowAddCompetencyModal}
-              className="w-full py-2 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors flex items-center justify-center gap-2"
+              className="w-full py-2 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
               aria-label="Adicionar competência comportamental"
             >
               <Plus className="w-3.5 h-3.5" /> Adicionar competência

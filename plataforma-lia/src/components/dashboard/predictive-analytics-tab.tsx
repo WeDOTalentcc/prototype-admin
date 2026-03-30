@@ -255,7 +255,7 @@ export function PredictiveAnalyticsTab() {
           disabled={loading}
           className="gap-2"
         >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin motion-reduce:animate-none' : ''}`} />
           Atualizar
         </Button>
       </div>

@@ -283,7 +283,7 @@ export function useJobsPageCore(props: JobsPageProps) {
     return (
       <div className="h-full flex items-center justify-center bg-gray-50 dark:bg-lia-bg-primary">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-lia-border-default border-t-gray-600 rounded-full animate-spin mx-auto mb-3" />
+          <div className="w-8 h-8 border-2 border-lia-border-default border-t-gray-600 rounded-full animate-spin motion-reduce:animate-none mx-auto mb-3" />
           <p className="text-base-ui text-lia-text-tertiary dark:text-lia-text-tertiary">Carregando vaga...</p>
         </div>
       </div>

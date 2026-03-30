@@ -115,11 +115,11 @@ export function ArchetypesList({
               <button
                 onClick={onCreateFromActiveSearch}
                 disabled={isCreatingFromSearch}
-                className="mt-3 w-full px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 text-xs rounded-md transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="mt-3 w-full px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 text-xs rounded-md transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isCreatingFromSearch ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
                     Salvando arquétipo...
                   </>
                 ) : (
@@ -132,7 +132,7 @@ export function ArchetypesList({
             ) : (
               <button
                 onClick={() => onUseAsBase(naturalSearchValue)}
-                className="mt-3 w-full px-3 py-1.5 bg-gray-100 lia-text-800 dark:text-lia-text-primary text-xs rounded-md hover:bg-gray-200 transition-colors flex items-center justify-center gap-1.5"
+                className="mt-3 w-full px-3 py-1.5 bg-gray-100 lia-text-800 dark:text-lia-text-primary text-xs rounded-md hover:bg-gray-200 transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5"
               >
                 <Plus className="w-3 h-3" />
                 Usar como base para novo arquétipo
@@ -164,11 +164,11 @@ export function ArchetypesList({
         <button
           onClick={() => onCreateFromDescription(newArchetypeDescription)}
           disabled={isCreatingArchetype || !newArchetypeDescription.trim()}
-          className="w-full px-3 py-2 bg-gray-900 text-white text-xs rounded-md hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full px-3 py-2 bg-gray-900 text-white text-xs rounded-md hover:bg-gray-800 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isCreatingArchetype ? (
             <>
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
               Criando arquétipo...
             </>
           ) : (
@@ -215,7 +215,7 @@ export function ArchetypesList({
           {filteredArchetypes.length === 0 ? (
             <div className="text-center py-6 lia-text-500">
               <Target className="w-8 h-8 mx-auto mb-2 opacity-30" />
-              <p className="text-xs">Nenhum arquétipo encontrado</p>
+              <p className="text-xs" aria-live="polite" aria-atomic="true">Nenhum arquétipo encontrado</p>
               <p className="text-micro lia-text-400 mt-1">Crie um novo acima para começar</p>
             </div>
           ) : (
@@ -225,14 +225,14 @@ export function ArchetypesList({
               return (
                 <div
                   key={arch.id}
-                  className="group relative p-3 rounded-md border border-lia-border-subtle bg-lia-bg-primary hover:border-gray-400 transition-colors cursor-pointer"
+                  className="group relative p-3 rounded-md border border-lia-border-subtle bg-lia-bg-primary hover:border-gray-400 transition-colors motion-reduce:transition-none cursor-pointer"
                   onClick={() => onSelectArchetype(arch.id, query)}
                 >
                   {/* Edit/Delete */}
-                  <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none">
                     <button
                       onClick={(e) => onEditArchetype(arch, e)}
-                      className="p-1 rounded-md hover:bg-gray-100 transition-colors"
+                      className="p-1 rounded-md hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                       title="Editar arquétipo"
                     >
                       <Pencil className="w-3.5 h-3.5 lia-text-400 hover:lia-text-600" />
@@ -240,11 +240,11 @@ export function ArchetypesList({
                     <button
                       onClick={(e) => onDeleteArchetype(arch, e)}
                       disabled={isDeletingArchetype === arch.id}
-                      className="p-1 rounded-md hover:bg-status-error/10 transition-colors"
+                      className="p-1 rounded-md hover:bg-status-error/10 transition-colors motion-reduce:transition-none"
                       title="Excluir arquétipo"
                     >
                       {isDeletingArchetype === arch.id ? (
-                        <Loader2 className="w-3.5 h-3.5 lia-text-400 animate-spin" />
+                        <Loader2 className="w-3.5 h-3.5 lia-text-400 animate-spin motion-reduce:animate-none" />
                       ) : (
                         <Trash2 className="w-3.5 h-3.5 lia-text-400 hover:text-status-error" />
                       )}

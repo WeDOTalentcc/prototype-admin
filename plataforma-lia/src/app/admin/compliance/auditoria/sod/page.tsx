@@ -279,7 +279,7 @@ export default function SoDPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:lia-divide-700">
                   {conflictMatrix.map((item, index) => (
-                    <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                    <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors motion-reduce:transition-none">
                       <td className="px-6 py-4">
                         <span className="text-sm font-medium lia-text-950 dark:lia-text-50">{item.functionA}</span>
                       </td>
@@ -333,7 +333,7 @@ export default function SoDPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:lia-divide-700">
                   {detectedConflicts.map((conflict) => (
-                    <tr key={conflict.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                    <tr key={conflict.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors motion-reduce:transition-none">
                       <td className="px-6 py-4">
                         <div>
                           <p className="text-sm font-medium lia-text-950 dark:lia-text-50">{conflict.user}</p>

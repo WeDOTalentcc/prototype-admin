@@ -245,13 +245,13 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
         <div className="space-y-3">
           <button
             onClick={() => window.location.href = '/login'}
-            className="w-full text-white px-6 py-2 rounded-md hover:opacity-90 transition-colors bg-gray-900"
+            className="w-full text-white px-6 py-2 rounded-md hover:opacity-90 transition-colors motion-reduce:transition-none bg-gray-900"
           >
             Fazer Login
           </button>
           <button
             onClick={() => window.location.href = '/demo-onboarding'}
-            className="w-full bg-gray-700 text-white px-6 py-2 rounded-md hover:bg-gray-800 transition-colors"
+            className="w-full bg-gray-700 text-white px-6 py-2 rounded-md hover:bg-gray-800 transition-colors motion-reduce:transition-none"
            
           >
             🚀 Demonstração do Onboarding

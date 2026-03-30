@@ -62,7 +62,7 @@ export function JobPreviewPanel({
               >
                 {/* Resize Handle - Left Side */}
                 <div
-                  className="absolute left-0 top-0 bottom-0 w-1 cursor-ew-resize bg-gray-400/30 hover:bg-gray-400 transition-colors group-hover:opacity-100 opacity-0 z-10"
+                  className="absolute left-0 top-0 bottom-0 w-1 cursor-ew-resize bg-gray-400/30 hover:bg-gray-400 transition-colors motion-reduce:transition-none group-hover:opacity-100 opacity-0 z-10"
                   onMouseDown={(e) => {
                     e.preventDefault()
                     onResizeStart()
@@ -296,7 +296,7 @@ export function JobPreviewPanel({
                   <div className="flex items-center px-3">
                     <button
                       onClick={() => onTabChange('screening')}
-                      className={`px-2 py-2 text-micro font-medium border-b transition-colors ${
+                      className={`px-2 py-2 text-micro font-medium border-b transition-colors motion-reduce:transition-none ${
                         activePreviewTab === 'screening'
                           ? 'border-gray-900 text-lia-text-secondary font-semibold'
                           : 'border-transparent text-lia-text-tertiary hover:text-lia-text-secondary'

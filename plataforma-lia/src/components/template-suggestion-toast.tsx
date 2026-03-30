@@ -117,7 +117,7 @@ export function TemplateSuggestionToast({
 
   return (
     <div
-      className={`fixed ${getPositionClasses()} z-50 transform transition-colors duration-300 ease-in-out ${
+      className={`fixed ${getPositionClasses()} z-50 transform transition-colors motion-reduce:transition-none duration-300 ease-in-out ${
         isDismissing ? 'translate-y-full opacity-0' : 'translate-y-0 opacity-100'
       }`}
     >
@@ -201,7 +201,7 @@ export function TemplateSuggestionToast({
             <span>💡 LIA Intelligence</span>
             <button
               onClick={() => {/* Abrir configurações */}}
-              className="hover:lia-text-base transition-colors"
+              className="hover:lia-text-base transition-colors motion-reduce:transition-none"
             >
               <Settings className="w-3 h-3" />
             </button>

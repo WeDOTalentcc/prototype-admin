@@ -126,13 +126,13 @@ export function HistorySection({
           onClick={() => fetchCommunicationHistory()}
           disabled={historyLoading}
         >
-          <RefreshCw className={`w-4 h-4 ${historyLoading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`w-4 h-4 ${historyLoading ? 'animate-spin motion-reduce:animate-none' : ''}`} />
         </Button>
       </div>
 
       {historyLoading && communicationLogs.length === 0 ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin lia-text-700 dark:text-lia-text-secondary" />
+        <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-700 dark:text-lia-text-secondary" />
           <span className="ml-3 text-sm lia-text-500 dark:text-lia-text-tertiary" >
             Carregando histórico...
           </span>
@@ -258,7 +258,7 @@ export function HistorySection({
               {filteredLogs.map(log => (
                 <div
                   key={log.id}
-                  className="flex items-center justify-between p-3 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors border-lia-border-subtle dark:border-lia-border-subtle"
+                  className="flex items-center justify-between p-3 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors motion-reduce:transition-none border-lia-border-subtle dark:border-lia-border-subtle"
                   
                 >
                   <div className="flex items-center gap-3">

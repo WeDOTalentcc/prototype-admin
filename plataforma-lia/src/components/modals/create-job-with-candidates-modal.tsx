@@ -171,7 +171,7 @@ export function CreateJobWithCandidatesModal({
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-md hover:bg-gray-800 text-lia-text-disabled hover:text-lia-text-inverse transition-colors"
+              className="p-2 rounded-md hover:bg-gray-800 text-lia-text-disabled hover:text-lia-text-inverse transition-colors motion-reduce:transition-none"
               aria-label="Fechar modal"
             >
               <X className="w-4 h-4" />

@@ -126,7 +126,7 @@ export function SearchModeArchetypes({
         </button>
         <button
           onClick={() => onArchetypeTabChange("create")}
-          className="flex items-center gap-1 h-7 px-3 rounded-md text-xs font-medium transition-colors ring-1 ring-gray-300 hover:ring-gray-400 hover:bg-gray-50 bg-lia-bg-primary"
+          className="flex items-center gap-1 h-7 px-3 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none ring-1 ring-gray-300 hover:ring-gray-400 hover:bg-gray-50 bg-lia-bg-primary"
         >
           <Plus className="w-3 h-3" />
           Criar Novo
@@ -152,8 +152,8 @@ export function SearchModeArchetypes({
           </div>
 
           {isLoadingArchetypes ? (
-            <div className="flex items-center justify-center py-6">
-              <Loader2 className="w-5 h-5 animate-spin lia-text-700" />
+            <div className="flex items-center justify-center py-6" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none lia-text-700" />
               <span className="ml-2 text-sm lia-text-500 dark:text-lia-text-tertiary">
                 Carregando arquétipos...
               </span>
@@ -161,7 +161,7 @@ export function SearchModeArchetypes({
           ) : filteredArchetypes.length === 0 ? (
             <div className="text-center py-6">
               <Target className="w-8 h-8 mx-auto mb-2 lia-text-500 dark:text-lia-text-tertiary" />
-              <p className="text-sm lia-text-500 dark:text-lia-text-tertiary">
+              <p className="text-sm lia-text-500 dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
                 {archetypeVacancies.length === 0
                   ? "Nenhum arquétipo encontrado"
                   : "Nenhum arquétipo corresponde à busca"}
@@ -402,7 +402,7 @@ export function SearchModeArchetypes({
                               className="text-xs px-2 text-status-error"
                             >
                               {isDeletingArchetype === arch.id ? (
-                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
                               ) : (
                                 <Trash2 className="w-3.5 h-3.5" />
                               )}
@@ -432,7 +432,7 @@ export function SearchModeArchetypes({
                   value={archetypeSearchPrompt}
                   onChange={(e) => onArchetypeSearchPromptChange(e.target.value)}
                   placeholder="Descreva o perfil do arquétipo..."
-                  className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[60px] transition-colors border bg-[var(--lia-bg-primary)] lia-text-950"
+                  className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[60px] transition-colors motion-reduce:transition-none border bg-[var(--lia-bg-primary)] lia-text-950"
                   rows={2}
                 />
                 {onSearchSourceChange && (
@@ -469,7 +469,7 @@ export function SearchModeArchetypes({
                     ? `Buscar perfis similares a "${selectedArchetype.title}"...`
                     : "Selecione um arquétipo acima para buscar..."
                 }
-                className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-14 transition-colors border bg-[var(--lia-bg-primary)] lia-text-950"
+                className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-14 transition-colors motion-reduce:transition-none border bg-[var(--lia-bg-primary)] lia-text-950"
                 rows={2}
                 disabled={!selectedArchetype}
               />
@@ -541,7 +541,7 @@ export function SearchModeArchetypes({
           {/* A partir de Vaga */}
           {archetypeCreateMode === "job" && (
             <div className="space-y-2">
-              <p className="text-xs lia-text-500 dark:text-lia-text-tertiary">
+              <p className="text-xs lia-text-500 dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
                 Busque por nome ou ID da vaga para criar um arquétipo:
               </p>
 
@@ -560,23 +560,23 @@ export function SearchModeArchetypes({
                   className="w-full pl-8 pr-3 py-2 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-lia-border-subtle"
                 />
                 {isSearchingJobs && (
-                  <Loader2 className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 animate-spin lia-text-700" />
+                  <Loader2 className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 animate-spin motion-reduce:animate-none lia-text-700" />
                 )}
               </div>
 
               {jobSearchQuery.trim() && (
-                <div className="max-h-[200px] overflow-y-auto space-y-1.5 rounded-md border border-lia-border-subtle">
+                <div className="max-h-[200px] overflow-y-auto space-y-1.5 rounded-md border border-lia-border-subtle" role="status" aria-live="polite" aria-label="Carregando...">
                   {isSearchingJobs ? (
-                    <div className="flex items-center justify-center py-4">
-                      <Loader2 className="w-4 h-4 animate-spin lia-text-700" />
-                      <span className="ml-2 text-xs lia-text-500 dark:text-lia-text-tertiary">
+                    <div className="flex items-center justify-center py-4" role="status" aria-live="polite" aria-label="Carregando...">
+                      <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-700" />
+                      <span className="ml-2 text-xs lia-text-500 dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
                         Buscando vagas...
                       </span>
                     </div>
                   ) : jobSearchResults.length === 0 ? (
                     <div className="text-center py-4 px-3">
                       <Briefcase className="w-5 h-5 mx-auto mb-1.5" />
-                      <p className="text-xs lia-text-400">
+                      <p className="text-xs lia-text-400" aria-live="polite" aria-atomic="true">
                         Nenhuma vaga encontrada para "{jobSearchQuery}"
                       </p>
                     </div>
@@ -585,7 +585,7 @@ export function SearchModeArchetypes({
                       <button
                         key={job.id}
                         onClick={() => onOpenArchetypeFromJob(job)}
-                        className="w-full p-2.5 text-left transition-colors hover:bg-gray-50 border-b border-lia-border-subtle last:border-b-0"
+                        className="w-full p-2.5 text-left transition-colors motion-reduce:transition-none hover:bg-gray-50 border-b border-lia-border-subtle last:border-b-0"
                       >
                         <div className="flex items-start gap-2">
                           <Briefcase className="w-4 h-4 mt-0.5 flex-shrink-0 lia-text-600" />
@@ -659,7 +659,7 @@ export function SearchModeArchetypes({
               {!jobSearchQuery.trim() && (
                 <div className="text-center py-4 px-3 rounded-md border border-dashed border-lia-border-subtle">
                   <Search className="w-5 h-5 mx-auto mb-1.5" />
-                  <p className="text-xs lia-text-400">
+                  <p className="text-xs lia-text-400" aria-live="polite" aria-atomic="true">
                     Digite o nome ou ID da vaga para buscar
                   </p>
                 </div>
@@ -698,7 +698,7 @@ export function SearchModeArchetypes({
               >
                 {isCreatingArchetype ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                    <Loader2 className="w-4 h-4 mr-1 animate-spin motion-reduce:animate-none" />
                     Criando...
                   </>
                 ) : (
@@ -815,7 +815,7 @@ function ScopeButtons({
                 className="!animate-none !duration-0"
               >
                 <p className="text-xs font-medium">Expanda sua busca</p>
-                <p className="text-xs lia-text-300">Local + Global • 1 crédito/candidato</p>
+                <p className="text-xs lia-text-300" aria-live="polite" aria-atomic="true">Local + Global • 1 crédito/candidato</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -848,7 +848,7 @@ function ScopeButtons({
                 className="!animate-none !duration-0"
               >
                 <p className="text-xs font-medium">Alcance global</p>
-                <p className="text-xs lia-text-300">800M+ candidatos • 1 crédito/candidato</p>
+                <p className="text-xs lia-text-300" aria-live="polite" aria-atomic="true">800M+ candidatos • 1 crédito/candidato</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -940,7 +940,7 @@ function ScopeButtons({
                 )}
               >
                 {isLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                 ) : (
                   <Search className="w-4 h-4" />
                 )}

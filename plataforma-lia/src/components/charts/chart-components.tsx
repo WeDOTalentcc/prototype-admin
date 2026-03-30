@@ -11,7 +11,7 @@ interface ChartContainerProps {
 
 export function ChartContainer({ title, description, children, className = "" }: ChartContainerProps) {
   return (
-    <div className={`bg-white dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle p-6 transition-colors duration-200 ${className}`}>
+    <div className={`bg-white dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle p-6 transition-colors motion-reduce:transition-none duration-200 ${className}`}>
       <div className="mb-4">
         <h3 className="text-sm font-semibold font-sans text-lia-text-primary">{title}</h3>
         {description && (
@@ -74,7 +74,7 @@ export function MetricCard({ title, value, trend, trendValue, icon, description 
   }
 
   return (
-    <div className="bg-white dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle p-6 transition-colors duration-200">
+    <div className="bg-white dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle p-6 transition-colors motion-reduce:transition-none duration-200">
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <p className="text-xs text-lia-text-primary dark:text-lia-text-primary font-medium uppercase tracking-wide">
@@ -147,7 +147,7 @@ export function DonutChart({ data, centerText }: DonutChartProps) {
                 strokeDasharray={strokeDasharray}
                 strokeDashoffset={strokeDashoffset}
                 strokeLinecap="round"
-                className="transition-colors duration-500"
+                className="transition-colors motion-reduce:transition-none duration-500"
               />
             )
           })}
@@ -205,7 +205,7 @@ export function LineChart({ data, color = "var(--gray-500)" }: LineChartProps) {
           stroke={color}
           strokeWidth="2"
           points={points}
-          className="transition-colors duration-500"
+          className="transition-colors motion-reduce:transition-none duration-500"
         />
         {data.map((item, index) => {
           const x = (index / (data.length - 1)) * 200
@@ -217,7 +217,7 @@ export function LineChart({ data, color = "var(--gray-500)" }: LineChartProps) {
               cy={y}
               r="3"
               fill={color}
-              className="transition-colors duration-500"
+              className="transition-colors motion-reduce:transition-none duration-500"
             />
           )
         })}

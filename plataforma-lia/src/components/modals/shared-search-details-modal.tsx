@@ -298,8 +298,8 @@ export function SharedSearchDetailsModal({
         </DialogHeader>
 
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-zinc-500" />
+          <div className="flex items-center justify-center py-20" role="status" aria-live="polite" aria-label="Carregando...">
+            <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none text-zinc-500" />
           </div>
         ) : sharedSearch ? (
           <>
@@ -343,7 +343,7 @@ export function SharedSearchDetailsModal({
                           {totalEvaluated}/{totalCandidates}
                         </span>
                       </div>
-                      <p className="text-zinc-500 text-micro mt-0.5">candidatos avaliados</p>
+                      <p className="text-zinc-500 text-micro mt-0.5" aria-live="polite" aria-atomic="true">candidatos avaliados</p>
                     </div>
                   </div>
                 </div>
@@ -450,7 +450,7 @@ export function SharedSearchDetailsModal({
                           key={candidate.id}
                           className={cn(
                             "bg-zinc-800 rounded-md p-3 border border-zinc-700 flex items-start gap-3",
-                            "hover:border-zinc-600 transition-colors"
+                            "hover:border-zinc-600 transition-colors motion-reduce:transition-none"
                           )}
                         >
                           <Checkbox

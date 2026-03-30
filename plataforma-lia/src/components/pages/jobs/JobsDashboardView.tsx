@@ -39,21 +39,21 @@ export function JobsDashboardView({
                 }}
                 className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-lia-text-primary hover:bg-gray-900 hover:text-white font-open-sans"
               >
-                <Plus className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors" />
+                <Plus className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors motion-reduce:transition-none" />
                 Criar nova vaga
               </button>
               <button
                 onClick={() => onSetActiveFilter('ativas')}
                 className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-lia-text-primary hover:bg-gray-900 hover:text-white font-open-sans"
               >
-                <Briefcase className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors" />
+                <Briefcase className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors motion-reduce:transition-none" />
                 Ver minhas vagas
               </button>
               <button
                 onClick={() => onSetActiveFilter('todas')}
                 className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-lia-text-primary hover:bg-gray-900 hover:text-white font-open-sans"
               >
-                <Building2 className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors" />
+                <Building2 className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors motion-reduce:transition-none" />
                 Ver todas as vagas
               </button>
               <button
@@ -63,7 +63,7 @@ export function JobsDashboardView({
                 }}
                 className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-lia-text-primary hover:bg-gray-900 hover:text-white font-open-sans"
               >
-                <BarChart3 className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors" />
+                <BarChart3 className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors motion-reduce:transition-none" />
                 Resumo das vagas
               </button>
               <LiaVacancyQueriesGuide
@@ -76,7 +76,7 @@ export function JobsDashboardView({
           </div>
 
           <div className="px-4 pt-4 pb-4">
-            <div className="flex items-center gap-3 px-4 py-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle transition-colors focus-within:border-gray-400 focus-within:ring-1 focus-within:ring-gray-900/20">
+            <div className="flex items-center gap-3 px-4 py-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle transition-colors motion-reduce:transition-none focus-within:border-gray-400 focus-within:ring-1 focus-within:ring-gray-900/20">
               <input
                 type="text"
                 placeholder="Como posso te ajudar com suas vagas hoje?"
@@ -98,12 +98,12 @@ export function JobsDashboardView({
               <div className="flex items-center gap-1">
                 <AudioRecordButton
                   onTranscription={(text) => onSetLiaPromptValue(liaPromptValue ? `${liaPromptValue} ${text}` : text)}
-                  className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-gray-100 transition-colors"
+                  className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                 />
               </div>
               
               <button
-                className="flex items-center justify-center hover:opacity-70 transition-opacity"
+                className="flex items-center justify-center hover:opacity-70 transition-opacity motion-reduce:transition-none"
                 onClick={() => {
                   if (liaPromptValue.trim()) {
                     onSetActiveFilter('todas')

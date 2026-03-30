@@ -60,7 +60,7 @@ export function MatrixSection({
             onClick={fetchMatrixEntries}
             disabled={matrixLoading}
           >
-            <RefreshCw className={`w-4 h-4 ${matrixLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${matrixLoading ? 'animate-spin motion-reduce:animate-none' : ''}`} />
           </Button>
           <Button
             variant="outline"
@@ -69,7 +69,7 @@ export function MatrixSection({
             disabled={seedingMatrix || matrixLoading}
           >
             {seedingMatrix ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
             ) : (
               <Plus className="w-4 h-4 mr-2" />
             )}
@@ -107,8 +107,8 @@ export function MatrixSection({
       </div>
 
       {matrixLoading && matrixModules.length === 0 ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin lia-text-700 dark:text-lia-text-secondary" />
+        <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-700 dark:text-lia-text-secondary" />
           <span className="ml-3 text-sm lia-text-500 dark:text-lia-text-tertiary" >
             Carregando matriz...
           </span>
@@ -129,7 +129,7 @@ export function MatrixSection({
             disabled={seedingMatrix}
           >
             {seedingMatrix ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
             ) : (
               <Plus className="w-4 h-4 mr-2" />
             )}
@@ -174,7 +174,7 @@ export function MatrixSection({
                       return (
                         <div
                           key={entry.id}
- className={`p-4 rounded-md border transition-opacity border-lia-border-subtle dark:border-lia-border-subtle ${entry.isActive ? 'bg-white' : 'bg-gray-50 dark:bg-lia-bg-secondary/50 opacity-60'}`}
+ className={`p-4 rounded-md border transition-opacity motion-reduce:transition-none border-lia-border-subtle dark:border-lia-border-subtle ${entry.isActive ? 'bg-white' : 'bg-gray-50 dark:bg-lia-bg-secondary/50 opacity-60'}`}
                         >
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1 min-w-0">
@@ -220,7 +220,7 @@ export function MatrixSection({
                                       key={channel}
                                       onClick={() => handleToggleMatrixChannel(entry, channel)}
                                       disabled={isUpdating}
-                                      className={`px-2 py-0.5 rounded-md text-xs font-medium transition-colors cursor-pointer ${isActive ? config.activeColor : config.color} ${isUpdating ? 'opacity-50' : 'hover:opacity-80'}`}
+                                      className={`px-2 py-0.5 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none cursor-pointer ${isActive ? config.activeColor : config.color} ${isUpdating ? 'opacity-50' : 'hover:opacity-80'}`}
                                     >
                                       {config.label}
                                     </button>
@@ -241,9 +241,9 @@ export function MatrixSection({
                               )}
                             </div>
                             
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
                               {isUpdating && (
-                                <Loader2 className="w-4 h-4 animate-spin lia-text-700 dark:text-lia-text-secondary" />
+                                <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-700 dark:text-lia-text-secondary" />
                               )}
                               <Switch
                                 checked={entry.isActive}

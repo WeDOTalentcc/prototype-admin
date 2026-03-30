@@ -446,7 +446,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
     if (loading) {
       return (
         <div className="space-y-6">
-          <Card className="border-0 rounded-md backdrop-blur-sm animate-pulse">
+          <Card className="border-0 rounded-md backdrop-blur-sm animate-pulse motion-reduce:animate-none">
             <CardHeader className="pb-4">
               <div className="h-5 w-48 rounded-md bg-gray-400 opacity-30"></div>
             </CardHeader>
@@ -502,7 +502,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                 >
                   {savingStages ? (
                     <>
-                      <Loader2 className={`${actionButtonStyles.icon} animate-spin`} />
+                      <Loader2 className={`${actionButtonStyles.icon} animate-spin motion-reduce:animate-none`} />
                       Salvando...
                     </>
                   ) : (
@@ -568,7 +568,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                 <MessageSquare className="w-3.5 h-3.5 lia-text-700 dark:text-lia-text-secondary" />
                 Catálogo de Perguntas de Elegibilidade
               </CardTitle>
-              <p className={`${textStyles.description} mt-1`}>
+              <p className={`${textStyles.description} mt-1`} aria-live="polite" aria-atomic="true">
                 Perguntas padrão da empresa — aparecem ativas em todas as vagas por padrão. O recrutador pode desativar individualmente em cada vaga.
               </p>
             </div>
@@ -603,7 +603,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                   >
                     {savingQuestions ? (
                       <>
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
                         Salvando...
                       </>
                     ) : (
@@ -657,7 +657,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                     <div key={category} className="border border-lia-border-subtle rounded-md overflow-hidden">
                       <button
                         onClick={() => toggleCategory(category)}
-                        className="w-full flex items-center justify-between p-2.5 bg-gray-50 hover:bg-gray-100 transition-colors"
+                        className="w-full flex items-center justify-between p-2.5 bg-gray-50 hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                       >
                         <div className="flex items-center gap-2">
                           <span className="text-sm">{categoryInfo.icon}</span>
@@ -684,7 +684,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                             return (
                               <div 
                                 key={q.id}
-                                className={`flex items-start gap-2 p-2 rounded-md border transition-colors ${
+                                className={`flex items-start gap-2 p-2 rounded-md border transition-colors motion-reduce:transition-none ${
                                   isAdded 
                                     ? 'bg-gray-100 border-lia-border-subtle opacity-60 dark:bg-lia-bg-elevated dark:border-lia-border-default' 
                                     : isSelected 
@@ -818,7 +818,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                         Não
                       </label>
                     </div>
-                    <p className={`${textStyles.caption} text-status-error mt-2`}>
+                    <p className={`${textStyles.caption} text-status-error mt-2`} aria-live="polite" aria-atomic="true">
                       Se o candidato responder diferente, será avisado e poderá reconsiderar ou ir para o banco de talentos.
                     </p>
                   </div>
@@ -840,19 +840,19 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
             {questions.map((q, index) => (
               <div 
                 key={q.id} 
-                className={`flex items-center gap-3 p-3 rounded-md border group transition-colors ${
+                className={`flex items-center gap-3 p-3 rounded-md border group transition-colors motion-reduce:transition-none ${
                   isEditingQuestions 
                     ? 'bg-gray-50 dark:bg-lia-bg-secondary/50 border-lia-border-subtle dark:border-lia-border-subtle' 
                     : 'bg-gray-50/60 dark:bg-lia-bg-secondary/30 border-lia-border-subtle/60 dark:border-lia-border-subtle/60'
                 }`}
               >
                 <div 
-                  className={`flex items-center justify-center w-6 h-6 rounded-full bg-gray-900 text-white dark:lia-bg-50 dark:lia-text-900 transition-opacity ${!isEditingQuestions ? 'opacity-60' : ''} ${textStyles.labelSmall}`}
+                  className={`flex items-center justify-center w-6 h-6 rounded-full bg-gray-900 text-white dark:lia-bg-50 dark:lia-text-900 transition-opacity motion-reduce:transition-none ${!isEditingQuestions ? 'opacity-60' : ''} ${textStyles.labelSmall}`}
                 >
                   {index + 1}
                 </div>
                 <div className="flex-1">
- <p className={`${textStyles.body} transition-colors ${isEditingQuestions ? 'lia-text-950' : 'lia-text-600 dark:text-lia-text-tertiary'}`}>
+ <p className={`${textStyles.body} transition-colors motion-reduce:transition-none ${isEditingQuestions ? 'lia-text-950' : 'lia-text-600 dark:text-lia-text-tertiary'}`}>
                     {q.question}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -873,7 +873,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                   </div>
                 </div>
                 {isEditingQuestions && (
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none">
                     <Button
                       variant="ghost"
                       size="sm"

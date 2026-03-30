@@ -167,7 +167,7 @@ export function VoiceChatButton({
     if (isProcessing) {
       return (
         <>
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />
           <span className="text-xs ml-1">Processando...</span>
         </>
       )
@@ -226,7 +226,7 @@ export function VoiceChatButton({
       className={cn(
         "transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-gray-400",
         isRecording 
-          ? "text-status-error hover:text-status-error hover:bg-status-error/10 animate-pulse px-3" 
+          ? "text-status-error hover:text-status-error hover:bg-status-error/10 animate-pulse motion-reduce:animate-none px-3" 
           : isPlaying 
             ? "lia-text-600 dark:text-lia-text-tertiary hover:text-wedo-cyan-dark hover:bg-gray-100 dark:bg-lia-bg-secondary px-3"
             : isProcessing

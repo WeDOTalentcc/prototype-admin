@@ -234,10 +234,10 @@ export function MessageComposer({
               LIA disponível
             </span>
           </div>
-          <div className="space-y-1.5 max-h-[150px] overflow-y-auto">
+          <div className="space-y-1.5 max-h-[150px] overflow-y-auto" role="status" aria-live="polite" aria-label="Carregando...">
             {templatesLoading ? (
-              <div className="flex items-center justify-center py-4">
-                <Loader2 className="w-4 h-4 animate-spin lia-text-base" />
+              <div className="flex items-center justify-center py-4" role="status" aria-live="polite" aria-label="Carregando...">
+                <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-base" />
                 <span className="text-xs lia-text-secondary ml-2">Carregando templates...</span>
               </div>
             ) : filteredTemplates.length === 0 ? (
@@ -249,7 +249,7 @@ export function MessageComposer({
                 <button
                   key={template.id}
                   onClick={() => handleTemplateSelect(template)}
-                  className={`w-full p-2.5 rounded-md border text-left transition-colors ${
+                  className={`w-full p-2.5 rounded-md border text-left transition-colors motion-reduce:transition-none ${
  selectedTemplateId === template.id
                       ? 'border-gray-500 bg-gray-50'
                       : 'border-lia-border-subtle hover:border-lia-border-default hover:bg-gray-50'
@@ -282,7 +282,7 @@ export function MessageComposer({
                   onSelect={insertVariableAtCursor}
                   trigger={
                     <button 
-                      className="text-micro flex items-center gap-1 px-2 py-1 rounded-full hover:bg-gray-100 transition-colors lia-text-base"
+                      className="text-micro flex items-center gap-1 px-2 py-1 rounded-full hover:bg-gray-100 transition-colors motion-reduce:transition-none lia-text-base"
                       onFocus={() => setFocusedField('subject')}
                     >
                       <span>Inserir Variável</span>
@@ -314,7 +314,7 @@ export function MessageComposer({
                 onSelect={insertVariableAtCursor}
                 trigger={
                   <button 
-                    className="text-micro flex items-center gap-1 px-2 py-1 rounded-full hover:bg-gray-100 transition-colors lia-text-base"
+                    className="text-micro flex items-center gap-1 px-2 py-1 rounded-full hover:bg-gray-100 transition-colors motion-reduce:transition-none lia-text-base"
                     onFocus={() => setFocusedField('message')}
                   >
                     <span>Inserir Variável</span>
@@ -382,7 +382,7 @@ export function MessageComposer({
               >
                 {isGenerating ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
                     Ajustando...
                   </>
                 ) : (
@@ -397,9 +397,9 @@ export function MessageComposer({
             {isGenerating && (
               <div className="flex items-center gap-2 p-2 rounded-md bg-wedo-cyan/[.08]">
                 <div className="flex gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900" style={{animationDelay: '0ms'}}></span>
-                  <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900" style={{animationDelay: '150ms'}}></span>
-                  <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900" style={{animationDelay: '300ms'}}></span>
+                  <span className="w-1.5 h-1.5 rounded-full animate-bounce motion-reduce:animate-none bg-gray-900" style={{animationDelay: '0ms'}}></span>
+                  <span className="w-1.5 h-1.5 rounded-full animate-bounce motion-reduce:animate-none bg-gray-900" style={{animationDelay: '150ms'}}></span>
+                  <span className="w-1.5 h-1.5 rounded-full animate-bounce motion-reduce:animate-none bg-gray-900" style={{animationDelay: '300ms'}}></span>
                 </div>
                 <span className="text-xs" style={{color: 'var(--wedo-cyan-dark)'}}>
                   A LIA está analisando e ajustando a mensagem...

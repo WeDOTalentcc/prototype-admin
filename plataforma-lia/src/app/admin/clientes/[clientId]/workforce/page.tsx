@@ -347,7 +347,7 @@ export default function ClientWorkforcePage({
                 <div className="flex items-start gap-3">
                   <DollarSign className="w-5 h-5 text-status-warning mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-status-warning dark:text-status-warning">
+                    <p className="text-sm font-medium text-status-warning dark:text-status-warning" aria-live="polite" aria-atomic="true">
                       {pendingBudgetApprovals.length} vaga(s) aguardando aprovação de budget
                     </p>
                     <p className="text-xs text-status-warning dark:text-status-warning mt-1">
@@ -391,7 +391,7 @@ export default function ClientWorkforcePage({
                 <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
                   {plan?.totalPlanned || 0}
                 </p>
-                <p className="text-xs mt-1 lia-text-400 dark:lia-text-500">
+                <p className="text-xs mt-1 lia-text-400 dark:lia-text-500" aria-live="polite" aria-atomic="true">
                   vagas no plano anual
                 </p>
               </div>
@@ -436,7 +436,7 @@ export default function ClientWorkforcePage({
                 <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
                   {plan?.totalOpen || 0}
                 </p>
-                <p className="text-xs mt-1 lia-text-400 dark:lia-text-500">
+                <p className="text-xs mt-1 lia-text-400 dark:lia-text-500" aria-live="polite" aria-atomic="true">
                   vagas abertas
                 </p>
               </div>
@@ -457,7 +457,7 @@ export default function ClientWorkforcePage({
                 <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
                   {departmentSummaries.length}
                 </p>
-                <p className="text-xs mt-1 lia-text-400 dark:lia-text-500">
+                <p className="text-xs mt-1 lia-text-400 dark:lia-text-500" aria-live="polite" aria-atomic="true">
                   com vagas planejadas
                 </p>
               </div>
@@ -591,7 +591,7 @@ export default function ClientWorkforcePage({
           {departmentSummaries.length === 0 ? (
             <div className="text-center py-8">
               <Building2 className="w-12 h-12 mx-auto mb-3 opacity-20" />
-              <p className="text-sm lia-text-400 dark:lia-text-500">
+              <p className="text-sm lia-text-400 dark:lia-text-500" aria-live="polite" aria-atomic="true">
                 Nenhuma vaga planejada para {selectedYear}
               </p>
             </div>
@@ -603,7 +603,7 @@ export default function ClientWorkforcePage({
                   className="border rounded-md overflow-hidden border-lia-border-subtle dark:border-lia-border-subtle"
                 >
                   <div 
-                    className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                    className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors motion-reduce:transition-none"
                     onClick={() => toggleDepartment(dept.name)}
                   >
                     <div className="flex items-center gap-3">

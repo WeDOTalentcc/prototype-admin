@@ -111,7 +111,7 @@ export function ChatPage() {
   return (
     <div className="flex overflow-hidden flex-1 bg-gray-50">
       {/* Main Chat Area */}
-      <div className={`flex flex-col transition-colors duration-300 overflow-hidden ${isPanelOpen ? 'w-3/5' : 'w-full'}`}>
+      <div className={`flex flex-col transition-colors motion-reduce:transition-none duration-300 overflow-hidden ${isPanelOpen ? 'w-3/5' : 'w-full'}`}>
         {/* Header */}
         <div className="py-3 px-6 flex-shrink-0 bg-gray-50 border-b border-lia-border-subtle">
           <div className="flex items-center justify-between">
@@ -132,7 +132,7 @@ export function ChatPage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowSearch(!showSearch)}
-                className="transition-transform duration-200 hover:scale-105"
+                className="transition-transform motion-reduce:transition-none duration-200 hover:scale-105"
                 title="Buscar na conversa (Ctrl+F)"
               >
                 <Search className="w-4 h-4" />
@@ -171,7 +171,7 @@ export function ChatPage() {
               <TabsList className="bg-transparent p-0 h-auto gap-4 border-b border-lia-border-subtle">
                 <TabsTrigger 
                   value="conversa" 
-                  className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-2 rounded-none border-b-2 border-transparent data-[state=active]:border-gray-900 dark:border-lia-border-medium transition-colors"
+                  className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-2 rounded-none border-b-2 border-transparent data-[state=active]:border-gray-900 dark:border-lia-border-medium transition-colors motion-reduce:transition-none"
                   style={{color: activeTab === 'conversa' ? 'var(--gray-950)' : 'var(--gray-500)'}} /* dynamic */
                 >
                   <MessageSquare className="w-4 h-4 mr-2" />
@@ -179,7 +179,7 @@ export function ChatPage() {
                 </TabsTrigger>
                 <TabsTrigger 
                   value="controle" 
-                  className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-2 rounded-none border-b-2 border-transparent data-[state=active]:border-gray-900 dark:border-lia-border-medium transition-colors"
+                  className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-2 rounded-none border-b-2 border-transparent data-[state=active]:border-gray-900 dark:border-lia-border-medium transition-colors motion-reduce:transition-none"
                   style={{color: activeTab === 'controle' ? 'var(--gray-950)' : 'var(--gray-500)'}} /* dynamic */
                 >
                   <Cpu className="w-4 h-4 mr-2" />
@@ -201,7 +201,7 @@ export function ChatPage() {
         {/* Messages com altura flexível e scroll */}
         <div
           ref={messagesContainerRef}
-          className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500 relative transition-colors duration-300 ${chatContainerClass} ${
+          className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500 relative transition-colors motion-reduce:transition-none duration-300 ${chatContainerClass} ${
             !isEmptyChat ? 'p-4' : ''
           }`}
           style={{scrollBehavior: 'smooth'}} /* dynamic - scroll-smooth class not fully equivalent */
@@ -277,13 +277,13 @@ export function ChatPage() {
 
           {isLoading && (
             <div className="flex justify-start">
-              <div className="flex items-start gap-1 max-w-4xl">
-                <div className="flex-shrink-0 pt-4">
+              <div className="flex items-start gap-1 max-w-4xl" role="status" aria-live="polite" aria-label="Carregando...">
+                <div className="flex-shrink-0 pt-4" role="status" aria-live="polite" aria-label="Carregando...">
                   <LIAIcon size="md" />
                 </div>
-                <div className="rounded-md p-5 flex-1 bg-gray-100">
-                  <div className="flex items-center space-x-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                <div className="rounded-md p-5 flex-1 bg-gray-100" role="status" aria-live="polite" aria-label="Carregando...">
+                  <div className="flex items-center space-x-2" role="status" aria-live="polite" aria-label="Carregando...">
+                    <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                     <span className="text-sm text-lia-text-tertiary">
                       LIA está digitando...
                     </span>
@@ -357,7 +357,7 @@ export function ChatPage() {
                             key={index}
                             size="sm"
                             onClick={() => setInput(suggestion)}
-                            className="text-xs h-7 px-3 transition-transform duration-200 hover:scale-105 text-lia-text-primary dark:text-lia-text-primary border border-lia-border-subtle bg-gray-50"
+                            className="text-xs h-7 px-3 transition-transform motion-reduce:transition-none duration-200 hover:scale-105 text-lia-text-primary dark:text-lia-text-primary border border-lia-border-subtle bg-gray-50"
                           >
                             {suggestion}
                           </Button>
@@ -385,7 +385,7 @@ export function ChatPage() {
                     </div>
                     <button
                       onClick={() => setFileValidationError(null)}
-                      className="p-1 rounded-full hover:bg-status-error/15 transition-colors"
+                      className="p-1 rounded-full hover:bg-status-error/15 transition-colors motion-reduce:transition-none"
                     >
                       <X className="w-3.5 h-3.5 text-status-error" />
                     </button>
@@ -414,7 +414,7 @@ export function ChatPage() {
                           </span>
                           <button
                             onClick={() => handleRemoveFile(index)}
-                            className="p-0.5 rounded-full hover:bg-gray-200 transition-colors"
+                            className="p-0.5 rounded-full hover:bg-gray-200 transition-colors motion-reduce:transition-none"
                           >
                             <X className="w-3 h-3 text-lia-text-tertiary" />
                           </button>
@@ -426,8 +426,8 @@ export function ChatPage() {
 
                 {/* Recording Indicator */}
                 {isRecording && (
-                  <div className="flex items-center gap-3 p-3 rounded-md mb-2 animate-pulse bg-status-error/10 border border-status-error/30">
-                    <div className="w-3 h-3 bg-status-error rounded-full animate-ping" />
+                  <div className="flex items-center gap-3 p-3 rounded-md mb-2 animate-pulse motion-reduce:animate-none bg-status-error/10 border border-status-error/30">
+                    <div className="w-3 h-3 bg-status-error rounded-full animate-ping motion-reduce:animate-none" />
                     <span className="text-sm font-medium text-status-error">
                       Gravando... {recordingTime}s
                     </span>
@@ -518,12 +518,12 @@ export function ChatPage() {
                 {activePendingAction && (
                   <div className="flex items-center gap-2 px-3 py-1.5 mb-2 rounded-md border text-xs bg-wedo-cyan/[0.08] border-wedo-cyan/[0.35] text-lia-text-tertiary"
                   >
-                    <span className="w-2 h-2 rounded-full bg-wedo-cyan animate-pulse shrink-0" />
+                    <span className="w-2 h-2 rounded-full bg-wedo-cyan animate-pulse motion-reduce:animate-none shrink-0" />
                     <span>
                       Ação em andamento: <strong className="text-lia-text-primary">{activePendingAction.intent.replace(/_/g, " ")}</strong>
                     </span>
                     <button
-                      className="ml-auto text-xs hover:opacity-80 transition-opacity text-lia-text-disabled"
+                      className="ml-auto text-xs hover:opacity-80 transition-opacity motion-reduce:transition-none text-lia-text-disabled"
                       onClick={() => handleSendMessage("cancelar")}
                       type="button"
                     >
@@ -551,7 +551,7 @@ export function ChatPage() {
                       variant="ghost" 
                       size="sm" 
                       onClick={activateSmartSearch}
-                      className="transition-transform duration-200 hover:scale-105"
+                      className="transition-transform motion-reduce:transition-none duration-200 hover:scale-105"
                       title="Busca avançada de candidatos"
                     >
                       <Search className="w-4 h-4" />
@@ -578,7 +578,7 @@ export function ChatPage() {
                       onClick={() => handleSendMessage()}
                       disabled={!input.trim() || isLoading || emptyFieldNotifications.hasPendingNotifications}
                       size="sm"
-                      className="transition-transform duration-200 hover:scale-105 disabled:hover:scale-100 disabled:opacity-50 bg-gray-800 text-white"
+                      className="transition-transform motion-reduce:transition-none duration-200 hover:scale-105 disabled:hover:scale-100 disabled:opacity-50 bg-gray-800 text-white"
                       title={emptyFieldNotifications.hasPendingNotifications ? "Resolva as pendências acima para continuar" : undefined}
                     >
                       <Send className="w-4 h-4" />
@@ -713,7 +713,7 @@ export function ChatPage() {
                   salary_max: 25000,
                   benefits: []
                 }, "Remuneração e Benefícios")}
-                className="px-3 py-1.5 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 rounded-md transition-colors"
+                className="px-3 py-1.5 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 rounded-md transition-colors motion-reduce:transition-none"
               >
                 Debug Panel
               </button>

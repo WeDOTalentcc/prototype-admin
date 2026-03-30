@@ -169,7 +169,7 @@ function DataFieldsPanel({ stage, isEditMode, onUpdate }: DataFieldsPanelProps) 
     <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle mt-3 pt-2">
       <button
         onClick={() => setExpanded(v => !v)}
-        className="flex items-center gap-1.5 text-xs lia-text-500 hover:lia-text-700 dark:hover:lia-text-300 transition-colors w-full"
+        className="flex items-center gap-1.5 text-xs lia-text-500 hover:lia-text-700 dark:hover:lia-text-300 transition-colors motion-reduce:transition-none w-full"
         aria-expanded={expanded}
         type="button"
       >
@@ -192,7 +192,7 @@ function DataFieldsPanel({ stage, isEditMode, onUpdate }: DataFieldsPanelProps) 
                   return (
                     <div
                       key={catalog.id}
-                      className={`flex items-center gap-2 px-2 py-1.5 rounded-md border transition-colors ${
+                      className={`flex items-center gap-2 px-2 py-1.5 rounded-md border transition-colors motion-reduce:transition-none ${
                         active
                           ? 'bg-white dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-default'
                           : 'bg-gray-50 dark:bg-lia-bg-primary/50 border-lia-border-subtle dark:border-lia-border-subtle'
@@ -292,7 +292,7 @@ function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStatusPanel
     <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle mt-3 pt-2">
       <button
         onClick={handleExpand}
-        className="flex items-center gap-1.5 text-xs lia-text-500 hover:lia-text-700 dark:hover:lia-text-300 transition-colors w-full"
+        className="flex items-center gap-1.5 text-xs lia-text-500 hover:lia-text-700 dark:hover:lia-text-300 transition-colors motion-reduce:transition-none w-full"
         aria-expanded={expanded}
         aria-label={`${expanded ? 'Recolher' : 'Expandir'} subetapas de ${stage.display_name || stage.name}`}
         data-testid={`sub-status-panel-${stage.id}`}
@@ -307,10 +307,10 @@ function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStatusPanel
       </button>
 
       {expanded && (
-        <div className="mt-2 space-y-1.5">
+        <div className="mt-2 space-y-1.5" role="status" aria-live="polite" aria-label="Carregando...">
           {loading && (
-            <div className="flex items-center gap-2 px-1 py-2">
-              <Loader2 className="h-3.5 w-3.5 animate-spin lia-text-400" />
+            <div className="flex items-center gap-2 px-1 py-2" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none lia-text-400" />
               <span className="text-xs lia-text-400">Carregando subetapas...</span>
             </div>
           )}
@@ -324,7 +324,7 @@ function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStatusPanel
           {!loading && displayList.map(ss => (
             <div
               key={ss.id}
-              className={`flex items-center gap-2 px-2 py-1.5 rounded-md border transition-colors ${
+              className={`flex items-center gap-2 px-2 py-1.5 rounded-md border transition-colors motion-reduce:transition-none ${
                 ss.is_active
                   ? 'bg-white dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-default'
                   : 'bg-gray-50 dark:bg-lia-bg-primary/50 border-lia-border-subtle dark:border-lia-border-subtle opacity-60'
@@ -350,12 +350,12 @@ function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStatusPanel
                   disabled={togglingId === `default-${ss.id}`}
                   aria-label={ss.is_default ? `Remover ${ss.display_name} como padrão` : `Definir ${ss.display_name} como padrão`}
                   title={ss.is_default ? 'Remover como padrão' : 'Definir como padrão'}
-                  className="p-0.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                  className="p-0.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors motion-reduce:transition-none"
                   data-testid={`sub-status-default-toggle-${ss.id}`}
                   type="button"
                 >
                   {togglingId === `default-${ss.id}` ? (
-                    <Loader2 className="h-3 w-3 animate-spin lia-text-400" />
+                    <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none lia-text-400" />
                   ) : ss.is_default ? (
                     <Star className="h-3 w-3 text-status-warning fill-amber-400" />
                   ) : (
@@ -464,7 +464,7 @@ function SaturationControlPanel({ stage, isEditMode }: { stage: RecruitmentStage
     <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle mt-3 pt-2">
       <button
         onClick={handleExpand}
-        className="flex items-center gap-1.5 text-xs lia-text-500 hover:lia-text-700 dark:hover:lia-text-300 transition-colors w-full"
+        className="flex items-center gap-1.5 text-xs lia-text-500 hover:lia-text-700 dark:hover:lia-text-300 transition-colors motion-reduce:transition-none w-full"
         aria-expanded={expanded}
         type="button"
       >
@@ -474,10 +474,10 @@ function SaturationControlPanel({ stage, isEditMode }: { stage: RecruitmentStage
       </button>
 
       {expanded && (
-        <div className="mt-2 space-y-3">
+        <div className="mt-2 space-y-3" role="status" aria-live="polite" aria-label="Carregando...">
           {loading && (
-            <div className="flex items-center gap-2 px-1 py-2">
-              <Loader2 className="h-3.5 w-3.5 animate-spin lia-text-400" />
+            <div className="flex items-center gap-2 px-1 py-2" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none lia-text-400" />
               <span className="text-xs lia-text-400">Carregando configurações...</span>
             </div>
           )}
@@ -496,7 +496,7 @@ function SaturationControlPanel({ stage, isEditMode }: { stage: RecruitmentStage
                     disabled={!isEditMode}
                     min={1}
                     max={999}
-                    className="w-full px-2 py-1.5 text-xs lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-opacity disabled:opacity-50"
+                    className="w-full px-2 py-1.5 text-xs lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-opacity motion-reduce:transition-none disabled:opacity-50"
                   />
                 </div>
 
@@ -511,7 +511,7 @@ function SaturationControlPanel({ stage, isEditMode }: { stage: RecruitmentStage
                     disabled={!isEditMode}
                     min={1}
                     max={999}
-                    className="w-full px-2 py-1.5 text-xs lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-opacity disabled:opacity-50"
+                    className="w-full px-2 py-1.5 text-xs lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-opacity motion-reduce:transition-none disabled:opacity-50"
                   />
                 </div>
 
@@ -528,7 +528,7 @@ function SaturationControlPanel({ stage, isEditMode }: { stage: RecruitmentStage
                       disabled={!isEditMode}
                       min={1}
                       max={100}
-                      className="w-full px-2 py-1.5 text-xs lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-opacity disabled:opacity-50"
+                      className="w-full px-2 py-1.5 text-xs lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-opacity motion-reduce:transition-none disabled:opacity-50"
                     />
                   </div>
                 </div>
@@ -545,7 +545,7 @@ function SaturationControlPanel({ stage, isEditMode }: { stage: RecruitmentStage
                       disabled={!isEditMode}
                       min={1}
                       max={168}
-                      className="w-full px-2 py-1.5 text-xs lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-opacity disabled:opacity-50"
+                      className="w-full px-2 py-1.5 text-xs lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-opacity motion-reduce:transition-none disabled:opacity-50"
                     />
                     <span className="text-xs lia-text-400 whitespace-nowrap">horas</span>
                   </div>
@@ -562,7 +562,7 @@ function SaturationControlPanel({ stage, isEditMode }: { stage: RecruitmentStage
                   >
                     {saving ? (
                       <>
-                        <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                        <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none mr-1" />
                         Salvando...
                       </>
                     ) : (
@@ -572,7 +572,7 @@ function SaturationControlPanel({ stage, isEditMode }: { stage: RecruitmentStage
                 </div>
               )}
 
-              <p className="text-micro lia-text-400 px-1">
+              <p className="text-micro lia-text-400 px-1" aria-live="polite" aria-atomic="true">
                 Define os limites de candidatos simultâneos em triagem por canal. Quando o limite é atingido, novos candidatos entram em fila de espera.
               </p>
             </>
@@ -695,7 +695,7 @@ export function SortableStageCard({
   return (
     <div ref={combinedRef} style={style}>
       <Card
-        className={`border rounded-md p-4 mb-3 transition-colors duration-200 ${
+        className={`border rounded-md p-4 mb-3 transition-colors motion-reduce:transition-none duration-200 ${
           isDragging ? "opacity-90 bg-gray-50" : "bg-white hover:border-gray-400 dark:bg-lia-bg-secondary dark:hover:border-gray-500"
         } ${!stage.isActive ? "opacity-60" : ""} ${
           isSystemStage ? "border-lia-border-default bg-gray-50/50 dark:bg-lia-bg-primary/50" : "border-lia-border-subtle dark:border-lia-border-subtle"
@@ -706,7 +706,7 @@ export function SortableStageCard({
           {canDrag ? (
             <button
               {...attributes} {...listeners}
-              className="mt-1 cursor-grab active:cursor-grabbing p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="mt-1 cursor-grab active:cursor-grabbing p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none"
               aria-label="Arrastar para reordenar"
             >
               <GripVertical className="h-5 w-5 lia-text-400" />
@@ -723,7 +723,7 @@ export function SortableStageCard({
                   type="text"
                   value={getStageDisplayName(stage)}
                   onChange={(e) => onUpdate(stage.id, { display_name: e.target.value, name: stage.name })}
-                  className="flex-1 px-3 py-2 text-base-ui font-medium lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-colors"
+                  className="flex-1 px-3 py-2 text-base-ui font-medium lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-colors motion-reduce:transition-none"
                   placeholder="Nome da etapa"
                 />
               ) : (
@@ -753,7 +753,7 @@ export function SortableStageCard({
                 value={stage.notes}
                 onChange={(e) => onUpdate(stage.id, { notes: e.target.value })}
                 placeholder="Notas e comentários para a equipe..."
-                className="w-full px-3 py-2 text-xs lia-text-600 dark:text-lia-text-tertiary border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-colors resize-none"
+                className="w-full px-3 py-2 text-xs lia-text-600 dark:text-lia-text-tertiary border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-colors motion-reduce:transition-none resize-none"
                 rows={2}
               />
             )}
@@ -771,7 +771,7 @@ export function SortableStageCard({
                       type="number"
                       value={stage.sla}
                       onChange={(e) => onUpdate(stage.id, { sla: parseInt(e.target.value) || 0 })}
-                      className="w-14 px-2 py-1 text-xs text-center lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-colors"
+                      className="w-14 px-2 py-1 text-xs text-center lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-colors motion-reduce:transition-none"
                       min={0} max={30}
                     />
                     <span className={textStyles.caption}>dias</span>
@@ -784,7 +784,7 @@ export function SortableStageCard({
                   <select
                     value={stage.action_behavior || 'passive'}
                     onChange={(e) => onUpdate(stage.id, { action_behavior: e.target.value })}
-                    className="px-2 py-1 text-xs lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-colors"
+                    className="px-2 py-1 text-xs lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-colors motion-reduce:transition-none"
                   >
                     <option value="passive">Passivo</option>
                     <option value="screening">Triagem WSI</option>
@@ -805,7 +805,7 @@ export function SortableStageCard({
                   <select
                     value={stage.default_channel || 'email'}
                     onChange={(e) => onUpdate(stage.id, { default_channel: e.target.value })}
-                    className="px-2 py-1 text-xs lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-colors"
+                    className="px-2 py-1 text-xs lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-colors motion-reduce:transition-none"
                   >
                     <option value="email">E-mail</option>
                     <option value="whatsapp">WhatsApp</option>
@@ -819,7 +819,7 @@ export function SortableStageCard({
                   variant="ghost"
                   size="sm"
                   onClick={() => onRemove(stage.id)}
-                  className="lia-text-400 hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error/20 transition-colors"
+                  className="lia-text-400 hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error/20 transition-colors motion-reduce:transition-none"
                   aria-label={`Remover etapa ${getStageDisplayName(stage)}`}
                 >
                   <Trash2 className="h-4 w-4" />

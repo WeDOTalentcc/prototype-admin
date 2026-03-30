@@ -525,7 +525,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                                 <Badge
                                   key={benefit.id}
                                   variant="outline"
-                                  className={`text-xs px-2 py-0.5 cursor-pointer transition-colors ${
+                                  className={`text-xs px-2 py-0.5 cursor-pointer transition-colors motion-reduce:transition-none ${
                                     isAdded 
                                       ? 'bg-gray-100 border-gray-900 text-lia-text-primary' 
                                       : 'bg-gray-50 border-lia-border-subtle text-lia-text-secondary hover:bg-gray-100 hover:border-gray-400 hover:text-lia-text-primary'
@@ -596,7 +596,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                         <SelectTrigger className="h-8 w-[180px] text-xs bg-lia-bg-secondary border-lia-border-subtle">
                           {isLoadingTemplates ? (
                             <span className="flex items-center gap-1.5">
-                              <Loader2 className="w-3 h-3 animate-spin" />
+                              <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
                               Carregando...
                             </span>
                           ) : (
@@ -729,7 +729,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                     <h3 className="text-base-ui font-semibold text-lia-text-primary">Configuração de Confidencialidade para LIA</h3>
                   </div>
                   
-                  <p className="text-xs text-lia-text-tertiary mb-3">
+                  <p className="text-xs text-lia-text-tertiary mb-3" aria-live="polite" aria-atomic="true">
                     Configure o que a LIA pode ou não revelar durante conversas com candidatos.
                   </p>
 
@@ -872,7 +872,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Shield className="w-4 h-4 text-wedo-orange" />
-                          <span className="text-sm text-lia-text-secondary">Vaga Confidencial</span>
+                          <span className="text-sm text-lia-text-secondary" aria-live="polite" aria-atomic="true">Vaga Confidencial</span>
                         </div>
                         <Switch
                           checked={formData.isConfidential || false}
@@ -882,7 +882,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Heart className="w-4 h-4 text-wedo-magenta" />
-                          <span className="text-sm text-lia-text-secondary">Vaga Afirmativa</span>
+                          <span className="text-sm text-lia-text-secondary" aria-live="polite" aria-atomic="true">Vaga Afirmativa</span>
                         </div>
                         <Switch
                           checked={formData.isAffirmative || false}
@@ -968,7 +968,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                               </Badge>
                             ))}
                           </div>
-                          <p className="text-xs text-lia-text-tertiary mt-1">Usuários com acesso à vaga confidencial</p>
+                          <p className="text-xs text-lia-text-tertiary mt-1" aria-live="polite" aria-atomic="true">Usuários com acesso à vaga confidencial</p>
                         </div>
                       </div>
                     )}
@@ -1174,7 +1174,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
           >
             {isSaving ? (
               <>
-                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin motion-reduce:animate-none" />
                 Salvando...
               </>
             ) : (
@@ -1197,16 +1197,16 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
               </div>
               <button
                 onClick={() => setShowImportQuestionsModal(false)}
-                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-1 hover:bg-gray-100 rounded-full transition-colors motion-reduce:transition-none"
               >
                 <X className="w-4 h-4 text-lia-text-tertiary" />
               </button>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-5">
+            <div className="flex-1 overflow-y-auto p-5" role="status" aria-live="polite" aria-label="Carregando...">
               {isLoadingDefaultQuestions ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-6 h-6 animate-spin text-status-warning" />
+                <div className="flex items-center justify-center py-8" role="status" aria-live="polite" aria-label="Carregando...">
+                  <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none text-status-warning" />
                   <span className="ml-2 text-sm text-lia-text-secondary">Carregando perguntas...</span>
                 </div>
               ) : companyDefaultQuestions.length === 0 ? (
@@ -1220,14 +1220,14 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                   {companyDefaultQuestions.map((q) => (
                     <label
                       key={q.id}
-                      className={`flex items-start gap-3 p-3 rounded-md border cursor-pointer transition-colors ${
+                      className={`flex items-start gap-3 p-3 rounded-md border cursor-pointer transition-colors motion-reduce:transition-none ${
                         selectedDefaultQuestions.has(q.id)
                           ? 'bg-status-warning/10 border-status-warning/30'
                           : 'bg-lia-bg-primary border-lia-border-subtle hover:border-lia-border-default'
                       }`}
                     >
                       <div className="mt-0.5">
-                        <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${
+                        <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors motion-reduce:transition-none ${
                           selectedDefaultQuestions.has(q.id)
                             ? 'bg-status-warning border-status-warning/30'
                             : 'border-lia-border-default'

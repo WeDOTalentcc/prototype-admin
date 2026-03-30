@@ -97,7 +97,7 @@ export function HITLConfirmCard({
  "flex items-center gap-1.5 px-3 py-1.5",
             "rounded-md text-xs font-medium",
             "bg-gray-900 text-white",
-            "hover:bg-gray-700 dark:hover:bg-gray-200 transition-colors"
+            "hover:bg-gray-700 dark:hover:bg-gray-200 transition-colors motion-reduce:transition-none"
           )}
           aria-label="Confirmar ação"
         >
@@ -111,7 +111,7 @@ export function HITLConfirmCard({
             "rounded-md text-xs font-medium",
             "border border-lia-border-subtle dark:border-lia-border-subtle",
             "text-lia-text-secondary dark:text-lia-text-tertiary",
-            "hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            "hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
           )}
           aria-label="Cancelar ação"
         >

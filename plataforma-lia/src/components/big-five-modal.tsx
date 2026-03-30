@@ -434,7 +434,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                 return (
                   <div
                     key={trait}
-                    className={`${info.bgColor} rounded-md p-3 transition-colors hover:border border-lia-border-subtle dark:border-lia-border-subtle`}
+                    className={`${info.bgColor} rounded-md p-3 transition-colors motion-reduce:transition-none hover:border border-lia-border-subtle dark:border-lia-border-subtle`}
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">

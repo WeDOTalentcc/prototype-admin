@@ -87,7 +87,7 @@ export default function ForgotPasswordPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Digite seu email"
-                    className="w-full px-4 py-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors"
+                    className="w-full px-4 py-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors motion-reduce:transition-none"
                     required
                   />
                 </div>
@@ -101,11 +101,11 @@ export default function ForgotPasswordPage() {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-md transition-colors font-medium"
+                  className="w-full py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-md transition-colors motion-reduce:transition-none font-medium"
                 >
                   {isLoading ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mr-2" />
                       Enviando...
                     </>
                   ) : (
@@ -115,7 +115,7 @@ export default function ForgotPasswordPage() {
 
                 <Link 
                   href="/login" 
-                  className="flex items-center justify-center gap-2 lia-text-600 hover:lia-text-900 text-sm transition-colors"
+                  className="flex items-center justify-center gap-2 lia-text-600 hover:lia-text-900 text-sm transition-colors motion-reduce:transition-none"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   Voltar para o Login

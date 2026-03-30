@@ -202,9 +202,9 @@ export default function ComplianceDashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6">
-        <div className="max-w-7xl mx-auto flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+      <div className="p-6" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="max-w-7xl mx-auto flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
           <span className="ml-3 text-sm lia-text-400 dark:lia-text-500" >
             Carregando dados de compliance...
           </span>
@@ -236,7 +236,7 @@ export default function ComplianceDashboardPage() {
             </div>
           </div>
           <Button variant="outline" size="sm" onClick={fetchData} disabled={isRefreshing}>
-            <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin motion-reduce:animate-none' : ''}`} />
             {isRefreshing ? 'Atualizando...' : 'Atualizar'}
           </Button>
         </div>
@@ -456,7 +456,7 @@ export default function ComplianceDashboardPage() {
                 {alerts.slice(0, 5).map((alert) => (
                   <div 
                     key={alert.id}
-                    className="flex items-center gap-3 p-3 rounded-md transition-colors hover:opacity-90 bg-gray-100 dark:bg-lia-bg-secondary"
+                    className="flex items-center gap-3 p-3 rounded-md transition-colors motion-reduce:transition-none hover:opacity-90 bg-gray-100 dark:bg-lia-bg-secondary"
                     
                   >
                     {getAlertIcon(alert)}
@@ -491,7 +491,7 @@ export default function ComplianceDashboardPage() {
             ) : (
               <div className="text-center py-6">
                 <CheckCircle2 className="w-8 h-8 text-status-success mx-auto mb-2" />
-                <p className="text-sm lia-text-400 dark:lia-text-500" >
+                <p className="text-sm lia-text-400 dark:lia-text-500"  aria-live="polite" aria-atomic="true">
                   Nenhum alerta encontrado
                 </p>
               </div>

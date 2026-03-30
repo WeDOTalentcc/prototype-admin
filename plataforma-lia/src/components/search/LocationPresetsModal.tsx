@@ -255,7 +255,7 @@ export function LocationPresetsModal({
           <h2 className="text-sm font-semibold lia-text-800 dark:text-lia-text-primary">Location Presets</h2>
           <button 
             onClick={onClose}
-            className="p-1 hover:bg-gray-100 rounded-md transition-colors"
+            className="p-1 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
           >
             <X className="w-4 h-4 lia-text-500" />
           </button>
@@ -314,7 +314,7 @@ export function LocationPresetsModal({
                   <button
                     key={preset.id}
                     onClick={() => handleSelectPreset(preset)}
-                    className="w-full text-left p-3 border border-lia-border-subtle rounded-md hover:border-gray-400 hover:bg-gray-50 dark:border-lia-border-default dark:hover:border-gray-500 dark:hover:bg-gray-700 transition-colors"
+                    className="w-full text-left p-3 border border-lia-border-subtle rounded-md hover:border-gray-400 hover:bg-gray-50 dark:border-lia-border-default dark:hover:border-gray-500 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none"
                   >
                     <div className="flex items-start justify-between">
                       <div>
@@ -367,7 +367,7 @@ export function LocationPresetsModal({
                 <button
                   key={preset.id}
                   onClick={() => handleSelectPreset(preset)}
-                  className="w-full text-left p-3 border border-lia-border-subtle rounded-md hover:border-gray-400 hover:bg-gray-50 dark:border-lia-border-default dark:hover:border-gray-500 dark:hover:bg-gray-700 transition-colors"
+                  className="w-full text-left p-3 border border-lia-border-subtle rounded-md hover:border-gray-400 hover:bg-gray-50 dark:border-lia-border-default dark:hover:border-gray-500 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none"
                 >
                   <div className="flex items-start justify-between">
                     <div>

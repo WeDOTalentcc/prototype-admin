@@ -48,7 +48,7 @@ function PreferencesTab({ onSettingsChange }: { onSettingsChange: (changed: bool
                     setTheme(themeOption.id)
                     onSettingsChange(true)
                   }}
-                  className={`p-3 rounded-md border text-center transition-colors ${
+                  className={`p-3 rounded-md border text-center transition-colors motion-reduce:transition-none ${
                     theme === themeOption.id
  ? 'border-gray-900 dark:lia-border-50 bg-gray-50 dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-secondary'
                       : 'border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800'
@@ -149,7 +149,7 @@ function LIATab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => 
                     setLiaSettings(prev => ({ ...prev, personality: style.id }))
                     onSettingsChange(true)
                   }}
-                  className={`p-3 rounded-md border text-left transition-colors ${
+                  className={`p-3 rounded-md border text-left transition-colors motion-reduce:transition-none ${
                     liaSettings.personality === style.id
                       ? 'border-gray-900 dark:lia-border-50 bg-wedo-cyan/10 dark:bg-wedo-cyan/20'
                       : 'border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800'

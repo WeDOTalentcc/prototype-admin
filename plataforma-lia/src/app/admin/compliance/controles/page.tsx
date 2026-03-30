@@ -104,9 +104,9 @@ export default function ControlesPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6">
-        <div className="max-w-7xl mx-auto flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+      <div className="p-6" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="max-w-7xl mx-auto flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
           <span className="ml-3 text-sm lia-text-400 dark:lia-text-500">
             Carregando biblioteca de controles...
           </span>
@@ -137,7 +137,7 @@ export default function ControlesPage() {
             </div>
           </div>
           <Button variant="outline" size="sm" onClick={fetchData} disabled={isRefreshing}>
-            <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin motion-reduce:animate-none' : ''}`} />
             {isRefreshing ? 'Atualizando...' : 'Atualizar'}
           </Button>
         </div>
@@ -220,7 +220,7 @@ export default function ControlesPage() {
             {frameworkCards.map((framework) => (
               <Link key={framework.key} href={framework.href}>
                 <Card 
-                  className="h-full transition-colors hover:cursor-pointer"
+                  className="h-full transition-colors motion-reduce:transition-none hover:cursor-pointer"
                   
                 >
                   <CardContent className="p-5">
@@ -272,7 +272,7 @@ export default function ControlesPage() {
 
             <Link href="/admin/compliance/controles/cobertura">
               <Card 
-                className="h-full transition-colors hover:cursor-pointer border-dashed"
+                className="h-full transition-colors motion-reduce:transition-none hover:cursor-pointer border-dashed"
                 
               >
                 <CardContent className="p-5 flex flex-col h-full">

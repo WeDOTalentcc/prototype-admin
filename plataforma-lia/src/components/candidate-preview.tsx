@@ -484,7 +484,7 @@ export function CandidatePreview({
                     href={candidate.linkedin || candidate.linkedin_url || '#'} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className={`p-1 rounded-md transition-colors ${(candidate.linkedin || candidate.linkedin_url) ? 'hover:bg-wedo-cyan/10' : 'opacity-30 cursor-default'}`}
+                    className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${(candidate.linkedin || candidate.linkedin_url) ? 'hover:bg-wedo-cyan/10' : 'opacity-30 cursor-default'}`}
                     onClick={(e) => !(candidate.linkedin || candidate.linkedin_url) && e.preventDefault()}
                   >
                     <Linkedin className="w-3.5 h-3.5" style={{color: (candidate.linkedin || candidate.linkedin_url) ? 'var(--gray-600)' : 'var(--gray-400)'}} />
@@ -499,7 +499,7 @@ export function CandidatePreview({
                     href={candidate.github || candidate.github_url || '#'} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className={`p-1 rounded-md transition-colors ${(candidate.github || candidate.github_url) ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : 'opacity-30 cursor-default'}`}
+                    className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${(candidate.github || candidate.github_url) ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : 'opacity-30 cursor-default'}`}
                     onClick={(e) => !(candidate.github || candidate.github_url) && e.preventDefault()}
                   >
                     <svg className="w-3.5 h-3.5" fill={(candidate.github || candidate.github_url) ? 'var(--gray-950)' : 'var(--gray-400)'} viewBox="0 0 24 24">
@@ -516,7 +516,7 @@ export function CandidatePreview({
                     href={candidate.stackoverflow || candidate.stackoverflow_url || '#'} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className={`p-1 rounded-md transition-colors ${(candidate.stackoverflow || candidate.stackoverflow_url) ? 'hover:bg-wedo-orange/10' : 'opacity-30 cursor-default'}`}
+                    className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${(candidate.stackoverflow || candidate.stackoverflow_url) ? 'hover:bg-wedo-orange/10' : 'opacity-30 cursor-default'}`}
                     onClick={(e) => !(candidate.stackoverflow || candidate.stackoverflow_url) && e.preventDefault()}
                   >
                     <svg className="w-3.5 h-3.5" fill={(candidate.stackoverflow || candidate.stackoverflow_url) ? 'var(--gray-600)' : 'var(--gray-400)'} viewBox="0 0 24 24">
@@ -533,7 +533,7 @@ export function CandidatePreview({
                     href={candidate.twitter || candidate.twitter_url || candidate.x_url || '#'} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className={`p-1 rounded-md transition-colors ${(candidate.twitter || candidate.twitter_url || candidate.x_url) ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : 'opacity-30 cursor-default'}`}
+                    className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${(candidate.twitter || candidate.twitter_url || candidate.x_url) ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : 'opacity-30 cursor-default'}`}
                     onClick={(e) => !(candidate.twitter || candidate.twitter_url || candidate.x_url) && e.preventDefault()}
                   >
                     <svg className="w-3.5 h-3.5" fill={(candidate.twitter || candidate.twitter_url || candidate.x_url) ? 'var(--gray-950)' : 'var(--gray-400)'} viewBox="0 0 24 24">
@@ -550,7 +550,7 @@ export function CandidatePreview({
                     href={candidate.behance || candidate.behance_url || '#'} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className={`p-1 rounded-md transition-colors ${(candidate.behance || candidate.behance_url) ? 'hover:bg-wedo-cyan/10' : 'opacity-30 cursor-default'}`}
+                    className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${(candidate.behance || candidate.behance_url) ? 'hover:bg-wedo-cyan/10' : 'opacity-30 cursor-default'}`}
                     onClick={(e) => !(candidate.behance || candidate.behance_url) && e.preventDefault()}
                   >
                     <svg className="w-3.5 h-3.5" fill={(candidate.behance || candidate.behance_url) ? 'var(--gray-600)' : 'var(--gray-400)'} viewBox="0 0 24 24">
@@ -567,7 +567,7 @@ export function CandidatePreview({
                     href={candidate.portfolio || candidate.portfolio_url || '#'} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className={`p-1 rounded-md transition-colors ${(candidate.portfolio || candidate.portfolio_url) ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : 'opacity-30 cursor-default'}`}
+                    className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${(candidate.portfolio || candidate.portfolio_url) ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : 'opacity-30 cursor-default'}`}
                     onClick={(e) => !(candidate.portfolio || candidate.portfolio_url) && e.preventDefault()}
                   >
                     <ExternalLink className={`w-3.5 h-3.5 ${(candidate.portfolio || candidate.portfolio_url) ? 'text-lia-text-secondary dark:text-lia-text-tertiary' : 'text-lia-text-disabled'}`} />
@@ -588,7 +588,7 @@ export function CandidatePreview({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as string)}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium whitespace-nowrap transition-colors ${
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium whitespace-nowrap transition-colors motion-reduce:transition-none ${
  activeTab === tab.id
                   ? 'border-b-2 border-gray-800 text-lia-text-primary dark:text-lia-text-primary font-semibold'
                   : 'text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary'
@@ -659,7 +659,7 @@ export function CandidatePreview({
             <div className="flex items-center gap-1 border-b border-lia-border-subtle dark:border-lia-border-subtle pb-2">
               <button
                 onClick={() => setOpinionsSubTab('pareceres')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors motion-reduce:transition-none ${
  opinionsSubTab === 'pareceres'
                     ? 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary border-b-2 border-gray-900 dark:border-lia-border-subtle'
  : 'text-lia-text-tertiary hover:text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-50'
@@ -675,7 +675,7 @@ export function CandidatePreview({
               </button>
               <button
                 onClick={() => setOpinionsSubTab('analises')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors motion-reduce:transition-none ${
  opinionsSubTab === 'analises'
                     ? 'bg-wedo-purple/10 text-wedo-purple border-b-2 border-wedo-purple/30'
  : 'text-lia-text-tertiary hover:text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-50'
@@ -698,7 +698,7 @@ export function CandidatePreview({
                 {isLoadingHistory && (
                   <div className="space-y-3">
                     {[1, 2].map((i) => (
-                      <div key={i} className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4 animate-pulse">
+                      <div key={i} className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4 animate-pulse motion-reduce:animate-none">
                         <div className="flex items-center gap-3 mb-3">
                           <div className="w-8 h-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-full"></div>
                           <div className="flex-1">
@@ -762,7 +762,7 @@ export function CandidatePreview({
                 {isLoadingAnalyses && (
                   <div className="space-y-3">
                     {[1, 2].map((i) => (
-                      <div key={i} className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4 animate-pulse">
+                      <div key={i} className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4 animate-pulse motion-reduce:animate-none">
                         <div className="flex items-center gap-3 mb-3">
                           <div className="w-8 h-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-full"></div>
                           <div className="flex-1">
@@ -810,7 +810,7 @@ export function CandidatePreview({
                         >
                           {/* Card Header - Always Visible */}
                           <div 
-                            className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50/50 transition-colors"
+                            className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50/50 transition-colors motion-reduce:transition-none"
                             onClick={() => setExpandedAnalysisId(isExpanded ? null : analysis.id)}
                           >
                             <div className="flex items-center gap-2.5">
@@ -846,7 +846,7 @@ export function CandidatePreview({
                                       e.stopPropagation()
                                       handleCopyAnalysis(analysis)
                                     }}
-                                    className="p-1 hover:bg-gray-100 rounded-md transition-colors"
+                                    className="p-1 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
                                   >
                                     {copiedItemId === `analysis-${analysis.id}` ? (
                                       <Check className="w-3.5 h-3.5 text-status-success" />
@@ -857,7 +857,7 @@ export function CandidatePreview({
                                 </TooltipTrigger>
                                 <TooltipContent side="top" className="text-micro">Copiar análise</TooltipContent>
                               </Tooltip>
-                              <ChevronDown className={`w-4 h-4 lia-text-secondary transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                              <ChevronDown className={`w-4 h-4 lia-text-secondary transition-transform motion-reduce:transition-none ${isExpanded ? 'rotate-180' : ''}`} />
                             </div>
                           </div>
                           
@@ -876,7 +876,7 @@ export function CandidatePreview({
                                         e.stopPropagation()
                                         setAnalysisToDelete(analysis)
                                       }}
-                                      className="p-1.5 hover:bg-status-error/10 rounded-md transition-colors group"
+                                      className="p-1.5 hover:bg-status-error/10 rounded-md transition-colors motion-reduce:transition-none group"
                                     >
                                       <Trash2 className="w-4 h-4 lia-text-secondary group-hover:text-status-error" />
                                     </button>

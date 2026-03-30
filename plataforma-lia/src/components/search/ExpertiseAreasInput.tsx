@@ -240,8 +240,8 @@ export function ExpertiseAreasInput({
             disabled={isLoadingAI}
           />
           {isLoadingAI && (
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <Loader2 className="w-4 h-4 animate-spin lia-text-600" />
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-600" />
             </div>
           )}
         </div>
@@ -293,7 +293,7 @@ export function ExpertiseAreasInput({
                 <span>{expertise}</span>
                 <button
                   onClick={() => removeExpertise(expertise)}
-                  className="hover:bg-gray-200 rounded-md p-0.5 transition-colors"
+                  className="hover:bg-gray-200 rounded-md p-0.5 transition-colors motion-reduce:transition-none"
                   title="Remover"
                 >
                   <X className="w-3 h-3" />
@@ -310,7 +310,7 @@ export function ExpertiseAreasInput({
             className="text-xs gap-1.5 border-gray-900 dark:lia-border-50 lia-text-900 dark:lia-text-50 hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             {isFindingSimilar ? (
-              <Loader2 className="w-3 h-3 animate-spin" />
+              <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
             ) : (
               <Brain className="w-3 h-3 text-wedo-cyan" />
             )}

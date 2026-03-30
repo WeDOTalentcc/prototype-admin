@@ -208,7 +208,7 @@ export function RecruitmentJourneyConfig({
           {isEditMode && (
             <Popover open={catalogOpen} onOpenChange={setCatalogOpen}>
               <PopoverTrigger asChild>
-                <Button className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 rounded-md px-4 py-2 text-xs font-semibold transition-colors">
+                <Button className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 rounded-md px-4 py-2 text-xs font-semibold transition-colors motion-reduce:transition-none">
                   <Plus className="h-4 w-4 mr-2" />
                   Adicionar etapa
                 </Button>
@@ -225,7 +225,7 @@ export function RecruitmentJourneyConfig({
                       <button
                         key={cs.id}
                         onClick={() => handleAddFromCatalog(cs)}
-                        className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors text-left"
+                        className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors motion-reduce:transition-none text-left"
                       >
                         <span className="w-3 h-3 rounded-full flex-shrink-0" style={{backgroundColor: cs.color || 'var(--gray-400)'}} />
                         <span className={`flex-1 ${textStyles.body} lia-text-800 dark:text-lia-text-primary`}>{cs.display_name}</span>
@@ -243,7 +243,7 @@ export function RecruitmentJourneyConfig({
                 <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle p-2">
                   <button
                     onClick={handleAddStage}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors text-left"
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors motion-reduce:transition-none text-left"
                   >
                     <Plus className="h-4 w-4 lia-text-500" />
                     <span className={`${textStyles.body} lia-text-600 dark:text-lia-text-tertiary`}>Criar etapa customizada</span>

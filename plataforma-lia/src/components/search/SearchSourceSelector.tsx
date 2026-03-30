@@ -45,7 +45,7 @@ export function SearchSourceSelector({
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onLocalClick() }}
-              className={`p-1.5 rounded-md transition-colors ${
+              className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
                 searchSource === 'local' ? 'bg-gray-200' : 'hover:bg-gray-100'
               }`}
             >
@@ -66,7 +66,7 @@ export function SearchSourceSelector({
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); onHybridClick() }}
-                className={`p-1.5 rounded-md transition-colors ${
+                className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
                   searchSource === 'hybrid' ? 'bg-gray-200' : 'hover:bg-gray-100'
                 }`}
               >
@@ -88,7 +88,7 @@ export function SearchSourceSelector({
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); onGlobalClick() }}
-                className={`p-1.5 rounded-md transition-colors ${
+                className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
                   searchSource === 'global' ? 'bg-gray-200' : 'hover:bg-gray-100'
                 }`}
               >
@@ -112,7 +112,7 @@ export function SearchSourceSelector({
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onToggleEmails() }}
-              className={`p-1.5 rounded-md transition-colors ${
+              className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
                 requireEmails
                   ? 'bg-wedo-green-light/15 ring-1 ring-wedo-green-light'
                   : 'hover:bg-gray-100'
@@ -135,7 +135,7 @@ export function SearchSourceSelector({
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onTogglePhones() }}
-              className={`p-1.5 rounded-md transition-colors ${
+              className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
                 requirePhoneNumbers
                   ? 'bg-wedo-green-light/15 ring-1 ring-wedo-green-light'
                   : 'hover:bg-gray-100'

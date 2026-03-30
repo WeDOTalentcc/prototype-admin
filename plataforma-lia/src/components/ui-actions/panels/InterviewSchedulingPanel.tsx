@@ -237,7 +237,7 @@ export function InterviewSchedulingPanel({
                     type="button"
                     disabled={!isSelectable}
                     onClick={() => date && isSelectable && setSelectedDate(date)}
-                    className="h-8 w-full rounded-md text-sm transition-colors"
+                    className="h-8 w-full rounded-md text-sm transition-colors motion-reduce:transition-none"
                     style={{visibility: !date ? 'hidden' : 'visible',
                       backgroundColor: isSelected ? 'var(--lia-btn-primary-bg)' : 'transparent',
                       color: isSelected 
@@ -295,7 +295,7 @@ export function InterviewSchedulingPanel({
                   key={time}
                   type="button"
                   onClick={() => setSelectedTime(time)}
-                  className="py-2 px-3 rounded-md text-sm font-medium transition-colors"
+                  className="py-2 px-3 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none"
                   style={{backgroundColor: selectedTime === time ? 'var(--lia-btn-primary-bg)' : 'transparent',
                     color: selectedTime === time ? 'var(--lia-btn-primary-text)' : 'var(--lia-text-secondary)',
                     border: `1px solid ${selectedTime === time ? 'var(--lia-btn-primary-bg)' : 'var(--lia-border-subtle)'}`}}
@@ -331,7 +331,7 @@ export function InterviewSchedulingPanel({
                 key={option.value}
                 type="button"
                 onClick={() => setDuration(option.value)}
-                className="py-2 px-3 rounded-md text-sm font-medium transition-colors"
+                className="py-2 px-3 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none"
                 style={{backgroundColor: duration === option.value ? 'var(--lia-btn-primary-bg)' : 'transparent',
                   color: duration === option.value ? 'var(--lia-btn-primary-text)' : 'var(--lia-text-secondary)',
                   border: `1px solid ${duration === option.value ? 'var(--lia-btn-primary-bg)' : 'var(--lia-border-subtle)'}`}}
@@ -366,7 +366,7 @@ export function InterviewSchedulingPanel({
                 key={type.value}
                 type="button"
                 onClick={() => setInterviewType(type.value)}
-                className="py-3 px-4 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                className="py-3 px-4 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
                 style={{backgroundColor: interviewType === type.value ? 'var(--lia-btn-primary-bg)' : 'transparent',
                   color: interviewType === type.value ? 'var(--lia-btn-primary-text)' : 'var(--lia-text-secondary)',
                   border: `1px solid ${interviewType === type.value ? 'var(--lia-btn-primary-bg)' : 'var(--lia-border-subtle)'}`}}
@@ -400,7 +400,7 @@ export function InterviewSchedulingPanel({
           {MOCK_INTERVIEWERS.map((interviewer) => (
             <div
               key={interviewer.id}
-              className="flex items-center gap-3 p-2 rounded-md cursor-pointer transition-colors dark:hover:bg-gray-700"
+              className="flex items-center gap-3 p-2 rounded-md cursor-pointer transition-colors motion-reduce:transition-none dark:hover:bg-gray-700"
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--lia-interactive-hover)'}
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             >
@@ -491,7 +491,7 @@ export function InterviewSchedulingPanel({
       >
         {isLoading ? (
           <>
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none mr-2" />
             Agendando...
           </>
         ) : (

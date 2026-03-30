@@ -79,7 +79,7 @@ export function ResizableTableHeader({
       <div className="flex items-center gap-1 group">
         {!isFixed && onDragStart && (
           <GripVertical 
-            className="w-3 h-3 lia-text-base opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing flex-shrink-0" 
+            className="w-3 h-3 lia-text-base opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none cursor-grab active:cursor-grabbing flex-shrink-0" 
           />
         )}
         
@@ -100,7 +100,7 @@ export function ResizableTableHeader({
                 ? <ArrowUp className="w-3 h-3 flex-shrink-0 text-lia-text-secondary dark:text-lia-text-secondary" />
                 : <ArrowDown className="w-3 h-3 flex-shrink-0 text-lia-text-secondary dark:text-lia-text-secondary" />
             ) : sortable && (
-              <ChevronsUpDown className="w-3 h-3 flex-shrink-0 opacity-0 group-hover:opacity-50 transition-opacity" />
+              <ChevronsUpDown className="w-3 h-3 flex-shrink-0 opacity-0 group-hover:opacity-50 transition-opacity motion-reduce:transition-none" />
             )}
           </button>
         )}
@@ -108,12 +108,12 @@ export function ResizableTableHeader({
 
       {!isFixed && onResizeStart && (
         <div
-          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-gray-400 transition-colors opacity-0 group-hover:opacity-100"
+          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-gray-400 transition-colors motion-reduce:transition-none opacity-0 group-hover:opacity-100"
           onMouseDown={onResizeStart}
           onClick={(e) => e.stopPropagation()}
           title="Arraste para redimensionar"
         >
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-gray-300 hover:bg-gray-400 transition-colors" />
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-gray-300 hover:bg-gray-400 transition-colors motion-reduce:transition-none" />
         </div>
       )}
     </th>

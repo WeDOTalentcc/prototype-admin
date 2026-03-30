@@ -316,7 +316,7 @@ export function IndustryFilterInput({
       <div className="flex items-center gap-2">
         <Popover open={isTimeFilterOpen} onOpenChange={setIsTimeFilterOpen}>
           <PopoverTrigger asChild>
-            <button className="flex items-center gap-2 px-2.5 py-1 rounded-md border border-lia-border-subtle text-xs hover:bg-gray-50 transition-colors">
+            <button className="flex items-center gap-2 px-2.5 py-1 rounded-md border border-lia-border-subtle text-xs hover:bg-gray-50 transition-colors motion-reduce:transition-none">
               <span className="lia-text-800 dark:text-lia-text-primary">{currentTimeOption?.label}</span>
               <ChevronDown className="w-3.5 h-3.5 lia-text-400" />
             </button>
@@ -331,7 +331,7 @@ export function IndustryFilterInput({
                     setIsTimeFilterOpen(false)
                   }}
                   className={cn(
-                    "w-full text-left px-3 py-2 hover:bg-gray-50 transition-colors",
+                    "w-full text-left px-3 py-2 hover:bg-gray-50 transition-colors motion-reduce:transition-none",
                     timeFilter === option.value && "bg-gray-50"
                   )}
                 >
@@ -380,8 +380,8 @@ export function IndustryFilterInput({
             className="pl-9 pr-3 border-lia-border-subtle focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
           />
           {isLoadingAI && (
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <Loader2 className="w-4 h-4 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
             </div>
           )}
         </div>
@@ -448,7 +448,7 @@ export function IndustryFilterInput({
               <span>{industry}</span>
               <button
                 onClick={() => removeIndustry(industry)}
-                className="hover:bg-gray-200 rounded-md p-0.5 transition-colors ml-1"
+                className="hover:bg-gray-200 rounded-md p-0.5 transition-colors motion-reduce:transition-none ml-1"
                 title="Remove"
               >
                 <X className="w-3 h-3" />

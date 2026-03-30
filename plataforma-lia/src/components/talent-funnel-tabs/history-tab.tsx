@@ -228,7 +228,7 @@ export function HistoryTab({
                 return (
                   <div
                     key={item.id}
-                    className="group relative flex items-center gap-4 p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary hover:bg-gray-50 transition-colors cursor-pointer"
+                    className="group relative flex items-center gap-4 p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary hover:bg-gray-50 transition-colors motion-reduce:transition-none cursor-pointer"
                     onClick={() => onReExecuteSearch(item)}
                   >
                     <div 
@@ -268,7 +268,7 @@ export function HistoryTab({
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -289,7 +289,7 @@ export function HistoryTab({
                       </Button>
                     </div>
 
-                    <ChevronRight className="w-5 h-5 lia-text-muted group-hover:lia-text-base transition-colors" />
+                    <ChevronRight className="w-5 h-5 lia-text-muted group-hover:lia-text-base transition-colors motion-reduce:transition-none" />
                   </div>
                 )
               })}

@@ -384,7 +384,7 @@ export function InteractiveChart({
             <Badge
               key={key}
               variant="outline"
-              className={`cursor-pointer transition-colors ${
+              className={`cursor-pointer transition-colors motion-reduce:transition-none ${
  highlightedSeries === key ? 'border-2 bg-gray-100 dark:bg-lia-bg-secondary' : ''
               }`}
               onClick={() => setHighlightedSeries(highlightedSeries === key ? null : key)}

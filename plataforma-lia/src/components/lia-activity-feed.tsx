@@ -311,7 +311,7 @@ export function LIAActivityFeed() {
             disabled={isLoading}
             className="h-8 w-8 p-0"
           >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin motion-reduce:animate-none' : ''}`} />
           </Button>
         </div>
       </CardHeader>

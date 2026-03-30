@@ -158,7 +158,7 @@ export function SalaryStage({
             </div>
             <button
               onClick={handleToggleExpand}
-              className="p-1.5 hover:bg-lia-bg-primary/50 rounded-md transition-colors"
+              className="p-1.5 hover:bg-lia-bg-primary/50 rounded-md transition-colors motion-reduce:transition-none"
               aria-label={isExpanded ? 'Recolher painel de salário' : 'Expandir painel de salário'}
             >
               <ChevronDown className={cn(
@@ -189,7 +189,7 @@ export function SalaryStage({
               {salaryBenchmark.internal && salaryBenchmark.internal.sample_size > 0 && (
                 <div className="mb-2 p-2 bg-lia-bg-primary/50 rounded-md">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-micro lia-text-secondary">Dados internos ({salaryBenchmark.internal.sample_size} vagas)</span>
+                    <span className="text-micro lia-text-secondary" aria-live="polite" aria-atomic="true">Dados internos ({salaryBenchmark.internal.sample_size} vagas)</span>
                     {salaryBenchmark.internal.trend && salaryBenchmark.internal.trend !== 'stable' && (
                       <span className={`text-micro ${salaryBenchmark.internal.trend === 'increasing' ? 'text-status-success' : 'text-status-error'}`}>
                         {salaryBenchmark.internal.trend === 'increasing' ? '↑ Em alta' : '↓ Em queda'}
@@ -231,7 +231,7 @@ export function SalaryStage({
                       maxSalary: salaryBenchmark.combined!.max.toLocaleString()
                     })
                   }}
-                  className="w-full py-1.5 mt-1 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 text-micro font-medium rounded-md transition-colors flex items-center justify-center gap-1 focus-visible:ring-2 focus-visible:ring-gray-400"
+                  className="w-full py-1.5 mt-1 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 text-micro font-medium rounded-md transition-colors motion-reduce:transition-none flex items-center justify-center gap-1 focus-visible:ring-2 focus-visible:ring-gray-400"
                 >
                   <Brain className="w-3 h-3 text-wedo-cyan" />
                   Aplicar sugestão: R$ {salaryBenchmark.combined.min.toLocaleString()} - R$ {salaryBenchmark.combined.max.toLocaleString()}
@@ -245,8 +245,8 @@ export function SalaryStage({
           )}
 
           {isLoadingBenchmark && (
-            <div className="p-3 bg-gray-50 rounded-md border border-lia-border-subtle flex items-center gap-2">
-              <Loader2 className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin" />
+            <div className="p-3 bg-gray-50 rounded-md border border-lia-border-subtle flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
               <span className="text-xs lia-text-secondary">Buscando benchmark de mercado...</span>
             </div>
           )}
@@ -272,7 +272,7 @@ export function SalaryStage({
                     value={salaryInfo.minSalary}
                     onChange={(e) => onSalaryChange({ minSalary: e.target.value })}
                     placeholder="12.000"
-                    className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors"
+                    className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors motion-reduce:transition-none"
                    
                     aria-label="Salário mínimo base"
                   />
@@ -290,7 +290,7 @@ export function SalaryStage({
                     value={salaryInfo.maxSalary}
                     onChange={(e) => onSalaryChange({ maxSalary: e.target.value })}
                     placeholder="18.000"
-                    className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors"
+                    className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors motion-reduce:transition-none"
                    
                     aria-label="Salário máximo base"
                   />
@@ -317,7 +317,7 @@ export function SalaryStage({
                     value={salaryInfo.minBonus}
                     onChange={(e) => onSalaryChange({ minBonus: e.target.value })}
                     placeholder="10.000"
-                    className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors"
+                    className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors motion-reduce:transition-none"
                    
                     aria-label="Bônus mínimo anual"
                   />
@@ -332,7 +332,7 @@ export function SalaryStage({
                     value={salaryInfo.maxBonus}
                     onChange={(e) => onSalaryChange({ maxBonus: e.target.value })}
                     placeholder="20.000"
-                    className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors"
+                    className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors motion-reduce:transition-none"
                    
                     aria-label="Bônus máximo anual"
                   />
@@ -344,7 +344,7 @@ export function SalaryStage({
               value={salaryInfo.bonusCriteria}
               onChange={(e) => onSalaryChange({ bonusCriteria: e.target.value })}
               placeholder="Critérios: Desempenho individual + metas da empresa"
-              className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors"
+              className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors motion-reduce:transition-none"
              
             />
           </div>
@@ -425,7 +425,7 @@ export function SalaryStage({
             </div>
             <button
               onClick={onShowAddBenefitModal}
-              className="w-full mt-1.5 py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors flex items-center justify-center gap-2"
+              className="w-full mt-1.5 py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
               aria-label="Adicionar benefício para a vaga"
             >
               <Plus className="w-3.5 h-3.5" /> Adicionar benefício

@@ -215,7 +215,7 @@ export function WSIQuestionsPanel({
               <CardTitle className="text-base font-sans dark:text-lia-text-primary text-lia-text-primary">
                 Gerar Perguntas com IA
               </CardTitle>
-              <p className="text-xs mt-1 dark:text-lia-text-tertiary text-lia-text-secondary">
+              <p className="text-xs mt-1 dark:text-lia-text-tertiary text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                 A LIA cria perguntas WSI personalizadas baseadas na vaga e competências definidas
               </p>
             </div>
@@ -276,7 +276,7 @@ export function WSIQuestionsPanel({
           >
             {isGenerating ? (
               <>
-                <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                <Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none mr-2" />
                 Gerando perguntas personalizadas...
               </>
             ) : (
@@ -291,7 +291,7 @@ export function WSIQuestionsPanel({
             className="flex items-start gap-2 p-3 rounded-md dark:bg-lia-bg-primary/50 bg-[var(--lia-bg-tertiary)]"
           >
             <Brain className="h-4 w-4 shrink-0 mt-0.5 text-wedo-cyan" />
-            <p className="text-xs dark:text-lia-text-tertiary text-lia-text-secondary">
+            <p className="text-xs dark:text-lia-text-tertiary text-lia-text-secondary" aria-live="polite" aria-atomic="true">
               As perguntas são geradas considerando: requisitos técnicos da vaga, 
               competências comportamentais definidas, nível de senioridade e 
               metodologia WSI (Bloom + Dreyfus + Big Five).
@@ -350,7 +350,7 @@ export function WSIQuestionsPanel({
         <button
           type="button"
           onClick={() => setShowTemplates(!showTemplates)}
-          className="w-full flex items-center justify-between p-3 transition-colors dark:hover:bg-gray-700 bg-[var(--lia-bg-secondary)] text-lia-text-secondary"
+          className="w-full flex items-center justify-between p-3 transition-colors motion-reduce:transition-none dark:hover:bg-gray-700 bg-[var(--lia-bg-secondary)] text-lia-text-secondary"
         >
           <div className="flex items-center gap-2">
             <Lightbulb className="h-4 w-4" />
@@ -371,7 +371,7 @@ export function WSIQuestionsPanel({
           >
             <p 
               className="text-xs mb-4 dark:text-lia-text-tertiary text-lia-text-tertiary"
-            >
+             aria-live="polite" aria-atomic="true">
               Use estes templates como inspiração. Para melhores resultados, 
               recomendamos a geração com IA que personaliza as perguntas para sua vaga.
             </p>
@@ -397,7 +397,7 @@ export function WSIQuestionsPanel({
                   {WSI_TEMPLATES[area].map((template, index) => (
                     <div
                       key={index}
-                      className="border rounded-md p-3 transition-colors dark:border-lia-border-subtle border-[var(--lia-border-subtle)]"
+                      className="border rounded-md p-3 transition-colors motion-reduce:transition-none dark:border-lia-border-subtle border-[var(--lia-border-subtle)]"
                       style={{backgroundColor: isTemplateAdded(template) 
                           ? 'var(--lia-bg-tertiary)' 
                           : 'var(--lia-bg-primary)',
@@ -570,7 +570,7 @@ export function WSIQuestionsPanel({
       >
         {isLoading ? (
           <>
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none mr-2" />
             Salvando...
           </>
         ) : (
@@ -602,7 +602,7 @@ function QuestionCard({
     >
       <button
         type="button"
-        className="w-full text-left p-3 transition-colors dark:hover:bg-gray-700/50 bg-[var(--lia-bg-primary)]"
+        className="w-full text-left p-3 transition-colors motion-reduce:transition-none dark:hover:bg-gray-700/50 bg-[var(--lia-bg-primary)]"
         onClick={onToggleExpand}
       >
         <div className="flex items-start gap-3">

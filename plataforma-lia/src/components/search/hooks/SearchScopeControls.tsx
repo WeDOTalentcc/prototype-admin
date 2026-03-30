@@ -86,7 +86,7 @@ export function SearchScopeControls({
             </TooltipTrigger>
             <TooltipContent side="bottom" className="!animate-none !duration-0">
               <p className="text-xs font-medium">Expanda sua busca</p>
-              <p className="text-xs lia-text-300">Local + Global • 1 crédito/candidato</p>
+              <p className="text-xs lia-text-300" aria-live="polite" aria-atomic="true">Local + Global • 1 crédito/candidato</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -112,7 +112,7 @@ export function SearchScopeControls({
             </TooltipTrigger>
             <TooltipContent side="bottom" className="!animate-none !duration-0">
               <p className="text-xs font-medium">Alcance global</p>
-              <p className="text-xs lia-text-300">800M+ candidatos • 1 crédito/candidato</p>
+              <p className="text-xs lia-text-300" aria-live="polite" aria-atomic="true">800M+ candidatos • 1 crédito/candidato</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -178,9 +178,9 @@ export function SearchScopeControls({
             onClick={onSearch}
             disabled={!canSubmit() || isLoading}
             size="sm"
-            className={cn("h-8 w-8 p-0 rounded-md transition-transform hover:scale-105", canSubmit() ? "bg-gray-950 text-white" : "bg-gray-100 lia-text-500")}
+            className={cn("h-8 w-8 p-0 rounded-md transition-transform motion-reduce:transition-none hover:scale-105", canSubmit() ? "bg-gray-950 text-white" : "bg-gray-100 lia-text-500")}
           >
-            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+            {isLoading ? <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" /> : <Search className="w-4 h-4" />}
           </Button>
         </>
       )}

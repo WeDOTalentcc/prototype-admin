@@ -315,7 +315,7 @@ export function DailyBriefingCard({
               disabled={refreshing}
               className="h-8 w-8 p-0"
             >
-              <RefreshCw className={`w-4 h-4 text-lia-text-tertiary dark:text-lia-text-tertiary ${refreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 text-lia-text-tertiary dark:text-lia-text-tertiary ${refreshing ? 'animate-spin motion-reduce:animate-none' : ''}`} />
             </Button>
             <Button
               variant="ghost"
@@ -339,7 +339,7 @@ export function DailyBriefingCard({
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {/* Card Urgentes */}
             <div 
-              className="p-2 rounded-md border cursor-pointer transition-colors"
+              className="p-2 rounded-md border cursor-pointer transition-colors motion-reduce:transition-none"
               style={{backgroundColor: briefing.summary.urgent_count > 0 ? 'var(--gray-50)' : 'var(--gray-50)',
                 borderColor: 'var(--gray-200)'}}
               onClick={() => handleActionClick('view_urgent')}
@@ -355,7 +355,7 @@ export function DailyBriefingCard({
             
             {/* Card Tarefas Hoje */}
             <div 
-              className="p-2 rounded-md border cursor-pointer transition-colors"
+              className="p-2 rounded-md border cursor-pointer transition-colors motion-reduce:transition-none"
               style={{backgroundColor: 'var(--gray-50)', borderColor: 'var(--gray-200)'}}
               onClick={() => handleActionClick('view_tasks')}
             >
@@ -370,7 +370,7 @@ export function DailyBriefingCard({
             
             {/* Card Entrevistas */}
             <div 
-              className="p-2 rounded-md border cursor-pointer transition-colors"
+              className="p-2 rounded-md border cursor-pointer transition-colors motion-reduce:transition-none"
               style={{backgroundColor: 'var(--gray-50)', borderColor: 'var(--gray-200)'}}
               onClick={() => handleActionClick('view_interviews')}
             >
@@ -385,7 +385,7 @@ export function DailyBriefingCard({
             
             {/* Card Alertas */}
             <div 
-              className="p-2 rounded-md border cursor-pointer transition-colors"
+              className="p-2 rounded-md border cursor-pointer transition-colors motion-reduce:transition-none"
               style={{backgroundColor: 'var(--gray-50)', borderColor: 'var(--gray-200)'}}
               onClick={() => handleActionClick('view_alerts')}
             >
@@ -446,7 +446,7 @@ export function DailyBriefingCard({
                 {briefing.schedule.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center gap-2 p-2 rounded-md border shrink-0 cursor-pointer transition-colors"
+                    className="flex items-center gap-2 p-2 rounded-md border shrink-0 cursor-pointer transition-colors motion-reduce:transition-none"
                     style={{backgroundColor: 'var(--gray-50)', borderColor: 'var(--gray-200)'}}
                     onClick={() => handleActionClick('view_interview', item)}
                   >

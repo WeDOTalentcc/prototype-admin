@@ -182,7 +182,7 @@ export default function JornadaRecrutamentoPage() {
     return (
       <div aria-live="polite" aria-busy={isLoading} className="p-8 flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin lia-text-600 dark:text-lia-text-tertiary mx-auto mb-4" />
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary mx-auto mb-4" />
           <p className="text-sm lia-text-500">Carregando jornada de recrutamento...</p>
         </div>
       </div>
@@ -249,7 +249,7 @@ export default function JornadaRecrutamentoPage() {
               >
                 {isSaving ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
                     Salvando...
                   </>
                 ) : saveStatus === 'success' ? (

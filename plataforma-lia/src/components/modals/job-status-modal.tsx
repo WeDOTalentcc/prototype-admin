@@ -561,10 +561,10 @@ export function JobStatusModal({
           <div className="flex items-start gap-2">
             <AlertTriangle className="w-4 h-4 text-status-error mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-xs font-semibold text-status-error">
+              <p className="text-xs font-semibold text-status-error" aria-live="polite" aria-atomic="true">
                 {candidatesInProposal.length} candidato(s) em etapa de Proposta
               </p>
-              <p className="text-micro text-status-error mt-0.5">
+              <p className="text-micro text-status-error mt-0.5" aria-live="polite" aria-atomic="true">
                 Finalize ou mova esses candidatos antes de pausar a vaga.
               </p>
               <div className="mt-2 space-y-1">
@@ -628,7 +628,7 @@ export function JobStatusModal({
             </div>
             <div className="flex items-start gap-2 text-xs text-lia-text-primary">
               <span className="flex-shrink-0">📧</span>
-              <span>Novos candidatos → pool de talentos</span>
+              <span aria-live="polite" aria-atomic="true">Novos candidatos → pool de talentos</span>
             </div>
           </div>
         </div>
@@ -748,7 +748,7 @@ export function JobStatusModal({
                 <Label htmlFor="notifyApplicants" className="text-xs font-medium text-lia-text-primary cursor-pointer">
                   Enviar email aos candidatos
                 </Label>
-                <p className="text-micro text-lia-text-secondary">
+                <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                   Comunicar candidatos sobre o congelamento da vaga
                 </p>
                 {notifyApplicants && (
@@ -770,7 +770,7 @@ export function JobStatusModal({
       <div className="p-2.5 rounded-md border bg-gray-50 border-lia-border-subtle">
         <div className="flex items-center gap-2">
           <CheckCircle className="w-4 h-4 text-status-success flex-shrink-0" />
-          <span className="text-xs text-lia-text-primary leading-relaxed">
+          <span className="text-xs text-lia-text-primary leading-relaxed" aria-live="polite" aria-atomic="true">
             Você está prestes a ativar {jobs.length} vaga{jobs.length > 1 ? 's' : ''} pausada{jobs.length > 1 ? 's' : ''}
           </span>
         </div>
@@ -879,7 +879,7 @@ export function JobStatusModal({
     <div className="space-y-4">
       <div className="flex items-center gap-2 p-2.5 rounded-md bg-gray-100 border border-lia-border-subtle">
         <Mail className="w-4 h-4 text-lia-text-secondary" />
-        <span className="text-xs text-lia-text-primary">
+        <span className="text-xs text-lia-text-primary" aria-live="polite" aria-atomic="true">
           Configure a mensagem para {jobCandidates.length - candidatesInProposal.length} candidato(s)
         </span>
       </div>
@@ -912,13 +912,13 @@ export function JobStatusModal({
         </div>
       </div>
 
-      <div>
+      <div role="status" aria-live="polite" aria-label="Carregando...">
         <Label className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 block">
           Template
         </Label>
         {templatesLoading ? (
-          <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-md">
-            <Loader2 className="w-4 h-4 animate-spin text-lia-text-disabled" />
+          <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-md" role="status" aria-live="polite" aria-label="Carregando...">
+            <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none text-lia-text-disabled" />
             <span className="text-xs text-lia-text-tertiary">Carregando templates...</span>
           </div>
         ) : (
@@ -980,7 +980,7 @@ export function JobStatusModal({
         <div className="space-y-1.5">
           <div className="flex items-center gap-2 text-xs">
             <Check className="w-3.5 h-3.5 text-status-success" />
-            <span className="text-lia-text-primary">Pausar {jobs.length} vaga(s)</span>
+            <span className="text-lia-text-primary" aria-live="polite" aria-atomic="true">Pausar {jobs.length} vaga(s)</span>
           </div>
           
           {cancelScreenings && totalScreenings > 0 && (
@@ -1007,7 +1007,7 @@ export function JobStatusModal({
           {notifyApplicants && (
             <div className="flex items-center gap-2 text-xs">
               <Check className="w-3.5 h-3.5 text-status-success" />
-              <span className="text-lia-text-primary">
+              <span className="text-lia-text-primary" aria-live="polite" aria-atomic="true">
                 Notificar {selectedCandidateIds.size} candidato(s) via {notificationChannel === 'both' ? 'Email e WhatsApp' : notificationChannel}
               </span>
             </div>
@@ -1067,7 +1067,7 @@ export function JobStatusModal({
               <DialogTitle className="text-sm font-semibold text-lia-text-primary">
                 {isPauseMode ? 'Pausar Vagas' : 'Ativar Vagas'}
               </DialogTitle>
-              <p className="text-xs text-lia-text-secondary mt-0.5">
+              <p className="text-xs text-lia-text-secondary mt-0.5" aria-live="polite" aria-atomic="true">
                 {jobs.length} vaga{jobs.length > 1 ? 's' : ''} selecionada{jobs.length > 1 ? 's' : ''}
               </p>
             </div>
@@ -1115,7 +1115,7 @@ export function JobStatusModal({
                 className="h-9 px-4 text-xs font-medium text-white bg-gray-900 hover:bg-gray-800 disabled:opacity-50"
               >
                 {isSubmitting ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                 ) : currentStep === 'options' ? (
                   <>
                     {notifyApplicants ? 'Continuar' : 'Revisar'}

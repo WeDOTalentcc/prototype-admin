@@ -221,13 +221,13 @@ export function QuestionAdjustmentChat({
           </div>
         ))}
         {isLoading && (
-          <div className="flex gap-2">
-            <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 bg-wedo-cyan/15">
+          <div className="flex gap-2" role="status" aria-live="polite" aria-label="Carregando...">
+            <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 bg-wedo-cyan/15" role="status" aria-live="polite" aria-label="Carregando...">
               <Brain className="h-3 w-3 text-wedo-cyan" />
             </div>
-            <div className="bg-gray-50 border border-lia-border-subtle rounded-md px-3 py-2">
-              <div className="flex items-center gap-2">
-                <Loader2 className="h-3 w-3 animate-spin lia-text-base" />
+            <div className="bg-gray-50 border border-lia-border-subtle rounded-md px-3 py-2" role="status" aria-live="polite" aria-label="Carregando...">
+              <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
+                <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none lia-text-base" />
                 <span className="text-xs lia-text-secondary">Regenerando perguntas...</span>
               </div>
             </div>

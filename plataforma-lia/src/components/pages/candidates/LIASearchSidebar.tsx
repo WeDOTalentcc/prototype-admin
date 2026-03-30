@@ -209,7 +209,7 @@ export function LIASearchSidebar({
   } | null>(null)
   return (
     <div
-      className={`transition-colors duration-300 relative group ${isLiaSuperChat ? 'flex-1 z-10' : 'flex-shrink-0'}`}
+      className={`transition-colors motion-reduce:transition-none duration-300 relative group ${isLiaSuperChat ? 'flex-1 z-10' : 'flex-shrink-0'}`}
       style={{width: isLiaSuperChat ? 'auto' : `${liaWidth}px`,
         maxWidth: isLiaSuperChat ? 'none' : `${liaWidth}px`}}
     >
@@ -227,7 +227,7 @@ export function LIASearchSidebar({
                 <h3 className="text-sm font-semibold leading-tight truncate text-lia-text-primary dark:text-lia-text-primary">
                   Olá! Sou a Lia.
                 </h3>
-                <p className="text-xs leading-tight truncate mt-0.5 text-lia-text-tertiary">
+                <p className="text-xs leading-tight truncate mt-0.5 text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
                   Posso criar vagas, buscar candidatos, analisar métricas e muito mais!
                 </p>
               </div>
@@ -248,7 +248,7 @@ export function LIASearchSidebar({
                           setSuperChatWidth(Math.max(superChatWidth, 600))
                         }
                       }}
-                      className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
+                      className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors motion-reduce:transition-none flex-shrink-0"
                     >
                       {isLiaSuperChat ? (
                         <PanelLeftClose className="w-4 h-4 text-lia-text-secondary" />
@@ -267,7 +267,7 @@ export function LIASearchSidebar({
                 variant="ghost"
                 size="sm"
                 onClick={onClose}
-                className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
+                className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors motion-reduce:transition-none flex-shrink-0"
               >
                 <X className="w-4 h-4 text-lia-text-tertiary" />
               </Button>
@@ -307,7 +307,7 @@ export function LIASearchSidebar({
                         {/* Resumo dos resultados */}
                         <div className="p-3 rounded-md bg-white dark:bg-lia-bg-secondary">
                           <p className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
-                            Encontrei <span className="text-lia-text-secondary dark:text-lia-text-tertiary">{searchResults.localCount + (searchResults.showGlobalResults ? searchResults.globalCount : 0)} candidato{(searchResults.localCount + (searchResults.showGlobalResults ? searchResults.globalCount : 0)) > 1 ? 's' : ''}</span> para sua busca:
+                            Encontrei <span className="text-lia-text-secondary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">{searchResults.localCount + (searchResults.showGlobalResults ? searchResults.globalCount : 0)} candidato{(searchResults.localCount + (searchResults.showGlobalResults ? searchResults.globalCount : 0)) > 1 ? 's' : ''}</span> para sua busca:
                           </p>
                           <div className="flex items-center gap-3 text-xs mb-2">
                             {searchResults.localCount > 0 && (
@@ -347,7 +347,7 @@ export function LIASearchSidebar({
                             <div className="flex items-center gap-2">
                               <Home className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                               <p className="text-xs text-lia-text-primary dark:text-lia-text-secondary">
-                                <span className="font-semibold">{searchResults.localCount} candidatos</span> da base local exibidos na tabela
+                                <span className="font-semibold" aria-live="polite" aria-atomic="true">{searchResults.localCount} candidatos</span> da base local exibidos na tabela
                               </p>
                             </div>
                           </div>
@@ -363,7 +363,7 @@ export function LIASearchSidebar({
                                   <p className="text-xs font-medium text-wedo-cyan-dark dark:text-wedo-cyan-dark">
                                     Expandir para Busca Global?
                                   </p>
-                                  <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+                                  <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
                                     Acesse +800M de perfis (1 crédito/candidato)
                                   </p>
                                 </div>
@@ -421,7 +421,7 @@ export function LIASearchSidebar({
                             <div className="flex items-center gap-2">
                               <Globe className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
  <p className="text-xs text-wedo-cyan-dark dark:text-lia-text-secondary">
-                                <span className="font-semibold">{searchResults.globalCount} candidatos</span> globais adicionados à tabela
+                                <span className="font-semibold" aria-live="polite" aria-atomic="true">{searchResults.globalCount} candidatos</span> globais adicionados à tabela
                               </p>
                             </div>
                           </div>
@@ -445,7 +445,7 @@ export function LIASearchSidebar({
 
                     {/* LIA Pensando */}
                     <div className="flex items-start gap-2">
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 animate-pulse bg-wedo-cyan/20">
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 animate-pulse motion-reduce:animate-none bg-wedo-cyan/20">
                         <LIAIcon size="xs" />
                       </div>
                       <div className="flex-1 space-y-2">
@@ -454,9 +454,9 @@ export function LIASearchSidebar({
                           <div className="flex items-center gap-3 mb-3">
                             <div className="relative">
                               <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
-                                <Search className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-pulse" />
+                                <Search className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-pulse motion-reduce:animate-none" />
                               </div>
-                              <div className="absolute -top-1 -right-1 w-3 h-3 bg-gray-900 dark:bg-gray-50 rounded-full animate-ping" />
+                              <div className="absolute -top-1 -right-1 w-3 h-3 bg-gray-900 dark:bg-gray-50 rounded-full animate-ping motion-reduce:animate-none" />
                             </div>
                             <div>
                               <p className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
@@ -478,11 +478,11 @@ export function LIASearchSidebar({
                               </div>
                               <span>Interpretando critérios</span>
                             </div>
-                            <div className="flex items-center gap-2 text-xs text-lia-text-primary dark:text-lia-text-tertiary">
-                              <div className="w-4 h-4 rounded-full bg-gray-900 dark:bg-gray-50 flex items-center justify-center animate-spin">
+                            <div className="flex items-center gap-2 text-xs text-lia-text-primary dark:text-lia-text-tertiary" role="status" aria-live="polite" aria-label="Carregando...">
+                              <div className="w-4 h-4 rounded-full bg-gray-900 dark:bg-gray-50 flex items-center justify-center animate-spin motion-reduce:animate-none" role="status" aria-live="polite" aria-label="Carregando...">
                                 <div className="w-2 h-2 border border-white border-t-transparent rounded-full" />
                               </div>
-                              <span>Buscando na base de candidatos</span>
+                              <span aria-live="polite" aria-atomic="true">Buscando na base de candidatos</span>
                             </div>
                             <div className="flex items-center gap-2 text-xs text-lia-text-primary">
                               <div className="w-4 h-4 rounded-full bg-gray-200 dark:bg-lia-bg-elevated" />
@@ -494,9 +494,9 @@ export function LIASearchSidebar({
                         {/* Typing indicator */}
                         <div className="flex items-center gap-1.5 px-3 py-2">
                           <div className="flex gap-1">
-                            <div className="w-2 h-2 bg-gray-900 dark:bg-gray-50 rounded-full animate-bounce" style={{animationDelay: '0ms'}} />
-                            <div className="w-2 h-2 bg-gray-900 dark:bg-gray-50 rounded-full animate-bounce" style={{animationDelay: '150ms'}} />
-                            <div className="w-2 h-2 bg-gray-900 dark:bg-gray-50 rounded-full animate-bounce" style={{animationDelay: '300ms'}} />
+                            <div className="w-2 h-2 bg-gray-900 dark:bg-gray-50 rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '0ms'}} />
+                            <div className="w-2 h-2 bg-gray-900 dark:bg-gray-50 rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '150ms'}} />
+                            <div className="w-2 h-2 bg-gray-900 dark:bg-gray-50 rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '300ms'}} />
                           </div>
                         </div>
                       </div>
@@ -540,7 +540,7 @@ export function LIASearchSidebar({
                           <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 bg-wedo-cyan/15">
                             <LIAIcon size="xs" />
                           </div>
-                          <p className="text-xs text-lia-text-primary dark:text-lia-text-tertiary">
+                          <p className="text-xs text-lia-text-primary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
                             Vou mostrar alguns candidatos para entender melhor o perfil que você busca:
                           </p>
                         </div>
@@ -713,7 +713,7 @@ export function LIASearchSidebar({
                       }
                     }}
                     disabled={!liaPromptValue.trim() || searchResults.isLoading}
-                    className="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center transition-colors disabled:opacity-50 bg-gray-900"
+                    className="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none disabled:opacity-50 bg-gray-900"
                   >
                     <Send className="w-3.5 h-3.5 text-white" />
                   </button>
@@ -724,14 +724,14 @@ export function LIASearchSidebar({
                   <span className="text-micro font-medium text-lia-text-tertiary">Sugestões:</span>
                   <button
                     onClick={() => onAICommand('Top 5 candidatos')}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-lia-text-secondary bg-gray-100 rounded-full hover:bg-gray-200 transition-colors dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:hover:bg-gray-700"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-lia-text-secondary bg-gray-100 rounded-full hover:bg-gray-200 transition-colors motion-reduce:transition-none dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:hover:bg-gray-700"
                   >
                     <Star className="w-2.5 h-2.5 text-lia-text-tertiary" />
                     Top 5
                   </button>
                   <button
                     onClick={() => onAICommand('Resumir esta busca')}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-lia-text-secondary bg-gray-100 rounded-full hover:bg-gray-200 transition-colors dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:hover:bg-gray-700"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-lia-text-secondary bg-gray-100 rounded-full hover:bg-gray-200 transition-colors motion-reduce:transition-none dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:hover:bg-gray-700"
                   >
                     <FileText className="w-2.5 h-2.5 text-lia-text-tertiary" />
                     Resumir busca
@@ -749,7 +749,7 @@ export function LIASearchSidebar({
           {activeSearchTab === 'job-description' && (
             <div className="space-y-4 overflow-y-auto flex-1 p-4">
               {/* Descrição */}
-              <p className="text-xs text-lia-text-tertiary">
+              <p className="text-xs text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
                 Cole sua descrição de vaga e a IA extrairá os critérios automaticamente
               </p>
 
@@ -759,7 +759,7 @@ export function LIASearchSidebar({
                   placeholder="Cole aqui a descrição da vaga completa..."
                   value={jobDescriptionText}
                   onChange={(e) => setJobDescriptionText(e.target.value)}
-                  className="w-full h-48 p-4 pb-12 text-xs rounded-md border focus:outline-none transition-colors resize-none bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary border border-lia-border-subtle"
+                  className="w-full h-48 p-4 pb-12 text-xs rounded-md border focus:outline-none transition-colors motion-reduce:transition-none resize-none bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary border border-lia-border-subtle"
                   onFocus={(e) => e.target.style.borderColor = 'var(--gray-200)'}
                   onBlur={(e) => e.target.style.borderColor = 'var(--gray-50)'}
                 />
@@ -767,7 +767,7 @@ export function LIASearchSidebar({
                 <div className="absolute bottom-3 right-3 flex gap-2">
                   <button
                     type="button"
-                    className="p-2 rounded-md hover:bg-gray-100 transition-colors"
+                    className="p-2 rounded-md hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                     title="Anexar documento"
                     onClick={() => {
                       // TODO: Implementar upload de arquivo
@@ -777,7 +777,7 @@ export function LIASearchSidebar({
                   </button>
                   <button
                     type="button"
-                    className="p-2 rounded-md hover:bg-gray-100 transition-colors"
+                    className="p-2 rounded-md hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                     title="Gravar áudio"
                     onClick={() => {
                       // TODO: Implementar gravação de áudio
@@ -985,7 +985,7 @@ export function LIASearchSidebar({
               >
                 {isSearchingJD ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                     Analisando...
                   </>
                 ) : (
@@ -1011,7 +1011,7 @@ export function LIASearchSidebar({
           {/* ABA 4: SIMILAR */}
           {activeSearchTab === 'similar' && (
             <div className="space-y-4 overflow-y-auto flex-1 p-4">
-              <p className="text-xs text-lia-text-tertiary">
+              <p className="text-xs text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
                 Encontre candidatos similares a um perfil específico
               </p>
 
@@ -1021,7 +1021,7 @@ export function LIASearchSidebar({
                   value={similarProfileUrl}
                   onChange={(e) => setSimilarProfileUrl(e.target.value)}
                   placeholder="Cole o link do LinkedIn ou nome do candidato..."
-                  className="w-full p-3 text-xs rounded-md border focus:outline-none transition-colors bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary border border-lia-border-subtle"
+                  className="w-full p-3 text-xs rounded-md border focus:outline-none transition-colors motion-reduce:transition-none bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary border border-lia-border-subtle"
                 />
               </div>
 
@@ -1195,7 +1195,7 @@ export function LIASearchSidebar({
               >
                 {isSearchingSimilar ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
                     Buscando...
                   </>
                 ) : (
@@ -1220,7 +1220,7 @@ export function LIASearchSidebar({
                   <button
                     key={op}
                     onClick={() => setBooleanSearchValue(prev => prev + ' ' + op)}
-                    className="px-2 py-1 text-xs rounded-full bg-gray-100 hover:bg-gray-200 text-lia-text-primary font-mono transition-colors"
+                    className="px-2 py-1 text-xs rounded-full bg-gray-100 hover:bg-gray-200 text-lia-text-primary font-mono transition-colors motion-reduce:transition-none"
                   >
                     {op}
                   </button>
@@ -1231,7 +1231,7 @@ export function LIASearchSidebar({
                 value={booleanSearchValue}
                 onChange={(e) => setBooleanSearchValue(e.target.value)}
                 placeholder='Ex: ("Node.js" OR "Python") AND "sênior" NOT "júnior"'
-                className="w-full h-32 p-3 text-xs rounded-md border focus:outline-none transition-colors resize-none bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary font-mono border border-lia-border-subtle"
+                className="w-full h-32 p-3 text-xs rounded-md border focus:outline-none transition-colors motion-reduce:transition-none resize-none bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary font-mono border border-lia-border-subtle"
               />
 
               <div className="p-3 rounded-md bg-wedo-cyan/[0.06]">
@@ -1293,7 +1293,7 @@ export function LIASearchSidebar({
                         education: {},
                         languages: {}
                       })}
-                      className="text-xs text-lia-text-primary hover:text-status-error transition-colors"
+                      className="text-xs text-lia-text-primary hover:text-status-error transition-colors motion-reduce:transition-none"
 
                     >
                       Limpar todos
@@ -1315,7 +1315,7 @@ export function LIASearchSidebar({
 
               {/* Info sobre filtros laterais */}
               {!showTableFiltersPanel && (
-                <p className="text-xs text-lia-text-primary text-center mt-2">
+                <p className="text-xs text-lia-text-primary text-center mt-2" aria-live="polite" aria-atomic="true">
                   Os filtros aparecerão ao lado da tabela de candidatos
                 </p>
               )}
@@ -1327,7 +1327,7 @@ export function LIASearchSidebar({
 
       {/* Resize Handle - Sempre visível */}
       <div
-        className={`absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 cursor-ew-resize hover:scale-125 transition-transform z-10 flex items-center justify-center ${isLiaSuperChat ? 'h-full' : 'h-12'}`}
+        className={`absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 cursor-ew-resize hover:scale-125 transition-transform motion-reduce:transition-none z-10 flex items-center justify-center ${isLiaSuperChat ? 'h-full' : 'h-12'}`}
         title="Arraste para ajustar a largura"
         onMouseDown={(e) => {
           e.preventDefault()
@@ -1358,7 +1358,7 @@ export function LIASearchSidebar({
           document.addEventListener('mouseup', handleMouseUp)
         }}
       >
- <div className={`w-1 rounded-full transition-colors ${isLiaSuperChat ? 'h-24 bg-gray-900' : 'h-8 dark:bg-lia-bg-elevated hover:dark:hover:bg-gray-800'}`} />
+ <div className={`w-1 rounded-full transition-colors motion-reduce:transition-none ${isLiaSuperChat ? 'h-24 bg-gray-900' : 'h-8 dark:bg-lia-bg-elevated hover:dark:hover:bg-gray-800'}`} />
       </div>
     </div>
   )

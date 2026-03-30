@@ -117,14 +117,14 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
               <p 
                 className="text-xs text-lia-text-tertiary"
                
-              >
+               aria-live="polite" aria-atomic="true">
                 {candidate?.name ?? 'Candidato'}
               </p>
             </div>
           </div>
           <button 
             onClick={onClose}
-            className="h-7 w-7 p-0 flex items-center justify-center transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-lia-text-tertiary dark:text-lia-text-tertiary"
+            className="h-7 w-7 p-0 flex items-center justify-center transition-colors motion-reduce:transition-none hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-lia-text-tertiary dark:text-lia-text-tertiary"
           >
             <X className="w-4 h-4" />
           </button>
@@ -135,9 +135,9 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
             className="flex items-center justify-between p-3 rounded-md mb-4"
             style={{backgroundColor: statusConfig.bgColor, border: `1px solid ${statusConfig.borderColor}`}}
           >
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
               <StatusIcon 
-                className={`w-4 h-4 ${status === 'in_progress' ? 'animate-spin' : ''}`} 
+                className={`w-4 h-4 ${status === 'in_progress' ? 'animate-spin motion-reduce:animate-none' : ''}`} 
                 style={{color: statusConfig.color}} 
               />
               <span 
@@ -299,7 +299,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
               <p 
                 className="text-micro text-center text-lia-text-disabled"
                
-              >
+               aria-live="polite" aria-atomic="true">
                 O candidato receberá um convite para realizar o teste de inglês.
               </p>
             </div>
@@ -310,7 +310,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
               className="flex flex-col items-center justify-center py-8 text-status-warning"
               
             >
-              <Loader2 className="w-12 h-12 mb-3 animate-spin" />
+              <Loader2 className="w-12 h-12 mb-3 animate-spin motion-reduce:animate-none" />
               <p 
                 className="text-xs font-medium mb-1 text-lia-text-tertiary"
                
@@ -320,7 +320,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
               <p 
                 className="text-micro text-center text-lia-text-disabled"
                
-              >
+               aria-live="polite" aria-atomic="true">
                 O candidato está realizando o teste de inglês neste momento.
               </p>
             </div>

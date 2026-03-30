@@ -144,7 +144,7 @@ export function VoiceScreeningDashboard() {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center space-y-3">
-          <Activity className="w-8 h-8 mx-auto text-lia-text-secondary dark:text-lia-text-tertiary animate-spin" />
+          <Activity className="w-8 h-8 mx-auto text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
           <p className="text-sm font-open-sans text-lia-text-secondary dark:text-lia-text-tertiary">
             Carregando dados de Voice Screening...
           </p>
@@ -285,7 +285,7 @@ export function VoiceScreeningDashboard() {
               {screenings.map((screening) => (
                 <div 
                   key={screening.id}
-                  className="p-3 bg-gray-50 dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-900 dark:hover:border-gray-50 dark:hover:border-gray-900 dark:hover:border-gray-50 transition-colors"
+                  className="p-3 bg-gray-50 dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-900 dark:hover:border-gray-50 dark:hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">

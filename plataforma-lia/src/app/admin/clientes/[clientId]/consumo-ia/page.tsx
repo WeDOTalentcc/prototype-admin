@@ -21,15 +21,15 @@ export default function ConsumoIAPage() {
   if (isLoading) {
     return (
       <div className="p-6 space-y-6">
-        <div className="h-8 w-48 bg-gray-200 rounded-md animate-pulse" />
+        <div className="h-8 w-48 bg-gray-200 rounded-md animate-pulse motion-reduce:animate-none" />
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-32 bg-gray-100 rounded-md animate-pulse" />
+            <div key={i} className="h-32 bg-gray-100 rounded-md animate-pulse motion-reduce:animate-none" />
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="h-64 bg-gray-100 rounded-md animate-pulse" />
-          <div className="h-64 bg-gray-100 rounded-md animate-pulse" />
+          <div className="h-64 bg-gray-100 rounded-md animate-pulse motion-reduce:animate-none" />
+          <div className="h-64 bg-gray-100 rounded-md animate-pulse motion-reduce:animate-none" />
         </div>
       </div>
     )
@@ -46,7 +46,7 @@ export default function ConsumoIAPage() {
           </div>
           <button
             onClick={() => refetch()}
-            className="ml-auto px-3 py-1 text-sm bg-status-error/15 hover:bg-status-error/20 text-status-error rounded-md transition-colors"
+            className="ml-auto px-3 py-1 text-sm bg-status-error/15 hover:bg-status-error/20 text-status-error rounded-md transition-colors motion-reduce:transition-none"
           >
             Tentar novamente
           </button>

@@ -448,7 +448,7 @@ export function CloseVacancyModal({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-lia-text-tertiary" />
-            <span className={textStyles.label}>
+            <span className={textStyles.label} aria-live="polite" aria-atomic="true">
               Demais candidatos ({otherCandidates.length})
             </span>
           </div>
@@ -469,7 +469,7 @@ export function CloseVacancyModal({
           <div className="p-2 space-y-1">
             {otherCandidates.length === 0 ? (
               <div className="flex items-center justify-center h-32 text-lia-text-tertiary">
-                <p className={textStyles.description}>Não há outros candidatos na pipeline</p>
+                <p className={textStyles.description} aria-live="polite" aria-atomic="true">Não há outros candidatos na pipeline</p>
               </div>
             ) : (
               otherCandidates.map(candidate => (
@@ -510,7 +510,7 @@ export function CloseVacancyModal({
         </ScrollArea>
         
         {selectedCandidateIds.length > 0 && (
-          <p className={cn(textStyles.caption, 'text-lia-text-secondary dark:text-lia-text-tertiary')}>
+          <p className={cn(textStyles.caption, 'text-lia-text-secondary dark:text-lia-text-tertiary')} aria-live="polite" aria-atomic="true">
             {selectedCandidateIds.length} candidato(s) selecionado(s) para receber feedback
           </p>
         )}
@@ -661,7 +661,7 @@ export function CloseVacancyModal({
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />
                   Processando...
                 </>
               ) : (

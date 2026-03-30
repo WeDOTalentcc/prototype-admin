@@ -128,7 +128,7 @@ export function CompanyDataCard({
                 </div>
                 <button
                   onClick={() => setIsPopoverOpen(false)}
-                  className="lia-text-500 hover:lia-text-700 dark:text-lia-text-tertiary dark:hover:lia-text-200 transition-colors"
+                  className="lia-text-500 hover:lia-text-700 dark:text-lia-text-tertiary dark:hover:lia-text-200 transition-colors motion-reduce:transition-none"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -156,7 +156,7 @@ export function CompanyDataCard({
                       <button
                         key={idx}
                         onClick={() => setInstruction(example)}
-                        className="block w-full text-left text-xs lia-text-600 dark:text-lia-text-tertiary hover:lia-text-900 dark:hover:lia-text-50 p-1.5 rounded-md hover:bg-lia-bg-primary dark:hover:bg-gray-800 transition-colors"
+                        className="block w-full text-left text-xs lia-text-600 dark:text-lia-text-tertiary hover:lia-text-900 dark:hover:lia-text-50 p-1.5 rounded-md hover:bg-lia-bg-primary dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
                       >
                         "{example}"
                       </button>
@@ -181,7 +181,7 @@ export function CompanyDataCard({
                   className="text-xs h-8 bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
                 >
                   {isSaving ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-1" />
                   ) : (
                     <Save className="w-3.5 h-3.5 mr-1" />
                   )}

@@ -25,11 +25,11 @@ export default function AccessPage() {
         {/* Access Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Client Portal */}
-          <Card className="group hover:border-gray-400 dark:hover:border-gray-500 transition-colors duration-300 cursor-pointer">
+          <Card className="group hover:border-gray-400 dark:hover:border-gray-500 transition-colors motion-reduce:transition-none duration-300 cursor-pointer">
             <CardContent className="p-8">
               <div className="flex flex-col items-center text-center space-y-6">
                 {/* Icon */}
-                <div className="w-20 h-20 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center group-hover:bg-gray-800 dark:hover:bg-gray-200/20 transition-colors">
+                <div className="w-20 h-20 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center group-hover:bg-gray-800 dark:hover:bg-gray-200/20 transition-colors motion-reduce:transition-none">
                   <Users className="w-10 h-10 lia-text-700 dark:text-lia-text-secondary" />
                 </div>
 
@@ -96,11 +96,11 @@ export default function AccessPage() {
           </Card>
 
           {/* Admin Portal */}
-          <Card className="group hover:border-wedo-purple/30 transition-colors duration-300 cursor-pointer">
+          <Card className="group hover:border-wedo-purple/30 transition-colors motion-reduce:transition-none duration-300 cursor-pointer">
             <CardContent className="p-8">
               <div className="flex flex-col items-center text-center space-y-6">
                 {/* Icon */}
-                <div className="w-20 h-20 rounded-full bg-wedo-purple/10 flex items-center justify-center group-hover:bg-wedo-purple/20 transition-colors">
+                <div className="w-20 h-20 rounded-full bg-wedo-purple/10 flex items-center justify-center group-hover:bg-wedo-purple/20 transition-colors motion-reduce:transition-none">
                   <Shield className="w-10 h-10 text-wedo-purple" />
                 </div>
 

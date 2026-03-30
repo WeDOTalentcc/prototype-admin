@@ -390,7 +390,7 @@ export function AdminTemplateHub() {
               <button 
                 key={key}
                 onClick={() => handleChannelFilterChange(key as typeof channelFilter)}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none ${
  channelFilter === key 
                     ? 'text-white' 
                     : 'bg-gray-100 text-lia-text-secondary hover:bg-gray-200 dark:bg-lia-bg-elevated dark:text-lia-text-secondary'
@@ -427,7 +427,7 @@ export function AdminTemplateHub() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <Card key={i} className="rounded-md animate-pulse">
+              <Card key={i} className="rounded-md animate-pulse motion-reduce:animate-none">
                 <CardContent className="p-3">
                   <div className="flex items-start gap-2">
                     <div className="w-8 h-8 rounded-md bg-wedo-cyan/20"></div>
@@ -440,7 +440,7 @@ export function AdminTemplateHub() {
               </Card>
             ))}
           </div>
-          <Card className="border-dashed border-2 border-lia-border-subtle rounded-md h-64 flex items-center justify-center animate-pulse">
+          <Card className="border-dashed border-2 border-lia-border-subtle rounded-md h-64 flex items-center justify-center animate-pulse motion-reduce:animate-none">
             <CardContent className="text-center">
               <div className="w-10 h-10 rounded-full mx-auto mb-3 bg-wedo-cyan/20"></div>
               <div className="h-4 w-40 rounded-md mx-auto bg-wedo-cyan/20"></div>
@@ -456,7 +456,7 @@ export function AdminTemplateHub() {
                   <div className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2 bg-gray-200/30">
                     <Search className="w-4 h-4 lia-text-base" />
                   </div>
-                  <p className="text-sm lia-text-base">
+                  <p className="text-sm lia-text-base" aria-live="polite" aria-atomic="true">
                     Nenhum template encontrado
                   </p>
                   <p className="text-xs lia-text-secondary mt-1">
@@ -493,7 +493,7 @@ export function AdminTemplateHub() {
                           {groupTemplates.map((template) => (
                             <Card 
                               key={template.id}
-                              className={`border cursor-pointer transition-colors rounded-md ${
+                              className={`border cursor-pointer transition-colors motion-reduce:transition-none rounded-md ${
  selectedTemplate?.id === template.id 
                                   ? 'border-gray-900' 
                                   : 'border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default'
@@ -694,7 +694,7 @@ export function AdminTemplateHub() {
                         >
                           {isGenerating ? (
                             <>
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
                               Ajustando...
                             </>
                           ) : (
@@ -708,9 +708,9 @@ export function AdminTemplateHub() {
                       {isGenerating && (
                         <div className="flex items-center gap-2 p-2 rounded-md bg-wedo-cyan/[.08]">
                           <div className="flex gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900" style={{animationDelay: '0ms'}}></span>
-                            <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900" style={{animationDelay: '150ms'}}></span>
-                            <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-900" style={{animationDelay: '300ms'}}></span>
+                            <span className="w-1.5 h-1.5 rounded-full animate-bounce motion-reduce:animate-none bg-gray-900" style={{animationDelay: '0ms'}}></span>
+                            <span className="w-1.5 h-1.5 rounded-full animate-bounce motion-reduce:animate-none bg-gray-900" style={{animationDelay: '150ms'}}></span>
+                            <span className="w-1.5 h-1.5 rounded-full animate-bounce motion-reduce:animate-none bg-gray-900" style={{animationDelay: '300ms'}}></span>
                           </div>
                           <span className="text-xs" style={{color: 'var(--wedo-cyan-dark)'}}>
                             A LIA está analisando e ajustando o template...

@@ -57,7 +57,7 @@ const statusLabels: Record<string, string> = {
 
 function LoadingSpinner({ size = 'sm' }: { size?: 'sm' | 'md' | 'lg' }) {
   const sizeClass = size === 'lg' ? 'w-8 h-8' : size === 'md' ? 'w-6 h-6' : 'w-4 h-4'
-  return <Loader2 className={`${sizeClass} animate-spin lia-text-600`} />
+  return <Loader2 className={`${sizeClass} animate-spin motion-reduce:animate-none lia-text-600`} />
 }
 
 export default function ControlesPage({ params }: { params: Promise<{ clientId: string }> }) {
@@ -278,7 +278,7 @@ export default function ControlesPage({ params }: { params: Promise<{ clientId: 
           ) : (
             <div className="text-center py-6">
               <Shield className="w-8 h-8 lia-text-400 mx-auto mb-2" />
-              <p className="text-sm lia-text-400 dark:lia-text-500">Nenhum controle encontrado</p>
+              <p className="text-sm lia-text-400 dark:lia-text-500" aria-live="polite" aria-atomic="true">Nenhum controle encontrado</p>
             </div>
           )}
         </CardContent>

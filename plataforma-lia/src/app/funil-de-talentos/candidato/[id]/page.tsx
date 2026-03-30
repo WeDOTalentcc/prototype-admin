@@ -122,9 +122,9 @@ export default function CandidateProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-lia-bg-primary">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin lia-text-600 dark:text-lia-text-tertiary mx-auto mb-3" />
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-lia-bg-primary" role="status" aria-live="polite" aria-label="Carregando perfil...">
+        <div className="text-center" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary mx-auto mb-3" />
           <p className="text-sm lia-text-600 dark:text-lia-text-tertiary">Carregando perfil...</p>
         </div>
       </div>
@@ -133,9 +133,9 @@ export default function CandidateProfilePage() {
 
   if (error || !candidate) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-lia-bg-primary">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-lia-bg-primary" role="alert" aria-live="assertive">
         <div className="text-center">
-          <p className="text-sm text-status-error mb-4">{error || "Candidato não encontrado"}</p>
+          <p className="text-sm text-status-error mb-4" aria-live="polite" aria-atomic="true">{error || "Candidato não encontrado"}</p>
           <Button variant="outline" onClick={() => router.back()}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar
@@ -203,7 +203,7 @@ export default function CandidateProfilePage() {
                           <Badge className="text-xs bg-status-error/10 text-status-error border-status-error/30">⚠️ LCNU</Badge>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p className="font-medium">Lista de Candidatos Não Utilizáveis</p>
+                          <p className="font-medium" aria-live="polite" aria-atomic="true">Lista de Candidatos Não Utilizáveis</p>
                           {candidate.blacklist_reason && <p className="text-xs">{candidate.blacklist_reason}</p>}
                         </TooltipContent>
                       </Tooltip>
@@ -249,7 +249,7 @@ export default function CandidateProfilePage() {
                       }}
                     >
                       <button 
-                        className="p-1.5 rounded-full hover:bg-gray-100 dark:bg-lia-bg-secondary transition-colors"
+                        className="p-1.5 rounded-full hover:bg-gray-100 dark:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
                         title="Análise LIA do Perfil"
                       >
                         <Brain className="w-5 h-5 text-wedo-cyan" />
@@ -285,13 +285,13 @@ export default function CandidateProfilePage() {
 
                   <div className="flex items-center gap-4 flex-wrap">
                     {candidate.email && (
-                      <a href={`mailto:${candidate.email}`} className="flex items-center gap-1.5 text-sm lia-text-600 hover:lia-text-900 dark:hover:lia-text-100 transition-colors">
+                      <a href={`mailto:${candidate.email}`} className="flex items-center gap-1.5 text-sm lia-text-600 hover:lia-text-900 dark:hover:lia-text-100 transition-colors motion-reduce:transition-none">
                         <Mail className="w-4 h-4" />
                         {candidate.email}
                       </a>
                     )}
                     {(candidate.phone || candidate.mobile_phone) && (
-                      <a href={`tel:${candidate.mobile_phone || candidate.phone}`} className="flex items-center gap-1.5 text-sm lia-text-600 hover:lia-text-900 dark:hover:lia-text-100 transition-colors">
+                      <a href={`tel:${candidate.mobile_phone || candidate.phone}`} className="flex items-center gap-1.5 text-sm lia-text-600 hover:lia-text-900 dark:hover:lia-text-100 transition-colors motion-reduce:transition-none">
                         <Phone className="w-4 h-4" />
                         {candidate.mobile_phone || candidate.phone}
                       </a>
@@ -303,7 +303,7 @@ export default function CandidateProfilePage() {
                           href={candidate.linkedin_url || '#'} 
                           target="_blank" 
                           rel="noopener noreferrer" 
-                          className={`p-1.5 rounded-md transition-colors ${candidate.linkedin_url ? 'hover:bg-gray-100 dark:hover:bg-gray-800' : 'opacity-30 cursor-default'}`}
+                          className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${candidate.linkedin_url ? 'hover:bg-gray-100 dark:hover:bg-gray-800' : 'opacity-30 cursor-default'}`}
                           onClick={(e) => !candidate.linkedin_url && e.preventDefault()}
                         >
                           <Linkedin className="w-5 h-5" style={{color: candidate.linkedin_url ? '#0A66C2' : 'var(--gray-400)'}} />
@@ -317,7 +317,7 @@ export default function CandidateProfilePage() {
                           href={candidate.github_url || '#'} 
                           target="_blank" 
                           rel="noopener noreferrer" 
-                          className={`p-1.5 rounded-md transition-colors ${candidate.github_url ? 'hover:bg-gray-100' : 'opacity-30 cursor-default'}`}
+                          className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${candidate.github_url ? 'hover:bg-gray-100' : 'opacity-30 cursor-default'}`}
                           onClick={(e) => !candidate.github_url && e.preventDefault()}
                         >
                           <Github className="w-5 h-5" style={{color: candidate.github_url ? '#181717' : 'var(--gray-400)'}} />
@@ -331,7 +331,7 @@ export default function CandidateProfilePage() {
                           href={candidate.stackoverflow_url || '#'} 
                           target="_blank" 
                           rel="noopener noreferrer" 
-                          className={`p-1.5 rounded-md transition-colors ${candidate.stackoverflow_url ? 'hover:bg-wedo-orange/10' : 'opacity-30 cursor-default'}`}
+                          className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${candidate.stackoverflow_url ? 'hover:bg-wedo-orange/10' : 'opacity-30 cursor-default'}`}
                           onClick={(e) => !candidate.stackoverflow_url && e.preventDefault()}
                         >
                           <svg className="w-5 h-5" viewBox="0 0 24 24" fill={candidate.stackoverflow_url ? '#F48024' : 'var(--gray-400)'}><path d="M15 21H3v-8h2v6h10v-6h2v8z"/><path d="M5 15h10v-2H5v2zm0-3.5h10v-2H5v2zm.05-3.45l9.85 2.05.4-1.95L5.45 6l-.4 1.95zM7.15 4.55l8.95 4.55.85-1.7L8 2.85l-.85 1.7z"/></svg>
@@ -345,7 +345,7 @@ export default function CandidateProfilePage() {
                           href={candidate.twitter_url || candidate.x_url || '#'} 
                           target="_blank" 
                           rel="noopener noreferrer" 
-                          className={`p-1.5 rounded-md transition-colors ${(candidate.twitter_url || candidate.x_url) ? 'hover:bg-gray-100' : 'opacity-30 cursor-default'}`}
+                          className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${(candidate.twitter_url || candidate.x_url) ? 'hover:bg-gray-100' : 'opacity-30 cursor-default'}`}
                           onClick={(e) => !(candidate.twitter_url || candidate.x_url) && e.preventDefault()}
                         >
                           <svg className="w-5 h-5" viewBox="0 0 24 24" fill={(candidate.twitter_url || candidate.x_url) ? '#000000' : 'var(--gray-400)'}><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
@@ -359,7 +359,7 @@ export default function CandidateProfilePage() {
                           href={candidate.behance_url || '#'} 
                           target="_blank" 
                           rel="noopener noreferrer" 
-                          className={`p-1.5 rounded-md transition-colors ${candidate.behance_url ? 'hover:bg-gray-100 dark:hover:bg-gray-800' : 'opacity-30 cursor-default'}`}
+                          className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${candidate.behance_url ? 'hover:bg-gray-100 dark:hover:bg-gray-800' : 'opacity-30 cursor-default'}`}
                           onClick={(e) => !candidate.behance_url && e.preventDefault()}
                         >
                           <svg className="w-5 h-5" viewBox="0 0 24 24" fill={candidate.behance_url ? '#1769FF' : 'var(--gray-400)'}><path d="M7.5 11c1.5 0 2.5-.8 2.5-2.2S9 6.5 7.5 6.5H4v4.5h3.5zm.5 1H4v5h4c1.8 0 3-1.1 3-2.5S9.8 12 8 12zm8.5-1c-1.5 0-2.5.8-2.5 2h5c0-1.2-1-2-2.5-2z"/><path d="M22.5 6H14v1.5h8.5V6zm-.5 5c0-2.5-2-4.5-4.5-4.5S13 8.5 13 11s2 4.5 4.5 4.5c1.5 0 3-.8 3.8-2h-1.8c-.5.6-1.2 1-2 1-1.5 0-2.5-1-2.5-2.5h6.5v-.5c0-.2 0-.3-.5-.5z"/></svg>
@@ -373,7 +373,7 @@ export default function CandidateProfilePage() {
                           href={candidate.portfolio_url || '#'} 
                           target="_blank" 
                           rel="noopener noreferrer" 
-                          className={`p-1.5 rounded-md transition-colors ${candidate.portfolio_url ? 'hover:bg-gray-100 dark:hover:bg-gray-800' : 'opacity-30 cursor-default'}`}
+                          className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${candidate.portfolio_url ? 'hover:bg-gray-100 dark:hover:bg-gray-800' : 'opacity-30 cursor-default'}`}
                           onClick={(e) => !candidate.portfolio_url && e.preventDefault()}
                         >
                           <Globe className="w-5 h-5" style={{color: candidate.portfolio_url ? 'var(--gray-950)' : 'var(--gray-400)'}} />
@@ -618,7 +618,7 @@ export default function CandidateProfilePage() {
                           <div className="flex items-center bg-white dark:bg-lia-bg-secondary rounded-md p-0.5 border border-lia-border-subtle dark:border-lia-border-default">
                             <button
                               onClick={() => setActivityView('timeline')}
-                              className={`p-1.5 rounded-md transition-colors ${
+                              className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
                                 activityView === 'timeline' ? 'bg-gray-200 lia-text-800 dark:text-lia-text-primary' : 'lia-text-600 hover:lia-text-700'
                               }`}
                               title="Visualização Timeline"
@@ -627,7 +627,7 @@ export default function CandidateProfilePage() {
                             </button>
                             <button
                               onClick={() => setActivityView('list')}
-                              className={`p-1.5 rounded-md transition-colors ${
+                              className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
                                 activityView === 'list' ? 'bg-gray-200 lia-text-800 dark:text-lia-text-primary' : 'lia-text-600 hover:lia-text-700'
                               }`}
                               title="Visualização Lista"
@@ -646,7 +646,7 @@ export default function CandidateProfilePage() {
                       <div className="flex gap-1.5 flex-wrap">
                         <button
                           onClick={() => setActivityFilter('all')}
-                          className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
+                          className={`px-2.5 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none ${
                             activityFilter === 'all' ? 'bg-gray-600 text-white' : 'bg-gray-100 lia-text-600 hover:bg-gray-200'
                           }`}
                         >
@@ -654,7 +654,7 @@ export default function CandidateProfilePage() {
                         </button>
                         <button
                           onClick={() => setActivityFilter('emails')}
-                          className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
+                          className={`px-2.5 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none ${
                             activityFilter === 'emails' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 lia-text-800 dark:text-lia-text-primary hover:bg-gray-200'
                           }`}
                         >
@@ -662,7 +662,7 @@ export default function CandidateProfilePage() {
                         </button>
                         <button
                           onClick={() => setActivityFilter('interviews')}
-                          className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
+                          className={`px-2.5 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none ${
                             activityFilter === 'interviews' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 lia-text-800 dark:text-lia-text-primary hover:bg-gray-200'
                           }`}
                         >
@@ -670,7 +670,7 @@ export default function CandidateProfilePage() {
                         </button>
                         <button
                           onClick={() => setActivityFilter('tests')}
-                          className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
+                          className={`px-2.5 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none ${
                             activityFilter === 'tests' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 lia-text-800 dark:text-lia-text-primary hover:bg-gray-200'
                           }`}
                         >
@@ -678,7 +678,7 @@ export default function CandidateProfilePage() {
                         </button>
                         <button
                           onClick={() => setActivityFilter('lia')}
-                          className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
+                          className={`px-2.5 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none ${
                             activityFilter === 'lia' ? 'bg-status-error text-white' : 'bg-status-error/15 text-status-error hover:bg-status-error/20'
                           }`}
                         >
@@ -686,7 +686,7 @@ export default function CandidateProfilePage() {
                         </button>
                         <button
                           onClick={() => setActivityFilter('offers')}
-                          className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
+                          className={`px-2.5 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none ${
                             activityFilter === 'offers' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 lia-text-800 dark:text-lia-text-primary hover:bg-gray-200'
                           }`}
                         >
@@ -694,7 +694,7 @@ export default function CandidateProfilePage() {
                         </button>
                         <button
                           onClick={() => setActivityFilter('applications')}
-                          className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
+                          className={`px-2.5 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none ${
                             activityFilter === 'applications' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 lia-text-800 dark:text-lia-text-primary hover:bg-gray-200'
                           }`}
                         >
@@ -702,7 +702,7 @@ export default function CandidateProfilePage() {
                         </button>
                         <button
                           onClick={() => setActivityFilter('notes')}
-                          className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
+                          className={`px-2.5 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none ${
                             activityFilter === 'notes' ? 'bg-status-warning text-white' : 'bg-status-warning/15 text-status-warning hover:bg-status-warning/20'
                           }`}
                         >
@@ -774,10 +774,10 @@ export default function CandidateProfilePage() {
                     )}
 
                     {/* Feed de Atividades */}
-                    <div className="flex-1 p-4">
+                    <div className="flex-1 p-4" role="status" aria-live="polite" aria-label="Carregando...">
                       {isLoadingActivities ? (
-                        <div className="flex items-center justify-center py-12">
-                          <Loader2 className="w-6 h-6 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+                        <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
+                          <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
                         </div>
                       ) : (() => {
                         const getCategoryLabel = (cat: string) => {
@@ -852,7 +852,7 @@ export default function CandidateProfilePage() {
                                   ? 'Nenhuma nota registrada ainda'
                                   : 'Nenhuma atividade registrada ainda'}
                               </h3>
-                              <p className="text-xs lia-text-600 text-center max-w-xs">
+                              <p className="text-xs lia-text-600 text-center max-w-xs" aria-live="polite" aria-atomic="true">
                                 {activityFilter === 'notes'
                                   ? 'Use o formulário acima para adicionar notas sobre este candidato'
                                   : 'As atividades aparecerão aqui conforme o processo avança'}
@@ -866,7 +866,7 @@ export default function CandidateProfilePage() {
                             {filteredItems.map((item: Record<string, unknown>, index: number) => {
                               if (item.itemType === 'note') {
                                 return (
-                                  <div key={item.id || index} className="flex items-start gap-3 p-3 bg-status-warning/10/50 rounded-md border border-status-warning/30 transition-colors">
+                                  <div key={item.id || index} className="flex items-start gap-3 p-3 bg-status-warning/10/50 rounded-md border border-status-warning/30 transition-colors motion-reduce:transition-none">
                                     <div className="w-8 h-8 rounded-full bg-status-warning/15 flex items-center justify-center flex-shrink-0">
                                       <FileText className="w-4 h-4 text-status-warning" />
                                     </div>
@@ -890,7 +890,7 @@ export default function CandidateProfilePage() {
                               }
                               
                               return (
-                                <div key={item.id || index} className="flex gap-3 p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle transition-colors">
+                                <div key={item.id || index} className="flex gap-3 p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle transition-colors motion-reduce:transition-none">
                                   <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 dark:bg-lia-bg-elevated flex items-center justify-center">
                                     <Activity className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
                                   </div>
@@ -931,13 +931,13 @@ export default function CandidateProfilePage() {
                   <div className="flex flex-col">
                     {/* Header com botão de adicionar */}
                     <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary">
-                      <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center justify-between mb-3" role="status" aria-live="polite" aria-label="Carregando...">
                         <h4 className="text-sm font-medium lia-text-800 dark:text-lia-text-primary flex items-center gap-2">
                           <FileText className="w-4 h-4 lia-text-800 dark:text-lia-text-primary" />
                           Arquivos e Documentos
                           <Badge className="text-xs px-1.5 py-0">{candidateFiles.length}</Badge>
                           {isLoadingFiles && (
-                            <div className="animate-spin rounded-full h-3.5 w-3.5 border border-gray-400 border-t-gray-700"></div>
+                            <div className="animate-spin motion-reduce:animate-none rounded-full h-3.5 w-3.5 border border-gray-400 border-t-gray-700" role="status" aria-live="polite" aria-label="Carregando..."></div>
                           )}
                         </h4>
                         <Button
@@ -987,7 +987,7 @@ export default function CandidateProfilePage() {
                     <div className="flex-1 p-4 space-y-3">
                       {/* Drag and Drop Area */}
                       <div
-                        className={`border-2 border-dashed rounded-md p-6 text-center transition-colors cursor-pointer group ${
+                        className={`border-2 border-dashed rounded-md p-6 text-center transition-colors motion-reduce:transition-none cursor-pointer group ${
                           isDragging ? 'border-gray-400 bg-gray-100' : 'border-lia-border-default hover:border-gray-400'
                         }`}
                         onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
@@ -1011,11 +1011,11 @@ export default function CandidateProfilePage() {
                           input.click()
                         }}
                       >
-                        <div className="flex flex-col items-center">
+                        <div className="flex flex-col items-center" role="status" aria-live="polite" aria-label="Carregando...">
                           {isUploading ? (
                             <>
-                              <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mb-3">
-                                <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-400 border-t-gray-700"></div>
+                              <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mb-3" role="status" aria-live="polite" aria-label="Carregando...">
+                                <div className="animate-spin motion-reduce:animate-none rounded-full h-6 w-6 border-2 border-gray-400 border-t-gray-700" role="status" aria-live="polite" aria-label="Carregando..."></div>
                               </div>
                               <p className="text-sm lia-text-800 dark:text-lia-text-primary font-medium mb-2">Enviando... {uploadProgress}%</p>
                               <div className="w-40 h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -1024,7 +1024,7 @@ export default function CandidateProfilePage() {
                             </>
                           ) : (
                             <>
-                              <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors ${isDragging ? 'bg-gray-200' : 'bg-gray-100 group-hover:bg-gray-200'}`}>
+                              <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors motion-reduce:transition-none ${isDragging ? 'bg-gray-200' : 'bg-gray-100 group-hover:bg-gray-200'}`}>
                                 <Upload className={`w-6 h-6 ${isDragging ? 'lia-text-800 dark:text-lia-text-primary' : 'lia-text-600 group-hover:lia-text-700'}`} />
                               </div>
                               <p className="text-sm lia-text-800 dark:text-lia-text-primary mb-1">
@@ -1042,7 +1042,7 @@ export default function CandidateProfilePage() {
                         .map((file: Record<string, unknown>) => {
                           const colors = getCategoryColor(file.file_type)
                           return (
-                            <div key={file.id} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors">
+                            <div key={file.id} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
                               <div className="p-3">
                                 <div className="flex items-start gap-3">
                                   <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
@@ -1101,7 +1101,7 @@ export default function CandidateProfilePage() {
                   <div className="flex items-center gap-4 border-b border-lia-border-subtle pb-3">
                     <button
                       onClick={() => setOpinionsSubTab('pareceres')}
-                      className={`flex items-center gap-2 pb-2 text-sm font-medium transition-colors ${
+                      className={`flex items-center gap-2 pb-2 text-sm font-medium transition-colors motion-reduce:transition-none ${
                         opinionsSubTab === 'pareceres' 
                           ? 'lia-text-600 dark:text-lia-text-tertiary border-b-2 border-gray-900 dark:lia-border-50' 
                           : 'lia-text-500 hover:lia-text-700'
@@ -1117,7 +1117,7 @@ export default function CandidateProfilePage() {
                     </button>
                     <button
                       onClick={() => setOpinionsSubTab('analises')}
-                      className={`flex items-center gap-2 pb-2 text-sm font-medium transition-colors ${
+                      className={`flex items-center gap-2 pb-2 text-sm font-medium transition-colors motion-reduce:transition-none ${
                         opinionsSubTab === 'analises' 
                           ? 'text-wedo-purple border-b-2 border-wedo-purple/30' 
                           : 'lia-text-500 hover:lia-text-700'
@@ -1140,7 +1140,7 @@ export default function CandidateProfilePage() {
                   {isLoadingOpinions && (
                     <div className="space-y-3">
                       {[1, 2].map((i) => (
-                        <div key={i} className="bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4 animate-pulse">
+                        <div key={i} className="bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4 animate-pulse motion-reduce:animate-none">
                           <div className="flex items-center gap-3 mb-3">
                             <div className="w-8 h-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-full"></div>
                             <div className="flex-1">
@@ -1203,7 +1203,7 @@ export default function CandidateProfilePage() {
                             <div className="bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md overflow-hidden">
                               <button
                                 onClick={() => setExpandedOpinionId(isExpanded ? null : opinion.id)}
-                                className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                                className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors motion-reduce:transition-none"
                               >
                                 <div className="flex items-center gap-3">
                                   <div className={`w-9 h-9 rounded-full flex items-center justify-center ${isWsi ? 'bg-wedo-purple/15' : 'bg-gray-100 dark:bg-lia-bg-secondary'}`}>
@@ -1249,7 +1249,7 @@ export default function CandidateProfilePage() {
                                           ].filter(Boolean).join('\n\n')
                                           copyToClipboard(parecerText, 'Parecer')
                                         }}
-                                        className="p-1.5 rounded-md hover:bg-gray-100 transition-colors"
+                                        className="p-1.5 rounded-md hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                                       >
                                         <Copy className="w-4 h-4 lia-text-400" />
                                       </button>
@@ -1347,7 +1347,7 @@ export default function CandidateProfilePage() {
                       {isLoadingAnalyses && (
                         <div className="space-y-3">
                           {[1, 2].map((i) => (
-                            <div key={i} className="bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4 animate-pulse">
+                            <div key={i} className="bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4 animate-pulse motion-reduce:animate-none">
                               <div className="flex items-center gap-3 mb-3">
                                 <div className="w-8 h-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-full"></div>
                                 <div className="flex-1">
@@ -1371,7 +1371,7 @@ export default function CandidateProfilePage() {
                             <Brain className="w-7 h-7 text-wedo-purple" />
                           </div>
                           <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-1">Nenhuma análise salva</p>
-                          <p className="text-xs lia-text-500">
+                          <p className="text-xs lia-text-500" aria-live="polite" aria-atomic="true">
                             Use o ícone 🧠 no perfil do candidato para gerar análises.
                           </p>
                         </div>
@@ -1392,7 +1392,7 @@ export default function CandidateProfilePage() {
                               <div key={analysis.id} className="bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md overflow-hidden">
                                 <button
                                   onClick={() => setExpandedAnalysisId(isExpanded ? null : analysis.id)}
-                                  className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                                  className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors motion-reduce:transition-none"
                                 >
                                   <div className="flex items-center gap-3">
                                     <div className="w-9 h-9 rounded-full bg-wedo-purple/15 flex items-center justify-center">
@@ -1420,7 +1420,7 @@ export default function CandidateProfilePage() {
                                             e.stopPropagation()
                                             copyToClipboard(analysis.content, 'Análise')
                                           }}
-                                          className="p-1.5 rounded-md hover:bg-gray-100 transition-colors"
+                                          className="p-1.5 rounded-md hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                                         >
                                           <Copy className="w-4 h-4 lia-text-400" />
                                         </button>

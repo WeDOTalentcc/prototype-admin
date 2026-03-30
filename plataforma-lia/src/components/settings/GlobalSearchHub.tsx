@@ -219,8 +219,8 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <Loader2 className="w-4 h-4 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+      <div className="flex items-center justify-center py-8" role="status" aria-live="polite" aria-label="Carregando...">
+        <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
       </div>
     )
   }
@@ -255,7 +255,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                   <Badge className="bg-gray-100 dark:bg-lia-bg-secondary lia-text-500 dark:text-lia-text-tertiary text-xs">Desativado</Badge>
                 )}
               </div>
-              <p className="text-xs lia-text-600 dark:text-lia-text-tertiary mb-2">
+              <p className="text-xs lia-text-600 dark:text-lia-text-tertiary mb-2" aria-live="polite" aria-atomic="true">
                 Controla o acesso à busca global de candidatos em toda a plataforma.
               </p>
               
@@ -345,7 +345,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                     >
                       {saving ? (
                         <>
-                          <Loader2 className={`${actionButtonStyles.icon} animate-spin`} />
+                          <Loader2 className={`${actionButtonStyles.icon} animate-spin motion-reduce:animate-none`} />
                           Salvando...
                         </>
                       ) : (
@@ -369,7 +369,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                 {limitOptions.map((option) => (
                   <div
                     key={option.value}
-                    className={`relative flex items-start p-3 rounded-md border-2 transition-colors ${
+                    className={`relative flex items-start p-3 rounded-md border-2 transition-colors motion-reduce:transition-none ${
                       isEditingLimits ? 'cursor-pointer' : 'cursor-default'
                     } ${
                       settings.defaultLimit === option.value
@@ -451,7 +451,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                     >
                       {saving ? (
                         <>
-                          <Loader2 className={`${actionButtonStyles.icon} animate-spin`} />
+                          <Loader2 className={`${actionButtonStyles.icon} animate-spin motion-reduce:animate-none`} />
                           Salvando...
                         </>
                       ) : (

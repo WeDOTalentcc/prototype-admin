@@ -269,7 +269,7 @@ export function CandidateCard({
                   <div className="mt-2 space-y-2">
                     {isLoading ? (
                       <div className="flex items-center justify-center py-4">
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-400"></div>
+                        <div className="animate-spin motion-reduce:animate-none rounded-full h-5 w-5 border-b-2 border-gray-400"></div>
                       </div>
                     ) : communications.length === 0 ? (
                       <div className="text-center py-3 text-xs text-lia-text-disabled">

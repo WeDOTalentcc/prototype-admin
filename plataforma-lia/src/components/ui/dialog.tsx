@@ -46,7 +46,7 @@ const DialogContent = React.forwardRef<
         {...props}
       >
         {children}
-        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-md p-1 lia-text-secondary transition-colors hover:text-lia-text-primary hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-400 disabled:pointer-events-none data-[state=open]:bg-gray-100 data-[state=open]:text-lia-text-primary dark:text-lia-text-tertiary dark:hover:text-lia-text-inverse dark:hover:bg-gray-700 dark:focus:ring-gray-600 dark:data-[state=open]:bg-gray-700 dark:data-[state=open]:text-lia-text-inverse">
+        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-md p-1 lia-text-secondary transition-colors motion-reduce:transition-none hover:text-lia-text-primary hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-400 disabled:pointer-events-none data-[state=open]:bg-gray-100 data-[state=open]:text-lia-text-primary dark:text-lia-text-tertiary dark:hover:text-lia-text-inverse dark:hover:bg-gray-700 dark:focus:ring-gray-600 dark:data-[state=open]:bg-gray-700 dark:data-[state=open]:text-lia-text-inverse">
           <X className="h-4 w-4" />
           <span className="sr-only">Close</span>
         </DialogPrimitive.Close>
@@ -133,7 +133,7 @@ const DraggableDialogContent = React.forwardRef<
             onMouseDown={handleMouseDown}
           />
           {children}
-          <DialogPrimitive.Close className="absolute right-4 top-4 rounded-md p-1 lia-text-secondary transition-colors hover:text-lia-text-primary hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-400 disabled:pointer-events-none data-[state=open]:bg-gray-100 data-[state=open]:text-lia-text-primary dark:text-lia-text-tertiary dark:hover:text-lia-text-inverse dark:hover:bg-gray-700 dark:focus:ring-gray-600 dark:data-[state=open]:bg-gray-700 dark:data-[state=open]:text-lia-text-inverse z-10" data-dialog-close>
+          <DialogPrimitive.Close className="absolute right-4 top-4 rounded-md p-1 lia-text-secondary transition-colors motion-reduce:transition-none hover:text-lia-text-primary hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-400 disabled:pointer-events-none data-[state=open]:bg-gray-100 data-[state=open]:text-lia-text-primary dark:text-lia-text-tertiary dark:hover:text-lia-text-inverse dark:hover:bg-gray-700 dark:focus:ring-gray-600 dark:data-[state=open]:bg-gray-700 dark:data-[state=open]:text-lia-text-inverse z-10" data-dialog-close>
             <X className="h-4 w-4" />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>

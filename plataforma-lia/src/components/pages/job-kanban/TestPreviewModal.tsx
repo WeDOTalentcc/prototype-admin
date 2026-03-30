@@ -32,7 +32,7 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-lia-bg-primary/20 rounded-md transition-colors"
+              className="p-2 hover:bg-lia-bg-primary/20 rounded-md transition-colors motion-reduce:transition-none"
             >
               <X className="w-5 h-5" />
             </button>
@@ -102,7 +102,7 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
                         <span className="font-medium">Tempo limite: 3:00</span>
                       </div>
                       <div className="flex-1 bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-1.5 max-w-sidebar-content">
-                        <div className="bg-gray-700 dark:bg-gray-400 h-1.5 rounded-full animate-pulse" style={{width: '75%'}}></div>
+                        <div className="bg-gray-700 dark:bg-gray-400 h-1.5 rounded-full animate-pulse motion-reduce:animate-none" style={{width: '75%'}}></div>
                       </div>
                     </div>
                   </div>
@@ -116,7 +116,7 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
                   'Visibilidade do status do sistema',
                   'Consistência e padrões'
                 ].map((option, idx) => (
-                  <label key={idx} className="flex items-center gap-3 p-3 bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500 cursor-pointer transition-colors group">
+                  <label key={idx} className="flex items-center gap-3 p-3 bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500 cursor-pointer transition-colors motion-reduce:transition-none group">
                     <input
                       type="radio"
                       name="candidate-q1"
@@ -158,7 +158,7 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
                   'Prototipar',
                   'Testar'
                 ].map((option, idx) => (
-                  <label key={idx} className="flex items-center gap-3 p-3 bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500 cursor-pointer transition-colors group">
+                  <label key={idx} className="flex items-center gap-3 p-3 bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500 cursor-pointer transition-colors motion-reduce:transition-none group">
                     <input
                       type="radio"
                       name="candidate-q2"
@@ -200,7 +200,7 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
                   'System Usability Scale (SUS)',
                   'Net Promoter Score (NPS)'
                 ].map((option, idx) => (
-                  <label key={idx} className="flex items-center gap-3 p-3 bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500 cursor-pointer transition-colors group">
+                  <label key={idx} className="flex items-center gap-3 p-3 bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500 cursor-pointer transition-colors motion-reduce:transition-none group">
                     <input
                       type="radio"
                       name="candidate-q3"

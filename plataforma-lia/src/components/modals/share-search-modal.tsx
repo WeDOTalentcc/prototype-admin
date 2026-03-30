@@ -629,7 +629,7 @@ export function ShareSearchModal({
                   <div className="px-5 py-4 space-y-3">
                     <div className="border-b border-lia-border-subtle dark:border-lia-border-subtle pb-2">
                       <p className="text-micro text-lia-text-tertiary">Assunto</p>
-                      <p className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
+                      <p className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary" aria-live="polite" aria-atomic="true">
                         {renderPreview(subject) || 'Candidatos para sua avaliação'}
                       </p>
                     </div>
@@ -648,7 +648,7 @@ export function ShareSearchModal({
                     <div className="bg-gray-50 dark:bg-lia-bg-elevated/30 rounded-md p-3 space-y-2">
                       <div className="flex items-center gap-2">
                         <Users className="w-3.5 h-3.5 text-lia-text-tertiary" />
-                        <span className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-secondary">
+                        <span className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                           {candidateCount} candidato{candidateCount !== 1 ? 's' : ''} para avaliar
                         </span>
                       </div>
@@ -707,7 +707,7 @@ export function ShareSearchModal({
                             )}
                           </p>
                           <div className="mt-1.5 pt-1.5 border-t border-status-success/30 dark:border-status-success/30 text-micro text-lia-text-secondary dark:text-lia-text-tertiary space-y-0.5">
-                            <p>📋 {candidateCount} candidato{candidateCount !== 1 ? 's' : ''} · 🔗 Link · 🔑 OTP</p>
+                            <p aria-live="polite" aria-atomic="true">📋 {candidateCount} candidato{candidateCount !== 1 ? 's' : ''} · 🔗 Link · 🔑 OTP</p>
                           </div>
                         </div>
                       </div>
@@ -730,7 +730,7 @@ export function ShareSearchModal({
                         {message && (
                           <>
                             <div className="mt-2 pt-2 border-t border-status-success/30 dark:border-status-success/30">
-                              <p className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary">
+                              <p className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
                                 📋 {candidateCount} candidato{candidateCount !== 1 ? 's' : ''} para avaliar
                               </p>
                               <p className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary">
@@ -782,7 +782,7 @@ export function ShareSearchModal({
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
                   Compartilhando...
                 </>
               ) : (

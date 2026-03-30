@@ -358,7 +358,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
           </div>
           <button 
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-md transition-colors"
+            className="p-2 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
           >
             <X className="w-4 h-4 lia-text-secondary" />
           </button>
@@ -376,7 +376,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
               <div className="flex flex-col gap-2">
                 <button
                   onClick={() => setChannel('email')}
-                  className={`flex items-center gap-3 p-3 rounded-md border transition-colors text-left ${
+                  className={`flex items-center gap-3 p-3 rounded-md border transition-colors motion-reduce:transition-none text-left ${
  channel === 'email' 
                       ? 'border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50' 
                       : 'border-lia-border-subtle hover:border-lia-border-default'
@@ -391,7 +391,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                 
                 <button
                   onClick={() => setChannel('whatsapp')}
-                  className={`flex items-center gap-3 p-3 rounded-md border transition-colors text-left ${
+                  className={`flex items-center gap-3 p-3 rounded-md border transition-colors motion-reduce:transition-none text-left ${
  channel === 'whatsapp' 
                       ? 'border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50' 
                       : 'border-lia-border-subtle hover:border-lia-border-default'
@@ -406,7 +406,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                 
                 <button
                   onClick={() => setChannel('telefone')}
-                  className={`flex items-center gap-3 p-3 rounded-md border transition-colors text-left ${
+                  className={`flex items-center gap-3 p-3 rounded-md border transition-colors motion-reduce:transition-none text-left ${
  channel === 'telefone' 
                       ? 'border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50' 
                       : 'border-lia-border-subtle hover:border-lia-border-default'
@@ -421,7 +421,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                 
                 <button
                   onClick={() => setChannel('both')}
-                  className={`flex items-center gap-3 p-3 rounded-md border transition-colors text-left ${
+                  className={`flex items-center gap-3 p-3 rounded-md border transition-colors motion-reduce:transition-none text-left ${
  channel === 'both' 
                       ? 'border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50' 
                       : 'border-lia-border-subtle hover:border-lia-border-default'
@@ -481,7 +481,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                 <div className="flex items-center gap-2">
                   <Briefcase className="w-4 h-4 lia-text-base" />
                   <div>
-                    <span className={textStyles.subtitle}>Vincular à Vaga</span>
+                    <span className={textStyles.subtitle} aria-live="polite" aria-atomic="true">Vincular à Vaga</span>
                     <span className={`${textStyles.description} ml-2`}>(opcional)</span>
                   </div>
                 </div>
@@ -493,13 +493,13 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
               
               {linkToVacancy && (
                 <div className="p-3 space-y-3 border-t border-lia-border-subtle">
-                  <div>
+                  <div role="status" aria-live="polite" aria-label="Carregando...">
                     <label className={`${textStyles.subtitle} mb-1.5 block`}>
                       Selecione a Vaga
                     </label>
                     {isLoadingVacancies ? (
-                      <div className="flex items-center gap-2 text-xs lia-text-secondary py-2">
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <div className="flex items-center gap-2 text-xs lia-text-secondary py-2" role="status" aria-live="polite" aria-label="Carregando...">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
                         Carregando vagas...
                       </div>
                     ) : vacancies.length === 0 ? (
@@ -556,7 +556,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
             <div className="border border-lia-border-subtle rounded-md overflow-hidden">
               <button
                 onClick={() => setShowQuestions(!showQuestions)}
-                className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition-colors"
+                className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition-colors motion-reduce:transition-none"
               >
                 <div className="flex items-center gap-2">
                   <ListChecks className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
@@ -778,7 +778,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
             >
               {isSending ? (
                 <>
-                  <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
+                  <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin motion-reduce:animate-none" />
                   Enviando...
                 </>
               ) : (

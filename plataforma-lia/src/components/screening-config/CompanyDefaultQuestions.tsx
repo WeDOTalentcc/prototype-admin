@@ -21,7 +21,7 @@ export function CompanyDefaultQuestions({
     <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-primary overflow-hidden">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
       >
         <div className="flex items-center gap-2">
           <Shield className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-tertiary" />
@@ -53,7 +53,7 @@ export function CompanyDefaultQuestions({
               return (
                 <div
                   key={q.id}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors motion-reduce:transition-none ${
  enabled
                       ? 'bg-white dark:bg-lia-bg-primary'
                       : 'bg-gray-50 dark:bg-lia-bg-secondary/50 opacity-50'

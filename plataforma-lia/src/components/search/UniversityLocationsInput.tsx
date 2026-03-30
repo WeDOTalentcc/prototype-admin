@@ -260,7 +260,7 @@ export function UniversityLocationsInput({
               <span>{location}</span>
               <button
                 onClick={() => removeLocation(location)}
-                className="hover:bg-gray-200 rounded-md p-0.5 transition-colors ml-1"
+                className="hover:bg-gray-200 rounded-md p-0.5 transition-colors motion-reduce:transition-none ml-1"
                 title="Remove"
               >
                 <X className="w-3 h-3" />

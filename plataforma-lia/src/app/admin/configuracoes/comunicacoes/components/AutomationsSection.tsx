@@ -82,7 +82,7 @@ export function AutomationsSection({
             onClick={fetchAutomations}
             disabled={automationsLoading}
           >
-            <RefreshCw className={`w-4 h-4 ${automationsLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${automationsLoading ? 'animate-spin motion-reduce:animate-none' : ''}`} />
           </Button>
           <Badge variant="outline" className="text-xs">
             <Activity className="w-3 h-3 mr-1" />
@@ -92,8 +92,8 @@ export function AutomationsSection({
       </div>
 
       {automationsLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin lia-text-700 dark:text-lia-text-secondary" />
+        <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-700 dark:text-lia-text-secondary" />
           <span className="ml-3 text-sm lia-text-500 dark:text-lia-text-tertiary" >
             Carregando automações...
           </span>
@@ -125,7 +125,7 @@ export function AutomationsSection({
           return (
             <Card
               key={automation.id}
-              className={`cursor-pointer transition-colors ${selectedAutomation?.id === automation.id ? 'ring-2 ring-gray-900/20 dark:lia-ring-50/20' : 'hover:border-lia-border-default'}`}
+              className={`cursor-pointer transition-colors motion-reduce:transition-none ${selectedAutomation?.id === automation.id ? 'ring-2 ring-gray-900/20 dark:lia-ring-50/20' : 'hover:border-lia-border-default'}`}
               onClick={() => setSelectedAutomation(selectedAutomation?.id === automation.id ? null : automation)}
             >
               <CardContent className="p-4">

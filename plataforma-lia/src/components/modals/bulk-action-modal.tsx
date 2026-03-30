@@ -412,7 +412,7 @@ export function BulkActionModal({
               >
                 {isExecuting ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                    <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin motion-reduce:animate-none" />
                     Processando...
                   </>
                 ) : (

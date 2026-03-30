@@ -92,7 +92,7 @@ export function KanbanLIASidebar({
 }: KanbanLIASidebarProps) {
   return (
     <div
-      className="flex-shrink-0 transition-colors duration-300 pl-4 py-4 pr-0 relative"
+      className="flex-shrink-0 transition-colors motion-reduce:transition-none duration-300 pl-4 py-4 pr-0 relative"
       style={{width: `${liaExpandedWidth}px`}}
     >
       <Card className="h-[calc(100vh-16rem)] flex flex-col overflow-hidden border border-lia-border-default bg-white dark:bg-lia-bg-secondary max-h-[calc(100vh-16rem)]">
@@ -121,7 +121,7 @@ export function KanbanLIASidebar({
                   size="sm"
                   onClick={() => setLiaMessages([])}
                   title="Nova conversa"
-                  className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
+                  className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors motion-reduce:transition-none flex-shrink-0"
                 >
                   <RotateCcw className="w-3.5 h-3.5 text-lia-text-disabled" />
                 </Button>
@@ -131,7 +131,7 @@ export function KanbanLIASidebar({
                 size="sm"
                 onClick={() => openSuperChat()}
                 title="Expandir chat"
-                className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
+                className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors motion-reduce:transition-none flex-shrink-0"
               >
                 <Maximize2 className="w-4 h-4 text-lia-text-tertiary" />
               </Button>
@@ -142,7 +142,7 @@ export function KanbanLIASidebar({
                   setShowExpandedLIA(false)
                   setUserCollapsedLIA(true)
                 }}
-                className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
+                className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors motion-reduce:transition-none flex-shrink-0"
               >
                 <X className="w-4 h-4 text-lia-text-tertiary" />
               </Button>
@@ -155,7 +155,7 @@ export function KanbanLIASidebar({
           <div className="flex-shrink-0 px-4 py-2">
             <div className="px-3 py-2 bg-gray-100 rounded-md border border-lia-border-subtle flex items-center gap-2">
               <Users className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
-              <span className="text-xs text-lia-text-secondary font-medium">
+              <span className="text-xs text-lia-text-secondary font-medium" aria-live="polite" aria-atomic="true">
                 {selectedCandidates.size} candidato{selectedCandidates.size > 1 ? 's' : ''} selecionado{selectedCandidates.size > 1 ? 's' : ''}
               </span>
               <button
@@ -173,7 +173,7 @@ export function KanbanLIASidebar({
           <div className="flex-shrink-0 px-4 py-2">
             <button
               onClick={() => setShowLiaSuggestionsPanel(prev => !prev)}
-              className="w-full flex items-center justify-between px-3 py-2 bg-gray-50 rounded-md border border-lia-border-subtle hover:bg-gray-100 transition-colors"
+              className="w-full flex items-center justify-between px-3 py-2 bg-gray-50 rounded-md border border-lia-border-subtle hover:bg-gray-100 transition-colors motion-reduce:transition-none"
             >
               <div className="flex items-center gap-2">
                 <Lightbulb className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -287,7 +287,7 @@ export function KanbanLIASidebar({
                               (msg as { metadata?: { action_executed?: boolean; action_result?: unknown; action_type?: string; is_fallback?: boolean; ui_action?: string; ui_action_params?: Record<string, unknown> } }).metadata.ui_action,
                               (msg as { metadata?: { action_executed?: boolean; action_result?: unknown; action_type?: string; is_fallback?: boolean; ui_action?: string; ui_action_params?: Record<string, unknown> } }).metadata.ui_action_params || {}
                             )}
-                            className="mt-2 px-3 py-1.5 text-xs font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-md transition-colors"
+                            className="mt-2 px-3 py-1.5 text-xs font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-md transition-colors motion-reduce:transition-none"
                             
                           >
                             Abrir manualmente
@@ -301,10 +301,10 @@ export function KanbanLIASidebar({
             ))}
 
             {isLiaLoading && (
-              <div className="flex justify-start">
-                <div className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
-                  <div className="w-5 h-5 rounded-md bg-lia-bg-primary flex items-center justify-center">
-                    <Loader2 className="w-3 h-3 animate-spin text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <div className="flex justify-start" role="status" aria-live="polite" aria-label="Carregando...">
+                <div className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-gray-100 dark:bg-lia-bg-secondary" role="status" aria-live="polite" aria-label="Carregando...">
+                  <div className="w-5 h-5 rounded-md bg-lia-bg-primary flex items-center justify-center" role="status" aria-live="polite" aria-label="Carregando...">
+                    <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
                   </div>
                   <span className="text-micro text-lia-text-tertiary">Pensando...</span>
                 </div>
@@ -338,7 +338,7 @@ export function KanbanLIASidebar({
             />
             <AudioRecordButton
               onTranscription={(text) => setLiaPromptValue(prev => prev ? `${prev} ${text}` : text)}
-              className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-gray-100 transition-colors"
+              className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-gray-100 transition-colors motion-reduce:transition-none"
             />
             <button
               type="button"
@@ -349,7 +349,7 @@ export function KanbanLIASidebar({
                 }
               }}
               disabled={!liaPromptValue.trim() || isLiaLoading}
-              className="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center transition-colors disabled:opacity-50 bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:hover:bg-gray-200"
+              className="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none disabled:opacity-50 bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:hover:bg-gray-200"
             >
               <Send className="w-3.5 h-3.5 text-white dark:text-lia-text-disabled" />
             </button>
@@ -387,7 +387,7 @@ export function KanbanLIASidebar({
           setIsResizingLIA(true)
         }}
       >
-        <div className="w-0.5 h-12 bg-gray-300 dark:bg-lia-bg-elevated group-hover:bg-gray-600 dark:group-hover:bg-gray-400 rounded-full transition-colors" />
+        <div className="w-0.5 h-12 bg-gray-300 dark:bg-lia-bg-elevated group-hover:bg-gray-600 dark:group-hover:bg-gray-400 rounded-full transition-colors motion-reduce:transition-none" />
       </div>
     </div>
   )

@@ -292,7 +292,7 @@ export function WSITextScreeningModal({
                 return (
                   <div
                     key={`cell-${b}-${d}`}
-                    className={`h-6 rounded-md transition-colors ${
+                    className={`h-6 rounded-md transition-colors motion-reduce:transition-none ${
  isCurrent 
                         ? 'bg-gray-800 ring-2 ring-gray-400' 
                         : isActive 
@@ -421,10 +421,10 @@ export function WSITextScreeningModal({
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto py-4 space-y-4">
+        <div className="flex-1 overflow-y-auto py-4 space-y-4" role="status" aria-live="polite" aria-label="Carregando...">
           {step === 'loading' && (
-            <div className="flex flex-col items-center justify-center py-12 space-y-4">
-              <Loader2 className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin" />
+            <div className="flex flex-col items-center justify-center py-12 space-y-4" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
               <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">
                 Gerando perguntas baseadas em Bloom's Taxonomy...
               </p>
@@ -496,10 +496,10 @@ export function WSITextScreeningModal({
           )}
 
           {step === 'processing' && (
-            <div className="flex flex-col items-center justify-center py-12 space-y-4">
-              <div className="relative">
-                <Loader2 className="w-12 h-12 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin" />
-                <Brain className="w-5 h-5 text-status-warning absolute -top-1 -right-1 animate-pulse" />
+            <div className="flex flex-col items-center justify-center py-12 space-y-4" role="status" aria-live="polite" aria-label="Carregando...">
+              <div className="relative" role="status" aria-live="polite" aria-label="Carregando...">
+                <Loader2 className="w-12 h-12 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
+                <Brain className="w-5 h-5 text-status-warning absolute -top-1 -right-1 animate-pulse motion-reduce:animate-none" />
               </div>
               <div className="text-center">
                 <p className="font-medium text-lia-text-primary dark:text-lia-text-primary">Analisando com Claude AI...</p>
@@ -616,7 +616,7 @@ export function WSITextScreeningModal({
                 className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 gap-2"
               >
                 {isSubmitting ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                 ) : currentQuestionIndex === questions.length - 1 ? (
                   <>
                     Finalizar e Analisar

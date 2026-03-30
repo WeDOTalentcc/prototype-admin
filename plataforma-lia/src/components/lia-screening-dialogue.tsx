@@ -807,7 +807,7 @@ Boa sorte com as triagens! 🚀`,
                           <button
                             key={index}
                             onClick={() => handleOptionSelect(option)}
-                            className="block w-full text-left p-2 bg-lia-bg-primary bg-opacity-20 hover:bg-opacity-30 rounded-md text-sm transition-colors"
+                            className="block w-full text-left p-2 bg-lia-bg-primary bg-opacity-20 hover:bg-opacity-30 rounded-md text-sm transition-colors motion-reduce:transition-none"
                           >
                             {option}
                           </button>
@@ -819,10 +819,10 @@ Boa sorte com as triagens! 🚀`,
               ))}
 
               {isLiaTyping && (
-                <div className="flex justify-start">
-                  <div className="bg-gray-100 dark:bg-lia-bg-elevated rounded-r-2xl rounded-tl-2xl p-3">
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin text-status-success" />
+                <div className="flex justify-start" role="status" aria-live="polite" aria-label="Carregando...">
+                  <div className="bg-gray-100 dark:bg-lia-bg-elevated rounded-r-2xl rounded-tl-2xl p-3" role="status" aria-live="polite" aria-label="Carregando...">
+                    <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
+                      <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none text-status-success" />
                       <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">LIA está digitando...</span>
                     </div>
                   </div>

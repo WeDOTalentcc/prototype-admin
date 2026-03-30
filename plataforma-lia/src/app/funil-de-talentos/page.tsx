@@ -252,7 +252,7 @@ export default function FunilDeTalentosPage() {
               {!loading && candidates.length === 0 && !error ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center px-4">
                   <Users className="h-10 w-10 lia-text-300 dark:lia-text-600 mb-3" />
-                  <p className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary">
+                  <p className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
                     {filters.search || filters.status || filters.seniority
                       ? "Nenhum candidato encontrado. Tente outros filtros."
                       : "Busque candidatos por nome, habilidade ou cargo"}

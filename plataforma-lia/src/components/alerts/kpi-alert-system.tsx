@@ -558,7 +558,7 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
                 disabled={isRefreshing}
                 className="gap-2"
               >
-                <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin motion-reduce:animate-none' : ''}`} />
                 Atualizar
               </Button>
               <Button
@@ -680,14 +680,14 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
             {filteredAlerts.length === 0 ? (
               <div className="text-center py-8 lia-text-base">
                 <Bell className="w-12 h-12 mx-auto mb-4 lia-text-base" />
-                <p>Nenhum alerta encontrado</p>
+                <p aria-live="polite" aria-atomic="true">Nenhum alerta encontrado</p>
                 <p className="text-sm">Todos os KPIs estão dentro dos parâmetros esperados</p>
               </div>
             ) : (
               filteredAlerts.map((alert) => (
                 <div
                   key={alert.id}
-                  className={`p-4 border rounded-md transition-colors ${
+                  className={`p-4 border rounded-md transition-colors motion-reduce:transition-none ${
  alert.isRead ? 'bg-gray-50' : 'bg-lia-bg-primary border-l-4'
                   } ${
                     alert.type === 'critical' ? 'border-l-red-500' :

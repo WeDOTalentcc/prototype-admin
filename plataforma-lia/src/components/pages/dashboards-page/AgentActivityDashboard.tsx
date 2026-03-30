@@ -341,7 +341,7 @@ export function AgentActivityDashboard() {
             {agentsData.map((agent) => (
               <div 
                 key={agent.id}
-                className="p-3 bg-gray-50 dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-900 dark:hover:border-gray-50 dark:hover:border-gray-900 dark:hover:border-gray-50 transition-colors"
+                className="p-3 bg-gray-50 dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-900 dark:hover:border-gray-50 dark:hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none"
               >
                 {/* Header com status */}
                 <div className="flex items-start justify-between mb-2">
@@ -382,7 +382,7 @@ export function AgentActivityDashboard() {
                   {[40, 65, 45, 80, 55, 70, 90, 60].map((value, idx) => (
                     <div 
                       key={idx}
-                      className="flex-1 rounded-sm transition-colors"
+                      className="flex-1 rounded-sm transition-colors motion-reduce:transition-none"
                       style={{height: `${value}%`, 
                         backgroundColor: agent.color,
                         opacity: 0.4 + (idx * 0.08)}}

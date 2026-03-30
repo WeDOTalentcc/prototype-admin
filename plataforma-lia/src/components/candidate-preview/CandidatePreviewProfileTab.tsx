@@ -94,11 +94,11 @@ export function CandidatePreviewProfileTab({
                         disabled={isAnalyzingWithLia}
                         size="sm"
                         variant="ghost"
-                        className={`gap-1 px-2 py-1 ${textStyles.caption} h-6 hover:bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary transition-colors disabled:opacity-50`}
+                        className={`gap-1 px-2 py-1 ${textStyles.caption} h-6 hover:bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary transition-colors motion-reduce:transition-none disabled:opacity-50`}
                       >
                         {isAnalyzingWithLia ? (
                           <>
-                            <div className="w-3 h-3 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
+                            <div className="w-3 h-3 border-2 border-gray-900 border-t-transparent rounded-full animate-spin motion-reduce:animate-none" />
                             <span>Analisando...</span>
                           </>
                         ) : (
@@ -155,7 +155,7 @@ export function CandidatePreviewProfileTab({
             )}
             
             {jobId && isLoadingOpinions && !opinionsData && (
-              <div className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3 animate-pulse">
+              <div className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3 animate-pulse motion-reduce:animate-none">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-4 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md"></div>
                   <div className="w-24 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md"></div>

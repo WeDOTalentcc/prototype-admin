@@ -383,7 +383,7 @@ export function SuccessPredictionAnalytics() {
         <CardContent>
           <div className="space-y-4">
             {candidatePredictions.map(prediction => (
-              <div key={prediction.candidateId} className="p-4 border border-lia-border-subtle rounded-md hover:bg-gray-50 transition-colors">
+              <div key={prediction.candidateId} className="p-4 border border-lia-border-subtle rounded-md hover:bg-gray-50 transition-colors motion-reduce:transition-none">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center">
@@ -500,7 +500,7 @@ export function SuccessPredictionAnalytics() {
           <p className="text-sm lia-text-base">Gerencie e monitore os modelos de predição</p>
         </div>
         <Button className="gap-2" disabled={isTraining}>
-          <RefreshCw className={`w-4 h-4 ${isTraining ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`w-4 h-4 ${isTraining ? 'animate-spin motion-reduce:animate-none' : ''}`} />
           {isTraining ? 'Treinando...' : 'Retreinar Todos'}
         </Button>
       </div>
@@ -620,7 +620,7 @@ export function SuccessPredictionAnalytics() {
               <button
                 key={tab.id}
                 onClick={() => setSelectedView(tab.id as Parameters<typeof setSelectedView>[0])}
-                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none ${
  selectedView === tab.id
                     ? 'bg-lia-bg-primary text-lia-text-primary'
                     : 'lia-text-base hover:lia-text-strong'

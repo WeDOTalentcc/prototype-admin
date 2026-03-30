@@ -107,14 +107,14 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
               <p 
                 className="text-xs text-lia-text-secondary"
                
-              >
+               aria-live="polite" aria-atomic="true">
                 {candidate?.name ?? 'Candidato'}
               </p>
             </div>
           </div>
           <button 
             onClick={onClose}
-            className="h-7 w-7 p-0 flex items-center justify-center transition-colors hover:bg-gray-100 rounded-full text-lia-text-tertiary"
+            className="h-7 w-7 p-0 flex items-center justify-center transition-colors motion-reduce:transition-none hover:bg-gray-100 rounded-full text-lia-text-tertiary"
           >
             <X className="w-4 h-4" />
           </button>
@@ -125,9 +125,9 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
             className="flex items-center justify-between p-3 rounded-md mb-4"
             style={{backgroundColor: statusConfig.bgColor, border: `1px solid ${statusConfig.borderColor}`}}
           >
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
               <StatusIcon 
-                className={`w-4 h-4 ${status === 'in_progress' ? 'animate-spin' : ''}`} 
+                className={`w-4 h-4 ${status === 'in_progress' ? 'animate-spin motion-reduce:animate-none' : ''}`} 
                 style={{color: statusConfig.color}} 
               />
               <span 
@@ -208,7 +208,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                 <span 
                   className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary"
                  
-                >
+                 aria-live="polite" aria-atomic="true">
                   Comparação com outros candidatos:
                 </span>
                 <span 
@@ -263,7 +263,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                         <span 
                           className="text-micro text-lia-text-secondary"
                          
-                        >
+                         aria-live="polite" aria-atomic="true">
                           Média dos candidatos: {category.avgScore}
                         </span>
                         <span 
@@ -294,7 +294,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
               <p 
                 className="text-micro text-center text-lia-text-disabled"
                
-              >
+               aria-live="polite" aria-atomic="true">
                 O candidato receberá um convite para realizar o teste técnico.
               </p>
             </div>
@@ -305,7 +305,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
               className="flex flex-col items-center justify-center py-8 text-status-warning"
               
             >
-              <Loader2 className="w-12 h-12 mb-3 animate-spin" />
+              <Loader2 className="w-12 h-12 mb-3 animate-spin motion-reduce:animate-none" />
               <p 
                 className="text-xs font-medium mb-1 text-lia-text-tertiary"
                
@@ -315,7 +315,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
               <p 
                 className="text-micro text-center text-lia-text-disabled"
                
-              >
+               aria-live="polite" aria-atomic="true">
                 O candidato está realizando o teste técnico neste momento.
               </p>
             </div>

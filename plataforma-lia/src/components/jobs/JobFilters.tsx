@@ -130,7 +130,7 @@ export function JobFiltersPanel({
                 <Badge
                   key={status}
                   variant="outline"
-                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
+                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none ${
                     jobFilters.status?.statuses?.includes(status)
                       ? 'bg-gray-100 dark:bg-lia-bg-secondary border-gray-900 dark:lia-border-50 lia-text-950 dark:lia-text-50 font-medium'
                       : 'bg-white dark:bg-lia-bg-secondary lia-text-800 dark:text-lia-text-primary'
@@ -153,7 +153,7 @@ export function JobFiltersPanel({
                 <Badge
                   key={stage}
                   variant="outline"
-                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
+                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none ${
                     jobFilters.status?.stages?.includes(stage)
                       ? 'bg-wedo-purple/10 border-wedo-purple/30 text-wedo-purple font-medium'
                       : 'bg-white dark:bg-lia-bg-secondary lia-text-800 dark:text-lia-text-primary'
@@ -180,7 +180,7 @@ export function JobFiltersPanel({
                 <Badge
                   key={priority.value}
                   variant="outline"
-                  className={`text-xs cursor-pointer hover:opacity-80 transition-opacity ${
+                  className={`text-xs cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none ${
                     jobFilters.status?.priorities?.includes(priority.value)
                       ? priority.color + ' font-medium'
                       : 'bg-white dark:bg-lia-bg-secondary lia-text-800 dark:text-lia-text-primary'
@@ -203,7 +203,7 @@ export function JobFiltersPanel({
                 <Badge
                   key={model}
                   variant="outline"
-                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors capitalize ${
+                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none capitalize ${
                     jobFilters.position?.workModels?.includes(model)
                       ? 'bg-gray-100 dark:bg-lia-bg-secondary border-gray-900 dark:lia-border-50 lia-text-950 dark:lia-text-50 font-medium'
                       : 'bg-white dark:bg-lia-bg-secondary lia-text-800 dark:text-lia-text-primary'
@@ -226,7 +226,7 @@ export function JobFiltersPanel({
                 <Badge
                   key={level}
                   variant="outline"
-                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
+                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none ${
                     jobFilters.position?.levels?.includes(level)
                       ? 'bg-gray-100 dark:bg-lia-bg-secondary border-gray-900 dark:lia-border-50 lia-text-950 dark:lia-text-50 font-medium'
                       : 'bg-white dark:bg-lia-bg-secondary lia-text-800 dark:text-lia-text-primary'
@@ -249,7 +249,7 @@ export function JobFiltersPanel({
                 <Badge
                   key={loc}
                   variant="outline"
-                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
+                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none ${
                     jobFilters.position?.locations?.includes(loc)
                       ? 'bg-gray-100 dark:bg-lia-bg-secondary border-gray-900 dark:lia-border-50 lia-text-950 dark:lia-text-50 font-medium'
                       : 'bg-white dark:bg-lia-bg-secondary lia-text-800 dark:text-lia-text-primary'
@@ -272,7 +272,7 @@ export function JobFiltersPanel({
                 <Badge
                   key={dept}
                   variant="outline"
-                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
+                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none ${
                     jobFilters.team?.departments?.includes(dept)
                       ? 'bg-gray-100 dark:bg-lia-bg-secondary border-gray-900 dark:lia-border-50 lia-text-950 dark:lia-text-50 font-medium'
                       : 'bg-white dark:bg-lia-bg-secondary lia-text-800 dark:text-lia-text-primary'
@@ -295,7 +295,7 @@ export function JobFiltersPanel({
                 <Badge
                   key={recruiter}
                   variant="outline"
-                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
+                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none ${
                     jobFilters.team?.recruiters?.includes(recruiter)
                       ? 'bg-gray-100 dark:bg-lia-bg-secondary border-gray-900 dark:lia-border-50 lia-text-950 dark:lia-text-50 font-medium'
                       : 'bg-white dark:bg-lia-bg-secondary lia-text-800 dark:text-lia-text-primary'
@@ -318,7 +318,7 @@ export function JobFiltersPanel({
                 <Badge
                   key={manager}
                   variant="outline"
-                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
+                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none ${
                     jobFilters.team?.managers?.includes(manager)
                       ? 'bg-gray-100 dark:bg-lia-bg-secondary border-gray-900 dark:lia-border-50 lia-text-950 dark:lia-text-50 font-medium'
                       : 'bg-white dark:bg-lia-bg-secondary lia-text-800 dark:text-lia-text-primary'
@@ -345,7 +345,7 @@ export function JobFiltersPanel({
                 <Badge
                   key={channel.value}
                   variant="outline"
-                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors flex items-center gap-1 ${
+                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none flex items-center gap-1 ${
                     jobFilters.publishing?.channels?.includes(channel.value)
                       ? 'bg-gray-100 dark:bg-lia-bg-secondary border-gray-900 dark:lia-border-50 lia-text-950 dark:lia-text-50 font-medium'
                       : 'bg-white dark:bg-lia-bg-secondary lia-text-800 dark:text-lia-text-primary'
@@ -358,7 +358,7 @@ export function JobFiltersPanel({
               ))}
               <Badge
                 variant="outline"
-                className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors ${
+                className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none ${
                   jobFilters.publishing?.unpublished
                     ? 'bg-wedo-orange/10 border-wedo-orange/30 text-wedo-orange font-medium'
                     : 'bg-white dark:bg-lia-bg-secondary lia-text-800 dark:text-lia-text-primary'
@@ -423,7 +423,7 @@ export function JobFiltersPanel({
                 {savedSearches.map((search) => (
                   <div
                     key={search.id}
-                    className="group flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                    className="group flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none cursor-pointer"
                     onClick={() => handleApplySavedSearch(search.id)}
                   >
                     <div className="flex-1 min-w-0">
@@ -438,7 +438,7 @@ export function JobFiltersPanel({
                         {search.query && ` - "${search.query}"`}
                       </p>
                     </div>
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none">
                       <Button
                         variant="ghost"
                         size="sm"

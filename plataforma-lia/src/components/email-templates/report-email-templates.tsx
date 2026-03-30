@@ -418,7 +418,7 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
           <div className="flex items-center gap-2">
             {isSending ? (
               <Button disabled className="gap-2">
-                <RefreshCw className="w-4 h-4 animate-spin" />
+                <RefreshCw className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                 Enviando...
               </Button>
             ) : (
@@ -448,7 +448,7 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as EmailTemplate['category'])}
-              className={`flex items-center gap-2 px-6 py-3 text-sm font-medium transition-colors ${
+              className={`flex items-center gap-2 px-6 py-3 text-sm font-medium transition-colors motion-reduce:transition-none ${
  activeTab === tab.id
                   ? 'text-lia-text-secondary dark:text-lia-text-tertiary border-b-2 border-gray-900 bg-gray-100 dark:bg-lia-bg-secondary'
                   : 'lia-text-base hover:lia-text-strong'
@@ -472,7 +472,7 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
               {emailTemplates.map((template) => (
                 <Card
                   key={template.id}
-                  className={`cursor-pointer transition-colors hover:${
+                  className={`cursor-pointer transition-colors motion-reduce:transition-none hover:${
  selectedTemplate.id === template.id ? 'ring-2 ring-gray-900/20 dark:ring-gray-50/20 bg-gray-100 dark:bg-lia-bg-secondary' : ''
                   }`}
                   onClick={() => setSelectedTemplate(template)}

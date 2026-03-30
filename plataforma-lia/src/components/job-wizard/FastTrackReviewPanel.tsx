@@ -82,7 +82,7 @@ function CollapsibleSection({
     <div className="border border-neutral-700 rounded-md overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-3 bg-neutral-800/50 hover:bg-neutral-800 transition-colors"
+        className="w-full flex items-center justify-between p-3 bg-neutral-800/50 hover:bg-neutral-800 transition-colors motion-reduce:transition-none"
       >
         <div className="flex items-center gap-2">
           <span className="text-neutral-400">{icon}</span>
@@ -97,7 +97,7 @@ function CollapsibleSection({
           {onEdit && (
             <button 
               onClick={(e) => { e.stopPropagation(); onEdit() }}
-              className="p-1 text-neutral-500 hover:lia-text-muted transition-colors"
+              className="p-1 text-neutral-500 hover:lia-text-muted transition-colors motion-reduce:transition-none"
             >
               <Edit2 className="w-3 h-3" />
             </button>
@@ -433,7 +433,7 @@ export function FastTrackReviewPanel({
       >
         {isPublishing ? (
           <>
-            <span className="animate-spin mr-2">⏳</span>
+            <span className="animate-spin motion-reduce:animate-none mr-2">⏳</span>
             Publicando...
           </>
         ) : (

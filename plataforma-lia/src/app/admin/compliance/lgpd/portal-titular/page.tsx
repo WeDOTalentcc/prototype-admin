@@ -301,9 +301,9 @@ export default function PortalTitularPage() {
               </p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2" role="status" aria-live="polite" aria-label="Carregando...">
             <Button variant="outline" onClick={loadData} disabled={loading}>
-              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin motion-reduce:animate-none' : ''}`} />
               Atualizar
             </Button>
             <Button variant="outline" asChild>
@@ -334,8 +334,8 @@ export default function PortalTitularPage() {
 
           <Card >
             <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-amber-500/10">
+              <div className="flex items-center gap-3" role="status" aria-live="polite" aria-label="Carregando...">
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-amber-500/10" role="status" aria-live="polite" aria-label="Carregando...">
                   <Loader2 className="w-5 h-5 text-status-warning" />
                 </div>
                 <div>
@@ -453,8 +453,8 @@ export default function PortalTitularPage() {
               </CardHeader>
               <CardContent>
                 {loading ? (
-                  <div className="flex items-center justify-center py-12">
-                    <Loader2 className="w-8 h-8 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+                  <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
+                    <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
                   </div>
                 ) : requests.length === 0 ? (
                   <div className="text-center py-12">
@@ -609,7 +609,7 @@ export default function PortalTitularPage() {
                     return (
                       <div 
                         key={direito.id}
-                        className="flex items-center gap-3 p-3 rounded-md hover:bg-gray-50 transition-colors bg-gray-100 dark:bg-lia-bg-secondary"
+                        className="flex items-center gap-3 p-3 rounded-md hover:bg-gray-50 transition-colors motion-reduce:transition-none bg-gray-100 dark:bg-lia-bg-secondary"
                         
                       >
                         <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
@@ -931,7 +931,7 @@ export default function PortalTitularPage() {
               disabled={actionLoading || (actionType === 'complete' ? !actionResponse : !actionReason)}
               className={actionType === 'reject' ? 'bg-status-error hover:bg-status-error' : ''}
             >
-              {actionLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {actionLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />}
               {actionType === 'complete' ? 'Concluir' : 'Rejeitar'}
             </Button>
           </DialogFooter>

@@ -65,7 +65,7 @@ export function KanbanFiltersPanel({
   }
 
   return (
-    <div className="flex-shrink-0 w-72 transition-colors duration-300">
+    <div className="flex-shrink-0 w-72 transition-colors motion-reduce:transition-none duration-300">
       <Card className="h-[calc(100vh-12rem)] flex flex-col overflow-hidden border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
         {/* Header */}
         <div className="flex-shrink-0 p-4 border-b border-lia-border-subtle">
@@ -166,13 +166,13 @@ export function KanbanFiltersPanel({
           <div className="flex gap-2">
             <button
               onClick={handleClear}
-              className="flex-1 px-3 py-2 text-xs font-medium text-lia-text-secondary bg-lia-bg-primary border border-lia-border-subtle rounded-md hover:bg-gray-50 transition-colors"
+              className="flex-1 px-3 py-2 text-xs font-medium text-lia-text-secondary bg-lia-bg-primary border border-lia-border-subtle rounded-md hover:bg-gray-50 transition-colors motion-reduce:transition-none"
             >
               Limpar
             </button>
             <button
               onClick={onClose}
-              className="flex-1 px-3 py-2 text-xs font-medium text-white rounded-md transition-colors bg-gray-900 hover:bg-gray-800"
+              className="flex-1 px-3 py-2 text-xs font-medium text-white rounded-md transition-colors motion-reduce:transition-none bg-gray-900 hover:bg-gray-800"
             >
               Aplicar
             </button>

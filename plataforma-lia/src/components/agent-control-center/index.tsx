@@ -124,7 +124,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="flex items-center gap-2 text-lia-text-tertiary dark:text-lia-text-tertiary">
-          <RefreshCcw className="w-5 h-5 animate-spin" />
+          <RefreshCcw className="w-5 h-5 animate-spin motion-reduce:animate-none" />
           <span>Carregando Centro de Controle...</span>
         </div>
       </div>
@@ -158,7 +158,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
               disabled={isLoading}
               className="text-xs border-lia-border-default dark:border-lia-border-default"
             >
-              <RefreshCcw className={`w-3 h-3 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
+              <RefreshCcw className={`w-3 h-3 mr-1 ${isLoading ? 'animate-spin motion-reduce:animate-none' : ''}`} />
               Atualizar
             </Button>
           </div>
@@ -249,7 +249,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
             <Card
               key={agent.id}
               onClick={() => handleAgentClick(agent)}
-              className={`border transition-transform duration-200 hover:scale-[1.02] hover:cursor-pointer group bg-white ${selectedAgent?.id === agent.id ? 'border-gray-900 dark:border-lia-border-subtle' : 'border-lia-border-subtle dark:border-lia-border-subtle'}`}
+              className={`border transition-transform motion-reduce:transition-none duration-200 hover:scale-[1.02] hover:cursor-pointer group bg-white ${selectedAgent?.id === agent.id ? 'border-gray-900 dark:border-lia-border-subtle' : 'border-lia-border-subtle dark:border-lia-border-subtle'}`}
             >
               <CardContent className="p-4">
                 {/* Header */}
@@ -268,7 +268,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                       style={{backgroundColor: getStatusColor(agent.status)}}
                     />
                     <ChevronRight
-                      className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-lia-text-disabled"
+                      className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none text-lia-text-disabled"
                     />
                   </div>
                 </div>
@@ -442,7 +442,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                 {activities.map((activity) => (
                   <div 
                     key={activity.id}
-                    className="flex items-start gap-3 p-4 transition-colors hover:bg-opacity-50"
+                    className="flex items-start gap-3 p-4 transition-colors motion-reduce:transition-none hover:bg-opacity-50"
                     style={{backgroundColor: 'transparent'}}
                   >
                     <div className="flex-shrink-0 mt-0.5">

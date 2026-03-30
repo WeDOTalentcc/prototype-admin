@@ -108,37 +108,37 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
           <thead>
             <tr className="">
               <th className="py-3 px-3 text-center w-12">
-                <div className="w-4 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse mx-auto" />
+                <div className="w-4 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
               </th>
               <th className="py-3 px-3 text-left w-[80px]">
-                <div className="w-8 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse" />
+                <div className="w-8 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse motion-reduce:animate-none" />
               </th>
               <th className="py-3 px-3 text-left w-[200px]">
-                <div className="w-16 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse" />
+                <div className="w-16 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse motion-reduce:animate-none" />
               </th>
               <th className="py-3 px-3 text-center w-[100px]">
-                <div className="w-20 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse mx-auto" />
+                <div className="w-20 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
               </th>
               <th className="py-3 px-3 text-left w-[180px]">
-                <div className="w-32 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse" />
+                <div className="w-32 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse motion-reduce:animate-none" />
               </th>
               <th className="py-3 px-3 text-left w-[100px]">
-                <div className="w-14 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse" />
+                <div className="w-14 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse motion-reduce:animate-none" />
               </th>
               <th className="py-3 px-3 text-left w-[60px]">
-                <div className="w-10 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse" />
+                <div className="w-10 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse motion-reduce:animate-none" />
               </th>
               <th className="py-3 px-3 text-left w-[120px]">
-                <div className="w-20 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse" />
+                <div className="w-20 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse motion-reduce:animate-none" />
               </th>
               <th className="py-3 px-3 text-left w-[100px]">
-                <div className="w-14 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse" />
+                <div className="w-14 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse motion-reduce:animate-none" />
               </th>
               <th className="py-3 px-3 text-center w-[100px]">
-                <div className="w-16 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse mx-auto" />
+                <div className="w-16 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
               </th>
               <th className="py-3 px-3 text-center w-[80px]">
-                <div className="w-12 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse mx-auto" />
+                <div className="w-12 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
               </th>
             </tr>
           </thead>
@@ -146,49 +146,49 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
             {[1, 2, 3, 4, 5, 6, 7, 8].map((row) => (
               <tr key={row} className="">
                 <td className="py-3 px-3 text-center">
-                  <div className="w-4 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse mx-auto" />
+                  <div className="w-4 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
                 </td>
                 <td className="py-3 px-3">
-                  <div className="w-16 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse" />
+                  <div className="w-16 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
                 </td>
                 <td className="py-3 px-3">
                   <div className="space-y-1">
-                    <div className="w-40 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse" />
-                    <div className="w-24 h-3 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md animate-pulse" />
+                    <div className="w-40 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
+                    <div className="w-24 h-3 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md animate-pulse motion-reduce:animate-none" />
                   </div>
                 </td>
                 <td className="py-3 px-3 text-center">
-                  <div className="w-8 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse mx-auto" />
+                  <div className="w-8 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
                 </td>
                 <td className="py-3 px-3">
                   <div className="flex gap-1">
-                    <div className="w-6 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse" />
-                    <div className="w-6 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse" />
-                    <div className="w-6 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse" />
-                    <div className="w-6 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse" />
-                    <div className="w-6 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse" />
+                    <div className="w-6 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
+                    <div className="w-6 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
+                    <div className="w-6 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
+                    <div className="w-6 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
+                    <div className="w-6 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
                   </div>
                 </td>
                 <td className="py-3 px-3">
-                  <div className="w-16 h-5 bg-gray-100 dark:bg-lia-bg-secondary rounded-full animate-pulse" />
+                  <div className="w-16 h-5 bg-gray-100 dark:bg-lia-bg-secondary rounded-full animate-pulse motion-reduce:animate-none" />
                 </td>
                 <td className="py-3 px-3">
-                  <div className="w-8 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse" />
+                  <div className="w-8 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
                 </td>
                 <td className="py-3 px-3">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-full animate-pulse" />
-                    <div className="w-20 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse" />
+                    <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-full animate-pulse motion-reduce:animate-none" />
+                    <div className="w-20 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
                   </div>
                 </td>
                 <td className="py-3 px-3">
-                  <div className="w-20 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse" />
+                  <div className="w-20 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
                 </td>
                 <td className="py-3 px-3 text-center">
-                  <div className="w-16 h-5 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse mx-auto" />
+                  <div className="w-16 h-5 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
                 </td>
                 <td className="py-3 px-3 text-center">
-                  <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse mx-auto" />
+                  <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
                 </td>
               </tr>
             ))}
@@ -196,7 +196,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
         </table>
         <div className="flex items-center justify-center py-6 text-sm text-lia-text-primary dark:text-lia-text-tertiary">
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded-full animate-spin bg-gray-600" />
+            <div className="w-5 h-5 rounded-full animate-spin motion-reduce:animate-none bg-gray-600" />
             <span>Carregando vagas...</span>
           </div>
         </div>
@@ -279,7 +279,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                   onClick={() => config.sortable && onSort(columnId)}
                 >
                   <div className="flex items-center gap-1">
-                    <GripVertical className="w-3 h-3 text-lia-text-primary opacity-0 group-hover:opacity-100 transition-opacity cursor-grab" />
+                    <GripVertical className="w-3 h-3 text-lia-text-primary opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none cursor-grab" />
                     <span>{config.label}</span>
                     {config.sortable && (
                       jobsSortColumn === columnId 
@@ -291,7 +291,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                   </div>
                   
                   <div
-                    className="absolute right-0 top-0 h-full w-1 cursor-col-resize opacity-0 group-hover:opacity-100 bg-gray-300 dark:bg-lia-bg-elevated hover:bg-gray-500 dark:hover:bg-gray-500 transition-colors"
+                    className="absolute right-0 top-0 h-full w-1 cursor-col-resize opacity-0 group-hover:opacity-100 bg-gray-300 dark:bg-lia-bg-elevated hover:bg-gray-500 dark:hover:bg-gray-500 transition-colors motion-reduce:transition-none"
                     onMouseDown={(e) => onColumnResize(columnId, e)}
                     onClick={(e) => e.stopPropagation()}
                   />
@@ -311,7 +311,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                 {statusJobs.map((job) => (
                   <React.Fragment key={job.id}>
                     <tr
-                      className="hover:bg-gray-50 dark:hover:bg-gray-800/50 text-xs cursor-pointer transition-colors"
+                      className="hover:bg-gray-50 dark:hover:bg-gray-800/50 text-xs cursor-pointer transition-colors motion-reduce:transition-none"
                       onClick={() => onJobPreview(job)}
                     >
                       {jobsColumnOrder.filter((columnId) => {
@@ -587,7 +587,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                             <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}} /* dynamic */>
                               <Badge
                                 variant="outline"
-                                className="border-0 text-micro font-normal px-2 py-0.5 text-lia-text-primary dark:text-lia-text-primary cursor-pointer hover:opacity-80 transition-opacity"
+                                className="border-0 text-micro font-normal px-2 py-0.5 text-lia-text-primary dark:text-lia-text-primary cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none"
                                 style={{backgroundColor: screeningColors[status] || 'var(--gray-200)'}} /* dynamic */
                                 onClick={(e) => {
                                   e.stopPropagation()
@@ -663,7 +663,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className={`h-7 w-7 p-0 transition-colors ${
+                                  className={`h-7 w-7 p-0 transition-colors motion-reduce:transition-none ${
                                     isUrgent 
                                       ? 'bg-status-error/10 hover:bg-status-error/15 dark:bg-status-error/20 dark:hover:bg-status-error/30' 
                                       : 'hover:bg-gray-100 dark:hover:bg-gray-800'
@@ -674,7 +674,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   }}
                                   title={isUrgent ? "Remover urgência" : "Marcar como urgente"}
                                 >
-                                  <AlertTriangle className={`w-3.5 h-3.5 transition-colors ${
+                                  <AlertTriangle className={`w-3.5 h-3.5 transition-colors motion-reduce:transition-none ${
                                     isUrgent 
                                       ? 'text-status-error fill-red-100' 
                                       : 'text-lia-text-primary dark:text-lia-text-primary'
@@ -683,7 +683,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className={`h-7 w-7 p-0 transition-colors ${
+                                  className={`h-7 w-7 p-0 transition-colors motion-reduce:transition-none ${
                                     isPinned 
                                       ? 'bg-gray-100 hover:bg-gray-200 dark:bg-lia-bg-secondary dark:hover:bg-gray-700' 
                                       : 'hover:bg-gray-100 dark:hover:bg-gray-800'
@@ -694,7 +694,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   }}
                                   title={isPinned ? "Desafixar vaga" : "Fixar vaga"}
                                 >
-                                  <Pin className={`w-3 h-3 transition-colors ${
+                                  <Pin className={`w-3 h-3 transition-colors motion-reduce:transition-none ${
                                     isPinned 
                                       ? 'text-lia-text-primary dark:text-lia-text-primary fill-current' 
                                       : 'text-lia-text-primary dark:text-lia-text-primary'
@@ -703,7 +703,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className={`h-7 w-7 p-0 transition-colors ${
+                                  className={`h-7 w-7 p-0 transition-colors motion-reduce:transition-none ${
                                     isFavorite 
                                       ? 'bg-status-warning/10 hover:bg-status-warning/15 dark:bg-status-warning/20 dark:hover:bg-status-warning/30' 
                                       : 'hover:bg-gray-100 dark:hover:bg-gray-800'
@@ -714,7 +714,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   }}
                                   title={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
                                 >
-                                  <Star className={`w-3 h-3 transition-colors ${
+                                  <Star className={`w-3 h-3 transition-colors motion-reduce:transition-none ${
                                     isFavorite 
                                       ? 'text-status-warning fill-yellow-400' 
                                       : 'text-lia-text-primary dark:text-lia-text-primary'

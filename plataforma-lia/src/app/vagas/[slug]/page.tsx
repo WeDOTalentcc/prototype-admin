@@ -172,10 +172,10 @@ export default function PublicVacancyPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-lia-bg-primary flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-10 h-10 animate-spin text-neutral-400 dark:lia-text-500 mx-auto" />
-          <p className="text-neutral-500 dark:lia-text-400 mt-4 text-sm">Carregando vaga...</p>
+      <div className="min-h-screen bg-white dark:bg-lia-bg-primary flex items-center justify-center" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="text-center" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-10 h-10 animate-spin motion-reduce:animate-none text-neutral-400 dark:lia-text-500 mx-auto" />
+          <p className="text-neutral-500 dark:lia-text-400 mt-4 text-sm" aria-live="polite" aria-atomic="true">Carregando vaga...</p>
         </div>
       </div>
     )
@@ -191,7 +191,7 @@ export default function PublicVacancyPage() {
           <h2 className="text-xl font-semibold text-neutral-900 dark:text-lia-text-primary mb-2">
             Vaga Indisponível
           </h2>
-          <p className="text-neutral-500 dark:text-lia-text-tertiary mb-6">
+          <p className="text-neutral-500 dark:text-lia-text-tertiary mb-6" aria-live="polite" aria-atomic="true">
             {error || "Esta vaga não está mais disponível."}
           </p>
           <Button 
@@ -713,7 +713,7 @@ export default function PublicVacancyPage() {
                     />
                     <div
                       onClick={() => fileInputRef.current?.click()}
-                      className={`w-full px-3 py-4 border-2 border-dashed rounded-md text-center cursor-pointer transition-colors hover:border-neutral-400 dark:hover:border-gray-500 hover:bg-neutral-50 dark:hover:bg-gray-700 ${
+                      className={`w-full px-3 py-4 border-2 border-dashed rounded-md text-center cursor-pointer transition-colors motion-reduce:transition-none hover:border-neutral-400 dark:hover:border-gray-500 hover:bg-neutral-50 dark:hover:bg-gray-700 ${
                         formErrors.cvFile ? "border-status-error/30" : form.cvFile ? "border-neutral-400 dark:lia-border-500 bg-neutral-50 dark:lia-bg-700" : "border-neutral-200 dark:lia-border-600"
                       }`}
                     >
@@ -775,7 +775,7 @@ export default function PublicVacancyPage() {
                     >
                       {submitting ? (
                         <>
-                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                          <Loader2 className="w-5 h-5 mr-2 animate-spin motion-reduce:animate-none" />
                           Enviando candidatura...
                         </>
                       ) : (

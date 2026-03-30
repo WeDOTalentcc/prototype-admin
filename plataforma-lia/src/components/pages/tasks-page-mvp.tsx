@@ -517,8 +517,8 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
 
           <TabsContent value="entrevistas" className="mt-3">
             {isLoading ? (
-              <div className="py-16 text-center">
-                <Loader2 className="w-8 h-8 text-lia-text-disabled dark:text-lia-text-tertiary mx-auto mb-3 animate-spin" />
+              <div className="py-16 text-center" role="status" aria-live="polite" aria-label="Carregando...">
+                <Loader2 className="w-8 h-8 text-lia-text-disabled dark:text-lia-text-tertiary mx-auto mb-3 animate-spin motion-reduce:animate-none" />
                 <p className="text-base-ui font-[Open_Sans,sans-serif] text-lia-text-tertiary dark:text-lia-text-tertiary">Carregando entrevistas...</p>
               </div>
             ) : error ? (
@@ -548,7 +548,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                 {morningInterviews.map((interview) => (
                   <div
                     key={interview.id}
-                    className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3.5 bg-white dark:bg-lia-bg-primary transition-colors duration-150 hover:border-lia-border-default dark:hover:border-gray-600"
+                    className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3.5 bg-white dark:bg-lia-bg-primary transition-colors motion-reduce:transition-none duration-150 hover:border-lia-border-default dark:hover:border-gray-600"
                   >
                     <div className="flex gap-3">
                       <Avatar className="w-10 h-10 flex-shrink-0 mt-0.5">
@@ -574,7 +574,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                               {getPlatformLabel(interview.platform)}
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleCopyLink(interview) }}
-                                className="ml-0.5 text-lia-text-disabled hover:text-lia-text-secondary dark:hover:text-lia-text-disabled transition-colors"
+                                className="ml-0.5 text-lia-text-disabled hover:text-lia-text-secondary dark:hover:text-lia-text-disabled transition-colors motion-reduce:transition-none"
                                 title={copiedId === interview.id ? 'Link copiado!' : 'Copiar link da reunião'}
                               >
                                 {copiedId === interview.id ? <Check className="w-3.5 h-3.5 text-status-success stroke-[2.5]" /> : <Share2 className="w-3.5 h-3.5 stroke-[2.5]" />}
@@ -631,7 +631,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                 {afternoonInterviews.map((interview) => (
                   <div
                     key={interview.id}
-                    className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3.5 bg-white dark:bg-lia-bg-primary transition-colors duration-150 hover:border-lia-border-default dark:hover:border-gray-600"
+                    className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3.5 bg-white dark:bg-lia-bg-primary transition-colors motion-reduce:transition-none duration-150 hover:border-lia-border-default dark:hover:border-gray-600"
                   >
                     <div className="flex gap-3">
                       <Avatar className="w-10 h-10 flex-shrink-0 mt-0.5">
@@ -657,7 +657,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                               {getPlatformLabel(interview.platform)}
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleCopyLink(interview) }}
-                                className="ml-0.5 text-lia-text-disabled hover:text-lia-text-secondary dark:hover:text-lia-text-disabled transition-colors"
+                                className="ml-0.5 text-lia-text-disabled hover:text-lia-text-secondary dark:hover:text-lia-text-disabled transition-colors motion-reduce:transition-none"
                                 title={copiedId === interview.id ? 'Link copiado!' : 'Copiar link da reunião'}
                               >
                                 {copiedId === interview.id ? <Check className="w-3.5 h-3.5 text-status-success stroke-[2.5]" /> : <Share2 className="w-3.5 h-3.5 stroke-[2.5]" />}
@@ -720,7 +720,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                       {interviews.map((interview) => (
                         <div
                           key={interview.id}
-                          className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3.5 bg-white dark:bg-lia-bg-primary transition-colors duration-150 hover:border-lia-border-default dark:hover:border-gray-600"
+                          className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3.5 bg-white dark:bg-lia-bg-primary transition-colors motion-reduce:transition-none duration-150 hover:border-lia-border-default dark:hover:border-gray-600"
                         >
                           <div className="flex gap-3">
                             <Avatar className="w-10 h-10 flex-shrink-0 mt-0.5">
@@ -746,7 +746,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                                     {getPlatformLabel(interview.platform)}
                                     <button
                                       onClick={(e) => { e.stopPropagation(); handleCopyLink(interview) }}
-                                      className="ml-0.5 text-lia-text-disabled hover:text-lia-text-secondary dark:hover:text-lia-text-disabled transition-colors"
+                                      className="ml-0.5 text-lia-text-disabled hover:text-lia-text-secondary dark:hover:text-lia-text-disabled transition-colors motion-reduce:transition-none"
                                       title={copiedId === interview.id ? 'Link copiado!' : 'Copiar link da reunião'}
                                     >
                                       {copiedId === interview.id ? <Check className="w-3.5 h-3.5 text-status-success stroke-[2.5]" /> : <Share2 className="w-3.5 h-3.5 stroke-[2.5]" />}
@@ -812,7 +812,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                 {pastInterviews.map((interview) => (
                   <div
                     key={interview.id}
-                    className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3.5 bg-white dark:bg-lia-bg-primary transition-colors duration-150"
+                    className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3.5 bg-white dark:bg-lia-bg-primary transition-colors motion-reduce:transition-none duration-150"
                   >
                     <div className="flex gap-3">
                       <Avatar className="w-10 h-10 flex-shrink-0 mt-0.5">
@@ -837,7 +837,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                               {getPlatformLabel(interview.platform)}
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleCopyLink(interview) }}
-                                className="ml-0.5 text-lia-text-disabled hover:text-lia-text-secondary dark:hover:text-lia-text-disabled transition-colors"
+                                className="ml-0.5 text-lia-text-disabled hover:text-lia-text-secondary dark:hover:text-lia-text-disabled transition-colors motion-reduce:transition-none"
                                 title={copiedId === interview.id ? 'Link copiado!' : 'Copiar link da reunião'}
                               >
                                 {copiedId === interview.id ? <Check className="w-3.5 h-3.5 text-status-success stroke-[2.5]" /> : <Share2 className="w-3.5 h-3.5 stroke-[2.5]" />}

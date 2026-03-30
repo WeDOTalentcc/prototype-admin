@@ -228,7 +228,7 @@ export function RubricEvaluationCard({
             return (
               <div 
                 key={idx} 
-                className={`flex items-start gap-2 p-1.5 rounded-md ${getRubricBgColor(level)} transition-colors`}
+                className={`flex items-start gap-2 p-1.5 rounded-md ${getRubricBgColor(level)} transition-colors motion-reduce:transition-none`}
               >
                 <div className="mt-0.5 flex-shrink-0">
                   {getRubricIcon(level)}
@@ -260,7 +260,7 @@ export function RubricEvaluationCard({
           {hasMoreRequirements && (
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className={`flex items-center gap-1 ${textStyles.caption} lia-text-secondary hover:lia-text-base transition-colors pl-1 pt-1`}
+              className={`flex items-center gap-1 ${textStyles.caption} lia-text-secondary hover:lia-text-base transition-colors motion-reduce:transition-none pl-1 pt-1`}
             >
               {isExpanded ? (
                 <>

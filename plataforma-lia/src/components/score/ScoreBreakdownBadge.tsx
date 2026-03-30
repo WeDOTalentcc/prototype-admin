@@ -114,7 +114,7 @@ export function ScoreBreakdownBadgeLazy({
       <PopoverTrigger asChild>
         <button
           className={cn(
- "inline-flex items-center gap-1 cursor-pointer select-none rounded-md hover:opacity-80 transition-opacity",
+ "inline-flex items-center gap-1 cursor-pointer select-none rounded-md hover:opacity-80 transition-opacity motion-reduce:transition-none",
             sizeClasses[size],
             getScoreColor(score),
             className
@@ -135,8 +135,8 @@ export function ScoreBreakdownBadgeLazy({
           </div>
 
           {loading && (
-            <div className="flex items-center justify-center py-4">
-              <Loader2 className="h-4 w-4 animate-spin lia-text-secondary" />
+            <div className="flex items-center justify-center py-4" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none lia-text-secondary" />
               <span className="ml-2 text-xs lia-text-secondary">Carregando...</span>
             </div>
           )}

@@ -63,7 +63,7 @@ export default function JobPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen" aria-live="polite" aria-busy={true} role="status">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-wedo-cyan/30" />
+        <div className="animate-spin motion-reduce:animate-none rounded-full h-8 w-8 border-b-2 border-wedo-cyan/30" />
       </div>
     )
   }

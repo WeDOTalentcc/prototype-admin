@@ -255,8 +255,8 @@ export function SkillsFilterInput({
             disabled={isLoadingAI}
           />
           {isLoadingAI && (
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <Loader2 className="w-4 h-4 animate-spin lia-text-600" />
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-600" />
             </div>
           )}
         </div>
@@ -306,7 +306,7 @@ export function SkillsFilterInput({
               >
                 <button
                   onClick={() => togglePin(skill.name)}
-                  className="hover:bg-gray-600 rounded-md p-0.5 transition-colors"
+                  className="hover:bg-gray-600 rounded-md p-0.5 transition-colors motion-reduce:transition-none"
                   title="Desmarcar como obrigatória"
                 >
                   <Pin className="w-3 h-3 fill-current" />
@@ -314,7 +314,7 @@ export function SkillsFilterInput({
                 <span>{skill.name}</span>
                 <button
                   onClick={() => removeSkill(skill.name)}
-                  className="hover:bg-gray-600 rounded-md p-0.5 transition-colors"
+                  className="hover:bg-gray-600 rounded-md p-0.5 transition-colors motion-reduce:transition-none"
                   title="Remover"
                 >
                   <X className="w-3 h-3" />
@@ -328,7 +328,7 @@ export function SkillsFilterInput({
               >
                 <button
                   onClick={() => togglePin(skill.name)}
-                  className="hover:bg-gray-200 rounded-md p-0.5 transition-colors"
+                  className="hover:bg-gray-200 rounded-md p-0.5 transition-colors motion-reduce:transition-none"
                   title="Marcar como obrigatória"
                 >
                   <Pin className="w-3 h-3" />
@@ -336,7 +336,7 @@ export function SkillsFilterInput({
                 <span>{skill.name}</span>
                 <button
                   onClick={() => removeSkill(skill.name)}
-                  className="hover:bg-gray-200 rounded-md p-0.5 transition-colors"
+                  className="hover:bg-gray-200 rounded-md p-0.5 transition-colors motion-reduce:transition-none"
                   title="Remover"
                 >
                   <X className="w-3 h-3" />
@@ -353,7 +353,7 @@ export function SkillsFilterInput({
             className="text-xs gap-1.5 border-gray-900 dark:lia-border-50 lia-text-900 dark:lia-text-50 hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             {isFindingSimilar ? (
-              <Loader2 className="w-3 h-3 animate-spin" />
+              <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
             ) : (
               <Brain className="w-3 h-3 text-wedo-cyan" />
             )}

@@ -261,7 +261,7 @@ export function LiaChatPanel() {
         <div className="flex items-center gap-1">
           <button
             onClick={handleNewChat}
-            className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary dark:hover:text-lia-text-disabled hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary dark:hover:text-lia-text-disabled hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
             title="Novo chat"
             aria-label="Iniciar novo chat"
           >
@@ -270,7 +270,7 @@ export function LiaChatPanel() {
           <button
             onClick={handleClear}
             disabled={messages.length === 0}
-            className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary dark:hover:text-lia-text-disabled hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary dark:hover:text-lia-text-disabled hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none disabled:opacity-30 disabled:cursor-not-allowed"
             title="Limpar mensagens"
             aria-label="Limpar mensagens"
           >
@@ -293,7 +293,7 @@ export function LiaChatPanel() {
           <div className="w-px h-4 bg-gray-200 dark:bg-lia-bg-elevated mx-0.5" />
           <button
             onClick={handleExpand}
-            className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary dark:hover:text-lia-text-disabled hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary dark:hover:text-lia-text-disabled hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
             title="Expandir para chat completo"
             aria-label="Expandir chat"
           >
@@ -301,7 +301,7 @@ export function LiaChatPanel() {
           </button>
           <button
             onClick={close}
-            className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary dark:hover:text-lia-text-disabled hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary dark:hover:text-lia-text-disabled hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
             title="Fechar"
             aria-label="Fechar chat"
           >
@@ -318,7 +318,7 @@ export function LiaChatPanel() {
           </span>
           <button
             onClick={() => { setActiveActionType(null); setActionLabel(null) }}
-            className="text-xs lia-text-secondary hover:lia-text-base dark:hover:lia-text-muted transition-colors"
+            className="text-xs lia-text-secondary hover:lia-text-base dark:hover:lia-text-muted transition-colors motion-reduce:transition-none"
             aria-label="Sair do modo de ação"
           >
             Sair
@@ -350,11 +350,11 @@ export function LiaChatPanel() {
               <button
                 key={chat.id}
                 onClick={() => handleLoadConversation(chat.id)}
-                className="w-full flex items-start gap-2.5 px-3 py-2.5 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left group"
+                className="w-full flex items-start gap-2.5 px-3 py-2.5 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none text-left group"
               >
                 <Clock className="w-3.5 h-3.5 lia-text-secondary flex-shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm-ui text-lia-text-secondary dark:text-lia-text-secondary truncate group-hover:text-lia-text-primary dark:group-hover:lia-text-subtle transition-colors">
+                  <p className="text-sm-ui text-lia-text-secondary dark:text-lia-text-secondary truncate group-hover:text-lia-text-primary dark:group-hover:lia-text-subtle transition-colors motion-reduce:transition-none">
                     {chat.title}
                   </p>
                   <p className="text-xs text-lia-text-disabled mt-0.5">
@@ -368,10 +368,10 @@ export function LiaChatPanel() {
       )}
 
       {!showHistory && (
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4" role="status" aria-live="polite" aria-label="Carregando...">
           {isFetchingHistory ? (
-            <div className="flex justify-center items-center h-full">
-              <Loader2 className="w-5 h-5 animate-spin lia-text-secondary" />
+            <div className="flex justify-center items-center h-full" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none lia-text-secondary" />
             </div>
           ) : isEmpty ? (
             <EmptyState />
@@ -427,10 +427,10 @@ export function LiaChatPanel() {
                 clearIntent()
               }
             }}
-            className="flex items-center gap-2 text-sm-ui text-lia-text-tertiary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors group w-full text-left"
+            className="flex items-center gap-2 text-sm-ui text-lia-text-tertiary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors motion-reduce:transition-none group w-full text-left"
             aria-label={`Abrir ${navIntent.page}`}
           >
-            <ArrowRight className="w-3.5 h-3.5 flex-shrink-0 text-chat-cyan group-hover:translate-x-0.5 transition-transform" />
+            <ArrowRight className="w-3.5 h-3.5 flex-shrink-0 text-chat-cyan group-hover:translate-x-0.5 transition-transform motion-reduce:transition-none" />
             <span>{navIntent.hint ?? `Ver em ${navIntent.page}`}</span>
           </button>
         </div>
@@ -474,7 +474,7 @@ export function LiaChatPanel() {
             )}
           >
             {isCreating || isStreaming
-              ? <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
+              ? <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none text-white" />
               : <Send className="w-3.5 h-3.5" />
             }
           </button>
@@ -499,7 +499,7 @@ function EmptyState() {
         <p className="text-base-ui font-medium text-lia-text-secondary dark:text-lia-text-secondary" >
           Como posso ajudar?
         </p>
-        <p className="text-sm-ui text-lia-text-disabled mt-1">
+        <p className="text-sm-ui text-lia-text-disabled mt-1" aria-live="polite" aria-atomic="true">
           Pergunte sobre vagas, candidatos, relatórios e muito mais.
         </p>
       </div>
@@ -518,9 +518,9 @@ function ThinkingIndicator() {
           <span className="text-xs font-bold text-lia-text-primary dark:text-lia-text-primary" >LIA</span>
         </div>
         <span className="flex gap-1 items-center h-5">
-          <span className="w-1.5 h-1.5 rounded-full bg-chat-cyan animate-bounce" style={{animationDelay: "0ms"}} />
-          <span className="w-1.5 h-1.5 rounded-full bg-chat-cyan animate-bounce" style={{animationDelay: "150ms"}} />
-          <span className="w-1.5 h-1.5 rounded-full bg-chat-cyan animate-bounce" style={{animationDelay: "300ms"}} />
+          <span className="w-1.5 h-1.5 rounded-full bg-chat-cyan animate-bounce motion-reduce:animate-none" style={{animationDelay: "0ms"}} />
+          <span className="w-1.5 h-1.5 rounded-full bg-chat-cyan animate-bounce motion-reduce:animate-none" style={{animationDelay: "150ms"}} />
+          <span className="w-1.5 h-1.5 rounded-full bg-chat-cyan animate-bounce motion-reduce:animate-none" style={{animationDelay: "300ms"}} />
         </span>
       </div>
     </div>
@@ -554,7 +554,7 @@ function StreamingBubble({ content }: { content: string }) {
             html={html}
             className="text-base-ui text-lia-text-secondary dark:text-lia-text-primary leading-relaxed font-['Open_Sans',sans-serif]"
           />
-          <span className="inline-block w-1.5 h-3.5 bg-chat-cyan ml-0.5 animate-pulse align-middle" />
+          <span className="inline-block w-1.5 h-3.5 bg-chat-cyan ml-0.5 animate-pulse motion-reduce:animate-none align-middle" />
         </div>
       </div>
     </div>

@@ -209,7 +209,7 @@ export function SaveArchetypeModal({
                   key={emoji}
                   type="button"
                   onClick={() => setSelectedEmoji(emoji)}
-                  className={`w-10 h-10 rounded-md border-2 text-xl flex items-center justify-center transition-colors ${
+                  className={`w-10 h-10 rounded-md border-2 text-xl flex items-center justify-center transition-colors motion-reduce:transition-none ${
                     selectedEmoji === emoji
                       ? "border-gray-900 dark:lia-border-50 bg-gray-100 dark:bg-lia-bg-secondary"
                       : "border-lia-border-subtle hover:border-lia-border-default"
@@ -301,7 +301,7 @@ export function SaveArchetypeModal({
             >
               {isSaving ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                   Salvando...
                 </>
               ) : (

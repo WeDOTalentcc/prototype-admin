@@ -326,7 +326,7 @@ export function BatchApprovalModal({
         {/* Progress Bar */}
         <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated h-1">
           <div
-            className="bg-gray-900 h-1 transition-colors duration-500"
+            className="bg-gray-900 h-1 transition-colors motion-reduce:transition-none duration-500"
             style={{width: `${(['selection', 'action', 'review', 'processing', 'complete'].indexOf(currentStep) + 1) * 20}%`}}
           />
         </div>
@@ -390,7 +390,7 @@ export function BatchApprovalModal({
                 {filteredCandidates.map((candidate) => (
                   <Card
                     key={candidate.id}
-                    className={`cursor-pointer transition-colors duration-200 ${
+                    className={`cursor-pointer transition-colors motion-reduce:transition-none duration-200 ${
  selectedCandidates.has(candidate.id)
                         ? 'ring-2 ring-gray-900 dark:ring-gray-50 bg-gray-50 dark:bg-lia-bg-elevated'
                         : 'hover:border-lia-border-default'
@@ -503,7 +503,7 @@ export function BatchApprovalModal({
                   {actionTemplates.map((template) => (
                     <Card
                       key={template.id}
-                      className={`cursor-pointer transition-colors duration-200 ${
+                      className={`cursor-pointer transition-colors motion-reduce:transition-none duration-200 ${
  batchAction.type === template.type
                           ? 'ring-2 ring-gray-900 dark:ring-gray-50 bg-gray-50 dark:bg-lia-bg-elevated'
                           : 'hover:border-lia-border-default'
@@ -772,7 +772,7 @@ export function BatchApprovalModal({
           {currentStep === 'processing' && (
             <div className="p-6 h-full flex items-center justify-center">
               <div className="text-center">
-                <div className="w-16 h-16 border-4 border-gray-900 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <div className="w-16 h-16 border-4 border-gray-900 border-t-transparent rounded-full animate-spin motion-reduce:animate-none mx-auto mb-4"></div>
                 <h3 className="text-lg font-semibold text-lia-text-primary mb-2">
                   Processando Aprovação em Lote
                 </h3>
@@ -781,15 +781,15 @@ export function BatchApprovalModal({
                 </p>
                 <div className="space-y-2 text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
                   <div className="flex items-center justify-center gap-2">
-                    <Activity className="w-4 h-4 animate-pulse" />
+                    <Activity className="w-4 h-4 animate-pulse motion-reduce:animate-none" />
                     Atualizando status dos candidatos
                   </div>
                   <div className="flex items-center justify-center gap-2">
-                    <Bell className="w-4 h-4 animate-pulse" />
+                    <Bell className="w-4 h-4 animate-pulse motion-reduce:animate-none" />
                     Enviando notificações
                   </div>
                   <div className="flex items-center justify-center gap-2">
-                    <Mail className="w-4 h-4 animate-pulse" />
+                    <Mail className="w-4 h-4 animate-pulse motion-reduce:animate-none" />
                     Enviando emails automáticos
                   </div>
                 </div>

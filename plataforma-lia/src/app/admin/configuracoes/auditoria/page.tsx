@@ -314,7 +314,7 @@ export default function AuditLogsPage() {
               disabled={isLoading}
               className="gap-2"
             >
-              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin motion-reduce:animate-none' : ''}`} />
               Atualizar
             </Button>
             <Button
@@ -336,7 +336,7 @@ export default function AuditLogsPage() {
             return (
               <Card
                 key={key}
-                className={`cursor-pointer transition-colors hover:${
+                className={`cursor-pointer transition-colors motion-reduce:transition-none hover:${
                   selectedCategory === key ? 'ring-2 ring-gray-900/20' : ''
                 }`}
                 onClick={() => {
@@ -457,7 +457,7 @@ export default function AuditLogsPage() {
           <CardContent className="p-0">
             {isLoading ? (
               <div className="py-12 flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+                <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
               </div>
             ) : paginatedLogs.length === 0 ? (
               <div className="py-12 text-center">
@@ -517,7 +517,7 @@ export default function AuditLogsPage() {
                       return (
                         <tr
                           key={log.id}
-                          className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                          className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors motion-reduce:transition-none"
                         >
                           <td className="px-6 py-4">
                             <span className="text-sm lia-text-950 dark:lia-text-50">

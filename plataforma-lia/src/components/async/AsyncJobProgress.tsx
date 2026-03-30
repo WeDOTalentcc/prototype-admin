@@ -170,12 +170,12 @@ export function AsyncJobProgress({
   // ── Render ─────────────────────────────────────────────────────────────────
 
   const content = (
-    <div className="space-y-3">
+    <div className="space-y-3" role="status" aria-live="polite" aria-label="Carregando...">
       {/* Header */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between gap-2" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
           {status === "processing" || status === "queued" ? (
-            <Loader2 className="h-4 w-4 animate-spin lia-text-secondary" />
+            <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none lia-text-secondary" />
           ) : status === "completed" ? (
             <CheckCircle2 className="h-4 w-4 text-status-success" />
           ) : (

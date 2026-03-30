@@ -203,7 +203,7 @@ export function JobPublishModal({
               <DialogTitle className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif]">
                 {getModalTitle()}
               </DialogTitle>
-              <p className="text-xs text-lia-text-secondary mt-0.5">
+              <p className="text-xs text-lia-text-secondary mt-0.5" aria-live="polite" aria-atomic="true">
                 {jobs.length} vaga{jobs.length > 1 ? 's' : ''} selecionada{jobs.length > 1 ? 's' : ''}
               </p>
             </div>
@@ -377,7 +377,7 @@ export function JobPublishModal({
                         <Label htmlFor="notifyApplicants" className="text-xs font-medium text-lia-text-primary cursor-pointer">
                           Notificar candidatos
                         </Label>
-                        <p className="text-micro text-lia-text-secondary">
+                        <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                           Todos os candidatos do processo receberão uma mensagem
                         </p>
                         {notifyApplicants && (
@@ -409,7 +409,7 @@ export function JobPublishModal({
                       <span className={cn("font-medium", jobsWithoutWSI.length === 0 ? "text-status-success" : "text-status-warning")}>
                         Perguntas WSI geradas
                       </span>
-                      <span className={cn("text-micro", jobsWithoutWSI.length === 0 ? "text-status-success" : "text-status-warning")}>
+                      <span className={cn("text-micro", jobsWithoutWSI.length === 0 ? "text-status-success" : "text-status-warning")} aria-live="polite" aria-atomic="true">
                         {jobsWithoutWSI.length === 0 ? '— todas as vagas' : `— ${jobsWithoutWSI.length} pendente${jobsWithoutWSI.length > 1 ? 's' : ''}`}
                       </span>
                     </div>
@@ -422,14 +422,14 @@ export function JobPublishModal({
                       <span className={cn("font-medium", jobsWithoutScreening.length === 0 ? "text-status-success" : "text-status-warning")}>
                         Triagem WSI configurada
                       </span>
-                      <span className={cn("text-micro", jobsWithoutScreening.length === 0 ? "text-status-success" : "text-status-warning")}>
+                      <span className={cn("text-micro", jobsWithoutScreening.length === 0 ? "text-status-success" : "text-status-warning")} aria-live="polite" aria-atomic="true">
                         {jobsWithoutScreening.length === 0 ? '— todas as vagas' : `— ${jobsWithoutScreening.length} pendente${jobsWithoutScreening.length > 1 ? 's' : ''}`}
                       </span>
                     </div>
                   </div>
                   {needsWSIWarning && (
                     <div className="mt-2 pt-2 border-t border-status-warning/30 bg-status-warning/10 -mx-3 -mb-3 px-3 pb-3 rounded-b-md">
-                      <p className="text-micro text-status-warning leading-relaxed mb-2">
+                      <p className="text-micro text-status-warning leading-relaxed mb-2" aria-live="polite" aria-atomic="true">
                         {jobsWithoutWSI.length === 1
                           ? `A vaga "${jobsWithoutWSI[0].title}" não tem perguntas WSI geradas. Candidatos serão recebidos sem triagem automática.`
                           : `${jobsWithoutWSI.length} vagas não têm perguntas WSI geradas. Candidatos serão recebidos sem triagem automática.`
@@ -511,7 +511,7 @@ export function JobPublishModal({
                           <Label htmlFor="autoSearchInternal" className="text-xs font-medium text-lia-text-primary cursor-pointer">
                             Busca na base interna
                           </Label>
-                          <p className="text-micro text-lia-text-secondary">LIA encontra candidatos no banco de talentos</p>
+                          <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">LIA encontra candidatos no banco de talentos</p>
                         </div>
                       </div>
                       
@@ -564,7 +564,7 @@ export function JobPublishModal({
               disabled={isSubmitting}
               className="h-9 px-4 text-xs font-medium border-lia-border-subtle bg-gray-50 text-lia-text-secondary hover:bg-gray-100"
             >
-              {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : <X className="w-3.5 h-3.5 mr-1.5" />}
+              {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-1.5" /> : <X className="w-3.5 h-3.5 mr-1.5" />}
               Despublicar ({publishedCount})
             </Button>
           )}
@@ -575,7 +575,7 @@ export function JobPublishModal({
               disabled={isSubmitting}
               className="h-9 px-4 text-xs font-medium bg-gray-800 hover:bg-gray-900 text-white"
             >
-              {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : <X className="w-3.5 h-3.5 mr-1.5" />}
+              {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-1.5" /> : <X className="w-3.5 h-3.5 mr-1.5" />}
               Despublicar Vagas
             </Button>
           ) : (
@@ -584,7 +584,7 @@ export function JobPublishModal({
               disabled={isSubmitting || (selectedChannels.size === 0 && (mode === 'publish' || mode === 'mixed')) || (needsWSIWarning && !wsiWarningConfirmed)}
               className="h-9 px-4 text-xs font-medium bg-gray-800 hover:bg-gray-900 text-white"
             >
-              {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : <Share2 className="w-3.5 h-3.5 mr-1.5" />}
+              {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-1.5" /> : <Share2 className="w-3.5 h-3.5 mr-1.5" />}
               {mode === 'mixed' ? `Publicar (${unpublishedCount})` : 'Publicar Vagas'}
             </Button>
           )}

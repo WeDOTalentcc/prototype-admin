@@ -220,12 +220,12 @@ export function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     onBlur={handleEmailBlur}
                     placeholder="Digite seu email"
-                    className="w-full px-4 py-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors"
+                    className="w-full px-4 py-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors motion-reduce:transition-none"
                     required
                   />
                   {checkingSSO && (
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                      <Loader2 className="w-4 h-4 animate-spin text-lia-text-disabled" />
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2" role="status" aria-live="polite" aria-label="Carregando...">
+                      <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none text-lia-text-disabled" />
                     </div>
                   )}
                 </div>
@@ -248,7 +248,7 @@ export function LoginPage() {
                   <Button
                     type="button"
                     onClick={handleSSOLogin}
-                    className="w-full mt-3 py-3 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 rounded-md transition-colors font-medium flex items-center justify-center gap-2"
+                    className="w-full mt-3 py-3 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 rounded-md transition-colors motion-reduce:transition-none font-medium flex items-center justify-center gap-2"
                   >
                     <Building2 className="w-4 h-4" />
                     Entrar com SSO Corporativo
@@ -267,7 +267,7 @@ export function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Digite sua senha"
-                    className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors"
+                    className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors motion-reduce:transition-none"
                     required
                   />
                   <button
@@ -291,7 +291,7 @@ export function LoginPage() {
                   />
                   <span className="ml-2 text-sm text-lia-text-primary dark:text-lia-text-primary">Lembrar de mim</span>
                 </label>
-                <a href="/forgot-password" className="text-sm text-lia-text-primary dark:text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors">
+                <a href="/forgot-password" className="text-sm text-lia-text-primary dark:text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors motion-reduce:transition-none">
                   Esqueceu a senha?
                 </a>
               </div>
@@ -307,11 +307,11 @@ export function LoginPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-md transition-colors font-medium"
+                className="w-full py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-md transition-colors motion-reduce:transition-none font-medium"
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mr-2" />
                     Entrando...
                   </>
                 ) : (
@@ -335,7 +335,7 @@ export function LoginPage() {
                   type="button"
                   onClick={() => handleSocialLogin("Google")}
                   variant="outline"
-                  className="w-full py-3 border border-lia-border-subtle hover:border-lia-border-default rounded-md transition-colors flex items-center justify-center gap-3 bg-lia-bg-primary font-medium"
+                  className="w-full py-3 border border-lia-border-subtle hover:border-lia-border-default rounded-md transition-colors motion-reduce:transition-none flex items-center justify-center gap-3 bg-lia-bg-primary font-medium"
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -350,7 +350,7 @@ export function LoginPage() {
                   type="button"
                   onClick={() => handleSocialLogin("Microsoft")}
                   variant="outline"
-                  className="w-full py-3 border border-lia-border-subtle hover:border-lia-border-default rounded-md transition-colors flex items-center justify-center gap-3 bg-lia-bg-primary font-medium"
+                  className="w-full py-3 border border-lia-border-subtle hover:border-lia-border-default rounded-md transition-colors motion-reduce:transition-none flex items-center justify-center gap-3 bg-lia-bg-primary font-medium"
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24">
                     <path fill="#F25022" d="M1 1h10.5v10.5H1z"/>
@@ -380,7 +380,7 @@ export function LoginPage() {
                     type="button"
                     onClick={() => window.location.href = '/demo-onboarding'}
                     variant="outline"
-                    className="w-full py-3 border-2 border-wedo-purple/30 hover:border-wedo-purple/30 rounded-md transition-colors flex items-center justify-center gap-3 bg-wedo-purple/10 hover:bg-wedo-purple/15 font-medium text-wedo-purple"
+                    className="w-full py-3 border-2 border-wedo-purple/30 hover:border-wedo-purple/30 rounded-md transition-colors motion-reduce:transition-none flex items-center justify-center gap-3 bg-wedo-purple/10 hover:bg-wedo-purple/15 font-medium text-wedo-purple"
                   >
                     <span className="text-lg">🌟</span>
                     Tour de Onboarding Completo
@@ -400,7 +400,7 @@ export function LoginPage() {
                       })
                     }}
                     variant="outline"
- className="w-full py-3 border-2 border-lia-border-default hover:border-lia-border-default rounded-md transition-colors flex items-center justify-center gap-3 hover:bg-gray-100 font-medium text-wedo-cyan-dark"
+ className="w-full py-3 border-2 border-lia-border-default hover:border-lia-border-default rounded-md transition-colors motion-reduce:transition-none flex items-center justify-center gap-3 hover:bg-gray-100 font-medium text-wedo-cyan-dark"
                   >
                     <span className="text-lg">🎯</span>
                     Acesso Demo + Onboarding
@@ -419,7 +419,7 @@ export function LoginPage() {
                       })
                     }}
                     variant="outline"
-                    className="w-full py-3 border-2 border-status-success/30 hover:border-status-success/30 rounded-md transition-colors flex items-center justify-center gap-3 bg-status-success/10 hover:bg-status-success/15 font-medium text-status-success"
+                    className="w-full py-3 border-2 border-status-success/30 hover:border-status-success/30 rounded-md transition-colors motion-reduce:transition-none flex items-center justify-center gap-3 bg-status-success/10 hover:bg-status-success/15 font-medium text-status-success"
                   >
                     <span className="text-lg">🔄</span>
                     Login + Replay Onboarding
@@ -497,12 +497,12 @@ export function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   onBlur={handleEmailBlur}
                   placeholder="Digite seu email"
-                  className="w-full px-4 py-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors"
+                  className="w-full px-4 py-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors motion-reduce:transition-none"
                   required
                 />
                 {checkingSSO && (
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                    <Loader2 className="w-4 h-4 animate-spin text-lia-text-disabled" />
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2" role="status" aria-live="polite" aria-label="Carregando...">
+                    <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none text-lia-text-disabled" />
                   </div>
                 )}
               </div>
@@ -525,7 +525,7 @@ export function LoginPage() {
                 <Button
                   type="button"
                   onClick={handleSSOLogin}
-                  className="w-full mt-3 py-3 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 rounded-md transition-colors font-medium flex items-center justify-center gap-2"
+                  className="w-full mt-3 py-3 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 rounded-md transition-colors motion-reduce:transition-none font-medium flex items-center justify-center gap-2"
                 >
                   <Building2 className="w-4 h-4" />
                   Entrar com SSO Corporativo
@@ -541,7 +541,7 @@ export function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Digite sua senha"
-                  className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors"
+                  className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors motion-reduce:transition-none"
                   required
                 />
                 <button
@@ -580,7 +580,7 @@ export function LoginPage() {
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mr-2" />
                   Entrando...
                 </>
               ) : (

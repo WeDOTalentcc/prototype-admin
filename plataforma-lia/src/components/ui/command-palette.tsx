@@ -139,7 +139,7 @@ export function CommandPalette({
                       onClose()
                     }}
                     onMouseEnter={() => setSelectedIndex(globalIndex)}
-                    className={`w-full px-4 py-3 flex items-center gap-3 transition-colors text-left lia-text-strong ${isSelected ? 'bg-gray-100' : 'bg-transparent'}`}
+                    className={`w-full px-4 py-3 flex items-center gap-3 transition-colors motion-reduce:transition-none text-left lia-text-strong ${isSelected ? 'bg-gray-100' : 'bg-transparent'}`}
                   >
                     <span className="text-lia-text-secondary dark:text-lia-text-tertiary flex-shrink-0">
                       {cmd.icon}

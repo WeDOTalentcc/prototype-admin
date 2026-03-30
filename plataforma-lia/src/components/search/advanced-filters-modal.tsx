@@ -186,7 +186,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                 )}
                 <button
                   onClick={onClose}
-                  className="p-1.5 rounded-md hover:bg-gray-100 lia-text-400 hover:lia-text-600 transition-colors"
+                  className="p-1.5 rounded-md hover:bg-gray-100 lia-text-400 hover:lia-text-600 transition-colors motion-reduce:transition-none"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -249,7 +249,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                         Base Local
                       </span>
                     </div>
-                    <p className="text-xs lia-text-600">
+                    <p className="text-xs lia-text-600" aria-live="polite" aria-atomic="true">
                       Candidatos já cadastrados na sua base
                     </p>
                     {searchSource === "local" && (
@@ -337,10 +337,10 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                     <div className="flex items-center gap-2">
                       <Eye className="w-4 h-4 text-status-warning" />
                       <div>
-                        <span className={textStyles.subtitle}>
+                        <span className={textStyles.subtitle} aria-live="polite" aria-atomic="true">
                           Incluir candidatos descobertos
                         </span>
-                        <p className={textStyles.description}>
+                        <p className={textStyles.description} aria-live="polite" aria-atomic="true">
                           Mostrar candidatos encontrados em buscas anteriores ainda não salvos na base
                         </p>
                       </div>
@@ -573,7 +573,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                       <PopoverTrigger asChild>
                         <button 
                           type="button"
-                          className="lia-text-400 hover:lia-text-600 transition-colors"
+                          className="lia-text-400 hover:lia-text-600 transition-colors motion-reduce:transition-none"
                         >
                           <HelpCircle className="w-4 h-4" />
                         </button>

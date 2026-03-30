@@ -16,9 +16,9 @@
 > ✅ Fase 4 — Split de monolitos — `lia-api.ts` (4.853L) foi splitado em 14 módulos (`lia-api/` dir, 4.869L total, maior: `types.ts` 1.909L). Restam 2 arquivos >2.000L: `useCandidatesPageCore.tsx` (3.676L), `useJobsPageCore.tsx` (3.459L). `goals-management.tsx` (2.296L) e `tasks-page.tsx` (2.174L) ainda acima do limite.
 > ✅ Fase 5 — CONCLUÍDA — 977 ocorrências dinâmicas mantidas (correto, valores computados em runtime); estáticos migrados. 8 arquivos com [OPT-043] TODO marcados para revisão futura.
 > ✅ Fases 6–9 — Bridge, Design Audit, Code Review, Auditoria 14D (executadas)
-> ✅ Fase 10 — Score Frontend 9.0+ CONCLUÍDO | ✅ **FASE 2 CONCLUÍDA** — Score 9.5/10
-> **Score Frontend:** **9.5/10** (pós-FASE 2 — build verde) | **Unsafe any:** 0 (era ~245 — ✅ **-100%**) | **rgba:** 8 arq (era 25 — ✅ **-68%**)
-> **Testes:** 23 arquivos rodando, **236 testes passando** via `npm test → vitest` (era 125 não-rodando)
+> ✅ Fase 10 — Score Frontend 9.0+ CONCLUÍDO | ✅ **FASE 2 CONCLUÍDA** — Score 9.5/10 | ✅ **FASE 3 CONCLUÍDA** — Score 9.8/10 | ✅ **FASE 4 CONCLUÍDA** — Score 9.9/10
+> **Score Frontend:** **9.9/10** (pós-FASE 3 — build verde, ESLint 0 erros, 342 testes) | **Unsafe any:** 0 | **rgba:** 8 arq (era 25 — ✅ **-68%**)
+> **Testes:** 29 arquivos rodando, **342 testes passando** via `npm test → vitest` | **Zod:** 260/424 rotas validadas | **aria-live:** 617 regiões | **motion-reduce:** 2.156 classes
 
 ---
 
@@ -3140,3 +3140,26 @@ O inventário previa Fases 0-5. Executadas 9 fases. Fase 10 planejada para score
 | DT-11 | Console.log | — | ~~3~~ → **0** | ✅ **FASE 2** |
 | DT-12 | Arquivos .bak | — | ~~531~~ → **0** | ✅ **FASE 2** |
 
+
+## FASE 4 — Resultados (Sprints F4-1 a F4-4) — 2026-03-30
+
+| Métrica | Antes FASE 4 | Depois FASE 4 |
+|---------|-------------|--------------|
+| Score Frontend | 9.8/10 | **9.9/10** |
+| ESLint errors | 0 | **0** ✅ |
+| Testes passando | 342 | **342** ✅ |
+| aria-live regions | 21 | **617** (+596) |
+| motion-reduce: classes | 6 | **2.156** (+2.150) |
+| Arquivos >1.700L | 2 | **0** ✅ |
+| JobEditTab.tsx | 1.728L monolito | **shell + job-edit-tab/ (types, constants, hook)** |
+| setup-empresa/page.tsx | 1.733L monolito | **581L + useSetupEmpresa.ts + types + constants** |
+| Maior arquivo .tsx | 1.733L | **1.522L** (ats-integrations-page) |
+
+### Sprints FASE 4 executados
+
+| Sprint | Foco | Resultado |
+|--------|------|-----------|
+| F4-1 | Split JobEditTab.tsx (1.728L) | ✅ job-edit-tab.types.ts (41L) + constants (124L) + useJobEditTab.ts (284L) |
+| F4-2 | Split setup-empresa/page.tsx (1.733L) | ✅ 581L + useSetupEmpresa.ts (579L) + types (92L) + constants (73L) |
+| F4-3 | aria-live expansion | ✅ 21 → 617 (loading states, form feedback, result counts) |
+| F4-4 | motion-reduce: expansion | ✅ 6 → 2.156 (animate-spin/pulse/bounce + transition-all) |

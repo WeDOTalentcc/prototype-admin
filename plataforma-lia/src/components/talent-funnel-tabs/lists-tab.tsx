@@ -406,7 +406,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
             <List className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             Listas de Candidatos
           </h2>
-          <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mt-0.5">
+          <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mt-0.5" aria-live="polite" aria-atomic="true">
             {lists.length} {lists.length === 1 ? 'lista' : 'listas'} • {totalCandidates} {totalCandidates === 1 ? 'candidato' : 'candidatos'} no total
           </p>
         </div>
@@ -434,8 +434,8 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-lia-text-secondary dark:text-lia-text-tertiary" />
+        <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
           <span className="ml-2 text-sm text-lia-text-primary dark:text-lia-text-primary">Carregando listas...</span>
         </div>
       ) : filteredLists.length > 0 ? (
@@ -444,7 +444,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
             <div
               key={list.id}
               onClick={() => onListSelect(list.id)}
-              className="group relative flex items-center gap-4 p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary hover:bg-gray-50 transition-colors cursor-pointer"
+              className="group relative flex items-center gap-4 p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary hover:bg-gray-50 transition-colors motion-reduce:transition-none cursor-pointer"
             >
               <div 
                 className="flex-shrink-0 w-10 h-10 rounded-md flex items-center justify-center relative bg-gray-100"
@@ -458,7 +458,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <p className="text-sm font-medium text-lia-text-primary truncate transition-colors">
+                  <p className="text-sm font-medium text-lia-text-primary truncate transition-colors motion-reduce:transition-none">
                     {list.name}
                   </p>
                 </div>
@@ -473,7 +473,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
                 <span className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">
                   {list.candidate_count || 0}
                 </span>
-                <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wide">
+                <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wide" aria-live="polite" aria-atomic="true">
                   {(list.candidate_count || 0) === 1 ? 'candidato' : 'candidatos'}
                 </span>
               </div>
@@ -483,7 +483,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
                 <span>{formatDate(list.updated_at || list.created_at)}</span>
               </div>
 
-              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -572,7 +572,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
                 </DropdownMenu>
               </div>
 
-              <ChevronRight className="w-5 h-5 lia-text-muted group-hover:lia-text-base transition-colors flex-shrink-0" />
+              <ChevronRight className="w-5 h-5 lia-text-muted group-hover:lia-text-base transition-colors motion-reduce:transition-none flex-shrink-0" />
             </div>
           ))}
         </div>
@@ -586,7 +586,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
           <h3 className="text-lg font-medium text-lia-text-primary mb-2 font-['Open_Sans',sans-serif]">
             {searchTerm ? 'Nenhuma lista encontrada' : 'Nenhuma lista criada'}
           </h3>
-          <p className="text-sm text-lia-text-primary dark:text-lia-text-primary text-center max-w-md mb-6">
+          <p className="text-sm text-lia-text-primary dark:text-lia-text-primary text-center max-w-md mb-6" aria-live="polite" aria-atomic="true">
             {searchTerm
               ? `Não encontramos listas com o termo "${searchTerm}". Tente outro termo ou crie uma nova lista.`
               : 'Crie sua primeira lista para organizar candidatos de forma eficiente. Você pode agrupar candidatos por vaga, perfil ou qualquer critério.'}
@@ -618,8 +618,8 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
         </div>
 
         {loadingShared ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-5 h-5 animate-spin lia-text-secondary" />
+          <div className="flex items-center justify-center py-8" role="status" aria-live="polite" aria-label="Carregando...">
+            <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none lia-text-secondary" />
             <span className="ml-2 text-xs lia-text-base">Carregando compartilhamentos...</span>
           </div>
         ) : sharedSearches.length > 0 ? (
@@ -627,7 +627,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
             {sharedSearches.map((shared) => (
               <div
                 key={shared.id}
-                className="group relative p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary hover:bg-gray-50 transition-colors"
+                className="group relative p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary hover:bg-gray-50 transition-colors motion-reduce:transition-none"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
@@ -641,7 +641,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
                         </p>
                         {getStatusBadge(shared.status)}
                       </div>
-                      <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+                      <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
                         {shared.share_type === 'search' ? 'Busca' : 'Lista'} • {shared.candidate_count} {shared.candidate_count === 1 ? 'candidato' : 'candidatos'}
                       </p>
                     </div>
@@ -820,7 +820,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
             >
               {saving ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
                   Salvando...
                 </>
               ) : editingList ? (
@@ -842,7 +842,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
             <AlertDialogDescription>
               Tem certeza que deseja excluir a lista <strong>"{listToDelete?.name}"</strong>?
               {listToDelete && listToDelete.candidate_count > 0 && (
-                <span className="block mt-2 text-status-warning">
+                <span className="block mt-2 text-status-warning" aria-live="polite" aria-atomic="true">
                   Esta lista contém {listToDelete.candidate_count} {listToDelete.candidate_count === 1 ? 'candidato' : 'candidatos'}.
                   Os candidatos não serão excluídos, apenas a associação com esta lista.
                 </span>
@@ -858,7 +858,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
             >
               {deleting ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
                   Excluindo...
                 </>
               ) : (

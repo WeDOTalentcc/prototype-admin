@@ -243,7 +243,7 @@ export default function AuditoriaPage() {
                       <Link
                         key={link.href}
                         href={link.href}
-                        className="group p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-900 dark:hover:border-gray-50 transition-colors"
+                        className="group p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none"
                       >
                         <div className="flex items-start gap-3">
                           <div className={`p-2 rounded-md ${link.bgColor}`}>
@@ -251,10 +251,10 @@ export default function AuditoriaPage() {
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center justify-between">
-                              <h3 className="font-medium lia-text-950 dark:lia-text-50 group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors">
+                              <h3 className="font-medium lia-text-950 dark:lia-text-50 group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors motion-reduce:transition-none">
                                 {link.title}
                               </h3>
-                              <ArrowRight className="w-4 h-4 lia-text-400 group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors" />
+                              <ArrowRight className="w-4 h-4 lia-text-400 group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors motion-reduce:transition-none" />
                             </div>
                             <p className="text-sm lia-text-500 dark:text-lia-text-tertiary mt-1">
                               {link.description}
@@ -283,7 +283,7 @@ export default function AuditoriaPage() {
                   {scheduledAudits.map((audit) => (
                     <div 
                       key={audit.id}
-                      className="flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-900 dark:hover:border-gray-50 transition-colors"
+                      className="flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none"
                     >
                       <div className="flex items-center gap-3">
                         <div className="flex items-center gap-2 text-sm lia-text-500">

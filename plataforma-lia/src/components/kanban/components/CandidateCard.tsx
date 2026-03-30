@@ -192,7 +192,7 @@ export function CandidateCard({
           className="px-2 py-0.5 border-b bg-gray-100"
         >
           <div className="flex items-center gap-1">
-            <Zap className="w-2 h-2 animate-pulse lia-text-500" />
+            <Zap className="w-2 h-2 animate-pulse motion-reduce:animate-none lia-text-500" />
             <span className="text-micro font-bold lia-text-500">
               Ação Necessária
             </span>
@@ -201,11 +201,11 @@ export function CandidateCard({
       )}
 
       <div className="p-2 relative">
-        <div className="absolute right-2 top-8 flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+        <div className="absolute right-2 top-8 flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none z-10">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-opacity bg-white/80 dark:bg-lia-bg-primary/80"
+                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-opacity motion-reduce:transition-none bg-white/80 dark:bg-lia-bg-primary/80"
                 onClick={(e) => e.stopPropagation()}
                 title="Mais opções"
               >
@@ -274,7 +274,7 @@ export function CandidateCard({
           </DropdownMenu>
 
           <button
-            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors bg-white/80 dark:bg-lia-bg-primary/80"
+            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors motion-reduce:transition-none bg-white/80 dark:bg-lia-bg-primary/80"
             onClick={handleQuickAction('view_details')}
             title="Ver detalhes do candidato"
           >
@@ -375,7 +375,7 @@ export function CandidateCard({
           {(candidate.subStatus || candidate.sub_status) && onSubStatusChange && subStatusOptions && subStatusOptions.length > 0 ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                <button className="cursor-pointer hover:opacity-80 transition-opacity">
+                <button className="cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none">
                   <StatusBadge
                     stageId={stageId}
                     subStatus={candidate.subStatus || candidate.sub_status}

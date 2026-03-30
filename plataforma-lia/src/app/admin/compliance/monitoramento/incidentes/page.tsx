@@ -297,7 +297,7 @@ export default function IncidentesPage() {
                       <Badge
                         key={service}
                         variant="outline"
-                        className={`cursor-pointer transition-colors ${
+                        className={`cursor-pointer transition-colors motion-reduce:transition-none ${
                           newIncident.affectedServices.includes(service)
                             ? 'bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary border-gray-900 dark:lia-border-50'
                             : 'hover:bg-gray-100'

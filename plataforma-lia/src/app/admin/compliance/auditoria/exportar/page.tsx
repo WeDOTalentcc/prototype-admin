@@ -272,7 +272,7 @@ export default function ExportarPage() {
                       return (
                         <div 
                           key={evidence.id}
-                          className={`p-4 rounded-md border cursor-pointer transition-colors ${
+                          className={`p-4 rounded-md border cursor-pointer transition-colors motion-reduce:transition-none ${
                             evidence.selected 
                               ? 'border-gray-900 dark:lia-border-50 bg-gray-50 dark:bg-lia-bg-secondary/50' 
                               : 'border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default'
@@ -332,7 +332,7 @@ export default function ExportarPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:lia-divide-700">
                       {previousExports.map((exp) => (
-                        <tr key={exp.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                        <tr key={exp.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors motion-reduce:transition-none">
                           <td className="px-6 py-4">
                             <span className="text-sm font-medium lia-text-950 dark:lia-text-50">{exp.framework}</span>
                           </td>
@@ -424,7 +424,7 @@ export default function ExportarPage() {
                     >
                       {isGenerating ? (
                         <>
-                          <Clock className="w-4 h-4 animate-spin" />
+                          <Clock className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                           Gerando Pacote...
                         </>
                       ) : (

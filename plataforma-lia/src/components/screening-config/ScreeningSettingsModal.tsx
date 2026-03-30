@@ -104,7 +104,7 @@ export function ScreeningSettingsModal({
               step={5}
               className="w-full"
             />
-            <p className="text-micro lia-text-secondary">
+            <p className="text-micro lia-text-secondary" aria-live="polite" aria-atomic="true">
               Candidatos com score abaixo de {minScore}% serão reprovados automaticamente
             </p>
           </div>
@@ -128,7 +128,7 @@ export function ScreeningSettingsModal({
               />
               <span className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">horas</span>
             </div>
-            <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary">
+            <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
               Tempo máximo de espera para resposta do candidato (1-168h)
             </p>
           </div>
@@ -174,7 +174,7 @@ export function ScreeningSettingsModal({
           >
             {isSaving ? (
               <>
-                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin motion-reduce:animate-none" />
                 Salvando...
               </>
             ) : (

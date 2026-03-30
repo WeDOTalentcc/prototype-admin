@@ -86,7 +86,7 @@ export function InterviewsSection() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {candidates.map((candidate) => (
-          <div key={candidate.id} className="wedo-card p-5 hover:border-lia-border-default dark:hover:border-gray-600 transition-colors cursor-pointer">
+          <div key={candidate.id} className="wedo-card p-5 hover:border-lia-border-default dark:hover:border-gray-600 transition-colors motion-reduce:transition-none cursor-pointer">
             <div className="space-y-4">
               {/* Header com avatar, nome e status */}
               <div className="flex items-start gap-3">

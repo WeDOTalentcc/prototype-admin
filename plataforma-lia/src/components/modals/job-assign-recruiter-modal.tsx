@@ -260,7 +260,7 @@ export function JobAssignRecruiterModal({
                       <div
                         key={recruiter.id}
                         onClick={() => setSelectedRecruiterId(recruiter.id)}
-                        className={`p-2.5 rounded-md cursor-pointer transition-colors ${
+                        className={`p-2.5 rounded-md cursor-pointer transition-colors motion-reduce:transition-none ${
                           isSelected
                             ? "bg-gray-100 border-2 border-gray-900"
                             : "bg-gray-50 border border-lia-border-subtle hover:border-gray-400"

@@ -191,7 +191,7 @@ export function CandidateTableRow({
 
   return (
     <tr
-      className={`group cursor-pointer transition-colors relative ${
+      className={`group cursor-pointer transition-colors motion-reduce:transition-none relative ${
  isSelected 
           ? 'bg-gray-100 dark:bg-lia-bg-secondary hover:bg-gray-200/70 dark:hover:bg-gray-700/70' 
           : 'hover:bg-gray-100 dark:hover:bg-gray-800/50'
@@ -212,7 +212,7 @@ export function CandidateTableRow({
           {renderCellContent(column)}
           {index === firstDataColumnIndex && overlayContent && (
             <div 
-              className="absolute left-0 top-0 h-full flex items-center pl-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20"
+              className="absolute left-0 top-0 h-full flex items-center pl-2 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none duration-200 z-20"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center gap-0.5 bg-white/95 dark:bg-lia-bg-primary/95 backdrop-blur-sm rounded-md px-1.5 py-1 border border-lia-border-subtle dark:border-lia-border-subtle">

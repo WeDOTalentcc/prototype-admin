@@ -295,7 +295,7 @@ export function CalibrationDashboard() {
           disabled={loading}
           className="gap-2"
         >
-          <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
+          <RefreshCw className={cn("w-4 h-4", loading && "animate-spin motion-reduce:animate-none")} />
           Atualizar
         </Button>
       </div>

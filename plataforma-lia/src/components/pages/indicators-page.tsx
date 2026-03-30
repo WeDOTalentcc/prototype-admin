@@ -86,7 +86,7 @@ export function IndicatorsPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-1 py-4 text-sm font-medium border-b-2 transition-colors ${
+              className={`flex items-center gap-2 px-1 py-4 text-sm font-medium border-b-2 transition-colors motion-reduce:transition-none ${
                 activeTab === tab.id
                   ? "border-gray-900 dark:border-lia-border-medium text-lia-text-secondary dark:text-lia-text-tertiary"
                   : "border-transparent text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-disabled"

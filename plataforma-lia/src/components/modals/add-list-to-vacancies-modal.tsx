@@ -168,7 +168,7 @@ export function AddListToVacanciesModal({
               </div>
               <div className="flex items-center gap-1.5 text-lia-text-primary dark:text-lia-text-primary">
                 <Users className="w-4 h-4" />
-                <span>
+                <span aria-live="polite" aria-atomic="true">
                   {isAddingSelected 
                     ? `${candidatesToAdd} de ${candidateCount} candidatos selecionados`
                     : `${candidateCount} candidato${candidateCount !== 1 ? 's' : ''}`
@@ -191,21 +191,21 @@ export function AddListToVacanciesModal({
           </div>
 
           {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-6 h-6 animate-spin text-lia-text-tertiary" />
+            <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
             </div>
           ) : vacancies.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Briefcase className="w-10 h-10 text-lia-text-disabled mb-3" />
-              <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">Nenhuma vaga aberta encontrada</p>
-              <p className="text-xs text-lia-text-secondary mt-1">
+              <p className="text-xs text-lia-text-primary dark:text-lia-text-primary" aria-live="polite" aria-atomic="true">Nenhuma vaga aberta encontrada</p>
+              <p className="text-xs text-lia-text-secondary mt-1" aria-live="polite" aria-atomic="true">
                 Crie uma vaga primeiro para poder adicionar candidatos
               </p>
             </div>
           ) : filteredVacancies.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Search className="w-10 h-10 text-lia-text-disabled mb-3" />
-              <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">Nenhuma vaga encontrada</p>
+              <p className="text-xs text-lia-text-primary dark:text-lia-text-primary" aria-live="polite" aria-atomic="true">Nenhuma vaga encontrada</p>
               <p className="text-xs text-lia-text-secondary mt-1">
                 Tente buscar com outros termos
               </p>
@@ -227,7 +227,7 @@ export function AddListToVacanciesModal({
                     : 'Selecionar todas'
                   }
                 </button>
-                <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+                <span className="text-xs text-lia-text-primary dark:text-lia-text-primary" aria-live="polite" aria-atomic="true">
                   {filteredVacancies.length} vaga{filteredVacancies.length !== 1 ? 's' : ''} disponíve{filteredVacancies.length !== 1 ? 'is' : 'l'}
                 </span>
               </div>
@@ -238,7 +238,7 @@ export function AddListToVacanciesModal({
                     <div
                       key={vacancy.id}
                       className={cn(
-                        "flex items-start gap-3 p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle cursor-pointer transition-colors hover:border-gray-400 dark:hover:border-gray-500",
+                        "flex items-start gap-3 p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle cursor-pointer transition-colors motion-reduce:transition-none hover:border-gray-400 dark:hover:border-gray-500",
                         selectedVacancyIds.has(vacancy.id) && "border-gray-900 dark:border-lia-border-default bg-gray-50 dark:bg-lia-bg-secondary"
                       )}
                       onClick={() => toggleVacancy(vacancy.id)}
@@ -321,7 +321,7 @@ export function AddListToVacanciesModal({
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
                 Adicionando...
               </>
             ) : (

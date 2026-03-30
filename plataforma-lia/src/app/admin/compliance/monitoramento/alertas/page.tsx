@@ -534,7 +534,7 @@ export default function AlertasPage() {
                     return (
                       <div 
                         key={type}
-                        className={`flex items-center justify-between p-2 rounded-md hover:bg-gray-50 transition-colors cursor-pointer ${typeFilter === type ? 'bg-gray-50 dark:bg-lia-bg-primary' : ''}`}
+                        className={`flex items-center justify-between p-2 rounded-md hover:bg-gray-50 transition-colors motion-reduce:transition-none cursor-pointer ${typeFilter === type ? 'bg-gray-50 dark:bg-lia-bg-primary' : ''}`}
                         onClick={() => setTypeFilter(type)}
                       >
                         <div className="flex items-center gap-2">

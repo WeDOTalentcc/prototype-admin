@@ -61,7 +61,7 @@ export function RadiusDropdown({
         <button 
           className={cn(
             "flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-lia-border-subtle",
-            "text-xs font-medium lia-text-800 dark:text-lia-text-primary hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-lia-border-subtle transition-colors",
+            "text-xs font-medium lia-text-800 dark:text-lia-text-primary hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-lia-border-subtle transition-colors motion-reduce:transition-none",
             className
           )}
         >
@@ -82,7 +82,7 @@ export function RadiusDropdown({
                   setIsOpen(false)
                 }}
                 className={cn(
-                  "w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors",
+                  "w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none",
                   value === option.value && "bg-gray-50 dark:bg-lia-bg-elevated"
                 )}
               >

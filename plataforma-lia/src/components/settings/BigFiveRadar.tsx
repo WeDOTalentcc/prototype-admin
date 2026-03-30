@@ -128,7 +128,7 @@ export function BigFiveRadar({
             fill="url(#radarGradient)"
             stroke="var(--gray-600)"
             strokeWidth="2"
-            className="transition-colors duration-300"
+            className="transition-colors motion-reduce:transition-none duration-300"
           />
 
           {dataPoints.map((value, index) => {
@@ -142,7 +142,7 @@ export function BigFiveRadar({
                 fill="var(--gray-600)"
                 stroke="white"
                 strokeWidth="2"
-                className="transition-colors duration-300"
+                className="transition-colors motion-reduce:transition-none duration-300"
               />
             )
           })}

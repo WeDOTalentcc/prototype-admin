@@ -274,7 +274,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 py-4 border-b-2 transition-colors ${
+                className={`flex items-center gap-2 py-4 border-b-2 transition-colors motion-reduce:transition-none ${
  activeTab === tab.id
                     ? 'border-gray-900 text-lia-text-primary dark:border-lia-border-subtle dark:text-lia-text-primary'
                     : 'border-transparent text-lia-text-primary dark:text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse'
@@ -516,7 +516,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                   <div className="flex gap-2">
                     <button
                       onClick={() => setNoteType('positive')}
-                      className={`px-3 py-1 text-xs rounded-full border transition-colors ${
+                      className={`px-3 py-1 text-xs rounded-full border transition-colors motion-reduce:transition-none ${
  noteType === 'positive'
                           ? 'bg-status-success/15 dark:bg-status-success/20 text-status-success dark:text-status-success border-status-success/30 dark:border-status-success/30'
                           : 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default'
@@ -527,7 +527,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                     </button>
                     <button
                       onClick={() => setNoteType('neutral')}
-                      className={`px-3 py-1 text-xs rounded-full border transition-colors ${
+                      className={`px-3 py-1 text-xs rounded-full border transition-colors motion-reduce:transition-none ${
  noteType === 'neutral'
                           ? 'bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary border-lia-border-default dark:border-lia-border-default'
                           : 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default'
@@ -538,7 +538,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                     </button>
                     <button
                       onClick={() => setNoteType('negative')}
-                      className={`px-3 py-1 text-xs rounded-full border transition-colors ${
+                      className={`px-3 py-1 text-xs rounded-full border transition-colors motion-reduce:transition-none ${
  noteType === 'negative'
                           ? 'bg-status-error/15 dark:bg-status-error/20 text-status-error dark:text-status-error border-status-error/30 dark:border-status-error/30'
                           : 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default'

@@ -264,7 +264,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
         <CardHeader className="py-3 border-b border-lia-border-subtle dark:lia-border-800">
           <CardTitle className={`${textStyles.h4} flex items-center justify-between`}>
             <span>Metas por Categoria</span>
-            {isLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+            {isLoading && <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4">
@@ -300,7 +300,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                 return (
                   <div key={template.id} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl overflow-hidden">
                     <div 
-                      className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors bg-gray-50/50"
+                      className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none bg-gray-50/50"
                       onClick={() => toggleGoalCollapse(template.id)}
                     >
                       <div className="flex items-center gap-2 flex-1">
@@ -546,7 +546,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                     disabled={isSaving}
                     className="text-micro h-6 bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 font-['Open_Sans',sans-serif]"
                   >
-                    {isSaving ? <Loader2 className="w-2.5 h-2.5 animate-spin mr-1" /> : <Plus className="w-2.5 h-2.5 mr-1" />}
+                    {isSaving ? <Loader2 className="w-2.5 h-2.5 animate-spin motion-reduce:animate-none mr-1" /> : <Plus className="w-2.5 h-2.5 mr-1" />}
                     Aplicar Selecionados
                   </Button>
                   <Button
@@ -628,7 +628,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                 <div 
                   key={template.id} 
                   onClick={() => !isAppliedToAll && toggleTemplateSelection(template.id)}
-                  className={`border rounded-md p-3 transition-colors cursor-pointer ${
+                  className={`border rounded-md p-3 transition-colors motion-reduce:transition-none cursor-pointer ${
                     isAppliedToAll 
                       ? 'border-status-success/30 bg-status-success/10 opacity-60 cursor-not-allowed' 
                       : isSelected
@@ -640,7 +640,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                 >
                   <div className="flex items-start justify-between mb-1.5">
                     <div className="flex items-center gap-2">
-                      <div className={`w-4 h-4 rounded-md border-2 flex items-center justify-center transition-colors ${
+                      <div className={`w-4 h-4 rounded-md border-2 flex items-center justify-center transition-colors motion-reduce:transition-none ${
                         isAppliedToAll 
                           ? 'bg-status-success border-status-success/30'
                           : isSelected 
@@ -907,7 +907,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                 <Button onClick={handleCreateCustomGoal} disabled={isSaving}>
                   {isSaving ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mr-2" />
                       Salvando...
                     </>
                   ) : (
@@ -1001,7 +1001,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                 >
                   {isSaving ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mr-2" />
                       Salvando...
                     </>
                   ) : (
@@ -1066,7 +1066,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                 >
                   {isDeleting ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mr-2" />
                       Excluindo...
                     </>
                   ) : (

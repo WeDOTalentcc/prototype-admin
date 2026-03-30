@@ -65,7 +65,7 @@ export function ToolExecutionFeedback({
           className
         )}
       >
-        <Loader2 className="h-5 w-5 text-wedo-cyan-dark dark:text-wedo-cyan-dark animate-spin flex-shrink-0" aria-hidden="true" />
+        <Loader2 className="h-5 w-5 text-wedo-cyan-dark dark:text-wedo-cyan-dark animate-spin motion-reduce:animate-none flex-shrink-0" aria-hidden="true" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-wedo-cyan-dark dark:text-wedo-cyan-dark">
             Executando {displayName}...
@@ -114,7 +114,7 @@ export function ToolExecutionFeedback({
               variant="ghost"
               size="sm"
               aria-label="Desfazer ação"
-              className="mt-2 h-7 text-xs text-status-success hover:text-status-success hover:bg-status-success/15 dark:text-status-success dark:hover:bg-status-success/50 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors duration-200"
+              className="mt-2 h-7 text-xs text-status-success hover:text-status-success hover:bg-status-success/15 dark:text-status-success dark:hover:bg-status-success/50 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors motion-reduce:transition-none duration-200"
             >
               <RefreshCw className="h-3 w-3 mr-1" aria-hidden="true" />
               Desfazer
@@ -153,7 +153,7 @@ export function ToolExecutionFeedback({
             variant="ghost"
             size="sm"
             aria-label="Tentar novamente"
-            className="mt-2 h-7 text-xs text-status-error hover:text-status-error hover:bg-status-error/15 dark:text-status-error dark:hover:bg-status-error/50 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200"
+            className="mt-2 h-7 text-xs text-status-error hover:text-status-error hover:bg-status-error/15 dark:text-status-error dark:hover:bg-status-error/50 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors motion-reduce:transition-none duration-200"
           >
             <RefreshCw className="h-3 w-3 mr-1" aria-hidden="true" />
             Tentar novamente

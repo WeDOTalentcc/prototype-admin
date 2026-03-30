@@ -279,7 +279,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
                   <button
                     key={mode}
                     onClick={() => setViewMode(mode)}
-                    className={`px-3 py-1 text-xs rounded-md transition-colors ${
+                    className={`px-3 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none ${
  viewMode === mode
                         ? 'bg-wedo-orange/10 text-white'
                         : 'lia-text-base hover:lia-text-strong'
@@ -296,7 +296,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
                   <button
                     key={sort}
                     onClick={() => setSortBy(sort)}
-                    className={`px-3 py-1 text-xs rounded-md transition-colors ${
+                    className={`px-3 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none ${
  sortBy === sort
                         ? 'bg-gray-900 text-white'
                         : 'lia-text-base hover:lia-text-strong'
@@ -327,7 +327,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
 
                   {/* Header da região/estado */}
                   <div
-                    className="p-4 bg-gray-50 dark:bg-lia-bg-secondary cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    className="p-4 bg-gray-50 dark:bg-lia-bg-secondary cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none"
                     onClick={() => isRegion && toggleRegionExpansion(item.regiao)}
                   >
                     <div className="flex items-center justify-between">

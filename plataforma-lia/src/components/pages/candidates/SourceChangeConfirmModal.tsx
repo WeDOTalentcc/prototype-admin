@@ -67,13 +67,13 @@ export function SourceChangeConfirmModal({
         <div className="flex gap-2.5 pt-3">
           <button
             onClick={onCancel}
-            className="flex-1 h-8 text-xs px-3 rounded-md bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors"
+            className="flex-1 h-8 text-xs px-3 rounded-md bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors motion-reduce:transition-none"
           >
             Cancelar
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 h-8 text-xs px-3 rounded-md text-white flex items-center justify-center gap-1.5 font-medium transition-colors hover:opacity-90 bg-gray-900"
+            className="flex-1 h-8 text-xs px-3 rounded-md text-white flex items-center justify-center gap-1.5 font-medium transition-colors motion-reduce:transition-none hover:opacity-90 bg-gray-900"
           >
             {pendingSourceChange === 'hybrid' ? (
               <>

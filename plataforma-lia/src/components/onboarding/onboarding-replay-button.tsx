@@ -36,7 +36,7 @@ export function OnboardingReplayButton({
         onClick={() => window.open('/admin/configuracoes', '_self')}
       >
         <div
-          className="transition-transform duration-300"
+          className="transition-transform motion-reduce:transition-none duration-300"
           style={{transform: isHovered ? 'rotate(360deg)' : 'rotate(0deg)'}}
         >
           <HelpCircle className="w-4 h-4" />
@@ -57,7 +57,7 @@ export function OnboardingReplayButton({
           onMouseLeave={() => setIsHovered(false)}
         >
           <div
-            className="transition-transform duration-200"
+            className="transition-transform motion-reduce:transition-none duration-200"
             style={{transform: isHovered ? 'scale(1.1)' : 'scale(1)'}}
           >
             <HelpCircle className="w-4 h-4" />

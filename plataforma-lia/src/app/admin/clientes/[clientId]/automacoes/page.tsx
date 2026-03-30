@@ -198,8 +198,8 @@ export default function ClientAutomacoesPage({
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin lia-text-600 dark:text-lia-text-tertiary" />
+        <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
           <span className="ml-3 text-sm lia-text-400 dark:lia-text-500">
             Carregando automações...
           </span>
@@ -235,7 +235,7 @@ export default function ClientAutomacoesPage({
           {automations.map((automation) => (
             <Card 
               key={automation.id}
-              className={`hover:border-gray-900 dark:hover:border-gray-50 transition-colors ${!automation.is_active ? 'opacity-60' : ''}`}
+              className={`hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none ${!automation.is_active ? 'opacity-60' : ''}`}
             >
               <CardContent className="p-4">
                 <div className="flex items-center gap-4">

@@ -447,7 +447,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         {/* Aba Favoritos */}
         {activeTab === 'favorites' && (
           <div className="flex gap-6">
-            <div className={`${showCandidatePreview && previewCandidate ? 'flex-1' : 'w-full'} transition-colors duration-300`}>
+            <div className={`${showCandidatePreview && previewCandidate ? 'flex-1' : 'w-full'} transition-colors motion-reduce:transition-none duration-300`}>
               <FavoritesTab
                 candidates={candidates.filter(c => pinnedCandidates.has(c.id) || favorites.has(c.id))}
                 pinnedCandidates={pinnedCandidates}
@@ -465,12 +465,12 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
             {showCandidatePreview && previewCandidate && (
               <div className="flex-shrink-0 relative" style={{width: `${previewWidth}px`}}>
                 <div
-                  className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors z-10 group"
+                  className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors motion-reduce:transition-none z-10 group"
                   onMouseDown={handlePreviewResize}
                   title="Arraste para redimensionar"
                 >
                   <div className="absolute inset-0 -left-1 -right-1"></div>
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-gray-300 dark:bg-lia-bg-elevated group-hover:bg-gray-400 dark:group-hover:bg-gray-500 rounded-full transition-colors"></div>
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-gray-300 dark:bg-lia-bg-elevated group-hover:bg-gray-400 dark:group-hover:bg-gray-500 rounded-full transition-colors motion-reduce:transition-none"></div>
                 </div>
                 <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
                   <CandidatePreview

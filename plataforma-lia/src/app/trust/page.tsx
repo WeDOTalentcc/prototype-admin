@@ -143,13 +143,13 @@ export default function PublicTrustCenterPage() {
           <nav className="flex items-center gap-4">
             <Link 
               href="/privacidade" 
-              className="text-sm lia-text-600 hover:lia-text-900 transition-colors"
+              className="text-sm lia-text-600 hover:lia-text-900 transition-colors motion-reduce:transition-none"
             >
               Portal LGPD
             </Link>
             <Link 
               href="/login" 
-              className="text-sm px-4 py-2 rounded-md bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 transition-colors"
+              className="text-sm px-4 py-2 rounded-md bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 transition-colors motion-reduce:transition-none"
             >
               Acessar Plataforma
             </Link>
@@ -300,7 +300,7 @@ export default function PublicTrustCenterPage() {
             {resources.map((resource) => (
               <button 
                 key={resource.id}
-                className="bg-lia-bg-primary rounded-md border border-lia-border-subtle p-4 flex items-start gap-4 hover:border-gray-900 dark:hover:border-gray-50 transition-colors text-left"
+                className="bg-lia-bg-primary rounded-md border border-lia-border-subtle p-4 flex items-start gap-4 hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none text-left"
               >
                 <div className="w-10 h-10 rounded-md bg-status-error/15 flex items-center justify-center flex-shrink-0">
                   <FileText className="w-5 h-5 text-status-error" />
@@ -490,21 +490,21 @@ export default function PublicTrustCenterPage() {
               <div className="flex flex-wrap gap-4">
                 <a 
                   href="mailto:security@wedotalent.com.br"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 text-sm font-medium transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 text-sm font-medium transition-colors motion-reduce:transition-none"
                 >
                   <Mail className="w-4 h-4" />
                   security@wedotalent.com.br
                 </a>
                 <a 
                   href="mailto:dpo@wedotalent.com.br"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-lia-border-subtle lia-text-800 dark:text-lia-text-primary text-sm font-medium hover:bg-gray-50 transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-lia-border-subtle lia-text-800 dark:text-lia-text-primary text-sm font-medium hover:bg-gray-50 transition-colors motion-reduce:transition-none"
                 >
                   <Shield className="w-4 h-4" />
                   DPO: dpo@wedotalent.com.br
                 </a>
                 <Link 
                   href="/privacidade"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-lia-border-subtle lia-text-800 dark:text-lia-text-primary text-sm font-medium hover:bg-gray-50 transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-lia-border-subtle lia-text-800 dark:text-lia-text-primary text-sm font-medium hover:bg-gray-50 transition-colors motion-reduce:transition-none"
                 >
                   <ExternalLink className="w-4 h-4" />
                   Portal LGPD

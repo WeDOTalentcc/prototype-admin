@@ -116,7 +116,7 @@ const NotificationItem = React.memo(({
 
   return (
     <div
-      className={`relative p-2.5 rounded-md cursor-pointer transition-colors duration-200 hover:bg-lia-bg-primary dark:hover:bg-gray-800 ${
+      className={`relative p-2.5 rounded-md cursor-pointer transition-colors motion-reduce:transition-none duration-200 hover:bg-lia-bg-primary dark:hover:bg-gray-800 ${
  !notification.read 
           ? "bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle" 
           : "bg-transparent border border-transparent"
@@ -148,7 +148,7 @@ const NotificationItem = React.memo(({
               variant="ghost"
               size="sm"
               onClick={handleRemove}
-              className="h-5 w-5 p-0 lia-text-base hover:lia-text-base dark:hover:lia-text-muted opacity-0 group-hover:opacity-100 transition-opacity -mt-0.5 -mr-1"
+              className="h-5 w-5 p-0 lia-text-base hover:lia-text-base dark:hover:lia-text-muted opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none -mt-0.5 -mr-1"
             >
               <X className="w-3 h-3" />
             </Button>
@@ -333,9 +333,9 @@ export function NotificationSystem({
                     </span>
                   )}
                 </h3>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1" role="status" aria-live="polite" aria-label="Carregando...">
                   {isLoading && (
-                    <Loader2 className="w-3 h-3 animate-spin lia-text-base" />
+                    <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none lia-text-base" />
                   )}
                   {unreadCount > 0 && (
                     <Button

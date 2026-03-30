@@ -135,7 +135,7 @@ function LearnedSuggestionsChips({ suggestions, onAccept }: { suggestions: Learn
           <button
             key={idx}
             onClick={() => onAccept(s)}
-            className="inline-flex items-center gap-1 px-2 py-0.5 bg-status-warning/10 border border-status-warning/30 rounded-md text-micro text-status-warning hover:bg-status-warning/15 transition-colors"
+            className="inline-flex items-center gap-1 px-2 py-0.5 bg-status-warning/10 border border-status-warning/30 rounded-md text-micro text-status-warning hover:bg-status-warning/15 transition-colors motion-reduce:transition-none"
             
           >
             <Sparkles className="w-2.5 h-2.5" />
@@ -235,7 +235,7 @@ export function TransitionChatPanel({
                   onClick={onNewChat}
                   title="Novo chat"
                   aria-label="Iniciar novo chat"
-                  className="p-1.5 rounded-md lia-text-400 hover:lia-text-600 hover:bg-gray-100 transition-colors"
+                  className="p-1.5 rounded-md lia-text-400 hover:lia-text-600 hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                 >
                   <Plus className="w-3.5 h-3.5" />
                 </button>
@@ -246,7 +246,7 @@ export function TransitionChatPanel({
                   disabled={messages.length === 0}
                   title="Limpar mensagens"
                   aria-label="Limpar mensagens"
-                  className="p-1.5 rounded-md lia-text-400 hover:lia-text-600 hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="p-1.5 rounded-md lia-text-400 hover:lia-text-600 hover:bg-gray-100 transition-colors motion-reduce:transition-none disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <Eraser className="w-3.5 h-3.5" />
                 </button>
@@ -256,7 +256,7 @@ export function TransitionChatPanel({
                   onClick={onToggleHistory}
                   title="Histórico de conversas"
                   aria-label="Ver histórico de conversas"
-                  className="p-1.5 rounded-md lia-text-400 hover:lia-text-600 hover:bg-gray-100 transition-colors"
+                  className="p-1.5 rounded-md lia-text-400 hover:lia-text-600 hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                 >
                   <History className="w-3.5 h-3.5" />
                 </button>
@@ -268,7 +268,7 @@ export function TransitionChatPanel({
                     onClick={onClose}
                     title="Fechar"
                     aria-label="Fechar"
-                    className="p-1.5 rounded-md lia-text-400 hover:lia-text-600 hover:bg-gray-100 transition-colors"
+                    className="p-1.5 rounded-md lia-text-400 hover:lia-text-600 hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -400,9 +400,9 @@ export function TransitionChatPanel({
                 </div>
                 <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-[14px] rounded-bl-[4px] p-3 inline-block">
                   <div className="flex items-center gap-1">
-                    <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{animationDelay: '0ms'}} />
-                    <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{animationDelay: '150ms'}} />
-                    <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce" style={{animationDelay: '300ms'}} />
+                    <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '0ms'}} />
+                    <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '150ms'}} />
+                    <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '300ms'}} />
                   </div>
                 </div>
               </div>
@@ -455,7 +455,7 @@ export function TransitionChatPanel({
               disabled={isLoading}
             />
             <button
-              className="p-1.5 lia-text-400 hover:lia-text-500 dark:lia-text-500 dark:hover:lia-text-300 transition-colors rounded-full"
+              className="p-1.5 lia-text-400 hover:lia-text-500 dark:lia-text-500 dark:hover:lia-text-300 transition-colors motion-reduce:transition-none rounded-full"
               type="button"
               title="Gravar áudio"
               aria-label="Gravar áudio"
@@ -475,7 +475,7 @@ export function TransitionChatPanel({
               type="button"
             >
               {isLoading ? (
-                <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 text-white animate-spin motion-reduce:animate-none" />
               ) : (
                 <Send className="w-3.5 h-3.5" />
               )}

@@ -91,7 +91,7 @@ export function WebhooksSection({
             onClick={fetchWebhooks}
             disabled={webhooksLoading}
           >
-            <RefreshCw className={`w-4 h-4 ${webhooksLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${webhooksLoading ? 'animate-spin motion-reduce:animate-none' : ''}`} />
           </Button>
         </div>
         <Button
@@ -106,8 +106,8 @@ export function WebhooksSection({
       </div>
 
       {webhooksLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin lia-text-700 dark:text-lia-text-secondary" />
+        <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-700 dark:text-lia-text-secondary" />
           <span className="ml-3 text-sm lia-text-500 dark:text-lia-text-tertiary" >
             Carregando webhooks...
           </span>
@@ -132,7 +132,7 @@ export function WebhooksSection({
                       disabled={savingWebhook || !editingWebhook.name || !editingWebhook.url}
                     >
                       {savingWebhook ? (
-                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                        <Loader2 className="w-4 h-4 mr-1 animate-spin motion-reduce:animate-none" />
                       ) : (
                         <Save className="w-4 h-4 mr-1" />
                       )}
@@ -344,7 +344,7 @@ export function WebhooksSection({
                           title={!webhook.isActive ? 'Ative o webhook para testar' : 'Enviar teste'}
                         >
                           {testingWebhook === webhook.id ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                           ) : (
                             <Play className="w-4 h-4" />
                           )}
@@ -412,8 +412,8 @@ export function WebhooksSection({
                 </CardHeader>
                 <CardContent className="overflow-y-auto max-h-[60vh]">
                   {webhookLogsLoading ? (
-                    <div className="flex items-center justify-center py-8">
-                      <Loader2 className="w-6 h-6 animate-spin lia-text-700 dark:text-lia-text-secondary" />
+                    <div className="flex items-center justify-center py-8" role="status" aria-live="polite" aria-label="Carregando...">
+                      <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none lia-text-700 dark:text-lia-text-secondary" />
                       <span className="ml-2 text-sm lia-text-500 dark:text-lia-text-tertiary" >
                         Carregando logs...
                       </span>
@@ -421,7 +421,7 @@ export function WebhooksSection({
                   ) : webhookLogs.length === 0 ? (
                     <div className="text-center py-8">
                       <FileText className="w-10 h-10 mx-auto mb-2 lia-text-400 dark:lia-text-500"  />
-                      <p className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
+                      <p className="text-sm lia-text-500 dark:text-lia-text-tertiary"  aria-live="polite" aria-atomic="true">
                         Nenhum log de entrega encontrado
                       </p>
                     </div>

@@ -607,7 +607,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                   disabled={saving}
                   className={buttonStyles.primary}
                 >
-                  {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                  {saving ? <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" /> : <Save className="w-3 h-3" />}
                   Salvar Alterações
                 </button>
               </div>
@@ -618,7 +618,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
           {alerts.map((alert) => (
             <div 
               key={alert.id}
-              className={`p-2.5 rounded-md border transition-colors ${
+              className={`p-2.5 rounded-md border transition-colors motion-reduce:transition-none ${
                 alert.enabled 
                   ? 'bg-white dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle' 
                   : 'bg-gray-50 dark:bg-lia-bg-secondary/50 border-lia-border-subtle dark:lia-border-800'
@@ -627,7 +627,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-2">
                   <div 
-                    className={`w-7 h-7 rounded-md flex items-center justify-center transition-colors ${
+                    className={`w-7 h-7 rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none ${
                       alert.enabled 
                         ? 'bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary' 
                         : 'bg-gray-100 dark:bg-lia-bg-elevated lia-text-600 dark:text-lia-text-tertiary'
@@ -656,10 +656,10 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                   <button
                     onClick={() => isEditingAlerts && handleToggleAlert(alert.id)}
                     disabled={!isEditingAlerts}
-                    className="relative w-10 h-5 rounded-full transition-colors disabled:opacity-60"
+                    className="relative w-10 h-5 rounded-full transition-colors motion-reduce:transition-none disabled:opacity-60"
                     style={{backgroundColor: alert.enabled ? 'var(--gray-950)' : 'var(--gray-200)'}}
                   >
-                    <span className={`absolute top-0.5 w-4 h-4 bg-white dark:lia-bg-200 rounded-full transition-transform ${
+                    <span className={`absolute top-0.5 w-4 h-4 bg-white dark:lia-bg-200 rounded-full transition-transform motion-reduce:transition-none ${
                       alert.enabled ? 'left-5' : 'left-0.5'
                     }`} />
                   </button>
@@ -682,7 +682,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
             <button
               onClick={() => setBriefingFrequency('twice_daily')}
               disabled={!isEditingAlerts}
-              className={`p-2.5 rounded-md border-2 transition-colors text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''} ${
+              className={`p-2.5 rounded-md border-2 transition-colors motion-reduce:transition-none text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''} ${
                 briefingFrequency === 'twice_daily'
                   ? 'border-gray-900 dark:lia-border-50 bg-gray-50 dark:bg-lia-bg-primary'
                   : 'border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary'
@@ -699,7 +699,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
             <button
               onClick={() => setBriefingFrequency('daily')}
               disabled={!isEditingAlerts}
-              className={`p-2.5 rounded-md border-2 transition-colors text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''} ${
+              className={`p-2.5 rounded-md border-2 transition-colors motion-reduce:transition-none text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''} ${
                 briefingFrequency === 'daily'
                   ? 'border-gray-900 dark:lia-border-50 bg-gray-50 dark:bg-lia-bg-primary'
                   : 'border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary'
@@ -716,7 +716,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
             <button
               onClick={() => setBriefingFrequency('weekly')}
               disabled={!isEditingAlerts}
-              className={`p-2.5 rounded-md border-2 transition-colors text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''} ${
+              className={`p-2.5 rounded-md border-2 transition-colors motion-reduce:transition-none text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''} ${
                 briefingFrequency === 'weekly'
                   ? 'border-gray-900 dark:lia-border-50 bg-gray-50 dark:bg-lia-bg-primary'
                   : 'border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary'
@@ -733,7 +733,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
             <button
               onClick={() => setBriefingFrequency('monthly')}
               disabled={!isEditingAlerts}
-              className={`p-2.5 rounded-md border-2 transition-colors text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''} ${
+              className={`p-2.5 rounded-md border-2 transition-colors motion-reduce:transition-none text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''} ${
                 briefingFrequency === 'monthly'
                   ? 'border-gray-900 dark:lia-border-50 bg-gray-50 dark:bg-lia-bg-primary'
                   : 'border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary'
@@ -846,7 +846,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                     disabled={saving}
                     className={actionButtonStyles.smPrimary}
                   >
-                    {saving ? <Loader2 className={actionButtonStyles.icon + " animate-spin"} /> : <Save className={actionButtonStyles.icon} />}
+                    {saving ? <Loader2 className={actionButtonStyles.icon + " animate-spin motion-reduce:animate-none"} /> : <Save className={actionButtonStyles.icon} />}
                     Salvar Alterações
                   </button>
                 </>
@@ -859,7 +859,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
             <Card className={`${cardStyles.flat} rounded-md flex-1`}>
               <CardContent className="p-2.5">
                 <p className={textStyles.caption}>Total Planejado {selectedYear}</p>
-                <p className={textStyles.metricLarge}>{workforceStats.totalPlanned} vagas</p>
+                <p className={textStyles.metricLarge} aria-live="polite" aria-atomic="true">{workforceStats.totalPlanned} vagas</p>
               </CardContent>
             </Card>
             <p className={`${textStyles.description} max-w-xs`}>
@@ -889,7 +889,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                     <span className={textStyles.description}>
                       {dept.positions.length} posição{dept.positions.length !== 1 ? 's' : ''}
                     </span>
-                    <span className={`${textStyles.subtitle} font-semibold lia-text-900 dark:lia-text-50`}>
+                    <span className={`${textStyles.subtitle} font-semibold lia-text-900 dark:lia-text-50`} aria-live="polite" aria-atomic="true">
                       {dept.positions.reduce((acc, p) => acc + getPositionTotal(p), 0)} vagas
                     </span>
                   </div>

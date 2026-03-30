@@ -145,7 +145,7 @@ export function CalibrationFeedbackPanel({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-xs dark:text-lia-text-tertiary text-lia-text-tertiary">
+          <p className="text-xs dark:text-lia-text-tertiary text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
             Avalie os candidatos abaixo para calibrar a busca. Sua avaliação ajudará
             a IA a entender melhor o perfil ideal para a vaga.
           </p>
@@ -219,7 +219,7 @@ export function CalibrationFeedbackPanel({
       >
         {isLoading ? (
           <>
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none mr-2" />
             Salvando...
           </>
         ) : (
@@ -271,7 +271,7 @@ function CandidateCard({
 
   return (
     <Card
-      className="transition-colors rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle"
+      className="transition-colors motion-reduce:transition-none rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle"
       style={{borderColor: borderStyle.borderColor,
         backgroundColor: borderStyle.backgroundColor,
         borderWidth: '1px'}}

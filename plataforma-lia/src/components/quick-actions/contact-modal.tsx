@@ -358,7 +358,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded-md lia-text-secondary hover:lia-text-base dark:hover:lia-text-muted hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+          <button onClick={onClose} className="p-1 rounded-md lia-text-secondary hover:lia-text-base dark:hover:lia-text-muted hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -372,7 +372,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
             <div className="space-y-2">
               <button
                 onClick={() => setActiveTab('email')}
-                className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-colors ${
+                className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-colors motion-reduce:transition-none ${
  activeTab === 'email'
                     ? 'bg-gray-100 lia-text-strong border border-lia-border-subtle'
                     : 'hover:bg-gray-50 text-lia-text-primary dark:text-lia-text-primary border border-transparent'
@@ -387,7 +387,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
 
               <button
                 onClick={() => setActiveTab('whatsapp')}
-                className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-colors ${
+                className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-colors motion-reduce:transition-none ${
  activeTab === 'whatsapp'
                     ? 'bg-status-success/10 text-status-success border border-status-success/30'
                     : 'hover:bg-gray-50 text-lia-text-primary dark:text-lia-text-primary border border-transparent'
@@ -402,7 +402,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
 
               <button
                 onClick={() => setActiveTab('phone')}
-                className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-colors ${
+                className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-colors motion-reduce:transition-none ${
  activeTab === 'phone'
                     ? 'bg-wedo-purple/10 text-wedo-purple border border-wedo-purple/30'
                     : 'hover:bg-gray-50 text-lia-text-primary dark:text-lia-text-primary border border-transparent'
@@ -435,7 +435,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
                   <button
                     key={template.id}
                     onClick={() => handleTemplateSelect(template)}
-                    className={`p-3 border rounded-md text-left transition-colors ${
+                    className={`p-3 border rounded-md text-left transition-colors motion-reduce:transition-none ${
  templateType === template.id
                         ? 'border-lia-border-default bg-gray-100'
                         : 'border-lia-border-subtle hover:bg-gray-50 hover:border-lia-border-subtle'
@@ -472,11 +472,11 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
                 <button
                   onClick={() => generateLiaSuggestions(liaContext)}
                   disabled={isLiaGenerating}
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 transition-colors motion-reduce:transition-none disabled:opacity-50"
                 >
                   {isLiaGenerating ? (
                     <>
-                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <RefreshCw className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                       LIA gerando...
                     </>
                   ) : (
@@ -488,7 +488,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
                 </button>
                 <button
                   onClick={() => setShowLiaSuggestions(!showLiaSuggestions)}
-                  className="px-3 py-1.5 rounded-md lia-text-secondary hover:bg-gray-50 transition-colors"
+                  className="px-3 py-1.5 rounded-md lia-text-secondary hover:bg-gray-50 transition-colors motion-reduce:transition-none"
                   title="Ver/Ocultar sugestões"
                 >
                   <Eye className="w-4 h-4" />
@@ -501,7 +501,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
                   {isLiaGenerating ? (
                     <div className="flex items-center justify-center py-8">
                       <div className="text-center">
-                        <RefreshCw className="w-8 h-8 animate-spin text-lia-text-secondary dark:text-lia-text-tertiary mx-auto mb-2" />
+                        <RefreshCw className="w-8 h-8 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary mx-auto mb-2" />
                         <p className="text-xs lia-text-base">LIA analisando perfil e gerando sugestões...</p>
                       </div>
                     </div>
@@ -605,18 +605,18 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
             <div className="flex justify-end gap-3 mt-6 pt-5 border-t border-lia-border-subtle">
               <button
                 onClick={onClose}
-                className="px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 transition-colors"
+                className="px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 transition-colors motion-reduce:transition-none"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSend}
                 disabled={isSending || !message.trim()}
-                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md bg-gray-900 hover:bg-gray-800 text-white transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md bg-gray-900 hover:bg-gray-800 text-white transition-colors motion-reduce:transition-none disabled:opacity-50"
               >
                 {isSending ? (
                   <>
-                    <Clock className="w-4 h-4 animate-spin" />
+                    <Clock className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                     Enviando...
                   </>
                 ) : (

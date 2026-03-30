@@ -159,7 +159,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
             onClick={loadJobs}
             disabled={loading}
           >
-            <RefreshCw className={cn("h-4 w-4 mr-1", loading && "animate-spin")} />
+            <RefreshCw className={cn("h-4 w-4 mr-1", loading && "animate-spin motion-reduce:animate-none")} />
             Atualizar
           </Button>
           <Button
@@ -199,8 +199,8 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-lia-text-secondary dark:text-lia-text-tertiary" />
+        <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="h-8 w-8 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
         </div>
       ) : filteredJobs.length === 0 ? (
         <Card>
@@ -238,7 +238,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
             return (
               <Card
                 key={job.id}
-                className="rounded-md hover:border-gray-400 dark:hover:border-gray-500 transition-colors cursor-pointer dark:bg-lia-bg-secondary dark:border-lia-border-subtle"
+                className="rounded-md hover:border-gray-400 dark:hover:border-gray-500 transition-colors motion-reduce:transition-none cursor-pointer dark:bg-lia-bg-secondary dark:border-lia-border-subtle"
                 onClick={() => onJobSelect?.(job)}
               >
                 <CardHeader className="pb-2">
@@ -257,7 +257,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
                     <Badge className={cn("shrink-0", getStatusBadge(job.status))}>
                       <StatusIcon className={cn(
  "h-3 w-3 mr-1",
-                        job.status === 'running' && "animate-spin"
+                        job.status === 'running' && "animate-spin motion-reduce:animate-none"
                       )} />
                       {STATUS_LABELS[job.status] || job.status}
                     </Badge>
@@ -303,7 +303,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
                           disabled={isExecuting}
                         >
                           {isExecuting ? (
-                            <Loader2 className="h-3 w-3 animate-spin" />
+                            <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none" />
                           ) : (
                             <Play className="h-3 w-3" />
                           )}

@@ -455,7 +455,7 @@ export default function DashboardSegurancaPage() {
                 {topEventTypes.map((event, idx) => (
                   <div 
                     key={idx}
-                    className="flex items-center justify-between p-3 rounded-md border hover:bg-gray-50 transition-colors border-lia-border-subtle dark:border-lia-border-subtle"
+                    className="flex items-center justify-between p-3 rounded-md border hover:bg-gray-50 transition-colors motion-reduce:transition-none border-lia-border-subtle dark:border-lia-border-subtle"
                     
                   >
                     <div className="flex items-center gap-3">

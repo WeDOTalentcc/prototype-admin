@@ -164,7 +164,7 @@ export function LiaQueriesGuide({
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
-                className="p-0.5 rounded-full hover:bg-gray-200 transition-colors"
+                className="p-0.5 rounded-full hover:bg-gray-200 transition-colors motion-reduce:transition-none"
                 aria-label="Limpar busca"
               >
                 <X className="w-3 h-3 lia-text-secondary" />
@@ -212,7 +212,7 @@ export function LiaQueriesGuide({
               <button
                 key={query.id}
                 onClick={() => handleSelectQuery(query.question)}
-                className="w-full px-2.5 py-2 text-left transition-colors rounded-md group flex items-center gap-2"
+                className="w-full px-2.5 py-2 text-left transition-colors motion-reduce:transition-none rounded-md group flex items-center gap-2"
                 style={{backgroundColor: 'var(--gray-50)',
                   border: '1px solid var(--gray-100)'}}
               >

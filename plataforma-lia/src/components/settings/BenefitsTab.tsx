@@ -497,10 +497,10 @@ export function BenefitsTab() {
 
   if (isLoading) {
     return (
-      <div className="space-y-3">
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2 lia-text-600 dark:text-lia-text-tertiary" />
+      <div className="space-y-3" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
+          <div className="text-center" role="status" aria-live="polite" aria-label="Carregando...">
+            <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mx-auto mb-2 lia-text-600 dark:text-lia-text-tertiary" />
             <p className={`${textStyles.description}`}>Carregando benefícios...</p>
           </div>
         </div>
@@ -570,7 +570,7 @@ export function BenefitsTab() {
               >
                 {isSaving ? (
                   <>
-                    <Loader2 className="w-3 h-3 animate-spin" />
+                    <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
                     Salvando...
                   </>
                 ) : (
@@ -623,7 +623,7 @@ export function BenefitsTab() {
           return (
             <Card key={category.id} className={`${cardStyles.default} dark:border-lia-border-subtle/50 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md overflow-hidden`}>
               <div
-                className={`flex items-center justify-between p-3 cursor-pointer transition-colors ${category.bgColor}`}
+                className={`flex items-center justify-between p-3 cursor-pointer transition-colors motion-reduce:transition-none ${category.bgColor}`}
                 onClick={() => toggleCategory(category.id)}
               >
                 <div className="flex items-center gap-2">
@@ -678,7 +678,7 @@ export function BenefitsTab() {
                       {categoryBenefits.map((benefit) => (
                         <div
                           key={benefit.id}
-                          className={`p-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors ${
+                          className={`p-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors motion-reduce:transition-none ${
                             !benefit.is_active ? 'opacity-60' : ''
                           }`}
                         >
@@ -1007,7 +1007,7 @@ export function BenefitsTab() {
             >
               {isSaving ? (
                 <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-1.5" />
                   Salvando...
                 </>
               ) : (
@@ -1063,7 +1063,7 @@ export function BenefitsTab() {
             </div>
 
             <div className={`flex items-center gap-2 ${textStyles.caption}`}>
-              <span>{filteredTemplates.length} benefícios encontrados</span>
+              <span aria-live="polite" aria-atomic="true">{filteredTemplates.length} benefícios encontrados</span>
               {templateSearch && (
                 <Button 
                   variant="ghost" 
@@ -1077,18 +1077,18 @@ export function BenefitsTab() {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto space-y-2 py-1 pr-1 -mr-1">
+          <div className="flex-1 overflow-y-auto space-y-2 py-1 pr-1 -mr-1" role="status" aria-live="polite" aria-label="Carregando...">
             {isLoadingTemplates ? (
-              <div className="flex items-center justify-center py-6">
-                <div className="text-center">
-                  <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2 lia-text-600 dark:text-lia-text-tertiary" />
+              <div className="flex items-center justify-center py-6" role="status" aria-live="polite" aria-label="Carregando...">
+                <div className="text-center" role="status" aria-live="polite" aria-label="Carregando...">
+                  <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mx-auto mb-2 lia-text-600 dark:text-lia-text-tertiary" />
                   <p className={`${textStyles.description}`}>Carregando...</p>
                 </div>
               </div>
             ) : filteredTemplates.length === 0 ? (
               <div className="text-center py-6">
                 <Gift className="w-4 h-4 mx-auto lia-text-300 dark:lia-text-600 mb-2" />
-                <p className={`${textStyles.description}`}>
+                <p className={`${textStyles.description}`} aria-live="polite" aria-atomic="true">
                   Nenhum benefício encontrado
                 </p>
                 <Button
@@ -1124,7 +1124,7 @@ export function BenefitsTab() {
                         return (
                           <div
                             key={template.id}
-                            className={`p-2 border rounded-md cursor-pointer transition-colors ${
+                            className={`p-2 border rounded-md cursor-pointer transition-colors motion-reduce:transition-none ${
                               alreadyAdded 
                                 ? 'bg-status-success/10 dark:bg-status-success/20 border-status-success/30 dark:border-status-success/30' 
                                 : 'bg-white dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-600 hover:'

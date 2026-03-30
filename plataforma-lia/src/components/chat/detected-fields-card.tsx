@@ -59,7 +59,7 @@ export function DetectedFieldsCard({ fields, title = "Campos detectados automati
               <button
                 onClick={() => onEdit(field.label)}
                 aria-label={`Editar campo ${field.label}`}
-                className="p-1 lia-text-400 hover:lia-text-600 dark:hover:lia-text-300 transition-colors flex-shrink-0 focus:outline-none focus-visible:ring-1 focus-visible:ring-gray-400 rounded-md"
+                className="p-1 lia-text-400 hover:lia-text-600 dark:hover:lia-text-300 transition-colors motion-reduce:transition-none flex-shrink-0 focus:outline-none focus-visible:ring-1 focus-visible:ring-gray-400 rounded-md"
               >
                 <Edit2 className="w-3 h-3" />
               </button>

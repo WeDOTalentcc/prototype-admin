@@ -144,7 +144,7 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
                 <button
                   key={actionItem.id}
                   onClick={() => setAction(actionItem.id)}
-                  className={`p-4 border rounded-md text-left transition-colors ${
+                  className={`p-4 border rounded-md text-left transition-colors motion-reduce:transition-none ${
  action === actionItem.id
                       ? 'border-lia-border-default bg-gray-100'
                       : 'border-lia-border-subtle hover:bg-gray-50'

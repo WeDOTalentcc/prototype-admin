@@ -80,7 +80,7 @@ export function TechStackTab({
                     [category.key]: !isExpanded,
                   }))
                 }
-                className={`w-full flex items-center justify-between px-3 py-2.5 ${category.color} hover:opacity-90 transition-opacity`}
+                className={`w-full flex items-center justify-between px-3 py-2.5 ${category.color} hover:opacity-90 transition-opacity motion-reduce:transition-none`}
               >
                 <div className="flex items-center gap-2">
                   <CategoryIcon className="w-4 h-4" />
@@ -138,7 +138,7 @@ export function TechStackTab({
                             if (!isEditingCompanyData) return;
                             addTechToCategory(category.key, suggestion);
                           }}
-                          className={`text-micro px-2 py-1 border border-dashed border-lia-border-default dark:border-lia-border-default rounded-full lia-text-500 dark:text-lia-text-tertiary hover:border-gray-400 hover:lia-text-700 dark:hover:border-gray-500 dark:hover:lia-text-300 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
+                          className={`text-micro px-2 py-1 border border-dashed border-lia-border-default dark:border-lia-border-default rounded-full lia-text-500 dark:text-lia-text-tertiary hover:border-gray-400 hover:lia-text-700 dark:hover:border-gray-500 dark:hover:lia-text-300 transition-colors motion-reduce:transition-none ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
                         >
                           + {suggestion}
                         </button>
@@ -149,7 +149,7 @@ export function TechStackTab({
                     type="text"
                     placeholder={`Adicionar ${category.label.toLowerCase()} personalizada...`}
                     disabled={!isEditingCompanyData}
-                    className={`w-full px-3 py-2 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    className={`w-full px-3 py-2 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && e.currentTarget.value.trim()) {
                         e.preventDefault();
@@ -174,7 +174,7 @@ export function TechStackTab({
                   outros: !prev.outros,
                 }))
               }
-              className="w-full flex items-center justify-between px-3 py-2.5 bg-gray-100 lia-text-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary hover:opacity-90 transition-opacity"
+              className="w-full flex items-center justify-between px-3 py-2.5 bg-gray-100 lia-text-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary hover:opacity-90 transition-opacity motion-reduce:transition-none"
             >
               <div className="flex items-center gap-2">
                 <Code className="w-4 h-4" />
@@ -215,7 +215,7 @@ export function TechStackTab({
                   type="text"
                   placeholder="Adicionar tecnologia..."
                   disabled={!isEditingCompanyData}
-                  className={`w-full px-3 py-2 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
+                  className={`w-full px-3 py-2 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && e.currentTarget.value.trim()) {
                       e.preventDefault();
@@ -254,7 +254,7 @@ export function TechStackTab({
                 engineering_culture: e.target.value,
               }))
             }
-            className={`w-full px-3 py-2 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed bg-gray-50 dark:bg-lia-bg-primary' : ''}`}
+            className={`w-full px-3 py-2 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed bg-gray-50 dark:bg-lia-bg-primary' : ''}`}
             rows={3}
             placeholder="Descreva a cultura de engenharia da empresa (metodologias, práticas de desenvolvimento, ambiente de trabalho técnico)..."
           />

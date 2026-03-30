@@ -112,8 +112,8 @@ export function ProactiveActions({
 
   if (loading) {
     return (
-      <div className={cn("flex items-center justify-center py-8", className)}>
-        <Loader2 className="h-6 w-6 animate-spin text-lia-text-secondary dark:text-lia-text-tertiary" />
+      <div className={cn("flex items-center justify-center py-8", className)} role="status" aria-live="polite" aria-label="Carregando...">
+        <Loader2 className="h-6 w-6 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
       </div>
     )
   }
@@ -147,7 +147,7 @@ export function ProactiveActions({
           return (
             <div
               key={action.id}
- className="flex items-start gap-3 p-3 rounded-md border border-lia-border-subtle bg-white dark:bg-lia-bg-primary hover:border-lia-border-default dark:border-lia-border-default transition-colors"
+ className="flex items-start gap-3 p-3 rounded-md border border-lia-border-subtle bg-white dark:bg-lia-bg-primary hover:border-lia-border-default dark:border-lia-border-default transition-colors motion-reduce:transition-none"
             >
               <div className={cn(
  "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
@@ -174,7 +174,7 @@ export function ProactiveActions({
                   disabled={isProcessing}
                 >
                   {isProcessing ? (
-                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none" />
                   ) : (
                     <Check className="h-3 w-3" />
                   )}
@@ -217,7 +217,7 @@ export function ProactiveActions({
           return (
             <Card
               key={action.id}
-              className="hover:border-lia-border-default dark:border-lia-border-default transition-colors"
+              className="hover:border-lia-border-default dark:border-lia-border-default transition-colors motion-reduce:transition-none"
             >
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
@@ -279,7 +279,7 @@ export function ProactiveActions({
                         disabled={isProcessing}
                       >
                         {isProcessing ? (
-                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                          <Loader2 className="h-4 w-4 mr-1 animate-spin motion-reduce:animate-none" />
                         ) : (
                           <Check className="h-4 w-4 mr-1" />
                         )}

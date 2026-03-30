@@ -283,7 +283,7 @@ export function LocationFilterInput({
           {value.length > 0 && (
             <button
               onClick={clearAll}
-              className="text-xs lia-text-500 hover:text-status-error flex items-center gap-1 transition-colors"
+              className="text-xs lia-text-500 hover:text-status-error flex items-center gap-1 transition-colors motion-reduce:transition-none"
             >
               <RotateCcw className="w-3 h-3" />
               Limpar tudo
@@ -386,7 +386,7 @@ export function LocationFilterInput({
                   <span>{location.value.split(',')[0]}</span>
                   <button
                     onClick={() => removeLocation(location.value)}
-                    className="hover:bg-gray-200 rounded-md p-0.5 transition-colors ml-0.5"
+                    className="hover:bg-gray-200 rounded-md p-0.5 transition-colors motion-reduce:transition-none ml-0.5"
                     title="Remove"
                   >
                     <X className="w-3 h-3" />

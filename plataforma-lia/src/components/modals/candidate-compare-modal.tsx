@@ -90,8 +90,8 @@ export function CandidateCompareModal({
         </DialogHeader>
 
         {loading && (
-          <div className="flex items-center justify-center py-10">
-            <Loader2 className="h-5 w-5 animate-spin text-lia-text-disabled" />
+          <div className="flex items-center justify-center py-10" role="status" aria-live="polite" aria-label="Carregando...">
+            <Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none text-lia-text-disabled" />
             <span className="ml-2 text-sm text-lia-text-tertiary">Comparando...</span>
           </div>
         )}
@@ -110,7 +110,7 @@ export function CandidateCompareModal({
               <div className="flex items-center gap-2 p-3 bg-status-success/10 dark:bg-status-success/20 rounded-lg border border-status-success/30 dark:border-status-success/30">
                 <Trophy className="h-4 w-4 text-status-success" />
                 <div>
-                  <span className="text-xs font-semibold text-status-success dark:text-status-success">
+                  <span className="text-xs font-semibold text-status-success dark:text-status-success" aria-live="polite" aria-atomic="true">
                     Candidato indicado: {data.winner_name || nameById[data.winner] || data.winner}
                   </span>
                   <span className="ml-2 text-micro text-status-success opacity-70">

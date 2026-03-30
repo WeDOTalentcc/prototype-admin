@@ -281,7 +281,7 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
                   <button
                     key={preset.label}
                     onClick={() => handlePreset(preset)}
-                    className="w-full text-left text-xs py-1.5 px-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans'] transition-colors"
+                    className="w-full text-left text-xs py-1.5 px-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans'] transition-colors motion-reduce:transition-none"
                   >
                     {preset.label}
                   </button>

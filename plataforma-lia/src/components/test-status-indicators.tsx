@@ -15,7 +15,7 @@ export function TestStatusIndicators({ candidate }: TestStatusIndicatorsProps) {
         className="relative group"
         title={candidate.technicalTestScore ? `Teste Técnico: ${candidate.technicalTestScore}%` : 'Teste Técnico: Pendente'}
       >
-        <div className={`w-8 h-8 rounded-md flex items-center justify-center transition-colors ${
+        <div className={`w-8 h-8 rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none ${
  candidate.technicalTestScore
             ? 'bg-wedo-purple/15 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple'
             : 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary'
@@ -36,7 +36,7 @@ export function TestStatusIndicators({ candidate }: TestStatusIndicatorsProps) {
         className="relative group"
         title={candidate.englishTestScore ? `Teste de Inglês: ${candidate.englishTestScore}% (${candidate.englishLevel || 'N/A'})` : 'Teste de Inglês: Pendente'}
       >
-        <div className={`w-8 h-8 rounded-md flex items-center justify-center transition-colors ${
+        <div className={`w-8 h-8 rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none ${
  candidate.englishTestScore
             ? 'bg-wedo-purple/15 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple'
             : 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary'
@@ -57,7 +57,7 @@ export function TestStatusIndicators({ candidate }: TestStatusIndicatorsProps) {
         className="relative group"
         title={candidate.bigFiveScores ? 'Assessment Big Five: Completo' : 'Assessment Big Five: Pendente'}
       >
-        <div className={`w-8 h-8 rounded-md flex items-center justify-center transition-colors ${
+        <div className={`w-8 h-8 rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none ${
  candidate.bigFiveScores
             ? 'bg-wedo-magenta/15 dark:bg-wedo-magenta/30 text-wedo-magenta dark:text-wedo-magenta'
             : 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary'

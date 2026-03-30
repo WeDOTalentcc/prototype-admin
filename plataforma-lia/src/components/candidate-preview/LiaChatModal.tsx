@@ -152,21 +152,21 @@ export function LiaChatModal({
           <div className="flex gap-1">
             <button
               onClick={handleContact}
-              className="flex-1 flex items-center justify-center gap-1 py-2 bg-lia-bg-primary rounded-md text-xs hover:bg-gray-100 transition-colors border border-lia-border-subtle dark:border-lia-border-subtle"
+              className="flex-1 flex items-center justify-center gap-1 py-2 bg-lia-bg-primary rounded-md text-xs hover:bg-gray-100 transition-colors motion-reduce:transition-none border border-lia-border-subtle dark:border-lia-border-subtle"
             >
               <MessageSquare className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary" />
               Contatar
             </button>
             <button
               onClick={handleSchedule}
-              className="flex-1 flex items-center justify-center gap-1 py-2 bg-lia-bg-primary rounded-md text-xs hover:bg-gray-100 transition-colors border border-lia-border-subtle dark:border-lia-border-subtle"
+              className="flex-1 flex items-center justify-center gap-1 py-2 bg-lia-bg-primary rounded-md text-xs hover:bg-gray-100 transition-colors motion-reduce:transition-none border border-lia-border-subtle dark:border-lia-border-subtle"
             >
               <CalendarIcon className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary" />
               Agendar
             </button>
             <button
               onClick={handleAddTo}
-              className="flex-1 flex items-center justify-center gap-1 py-2 bg-lia-bg-primary rounded-md text-xs hover:bg-gray-100 transition-colors border border-lia-border-subtle dark:border-lia-border-subtle"
+              className="flex-1 flex items-center justify-center gap-1 py-2 bg-lia-bg-primary rounded-md text-xs hover:bg-gray-100 transition-colors motion-reduce:transition-none border border-lia-border-subtle dark:border-lia-border-subtle"
             >
               <UserPlus className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary" />
               Adicionar
@@ -180,7 +180,7 @@ export function LiaChatModal({
             {liaActions.slice(0, 4).map((action) => (
               <div
                 key={action.id}
-                className="flex items-center gap-2 p-2 bg-white dark:bg-lia-bg-secondary rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 cursor-pointer group"
+                className="flex items-center gap-2 p-2 bg-white dark:bg-lia-bg-secondary rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none duration-200 cursor-pointer group"
                 onClick={() => onConversationChange(action.title)}
               >
                 <span className="text-base flex-shrink-0">{action.icon}</span>
@@ -224,9 +224,9 @@ export function LiaChatModal({
                     </Avatar>
                     <div className="bg-gray-100 dark:bg-lia-bg-secondary rounded-md px-3 py-2">
                       <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0ms'}} />
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '150ms'}} />
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '300ms'}} />
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '0ms'}} />
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '150ms'}} />
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '300ms'}} />
                       </div>
                     </div>
                   </div>
@@ -256,7 +256,7 @@ export function LiaChatModal({
 
                 <div className="text-xs text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1">
                   {isLiaChatLoading ? (
-                    <><span className="animate-pulse">●</span>Processando...</>
+                    <><span className="animate-pulse motion-reduce:animate-none">●</span>Processando...</>
                   ) : (
                     <><span>●</span>Pronta</>
                   )}
@@ -264,7 +264,7 @@ export function LiaChatModal({
 
                 <button
                   type="button"
-                  className="w-6 h-6 rounded-md flex items-center justify-center hover:bg-gray-200 transition-colors"
+                  className="w-6 h-6 rounded-md flex items-center justify-center hover:bg-gray-200 transition-colors motion-reduce:transition-none"
                   disabled={isLiaChatLoading}
                 >
                   <Mic className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary" />
@@ -273,7 +273,7 @@ export function LiaChatModal({
                 <button
                   type="submit"
                   disabled={!liaConversation.trim() || isLiaChatLoading}
-                  className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors ${
+                  className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none ${
  liaConversation.trim() && !isLiaChatLoading
                       ? 'bg-gray-800 text-white hover:bg-gray-700'
                       : 'bg-gray-200 text-lia-text-secondary dark:text-lia-text-tertiary cursor-not-allowed'
@@ -287,21 +287,21 @@ export function LiaChatModal({
               <div className="flex flex-wrap gap-1 mt-2">
                 <button
                   onClick={() => onConversationChange(`Agendar entrevista com ${candidate.name}`)}
-                  className="text-xs px-2 py-1 bg-lia-bg-primary rounded-full border border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-100 transition-colors"
+                  className="text-xs px-2 py-1 bg-lia-bg-primary rounded-full border border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                   disabled={isLiaChatLoading}
                 >
                   📅 Agendar entrevista
                 </button>
                 <button
                   onClick={() => onConversationChange(`Enviar email de follow-up para ${candidate.name}`)}
-                  className="text-xs px-2 py-1 bg-lia-bg-primary rounded-full border border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-100 transition-colors"
+                  className="text-xs px-2 py-1 bg-lia-bg-primary rounded-full border border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                   disabled={isLiaChatLoading}
                 >
                   📧 Enviar email
                 </button>
                 <button
                   onClick={() => onConversationChange(`Fazer análise completa de ${candidate.name}`)}
-                  className="text-xs px-2 py-1 bg-lia-bg-primary rounded-full border border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-100 transition-colors"
+                  className="text-xs px-2 py-1 bg-lia-bg-primary rounded-full border border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                   disabled={isLiaChatLoading}
                 >
                   🔍 Análise completa

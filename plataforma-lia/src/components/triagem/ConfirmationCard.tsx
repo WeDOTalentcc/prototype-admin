@@ -56,7 +56,7 @@ export function ConfirmationCard({
           onClick={onReview}
           disabled={isSubmitting}
           aria-label="Quero revisar minhas respostas"
-          className="flex-1 h-10 flex items-center justify-center rounded-md bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary text-sm font-medium border border-lia-border-default dark:border-lia-border-default hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:outline-none font-['Open_Sans',sans-serif]"
+          className="flex-1 h-10 flex items-center justify-center rounded-md bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary text-sm font-medium border border-lia-border-default dark:border-lia-border-default hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:outline-none font-['Open_Sans',sans-serif]"
         >
           Quero revisar
         </button>
@@ -65,7 +65,7 @@ export function ConfirmationCard({
           onClick={onConfirm}
           disabled={isSubmitting}
           aria-label="Finalizar triagem"
-          className="flex-1 h-10 flex items-center justify-center rounded-md bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:outline-none font-['Open_Sans',sans-serif]"
+          className="flex-1 h-10 flex items-center justify-center rounded-md bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:outline-none font-['Open_Sans',sans-serif]"
         >
           {isSubmitting ? "Finalizando..." : "Finalizar Triagem"}
         </button>

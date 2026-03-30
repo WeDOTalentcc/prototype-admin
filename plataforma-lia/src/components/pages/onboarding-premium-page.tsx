@@ -546,7 +546,7 @@ export function OnboardingPremiumPage() {
               <button
                 key={tab.id}
                 onClick={() => setSelectedView(tab.id as Parameters<typeof setSelectedView>[0])}
-                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none ${
                   selectedView === tab.id
                     ? 'bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary'
                     : 'text-lia-text-secondary hover:text-lia-text-primary'
@@ -601,7 +601,7 @@ function CandidateKanbanCard({ candidate, onDragStart, onClick }: CandidateKanba
 
   return (
     <Card
-      className="cursor-move transition-colors duration-200 border-l-4 border-l-gray-400 dark:border-l-gray-500"
+      className="cursor-move transition-colors motion-reduce:transition-none duration-200 border-l-4 border-l-gray-400 dark:border-l-gray-500"
       draggable
       onDragStart={(e) => onDragStart(e, candidate)}
       onClick={onClick}
@@ -719,7 +719,7 @@ function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboardingMod
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as Parameters<typeof setActiveTab>[0])}
-              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors motion-reduce:transition-none ${
                 activeTab === tab.id
                   ? "text-lia-text-secondary dark:text-lia-text-tertiary border-b-2 border-gray-900 dark:border-lia-border-medium"
                   : "text-lia-text-secondary hover:text-lia-text-primary"

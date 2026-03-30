@@ -153,7 +153,7 @@ export function AgentExplainabilityPanel({
       onOpenChange={handleToggle}
       className={cn("rounded-md border border-zinc-700/50", className)}
     >
-      <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md bg-gray-900 px-4 py-3 transition-colors hover:bg-gray-900/80">
+      <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md bg-gray-900 px-4 py-3 transition-colors motion-reduce:transition-none hover:bg-gray-900/80">
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-wedo-cyan" />
           <span className="text-sm font-medium text-zinc-200 font-[Inter]">
@@ -177,10 +177,10 @@ export function AgentExplainabilityPanel({
       </CollapsibleTrigger>
 
       <CollapsibleContent>
-        <div className="border-t border-zinc-700/50 bg-gray-900 px-4 py-3">
+        <div className="border-t border-zinc-700/50 bg-gray-900 px-4 py-3" role="status" aria-live="polite" aria-label="Carregando...">
           {loading && (
-            <div className="flex items-center justify-center gap-2 py-8">
-              <Loader2 className="h-5 w-5 animate-spin text-wedo-cyan" />
+            <div className="flex items-center justify-center gap-2 py-8" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none text-wedo-cyan" />
               <span className="text-sm text-zinc-400">
                 Carregando raciocínio...
               </span>
