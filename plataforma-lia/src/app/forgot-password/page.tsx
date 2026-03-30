@@ -1,41 +1,51 @@
 "use client"
 
 import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { forgotPasswordSchema, type ForgotPasswordFormData } from "@/lib/schemas/auth.schemas"
 import { Button } from "@/components/ui/button"
 import { WeDOLogo } from "@/components/wedo-logo"
 import { Loader2, CheckCircle, ArrowLeft, Mail } from "lucide-react"
 import Link from "next/link"
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
   const [success, setSuccess] = useState(false)
+  const [serverError, setServerError] = useState("")
+  const [submittedEmail, setSubmittedEmail] = useState("")
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-    setIsLoading(true)
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<ForgotPasswordFormData>({
+    resolver: zodResolver(forgotPasswordSchema),
+  })
 
+  const onSubmit = handleSubmit(async (data) => {
+    setServerError("")
     try {
       const response = await fetch("/api/backend-proxy/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: data.email }),
       })
 
       if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || data.details?.detail || "Erro ao enviar email")
+        const resData = await response.json()
+        throw new Error(resData.error || resData.details?.detail || "Erro ao enviar email")
       }
 
+      setSubmittedEmail(data.email)
       setSuccess(true)
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : String(err) || "Erro ao enviar email. Tente novamente.")
-    } finally {
-      setIsLoading(false)
+      setServerError(
+        err instanceof Error
+          ? err.message
+          : String(err) || "Erro ao enviar email. Tente novamente."
+      )
     }
-  }
+  })
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 font-open-sans p-4">
@@ -54,7 +64,7 @@ export default function ForgotPasswordPage() {
               </div>
               <h2 className="text-2xl font-bold lia-text-950 dark:lia-text-50 mb-3">Email Enviado!</h2>
               <p className="lia-text-600 mb-6">
-                Se existe uma conta com o email <strong>{email}</strong>, você receberá um link para redefinir sua senha.
+                Se existe uma conta com o email <strong>{submittedEmail}</strong>, você receberá um link para redefinir sua senha.
               </p>
               <p className="lia-text-500 text-sm mb-6">
                 Verifique também sua pasta de spam caso não encontre o email.
@@ -69,7 +79,7 @@ export default function ForgotPasswordPage() {
             <>
               <div className="text-center mb-6">
                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Mail className="w-8 h-8 lia-text-600" />
+                  <Mail className="w-8 h-8 lia-text-600" aria-hidden="true" />
                 </div>
                 <h2 className="text-2xl font-bold lia-text-950 dark:lia-text-50 mb-3">Esqueceu a senha?</h2>
                 <p className="lia-text-600 text-base leading-relaxed">
@@ -77,35 +87,41 @@ export default function ForgotPasswordPage() {
                 </p>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form onSubmit={onSubmit} className="space-y-5" noValidate>
                 <div>
-                  <label className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2">
+                  <label htmlFor="forgot-email" className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2">
                     Email
                   </label>
                   <input
+                    id="forgot-email"
                     type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    {...register("email")}
+                    aria-invalid={!!errors.email}
+                    aria-describedby={errors.email ? "forgot-email-error" : undefined}
                     placeholder="Digite seu email"
                     className="w-full px-4 py-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors motion-reduce:transition-none"
-                    required
                   />
+                  {errors.email && (
+                    <p id="forgot-email-error" role="alert" className="mt-1.5 text-sm text-status-error">
+                      {errors.email.message}
+                    </p>
+                  )}
                 </div>
 
-                {error && (
-                  <div className="p-3 rounded-md bg-status-error/10 border border-status-error/30">
-                    <p className="text-status-error text-sm font-medium">{error}</p>
+                {serverError && (
+                  <div className="p-3 rounded-md bg-status-error/10 border border-status-error/30" role="alert">
+                    <p className="text-status-error text-sm font-medium">{serverError}</p>
                   </div>
                 )}
 
                 <Button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isSubmitting}
                   className="w-full py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-md transition-colors motion-reduce:transition-none font-medium"
                 >
-                  {isLoading ? (
+                  {isSubmitting ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mr-2" />
+                      <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mr-2" aria-hidden="true" />
                       Enviando...
                     </>
                   ) : (
@@ -113,11 +129,11 @@ export default function ForgotPasswordPage() {
                   )}
                 </Button>
 
-                <Link 
-                  href="/login" 
+                <Link
+                  href="/login"
                   className="flex items-center justify-center gap-2 lia-text-600 hover:lia-text-900 text-sm transition-colors motion-reduce:transition-none"
                 >
-                  <ArrowLeft className="w-4 h-4" />
+                  <ArrowLeft className="w-4 h-4" aria-hidden="true" />
                   Voltar para o Login
                 </Link>
               </form>
