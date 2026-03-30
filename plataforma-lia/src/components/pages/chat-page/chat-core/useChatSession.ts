@@ -1,0 +1,429 @@
+"use client"
+
+import { useState, useCallback, useEffect, useMemo, useRef } from "react"
+import { liaApi } from "@/services/lia-api"
+import { useAgentStreaming } from "@/hooks/use-agent-streaming"
+import type { Message, ContextPanelData, SelectedCandidateForScheduling, PendingPearchSearch } from "./chat-core.types"
+import type { SearchFilters } from "@/components/search/advanced-filters-modal"
+import type { SearchPreviewData } from "@/components/search/search-preview-card"
+import type { CandidateResult } from "@/components/search/search-results-card"
+import { useGlobalSearchSettings } from "@/hooks/useGlobalSearchSettings"
+import { useEmptyFieldNotifications, type FieldValueSuggestion } from "@/hooks/use-empty-field-notifications"
+import { useSearchFlow } from "@/hooks/useSearchFlow"
+import { DEFAULT_COMPANY_ID } from "./chat-core.constants"
+
+interface UseChatSessionOptions {
+  initialConversation: Message[]
+  conversationType: string
+  messages: Message[]
+  setMessages: (fn: (prev: Message[]) => Message[]) => void
+  setIsLoading: (v: boolean) => void
+  setContextData: (data: ContextPanelData | null) => void
+  setIsPanelOpen: (open: boolean) => void
+}
+
+export function useChatSession({
+  initialConversation,
+  conversationType,
+  messages,
+  setMessages,
+  setIsLoading,
+  setContextData,
+  setIsPanelOpen,
+}: UseChatSessionOptions) {
+  // ── Scheduling / Command Palette ───────────────────────────
+  const [isSchedulingModalOpen, setIsSchedulingModalOpen] = useState(false)
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false)
+  const [selectedCandidateForScheduling, setSelectedCandidateForScheduling] =
+    useState<SelectedCandidateForScheduling | null>(null)
+
+  // ── Candidate Search (Pearch) ──────────────────────────────
+  const [isCandidateDetailOpen, setIsCandidateDetailOpen] = useState(false)
+  const [selectedCandidateForDetail, setSelectedCandidateForDetail] = useState<CandidateResult | null>(null)
+  const [isCreditDialogOpen, setIsCreditDialogOpen] = useState(false)
+  const [pendingPearchSearch, setPendingPearchSearch] = useState<PendingPearchSearch | null>(null)
+
+  // ── Smart Search ───────────────────────────────────────────
+  const [isSmartSearchMode, setIsSmartSearchMode] = useState(false)
+  const [smartSearchQuery, setSmartSearchQuery] = useState("")
+  const searchFlow = useSearchFlow()
+  const [searchPreviewData, setSearchPreviewData] = useState<SearchPreviewData | null>(null)
+  const [hasSearchResults, setHasSearchResults] = useState(false)
+
+  // ── Filters ────────────────────────────────────────────────
+  const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false)
+  const [activeSearchFilters, setActiveSearchFilters] = useState<SearchFilters>({})
+
+  // ── Global settings ────────────────────────────────────────
+  const { settings: globalSearchSettings, loading: globalSettingsLoading } = useGlobalSearchSettings()
+
+  useEffect(() => {
+    if (!globalSettingsLoading && globalSearchSettings) {
+      setActiveSearchFilters(prev => ({
+        ...prev,
+        ppiOptions: {
+          ...prev.ppiOptions,
+          searchType: globalSearchSettings.searchType,
+          highFreshness: globalSearchSettings.highFreshness,
+          showEmails: globalSearchSettings.showEmails,
+          showPhoneNumbers: globalSearchSettings.showPhoneNumbers,
+        },
+      }))
+    }
+  }, [globalSettingsLoading, globalSearchSettings])
+
+  // ── Empty field notifications ──────────────────────────────
+  const emptyFieldNotifications = useEmptyFieldNotifications()
+  const [currentSuggestion, setCurrentSuggestion] = useState<FieldValueSuggestion | null>(null)
+  const [isLoadingSuggestion, setIsLoadingSuggestion] = useState(false)
+
+  // ── Credits ────────────────────────────────────────────────
+  const [availableCredits, setAvailableCredits] = useState<number>(50)
+
+  useEffect(() => {
+    const fetchCredits = async () => {
+      try {
+        const balance = await liaApi.getCreditBalance("demo-user")
+        setAvailableCredits(balance.available_credits)
+      } catch {
+        // Keep default value (50) on error
+      }
+    }
+    fetchCredits()
+  }, [])
+
+  // ── Chat ID & Title ────────────────────────────────────────
+  const [chatId, setChatId] = useState("#0000")
+
+  useEffect(() => {
+    const timestamp = Date.now()
+    setChatId(`#${String(timestamp).slice(-4)}`)
+  }, [])
+
+  const [chatTitle, setChatTitle] = useState(() => {
+    if (conversationType === 'empty') return 'Nova Conversa'
+    const firstMessages = initialConversation.slice(0, 5).map(m => m.content.toLowerCase()).join(' ')
+    if (firstMessages.includes('vaga') || firstMessages.includes('posição') || firstMessages.includes('diretor')) {
+      const directorMatch = firstMessages.match(/diretor\s+de\s+(\w+)/i)
+      if (directorMatch) {
+        return `Vaga ${directorMatch[0].split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}`
+      }
+      return 'Nova Vaga'
+    }
+    if (firstMessages.includes('candidato') || firstMessages.includes('triagem')) return 'Análise de Candidatos'
+    if (firstMessages.includes('relatório') || firstMessages.includes('dashboard')) return 'Relatório & Analytics'
+    if (firstMessages.includes('onboarding')) return 'Plano de Onboarding'
+    return 'Conversa Geral'
+  })
+
+  const updateChatTitle = useCallback((newTitle: string) => setChatTitle(newTitle), [])
+
+  const [activeTab, setActiveTab] = useState<"conversa" | "controle">("conversa")
+
+  // ── Agent Streaming (WebSocket) ────────────────────────────
+  const wsSessionId = chatId.replace('#', '')
+  const {
+    tokens: wsTokens,
+    isStreaming: wsIsStreaming,
+    isConnected: wsIsConnected,
+    connect: wsConnect,
+    disconnect: wsDisconnect,
+    clearTokens: wsClearTokens,
+    sendMessage: wsSendMessage,
+  } = useAgentStreaming(wsSessionId)
+
+  const wsStreamingModeRef = useRef(false)
+
+  useEffect(() => {
+    if (wsSessionId && wsSessionId !== '0000') wsConnect()
+    return () => { wsDisconnect() }
+  }, [wsSessionId, wsConnect, wsDisconnect])
+
+  useEffect(() => {
+    if (!wsStreamingModeRef.current || !wsTokens) return
+    setMessages(prev => {
+      const updated = [...prev]
+      const last = updated[updated.length - 1]
+      if (last?.sender === 'lia') updated[updated.length - 1] = { ...last, content: wsTokens }
+      return updated
+    })
+  }, [wsTokens, setMessages])
+
+  useEffect(() => {
+    if (wsStreamingModeRef.current && !wsIsStreaming && wsTokens) {
+      wsStreamingModeRef.current = false
+      setIsLoading(false)
+    }
+  }, [wsIsStreaming, wsTokens, setIsLoading])
+
+  // ── Derived ────────────────────────────────────────────────
+  const activePendingAction = useMemo(() => {
+    const lastLia = [...messages].reverse().find(m => m.sender === "lia")
+    const pending = lastLia?.data?.pending_action
+    if (!pending || (pending as Record<string, unknown>).awaiting_confirmation) return null
+    const missing = (pending as Record<string, unknown>).missing_params
+    if (!missing || !(missing as unknown[]).length) return null
+    return {
+      intent: (pending as Record<string, unknown>).intent as string,
+      missing_params: missing as string[],
+    }
+  }, [messages])
+
+  // ── Window event listeners ─────────────────────────────────
+  // "Nova Conversa"
+  useEffect(() => {
+    const handleNewChat = () => {
+      setMessages(() => [])
+      setContextData(null)
+      setIsPanelOpen(false)
+      setChatTitle('Nova Conversa')
+    }
+    window.addEventListener('lia:new-chat', handleNewChat)
+    return () => window.removeEventListener('lia:new-chat', handleNewChat)
+  }, [setMessages, setContextData, setIsPanelOpen])
+
+  // "Open Pipeline"
+  useEffect(() => {
+    const handleOpenPipeline = async () => {
+      setChatTitle('Gerenciamento de Pipeline')
+      setIsLoading(true)
+      try {
+        const report = await liaApi.getStaleCandidates(3, 50)
+        if (report && report.groups) {
+          setContextData({
+            type: "pipeline-report",
+            title: "Pipeline - Candidatos Parados",
+            data: report,
+          })
+          setIsPanelOpen(true)
+          const totalStale = report.total_stale ||
+            (report.groups as unknown as Record<string, unknown>[]).reduce(
+              (acc: number, job: Record<string, unknown>) =>
+                acc + ((job.stale_candidates as unknown[] | undefined)?.length || 0), 0
+            )
+          setMessages(prev => [...prev, {
+            id: Date.now(), sender: "lia",
+            content: Number(totalStale) > 0
+              ? `Encontrei **${totalStale} candidatos** que estão parados há mais de 3 dias em **${report.groups.length} vagas**. No painel ao lado você pode ver o detalhamento e tomar ações rápidas para cada candidato.\n\nQuer que eu priorize alguma vaga específica ou sugira as próximas ações?`
+              : `Ótimo! Todos os candidatos estão fluindo bem pelo pipeline. Nenhum candidato está parado há mais de 3 dias.\n\nPosso ajudar com outra coisa?`,
+            timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+            type: "text",
+          }])
+        }
+      } catch {
+        setMessages(prev => [...prev, {
+          id: Date.now(), sender: "lia",
+          content: "Desculpe, não consegui carregar os dados do pipeline. Tente novamente em alguns instantes.",
+          timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+          type: "text",
+        }])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    window.addEventListener('lia-open-pipeline', handleOpenPipeline as unknown as EventListener)
+    return () => window.removeEventListener('lia-open-pipeline', handleOpenPipeline as unknown as EventListener)
+  }, [setMessages, setContextData, setIsPanelOpen, setIsLoading])
+
+  // "Nova Tarefa"
+  useEffect(() => {
+    const handleNewTask = () => {
+      setChatTitle('Nova Tarefa')
+      const taskSuggestions = [
+        { icon: '🔍', title: 'Buscar candidatos', description: 'Encontrar perfis que atendam aos requisitos de uma vaga' },
+        { icon: '📋', title: 'Criar nova vaga', description: 'Definir uma nova posição com requisitos e benefícios' },
+        { icon: '📞', title: 'Agendar entrevistas', description: 'Organizar entrevistas com candidatos selecionados' },
+        { icon: '✉️', title: 'Enviar comunicações', description: 'Enviar emails ou mensagens para candidatos' },
+        { icon: '📊', title: 'Gerar relatório', description: 'Criar análises e relatórios de recrutamento' },
+        { icon: '🎯', title: 'Fazer triagem', description: 'Avaliar e qualificar candidatos de uma vaga' },
+      ]
+      const suggestionsText = taskSuggestions.map(s => `${s.icon} **${s.title}** - ${s.description}`).join('\n')
+      setMessages(prev => [...prev, {
+        id: Date.now(), sender: "lia",
+        content: `Olá! Estou pronta para ajudar você a criar uma nova tarefa. O que você gostaria de fazer?\n\n${suggestionsText}\n\nDigite o que você precisa ou escolha uma das opções acima!`,
+        timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+        type: "text",
+      }])
+    }
+    window.addEventListener('lia-new-task', handleNewTask)
+    return () => window.removeEventListener('lia-new-task', handleNewTask)
+  }, [setMessages])
+
+  // "Nova Vaga"
+  useEffect(() => {
+    const handleNewJob = async () => {
+      setChatTitle('Nova Vaga')
+      await emptyFieldNotifications.fetchNotifications(DEFAULT_COMPANY_ID)
+      setMessages(prev => [...prev, {
+        id: Date.now(), sender: "lia",
+        content: `Olá! Sou a **LIA**, sua assistente de recrutamento. Vou ajudar você a criar uma nova vaga de forma conversacional.\n\nPara começar, me conte sobre a posição que você precisa preencher:\n\n**O que preciso saber:**\n- Qual é o **cargo/título** da vaga?\n- Para qual **departamento** ou **área** é essa posição?\n- É uma vaga **presencial**, **híbrida** ou **remota**?\n\nVocê pode me contar livremente ou colar uma descrição de vaga existente que eu extraio as informações automaticamente!`,
+        timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+        type: "text",
+      }])
+    }
+    window.addEventListener('lia-new-job', handleNewJob)
+    return () => window.removeEventListener('lia-new-job', handleNewJob)
+  }, [emptyFieldNotifications, setMessages])
+
+  // Library events
+  useEffect(() => {
+    const handleExecuteCommand = (event: CustomEvent) => {
+      const { command, title } = event.detail
+      setChatTitle(title || 'Comando da Biblioteca')
+      setMessages(prev => [...prev, {
+        id: Date.now(), sender: "user", content: command,
+        timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+        type: "text",
+      }])
+      setTimeout(() => {
+        setMessages(prev => [...prev, {
+          id: Date.now() + 1, sender: "lia",
+          content: `Entendido! Estou processando seu comando: **"${title}"**\n\nAguarde enquanto analiso as informações...`,
+          timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+          type: "text",
+        }])
+      }, 500)
+    }
+
+    const handleLibraryPrompt = (event: CustomEvent) => {
+      const { prompt } = event.detail
+      setChatTitle('Conversa com LIA')
+      setMessages(prev => [...prev, {
+        id: Date.now(), sender: "user", content: prompt,
+        timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+        type: "text",
+      }])
+    }
+
+    const handleLibraryCategory = (event: CustomEvent) => {
+      const { category } = event.detail
+      setChatTitle(`Explorar ${category}`)
+      setMessages(prev => [...prev, {
+        id: Date.now(), sender: "lia",
+        content: `Vamos explorar comandos de **${category}**! O que você gostaria de fazer?\n\nPosso ajudar com tarefas como buscar informações, gerar relatórios, automatizar processos ou criar conteúdo relacionado a ${category.toLowerCase()}.\n\nMe conte sua necessidade!`,
+        timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+        type: "text",
+      }])
+    }
+
+    window.addEventListener('lia-execute-command', handleExecuteCommand as EventListener)
+    window.addEventListener('lia-library-prompt', handleLibraryPrompt as EventListener)
+    window.addEventListener('lia-library-category', handleLibraryCategory as EventListener)
+    return () => {
+      window.removeEventListener('lia-execute-command', handleExecuteCommand as EventListener)
+      window.removeEventListener('lia-library-prompt', handleLibraryPrompt as EventListener)
+      window.removeEventListener('lia-library-category', handleLibraryCategory as EventListener)
+    }
+  }, [setMessages])
+
+  // ── Empty field notification handlers ─────────────────────
+  const handleEmptyFieldAction = useCallback(async (action: string) => {
+    const notification = emptyFieldNotifications.currentNotification
+    if (!notification) return
+    if (action === 'fill_now') {
+      setIsLoadingSuggestion(true)
+      const suggestion = await emptyFieldNotifications.getSuggestion(DEFAULT_COMPANY_ID, notification.field_key)
+      setCurrentSuggestion(suggestion)
+      setIsLoadingSuggestion(false)
+      await emptyFieldNotifications.handleAction(DEFAULT_COMPANY_ID, notification.field_key, action)
+    } else {
+      await emptyFieldNotifications.handleAction(DEFAULT_COMPANY_ID, notification.field_key, action)
+      setCurrentSuggestion(null)
+      setMessages(prev => [...prev, {
+        id: Date.now(), sender: "lia",
+        content: action === 'remind_later'
+          ? `Certo! Vou lembrar você sobre o campo **${notification.field_label}** em 7 dias. Por enquanto, usarei dados alternativos para as sugestões.`
+          : `Entendido! Não vou mais lembrar sobre o campo **${notification.field_label}**. Usarei dados alternativos quando necessário.`,
+        timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+        type: "text",
+      }])
+    }
+  }, [emptyFieldNotifications, setMessages])
+
+  const handleSuggestionAccepted = useCallback((fieldKey: string, value: unknown) => {
+    const formattedValue = typeof value === 'object' ? JSON.stringify(value) : String(value)
+    setMessages(prev => [...prev, {
+      id: Date.now(), sender: "lia",
+      content: `Ótimo! O campo **${fieldKey}** foi atualizado com: ${formattedValue}\n\nAgora posso usar esse valor nas minhas sugestões para esta e futuras vagas.`,
+      timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+      type: "text",
+    }])
+    setCurrentSuggestion(null)
+  }, [setMessages])
+
+  const handleSuggestionRejected = useCallback(() => {
+    setCurrentSuggestion(null)
+    setMessages(prev => [...prev, {
+      id: Date.now(), sender: "lia",
+      content: `Sem problemas! Usarei dados alternativos para as sugestões. Você pode configurar esse campo a qualquer momento nas configurações da empresa.`,
+      timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+      type: "text",
+    }])
+  }, [setMessages])
+
+  // ── Filter handlers ────────────────────────────────────────
+  const handleApplyFilters = useCallback((filters: SearchFilters) => {
+    setActiveSearchFilters(filters)
+    setIsFiltersModalOpen(false)
+  }, [])
+
+  const getActiveFiltersCount = useCallback(() => {
+    let count = 0
+    Object.values(activeSearchFilters).forEach(category => {
+      if (category) {
+        Object.values(category).forEach(value => {
+          if (value !== undefined && value !== null && value !== "" &&
+            !(Array.isArray(value) && value.length === 0)) count++
+        })
+      }
+    })
+    return count
+  }, [activeSearchFilters])
+
+  return {
+    // Scheduling
+    isSchedulingModalOpen, setIsSchedulingModalOpen,
+    isCommandPaletteOpen, setIsCommandPaletteOpen,
+    selectedCandidateForScheduling, setSelectedCandidateForScheduling,
+    // Candidate search
+    isCandidateDetailOpen, setIsCandidateDetailOpen,
+    selectedCandidateForDetail, setSelectedCandidateForDetail,
+    isCreditDialogOpen, setIsCreditDialogOpen,
+    pendingPearchSearch, setPendingPearchSearch,
+    // Smart search
+    isSmartSearchMode, setIsSmartSearchMode,
+    smartSearchQuery, setSmartSearchQuery,
+    searchFlow,
+    searchPreviewData, setSearchPreviewData,
+    hasSearchResults, setHasSearchResults,
+    // Filters
+    isFiltersModalOpen, setIsFiltersModalOpen,
+    activeSearchFilters,
+    // Global settings
+    globalSearchSettings, globalSettingsLoading,
+    // Empty field notifications
+    emptyFieldNotifications,
+    currentSuggestion,
+    isLoadingSuggestion,
+    // Credits
+    availableCredits,
+    // Chat metadata
+    chatId,
+    chatTitle, setChatTitle,
+    activeTab, setActiveTab,
+    updateChatTitle,
+    // WS streaming (needed by handlers)
+    wsIsConnected,
+    wsSendMessage,
+    wsClearTokens,
+    wsStreamingModeRef,
+    // Derived
+    activePendingAction,
+    // Handlers
+    handleEmptyFieldAction,
+    handleSuggestionAccepted,
+    handleSuggestionRejected,
+    handleApplyFilters,
+    getActiveFiltersCount,
+  }
+}

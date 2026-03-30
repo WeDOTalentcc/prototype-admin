@@ -1,14 +1,12 @@
 "use client"
 
-import { useState } from "react"
-import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
+import { textStyles, cardStyles } from '@/lib/design-tokens'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Link2, Settings, Activity, CheckCircle, AlertTriangle, XCircle,
-  Plus, Play, Pause, RotateCw, Eye, Edit, Trash2, Download,
+  Plus, Play, RotateCw, Eye, Edit, Trash2, Download,
   Upload, FileText, BarChart3, Calendar, Clock, Users,
   Database, Server, Wifi, Shield, Key, Globe, Zap, Target,
   ArrowRight, ArrowUp, ArrowDown, Minus, Search, Filter,
@@ -17,258 +15,50 @@ import {
   AlertCircle, Info, CheckCircle2, TrendingUp, Lock, Crown,
   MoreHorizontal
 } from "lucide-react"
+import { useAtsIntegrations, useSystemModal } from './ats-integrations/useAtsIntegrations'
+import type { ATSSystem, SystemConfigurationModalProps, ViewTab } from './ats-integrations/ats-integrations.types'
 
-interface ATSSystem {
-  id: string
-  name: string
-  type: 'sap' | 'workday' | 'bamboohr' | 'greenhouse' | 'custom'
-  status: 'connected' | 'connecting' | 'error' | 'disabled'
-  description: string
-  logo?: string
-  lastSync?: string
-  totalRecords: number
-  syncedRecords: number
-  errorCount: number
-  features: string[]
-  webhookUrl?: string
-  apiEndpoint?: string
-  version?: string
+// ── Status helpers ────────────────────────────────────────────────────────────
+function getStatusIcon(status: string) {
+  switch (status) {
+    case 'connected': return <CheckCircle className="w-4 h-4 text-status-success" />
+    case 'connecting': return <RotateCw className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
+    case 'error': return <XCircle className="w-4 h-4 text-status-error" />
+    case 'disabled': return <Minus className="w-4 h-4 text-lia-text-secondary" />
+    default: return <AlertTriangle className="w-4 h-4 text-status-warning" />
+  }
 }
 
-interface SyncLog {
-  id: string
-  timestamp: string
-  system: string
-  type: 'sync' | 'webhook' | 'manual'
-  status: 'success' | 'warning' | 'error'
-  records: number
-  duration: number
-  message: string
-  details?: string
+function getSyncStatusIcon(status: string) {
+  switch (status) {
+    case 'success': return <CheckCircle2 className="w-4 h-4 text-status-success" />
+    case 'warning': return <AlertTriangle className="w-4 h-4 text-status-warning" />
+    case 'error': return <XCircle className="w-4 h-4 text-status-error" />
+    default: return <Info className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+  }
 }
 
-interface Integration {
-  id: string
-  name: string
-  system: ATSSystem
-  isActive: boolean
-  lastRun: string
-  nextRun: string
-  frequency: 'realtime' | 'hourly' | 'daily' | 'weekly'
-  direction: 'import' | 'export' | 'bidirectional'
-  mappedFields: number
-  totalFields: number
+function getStatusLabel(status: string) {
+  switch (status) {
+    case 'connected': return 'Conectado'
+    case 'connecting': return 'Conectando'
+    case 'error': return 'Erro'
+    default: return 'Desabilitado'
+  }
 }
 
-interface SystemField {
-  id: string
-  name: string
-  type: 'string' | 'email' | 'phone' | 'number' | 'date' | 'url' | 'select'
-  required: boolean
-  description: string
+// ── Sub-views ─────────────────────────────────────────────────────────────────
+interface OverviewProps {
+  atsSystems: ATSSystem[]
+  integrations: { isActive: boolean }[]
+  syncLogs: { id: string; message: string; system: string; timestamp: string; records: number; duration: number; status: string }[]
+  getStatusColor: (s: string) => string
+  setSelectedView: (v: ViewTab) => void
+  openSystemModal: (system: ATSSystem) => void
 }
 
-interface FieldMapping {
-  id: string
-  sourceField: string
-  targetField: string
-  sourceFieldName: string
-  targetFieldName: string
-  isActive: boolean
-  confidence: number
-}
-
-interface MappingTemplate {
-  sourceField: string
-  targetField: string
-  confidence: number
-}
-
-// Mock data
-const atsystems: ATSSystem[] = [
-  {
-    id: 'sap_sf',
-    name: 'SAP SuccessFactors',
-    type: 'sap',
-    status: 'connected',
-    description: 'Sistema completo de gestão de recursos humanos',
-    logo: 'https://logos-world.net/wp-content/uploads/2020/04/SAP-Logo.png',
-    lastSync: '2024-01-20T14:30:00Z',
-    totalRecords: 2847,
-    syncedRecords: 2847,
-    errorCount: 0,
-    features: ['Candidatos', 'Vagas', 'Entrevistas', 'Ofertas', 'Onboarding'],
-    webhookUrl: 'https://api.plataforma-lia.com/webhooks/sap',
-    apiEndpoint: 'https://api.successfactors.com/v2',
-    version: '2.0'
-  },
-  {
-    id: 'workday',
-    name: 'Workday HCM',
-    type: 'workday',
-    status: 'connecting',
-    description: 'Plataforma de capital humano empresarial',
-    logo: 'https://logos-world.net/wp-content/uploads/2021/08/Workday-Logo.png',
-    totalRecords: 0,
-    syncedRecords: 0,
-    errorCount: 0,
-    features: ['Funcionários', 'Requisições', 'Performance', 'Benefícios'],
-    apiEndpoint: 'https://wd2-impl-services1.workday.com',
-    version: '39.0'
-  },
-  {
-    id: 'bamboohr',
-    name: 'BambooHR',
-    type: 'bamboohr',
-    status: 'error',
-    description: 'Sistema de RH para pequenas e médias empresas',
-    logo: 'https://www.bamboohr.com/images/bamboo-logo.svg',
-    lastSync: '2024-01-19T16:20:00Z',
-    totalRecords: 156,
-    syncedRecords: 134,
-    errorCount: 22,
-    features: ['Colaboradores', 'Relatórios', 'Time Off', 'Performance'],
-    webhookUrl: 'https://api.plataforma-lia.com/webhooks/bamboo',
-    apiEndpoint: 'https://api.bamboohr.com/api/gateway.php',
-    version: '1.0'
-  },
-  {
-    id: 'greenhouse',
-    name: 'Greenhouse',
-    type: 'greenhouse',
-    status: 'disabled',
-    description: 'ATS focado em recrutamento e seleção',
-    logo: 'https://greenhouse-production.s3.amazonaws.com/assets/logos/greenhouse_logo_full_color-7b8b4bad0fe1e2b667ad1ff3d5b41a84.svg',
-    totalRecords: 0,
-    syncedRecords: 0,
-    errorCount: 0,
-    features: ['Candidatos', 'Vagas', 'Entrevistas', 'Scorecards'],
-    apiEndpoint: 'https://harvest.greenhouse.io/v1',
-    version: '1.0'
-  }
-]
-
-const integrations: Integration[] = [
-  {
-    id: 'sap_candidates',
-    name: 'Sincronização de Candidatos',
-    system: atsystems[0],
-    isActive: true,
-    lastRun: '2024-01-20T14:30:00Z',
-    nextRun: '2024-01-20T15:30:00Z',
-    frequency: 'hourly',
-    direction: 'bidirectional',
-    mappedFields: 24,
-    totalFields: 32
-  },
-  {
-    id: 'sap_jobs',
-    name: 'Importação de Vagas',
-    system: atsystems[0],
-    isActive: true,
-    lastRun: '2024-01-20T14:15:00Z',
-    nextRun: '2024-01-21T14:15:00Z',
-    frequency: 'daily',
-    direction: 'import',
-    mappedFields: 18,
-    totalFields: 25
-  },
-  {
-    id: 'bamboo_employees',
-    name: 'Dados de Funcionários',
-    system: atsystems[2],
-    isActive: false,
-    lastRun: '2024-01-19T16:20:00Z',
-    nextRun: '2024-01-20T16:20:00Z',
-    frequency: 'daily',
-    direction: 'import',
-    mappedFields: 12,
-    totalFields: 20
-  }
-]
-
-const syncLogs: SyncLog[] = [
-  {
-    id: '1',
-    timestamp: '2024-01-20T14:30:00Z',
-    system: 'SAP SuccessFactors',
-    type: 'sync',
-    status: 'success',
-    records: 15,
-    duration: 2340,
-    message: 'Sincronização de candidatos concluída com sucesso',
-    details: '15 novos candidatos importados, 3 atualizados'
-  },
-  {
-    id: '2',
-    timestamp: '2024-01-20T14:15:00Z',
-    system: 'SAP SuccessFactors',
-    type: 'webhook',
-    status: 'success',
-    records: 1,
-    duration: 156,
-    message: 'Nova vaga recebida via webhook',
-    details: 'Vaga "Senior Developer" criada automaticamente'
-  },
-  {
-    id: '3',
-    timestamp: '2024-01-19T16:20:00Z',
-    system: 'BambooHR',
-    type: 'sync',
-    status: 'error',
-    records: 0,
-    duration: 5000,
-    message: 'Erro de autenticação na API',
-    details: 'Token de acesso expirado - necessária renovação manual'
-  },
-  {
-    id: '4',
-    timestamp: '2024-01-19T12:00:00Z',
-    system: 'SAP SuccessFactors',
-    type: 'manual',
-    status: 'warning',
-    records: 234,
-    duration: 12450,
-    message: 'Sincronização manual com avisos',
-    details: '234 registros processados, 12 campos não mapeados encontrados'
-  }
-]
-
-export function ATSIntegrationsPage() {
-  const [selectedView, setSelectedView] = useState<'overview' | 'systems' | 'integrations' | 'logs'>('overview')
-  const [selectedSystem, setSelectedSystem] = useState<ATSSystem | null>(null)
-  const [showSystemModal, setShowSystemModal] = useState(false)
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'connected': return <CheckCircle className="w-4 h-4 text-status-success" />
-      case 'connecting': return <RotateCw className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
-      case 'error': return <XCircle className="w-4 h-4 text-status-error" />
-      case 'disabled': return <Minus className="w-4 h-4 text-lia-text-secondary" />
-      default: return <AlertTriangle className="w-4 h-4 text-status-warning" />
-    }
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'connected': return 'bg-status-success/10 text-status-success border-status-success/30'
-      case 'connecting': return 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary border-lia-border-default dark:border-lia-border-default'
-      case 'error': return 'bg-status-error/10 text-status-error border-status-error/30'
-      case 'disabled': return 'bg-gray-50 text-lia-text-primary dark:text-lia-text-primary border-lia-border-subtle'
-      default: return 'bg-status-warning/10 text-status-warning border-status-warning/30'
-    }
-  }
-
-  const getSyncStatusIcon = (status: string) => {
-    switch (status) {
-      case 'success': return <CheckCircle2 className="w-4 h-4 text-status-success" />
-      case 'warning': return <AlertTriangle className="w-4 h-4 text-status-warning" />
-      case 'error': return <XCircle className="w-4 h-4 text-status-error" />
-      default: return <Info className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
-    }
-  }
-
-  const renderOverview = () => (
+function OverviewView({ atsSystems, integrations, syncLogs, getStatusColor, setSelectedView, openSystemModal }: OverviewProps) {
+  return (
     <div className="space-y-6">
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -278,9 +68,9 @@ export function ATSIntegrationsPage() {
               <div>
                 <p className={textStyles.label}>Sistemas Conectados</p>
                 <p className={`${textStyles.titleXl} text-2xl`}>
-                  {atsystems.filter(s => s.status === 'connected').length}
+                  {atsSystems.filter(s => s.status === 'connected').length}
                 </p>
-                <p className={textStyles.caption}>de {atsystems.length} configurados</p>
+                <p className={textStyles.caption}>de {atsSystems.length} configurados</p>
               </div>
               <div className="w-12 h-12 bg-status-success/15 rounded-md flex items-center justify-center" aria-live="polite" aria-atomic="true">
                 <Link2 className="w-6 h-6 text-status-success" />
@@ -295,11 +85,11 @@ export function ATSIntegrationsPage() {
               <div>
                 <p className={textStyles.label}>Registros Sincronizados</p>
                 <p className={`${textStyles.titleXl} text-2xl text-lia-text-secondary dark:text-lia-text-secondary`}>
-                  {atsystems.reduce((acc, sys) => acc + sys.syncedRecords, 0).toLocaleString()}
+                  {atsSystems.reduce((acc, sys) => acc + sys.syncedRecords, 0).toLocaleString()}
                 </p>
                 <p className={`${textStyles.caption} text-status-success`}>+47 hoje</p>
               </div>
-              <div className="w-12 h-12 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+              <div className="w-12 h-12 bg-lia-bg-secondary rounded-md flex items-center justify-center">
                 <Database className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
               </div>
             </div>
@@ -346,35 +136,21 @@ export function ATSIntegrationsPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button
-              variant="outline"
-              className="h-auto p-4 justify-start gap-3"
-              onClick={() => setSelectedView('systems')}
-            >
+            <Button variant="outline" className="h-auto p-4 justify-start gap-3" onClick={() => setSelectedView('systems')}>
               <Plus className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
               <div className="text-left">
                 <div className="font-medium">Adicionar Sistema</div>
                 <div className="text-sm text-lia-text-secondary">Conectar novo ATS</div>
               </div>
             </Button>
-
-            <Button
-              variant="outline"
-              className="h-auto p-4 justify-start gap-3"
-              onClick={() => setSelectedView('integrations')}
-            >
+            <Button variant="outline" className="h-auto p-4 justify-start gap-3" onClick={() => setSelectedView('integrations')}>
               <Settings className="w-5 h-5 text-wedo-purple" />
               <div className="text-left">
                 <div className="font-medium">Configurar Sync</div>
                 <div className="text-sm text-lia-text-secondary">Gerenciar integrações</div>
               </div>
             </Button>
-
-            <Button
-              variant="outline"
-              className="h-auto p-4 justify-start gap-3"
-              onClick={() => setSelectedView('logs')}
-            >
+            <Button variant="outline" className="h-auto p-4 justify-start gap-3" onClick={() => setSelectedView('logs')}>
               <FileText className="w-5 h-5 text-wedo-orange" />
               <div className="text-left">
                 <div className="font-medium">Ver Logs</div>
@@ -392,10 +168,10 @@ export function ATSIntegrationsPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {atsystems.map(system => (
+            {atsSystems.map(system => (
               <div key={system.id} className="flex items-center justify-between p-4 border border-lia-border-subtle rounded-md">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center">
+                  <div className="w-12 h-12 bg-lia-bg-secondary rounded-md flex items-center justify-center">
                     <Server className="w-6 h-6 text-lia-text-secondary" />
                   </div>
                   <div>
@@ -404,9 +180,7 @@ export function ATSIntegrationsPage() {
                     <div className="flex items-center gap-2 mt-1">
                       {getStatusIcon(system.status)}
                       <span className={`text-xs px-2 py-1 rounded-full border ${getStatusColor(system.status)}`}>
-                        {system.status === 'connected' ? 'Conectado' :
-                         system.status === 'connecting' ? 'Conectando' :
-                         system.status === 'error' ? 'Erro' : 'Desabilitado'}
+                        {getStatusLabel(system.status)}
                       </span>
                       {system.lastSync && (
                         <span className="text-xs text-lia-text-secondary">
@@ -416,7 +190,6 @@ export function ATSIntegrationsPage() {
                     </div>
                   </div>
                 </div>
-
                 <div className="flex items-center gap-4 text-sm">
                   {system.status === 'connected' && (
                     <>
@@ -432,15 +205,7 @@ export function ATSIntegrationsPage() {
                       </div>
                     </>
                   )}
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedSystem(system)
-                      setShowSystemModal(true)
-                    }}
-                  >
+                  <Button variant="outline" size="sm" onClick={() => openSystemModal(system)}>
                     Configurar
                   </Button>
                 </div>
@@ -458,7 +223,7 @@ export function ATSIntegrationsPage() {
         <CardContent>
           <div className="space-y-3">
             {syncLogs.slice(0, 5).map(log => (
-              <div key={log.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+              <div key={log.id} className="flex items-center justify-between p-3 bg-lia-bg-secondary rounded-md">
                 <div className="flex items-center gap-3">
                   {getSyncStatusIcon(log.status)}
                   <div>
@@ -476,12 +241,7 @@ export function ATSIntegrationsPage() {
             ))}
           </div>
           <div className="mt-4 pt-3 border-t">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setSelectedView('logs')}
-              className="w-full"
-            >
+            <Button variant="outline" size="sm" onClick={() => setSelectedView('logs')} className="w-full">
               Ver Todos os Logs
             </Button>
           </div>
@@ -489,8 +249,14 @@ export function ATSIntegrationsPage() {
       </Card>
     </div>
   )
+}
 
-  const renderSystems = () => (
+function SystemsView({ atsSystems, getStatusColor, openSystemModal }: {
+  atsSystems: ATSSystem[]
+  getStatusColor: (s: string) => string
+  openSystemModal: (system: ATSSystem) => void
+}) {
+  return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
@@ -502,14 +268,13 @@ export function ATSIntegrationsPage() {
           Adicionar Sistema Personalizado
         </Button>
       </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {atsystems.map(system => (
-          <Card key={system.id} className={`${cardStyles.interactive}`}>
+        {atsSystems.map(system => (
+          <Card key={system.id} className={cardStyles.interactive}>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center">
+                  <div className="w-12 h-12 bg-lia-bg-secondary rounded-md flex items-center justify-center">
                     <Server className="w-6 h-6 text-lia-text-secondary" />
                   </div>
                   <div>
@@ -519,14 +284,12 @@ export function ATSIntegrationsPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   {getStatusIcon(system.status)}
-                  <Badge variant={
-                    system.status === 'connected' ? 'default' :
-                    system.status === 'connecting' ? 'secondary' :
-                    system.status === 'error' ? 'destructive' : 'outline'
-                  } className="text-xs" aria-live="polite">
-                    {system.status === 'connected' ? 'Conectado' :
-                     system.status === 'connecting' ? 'Conectando' :
-                     system.status === 'error' ? 'Erro' : 'Desabilitado'}
+                  <Badge
+                    variant={system.status === 'connected' ? 'default' : system.status === 'connecting' ? 'secondary' : system.status === 'error' ? 'destructive' : 'outline'}
+                    className="text-xs"
+                    aria-live="polite"
+                  >
+                    {getStatusLabel(system.status)}
                   </Badge>
                 </div>
               </div>
@@ -534,20 +297,14 @@ export function ATSIntegrationsPage() {
             <CardContent>
               <div className="space-y-4">
                 <p className={textStyles.body}>{system.description}</p>
-
-                {/* Features */}
                 <div>
                   <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Funcionalidades:</p>
                   <div className="flex flex-wrap gap-1">
                     {system.features.map(feature => (
-                      <Badge key={feature} variant="outline" className="text-xs">
-                        {feature}
-                      </Badge>
+                      <Badge key={feature} variant="outline" className="text-xs">{feature}</Badge>
                     ))}
                   </div>
                 </div>
-
-                {/* Connection Details */}
                 {system.status === 'connected' && (
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
@@ -556,9 +313,7 @@ export function ATSIntegrationsPage() {
                     </div>
                     <div>
                       <p className="text-lia-text-secondary">Última sincronização:</p>
-                      <p className="font-medium">
-                        {system.lastSync ? new Date(system.lastSync).toLocaleString('pt-BR') : 'N/A'}
-                      </p>
+                      <p className="font-medium">{system.lastSync ? new Date(system.lastSync).toLocaleString('pt-BR') : 'N/A'}</p>
                     </div>
                     {system.version && (
                       <div>
@@ -574,7 +329,6 @@ export function ATSIntegrationsPage() {
                     )}
                   </div>
                 )}
-
                 {system.status === 'error' && (
                   <div className="p-3 bg-status-error/10 border border-status-error/30 rounded-md" aria-live="polite" aria-atomic="true">
                     <p className="text-sm text-status-error">
@@ -583,38 +337,17 @@ export function ATSIntegrationsPage() {
                     </p>
                   </div>
                 )}
-
-                {/* Actions */}
                 <div className="flex gap-2">
                   {system.status === 'disabled' ? (
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        setSelectedSystem(system)
-                        setShowSystemModal(true)
-                      }}
-                      className="flex-1"
-                    >
-                      Configurar Conexão
-                    </Button>
+                    <Button size="sm" onClick={() => openSystemModal(system)} className="flex-1">Configurar Conexão</Button>
                   ) : (
                     <>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setSelectedSystem(system)
-                          setShowSystemModal(true)
-                        }}
-                        className="flex-1"
-                      >
-                        <Settings className="w-4 h-4 mr-2" />
-                        Configurar
+                      <Button size="sm" variant="outline" onClick={() => openSystemModal(system)} className="flex-1">
+                        <Settings className="w-4 h-4 mr-2" />Configurar
                       </Button>
                       {system.status === 'connected' && (
                         <Button size="sm" variant="outline" className="flex-1">
-                          <RefreshCw className="w-4 h-4 mr-2" />
-                          Sincronizar
+                          <RefreshCw className="w-4 h-4 mr-2" />Sincronizar
                         </Button>
                       )}
                     </>
@@ -627,34 +360,27 @@ export function ATSIntegrationsPage() {
       </div>
     </div>
   )
+}
 
-  const renderIntegrations = () => (
+function IntegrationsView({ integrations }: { integrations: ReturnType<typeof useAtsIntegrations>['integrations'] }) {
+  return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h3 className={textStyles.title}>Integrações Ativas</h3>
           <p className={textStyles.body}>Gerencie sincronizações e mapeamentos de dados</p>
         </div>
-        <Button className="gap-2">
-          <Plus className="w-4 h-4" />
-          Nova Integração
-        </Button>
+        <Button className="gap-2"><Plus className="w-4 h-4" />Nova Integração</Button>
       </div>
-
       <div className="space-y-4">
         {integrations.map(integration => (
           <Card key={integration.id}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-md flex items-center justify-center ${
-                    integration.isActive ? 'bg-status-success/15' : 'bg-gray-100'
-                  }`}>
-                    <Database className={`w-6 h-6 ${
-                      integration.isActive ? 'text-status-success' : 'text-lia-text-secondary'
-                    }`} />
+                  <div className={`w-12 h-12 rounded-md flex items-center justify-center ${integration.isActive ? 'bg-status-success/15' : 'bg-lia-bg-secondary'}`}>
+                    <Database className={`w-6 h-6 ${integration.isActive ? 'text-status-success' : 'text-lia-text-secondary'}`} />
                   </div>
-
                   <div>
                     <h4 className={textStyles.subtitle}>{integration.name}</h4>
                     <p className={textStyles.bodySmall}>{integration.system.name}</p>
@@ -663,50 +389,31 @@ export function ATSIntegrationsPage() {
                         {integration.isActive ? 'Ativa' : 'Inativa'}
                       </Badge>
                       <Badge variant="outline" className="text-xs">
-                        {integration.direction === 'bidirectional' ? '↔️ Bidirecional' :
-                         integration.direction === 'import' ? '⬇️ Import' : '⬆️ Export'}
+                        {integration.direction === 'bidirectional' ? '↔️ Bidirecional' : integration.direction === 'import' ? '⬇️ Import' : '⬆️ Export'}
                       </Badge>
                       <Badge variant="outline" className="text-xs">
-                        {integration.frequency === 'realtime' ? '⚡ Tempo Real' :
-                         integration.frequency === 'hourly' ? '🕐 A cada hora' :
-                         integration.frequency === 'daily' ? '📅 Diário' : '📆 Semanal'}
+                        {integration.frequency === 'realtime' ? '⚡ Tempo Real' : integration.frequency === 'hourly' ? '🕐 A cada hora' : integration.frequency === 'daily' ? '📅 Diário' : '📆 Semanal'}
                       </Badge>
                     </div>
                   </div>
                 </div>
-
                 <div className="flex items-center gap-6 text-sm">
                   <div className="text-center">
-                    <p className="font-medium text-lia-text-primary dark:text-lia-text-primary">
-                      {integration.mappedFields}/{integration.totalFields}
-                    </p>
+                    <p className="font-medium text-lia-text-primary dark:text-lia-text-primary">{integration.mappedFields}/{integration.totalFields}</p>
                     <p className="text-lia-text-secondary">Campos</p>
                   </div>
-
                   <div className="text-center">
-                    <p className="font-medium text-lia-text-primary dark:text-lia-text-primary">
-                      {new Date(integration.lastRun).toLocaleDateString('pt-BR')}
-                    </p>
+                    <p className="font-medium text-lia-text-primary dark:text-lia-text-primary">{new Date(integration.lastRun).toLocaleDateString('pt-BR')}</p>
                     <p className="text-lia-text-secondary">Última exec.</p>
                   </div>
-
                   <div className="text-center">
-                    <p className="font-medium text-lia-text-primary dark:text-lia-text-primary">
-                      {new Date(integration.nextRun).toLocaleDateString('pt-BR')}
-                    </p>
+                    <p className="font-medium text-lia-text-primary dark:text-lia-text-primary">{new Date(integration.nextRun).toLocaleDateString('pt-BR')}</p>
                     <p className="text-lia-text-secondary">Próxima</p>
                   </div>
-
                   <div className="flex gap-2">
-                    <Button size="sm" variant="outline">
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button size="sm" variant="outline">
-                      <Play className="w-4 h-4" />
-                    </Button>
-                    <Button size="sm" variant="outline">
-                      <MoreHorizontal className="w-4 h-4" />
-                    </Button>
+                    <Button size="sm" variant="outline"><Edit className="w-4 h-4" /></Button>
+                    <Button size="sm" variant="outline"><Play className="w-4 h-4" /></Button>
+                    <Button size="sm" variant="outline"><MoreHorizontal className="w-4 h-4" /></Button>
                   </div>
                 </div>
               </div>
@@ -716,8 +423,10 @@ export function ATSIntegrationsPage() {
       </div>
     </div>
   )
+}
 
-  const renderLogs = () => (
+function LogsView({ syncLogs }: { syncLogs: ReturnType<typeof useAtsIntegrations>['syncLogs'] }) {
+  return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
@@ -725,30 +434,19 @@ export function ATSIntegrationsPage() {
           <p className={textStyles.body}>Histórico detalhado de todas as operações</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="gap-2">
-            <Filter className="w-4 h-4" />
-            Filtros
-          </Button>
-          <Button variant="outline" size="sm" className="gap-2">
-            <Download className="w-4 h-4" />
-            Exportar
-          </Button>
+          <Button variant="outline" size="sm" className="gap-2"><Filter className="w-4 h-4" />Filtros</Button>
+          <Button variant="outline" size="sm" className="gap-2"><Download className="w-4 h-4" />Exportar</Button>
         </div>
       </div>
-
       <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className="bg-lia-bg-secondary">
                 <tr>
-                  <th className="text-left py-3 px-4 font-medium text-lia-text-primary dark:text-lia-text-primary">Status</th>
-                  <th className="text-left py-3 px-4 font-medium text-lia-text-primary dark:text-lia-text-primary">Sistema</th>
-                  <th className="text-left py-3 px-4 font-medium text-lia-text-primary dark:text-lia-text-primary">Operação</th>
-                  <th className="text-left py-3 px-4 font-medium text-lia-text-primary dark:text-lia-text-primary">Registros</th>
-                  <th className="text-left py-3 px-4 font-medium text-lia-text-primary dark:text-lia-text-primary">Duração</th>
-                  <th className="text-left py-3 px-4 font-medium text-lia-text-primary dark:text-lia-text-primary">Data/Hora</th>
-                  <th className="text-left py-3 px-4 font-medium text-lia-text-primary dark:text-lia-text-primary">Ações</th>
+                  {['Status', 'Sistema', 'Operação', 'Registros', 'Duração', 'Data/Hora', 'Ações'].map(h => (
+                    <th key={h} className="text-left py-3 px-4 font-medium text-lia-text-primary dark:text-lia-text-primary">{h}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
@@ -761,39 +459,21 @@ export function ATSIntegrationsPage() {
                           log.status === 'success' ? 'bg-status-success/15 text-status-success' :
                           log.status === 'warning' ? 'bg-status-warning/15 text-status-warning' :
                           log.status === 'error' ? 'bg-status-error/15 text-status-error' :
-                          'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary'
+                          'bg-lia-bg-secondary text-lia-text-secondary'
                         }`} aria-live="polite">
-                          {log.status === 'success' ? 'Sucesso' :
-                           log.status === 'warning' ? 'Aviso' :
-                           log.status === 'error' ? 'Erro' : 'Info'}
+                          {log.status === 'success' ? 'Sucesso' : log.status === 'warning' ? 'Aviso' : log.status === 'error' ? 'Erro' : 'Info'}
                         </span>
                       </div>
                     </td>
+                    <td className="py-3 px-4"><span className="font-medium text-lia-text-primary dark:text-lia-text-primary">{log.system}</span></td>
                     <td className="py-3 px-4">
-                      <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">{log.system}</span>
+                      <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">{log.message}</p>
+                      {log.details && <p className="text-xs text-lia-text-secondary">{log.details}</p>}
                     </td>
-                    <td className="py-3 px-4">
-                      <div>
-                        <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">{log.message}</p>
-                        {log.details && (
-                          <p className="text-xs text-lia-text-secondary">{log.details}</p>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="font-medium">{log.records}</span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="text-sm">{log.duration}ms</span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="text-sm">{new Date(log.timestamp).toLocaleString('pt-BR')}</span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <Button size="sm" variant="ghost">
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                    </td>
+                    <td className="py-3 px-4"><span className="font-medium">{log.records}</span></td>
+                    <td className="py-3 px-4"><span className="text-sm">{log.duration}ms</span></td>
+                    <td className="py-3 px-4"><span className="text-sm">{new Date(log.timestamp).toLocaleString('pt-BR')}</span></td>
+                    <td className="py-3 px-4"><Button size="sm" variant="ghost"><Eye className="w-4 h-4" /></Button></td>
                   </tr>
                 ))}
               </tbody>
@@ -803,671 +483,19 @@ export function ATSIntegrationsPage() {
       </Card>
     </div>
   )
-
-  return (
-    <div className="p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className={`${textStyles.titleLarge} flex items-center gap-1.5`}>
-                <Link2 className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
-                Integrações ATS Enterprise
-              </h1>
-              <p className={textStyles.body}>
-                Conecte e sincronize dados com sistemas HR externos
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button variant="outline" className="gap-2">
-                <Download className="w-4 h-4" />
-                Exportar Logs
-              </Button>
-              <Button variant="outline" className="gap-2">
-                <RefreshCw className="w-4 h-4" />
-                Sincronizar Tudo
-              </Button>
-              <Button className="gap-2">
-                <Plus className="w-4 h-4" />
-                Nova Integração
-              </Button>
-            </div>
-          </div>
-
-          {/* Navigation Tabs */}
-          <div className="flex space-x-1 bg-gray-100 p-1 rounded-md w-fit">
-            {[
-              { id: 'overview', label: 'Visão Geral', icon: BarChart3 },
-              { id: 'systems', label: 'Sistemas', icon: Server },
-              { id: 'integrations', label: 'Integrações', icon: Settings },
-              { id: 'logs', label: 'Logs', icon: FileText }
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setSelectedView(tab.id as Parameters<typeof setSelectedView>[0])}
-                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none ${
-                  selectedView === tab.id
-                    ? 'bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary'
-                    : 'text-lia-text-secondary hover:text-lia-text-primary'
-                }`}
-              >
-                <tab.icon className="w-4 h-4" />
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Content */}
-        {selectedView === 'overview' && renderOverview()}
-        {selectedView === 'systems' && renderSystems()}
-        {selectedView === 'integrations' && renderIntegrations()}
-        {selectedView === 'logs' && renderLogs()}
-
-        {/* System Configuration Modal */}
-        {showSystemModal && selectedSystem && (
-          <SystemConfigurationModal
-            system={selectedSystem}
-            onClose={() => {
-              setShowSystemModal(false)
-              setSelectedSystem(null)
-            }}
-          />
-        )}
-      </div>
-    </div>
-  )
 }
 
-// System Configuration Modal
-interface SystemConfigurationModalProps {
-  system: ATSSystem
-  onClose: () => void
-}
-
+// ── System Configuration Modal ────────────────────────────────────────────────
 function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalProps) {
-  const [selectedTab, setSelectedTab] = useState<'connection' | 'mapping' | 'sync' | 'webhooks'>('connection')
-  const [isConnecting, setIsConnecting] = useState(false)
-  const [connectionStatus, setConnectionStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle')
-  const [mappings, setMappings] = useState<FieldMapping[]>([])
-  const [draggedField, setDraggedField] = useState<SystemField | null>(null)
-  const [selectedTemplate, setSelectedTemplate] = useState<string>('')
-
-  // Definir campos mock para diferentes sistemas
-  const getSystemFields = (systemType: string): SystemField[] => {
-    switch (systemType) {
-      case 'sap':
-        return [
-          { id: 'candidate_id', name: 'Candidate ID', type: 'string', required: true, description: 'Identificador único do candidato' },
-          { id: 'first_name', name: 'First Name', type: 'string', required: true, description: 'Primeiro nome' },
-          { id: 'last_name', name: 'Last Name', type: 'string', required: true, description: 'Sobrenome' },
-          { id: 'email', name: 'Email Address', type: 'email', required: true, description: 'Email principal' },
-          { id: 'phone', name: 'Phone Number', type: 'phone', required: false, description: 'Telefone de contato' },
-          { id: 'position_applied', name: 'Position Applied', type: 'string', required: true, description: 'Cargo aplicado' },
-          { id: 'department', name: 'Department', type: 'string', required: false, description: 'Departamento' },
-          { id: 'experience_years', name: 'Years of Experience', type: 'number', required: false, description: 'Anos de experiência' },
-          { id: 'resume_url', name: 'Resume URL', type: 'url', required: false, description: 'Link do currículo' },
-          { id: 'application_date', name: 'Application Date', type: 'date', required: true, description: 'Data da candidatura' },
-          { id: 'current_status', name: 'Current Status', type: 'select', required: true, description: 'Status atual no processo' },
-          { id: 'salary_expectation', name: 'Salary Expectation', type: 'number', required: false, description: 'Expectativa salarial' }
-        ]
-      default:
-        return [
-          { id: 'id', name: 'ID', type: 'string', required: true, description: 'Identificador único' },
-          { id: 'name', name: 'Full Name', type: 'string', required: true, description: 'Nome completo' },
-          { id: 'email', name: 'Email', type: 'email', required: true, description: 'Email' },
-          { id: 'phone', name: 'Phone', type: 'phone', required: false, description: 'Telefone' },
-          { id: 'position', name: 'Position', type: 'string', required: true, description: 'Cargo' },
-          { id: 'status', name: 'Status', type: 'select', required: true, description: 'Status' }
-        ]
-    }
-  }
-
-  const liaFields: SystemField[] = [
-    { id: 'candidate_id', name: 'ID do Candidato', type: 'string', required: true, description: 'Identificador único na LIA' },
-    { id: 'nome_completo', name: 'Nome Completo', type: 'string', required: true, description: 'Nome completo do candidato' },
-    { id: 'email_principal', name: 'Email Principal', type: 'email', required: true, description: 'Email principal de contato' },
-    { id: 'telefone_contato', name: 'Telefone', type: 'phone', required: false, description: 'Telefone principal' },
-    { id: 'cargo_pretendido', name: 'Cargo Pretendido', type: 'string', required: true, description: 'Posição desejada' },
-    { id: 'departamento_alvo', name: 'Departamento', type: 'string', required: false, description: 'Departamento de interesse' },
-    { id: 'anos_experiencia', name: 'Anos de Experiência', type: 'number', required: false, description: 'Total de anos de experiência' },
-    { id: 'url_curriculo', name: 'URL do Currículo', type: 'url', required: false, description: 'Link para o currículo' },
-    { id: 'data_candidatura', name: 'Data da Candidatura', type: 'date', required: true, description: 'Data de aplicação' },
-    { id: 'status_processo', name: 'Status do Processo', type: 'select', required: true, description: 'Situação atual no processo seletivo' },
-    { id: 'pretensao_salarial', name: 'Pretensão Salarial', type: 'number', required: false, description: 'Expectativa salarial em R$' },
-    { id: 'score_lia', name: 'Score LIA', type: 'number', required: false, description: 'Score de compatibilidade calculado pela LIA' }
-  ]
-
-  const systemFields = getSystemFields(system.type)
-
-  const mappingTemplates = [
-    {
-      id: 'standard',
-      name: 'Mapeamento Padrão',
-      description: 'Mapeamento básico para campos comuns',
-      mappings: [
-        { sourceField: 'candidate_id', targetField: 'candidate_id', confidence: 100 },
-        { sourceField: 'first_name', targetField: 'nome_completo', confidence: 90 },
-        { sourceField: 'email', targetField: 'email_principal', confidence: 100 },
-        { sourceField: 'phone', targetField: 'telefone_contato', confidence: 100 },
-        { sourceField: 'position_applied', targetField: 'cargo_pretendido', confidence: 95 }
-      ]
-    },
-    {
-      id: 'complete',
-      name: 'Mapeamento Completo',
-      description: 'Mapeamento abrangente incluindo campos opcionais',
-      mappings: [
-        { sourceField: 'candidate_id', targetField: 'candidate_id', confidence: 100 },
-        { sourceField: 'first_name', targetField: 'nome_completo', confidence: 90 },
-        { sourceField: 'email', targetField: 'email_principal', confidence: 100 },
-        { sourceField: 'phone', targetField: 'telefone_contato', confidence: 100 },
-        { sourceField: 'position_applied', targetField: 'cargo_pretendido', confidence: 95 },
-        { sourceField: 'department', targetField: 'departamento_alvo', confidence: 85 },
-        { sourceField: 'experience_years', targetField: 'anos_experiencia', confidence: 100 },
-        { sourceField: 'resume_url', targetField: 'url_curriculo', confidence: 100 },
-        { sourceField: 'application_date', targetField: 'data_candidatura', confidence: 100 },
-        { sourceField: 'current_status', targetField: 'status_processo', confidence: 90 },
-        { sourceField: 'salary_expectation', targetField: 'pretensao_salarial', confidence: 95 }
-      ]
-    }
-  ]
-
-  const handleTestConnection = async () => {
-    setConnectionStatus('testing')
-    setIsConnecting(true)
-
-    // Simular teste de conexão
-    setTimeout(() => {
-      setConnectionStatus('success')
-      setIsConnecting(false)
-    }, 3000)
-  }
-
-  const handleDragStart = (field: SystemField) => {
-    setDraggedField(field)
-  }
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-  }
-
-  const handleDrop = (e: React.DragEvent, targetField: SystemField) => {
-    e.preventDefault()
-    if (draggedField) {
-      const newMapping: FieldMapping = {
-        id: `${draggedField.id}_${targetField.id}`,
-        sourceField: draggedField.id,
-        targetField: targetField.id,
-        sourceFieldName: draggedField.name,
-        targetFieldName: targetField.name,
-        isActive: true,
-        confidence: calculateConfidence(draggedField, targetField)
-      }
-
-      // Remove mapeamento existente para o campo de destino
-      const updatedMappings = mappings.filter(m => m.targetField !== targetField.id)
-      setMappings([...updatedMappings, newMapping])
-    }
-    setDraggedField(null)
-  }
-
-  const calculateConfidence = (source: SystemField, target: SystemField): number => {
-    // Algoritmo simples de confiança baseado em similaridade de nomes e tipos
-    let confidence = 0
-
-    // Compatibilidade de tipos
-    if (source.type === target.type) confidence += 40
-    else if ((source.type === 'string' && target.type === 'email') ||
-             (source.type === 'email' && target.type === 'string')) confidence += 20
-
-    // Similaridade de nomes (simplificado)
-    const sourceName = source.name.toLowerCase()
-    const targetName = target.name.toLowerCase()
-
-    if (sourceName.includes('name') && targetName.includes('nome')) confidence += 30
-    if (sourceName.includes('email') && targetName.includes('email')) confidence += 40
-    if (sourceName.includes('phone') && targetName.includes('telefone')) confidence += 40
-    if (sourceName.includes('id') && targetName.includes('id')) confidence += 50
-
-    return Math.min(confidence, 100)
-  }
-
-  const applyTemplate = (templateId: string) => {
-    const template = mappingTemplates.find(t => t.id === templateId)
-    if (template) {
-      const newMappings: FieldMapping[] = template.mappings.map(m => ({
-        id: `${m.sourceField}_${m.targetField}`,
-        sourceField: m.sourceField,
-        targetField: m.targetField,
-        sourceFieldName: systemFields.find(f => f.id === m.sourceField)?.name || m.sourceField,
-        targetFieldName: liaFields.find(f => f.id === m.targetField)?.name || m.targetField,
-        isActive: true,
-        confidence: m.confidence
-      }))
-      setMappings(newMappings)
-      setSelectedTemplate(templateId)
-    }
-  }
-
-  const removeMapping = (mappingId: string) => {
-    setMappings(mappings.filter(m => m.id !== mappingId))
-  }
-
-  const getFieldTypeIcon = (type: string) => {
-    switch (type) {
-      case 'string': return '📝'
-      case 'email': return '📧'
-      case 'phone': return '📞'
-      case 'number': return '🔢'
-      case 'date': return '📅'
-      case 'url': return '🔗'
-      case 'select': return '📋'
-      default: return '❓'
-    }
-  }
-
-  const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 90) return 'text-status-success bg-status-success/10'
-    if (confidence >= 70) return 'text-status-warning bg-status-warning/10'
-    return 'text-status-error bg-status-error/10'
-  }
-
-  const renderConnectionTab = () => (
-    <div className="space-y-6">
-      {system.type === 'sap' && (
-        <>
-          <div>
-            <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">Configuração SAP SuccessFactors</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
-                  URL do Servidor
-                </label>
-                <input
-                  type="url"
-                  placeholder="https://api.successfactors.com/v2"
-                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
-                  Company ID
-                </label>
-                <input
-                  type="text"
-                  placeholder="SODEXO_BRASIL"
-                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
-                  Client ID
-                </label>
-                <input
-                  type="text"
-                  placeholder="sua-client-id"
-                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
-                  Client Secret
-                </label>
-                <input
-                  type="password"
-                  placeholder="••••••••••••••••"
-                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="border border-lia-border-subtle rounded-md p-4">
-            <h5 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-3">Módulos para Sincronização</h5>
-            <div className="grid grid-cols-2 gap-2">
-              {['Recruiting', 'Candidate Profile', 'Job Requisition', 'Interview', 'Offer Letter'].map(module => (
-                <label key={module} className="flex items-center gap-2">
-                  <input type="checkbox" defaultChecked className="rounded-md border-lia-border-default" />
-                  <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">{module}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
-
-      {system.type === 'workday' && (
-        <>
-          <div>
-            <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">Configuração Workday HCM</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
-                  Tenant URL
-                </label>
-                <input
-                  type="url"
-                  placeholder="https://wd2-impl-services1.workday.com"
-                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
-                  Username
-                </label>
-                <input
-                  type="text"
-                  placeholder="integration.user@tenant"
-                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  placeholder="••••••••••••••••"
-                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
-                />
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-
-      {system.type === 'bamboohr' && (
-        <>
-          <div>
-            <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">Configuração BambooHR</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
-                  Subdomain
-                </label>
-                <input
-                  type="text"
-                  placeholder="sua-empresa"
-                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
-                  API Key
-                </label>
-                <input
-                  type="password"
-                  placeholder="••••••••••••••••"
-                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
-                />
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-
-      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-md" role="status" aria-live="polite" aria-label="Carregando...">
-        <div className="flex items-center gap-3" role="status" aria-live="polite" aria-label="Carregando...">
-          {connectionStatus === 'idle' && <Wifi className="w-5 h-5 text-lia-text-secondary" />}
-          {connectionStatus === 'testing' && <RefreshCw className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />}
-          {connectionStatus === 'success' && <CheckCircle className="w-5 h-5 text-status-success" />}
-          {connectionStatus === 'error' && <XCircle className="w-5 h-5 text-status-error" />}
-
-          <div>
-            <p className="font-medium text-lia-text-primary dark:text-lia-text-primary">
-              {connectionStatus === 'idle' && 'Pronto para testar conexão'}
-              {connectionStatus === 'testing' && 'Testando conexão...'}
-              {connectionStatus === 'success' && 'Conexão estabelecida com sucesso!'}
-              {connectionStatus === 'error' && 'Erro na conexão - verifique as credenciais'}
-            </p>
-            <p className="text-sm text-lia-text-secondary">
-              {connectionStatus === 'idle' && 'Clique em "Testar Conexão" para validar as configurações'}
-              {connectionStatus === 'testing' && 'Verificando credenciais e conectividade...'}
-              {connectionStatus === 'success' && 'Sistema pronto para sincronização'}
-              {connectionStatus === 'error' && 'Verifique as credenciais e tente novamente'}
-            </p>
-          </div>
-        </div>
-
-        <Button
-          onClick={handleTestConnection}
-          disabled={isConnecting}
-          className="gap-2"
-        >
-          {isConnecting ? (
-            <>
-              <RefreshCw className="w-4 h-4 animate-spin motion-reduce:animate-none" />
-              Testando...
-            </>
-          ) : (
-            <>
-              <Zap className="w-4 h-4" />
-              Testar Conexão
-            </>
-          )}
-        </Button>
-      </div>
-    </div>
-  )
-
-  const renderMappingTab = () => (
-    <div className="space-y-6">
-      {/* Template Selection */}
-      <div>
-        <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">Templates de Mapeamento</h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          {mappingTemplates.map(template => (
-            <div
-              key={template.id}
-              className={`p-4 border rounded-md cursor-pointer transition-colors motion-reduce:transition-none ${
-                selectedTemplate === template.id
-                  ? 'border-gray-900 dark:border-lia-border-medium bg-gray-100 dark:bg-lia-bg-secondary'
-                  : 'border-lia-border-subtle hover:border-lia-border-default'
-              }`}
-              onClick={() => applyTemplate(template.id)}
-            >
-              <h5 className="font-medium text-lia-text-primary dark:text-lia-text-primary">{template.name}</h5>
-              <p className="text-sm text-lia-text-secondary mt-1">{template.description}</p>
-              <p className="text-xs text-lia-text-secondary mt-2">{template.mappings.length} campos mapeados</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Field Mapping Interface */}
-      <div>
-        <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">Mapeamento de Campos</h4>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Source Fields */}
-          <div>
-            <h5 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-3 flex items-center gap-2">
-              <Server className="w-4 h-4" />
-              {system.name} (Origem)
-            </h5>
-            <div className="space-y-2 max-h-96 overflow-y-auto border border-lia-border-subtle rounded-md p-3">
-              {systemFields.map(field => {
-                const isMapped = mappings.some(m => m.sourceField === field.id)
-                return (
-                  <div
-                    key={field.id}
-                    draggable
-                    onDragStart={() => handleDragStart(field)}
-                    className={`p-3 border rounded-md cursor-move transition-colors motion-reduce:transition-none ${
-                      isMapped
-                        ? 'border-status-success/30 bg-status-success/10'
-                        : 'border-lia-border-subtle bg-lia-bg-primary hover:border-gray-900 dark:hover:border-gray-50 hover:'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs">{getFieldTypeIcon(field.type)}</span>
-                        <div>
-                          <p className="font-medium text-lia-text-primary dark:text-lia-text-primary text-sm">{field.name}</p>
-                          <p className="text-xs text-lia-text-secondary">{field.description}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        {field.required && (
-                          <span className="text-xs bg-status-error/15 text-status-error px-1.5 py-0.5 rounded-md" aria-live="polite">
-                            Obrigatório
-                          </span>
-                        )}
-                        {isMapped && (
-                          <CheckCircle className="w-4 h-4 text-status-success" />
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Target Fields */}
-          <div>
-            <h5 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-3 flex items-center gap-2">
-              <Database className="w-4 h-4" />
-              Plataforma LIA (Destino)
-            </h5>
-            <div className="space-y-2 max-h-96 overflow-y-auto border border-lia-border-subtle rounded-md p-3">
-              {liaFields.map(field => {
-                const mapping = mappings.find(m => m.targetField === field.id)
-                return (
-                  <div
-                    key={field.id}
-                    onDragOver={handleDragOver}
-                    onDrop={(e) => handleDrop(e, field)}
-                    className={`p-3 border rounded-md transition-colors motion-reduce:transition-none min-h-[60px] ${
-                      mapping
-                        ? 'border-lia-border-default dark:border-lia-border-default bg-gray-100 dark:bg-lia-bg-secondary'
-                        : 'border-dashed border-lia-border-default bg-gray-50 hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-100 dark:bg-lia-bg-secondary'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs">{getFieldTypeIcon(field.type)}</span>
-                        <div>
-                          <p className="font-medium text-lia-text-primary dark:text-lia-text-primary text-sm">{field.name}</p>
-                          <p className="text-xs text-lia-text-secondary">{field.description}</p>
-                          {mapping && (
-                            <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-1">
-                              ← Mapeado de: {mapping.sourceFieldName}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {field.required && (
-                          <span className="text-xs bg-status-error/15 text-status-error px-1.5 py-0.5 rounded-md" aria-live="polite">
-                            Obrigatório
-                          </span>
-                        )}
-                        {mapping && (
-                          <div className="flex items-center gap-1">
-                            <span className={`text-xs px-2 py-1 rounded-md ${getConfidenceColor(mapping.confidence)}`}>
-                              {mapping.confidence}%
-                            </span>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => removeMapping(mapping.id)}
-                              className="h-6 w-6 p-0 hover:bg-status-error/15"
-                            >
-                              <XCircle className="w-3 h-3 text-status-error" />
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Mapping Summary */}
-      {mappings.length > 0 && (
-        <div className="border border-lia-border-subtle rounded-md p-4">
-          <h5 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-3">Resumo do Mapeamento</h5>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">{mappings.length}</p>
-              <p className="text-sm text-lia-text-secondary">Campos Mapeados</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-status-success">
-                {mappings.filter(m => m.confidence >= 90).length}
-              </p>
-              <p className="text-sm text-lia-text-secondary">Alta Confiança (≥90%)</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-wedo-orange">
-                {liaFields.filter(f => f.required && !mappings.some(m => m.targetField === f.id)).length}
-              </p>
-              <p className="text-sm text-lia-text-secondary">Obrigatórios Pendentes</p>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            {mappings.map(mapping => (
-              <div key={mapping.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
-                <span className="text-sm">
-                  <span className="font-medium">{mapping.sourceFieldName}</span>
-                  <ArrowRight className="w-4 h-4 inline mx-2" />
-                  <span className="font-medium">{mapping.targetFieldName}</span>
-                </span>
-                <div className="flex items-center gap-2">
-                  <span className={`text-xs px-2 py-1 rounded-md ${getConfidenceColor(mapping.confidence)}`}>
-                    {mapping.confidence}%
-                  </span>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => removeMapping(mapping.id)}
-                    className="h-6 w-6 p-0"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Instructions */}
-      <div className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md p-4">
-        <h5 className="font-medium text-lia-text-secondary dark:text-lia-text-secondary mb-2">Como usar o mapeamento:</h5>
-        <ul className="text-sm text-lia-text-secondary dark:text-lia-text-secondary space-y-1">
-          <li>• Arraste campos da origem para os campos de destino correspondentes</li>
-          <li>• Use templates pré-configurados para mapeamentos comuns</li>
-          <li>• Verifique a porcentagem de confiança de cada mapeamento</li>
-          <li>• Certifique-se de mapear todos os campos obrigatórios (marcados em vermelho)</li>
-          <li>• Clique no X para remover mapeamentos incorretos</li>
-        </ul>
-      </div>
-    </div>
-  )
-
-  const renderSyncTab = () => (
-    <div className="text-center py-12">
-      <RefreshCw className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
-      <h3 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Configuração de Sincronização</h3>
-      <p className="text-lia-text-secondary">Configurações de frequência e filtros em desenvolvimento</p>
-    </div>
-  )
-
-  const renderWebhooksTab = () => (
-    <div className="text-center py-12">
-      <Zap className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
-      <h3 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Configuração de Webhooks</h3>
-      <p className="text-lia-text-secondary">Sistema de eventos em tempo real em desenvolvimento</p>
-    </div>
-  )
+  const {
+    selectedTab, setSelectedTab,
+    isConnecting, connectionStatus, handleTestConnection,
+    mappings, draggedField, selectedTemplate,
+    systemFields, liaFields, mappingTemplates,
+    handleDragStart, handleDragOver, handleDrop,
+    applyTemplate, removeMapping,
+    getFieldTypeIcon, getConfidenceColor
+  } = useSystemModal(system)
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -1481,23 +509,23 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b bg-gray-50">
+        <div className="flex border-b bg-lia-bg-secondary">
           {[
-            { id: 'connection', label: 'Conexão', icon: Link2 },
-            { id: 'mapping', label: 'Mapeamento', icon: GitBranch },
-            { id: 'sync', label: 'Sincronização', icon: RefreshCw },
-            { id: 'webhooks', label: 'Webhooks', icon: Zap }
+            { id: 'connection' as const, label: 'Conexão', Icon: Link2 },
+            { id: 'mapping' as const, label: 'Mapeamento', Icon: GitBranch },
+            { id: 'sync' as const, label: 'Sincronização', Icon: RefreshCw },
+            { id: 'webhooks' as const, label: 'Webhooks', Icon: Zap }
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => setSelectedTab(tab.id as Parameters<typeof setSelectedTab>[0])}
+              onClick={() => setSelectedTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors motion-reduce:transition-none ${
                 selectedTab === tab.id
-                  ? 'border-gray-900 dark:border-lia-border-medium text-lia-text-secondary dark:text-lia-text-tertiary bg-lia-bg-primary'
+                  ? 'border-lia-border-strong text-lia-text-primary bg-lia-bg-primary'
                   : 'border-transparent text-lia-text-secondary hover:text-lia-text-primary'
               }`}
             >
-              <tab.icon className="w-4 h-4" />
+              <tab.Icon className="w-4 h-4" />
               {tab.label}
             </button>
           ))}
@@ -1505,17 +533,362 @@ function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalP
 
         {/* Tab Content */}
         <div className="flex-1 p-6 overflow-y-auto">
-          {selectedTab === 'connection' && renderConnectionTab()}
-          {selectedTab === 'mapping' && renderMappingTab()}
-          {selectedTab === 'sync' && renderSyncTab()}
-          {selectedTab === 'webhooks' && renderWebhooksTab()}
+          {selectedTab === 'connection' && (
+            <div className="space-y-6">
+              {system.type === 'sap' && (
+                <>
+                  <div>
+                    <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">Configuração SAP SuccessFactors</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {[
+                        { label: 'URL do Servidor', type: 'url', placeholder: 'https://api.successfactors.com/v2' },
+                        { label: 'Company ID', type: 'text', placeholder: 'SODEXO_BRASIL' },
+                        { label: 'Client ID', type: 'text', placeholder: 'sua-client-id' },
+                        { label: 'Client Secret', type: 'password', placeholder: '••••••••••••••••' }
+                      ].map(field => (
+                        <div key={field.label}>
+                          <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">{field.label}</label>
+                          <input type={field.type} placeholder={field.placeholder} className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-lia-border-strong/20 focus:border-lia-border-strong" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="border border-lia-border-subtle rounded-md p-4">
+                    <h5 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-3">Módulos para Sincronização</h5>
+                    <div className="grid grid-cols-2 gap-2">
+                      {['Recruiting', 'Candidate Profile', 'Job Requisition', 'Interview', 'Offer Letter'].map(module => (
+                        <label key={module} className="flex items-center gap-2">
+                          <input type="checkbox" defaultChecked className="rounded-md border-lia-border-default" />
+                          <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">{module}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+              {system.type === 'workday' && (
+                <div>
+                  <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">Configuração Workday HCM</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {[
+                      { label: 'Tenant URL', type: 'url', placeholder: 'https://wd2-impl-services1.workday.com', span: false },
+                      { label: 'Username', type: 'text', placeholder: 'integration.user@tenant', span: false },
+                      { label: 'Password', type: 'password', placeholder: '••••••••••••••••', span: true }
+                    ].map(field => (
+                      <div key={field.label} className={field.span ? 'md:col-span-2' : ''}>
+                        <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">{field.label}</label>
+                        <input type={field.type} placeholder={field.placeholder} className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-lia-border-strong/20 focus:border-lia-border-strong" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {system.type === 'bamboohr' && (
+                <div>
+                  <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">Configuração BambooHR</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {[
+                      { label: 'Subdomain', type: 'text', placeholder: 'sua-empresa' },
+                      { label: 'API Key', type: 'password', placeholder: '••••••••••••••••' }
+                    ].map(field => (
+                      <div key={field.label}>
+                        <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">{field.label}</label>
+                        <input type={field.type} placeholder={field.placeholder} className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-lia-border-strong/20 focus:border-lia-border-strong" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between p-4 bg-lia-bg-secondary rounded-md" role="status" aria-live="polite" aria-label="Status da conexão">
+                <div className="flex items-center gap-3">
+                  {connectionStatus === 'idle' && <Wifi className="w-5 h-5 text-lia-text-secondary" />}
+                  {connectionStatus === 'testing' && <RefreshCw className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />}
+                  {connectionStatus === 'success' && <CheckCircle className="w-5 h-5 text-status-success" />}
+                  {connectionStatus === 'error' && <XCircle className="w-5 h-5 text-status-error" />}
+                  <div>
+                    <p className="font-medium text-lia-text-primary dark:text-lia-text-primary">
+                      {connectionStatus === 'idle' && 'Pronto para testar conexão'}
+                      {connectionStatus === 'testing' && 'Testando conexão...'}
+                      {connectionStatus === 'success' && 'Conexão estabelecida com sucesso!'}
+                      {connectionStatus === 'error' && 'Erro na conexão - verifique as credenciais'}
+                    </p>
+                    <p className="text-sm text-lia-text-secondary">
+                      {connectionStatus === 'idle' && 'Clique em "Testar Conexão" para validar as configurações'}
+                      {connectionStatus === 'testing' && 'Verificando credenciais e conectividade...'}
+                      {connectionStatus === 'success' && 'Sistema pronto para sincronização'}
+                      {connectionStatus === 'error' && 'Verifique as credenciais e tente novamente'}
+                    </p>
+                  </div>
+                </div>
+                <Button onClick={handleTestConnection} disabled={isConnecting} className="gap-2">
+                  {isConnecting ? (<><RefreshCw className="w-4 h-4 animate-spin motion-reduce:animate-none" />Testando...</>) : (<><Zap className="w-4 h-4" />Testar Conexão</>)}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {selectedTab === 'mapping' && (
+            <div className="space-y-6">
+              <div>
+                <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">Templates de Mapeamento</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  {mappingTemplates.map(template => (
+                    <div
+                      key={template.id}
+                      className={`p-4 border rounded-md cursor-pointer transition-colors motion-reduce:transition-none ${
+                        selectedTemplate === template.id
+                          ? 'border-lia-border-strong bg-lia-bg-secondary'
+                          : 'border-lia-border-subtle hover:border-lia-border-default'
+                      }`}
+                      onClick={() => applyTemplate(template.id)}
+                    >
+                      <h5 className="font-medium text-lia-text-primary dark:text-lia-text-primary">{template.name}</h5>
+                      <p className="text-sm text-lia-text-secondary mt-1">{template.description}</p>
+                      <p className="text-xs text-lia-text-secondary mt-2">{template.mappings.length} campos mapeados</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">Mapeamento de Campos</h4>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Source Fields */}
+                  <div>
+                    <h5 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-3 flex items-center gap-2">
+                      <Server className="w-4 h-4" />{system.name} (Origem)
+                    </h5>
+                    <div className="space-y-2 max-h-96 overflow-y-auto border border-lia-border-subtle rounded-md p-3">
+                      {systemFields.map(field => {
+                        const isMapped = mappings.some(m => m.sourceField === field.id)
+                        return (
+                          <div
+                            key={field.id}
+                            draggable
+                            onDragStart={() => handleDragStart(field)}
+                            className={`p-3 border rounded-md cursor-move transition-colors motion-reduce:transition-none ${
+                              isMapped ? 'border-status-success/30 bg-status-success/10' : 'border-lia-border-subtle bg-lia-bg-primary hover:border-lia-border-strong'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs">{getFieldTypeIcon(field.type)}</span>
+                                <div>
+                                  <p className="font-medium text-lia-text-primary dark:text-lia-text-primary text-sm">{field.name}</p>
+                                  <p className="text-xs text-lia-text-secondary">{field.description}</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                {field.required && <span className="text-xs bg-status-error/15 text-status-error px-1.5 py-0.5 rounded-md" aria-live="polite">Obrigatório</span>}
+                                {isMapped && <CheckCircle className="w-4 h-4 text-status-success" />}
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Target Fields */}
+                  <div>
+                    <h5 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-3 flex items-center gap-2">
+                      <Database className="w-4 h-4" />Plataforma LIA (Destino)
+                    </h5>
+                    <div className="space-y-2 max-h-96 overflow-y-auto border border-lia-border-subtle rounded-md p-3">
+                      {liaFields.map(field => {
+                        const mapping = mappings.find(m => m.targetField === field.id)
+                        return (
+                          <div
+                            key={field.id}
+                            onDragOver={handleDragOver}
+                            onDrop={(e) => handleDrop(e, field)}
+                            className={`p-3 border rounded-md transition-colors motion-reduce:transition-none min-h-[60px] ${
+                              mapping
+                                ? 'border-lia-border-default bg-lia-bg-secondary'
+                                : 'border-dashed border-lia-border-default bg-lia-bg-tertiary hover:border-lia-border-strong hover:bg-lia-bg-secondary'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs">{getFieldTypeIcon(field.type)}</span>
+                                <div>
+                                  <p className="font-medium text-lia-text-primary dark:text-lia-text-primary text-sm">{field.name}</p>
+                                  <p className="text-xs text-lia-text-secondary">{field.description}</p>
+                                  {mapping && <p className="text-xs text-lia-text-tertiary mt-1">← Mapeado de: {mapping.sourceFieldName}</p>}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {field.required && <span className="text-xs bg-status-error/15 text-status-error px-1.5 py-0.5 rounded-md" aria-live="polite">Obrigatório</span>}
+                                {mapping && (
+                                  <div className="flex items-center gap-1">
+                                    <span className={`text-xs px-2 py-1 rounded-md ${getConfidenceColor(mapping.confidence)}`}>{mapping.confidence}%</span>
+                                    <Button size="sm" variant="ghost" onClick={() => removeMapping(mapping.id)} className="h-6 w-6 p-0 hover:bg-status-error/15">
+                                      <XCircle className="w-3 h-3 text-status-error" />
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {mappings.length > 0 && (
+                <div className="border border-lia-border-subtle rounded-md p-4">
+                  <h5 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-3">Resumo do Mapeamento</h5>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">{mappings.length}</p>
+                      <p className="text-sm text-lia-text-secondary">Campos Mapeados</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-status-success">{mappings.filter(m => m.confidence >= 90).length}</p>
+                      <p className="text-sm text-lia-text-secondary">Alta Confiança (≥90%)</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-wedo-orange">{liaFields.filter(f => f.required && !mappings.some(m => m.targetField === f.id)).length}</p>
+                      <p className="text-sm text-lia-text-secondary">Obrigatórios Pendentes</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    {mappings.map(mapping => (
+                      <div key={mapping.id} className="flex items-center justify-between p-2 bg-lia-bg-secondary rounded-md">
+                        <span className="text-sm">
+                          <span className="font-medium">{mapping.sourceFieldName}</span>
+                          <ArrowRight className="w-4 h-4 inline mx-2" />
+                          <span className="font-medium">{mapping.targetFieldName}</span>
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-xs px-2 py-1 rounded-md ${getConfidenceColor(mapping.confidence)}`}>{mapping.confidence}%</span>
+                          <Button size="sm" variant="ghost" onClick={() => removeMapping(mapping.id)} className="h-6 w-6 p-0">
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="bg-lia-bg-secondary border border-lia-border-default rounded-md p-4">
+                <h5 className="font-medium text-lia-text-secondary dark:text-lia-text-secondary mb-2">Como usar o mapeamento:</h5>
+                <ul className="text-sm text-lia-text-secondary dark:text-lia-text-secondary space-y-1">
+                  <li>• Arraste campos da origem para os campos de destino correspondentes</li>
+                  <li>• Use templates pré-configurados para mapeamentos comuns</li>
+                  <li>• Verifique a porcentagem de confiança de cada mapeamento</li>
+                  <li>• Certifique-se de mapear todos os campos obrigatórios (marcados em vermelho)</li>
+                  <li>• Clique no X para remover mapeamentos incorretos</li>
+                </ul>
+              </div>
+            </div>
+          )}
+
+          {selectedTab === 'sync' && (
+            <div className="text-center py-12">
+              <RefreshCw className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
+              <h3 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Configuração de Sincronização</h3>
+              <p className="text-lia-text-secondary">Configurações de frequência e filtros em desenvolvimento</p>
+            </div>
+          )}
+
+          {selectedTab === 'webhooks' && (
+            <div className="text-center py-12">
+              <Zap className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
+              <h3 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Configuração de Webhooks</h3>
+              <p className="text-lia-text-secondary">Sistema de eventos em tempo real em desenvolvimento</p>
+            </div>
+          )}
         </div>
 
-        {/* Actions */}
         <div className="flex justify-end gap-2 p-6 border-t">
           <Button variant="outline" onClick={onClose}>Cancelar</Button>
           <Button>Salvar Configuração</Button>
         </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Main Page ─────────────────────────────────────────────────────────────────
+export function ATSIntegrationsPage() {
+  const {
+    selectedView, setSelectedView,
+    selectedSystem, showSystemModal,
+    openSystemModal, closeSystemModal,
+    atsSystems, integrations, syncLogs,
+    getStatusColor
+  } = useAtsIntegrations()
+
+  return (
+    <div className="p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
+                <Link2 className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                Integrações ATS Enterprise
+              </h1>
+              <p className="text-sm text-lia-text-secondary">Conecte e sincronize dados com sistemas HR externos</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button variant="outline" className="gap-2"><Download className="w-4 h-4" />Exportar Logs</Button>
+              <Button variant="outline" className="gap-2"><RefreshCw className="w-4 h-4" />Sincronizar Tudo</Button>
+              <Button className="gap-2"><Plus className="w-4 h-4" />Nova Integração</Button>
+            </div>
+          </div>
+
+          {/* Navigation Tabs */}
+          <div className="flex space-x-1 bg-lia-bg-secondary p-1 rounded-md w-fit">
+            {[
+              { id: 'overview' as const, label: 'Visão Geral', Icon: BarChart3 },
+              { id: 'systems' as const, label: 'Sistemas', Icon: Server },
+              { id: 'integrations' as const, label: 'Integrações', Icon: Settings },
+              { id: 'logs' as const, label: 'Logs', Icon: FileText }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setSelectedView(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none ${
+                  selectedView === tab.id
+                    ? 'bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary'
+                    : 'text-lia-text-secondary hover:text-lia-text-primary'
+                }`}
+              >
+                <tab.Icon className="w-4 h-4" />
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Content */}
+        {selectedView === 'overview' && (
+          <OverviewView
+            atsSystems={atsSystems}
+            integrations={integrations}
+            syncLogs={syncLogs}
+            getStatusColor={getStatusColor}
+            setSelectedView={setSelectedView}
+            openSystemModal={openSystemModal}
+          />
+        )}
+        {selectedView === 'systems' && (
+          <SystemsView atsSystems={atsSystems} getStatusColor={getStatusColor} openSystemModal={openSystemModal} />
+        )}
+        {selectedView === 'integrations' && <IntegrationsView integrations={integrations} />}
+        {selectedView === 'logs' && <LogsView syncLogs={syncLogs} />}
+
+        {/* System Configuration Modal */}
+        {showSystemModal && selectedSystem && (
+          <SystemConfigurationModal system={selectedSystem} onClose={closeSystemModal} />
+        )}
       </div>
     </div>
   )
