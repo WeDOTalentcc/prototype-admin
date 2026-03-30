@@ -1,6 +1,6 @@
-'use client'
+use client
 
-import { useState, useEffect, useCallback } from 'react'
+import useSWR from swr
 
 interface AiCreditsBalance {
   id: string
@@ -51,78 +51,73 @@ interface UseAiConsumptionHistoryReturn {
   error: string | null
 }
 
+const jsonFetcher = (url: string) =>
+  fetch(url).then(r => {
+    if (!r.ok) throw new Error()
+    return r.json()
+  })
+
 export function useAiCredits(): UseAiCreditsReturn {
-  const [balance, setBalance] = useState<AiCreditsBalance | null>(null)
-  const [summary, setSummary] = useState<UsageSummary | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const {
+    data: balance,
+    error: balanceError,
+    isLoading: balanceLoading,
+    mutate: mutateBalance,
+  } = useSWR<AiCreditsBalance>(/api/backend-proxy/ai-credits?endpoint=balance, jsonFetcher)
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const [balanceRes, summaryRes] = await Promise.all([
-        fetch('/api/backend-proxy/ai-credits?endpoint=balance'),
-        fetch('/api/backend-proxy/ai-credits?endpoint=summary'),
-      ])
+  const {
+    data: summary,
+    error: summaryError,
+    isLoading: summaryLoading,
+    mutate: mutateSummary,
+  } = useSWR<UsageSummary>(/api/backend-proxy/ai-credits?endpoint=summary, jsonFetcher)
 
-      if (balanceRes.ok) {
-        const data = await balanceRes.json()
-        setBalance(data)
-      }
+  const error = balanceError?.message ?? summaryError?.message ?? null
 
-      if (summaryRes.ok) {
-        const data = await summaryRes.json()
-        setSummary(data)
-      }
-    } catch (err) {
-      setError('Falha ao carregar dados de consumo de IA')
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    fetchData()
-  }, [fetchData])
-
-  return { balance, summary, isLoading, error, refetch: fetchData }
+  return {
+    balance: balance ?? null,
+    summary: summary ?? null,
+    isLoading: balanceLoading || summaryLoading,
+    error,
+    refetch: async () => {
+      await Promise.all([mutateBalance(), mutateSummary()])
+    },
+  }
 }
 
 export function useAiConsumptionHistory(days: number = 30): UseAiConsumptionHistoryReturn {
-  const [byDay, setByDay] = useState<DailyUsage[]>([])
-  const [byAgent, setByAgent] = useState<AgentUsage[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const {
+    data: dayData,
+    error: dayError,
+    isLoading: dayLoading,
+  } = useSWR<{ usage_by_day?: DailyUsage[] } | DailyUsage[]>(
+    ,
+    jsonFetcher
+  )
 
-  useEffect(() => {
-    const fetchHistory = async () => {
-      setIsLoading(true)
-      setError(null)
-      try {
-        const [dayRes, agentRes] = await Promise.all([
-          fetch(`/api/backend-proxy/ai-credits?endpoint=by-day&days=${days}`),
-          fetch('/api/backend-proxy/ai-credits?endpoint=by-agent'),
-        ])
+  const {
+    data: agentData,
+    error: agentError,
+    isLoading: agentLoading,
+  } = useSWR<{ usage_by_agent?: AgentUsage[] } | AgentUsage[]>(
+    /api/backend-proxy/ai-credits?endpoint=by-agent,
+    jsonFetcher
+  )
 
-        if (dayRes.ok) {
-          const data = await dayRes.json()
-          setByDay(data.usage_by_day || data || [])
-        }
+  const byDay: DailyUsage[] = Array.isArray(dayData)
+    ? dayData
+    : (dayData as { usage_by_day?: DailyUsage[] })?.usage_by_day ?? []
 
-        if (agentRes.ok) {
-          const data = await agentRes.json()
-          setByAgent(data.usage_by_agent || data || [])
-        }
-      } catch (err) {
-        setError('Falha ao carregar histórico de consumo de IA')
-      } finally {
-        setIsLoading(false)
-      }
-    }
+  const byAgent: AgentUsage[] = Array.isArray(agentData)
+    ? agentData
+    : (agentData as { usage_by_agent?: AgentUsage[] })?.usage_by_agent ?? []
 
-    fetchHistory()
-  }, [days])
+  const error = dayError?.message ?? agentError?.message ?? null
 
-  return { byDay, byAgent, isLoading, error }
+  return {
+    byDay,
+    byAgent,
+    isLoading: dayLoading || agentLoading,
+    error,
+  }
 }

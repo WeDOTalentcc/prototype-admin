@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import useSWR from swr
 
 interface Company {
   id: string
@@ -17,41 +17,24 @@ interface UseCurrentCompanyReturn {
   refetch: () => Promise<void>
 }
 
+const jsonFetcher = (url: string) =>
+  fetch(url).then(r => {
+    if (!r.ok) throw new Error()
+    return r.json()
+  })
+
 export function useCurrentCompany(): UseCurrentCompanyReturn {
-  const [company, setCompany] = useState<Company | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const fetchCompany = useCallback(async (signal?: AbortSignal) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const response = await fetch('/api/backend-proxy/company/profile', { signal })
-      if (response.ok) {
-        const data = await response.json()
-        setCompany(data)
-      } else {
-        setError('Não foi possível carregar dados da empresa')
-      }
-    } catch (err) {
-      if (err instanceof Error && err.name === 'AbortError') return
-      setError('Erro ao carregar empresa')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    const controller = new AbortController()
-    fetchCompany(controller.signal)
-    return () => controller.abort()
-  }, [fetchCompany])
+  const { data, error, isLoading, mutate } = useSWR<Company>(
+    /api/backend-proxy/company/profile,
+    jsonFetcher,
+    { revalidateOnFocus: false }
+  )
 
   return {
-    company,
-    companyId: company?.id || null,
-    loading,
-    error,
-    refetch: fetchCompany
+    company: data ?? null,
+    companyId: data?.id ?? null,
+    loading: isLoading,
+    error: error?.message ?? null,
+    refetch: () => mutate(),
   }
 }
