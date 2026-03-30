@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
-  Phone, Video, MessageSquare, X, Brain, RefreshCw, Building, Users
+  Phone, Video, MessageSquare, X, Brain, RefreshCw, Building, Users, Info, Download, Calendar
 } from "lucide-react"
 import { liaApi } from "@/services/lia-api"
 import { textStyles, cardStyles } from "@/lib/design-tokens"
@@ -43,6 +43,8 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
   const [isLiaAnalyzing, setIsLiaAnalyzing] = useState(false)
   const [liaFocus, setLiaFocus] = useState<'technical' | 'behavioral' | 'cultural' | 'comprehensive'>('comprehensive')
 
+  const [isScheduling, setIsScheduling] = useState(false)
+  const [createdInterviewId, setCreatedInterviewId] = useState<string | null>(null)
   if (!isOpen || !candidate) return null
 
   const interviewTypes = [
@@ -234,8 +236,6 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
     }
   }
 
-  const [isScheduling, setIsScheduling] = useState(false)
-  const [createdInterviewId, setCreatedInterviewId] = useState<string | null>(null)
 
   const handleSchedule = async () => {
     setIsScheduling(true)

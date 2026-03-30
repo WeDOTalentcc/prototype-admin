@@ -213,7 +213,7 @@ export function LIASearchSidebar({
       style={{width: isLiaSuperChat ? 'auto' : `${liaWidth}px`,
         maxWidth: isLiaSuperChat ? 'none' : `${liaWidth}px`}}
     >
-      <Card className="h-[calc(100vh-9rem)] flex flex-col overflow-hidden border border-lia-border-default bg-white dark:bg-lia-bg-secondary">
+      <Card className="h-full flex flex-col overflow-hidden border border-lia-border-default bg-white dark:bg-lia-bg-secondary">
         {/* Header do Prompt Expandido - Design Specs v3.1 */}
         <div className="flex-shrink-0 px-4 py-3 bg-white dark:bg-lia-bg-secondary">
           <div className="flex items-center justify-between gap-3">
@@ -282,12 +282,11 @@ export function LIASearchSidebar({
 
           {/* ABA 1: IA NATURAL - Chat Format */}
           {activeSearchTab === 'ia-natural' && (
-            <div className="flex flex-col flex-1 overflow-hidden">
+            <div className="flex flex-col flex-1 min-h-0">
               {/* Área de Chat - Histórico de Mensagens */}
               <div
                 ref={chatScrollRef}
-                className="flex-1 overflow-y-auto space-y-3 mb-4"
-                style={{maxHeight: 'calc(100% - 80px)'}}
+                className="flex-1 overflow-y-auto space-y-3 min-h-0"
               >
                 {/* Resultado da Busca (como resposta da LIA) - PRIMEIRO cronologicamente */}
                 {searchResults.query && (

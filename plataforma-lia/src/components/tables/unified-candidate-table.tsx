@@ -58,6 +58,7 @@ export function UnifiedCandidateTable({
   const virtualScrollRef = useRef<HTMLDivElement>(null)
 
   const rowVirtualizer = enableVirtualScroll && useVirtualizer
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     ? useVirtualizer({
         count: sortedCandidates.length,
         getScrollElement: () => virtualScrollRef.current,

@@ -73,6 +73,9 @@ export function BulkSelectionBar({
   className,
   showSecondaryActions = true,
 }: BulkSelectionBarProps) {
+  const handleAction = useCallback((actionId: BulkActionType) => {
+    onAction(actionId)
+  }, [onAction])
   if (selectedCount === 0) {
     return null
   }
@@ -80,9 +83,6 @@ export function BulkSelectionBar({
   const primaryActions = actions.slice(0, 3)
   const secondaryActions = actions.slice(3)
   
-  const handleAction = useCallback((actionId: BulkActionType) => {
-    onAction(actionId)
-  }, [onAction])
 
   return (
     <div 

@@ -108,14 +108,14 @@ export function InlineChatPanel({
   liaInlineMessagesEndRef,
   onAddRecentItem,
 }: InlineChatPanelProps) {
-  if (!showExpandedLIA && !showInlineChat) return null
-
-  // Internal state — only used within this panel
   const [activeSearchTab, setActiveSearchTab] = useState<"ia-natural" | "job-description" | "templates">("ia-natural")
   const [jobDescriptionText, setJobDescriptionText] = useState("")
   const [isUploadingJD, setIsUploadingJD] = useState(false)
   const [jdUploadError, setJdUploadError] = useState<string | null>(null)
   const jdFileInputRef = useRef<HTMLInputElement>(null)
+  if (!showExpandedLIA && !showInlineChat) return null
+
+  // Internal state — only used within this panel
 
   const handleJDFileUpload = async (file: File) => {
     setIsUploadingJD(true)
