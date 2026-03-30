@@ -104,7 +104,7 @@ export function LIAQuestionsPanel({ open, onClose }: LIAQuestionsPanelProps) {
                   Como você priorizaria funcionalidades em um MVP usando a matriz de esforço vs impacto?
                 </h4>
                 <div className="flex items-center gap-2">
-                  <Badge className="bg-gray-900 text-white dark:bg-gray-200 dark:text-lia-text-disabled text-xs">Alta Relevância</Badge>
+                  <Badge className="bg-gray-900 text-white dark:bg-lia-bg-tertiary dark:text-lia-text-primary text-xs">Alta Relevância</Badge>
                   <Badge className="bg-gray-100 text-lia-text-primary dark:text-lia-text-primary text-xs">3 min</Badge>
                 </div>
               </div>

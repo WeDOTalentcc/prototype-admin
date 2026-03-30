@@ -524,7 +524,7 @@ export function JobPreviewPanel({
                         </div>
 
                         {/* Pipeline LIA */}
-                        <div className="bg-gray-100 dark:bg-gray-750 rounded-md p-3 border border-lia-border-default dark:border-lia-border-default">
+                        <div className="bg-gray-100 dark:bg-lia-bg-elevated rounded-md p-3 border border-lia-border-default dark:border-lia-border-default">
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Pipeline LIA</span>
                             <TrendingUp className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary" />
@@ -552,7 +552,7 @@ export function JobPreviewPanel({
                         </div>
 
                         {/* Taxa de Conclusão */}
-                        <div className="bg-gray-100 dark:bg-gray-750 rounded-md p-3 border border-lia-border-default dark:border-lia-border-default">
+                        <div className="bg-gray-100 dark:bg-lia-bg-elevated rounded-md p-3 border border-lia-border-default dark:border-lia-border-default">
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Taxa de Conclusão</span>
                             <CheckCircle className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary" />
@@ -601,7 +601,7 @@ export function JobPreviewPanel({
                                   const triagensAgendadas = previewJob.liaMetrics?.triagens_agendadas ?? 0
                                   const widthPercent = pipelineLia > 0 ? (triagensAgendadas / pipelineLia) * 100 : 0
                                   return (
-                                    <div className="bg-gray-500 dark:bg-gray-400 h-3 rounded-full flex items-center justify-end pr-1"
+                                    <div className="bg-gray-500 dark:bg-lia-text-secondary h-3 rounded-full flex items-center justify-end pr-1"
                                          style={{width: `${Math.min(widthPercent, 100)}%`}}>
                                       <span className="text-xs text-white font-medium">{triagensAgendadas}</span>
                                     </div>
@@ -628,7 +628,7 @@ export function JobPreviewPanel({
                                   const triagensRealizadas = previewJob.liaMetrics?.triagens_realizadas ?? 0
                                   const widthPercent = pipelineLia > 0 ? (triagensRealizadas / pipelineLia) * 100 : 0
                                   return (
-                                    <div className="bg-gray-600 dark:bg-gray-300 h-3 rounded-full flex items-center justify-end pr-1"
+                                    <div className="bg-gray-600 dark:bg-lia-text-tertiary h-3 rounded-full flex items-center justify-end pr-1"
                                          style={{width: `${Math.min(widthPercent, 100)}%`}}>
                                       <span className="text-xs text-white dark:text-lia-text-primary font-medium">{triagensRealizadas}</span>
                                     </div>

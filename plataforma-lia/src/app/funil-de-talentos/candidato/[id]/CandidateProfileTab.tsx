@@ -525,7 +525,7 @@ export function CandidateProfileTab({
 
       {/* LinkedIn/Pearch Insights Card */}
       {hasPearchData(candidate as unknown as Record<string, unknown>) && (
-        <Card className="border-lia-border-subtle border-l-4 border-l-[#0A66C2]">
+        <Card className="border-lia-border-subtle border-l-4 border-l-brand-linkedin">
           <CardHeader className="py-2.5 px-4">
             <CardTitle className="text-sm font-semibold lia-text-800 flex items-center gap-2">
               <Linkedin className="w-4 h-4 text-brand-linkedin" />

@@ -123,7 +123,7 @@ export function WorkModelAnalyticsPage() {
   const getWorkModelColor = (modelo: string) => {
     switch (modelo) {
       case 'remoto': return 'bg-status-success'
-      case 'híbrido': return 'bg-gray-700 dark:bg-gray-300'
+      case 'híbrido': return 'bg-gray-700 dark:bg-lia-text-tertiary'
       case 'presencial': return 'bg-gray-500'
       default: return 'bg-gray-400'
     }
@@ -298,7 +298,7 @@ export function WorkModelAnalyticsPage() {
                             title={`Remoto: ${cargo.remoto}`}
                           />
                           <div
-                            className="bg-gray-700 dark:bg-gray-300"
+                            className="bg-gray-700 dark:bg-lia-text-tertiary"
                             style={{width: `${(cargo.hibrido / cargo.total) * 100}%`}}
                             title={`Híbrido: ${cargo.hibrido}`}
                           />
@@ -314,7 +314,7 @@ export function WorkModelAnalyticsPage() {
                             Remoto: {cargo.remoto}
                           </div>
                           <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 bg-gray-700 dark:bg-gray-300 rounded-full"></div>
+                            <div className="w-2 h-2 bg-gray-700 dark:bg-lia-text-tertiary rounded-full"></div>
                             Híbrido: {cargo.hibrido}
                           </div>
                           <div className="flex items-center gap-1">
@@ -365,7 +365,7 @@ export function WorkModelAnalyticsPage() {
                             title={`Remoto: ${level.remoto}`}
                           />
                           <div
-                            className="bg-gray-700 dark:bg-gray-300"
+                            className="bg-gray-700 dark:bg-lia-text-tertiary"
                             style={{width: `${(level.hibrido / level.total) * 100}%`}}
                             title={`Híbrido: ${level.hibrido}`}
                           />
@@ -381,7 +381,7 @@ export function WorkModelAnalyticsPage() {
                             {level.remoto} ({Math.round((level.remoto / level.total) * 100)}%)
                           </div>
                           <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 bg-gray-700 dark:bg-gray-300 rounded-full"></div>
+                            <div className="w-2 h-2 bg-gray-700 dark:bg-lia-text-tertiary rounded-full"></div>
                             {level.hibrido} ({Math.round((level.hibrido / level.total) * 100)}%)
                           </div>
                           <div className="flex items-center gap-1">
@@ -427,7 +427,7 @@ export function WorkModelAnalyticsPage() {
                             style={{width: `${(region.remoto / region.total) * 100}%`}}
                           />
                           <div
-                            className="bg-gray-700 dark:bg-gray-300"
+                            className="bg-gray-700 dark:bg-lia-text-tertiary"
                             style={{width: `${(region.hibrido / region.total) * 100}%`}}
                           />
                           <div

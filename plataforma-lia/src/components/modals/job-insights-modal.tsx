@@ -140,7 +140,7 @@ export function JobInsightsModal({
             </div>
             <Button
               onClick={onClose}
-              className="h-9 px-4 text-xs font-medium bg-gray-800 hover:bg-gray-900 dark:bg-gray-200 dark:hover:bg-gray-100 dark:text-gray-900 text-white"
+              className="h-9 px-4 text-xs font-medium bg-gray-800 hover:bg-gray-900 dark:bg-lia-bg-tertiary dark:hover:bg-lia-bg-secondary dark:text-lia-text-primary text-white"
             >
               Fechar
             </Button>

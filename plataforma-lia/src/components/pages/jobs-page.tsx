@@ -505,7 +505,7 @@ export function JobsPage(props: JobsPageProps) {
                   variant="secondary"
                   className={`ml-1 text-xs ${
                     showColumnConfig
-                      ?'bg-gray-800 text-white dark:bg-gray-200 dark:text-lia-text-disabled font-bold'
+                      ?'bg-gray-800 text-white dark:bg-lia-bg-tertiary dark:text-lia-text-primary font-bold'
                       :'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-elevated dark:text-lia-text-primary'
                   }`}
                 >

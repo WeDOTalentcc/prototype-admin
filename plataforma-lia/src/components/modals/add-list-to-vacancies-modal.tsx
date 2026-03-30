@@ -162,7 +162,7 @@ export function AddListToVacanciesModal({
             <div className="flex items-center gap-4 mt-1">
               <div className="flex items-center gap-2">
                 <div 
-                  className="w-3 h-3 rounded-full bg-gray-500 dark:bg-gray-400" 
+                  className="w-3 h-3 rounded-full bg-gray-500 dark:bg-lia-text-secondary" 
                 />
                 <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">{listName}</span>
               </div>

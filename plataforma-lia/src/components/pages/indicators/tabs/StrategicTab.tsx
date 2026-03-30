@@ -97,7 +97,7 @@ export function StrategicTab() {
             <div className="space-y-4">
               {[
                 { level: "Júnior", days: 18, color: "bg-status-success", target: 20 },
-                { level: "Pleno", days: 28, color: "bg-gray-700 dark:bg-gray-300", target: 30 },
+                { level: "Pleno", days: 28, color: "bg-gray-700 dark:bg-lia-text-tertiary", target: 30 },
                 { level: "Sênior", days: 42, color: "bg-status-warning", target: 45 },
                 { level: "Liderança", days: 67, color: "bg-status-error", target: 60 },
               ].map((item, index) => (
@@ -160,7 +160,7 @@ export function StrategicTab() {
                   <span className="font-medium">51%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-gray-700 dark:bg-gray-300 h-2 rounded-full w-[51%]" />
+                  <div className="bg-gray-700 dark:bg-lia-text-tertiary h-2 rounded-full w-[51%]" />
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span>Não-binário</span>

@@ -1075,7 +1075,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
           className="sm:max-w-sidebar-content w-[80vw] fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-3 rounded-md border" 
           style={{backgroundColor: 'var(--gray-100)'}}
         >
-          <div className="space-y-2 text-[10px] leading-snug" >
+          <div className="space-y-2 text-xs leading-snug" >
             <div className="flex items-center gap-1.5">
               {pendingSourceChange === 'hybrid' ? (
                 <Zap className="w-3 h-3 lia-text-base" />

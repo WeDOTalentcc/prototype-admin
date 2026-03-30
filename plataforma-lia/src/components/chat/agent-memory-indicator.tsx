@@ -93,8 +93,8 @@ export function AgentMemoryIndicator({
         tabIndex={0}
         onClick={handleExpand}
         onKeyDown={(e) => e.key === "Enter" && handleExpand()}
-        // [OPT-023] py-[5px] px arbitrário — sem canônico Tailwind
-        className="flex items-center gap-2.5 px-2.5 py-[5px] rounded-md border border-lia-border-subtle bg-gray-50 cursor-pointer text-xs lia-text-500 select-none transition-colors motion-reduce:transition-none"
+        // [OPT-023] py-1.5 px arbitrário — sem canônico Tailwind
+        className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md border border-lia-border-subtle bg-gray-50 cursor-pointer text-xs lia-text-500 select-none transition-colors motion-reduce:transition-none"
       >
         <Brain
           className="text-wedo-cyan flex-shrink-0 w-3.5 h-3.5"
@@ -151,7 +151,7 @@ export function AgentMemoryIndicator({
               className="mt-1 px-3.5 py-3 rounded-md border border-lia-border-subtle bg-gray-50 max-h-[280px] overflow-y-auto text-xs lia-text-800"
             >
               <div
-                className="font-semibold text-[13px] mb-2"
+                className="font-semibold text-sm mb-2"
               >
                 Memória do Agente
               </div>

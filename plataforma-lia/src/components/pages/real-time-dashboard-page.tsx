@@ -436,7 +436,7 @@ export function RealTimeDashboardPage() {
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
-                        className="bg-gray-700 dark:bg-gray-300 h-2 rounded-full transition-[width,height] duration-500"
+                        className="bg-gray-700 dark:bg-lia-text-tertiary h-2 rounded-full transition-[width,height] duration-500"
                         style={{width: `${workflow.progress}%`}}
                       />
                     </div>
@@ -481,7 +481,7 @@ export function RealTimeDashboardPage() {
                   <div className={`w-2 h-2 rounded-full ${
                     activity.type === 'success' ? 'bg-status-success' :
                     activity.type === 'warning' ? 'bg-status-warning' :
-                    activity.type === 'error' ? 'bg-status-error' : 'bg-gray-700 dark:bg-gray-300'
+                    activity.type === 'error' ? 'bg-status-error' : 'bg-gray-700 dark:bg-lia-text-tertiary'
                   }`} />
                   <div className="flex-1">
                     <div className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">{activity.event}</div>

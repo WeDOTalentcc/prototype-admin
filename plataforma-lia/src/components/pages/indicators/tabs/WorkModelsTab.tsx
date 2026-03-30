@@ -119,7 +119,7 @@ export function WorkModelsTab() {
                   </div>
                   <div className="flex w-full h-3 rounded-full overflow-hidden">
                     <div
-                      className="bg-gray-700 dark:bg-gray-300"
+                      className="bg-gray-700 dark:bg-lia-text-tertiary"
                       style={{ width: `${item.remote}%` }}
                     />
                     <div className="bg-wedo-purple" style={{ width: `${item.hybrid}%` }} />

@@ -196,7 +196,7 @@ export default function CandidateProfilePage() {
                           className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${candidate.linkedin_url ? "hover:bg-gray-100 dark:hover:bg-gray-800" : "opacity-30 cursor-default"}`}
                           onClick={(e) => !candidate.linkedin_url && e.preventDefault()}
                         >
-                          <Linkedin className="w-5 h-5" style={{ color: candidate.linkedin_url ? "#0A66C2" : "var(--gray-400)" }} />
+                          <Linkedin className={`w-5 h-5 ${candidate.linkedin_url ? "text-brand-linkedin" : "text-gray-400"}`} />
                         </a>
                       </TooltipTrigger>
                       <TooltipContent>LinkedIn</TooltipContent>

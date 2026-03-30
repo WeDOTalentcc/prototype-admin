@@ -263,7 +263,7 @@ export function DiversidadeInclusaoDashboard() {
             <div className="flex-1">
               <p className="text-sm font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary mb-1">Mulheres em Tech: 48% (meta 50%)</p>
               <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
-                <div className="h-2 rounded-full bg-gray-700 dark:bg-gray-300 w-[96%]"></div>
+                <div className="h-2 rounded-full bg-gray-700 dark:bg-lia-text-tertiary w-[96%]"></div>
               </div>
             </div>
           </div>

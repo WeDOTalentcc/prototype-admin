@@ -317,7 +317,7 @@ export function ExecutiveDashboardPage() {
                   <CardContent>
                     <div className="space-y-3">
                       {[
-                        { stage: "Candidatos", count: data.recruitmentFunnel.total, color: "bg-gray-700 dark:bg-gray-300", pct: 100 },
+                        { stage: "Candidatos", count: data.recruitmentFunnel.total, color: "bg-gray-700 dark:bg-lia-text-tertiary", pct: 100 },
                         { stage: "Triagem", count: data.recruitmentFunnel.screening, color: "bg-gray-50 dark:bg-lia-bg-primary0", pct: Math.round((data.recruitmentFunnel.screening / data.recruitmentFunnel.total) * 100) },
                         { stage: "Entrevistas", count: data.recruitmentFunnel.interview, color: "bg-status-warning", pct: Math.round((data.recruitmentFunnel.interview / data.recruitmentFunnel.total) * 100) },
                         { stage: "Fase Final", count: data.recruitmentFunnel.final, color: "bg-wedo-orange", pct: Math.round((data.recruitmentFunnel.final / data.recruitmentFunnel.total) * 100) },

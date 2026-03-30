@@ -160,7 +160,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary">UX Designer Sênior</h4>
-                    <Badge className="bg-gray-900 text-white dark:bg-gray-200 dark:text-lia-text-disabled text-xs">Finalizada</Badge>
+                    <Badge className="bg-gray-900 text-white dark:bg-lia-bg-tertiary dark:text-lia-text-primary text-xs">Finalizada</Badge>
                     <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">Sodexo • São Paulo</span>
                   </div>
                   <div className="flex items-center gap-6 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">

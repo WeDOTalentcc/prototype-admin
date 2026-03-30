@@ -147,7 +147,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                         Teste básico de conceitos e heurísticas de UX
                       </p>
                     </div>
-                    <Badge className="bg-gray-900 text-white dark:bg-gray-200 dark:text-lia-text-disabled text-xs">Popular</Badge>
+                    <Badge className="bg-gray-900 text-white dark:bg-lia-bg-tertiary dark:text-lia-text-primary text-xs">Popular</Badge>
                   </div>
 
                   {/* Mini Dashboard de Indicadores */}
@@ -163,7 +163,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                           <div className="flex items-baseline gap-2">
                             <p className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">7.4</p>
                             <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">/10</span>
-                            <Badge className="bg-gray-900 text-white dark:bg-gray-200 dark:text-lia-text-disabled text-xs">
+                            <Badge className="bg-gray-900 text-white dark:bg-lia-bg-tertiary dark:text-lia-text-primary text-xs">
                               <TrendingUp className="w-2.5 h-2.5 mr-0.5" />
                               +0.3
                             </Badge>
@@ -455,7 +455,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                     </div>
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-lia-text-primary dark:text-lia-text-primary">Nível:</span>
-                      <Badge className="bg-gray-900 text-white dark:bg-gray-200 dark:text-lia-text-disabled text-xs">Júnior</Badge>
+                      <Badge className="bg-gray-900 text-white dark:bg-lia-bg-tertiary dark:text-lia-text-primary text-xs">Júnior</Badge>
                     </div>
                   </div>
 

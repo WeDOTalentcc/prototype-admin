@@ -847,7 +847,7 @@ export function RecruitersTab({
                         <div className="flex items-center gap-2">
                           <div className="w-20 bg-gray-200 rounded-full h-2">
                             <div
-                              className="bg-gray-700 dark:bg-gray-300 h-2 rounded-full"
+                              className="bg-gray-700 dark:bg-lia-text-tertiary h-2 rounded-full"
                               style={{
                                 width: `${
                                   (recruiter.totalHires /

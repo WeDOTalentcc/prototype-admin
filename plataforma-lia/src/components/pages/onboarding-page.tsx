@@ -337,7 +337,7 @@ export function OnboardingPage() {
                     <div className="flex items-center gap-2 mt-2">
                       <div className="w-24 bg-gray-200 rounded-full h-2">
                         <div
-                          className="bg-gray-700 dark:bg-gray-300 h-2 rounded-full"
+                          className="bg-gray-700 dark:bg-lia-text-tertiary h-2 rounded-full"
                           style={{width: `${candidate.progress}%`}}
                         />
                       </div>
@@ -480,7 +480,7 @@ export function OnboardingPage() {
                     <div
                       className={`h-2 rounded-full ${
                         candidate.status === 'completed' ? 'bg-status-success' :
-                        candidate.status === 'delayed' ? 'bg-status-error' : 'bg-gray-700 dark:bg-gray-300'
+                        candidate.status === 'delayed' ? 'bg-status-error' : 'bg-gray-700 dark:bg-lia-text-tertiary'
                       }`}
                       style={{width: `${candidate.progress}%`}}
                     />
@@ -764,7 +764,7 @@ function CandidateDetailModal({ candidate, onClose }: CandidateDetailModalProps)
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-3">
                       <div
-                        className="bg-gray-700 dark:bg-gray-300 h-3 rounded-full"
+                        className="bg-gray-700 dark:bg-lia-text-tertiary h-3 rounded-full"
                         style={{width: `${candidate.progress}%`}}
                       />
                     </div>

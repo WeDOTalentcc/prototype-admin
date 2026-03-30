@@ -236,7 +236,7 @@ export function SearchModeArchetypes({
                         </div>
                       </div>
                       {!isExpanded && arch.description && (
-                        <p className="mt-1 pl-[21px] text-micro line-clamp-1"> {/* [OPT-022] px arbitrário — sem canônico Tailwind */}
+                        <p className="mt-1 pl-5 text-micro line-clamp-1"> {/* [OPT-022] px arbitrário — sem canônico Tailwind */}
                           {arch.description}
                         </p>
                       )}

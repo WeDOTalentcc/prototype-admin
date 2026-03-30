@@ -536,7 +536,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                         <div className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">{liaAnalysis.score}%</div>
                         <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-1.5 mt-2">
                           <div
-                            className="bg-gray-700 dark:bg-gray-300 h-1.5 rounded-full"
+                            className="bg-gray-700 dark:bg-lia-text-tertiary h-1.5 rounded-full"
                             style={{width: `${liaAnalysis.score}%`}}
                           />
                         </div>
@@ -639,7 +639,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                             </span>
                             <div className="flex-1 bg-gray-200 rounded-full h-2">
                               <div
-                                className="bg-gray-700 dark:bg-gray-300 h-2 rounded-full"
+                                className="bg-gray-700 dark:bg-lia-text-tertiary h-2 rounded-full"
                                 style={{width: `${value}%`}}
                               />
                             </div>
