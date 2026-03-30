@@ -8,7 +8,8 @@
  *
  * Vue/Nuxt: mapeia para composable useDailyBriefing() em setup().
  */
-import { useState, useEffect, useCallback } from "react"
+import { useState, useCallback } from "react"
+import useSWR from "swr"
 import { useJWTAuth } from "@/contexts/auth-context"
 
 export interface UrgentAction {
@@ -67,48 +68,39 @@ export interface UseDailyBriefingResult {
   refresh: () => Promise<void>
 }
 
+const jsonFetcher = (url: string) =>
+  fetch(url).then(r => {
+    if (!r.ok) throw new Error()
+    return r.json()
+  })
+
 export function useDailyBriefing(): UseDailyBriefingResult {
   const { user } = useJWTAuth()
-  const [briefing, setBriefing] = useState<DailyBriefingData | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [refreshError, setRefreshError] = useState<string | null>(null)
 
-  const fetchBriefing = useCallback(async () => {
-    if (!user?.id) return
-    setLoading(true)
-    setError(null)
-    try {
-      const res = await fetch(`/api/backend-proxy/briefing?user_id=${user.id}`)
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json()
-      setBriefing(data)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao carregar briefing")
-    } finally {
-      setLoading(false)
-    }
-  }, [user?.id])
+  const key = user?.id ?  : null
+
+  const { data, error, isLoading, mutate } = useSWR<DailyBriefingData>(key, jsonFetcher)
 
   const refresh = useCallback(async () => {
     if (!user?.id) return
-    setLoading(true)
-    setError(null)
     try {
+      setRefreshError(null)
       await fetch("/api/backend-proxy/briefing", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ user_id: user.id }),
       })
-      await fetchBriefing()
+      await mutate()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao atualizar briefing")
-      setLoading(false)
+      setRefreshError(err instanceof Error ? err.message : "Erro ao atualizar briefing")
     }
-  }, [user?.id, fetchBriefing])
+  }, [user?.id, mutate])
 
-  useEffect(() => {
-    fetchBriefing()
-  }, [fetchBriefing])
-
-  return { briefing, loading, error, refresh }
+  return {
+    briefing: data ?? null,
+    loading: isLoading,
+    error: refreshError ?? error?.message ?? null,
+    refresh,
+  }
 }
