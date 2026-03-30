@@ -448,7 +448,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                     <div className="absolute left-[5px] top-1 bottom-1 w-px bg-gray-300"></div>
                     <div className="space-y-1">
                       {reportData.timeline.map((event, index) => (
-                        <div key={index} className="relative flex items-center gap-2">
+                        <div key={`event-${index}`} className="relative flex items-center gap-2">
                           <div className={`w-2.5 h-2.5 rounded-full z-10 flex-shrink-0 ${
  event.status === 'completed' ? 'bg-status-success' :
                             event.status === 'in-progress' ? 'bg-status-warning' :

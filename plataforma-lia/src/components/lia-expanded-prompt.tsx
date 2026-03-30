@@ -154,7 +154,7 @@ export function LiaExpandedPrompt({
             <div className="grid grid-cols-1 gap-2">
               {suggestions.map((suggestion, index) => (
                 <button
-                  key={index}
+                  key={suggestion.action || index}
                   onClick={() => onCommand?.(suggestion.action)}
                   className="flex items-start gap-2 p-2 rounded-md hover:opacity-90 transition-opacity motion-reduce:transition-none text-left border border-lia-border-subtle"
                   style={{backgroundColor: 'white',

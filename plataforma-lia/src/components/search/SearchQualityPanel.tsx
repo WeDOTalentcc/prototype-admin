@@ -60,7 +60,7 @@ export function SearchQualityPanel({ searchAnalysis, onAlertActionClick }: Searc
         <div className="space-y-1.5">
           {searchAnalysis.alerts.slice(0, 2).map((alert, index) => (
             <div
-              key={index}
+              key={`alert-${index}`}
               className="flex items-start gap-2 px-2.5 py-2 rounded-full text-xs"
               style={{backgroundColor:
                   alert.severity === 'warning'

@@ -43,7 +43,7 @@ export function DetectedFieldsCard({ fields, title = "Campos detectados automati
       <div className="space-y-2">
         {fields.map((field, index) => (
           <div
-            key={index}
+            key={field.label}
             className="flex items-center justify-between py-1.5 px-2 rounded-md bg-white/60 dark:bg-lia-bg-secondary/40"
           >
             <div className="flex items-center gap-2 flex-1 min-w-0">

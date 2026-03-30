@@ -367,7 +367,7 @@ export function OnboardingPage() {
               { task: 'Treinamento de segurança', candidate: 'Carlos Santos', dueDate: '2 dias', priority: 'medium' },
               { task: 'Entrega de equipamentos', candidate: 'Ana Pereira', dueDate: '3 dias', priority: 'high' }
             ].map((item, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+              <div key={`${item.task}-${index}`} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
                 <div className="flex items-center gap-3">
                   <div className={`w-3 h-3 rounded-full ${
                     item.priority === 'high' ? 'bg-status-error' :

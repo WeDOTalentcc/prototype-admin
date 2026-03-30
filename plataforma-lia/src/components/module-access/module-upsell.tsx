@@ -84,7 +84,7 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
                   </h3>
                   <div className="space-y-3">
                     {moduleInfo.features.map((feature, index) => (
-                      <div key={index} className="flex items-center gap-3">
+                      <div key={`feature-${index}`} className="flex items-center gap-3">
                         <div className="w-6 h-6 bg-status-success/10 rounded-full flex items-center justify-center">
                           <Check className="w-4 h-4 text-status-success" />
                         </div>

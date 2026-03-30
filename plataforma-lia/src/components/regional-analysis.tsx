@@ -323,7 +323,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
               )
 
               return (
-                <div key={index} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md overflow-hidden">
+                <div key={item.regiao || index} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md overflow-hidden">
 
                   {/* Header da região/estado */}
                   <div

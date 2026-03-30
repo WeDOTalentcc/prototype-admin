@@ -207,7 +207,7 @@ export function JobSummaryCard({
             <div className="flex flex-wrap gap-1.5">
               {data.required_skills.slice(0, compact ? 3 : 5).map((skill, index) => (
                 <Badge
-                  key={index}
+                  key={skill}
                   variant="secondary"
                   className="text-xs bg-lia-bg-tertiary text-lia-text-secondary"
                 >

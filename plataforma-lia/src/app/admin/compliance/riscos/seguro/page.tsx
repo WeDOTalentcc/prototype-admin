@@ -744,7 +744,7 @@ export default function SeguroCiberneticoPage() {
               <div className="space-y-3">
                 {displayChecklist.map((item, index) => (
                   <div 
-                    key={index}
+                    key={`checklist-${index}`}
                     className="flex items-center justify-between p-3 rounded-md bg-gray-50 dark:bg-lia-bg-primary"
                     
                   >

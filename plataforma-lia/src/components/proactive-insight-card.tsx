@@ -172,7 +172,7 @@ export function ProactiveInsightCard({
           <div className="space-y-1.5">
             {alerts.map((alert, index) => (
               <div 
-                key={index}
+                key={`alert-${index}`}
                 className={cn(
  "flex items-start gap-2 p-2 rounded-md border text-xs",
                   getAlertBgColor(alert.type)

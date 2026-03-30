@@ -195,7 +195,7 @@ export function InterviewConfirmationCard({
             <div className="flex flex-wrap gap-2">
               {data.interviewers.map((interviewer, index) => (
                 <div
-                  key={index}
+                  key={interviewer.name}
                   className="flex items-center gap-2 px-2 py-1 rounded-full bg-lia-bg-tertiary"
                 >
                   <Avatar className="h-6 w-6">

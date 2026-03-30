@@ -69,7 +69,7 @@ export function PromptContextViewer({
           </div>
           <div className="flex flex-wrap gap-2">
             {selectedCandidates.slice(0, 3).map((candidate, index) => (
-              <div key={index} className="flex items-center gap-1 bg-lia-bg-primary rounded-md px-2 py-1 border border-lia-border-subtle">
+              <div key={candidate.name || index} className="flex items-center gap-1 bg-lia-bg-primary rounded-md px-2 py-1 border border-lia-border-subtle">
                 <Avatar className="w-4 h-4">
                   <AvatarFallback className="bg-gray-200 lia-text-base text-xs">
                     {candidate.name?.charAt(0) || 'C'}

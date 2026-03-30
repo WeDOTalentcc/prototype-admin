@@ -43,7 +43,7 @@ export function QuickActions({
             const Icon = action.icon
             return (
               <a
-                key={index}
+                key={action.href}
                 href={action.href}
                 className="flex items-center gap-3 p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
               >

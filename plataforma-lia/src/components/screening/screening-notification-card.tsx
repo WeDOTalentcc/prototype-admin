@@ -111,7 +111,7 @@ export function ScreeningNotificationCard({
               <div className="grid grid-cols-2 gap-2">
                 {wsiBlocks.map((block, index) => (
                   <div
-                    key={index}
+                    key={block.name}
                     className="p-2 rounded-md bg-gray-50 dark:bg-lia-bg-elevated/50"
                   >
                     <p className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary">

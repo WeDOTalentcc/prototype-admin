@@ -425,7 +425,7 @@ export function JobTemplatesPage() {
                 {/* Tags */}
                 <div className="flex flex-wrap gap-1 mb-4">
                   {template.tags.map((tag, index) => (
-                    <Badge key={index} variant="secondary" className="text-xs">
+                    <Badge key={tag} variant="secondary" className="text-xs">
                       {tag}
                     </Badge>
                   ))}

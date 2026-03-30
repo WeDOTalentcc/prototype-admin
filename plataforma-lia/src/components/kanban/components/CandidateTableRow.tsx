@@ -251,7 +251,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
                 </h4>
                 {alerts.map((alert, index) => (
                   <div
-                    key={index}
+                    key={`alert-${index}`}
                     className={`flex items-start gap-2 p-2 rounded-md border text-xs ${alert.color}`}
                   >
                     <span className="flex-shrink-0 mt-0.5">{alert.icon}</span>

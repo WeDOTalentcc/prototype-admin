@@ -942,7 +942,7 @@ export default function ConsentimentosPage() {
                     </h4>
                     <div className="space-y-2">
                       {subjectHistory.currentConsents.map((consent, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 rounded-md bg-gray-50">
+                        <div key={`${consent.consentType}-${index}`} className="flex items-center justify-between p-3 rounded-md bg-gray-50">
                           <div>
                             <span className="font-medium lia-text-800 dark:text-lia-text-primary" >
                               {CONSENT_TYPE_LABELS[consent.consentType] || consent.consentType}

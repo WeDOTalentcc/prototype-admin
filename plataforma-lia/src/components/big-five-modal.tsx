@@ -336,7 +336,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                       const y = 100 + 100 * Math.sin(angle)
                       return (
                         <line
-                          key={index}
+                          key={`trait-${index}`}
                           x1="100"
                           y1="100"
                           x2={x}

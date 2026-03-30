@@ -226,7 +226,7 @@ export function SaveArchetypeModal({
             {tags.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-2">
                 {tags.map((tag, index) => (
-                  <Badge key={index} className={badgeStyles.primary}>
+                  <Badge key={`tag-${index}`} className={badgeStyles.primary}>
                     {tag}
                     <button
                       onClick={() => handleRemoveTag(tag)}

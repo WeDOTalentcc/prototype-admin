@@ -314,7 +314,7 @@ export default function ContinuidadePage() {
                 {systems.map((system, index) => {
                   const Icon = system.icon
                   return (
-                    <TableRow key={index}>
+                    <TableRow key={system.name}>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-200/30">

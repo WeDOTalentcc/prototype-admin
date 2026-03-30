@@ -484,7 +484,7 @@ export function DailyBriefingCard({
               <div className="grid md:grid-cols-2 gap-2">
                 {briefing.insights.map((insight, index) => (
                   <div
-                    key={index}
+                    key={`insight-${index}`}
                     className={`p-2 rounded-md border ${getInsightStyle(insight.type)}`}
                   >
                     <div className="flex items-start gap-2">

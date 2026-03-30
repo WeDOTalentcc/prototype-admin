@@ -290,7 +290,7 @@ export function AdvancedReportExporter({
                           <p className="text-sm lia-text-base mb-2">{template.description}</p>
                           <div className="flex flex-wrap gap-1">
                             {template.sections.slice(0, 3).map((section, index) => (
-                              <Badge key={index} variant="secondary" className="text-xs">
+                              <Badge key={section} variant="secondary" className="text-xs">
                                 {section}
                               </Badge>
                             ))}

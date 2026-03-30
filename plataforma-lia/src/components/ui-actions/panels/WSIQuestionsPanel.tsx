@@ -396,7 +396,7 @@ export function WSIQuestionsPanel({
                 <TabsContent key={area} value={area} className="mt-4 space-y-2">
                   {WSI_TEMPLATES[area].map((template, index) => (
                     <div
-                      key={index}
+                      key={`template-${index}`}
                       className="border rounded-md p-3 transition-colors motion-reduce:transition-none dark:border-lia-border-subtle border-[var(--lia-border-subtle)]"
                       style={{backgroundColor: isTemplateAdded(template) 
                           ? 'var(--lia-bg-tertiary)' 

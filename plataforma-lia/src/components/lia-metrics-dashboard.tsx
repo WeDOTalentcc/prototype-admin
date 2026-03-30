@@ -309,7 +309,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
           <CardContent>
             <div className="space-y-2">
               {funnelStages.map((stage, index) => (
-                <div key={index} className="relative">
+                <div key={stage.stage} className="relative">
                   <div className="flex items-center gap-2">
                     <div className={`w-8 h-8 rounded-md ${stage.bgColor} flex items-center justify-center`}>
                       {stage.icon}

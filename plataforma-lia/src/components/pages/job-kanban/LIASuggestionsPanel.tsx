@@ -74,7 +74,7 @@ export function LIASuggestionsPanel({ open, onClose, selectedTriagemQuestion }: 
 
           <div className="space-y-3">
             {suggestions.map((pergunta, index) => (
-              <div key={index} className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500 cursor-pointer transition-colors motion-reduce:transition-none group">
+              <div key={`suggestion-${index}`} className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500 cursor-pointer transition-colors motion-reduce:transition-none group">
                 <div className="flex items-start justify-between mb-2">
                   <h4 className="text-sm font-medium text-lia-text-primary group-hover:text-lia-text-primary">
                     {pergunta}

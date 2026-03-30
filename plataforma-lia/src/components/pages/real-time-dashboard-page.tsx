@@ -476,7 +476,7 @@ export function RealTimeDashboardPage() {
                 { time: "14:43:58", event: "Novo candidato adicionado ao pipeline", system: "Recruitment", type: "success" },
                 { time: "14:43:45", event: "Email NPS enviado para 23 candidatos", system: "Communication", type: "success" }
               ].map((activity, index) => (
-                <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-md">
+                <div key={`${activity.time}-${index}`} className="flex items-center gap-3 p-3 bg-gray-50 rounded-md">
                   <div className="text-xs text-lia-text-primary dark:text-lia-text-primary w-16">{activity.time}</div>
                   <div className={`w-2 h-2 rounded-full ${
                     activity.type === 'success' ? 'bg-status-success' :

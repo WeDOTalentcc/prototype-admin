@@ -203,7 +203,7 @@ export function PromptSuggestionsPanel({
           <div className="space-y-1">
             {commandHistory.map((command, index) => (
               <button
-                key={index}
+                key={`hist-${index}`}
                 onClick={() => onHistoryCommand(command)}
                 disabled={isProcessing}
                 className={`w-full text-left text-xs p-2 rounded-md hover:bg-lia-bg-primary transition-colors motion-reduce:transition-none ${

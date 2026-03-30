@@ -104,7 +104,7 @@ export function Toast({ notification }: ToastProps) {
             >
               {notification.actions.map((action, index) => (
                 <Button
-                  key={index}
+                  key={action.label}
                   variant={action.variant === 'primary' ? 'default' : 'outline'}
                   size="sm"
                   onClick={action.action}

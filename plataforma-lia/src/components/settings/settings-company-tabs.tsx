@@ -770,7 +770,7 @@ export function CultureTab({ onSettingsChange }: { onSettingsChange: (changed: b
               { value: 'Espírito de Progresso', description: 'Inovamos e nos adaptamos para um mundo em mudança' },
               { value: 'Sustentabilidade', description: 'Comprometidos com um planeta mais sustentável' }
             ].map((item, index) => (
-              <div key={index} className="p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
+              <div key={item.value} className="p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="text-sm font-medium lia-text-950 dark:lia-text-50">
                     {item.value}

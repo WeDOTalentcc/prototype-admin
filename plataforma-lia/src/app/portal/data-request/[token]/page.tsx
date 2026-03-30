@@ -877,7 +877,7 @@ export default function CandidatePortalPage() {
                   <div className="flex justify-center gap-2">
                     {otpCode.map((digit, index) => (
                       <input
-                        key={index}
+                        key={`otp-${index}`}
                         ref={(el) => { otpInputRefs.current[index] = el }}
                         type="text"
                         inputMode="numeric"

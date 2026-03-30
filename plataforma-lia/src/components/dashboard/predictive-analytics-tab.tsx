@@ -358,7 +358,7 @@ export function PredictiveAnalyticsTab() {
             <CardContent className="space-y-3">
               {data.insights.map((insight, index) => (
                 <div
-                  key={index}
+                  key={`insight-${index}`}
                   className={`p-3 rounded-md ${
  insight.type === "warning" ? "bg-wedo-orange/10 dark:bg-wedo-orange/10/20" :
                     insight.type === "success" ? "bg-status-success/10 dark:bg-status-success/20" :

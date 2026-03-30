@@ -233,7 +233,7 @@ export function InterviewSchedulingPanel({
 
                 return (
                   <button
-                    key={index}
+                    key={`cal-cell-${index}`}
                     type="button"
                     disabled={!isSelectable}
                     onClick={() => date && isSelectable && setSelectedDate(date)}

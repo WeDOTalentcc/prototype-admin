@@ -107,7 +107,7 @@ export function PreviewSuggestionModal({
             <div className="flex flex-wrap gap-2">
               {previewTags.map((tag, index) => (
                 <Badge
-                  key={index}
+                  key={`tag-${index}`}
                   className="!text-xs !px-2 !py-1 flex items-center gap-1.5"
                   style={{backgroundColor: 'var(--wedo-cyan-bg-15)', border: '1px solid var(--wedo-cyan-border)'}}
                 >

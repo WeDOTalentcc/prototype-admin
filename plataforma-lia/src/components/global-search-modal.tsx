@@ -348,7 +348,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
               <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
                 {(aiSuggestionsByCategory[selectedType] || aiSuggestionsByCategory.all).map((suggestion, index) => (
                   <button
-                    key={index}
+                    key={suggestion}
                     onClick={() => handleSuggestionClick(suggestion)}
                     className="flex items-center gap-2 p-2 text-left text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-lia-bg-primary dark:hover:bg-gray-800 rounded-md transition-colors motion-reduce:transition-none border border-transparent hover:border-lia-border-subtle dark:hover:border-gray-700"
                   >

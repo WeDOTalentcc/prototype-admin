@@ -101,7 +101,7 @@ export function StrategicTab() {
                 { level: "Sênior", days: 42, color: "bg-status-warning", target: 45 },
                 { level: "Liderança", days: 67, color: "bg-status-error", target: 60 },
               ].map((item, index) => (
-                <div key={index} className="space-y-2">
+                <div key={item.level} className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span>{item.level}</span>
                     <div className="flex items-center gap-2">

@@ -106,7 +106,7 @@ export function MoveConfirmationModal({
               >
                 {substatusSuggestions.map((suggestion, index) => (
                   <div 
-                    key={index}
+                    key={`substatus-${index}`}
  className="flex items-center space-x-2 p-2 rounded-md border border-lia-border-subtle hover:border-lia-border-default dark:hover:border-lia-border-default transition-colors motion-reduce:transition-none bg-white dark:bg-lia-bg-secondary"
                   >
                     <RadioGroupItem 

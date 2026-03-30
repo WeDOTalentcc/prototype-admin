@@ -457,7 +457,7 @@ export function BatchApprovalModal({
                       <div className="mt-3 pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                         <div className="flex flex-wrap gap-1">
                           {candidate.skills.slice(0, 3).map((skill, index) => (
-                            <Badge key={index} variant="secondary" className="text-xs px-1 py-0">
+                            <Badge key={skill} variant="secondary" className="text-xs px-1 py-0">
                               {skill}
                             </Badge>
                           ))}

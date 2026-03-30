@@ -374,7 +374,7 @@ export default function FornecedoresPage() {
                           <div className="flex flex-wrap gap-1">
                             {vendor.certifications.map((cert, index) => (
                               <Badge 
-                                key={index} 
+                                key={cert} 
                                 variant="outline" 
                                 className="text-micro"
                               >

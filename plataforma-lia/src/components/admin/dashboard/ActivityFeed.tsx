@@ -45,7 +45,7 @@ export function ActivityFeed({
           const iconColor = activityConfig.color
 
           return (
-            <div key={index} className="flex items-start gap-3 text-sm">
+            <div key={`activity-${index}`} className="flex items-start gap-3 text-sm">
               <Icon className={`w-4 h-4 mt-0.5 shrink-0 ${iconColor}`} />
               <div>
                 <p className="font-medium text-lia-text-primary dark:text-lia-text-primary">

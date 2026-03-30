@@ -156,7 +156,7 @@ export function ResumeAnalysisResult({
             <ul className="space-y-2">
               {result.improvement_suggestions.map((suggestion, index) => (
                 <li 
-                  key={index}
+                  key={`suggestion-${index}`}
                   className="flex items-start gap-3 p-3 bg-status-warning/10 rounded-md border border-status-warning/30"
                 >
                   <AlertTriangle className="h-4 w-4 text-status-warning flex-shrink-0 mt-0.5" />

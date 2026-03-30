@@ -33,7 +33,7 @@ export function Breadcrumbs({
         const isLast = index === items.length - 1
         
         return (
-          <React.Fragment key={index}>
+          <React.Fragment key={item.label || index}>
             {index > 0 && (
               <ChevronRight
                 className="w-4 h-4 shrink-0 text-lia-text-disabled"
