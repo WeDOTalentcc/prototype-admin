@@ -188,7 +188,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
         {job.languages && job.languages.length > 0 ? (
           <div className="space-y-1.5">
             {job.languages.map((lang, idx) => (
-              <div key={idx} className="flex items-center gap-2">
+              <div key={`lang-${idx}`} className="flex items-center gap-2">
                 <span className="text-micro lia-text-600 dark:text-lia-text-tertiary font-medium">
                   {lang.language}
                 </span>
@@ -281,7 +281,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
             {job.interviewStages
               .sort((a, b) => (a.order || 0) - (b.order || 0))
               .map((stage, idx) => (
-                <React.Fragment key={idx}>
+                <React.Fragment key={`stage-${idx}`}>
                   {idx > 0 && (
                     <ChevronRight className="w-3 h-3 lia-text-300 flex-shrink-0" />
                   )}
@@ -398,7 +398,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
         {channels.length > 0 ? (
           <div className="flex flex-wrap gap-1.5 mb-2">
             {channels.map((ch, idx) => (
-              <Badge key={idx} className="text-micro px-1.5 py-0 h-4 bg-gray-100 lia-text-800 dark:text-lia-text-primary">
+              <Badge key={`ch-${idx}`} className="text-micro px-1.5 py-0 h-4 bg-gray-100 lia-text-800 dark:text-lia-text-primary">
                 {ch}
               </Badge>
             ))}

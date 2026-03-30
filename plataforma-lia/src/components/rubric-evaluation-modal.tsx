@@ -580,7 +580,7 @@ export function RubricEvaluationModal({
                           <span className="text-micro font-medium lia-text-secondary">Próximos Passos:</span>
                           <ul className="mt-1 space-y-0.5">
                             {mockParecer.recomendacao_final.proximos_passos.map((ps, idx) => (
-                              <li key={idx} className="text-micro flex items-start gap-1.5 text-lia-text-primary dark:text-lia-text-primary">
+                              <li key={`ps-${idx}`} className="text-micro flex items-start gap-1.5 text-lia-text-primary dark:text-lia-text-primary">
                                 <span className="lia-text-base">→</span>
                                 {ps}
                               </li>
@@ -794,7 +794,7 @@ export function RubricEvaluationModal({
                         { label: 'Versão', value: 'LIA CV Analyzer v1.0' },
                         { label: 'Data/Hora', value: new Date().toLocaleString('pt-BR') },
                       ].map((item, idx) => (
-                        <div key={idx} className="flex items-center justify-between">
+                        <div key={`just-${idx}`} className="flex items-center justify-between">
                           <span className="text-micro lia-text-secondary">{item.label}</span>
                           <span className="text-micro font-medium text-lia-text-primary dark:text-lia-text-primary">{item.value}</span>
                         </div>

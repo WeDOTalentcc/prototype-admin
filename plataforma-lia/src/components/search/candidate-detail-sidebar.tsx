@@ -240,7 +240,7 @@ export function CandidateDetailSidebar({
                 </h4>
                 <div className="space-y-4">
                   {candidate.experiences.slice(0, 3).map((exp, idx) => (
-                    <div key={idx} className="relative pl-4 border-l-2 border-lia-border-subtle dark:border-lia-border-subtle">
+                    <div key={`exp-${idx}`} className="relative pl-4 border-l-2 border-lia-border-subtle dark:border-lia-border-subtle">
                       <div className="absolute -left-[5px] top-0 w-2 h-2 rounded-full bg-gray-300 dark:lia-bg-600" />
                       <p className="font-medium lia-text-800 dark:text-lia-text-primary">{exp.title}</p>
                       <p className="text-sm lia-text-600 dark:text-lia-text-tertiary">{exp.company}</p>
@@ -267,7 +267,7 @@ export function CandidateDetailSidebar({
                 </h4>
                 <div className="space-y-3">
                   {candidate.education.slice(0, 2).map((edu, idx) => (
-                    <div key={idx}>
+                    <div key={`edu-${idx}`}>
                       <p className="font-medium lia-text-800 dark:text-lia-text-primary">{edu.school}</p>
                       {(edu.degree || edu.field_of_study) && (
                         <p className="text-sm lia-text-600 dark:text-lia-text-tertiary">
@@ -293,7 +293,7 @@ export function CandidateDetailSidebar({
                 </h4>
                 <div className="flex flex-wrap gap-2">
                   {candidate.languages.map((lang, idx) => (
-                    <Badge key={idx} variant="outline" className="border-lia-border-default dark:border-lia-border-default">
+                    <Badge key={`lang-${idx}`} variant="outline" className="border-lia-border-default dark:border-lia-border-default">
                       {lang.language}
                       {lang.proficiency && ` (${lang.proficiency})`}
                     </Badge>
@@ -307,7 +307,7 @@ export function CandidateDetailSidebar({
                 <h4 className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2">Pontos Fortes</h4>
                 <ul className="space-y-1">
                   {candidate.insights.strengths.map((strength, idx) => (
-                    <li key={idx} className="text-sm lia-text-600 dark:text-lia-text-tertiary flex items-start gap-2">
+                    <li key={`str-${idx}`} className="text-sm lia-text-600 dark:text-lia-text-tertiary flex items-start gap-2">
                       <CheckCircle className="h-4 w-4 text-status-success mt-0.5 flex-shrink-0" />
                       {strength}
                     </li>

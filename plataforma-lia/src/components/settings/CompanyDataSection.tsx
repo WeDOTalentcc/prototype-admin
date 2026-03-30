@@ -619,8 +619,8 @@ export function CompanyDataSection({
           >
             <div className="space-y-2">
               <div className="flex flex-wrap gap-2">
-                {(companyData.values || []).map((value: string, idx: number) => (
-                  <Badge key={idx} className="bg-gray-100 dark:bg-lia-bg-secondary lia-text-800 dark:text-lia-text-primary text-micro px-2 py-0.5 rounded-full">
+                {(companyData.values || []).map((value: string) => (
+                  <Badge key={value} className="bg-gray-100 dark:bg-lia-bg-secondary lia-text-800 dark:text-lia-text-primary text-micro px-2 py-0.5 rounded-full">
                     {value}
                     {isEditingCompanyData && (
                       <button
@@ -667,8 +667,8 @@ export function CompanyDataSection({
           >
             <div className="space-y-2">
               <div className="flex flex-wrap gap-2">
-                {(companyData.coreCompetencies || []).map((comp: string, idx: number) => (
-                  <Badge key={idx} className="bg-gray-100 dark:bg-lia-bg-elevated lia-text-700 dark:text-lia-text-secondary text-micro px-2 py-0.5 rounded-full">
+                {(companyData.coreCompetencies || []).map((comp: string) => (
+                  <Badge key={comp} className="bg-gray-100 dark:bg-lia-bg-elevated lia-text-700 dark:text-lia-text-secondary text-micro px-2 py-0.5 rounded-full">
                     {comp}
                     {isEditingCompanyData && (
                       <button
@@ -876,8 +876,8 @@ export function CompanyDataSection({
           >
             <div className="space-y-2">
               <div className="flex flex-wrap gap-2">
-                {(companyData.seniority_levels || []).map((level: string, idx: number) => (
-                  <Badge key={idx} className="bg-gray-100 dark:bg-lia-bg-secondary lia-text-700 dark:text-lia-text-secondary text-micro px-2 py-0.5 rounded-full">
+                {(companyData.seniority_levels || []).map((level: string) => (
+                  <Badge key={level} className="bg-gray-100 dark:bg-lia-bg-secondary lia-text-700 dark:text-lia-text-secondary text-micro px-2 py-0.5 rounded-full">
                     {level}
                     {isEditingCompanyData && (
                       <button

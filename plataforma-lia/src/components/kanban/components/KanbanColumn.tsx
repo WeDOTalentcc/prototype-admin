@@ -203,8 +203,6 @@ const KanbanColumn = memo(function KanbanColumn({
       </div>
     </div>
   )
-}
-
 })
 KanbanColumn.displayName = 'KanbanColumn'
 

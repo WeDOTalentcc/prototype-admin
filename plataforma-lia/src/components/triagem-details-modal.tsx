@@ -622,7 +622,7 @@ export function TriagemDetailsModal({
                                   <p className="text-micro lia-text-secondary uppercase tracking-wide mb-2">Evidências</p>
                                   <div className="flex flex-wrap gap-2">
                                     {resp.evidences.map((ev, i) => (
-                                      <span key={i} className="flex items-center gap-1 text-xs bg-lia-bg-primary border border-lia-border-subtle lia-text-base px-2 py-1 rounded-full">
+                                      <span key={`ev-${i}`} className="flex items-center gap-1 text-xs bg-lia-bg-primary border border-lia-border-subtle lia-text-base px-2 py-1 rounded-full">
                                         <CheckCircle className="w-3 h-3 text-status-success" /> {ev}
                                       </span>
                                     ))}
@@ -655,7 +655,7 @@ export function TriagemDetailsModal({
                   </div>
                   <ul className="space-y-1.5">
                     {(f11Report?.attention_flags || report?.flags || ["Score WSI dentro da zona de revisão — decisão requer análise do recrutador responsável."]).map((a: string, i: number) => (
-                      <li key={i} className="flex items-start gap-2 text-xs text-status-warning/90">
+                      <li key={`flag-${i}`} className="flex items-start gap-2 text-xs text-status-warning/90">
                         <AlertTriangle className="w-3.5 h-3.5 text-status-warning mt-0.5 shrink-0" /> {a}
                       </li>
                     ))}
@@ -683,7 +683,7 @@ export function TriagemDetailsModal({
                         <div className="mb-2">
                           <p className="text-micro font-medium text-status-success mb-1 flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5" /> Pontos Fortes:</p>
                           {report.technical_analysis.pontos_fortes.map((p: string, i: number) => (
-                            <div key={i} className="flex items-start gap-1.5 mb-1">
+                            <div key={`pf-${i}`} className="flex items-start gap-1.5 mb-1">
                               <CheckCircle className="w-3 h-3 mt-0.5 flex-shrink-0 text-status-success" />
                               <p className="text-xs lia-text-base">{p}</p>
                             </div>
@@ -712,7 +712,7 @@ export function TriagemDetailsModal({
                         <div>
                           <p className="text-micro font-medium lia-text-secondary mb-1">Evidências:</p>
                           {report.technical_analysis.evidencias.map((e: string, i: number) => (
-                            <div key={i} className="flex items-start gap-1.5 mb-1">
+                            <div key={`ev-${i}`} className="flex items-start gap-1.5 mb-1">
                               <Zap className="w-3 h-3 mt-0.5 flex-shrink-0 lia-text-secondary" />
                               <p className="text-xs lia-text-base">{e}</p>
                             </div>
@@ -841,7 +841,7 @@ export function TriagemDetailsModal({
                         <div>
                           <p className="text-micro font-medium lia-text-secondary mb-1">Próximos Passos:</p>
                           {report.recommendation.proximos_passos.map((step: string, i: number) => (
-                            <div key={i} className="flex items-center gap-1.5 mb-1">
+                            <div key={`step-${i}`} className="flex items-center gap-1.5 mb-1">
                               <span className="w-4 h-4 rounded-full bg-gray-200 flex items-center justify-center text-micro font-bold lia-text-base">{i + 1}</span>
                               <p className="text-xs lia-text-base">{step}</p>
                             </div>
@@ -980,7 +980,7 @@ export function TriagemDetailsModal({
                     <div className="mb-2">
                       <p className="text-micro font-medium lia-text-secondary mb-1">Pontos Fortes Técnicos:</p>
                       {feedback.technical_strengths.map((s: string, i: number) => (
-                        <div key={i} className="flex items-start gap-1.5 mb-0.5">
+                        <div key={`ts-${i}`} className="flex items-start gap-1.5 mb-0.5">
                           <CheckCircle className="w-3 h-3 mt-0.5 flex-shrink-0 text-status-success" />
                           <p className="text-xs lia-text-base">{s}</p>
                         </div>
@@ -992,7 +992,7 @@ export function TriagemDetailsModal({
                     <div className="mb-2">
                       <p className="text-micro font-medium lia-text-secondary mb-1">Pontos Fortes Comportamentais:</p>
                       {feedback.behavioral_strengths.map((s: string, i: number) => (
-                        <div key={i} className="flex items-start gap-1.5 mb-0.5">
+                        <div key={`bs-${i}`} className="flex items-start gap-1.5 mb-0.5">
                           <Star className="w-3 h-3 mt-0.5 flex-shrink-0 lia-text-secondary" />
                           <p className="text-xs lia-text-base">{s}</p>
                         </div>
@@ -1004,7 +1004,7 @@ export function TriagemDetailsModal({
                     <div className="mb-2">
                       <p className="text-micro font-medium lia-text-secondary mb-1">Oportunidades de Desenvolvimento:</p>
                       {feedback.development_opportunities.map((d: string, i: number) => (
-                        <div key={i} className="flex items-start gap-1.5 mb-0.5">
+                        <div key={`dev-${i}`} className="flex items-start gap-1.5 mb-0.5">
                           <BookOpen className="w-3 h-3 mt-0.5 flex-shrink-0 text-wedo-cyan-dark" />
                           <p className="text-xs lia-text-base">{d}</p>
                         </div>

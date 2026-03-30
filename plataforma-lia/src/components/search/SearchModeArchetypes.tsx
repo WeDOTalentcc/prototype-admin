@@ -261,7 +261,7 @@ export function SearchModeArchetypes({
                           <div className="space-y-1">
                             <span className="text-micro font-medium lia-text-400">Tags</span>
                             <div className="flex flex-wrap gap-1">
-                              {arch.tags.map((tag: string, idx: number) => (
+                              {arch.tags.map((tag: string) => (
                                 <span
                                   key={idx}
                                   className="text-micro px-1.5 py-0.5 rounded-full bg-gray-100"
@@ -277,7 +277,7 @@ export function SearchModeArchetypes({
                           <div className="space-y-1">
                             <span className="text-micro font-medium lia-text-400">Skills</span>
                             <div className="flex flex-wrap gap-1">
-                              {arch.filters.skills.map((skill: string, idx: number) => (
+                              {arch.filters.skills.map((skill: string) => (
                                 <span
                                   key={idx}
                                   className="text-micro px-1.5 py-0.5 rounded-full bg-gray-100"
@@ -358,7 +358,7 @@ export function SearchModeArchetypes({
                           <div className="space-y-1">
                             <span className="text-micro font-medium lia-text-400">Idiomas</span>
                             <div className="flex flex-wrap gap-1">
-                              {arch.filters.languages.map((lang: string, idx: number) => (
+                              {arch.filters.languages.map((lang: string) => (
                                 <span
                                   key={idx}
                                   className="px-1.5 py-0.5 rounded-full text-micro bg-gray-100"

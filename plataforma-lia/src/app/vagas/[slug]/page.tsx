@@ -417,7 +417,7 @@ export default function PublicVacancyPage() {
             </h3>
             <ul className="space-y-3">
               {vacancy.requirements.map((req, idx) => (
-                <li key={idx} className="flex items-start gap-3 text-neutral-700 dark:text-lia-text-primary">
+                <li key={`req-${idx}`} className="flex items-start gap-3 text-neutral-700 dark:text-lia-text-primary">
                   <CheckCircle2 className="w-4 h-4 text-neutral-300 dark:lia-text-600 mt-0.5 flex-shrink-0" />
                   <span>{req}</span>
                 </li>
@@ -533,7 +533,7 @@ export default function PublicVacancyPage() {
             
             <div className="space-y-6">
               {processSteps.map((step, idx) => (
-                <div key={idx} className="flex items-start gap-4 relative">
+                <div key={`step-${idx}`} className="flex items-start gap-4 relative">
                   <div className={`
                     w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 z-10
                     ${step.highlight 

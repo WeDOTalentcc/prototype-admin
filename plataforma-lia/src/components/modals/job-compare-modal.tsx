@@ -775,7 +775,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                           {job.technical_requirements && job.technical_requirements.length > 0 ? (
                             <div className="flex flex-wrap gap-1">
                               {job.technical_requirements.slice(0, 4).map((req, idx) => (
-                                <span key={idx} className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-secondary">
+                                <span key={`req-${idx}`} className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-secondary">
                                   {typeof req === "string" ? req : req.name || req.skill || "-"}
                                 </span>
                               ))}
@@ -806,7 +806,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                           {job.behavioral_competencies && job.behavioral_competencies.length > 0 ? (
                             <div className="flex flex-wrap gap-1">
                               {job.behavioral_competencies.slice(0, 4).map((comp, idx) => (
-                                <span key={idx} className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-secondary">
+                                <span key={`comp-${idx}`} className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-secondary">
                                   {typeof comp === "string" ? comp : comp.name || comp.competency || "-"}
                                 </span>
                               ))}
@@ -837,7 +837,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                           {job.benefits && job.benefits.length > 0 ? (
                             <div className="flex flex-wrap gap-1">
                               {job.benefits.slice(0, 4).map((benefit, idx) => (
-                                <span key={idx} className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-secondary">
+                                <span key={`ben-${idx}`} className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-secondary">
                                   {benefit}
                                 </span>
                               ))}
@@ -1030,7 +1030,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                     </h4>
                     <ul className="space-y-1.5">
                       {liaAnalysis.recommendations.map((rec, idx) => (
-                        <li key={idx} className="flex items-start gap-2 text-xs text-lia-text-secondary">
+                        <li key={`rec-${idx}`} className="flex items-start gap-2 text-xs text-lia-text-secondary">
                           <span className="text-lia-text-disabled mt-0.5">•</span>
                           <span className="leading-relaxed">{rec}</span>
                         </li>

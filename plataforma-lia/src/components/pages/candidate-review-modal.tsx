@@ -587,8 +587,8 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                               <p className="text-xs text-lia-text-secondary mt-1">{exp.period}</p>
                               {exp.skills && exp.skills.length > 0 && (
                                 <div className="flex flex-wrap gap-1 mt-2">
-                                  {exp.skills.slice(0, 5).map((skill, idx) => (
-                                    <span key={idx} className="text-xs text-lia-text-secondary">
+                                  {exp.skills.slice(0, 5).map((skill) => (
+                                    <span key={skill} className="text-xs text-lia-text-secondary">
                                       {skill}{idx < Math.min(exp.skills!.length - 1, 4) ? ' · ' : ''}
                                     </span>
                                   ))}
@@ -614,7 +614,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                 {activeProfileTab === 'education' && (
                   <div className="space-y-4">
                     {currentCandidate.education_list?.map((edu, idx) => (
-                      <div key={idx} className="p-4 bg-gray-50 rounded-md">
+                      <div key={`edu-${idx}`} className="p-4 bg-gray-50 rounded-md">
                         <h5 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">{edu.institution}</h5>
                         <p className="text-sm text-lia-text-secondary">{edu.degree}</p>
                         <p className="text-xs text-lia-text-secondary mt-1">{edu.period}</p>
@@ -630,8 +630,8 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                     <div>
                       <h4 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary mb-2">Skills</h4>
                       <div className="flex flex-wrap gap-2">
-                        {currentCandidate.skills?.map((skill, idx) => (
-                          <Badge key={idx} variant="outline" className="text-xs">
+                        {currentCandidate.skills?.map((skill) => (
+                          <Badge key={skill} variant="outline" className="text-xs">
                             {skill}
                           </Badge>
                         )) || (
@@ -644,7 +644,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                         <h4 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary mb-2">Languages</h4>
                         <div className="flex flex-wrap gap-2">
                           {currentCandidate.languages.map((lang, idx) => (
-                            <Badge key={idx} variant="outline" className="text-xs">
+                            <Badge key={`lang-${idx}`} variant="outline" className="text-xs">
                               {lang}
                             </Badge>
                           ))}

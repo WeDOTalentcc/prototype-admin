@@ -255,7 +255,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                       <h5 className="text-xs font-medium text-status-success mb-2">Próximos Passos Recomendados:</h5>
                       <div className="space-y-2">
                         {liaInsights.nextSteps.slice(0, 3).map((step: string, idx: number) => (
-                          <div key={idx} className="flex items-center justify-between">
+                          <div key={`step-${idx}`} className="flex items-center justify-between">
                             <div className="flex-1">
                               <span className="text-xs text-status-success">{step.action}</span>
                               <div className="flex items-center gap-2 mt-1">
@@ -283,7 +283,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                         </h5>
                         <ul className="text-xs text-status-success space-y-1">
                           {liaInsights.analysis.strengths.slice(0, 3).map((strength: string, idx: number) => (
-                            <li key={idx}>• {strength}</li>
+                            <li key={`str-${idx}`}>• {strength}</li>
                           ))}
                         </ul>
                       </div>
@@ -295,7 +295,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                         </h5>
                         <ul className="text-xs text-wedo-orange space-y-1">
                           {liaInsights.analysis.concerns.slice(0, 3).map((concern: string, idx: number) => (
-                            <li key={idx}>• {concern}</li>
+                            <li key={`con-${idx}`}>• {concern}</li>
                           ))}
                         </ul>
                       </div>
@@ -436,8 +436,8 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-1">
-                    {candidate.skills.slice(0, 8).map((skill, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs">
+                    {candidate.skills.slice(0, 8).map((skill) => (
+                      <Badge key={skill} variant="secondary" className="text-xs">
                         {skill}
                       </Badge>
                     ))}

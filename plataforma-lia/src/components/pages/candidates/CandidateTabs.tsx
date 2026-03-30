@@ -53,7 +53,7 @@ const CandidateTabs = memo(function CandidateTabs({ tabs, activeTab, onTabChange
       </div>
     </div>
   )
-))
+})
 CandidateTabs.displayName = 'CandidateTabs'
 
 export { CandidateTabs }

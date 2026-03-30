@@ -189,7 +189,7 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
                   </div>
                   <ul className="space-y-0.5 ml-5">
                     {section.items.map((item, i) => (
-                      <li key={i} className="text-micro lia-text-600 dark:text-lia-text-tertiary list-disc font-['Open_Sans',sans-serif]">
+                      <li key={`item-${i}`} className="text-micro lia-text-600 dark:text-lia-text-tertiary list-disc font-['Open_Sans',sans-serif]">
                         {item}
                       </li>
                     ))}
@@ -197,7 +197,7 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
                   {section.suggestions && section.suggestions.length > 0 && (
                     <div className="mt-2 pt-2 border-t border-lia-border-subtle/50 dark:border-lia-border-subtle/50 space-y-1">
                       {section.suggestions.map((sug, i) => (
-                        <div key={i} className="flex items-start gap-1.5">
+                        <div key={`sug-${i}`} className="flex items-start gap-1.5">
                           <Lightbulb className="w-3 h-3 lia-text-400 flex-shrink-0 mt-0.5" />
                           <span className="text-micro lia-text-500 dark:text-lia-text-tertiary font-['Open_Sans',sans-serif] flex-1">
                             {sug}
@@ -235,7 +235,7 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
                   <span>Mercado</span>
                 </div>
                 {data.marketComparisons.map((comp, idx) => (
-                  <div key={idx} className="grid grid-cols-3 gap-2 py-1">
+                  <div key={`comp-${idx}`} className="grid grid-cols-3 gap-2 py-1">
                     <span className="text-micro lia-text-600 dark:text-lia-text-tertiary font-['Open_Sans',sans-serif]">
                       {comp.field}
                     </span>
@@ -286,7 +286,7 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
             </div>
             <ol className="space-y-1 ml-4">
               {data.recommendations.map((rec, idx) => (
-                <li key={idx} className="text-micro lia-text-600 dark:text-lia-text-tertiary list-decimal font-['Open_Sans',sans-serif]">
+                <li key={`rec-${idx}`} className="text-micro lia-text-600 dark:text-lia-text-tertiary list-decimal font-['Open_Sans',sans-serif]">
                   {rec}
                 </li>
               ))}

@@ -138,8 +138,8 @@ export function JobScreeningSection({
                             const fallbackSkills = screeningConfig?.wsi_skills || ['Comunicação', 'Resolução de Problemas', 'Adaptabilidade', 'Trabalho em Equipe']
                             return (
                               <div className="flex flex-wrap gap-1.5">
-                                {fallbackSkills.slice(0, 6).map((skill: string, idx: number) => (
-                                  <Badge key={idx} className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary text-micro px-1.5 py-0.5 h-[18px] font-medium">
+                                {fallbackSkills.slice(0, 6).map((skill: string) => (
+                                  <Badge key={skill} className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary text-micro px-1.5 py-0.5 h-[18px] font-medium">
                                     {skill}
                                   </Badge>
                                 ))}
@@ -153,8 +153,8 @@ export function JobScreeningSection({
                                 <div>
                                   <span className="text-micro font-medium text-lia-text-tertiary uppercase tracking-wide">Técnicas</span>
                                   <div className="flex flex-wrap gap-1.5 mt-1">
-                                    {technicalSkills.map((skill: string, idx: number) => (
-                                      <Badge key={idx} className="bg-wedo-cyan/10 dark:bg-wedo-cyan/30 text-wedo-cyan-dark dark:text-wedo-cyan-dark text-micro px-1.5 py-0.5 h-[18px] font-medium border border-wedo-cyan/30">
+                                    {technicalSkills.map((skill: string) => (
+                                      <Badge key={skill} className="bg-wedo-cyan/10 dark:bg-wedo-cyan/30 text-wedo-cyan-dark dark:text-wedo-cyan-dark text-micro px-1.5 py-0.5 h-[18px] font-medium border border-wedo-cyan/30">
                                         {skill}
                                       </Badge>
                                     ))}
@@ -165,8 +165,8 @@ export function JobScreeningSection({
                                 <div>
                                   <span className="text-micro font-medium text-lia-text-tertiary uppercase tracking-wide">Comportamentais</span>
                                   <div className="flex flex-wrap gap-1.5 mt-1">
-                                    {behavioralSkills.map((skill: string, idx: number) => (
-                                      <Badge key={idx} className="bg-wedo-purple/10 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple text-micro px-1.5 py-0.5 h-[18px] font-medium border border-wedo-purple/30">
+                                    {behavioralSkills.map((skill: string) => (
+                                      <Badge key={skill} className="bg-wedo-purple/10 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple text-micro px-1.5 py-0.5 h-[18px] font-medium border border-wedo-purple/30">
                                         {skill}
                                       </Badge>
                                     ))}
@@ -177,8 +177,8 @@ export function JobScreeningSection({
                                 <div>
                                   <span className="text-micro font-medium text-lia-text-tertiary uppercase tracking-wide">Responsabilidades</span>
                                   <div className="flex flex-wrap gap-1.5 mt-1">
-                                    {responsibilitySkills.slice(0, 8).map((skill: string, idx: number) => (
-                                      <Badge key={idx} className="bg-status-warning/10 dark:bg-status-warning/30 text-status-warning dark:text-status-warning text-micro px-1.5 py-0.5 h-[18px] font-medium border border-status-warning/30">
+                                    {responsibilitySkills.slice(0, 8).map((skill: string) => (
+                                      <Badge key={skill} className="bg-status-warning/10 dark:bg-status-warning/30 text-status-warning dark:text-status-warning text-micro px-1.5 py-0.5 h-[18px] font-medium border border-status-warning/30">
                                         {skill}
                                       </Badge>
                                     ))}
@@ -211,7 +211,7 @@ export function JobScreeningSection({
                           previewJob.languages && previewJob.languages.length > 0 ? (
                             <div className="space-y-1.5 mt-2">
                               {previewJob.languages.map((lang: Language, idx: number) => (
-                                <div key={idx} className="flex items-center gap-2">
+                                <div key={`lang-${idx}`} className="flex items-center gap-2">
                                   <span className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary font-medium">
                                     {lang.language}
                                   </span>
@@ -290,7 +290,7 @@ export function JobScreeningSection({
                                       <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary block mb-1">Benefícios:</span>
                                       <div className="flex flex-wrap gap-1.5">
                                         {(benefits as Benefit[]).map((b: Benefit, idx: number) => (
-                                          <Badge key={idx} className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-lia-text-primary dark:text-lia-text-primary">
+                                          <Badge key={`benefit-${idx}`} className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-lia-text-primary dark:text-lia-text-primary">
                                             {typeof b === 'string' ? b : b.name}
                                           </Badge>
                                         ))}
@@ -321,7 +321,7 @@ export function JobScreeningSection({
                             {previewJob.hiringProcess && previewJob.hiringProcess.length > 0 ? (
                               <div className="flex items-center gap-1 overflow-x-auto pb-1">
                                 {previewJob.hiringProcess.map((step: string, idx: number) => (
-                                  <React.Fragment key={idx}>
+                                  <React.Fragment key={`step-${idx}`}>
                                     {idx > 0 && (
                                       <ChevronRight className="w-3 h-3 text-lia-text-disabled flex-shrink-0" />
                                     )}
@@ -336,7 +336,7 @@ export function JobScreeningSection({
                                 {previewJob.interviewStages
                                   .sort((a: InterviewStage, b: InterviewStage) => (a.order || 0) - (b.order || 0))
                                   .map((stage: InterviewStage, idx: number) => (
-                                    <React.Fragment key={idx}>
+                                    <React.Fragment key={`stage-${idx}`}>
                                       {idx > 0 && (
                                         <ChevronRight className="w-3 h-3 text-lia-text-disabled flex-shrink-0" />
                                       )}

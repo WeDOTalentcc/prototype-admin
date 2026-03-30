@@ -63,7 +63,7 @@ const CandidatesHeader = memo(function CandidatesHeader({
       </div>
     </div>
   )
-))
+})
 CandidatesHeader.displayName = 'CandidatesHeader'
 
 export { CandidatesHeader }

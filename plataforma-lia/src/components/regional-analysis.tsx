@@ -464,8 +464,8 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
                                   Principais Empresas:
                                 </div>
                                 <div className="flex flex-wrap gap-1">
-                                  {estado.principaisEmpresas.slice(0, 3).map((empresa, idx) => (
-                                    <Badge key={idx} variant="outline" className="text-xs">
+                                  {estado.principaisEmpresas.slice(0, 3).map((empresa: string) => (
+                                    <Badge key={empresa} variant="outline" className="text-xs">
                                       {empresa}
                                     </Badge>
                                   ))}
@@ -489,8 +489,8 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
                             Principais Empresas
                           </h4>
                           <div className="space-y-2">
-                            {item.principaisEmpresas.map((empresa: string, idx: number) => (
-                              <div key={idx} className="flex items-center gap-2">
+                            {item.principaisEmpresas.map((empresa: string) => (
+                              <div key={empresa} className="flex items-center gap-2">
                                 <Building className="w-3 h-3 lia-text-base" />
                                 <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">{empresa}</span>
                               </div>
@@ -504,8 +504,8 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
                             Cargos Mais Populares
                           </h4>
                           <div className="flex flex-wrap gap-2">
-                            {item.cargosPopulares.map((cargo: string, idx: number) => (
-                              <Badge key={idx} variant="outline" className="text-xs">
+                            {item.cargosPopulares.map((cargo: string) => (
+                              <Badge key={cargo} variant="outline" className="text-xs">
                                 {cargo}
                               </Badge>
                             ))}

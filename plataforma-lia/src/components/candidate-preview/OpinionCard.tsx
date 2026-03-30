@@ -193,7 +193,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
               </h5>
               <ul className="space-y-0.5">
                 {(opinion.strengths as string[]).map((s: string, i: number) => (
-                  <li key={i} className={`${textStyles.caption} text-lia-text-secondary dark:text-lia-text-tertiary flex items-start gap-1`}>
+                  <li key={`str-${i}`} className={`${textStyles.caption} text-lia-text-secondary dark:text-lia-text-tertiary flex items-start gap-1`}>
                     <span className="text-status-success mt-0.5">•</span>
                     {s}
                   </li>
@@ -210,7 +210,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
               </h5>
               <ul className="space-y-0.5">
                 {(opinion.concerns as string[]).map((c: string, i: number) => (
-                  <li key={i} className={`${textStyles.caption} text-lia-text-secondary dark:text-lia-text-tertiary flex items-start gap-1`}>
+                  <li key={`con-${i}`} className={`${textStyles.caption} text-lia-text-secondary dark:text-lia-text-tertiary flex items-start gap-1`}>
                     <span className="text-status-warning mt-0.5">•</span>
                     {c}
                   </li>
@@ -227,7 +227,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
               </h5>
               <ul className="space-y-0.5">
                 {(opinion.gaps as string[]).map((g: string, i: number) => (
-                  <li key={i} className={`${textStyles.caption} text-lia-text-secondary dark:text-lia-text-tertiary flex items-start gap-1`}>
+                  <li key={`gap-${i}`} className={`${textStyles.caption} text-lia-text-secondary dark:text-lia-text-tertiary flex items-start gap-1`}>
                     <span className="text-status-error mt-0.5">•</span>
                     {g}
                   </li>
@@ -242,8 +242,8 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
                 <div className="flex-1">
                   <h5 className={`${textStyles.label} text-status-success mb-1`}>Skills Match</h5>
                   <div className="flex flex-wrap gap-1">
-                    {(opinion.matched_skills as string[]).map((skill: string, i: number) => (
-                      <Badge key={i} className={badgeStyles.success}>
+                    {(opinion.matched_skills as string[]).map((skill: string) => (
+                      <Badge key={skill} className={badgeStyles.success}>
                         {skill}
                       </Badge>
                     ))}
@@ -254,8 +254,8 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
                 <div className="flex-1">
                   <h5 className={`${textStyles.label} text-status-error mb-1`}>Skills Faltantes</h5>
                   <div className="flex flex-wrap gap-1">
-                    {(opinion.missing_skills as string[]).map((skill: string, i: number) => (
-                      <Badge key={i} className={badgeStyles.error}>
+                    {(opinion.missing_skills as string[]).map((skill: string) => (
+                      <Badge key={skill} className={badgeStyles.error}>
                         {skill}
                       </Badge>
                     ))}

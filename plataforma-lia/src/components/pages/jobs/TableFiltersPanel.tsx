@@ -514,7 +514,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
       </Card>
     </div>
   )
-))
+})
 TableFiltersPanel.displayName = 'TableFiltersPanel'
 
 export { TableFiltersPanel }

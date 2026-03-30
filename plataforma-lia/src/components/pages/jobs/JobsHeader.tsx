@@ -116,7 +116,7 @@ const JobsHeader = memo(function JobsHeader({
       </Tabs>
     </div>
   )
-))
+})
 JobsHeader.displayName = 'JobsHeader'
 
 export { JobsHeader }

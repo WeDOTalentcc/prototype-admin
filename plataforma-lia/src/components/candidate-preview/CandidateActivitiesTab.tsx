@@ -134,7 +134,7 @@ export function CandidateActivitiesTab({
                   <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary mb-1">Anexos:</p>
                   <div className="flex flex-wrap gap-1">
                     {activity.details.attachments.map((att: string, i: number) => (
-                      <Badge key={i} variant="outline" className="text-micro px-1.5 py-0 bg-white dark:bg-lia-bg-secondary">
+                      <Badge key={`att-${i}`} variant="outline" className="text-micro px-1.5 py-0 bg-white dark:bg-lia-bg-secondary">
                         📎 {att}
                       </Badge>
                     ))}
@@ -151,7 +151,7 @@ export function CandidateActivitiesTab({
             {activity.details.suggestedTimes && (
               <div className="flex flex-wrap gap-1">
                 {activity.details.suggestedTimes.map((t: string, i: number) => (
-                  <Badge key={i} className="text-micro px-2 py-0.5 bg-gray-100 lia-text-base dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle">
+                  <Badge key={`stime-${i}`} className="text-micro px-2 py-0.5 bg-gray-100 lia-text-base dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle">
                     📅 {t}
                   </Badge>
                 ))}
@@ -240,7 +240,7 @@ export function CandidateActivitiesTab({
                   <p className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary mb-1">Pontos Fortes</p>
                   <div className="flex flex-wrap gap-1">
                     {activity.details.strengths.map((s: string, i: number) => (
-                      <Badge key={i} className="text-micro px-1.5 py-0 bg-status-success/10 text-status-success border-status-success/30">
+                      <Badge key={`str-${i}`} className="text-micro px-1.5 py-0 bg-status-success/10 text-status-success border-status-success/30">
                         ✓ {s}
                       </Badge>
                     ))}
@@ -324,7 +324,7 @@ export function CandidateActivitiesTab({
                   <p className="text-xs font-semibold text-status-success mb-1">✨ Destaques</p>
                   <ul className="space-y-0.5">
                     {activity.details.highlights.map((h: string, i: number) => (
-                      <li key={i} className="text-xs text-status-success flex items-start gap-1">
+                      <li key={`hl-${i}`} className="text-xs text-status-success flex items-start gap-1">
                         <span>•</span> {h}
                       </li>
                     ))}
@@ -539,7 +539,7 @@ export function CandidateActivitiesTab({
                   <p className={`${textStyles.labelSmall} text-lia-text-primary dark:text-lia-text-primary mb-1`}>⚠️ Áreas de Desenvolvimento</p>
                   <div className="flex flex-wrap gap-1">
                     {activity.details.developmentAreas.map((a: string, i: number) => (
-                      <Badge key={i} variant="outline" className="text-micro px-1.5 py-0 bg-gray-100 text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default">
+                      <Badge key={`dev-${i}`} variant="outline" className="text-micro px-1.5 py-0 bg-gray-100 text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default">
                         {a}
                       </Badge>
                     ))}
@@ -898,7 +898,7 @@ export function CandidateActivitiesTab({
                         <p className={`${textStyles.bodySmall} mb-1`}>📎 Anexos:</p>
                         <div className="flex flex-wrap gap-1">
                           {activity.details.attachments.map((file: string, i: number) => (
-                            <Badge key={i} variant="outline" className="text-xs px-1.5 py-0.5">
+                            <Badge key={`file-${i}`} variant="outline" className="text-xs px-1.5 py-0.5">
                               {file}
                             </Badge>
                           ))}

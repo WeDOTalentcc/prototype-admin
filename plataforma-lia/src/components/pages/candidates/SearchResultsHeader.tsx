@@ -230,7 +230,7 @@ const SearchResultsHeader = memo(function SearchResultsHeader({
       </div>
     </div>
   )
-))
+})
 SearchResultsHeader.displayName = 'SearchResultsHeader'
 
 export { SearchResultsHeader }

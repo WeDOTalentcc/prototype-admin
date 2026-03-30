@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { memo } from 'react'
 import {
   Send,
   Calendar,
@@ -84,6 +84,6 @@ const CandidateBadges = memo(function CandidateBadges({
     </div>
   )
 })
-CandidateBadges.displayName = CandidateBadges
+CandidateBadges.displayName = 'CandidateBadges'
 
 export { CandidateBadges }

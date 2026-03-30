@@ -562,8 +562,8 @@ export function CandidatePreviewProfileTab({
                           </div>
                           
                           <div className="flex flex-wrap gap-1.5 mb-2">
-                            {industriesList.slice(0, 2).map((ind: string, idx: number) => (
- <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro bg-gray-100 lia-text-base dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
+                            {industriesList.slice(0, 2).map((ind: string) => (
+ <span key={ind} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro bg-gray-100 lia-text-base dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
                                 <Building className="w-2.5 h-2.5 mr-0.5" />
                                 {ind}
                               </span>
@@ -587,8 +587,8 @@ export function CandidatePreviewProfileTab({
                                 <Code className="w-2.5 h-2.5" />
                                 Stack:
                               </span>
-                              {technologiesList.slice(0, 6).map((tech: string, idx: number) => (
-                                <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-primary dark:text-lia-text-primary">
+                              {technologiesList.slice(0, 6).map((tech: string) => (
+                                <span key={tech} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-primary dark:text-lia-text-primary">
                                   {tech}
                                 </span>
                               ))}

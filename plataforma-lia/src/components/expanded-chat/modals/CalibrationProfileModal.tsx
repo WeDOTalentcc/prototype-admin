@@ -159,7 +159,7 @@ export function CalibrationProfileModal({
                     </h4>
                     <div className="flex flex-wrap gap-3">
                       {candidate.highlights.map((highlight, idx) => (
-                        <div key={idx} className="flex items-center gap-2 px-2 py-1.5 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
+                        <div key={`hl-${idx}`} className="flex items-center gap-2 px-2 py-1.5 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
                           <div className="w-6 h-6 rounded-md bg-gray-50 flex items-center justify-center">
                             {highlight.icon === 'trophy' && <Star className="w-3.5 h-3.5 text-status-warning" />}
                             {highlight.icon === 'clock' && <Clock className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />}
@@ -251,7 +251,7 @@ export function CalibrationProfileModal({
               {profileTab === 'skillmap' && (
                 <div className="space-y-6">
                   {candidate.skillMap.map((category, idx) => (
-                    <div key={idx}>
+                    <div key={`cat-${idx}`}>
                       <h5 className="text-sm font-semibold lia-text-strong mb-2">{category.category}</h5>
                       <div className="flex flex-wrap gap-2">
                         {category.skills.map((skill, sidx) => (
@@ -266,8 +266,8 @@ export function CalibrationProfileModal({
                   <div>
                     <h5 className="text-sm font-semibold lia-text-strong mb-2">Additional Skills</h5>
                     <div className="flex flex-wrap gap-2">
-                      {candidate.additionalSkills.slice(0, 10).map((skill, idx) => (
-                        <span key={idx} className="px-3 py-1.5 text-xs lia-text-secondary bg-gray-50 rounded-md">
+                      {candidate.additionalSkills.slice(0, 10).map((skill) => (
+                        <span key={skill} className="px-3 py-1.5 text-xs lia-text-secondary bg-gray-50 rounded-md">
                           {skill}
                         </span>
                       ))}
@@ -283,7 +283,7 @@ export function CalibrationProfileModal({
                     <h5 className="text-sm font-semibold lia-text-strong mb-2">Languages</h5>
                     <div className="flex flex-wrap gap-2">
                       {candidate.languages.map((lang, idx) => (
-                        <span key={idx} className="px-2 py-1 text-xs font-medium lia-text-strong bg-wedo-cyan/10 rounded-md">
+                        <span key={`lang-${idx}`} className="px-2 py-1 text-xs font-medium lia-text-strong bg-wedo-cyan/10 rounded-md">
                           {lang}
                         </span>
                       ))}

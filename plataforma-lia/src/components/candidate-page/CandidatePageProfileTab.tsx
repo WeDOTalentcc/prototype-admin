@@ -271,8 +271,8 @@ export function CandidatePageProfileTab({
                     </div>
                     
                     <div className="flex flex-wrap gap-1.5 mb-2">
-                      {industries.slice(0, 2).map((ind: string, idx: number) => (
-                        <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-default">
+                      {industries.slice(0, 2).map((ind: string) => (
+                        <span key={ind} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-default">
                           <Building className="w-2.5 h-2.5 mr-0.5" />
                           {ind}
                         </span>
@@ -296,8 +296,8 @@ export function CandidatePageProfileTab({
                           <Code className="w-2.5 h-2.5" />
                           Stack:
                         </span>
-                        {technologies.slice(0, 6).map((tech: string, idx: number) => (
-                          <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary">
+                        {technologies.slice(0, 6).map((tech: string) => (
+                          <span key={tech} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary">
                             {tech}
                           </span>
                         ))}
@@ -362,8 +362,8 @@ export function CandidatePageProfileTab({
             </CardHeader>
             <CardContent className="p-4">
               <div className="flex flex-wrap gap-1.5">
-                {candidate.certifications.map((cert: string, idx: number) => (
-                  <Badge key={idx} variant="outline" className="text-xs px-2 py-0.5 bg-status-success/10 text-status-success border-status-success/30">
+                {candidate.certifications.map((cert: string) => (
+                  <Badge key={cert} variant="outline" className="text-xs px-2 py-0.5 bg-status-success/10 text-status-success border-status-success/30">
                     {cert}
                   </Badge>
                 ))}
@@ -549,8 +549,8 @@ export function CandidatePageProfileTab({
               <div>
                 <h5 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-1.5">Tags</h5>
                 <div className="flex flex-wrap gap-1">
-                  {candidate.tags.map((tag: string, idx: number) => (
-                    <Badge key={idx} className="text-xs bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-secondary border-lia-border-subtle dark:border-lia-border-default">
+                  {candidate.tags.map((tag: string) => (
+                    <Badge key={tag} className="text-xs bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-secondary border-lia-border-subtle dark:border-lia-border-default">
                       {tag}
                     </Badge>
                   ))}

@@ -110,7 +110,7 @@ function FairnessWarning({ fairnessResult }: { fairnessResult: { is_fair: boolea
             Alerta de Fairness
           </p>
           {fairnessResult.warnings.map((w, idx) => (
-            <p key={idx} className="text-micro text-status-error mt-0.5">
+            <p key={`warn-${idx}`} className="text-micro text-status-error mt-0.5">
               {w}
             </p>
           ))}
@@ -295,7 +295,7 @@ export function TransitionChatPanel({
 
               if (msg.role === 'user') {
                 return (
-                  <div key={i} className="flex justify-end items-start gap-2">
+                  <div key={`user-msg-${i}`} className="flex justify-end items-start gap-2">
                     <div className="flex flex-col items-end gap-1">
                       <div className="max-w-[85%] px-3.5 py-2.5 bg-gray-100 dark:bg-lia-bg-secondary rounded-[14px] rounded-br-[4px]">
                         <p
@@ -328,7 +328,7 @@ export function TransitionChatPanel({
               })()
 
               return (
-                <div key={i} className="flex items-start gap-2.5">
+                <div key={`ai-msg-${i}`} className="flex items-start gap-2.5">
                   <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                     <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
                   </div>

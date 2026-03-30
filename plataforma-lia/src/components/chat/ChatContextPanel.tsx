@@ -384,7 +384,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                             <div key={key}>
                               <h5 className="text-xs font-medium lia-text-600 uppercase tracking-wide mb-1">{key.replace('_', ' ')}</h5>
                               {items.slice(0, 2).map((item: string, i: number) => (
-                                <div key={i} className="flex items-start space-x-2 text-sm mb-1">
+                                <div key={`item-${i}`} className="flex items-start space-x-2 text-sm mb-1">
                                   <div className="w-1 h-1 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
                                   <span>{item}</span>
                                 </div>
@@ -401,7 +401,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                             <div key={key}>
                               <h5 className="text-xs font-medium lia-text-600 uppercase tracking-wide mb-1">{key.replace('_', ' ')}</h5>
                               {items.slice(0, 2).map((item: string, i: number) => (
-                                <div key={i} className="flex items-start space-x-2 text-sm mb-1">
+                                <div key={`item-${i}`} className="flex items-start space-x-2 text-sm mb-1">
                                   <CheckCircle className="w-3 h-3 lia-text-600 mt-0.5 flex-shrink-0" />
                                   <span>{item}</span>
                                 </div>
@@ -579,7 +579,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                             </div>
                             <div className="flex flex-wrap gap-2 mb-2">
                               {candidate.highlights.map((highlight: string, i: number) => (
-                                <Badge key={i} variant="outline" className="text-xs border-lia-border-subtle dark:border-lia-border-subtle">
+                                <Badge key={`hl-${i}`} variant="outline" className="text-xs border-lia-border-subtle dark:border-lia-border-subtle">
                                   {highlight}
                                 </Badge>
                               ))}
@@ -911,7 +911,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                             <p className="text-sm lia-text-600 dark:text-lia-text-tertiary mb-2">Duração: {phase.duration}</p>
                             <div className="space-y-1">
                               {phase.activities.slice(0, 2).map((activity: string, i: number) => (
-                                <div key={i} className="flex items-start space-x-2 text-xs">
+                                <div key={`phact-${i}`} className="flex items-start space-x-2 text-xs">
                                   <div className="w-1 h-1 bg-gray-400 rounded-full mt-1.5 flex-shrink-0"></div>
                                   <span>{activity}</span>
                                 </div>
@@ -942,7 +942,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                             <div key={key}>
                               <h5 className="text-xs font-medium lia-text-600 uppercase tracking-wide mb-1">{key.replace('_', ' ')}</h5>
                               {innovations.slice(0, 2).map((innovation: string, i: number) => (
-                                <div key={i} className="flex items-start space-x-2 text-xs mb-1">
+                                <div key={`innov-${i}`} className="flex items-start space-x-2 text-xs mb-1">
                                   <CheckCircle className="w-3 h-3 lia-text-600 dark:text-lia-text-tertiary mt-0.5 flex-shrink-0" />
                                   <span>{innovation}</span>
                                 </div>
@@ -1008,7 +1008,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                               <span className="text-xs lia-text-600">Ações Recomendadas:</span>
                               <ul className="mt-1 space-y-1">
                                 {prediction.actions.slice(0, 2).map((action: string, i: number) => (
-                                  <li key={i} className="flex items-start space-x-2 text-xs">
+                                  <li key={`act-${i}`} className="flex items-start space-x-2 text-xs">
                                     <div className="w-1 h-1 rounded-full mt-1.5 flex-shrink-0 bg-gray-500 dark:lia-bg-400"></div>
                                     <span>{action}</span>
                                   </li>
@@ -1132,7 +1132,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                             <div className="flex gap-2 text-xs lia-text-500 dark:text-lia-text-tertiary">
                               <span>Preferências:</span>
                               {candidate.preferred_times.map((time: string, i: number) => (
-                                <span key={i} className="px-2 py-1 rounded-md bg-white dark:lia-bg-950">{time}</span>
+                                <span key={`ptime-${i}`} className="px-2 py-1 rounded-md bg-white dark:lia-bg-950">{time}</span>
                               ))}
                             </div>
                           </div>
@@ -1325,14 +1325,14 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                     <div>
                       <h4 className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary mb-3">Status dos Campos</h4>
                       <div className="grid grid-cols-2 gap-3">
-                        {contextData.data.collected_fields?.map((field: string, idx: number) => (
-                          <div key={idx} className="flex items-center gap-2 p-2 rounded-md bg-status-success/10 dark:bg-status-success/20">
+                        {contextData.data.collected_fields?.map((field: string) => (
+                          <div key={field} className="flex items-center gap-2 p-2 rounded-md bg-status-success/10 dark:bg-status-success/20">
                             <CheckCircle className="w-4 h-4 text-status-success" />
                             <span className="text-sm">{field}</span>
                           </div>
                         ))}
-                        {contextData.data.pending_fields?.map((field: string, idx: number) => (
-                          <div key={idx} className="flex items-center gap-2 p-2 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
+                        {contextData.data.pending_fields?.map((field: string) => (
+                          <div key={`pending-${field}`} className="flex items-center gap-2 p-2 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
                             <Clock className="w-4 h-4 lia-text-600" />
                             <span className="text-sm lia-text-600">{field}</span>
                           </div>

@@ -751,8 +751,8 @@ export function JDEvaluationPanel({
               {/* 9-DIMENSION GRID */}
               {evaluation.indicators.some(i => i.dimension) && (
                 <div className="grid grid-cols-3 gap-1.5 pb-2 border-b border-lia-border-subtle dark:border-lia-border-subtle">
-                  {evaluation.indicators.map((indicator, idx) => (
-                    <div key={idx} className={cn(
+                  {evaluation.indicators.map((indicator) => (
+                    <div key={indicator.label} className={cn(
  "flex items-center gap-1.5 px-2 py-1.5 rounded-md border text-micro",
                       indicator.status === 'sufficient' ? 'bg-status-success/10 border-status-success/30 dark:bg-status-success/10 dark:border-status-success/30' :
                       indicator.status === 'partial' ? 'bg-status-warning/10 border-status-warning/30 dark:bg-status-warning/10 dark:border-status-warning/30' :
@@ -785,8 +785,8 @@ export function JDEvaluationPanel({
               {/* COMPACT ROW (fallback for old-format indicators without dimension) */}
               {!evaluation.indicators.some(i => i.dimension) && (
                 <div className="flex items-center gap-3 pb-2 border-b border-lia-border-subtle dark:border-lia-border-subtle flex-wrap">
-                  {evaluation.indicators.map((indicator, idx) => (
-                    <div key={idx} className="flex items-center gap-1.5">
+                  {evaluation.indicators.map((indicator) => (
+                    <div key={indicator.label} className="flex items-center gap-1.5">
                       {getIndicatorIcon(indicator.label)}
                       <span className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary">{indicator.label}:</span>
                       <span className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">{indicator.count ?? 0}</span>
@@ -844,7 +844,7 @@ export function JDEvaluationPanel({
                         <span className="text-micro font-semibold text-lia-text-primary uppercase tracking-wide block mb-1">Responsabilidades</span>
                         <ul className="space-y-0.5">
                           {responsibilities.map((item, idx) => (
-                            <li key={idx} className="flex items-start gap-1.5">
+                            <li key={`resp-${idx}`} className="flex items-start gap-1.5">
                               <span className="text-xs lia-text-secondary mt-0.5 shrink-0">•</span>
                               <span className="text-xs text-lia-text-secondary dark:text-lia-text-secondary leading-relaxed" >{item}</span>
                             </li>
@@ -857,8 +857,8 @@ export function JDEvaluationPanel({
                       <div>
                         <span className="text-micro font-semibold text-lia-text-primary uppercase tracking-wide block mb-1">Competências Técnicas</span>
                         <div className="flex flex-wrap gap-1.5">
-                          {technicalSkills.map((skill, idx) => (
-                            <span key={idx} className="px-2.5 py-0.5 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary" >
+                          {technicalSkills.map((skill) => (
+                            <span key={skill} className="px-2.5 py-0.5 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary" >
                               {skill}
                             </span>
                           ))}
@@ -870,8 +870,8 @@ export function JDEvaluationPanel({
                       <div>
                         <span className="text-micro font-semibold text-lia-text-primary uppercase tracking-wide block mb-1">Competências Comportamentais</span>
                         <div className="flex flex-wrap gap-1.5">
-                          {behavioralCompetencies.map((comp, idx) => (
-                            <span key={idx} className="px-2.5 py-0.5 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary" >
+                          {behavioralCompetencies.map((comp) => (
+                            <span key={comp} className="px-2.5 py-0.5 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary" >
                               {comp}
                             </span>
                           ))}
@@ -902,7 +902,7 @@ export function JDEvaluationPanel({
                             <span className="text-micro font-semibold uppercase tracking-wide block mb-1">Responsabilidades</span>
                             <ul className="space-y-0.5">
                               {enrichedJd.responsibilities.map((item, idx) => (
-                                <li key={idx} className="flex items-start gap-1.5">
+                                <li key={`resp-${idx}`} className="flex items-start gap-1.5">
                                   <span className="text-xs mt-0.5 shrink-0 lia-text-base">•</span>
                                   <span className="text-xs text-lia-text-secondary dark:text-lia-text-secondary leading-relaxed" >{item}</span>
                                 </li>
@@ -915,8 +915,8 @@ export function JDEvaluationPanel({
                           <div>
                             <span className="text-micro font-semibold uppercase tracking-wide block mb-1">Competências Técnicas</span>
                             <div className="flex flex-wrap gap-1.5">
-                              {enrichedJd.technical_skills.map((skill, idx) => (
-                                <span key={idx} className="px-2.5 py-0.5 text-xs rounded-full dark:text-lia-text-secondary bg-wedo-cyan/10" >
+                              {enrichedJd.technical_skills.map((skill) => (
+                                <span key={skill} className="px-2.5 py-0.5 text-xs rounded-full dark:text-lia-text-secondary bg-wedo-cyan/10" >
                                   {skill}
                                 </span>
                               ))}
@@ -928,8 +928,8 @@ export function JDEvaluationPanel({
                           <div>
                             <span className="text-micro font-semibold uppercase tracking-wide block mb-1">Competências Comportamentais</span>
                             <div className="flex flex-wrap gap-1.5">
-                              {enrichedJd.behavioral_competencies.map((comp, idx) => (
-                                <span key={idx} className="px-2.5 py-0.5 text-xs rounded-full dark:text-lia-text-secondary bg-wedo-cyan/10" >
+                              {enrichedJd.behavioral_competencies.map((comp) => (
+                                <span key={comp} className="px-2.5 py-0.5 text-xs rounded-full dark:text-lia-text-secondary bg-wedo-cyan/10" >
                                   {comp}
                                 </span>
                               ))}
@@ -978,7 +978,7 @@ export function JDEvaluationPanel({
                         <div className="bg-white rounded-md border border-lia-border-subtle dark:border-lia-border-subtle dark:bg-lia-bg-primary p-3">
                           <div className="space-y-0.5">
                             {editResponsibilities.map((item, idx) => (
-                              <div key={idx} className="group flex items-start gap-2 py-1 px-1 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800">
+                              <div key={`edit-resp-${idx}`} className="group flex items-start gap-2 py-1 px-1 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800">
                                 <span className="text-xs lia-text-secondary mt-0.5 shrink-0">•</span>
                                 <span className="text-xs text-lia-text-secondary dark:text-lia-text-secondary flex-1 leading-relaxed" >{item}</span>
                                 <button
@@ -1027,7 +1027,7 @@ export function JDEvaluationPanel({
                         <div className="bg-white rounded-md border border-lia-border-subtle dark:border-lia-border-subtle dark:bg-lia-bg-primary p-3">
                           <div className="flex flex-wrap gap-1.5 mb-2">
                             {editTechSkills.map((item, idx) => (
-                              <span key={idx} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-gray-100 lia-text-base rounded-full border border-lia-border-subtle dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-subtle">
+                              <span key={`tech-${idx}-${item}`} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-gray-100 lia-text-base rounded-full border border-lia-border-subtle dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-subtle">
                                 {item}
                                 <button onClick={() => setEditTechSkills(prev => prev.filter((_, i) => i !== idx))} className="lia-text-secondary hover:text-status-error">
                                   <XCircle className="h-3 w-3" />
@@ -1087,7 +1087,7 @@ export function JDEvaluationPanel({
                         <div className="bg-white rounded-md border border-lia-border-subtle dark:border-lia-border-subtle dark:bg-lia-bg-primary p-3">
                           <div className="flex flex-wrap gap-1.5 mb-2">
                             {editBehavCompetencies.map((item, idx) => (
-                              <span key={idx} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-gray-100 lia-text-base rounded-full border border-lia-border-subtle dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-subtle">
+                              <span key={`behav-${idx}-${item}`} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-gray-100 lia-text-base rounded-full border border-lia-border-subtle dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-subtle">
                                 {item}
                                 <button onClick={() => setEditBehavCompetencies(prev => prev.filter((_, i) => i !== idx))} className="lia-text-secondary hover:text-status-error">
                                   <XCircle className="h-3 w-3" />
@@ -1192,8 +1192,8 @@ export function JDEvaluationPanel({
 
                             {generatedJD.tags.length > 0 && (
                               <div className="flex flex-wrap gap-1.5 pt-4 mt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
-                                {generatedJD.tags.map((tag, idx) => (
-                                  <span key={idx} className="text-micro px-2 py-0.5 bg-gray-100 text-lia-text-secondary rounded-full dark:bg-lia-bg-secondary dark:text-lia-text-tertiary">
+                                {generatedJD.tags.map((tag) => (
+                                  <span key={tag} className="text-micro px-2 py-0.5 bg-gray-100 text-lia-text-secondary rounded-full dark:bg-lia-bg-secondary dark:text-lia-text-tertiary">
                                     {tag}
                                   </span>
                                 ))}
