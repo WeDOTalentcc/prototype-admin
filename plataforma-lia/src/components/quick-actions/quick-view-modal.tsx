@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Brain, RefreshCw, Eye, X, Mail, Phone, MapPin, Linkedin, Globe } from "lucide-react"
+import { Brain, RefreshCw, Eye, X, Mail, Phone, MapPin, Linkedin, Globe, CheckCircle, AlertCircle, Calendar, Heart, ChevronRight } from "lucide-react"
 import { textStyles } from "@/lib/design-tokens"
 
 interface Candidate {

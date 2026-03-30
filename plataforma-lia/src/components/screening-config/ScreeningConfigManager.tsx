@@ -124,7 +124,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
         <div className="space-y-4">
           <div className="flex items-center justify-between bg-white dark:bg-lia-bg-secondary rounded-md p-4">
             <div className="flex items-center gap-3">
-              <SectionIcon className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-secondary" />
+              <currentSection.icon className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-secondary" />
               <div>
                 <h2 className={textStyles.h3}>{currentSection.title}</h2>
                 <p className={textStyles.description}>{currentSection.description}</p>

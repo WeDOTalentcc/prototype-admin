@@ -1273,7 +1273,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                                     <SCMQuestionDetailView
                                       item={item}
                                       isDetailsExpanded={isDetailsExpanded}
-                                      onToggleDetails={(id) => setExpandedQuestionDetails(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next })}
+                                      onToggleDetails={(id) => setExpandedQuestionDetails(prev => { const next = new Set(prev); if (next.has(id)) { next.delete(id) } else { next.add(id) } return next })}
                                       helpers={{ getBloomComplexity, getBloomLabelPTBR, getDreyfusLabelPTBR, getBigFiveLabelPTBR, getEstimatedTime }}
                                     />
                                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
@@ -1312,7 +1312,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                                     <SCMQuestionDetailView
                                       item={item}
                                       isDetailsExpanded={genDetailsExpanded}
-                                      onToggleDetails={(id) => setExpandedQuestionDetails(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next })}
+                                      onToggleDetails={(id) => setExpandedQuestionDetails(prev => { const next = new Set(prev); if (next.has(id)) { next.delete(id) } else { next.add(id) } return next })}
                                       helpers={{ getBloomComplexity, getBloomLabelPTBR, getDreyfusLabelPTBR, getBigFiveLabelPTBR, getEstimatedTime }}
                                     />
                                     <div className="flex items-center gap-1.5 shrink-0">
