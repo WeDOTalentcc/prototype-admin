@@ -1,6 +1,7 @@
-'use client'
+"use client"
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback } from "react"
+import useSWR from "swr"
 import {
   technicalTestsService,
   TechnicalTest,
@@ -8,7 +9,7 @@ import {
   ClientTestStats,
   ClientTestConfig,
   TestFilters,
-} from '@/services/admin/technical-tests-service'
+} from "@/services/admin/technical-tests-service"
 
 export interface UseTechnicalTestsResult {
   tests: ClientTest[]
@@ -24,45 +25,26 @@ export interface UseTechnicalTestsResult {
 }
 
 export function useTechnicalTests(clientId: string): UseTechnicalTestsResult {
-  const [tests, setTests] = useState<ClientTest[]>([])
-  const [stats, setStats] = useState<ClientTestStats | null>(null)
-  const [totalTests, setTotalTests] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
   const [isUpdating, setIsUpdating] = useState(false)
-  const [error, setError] = useState<Error | null>(null)
 
-  const fetchData = useCallback(async () => {
-    if (!clientId) return
-
-    setIsLoading(true)
-    setError(null)
-
-    try {
+  const { data, error, isLoading, mutate } = useSWR(
+    clientId ? ["adminTechnicalTests", clientId] : null,
+    async ([, id]) => {
       const [testsData, statsData] = await Promise.all([
-        technicalTestsService.getClientTests(clientId),
-        technicalTestsService.getClientTestStats(clientId),
+        technicalTestsService.getClientTests(id),
+        technicalTestsService.getClientTestStats(id),
       ])
-
-      setTests(testsData.tests)
-      setTotalTests(testsData.total)
-      setStats(statsData)
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch technical tests'))
-    } finally {
-      setIsLoading(false)
+      return { tests: testsData.tests, total: testsData.total, stats: statsData }
     }
-  }, [clientId])
+  )
 
   const toggleTestEnabled = useCallback(async (testId: string, enabled: boolean): Promise<boolean> => {
     if (!clientId) return false
-
     setIsUpdating(true)
     try {
       const result = await technicalTestsService.configureClientTest(clientId, testId, { enabled })
       if (result) {
-        setTests(prev => prev.map(t => 
-          t.testId === testId ? { ...t, enabled } : t
-        ))
+        await mutate()
         return true
       }
       return false
@@ -71,18 +53,15 @@ export function useTechnicalTests(clientId: string): UseTechnicalTestsResult {
     } finally {
       setIsUpdating(false)
     }
-  }, [clientId])
+  }, [clientId, mutate])
 
   const configureTest = useCallback(async (testId: string, config: ClientTestConfig): Promise<boolean> => {
     if (!clientId) return false
-
     setIsUpdating(true)
     try {
       const result = await technicalTestsService.configureClientTest(clientId, testId, config)
       if (result) {
-        setTests(prev => prev.map(t => 
-          t.testId === testId ? { ...t, ...config } : t
-        ))
+        await mutate()
         return true
       }
       return false
@@ -91,14 +70,14 @@ export function useTechnicalTests(clientId: string): UseTechnicalTestsResult {
     } finally {
       setIsUpdating(false)
     }
-  }, [clientId])
+  }, [clientId, mutate])
 
   const seedTests = useCallback(async (): Promise<boolean> => {
     setIsUpdating(true)
     try {
       const result = await technicalTestsService.seedTests()
       if (result) {
-        await fetchData()
+        await mutate()
         return true
       }
       return false
@@ -107,20 +86,16 @@ export function useTechnicalTests(clientId: string): UseTechnicalTestsResult {
     } finally {
       setIsUpdating(false)
     }
-  }, [fetchData])
-
-  useEffect(() => {
-    fetchData()
-  }, [fetchData])
+  }, [mutate])
 
   return {
-    tests,
-    stats,
-    totalTests,
+    tests: data?.tests ?? [],
+    stats: data?.stats ?? null,
+    totalTests: data?.total ?? 0,
     isLoading,
     isUpdating,
-    error,
-    refetch: fetchData,
+    error: error instanceof Error ? error : error ? new Error(String(error)) : null,
+    refetch: () => mutate(),
     toggleTestEnabled,
     configureTest,
     seedTests,

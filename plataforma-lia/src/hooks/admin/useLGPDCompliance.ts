@@ -1,7 +1,7 @@
-use client
+"use client"
 
-import { useCallback } from react
-import useSWR from swr
+import { useCallback } from "react"
+import useSWR from "swr"
 import {
   lgpdService,
   LGPDStats,
@@ -10,7 +10,7 @@ import {
   AutomatedDecision,
   BreachListParams,
   AutomatedDecisionListParams,
-} from @/services/admin/lgpd-service
+} from "@/services/admin/lgpd-service"
 
 export interface UseLGPDComplianceResult {
   stats: LGPDStats | null
@@ -28,7 +28,7 @@ export interface UseLGPDComplianceResult {
 
 export function useLGPDCompliance(clientId: string): UseLGPDComplianceResult {
   const { data, error, isLoading, mutate } = useSWR(
-    clientId ? [adminLGPDCompliance, clientId] : null,
+    clientId ? ["adminLGPDCompliance", clientId] : null,
     async ([, id]) => {
       const [statsData, dpoData, breachesData, decisionsData] = await Promise.all([
         lgpdService.getStats(id),
@@ -50,18 +50,26 @@ export function useLGPDCompliance(clientId: string): UseLGPDComplianceResult {
   const fetchBreaches = useCallback(async (params?: BreachListParams) => {
     if (!clientId) return
     try {
-      await lgpdService.getBreaches(clientId, params)
+      const result = await lgpdService.getBreaches(clientId, params)
+      await mutate(
+        (prev) => prev ? { ...prev, breaches: result.breaches, totalBreaches: result.total } : prev,
+        false
+      )
     } catch (err) {
     }
-  }, [clientId])
+  }, [clientId, mutate])
 
   const fetchDecisions = useCallback(async (params?: AutomatedDecisionListParams) => {
     if (!clientId) return
     try {
-      await lgpdService.getAutomatedDecisions(clientId, params)
+      const result = await lgpdService.getAutomatedDecisions(clientId, params)
+      await mutate(
+        (prev) => prev ? { ...prev, decisions: result.decisions, totalDecisions: result.total } : prev,
+        false
+      )
     } catch (err) {
     }
-  }, [clientId])
+  }, [clientId, mutate])
 
   return {
     stats: data?.stats ?? null,

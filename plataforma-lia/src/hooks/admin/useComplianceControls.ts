@@ -1,7 +1,7 @@
-use client
+"use client"
 
-import { useState, useCallback } from react
-import useSWR from swr
+import { useState, useCallback } from "react"
+import useSWR from "swr"
 import {
   complianceService,
   ComplianceDashboard,
@@ -11,7 +11,7 @@ import {
   SOXControl,
   FrameworkStats,
   CompanyControlListParams,
-} from @/services/admin/compliance-service
+} from "@/services/admin/compliance-service"
 
 export interface UseComplianceControlsResult {
   dashboard: ComplianceDashboard | null
@@ -31,7 +31,7 @@ export interface UseComplianceControlsResult {
 
 export function useComplianceControls(clientId: string): UseComplianceControlsResult {
   const { data, error, isLoading, mutate } = useSWR(
-    clientId ? [adminComplianceControls, clientId] : null,
+    clientId ? ["adminComplianceControls", clientId] : null,
     async ([, id]) => {
       const [dashboardData, controlsData, auditsData, soxData] = await Promise.all([
         complianceService.getDashboard(id),
@@ -54,26 +54,38 @@ export function useComplianceControls(clientId: string): UseComplianceControlsRe
   const fetchControls = useCallback(async (params?: CompanyControlListParams) => {
     if (!clientId) return
     try {
-      await complianceService.getCompanyControls(clientId, params)
+      const result = await complianceService.getCompanyControls(clientId, params)
+      await mutate(
+        (prev) => prev ? { ...prev, controls: result.controls, totalControls: result.total } : prev,
+        false
+      )
     } catch (err) {
     }
-  }, [clientId])
+  }, [clientId, mutate])
 
   const fetchAudits = useCallback(async (framework?: string) => {
     if (!clientId) return
     try {
-      await complianceService.getAudits(clientId, framework)
+      const result = await complianceService.getAudits(clientId, framework)
+      await mutate(
+        (prev) => prev ? { ...prev, audits: result.audits, totalAudits: result.total } : prev,
+        false
+      )
     } catch (err) {
     }
-  }, [clientId])
+  }, [clientId, mutate])
 
   const fetchSOXControls = useCallback(async (section?: string, testResult?: string) => {
     if (!clientId) return
     try {
-      await complianceService.getSOXControls(clientId, section, testResult)
+      const result = await complianceService.getSOXControls(clientId, section, testResult)
+      await mutate(
+        (prev) => prev ? { ...prev, soxControls: result.controls, totalSoxControls: result.total } : prev,
+        false
+      )
     } catch (err) {
     }
-  }, [clientId])
+  }, [clientId, mutate])
 
   return {
     dashboard: data?.dashboard ?? null,
