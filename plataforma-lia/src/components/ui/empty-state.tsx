@@ -56,4 +56,4 @@ export const EmptyState = React.memo(function EmptyState({
     </div>
   )
 })
-EmptyState.displayName = EmptyState
+EmptyState.displayName = 'EmptyState'

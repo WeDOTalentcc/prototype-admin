@@ -20,4 +20,4 @@ export const LiaPromptHeader = React.memo(function LiaPromptHeader({ title, isAn
     </div>
   )
 })
-LiaPromptHeader.displayName = LiaPromptHeader
+LiaPromptHeader.displayName = 'LiaPromptHeader'
