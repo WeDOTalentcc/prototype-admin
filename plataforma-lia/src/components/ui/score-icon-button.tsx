@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/tooltip"
 
 interface ScoreIconButtonProps {
-  id: string // 'geral' | 'triagem' | 'cv' | 'tecnico' | 'ingles' | 'b5'
+  id: string // geral | triagem | cv | tecnico | ingles | b5
   icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>
   value: number | null | undefined
   formattedValue?: string // Valor formatado para exibição (ex: "85%")
@@ -18,9 +18,9 @@ interface ScoreIconButtonProps {
   alwaysClickable?: boolean // Para modais como CV e Triagem que podem ser abertos mesmo sem score
 }
 
-const LIA_SCORE_IDS = ['geral', 'triagem', 'cv']
+const LIA_SCORE_IDS = [geral, triagem, cv]
 
-export function ScoreIconButton({
+export const ScoreIconButton = React.memo(function ScoreIconButton({
   id,
   icon: Icon,
   value,
@@ -36,14 +36,14 @@ export function ScoreIconButton({
   const displayValue = formattedValue || (hasScore ? String(value) : null)
   
   const isLiaScore = LIA_SCORE_IDS.includes(id)
-  const activeColor = isLiaScore ? 'var(--gray-950)' : 'var(--gray-600)'
-  const inactiveColor = 'var(--gray-400)'
+  const activeColor = isLiaScore ? var(--gray-950) : var(--gray-600)
+  const inactiveColor = var(--gray-400)
 
   const tooltipText = hasScore 
-    ? `${label}: ${displayValue}` 
+    ?  
     : alwaysClickable 
-      ? `${label}: Clique para ver detalhes`
-      : `${label}: Não disponível`
+      ? 
+      : 
 
   const buttonContent = (
     <button
@@ -51,7 +51,7 @@ export function ScoreIconButton({
       onClick={isClickable ? onClick : undefined}
       disabled={isDisabled}
       className={cn(
- "flex items-center gap-1 transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-400 rounded-full",
+        "flex items-center gap-1 transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-400 rounded-full",
         isClickable 
           ? "cursor-pointer hover:scale-105 hover:drop-active:scale-95" 
           : "cursor-default opacity-25"
@@ -82,4 +82,5 @@ export function ScoreIconButton({
       </Tooltip>
     </TooltipProvider>
   )
-}
+})
+ScoreIconButton.displayName = ScoreIconButton
