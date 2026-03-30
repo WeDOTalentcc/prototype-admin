@@ -1,6 +1,7 @@
-'use client'
+use client
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback } from react
+import useSWR from swr
 import {
   complianceService,
   ComplianceDashboard,
@@ -10,7 +11,7 @@ import {
   SOXControl,
   FrameworkStats,
   CompanyControlListParams,
-} from '@/services/admin/compliance-service'
+} from @/services/admin/compliance-service
 
 export interface UseComplianceControlsResult {
   dashboard: ComplianceDashboard | null
@@ -29,92 +30,62 @@ export interface UseComplianceControlsResult {
 }
 
 export function useComplianceControls(clientId: string): UseComplianceControlsResult {
-  const [dashboard, setDashboard] = useState<ComplianceDashboard | null>(null)
-  const [controls, setControls] = useState<CompanyControl[]>([])
-  const [audits, setAudits] = useState<ComplianceAudit[]>([])
-  const [soxControls, setSoxControls] = useState<SOXControl[]>([])
-  const [totalControls, setTotalControls] = useState(0)
-  const [totalAudits, setTotalAudits] = useState(0)
-  const [totalSoxControls, setTotalSoxControls] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
-
-  const fetchData = useCallback(async () => {
-    if (!clientId) return
-
-    setIsLoading(true)
-    setError(null)
-
-    try {
+  const { data, error, isLoading, mutate } = useSWR(
+    clientId ? [adminComplianceControls, clientId] : null,
+    async ([, id]) => {
       const [dashboardData, controlsData, auditsData, soxData] = await Promise.all([
-        complianceService.getDashboard(clientId),
-        complianceService.getCompanyControls(clientId, { limit: 20 }),
-        complianceService.getAudits(clientId),
-        complianceService.getSOXControls(clientId),
+        complianceService.getDashboard(id),
+        complianceService.getCompanyControls(id, { limit: 20 }),
+        complianceService.getAudits(id),
+        complianceService.getSOXControls(id),
       ])
-
-      setDashboard(dashboardData)
-      setControls(controlsData.controls)
-      setTotalControls(controlsData.total)
-      setAudits(auditsData.audits)
-      setTotalAudits(auditsData.total)
-      setSoxControls(soxData.controls)
-      setTotalSoxControls(soxData.total)
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch compliance data'))
-    } finally {
-      setIsLoading(false)
+      return {
+        dashboard: dashboardData,
+        controls: controlsData.controls,
+        totalControls: controlsData.total,
+        audits: auditsData.audits,
+        totalAudits: auditsData.total,
+        soxControls: soxData.controls,
+        totalSoxControls: soxData.total,
+      }
     }
-  }, [clientId])
+  )
 
   const fetchControls = useCallback(async (params?: CompanyControlListParams) => {
     if (!clientId) return
-
     try {
-      const data = await complianceService.getCompanyControls(clientId, params)
-      setControls(data.controls)
-      setTotalControls(data.total)
+      await complianceService.getCompanyControls(clientId, params)
     } catch (err) {
     }
   }, [clientId])
 
   const fetchAudits = useCallback(async (framework?: string) => {
     if (!clientId) return
-
     try {
-      const data = await complianceService.getAudits(clientId, framework)
-      setAudits(data.audits)
-      setTotalAudits(data.total)
+      await complianceService.getAudits(clientId, framework)
     } catch (err) {
     }
   }, [clientId])
 
   const fetchSOXControls = useCallback(async (section?: string, testResult?: string) => {
     if (!clientId) return
-
     try {
-      const data = await complianceService.getSOXControls(clientId, section, testResult)
-      setSoxControls(data.controls)
-      setTotalSoxControls(data.total)
+      await complianceService.getSOXControls(clientId, section, testResult)
     } catch (err) {
     }
   }, [clientId])
 
-  useEffect(() => {
-    fetchData()
-  }, [fetchData])
-
   return {
-    dashboard,
-    controls,
-    audits,
-    soxControls,
-    totalControls,
-    totalAudits,
-    totalSoxControls,
+    dashboard: data?.dashboard ?? null,
+    controls: data?.controls ?? [],
+    audits: data?.audits ?? [],
+    soxControls: data?.soxControls ?? [],
+    totalControls: data?.totalControls ?? 0,
+    totalAudits: data?.totalAudits ?? 0,
+    totalSoxControls: data?.totalSoxControls ?? 0,
     isLoading,
-    error,
-    refetch: fetchData,
+    error: error instanceof Error ? error : error ? new Error(String(error)) : null,
+    refetch: () => mutate(),
     fetchControls,
     fetchAudits,
     fetchSOXControls,

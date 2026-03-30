@@ -1,6 +1,7 @@
-'use client'
+use client
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useCallback } from react
+import useSWR from swr
 import {
   lgpdService,
   LGPDStats,
@@ -9,7 +10,7 @@ import {
   AutomatedDecision,
   BreachListParams,
   AutomatedDecisionListParams,
-} from '@/services/admin/lgpd-service'
+} from @/services/admin/lgpd-service
 
 export interface UseLGPDComplianceResult {
   stats: LGPDStats | null
@@ -26,82 +27,52 @@ export interface UseLGPDComplianceResult {
 }
 
 export function useLGPDCompliance(clientId: string): UseLGPDComplianceResult {
-  const [stats, setStats] = useState<LGPDStats | null>(null)
-  const [dpo, setDpo] = useState<DPORegistry | null>(null)
-  const [breaches, setBreaches] = useState<BreachNotification[]>([])
-  const [decisions, setDecisions] = useState<AutomatedDecision[]>([])
-  const [totalBreaches, setTotalBreaches] = useState(0)
-  const [totalDecisions, setTotalDecisions] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
-
-  const isMountedRef = useRef(true)
-
-  const fetchData = useCallback(async () => {
-    if (!clientId) return
-
-    setIsLoading(true)
-    setError(null)
-
-    try {
+  const { data, error, isLoading, mutate } = useSWR(
+    clientId ? [adminLGPDCompliance, clientId] : null,
+    async ([, id]) => {
       const [statsData, dpoData, breachesData, decisionsData] = await Promise.all([
-        lgpdService.getStats(clientId),
-        lgpdService.getDPO(clientId),
-        lgpdService.getBreaches(clientId, { limit: 10 }),
-        lgpdService.getAutomatedDecisions(clientId, { limit: 10 }),
+        lgpdService.getStats(id),
+        lgpdService.getDPO(id),
+        lgpdService.getBreaches(id, { limit: 10 }),
+        lgpdService.getAutomatedDecisions(id, { limit: 10 }),
       ])
-
-      if (isMountedRef.current) setStats(statsData)
-      if (isMountedRef.current) setDpo(dpoData)
-      if (isMountedRef.current) setBreaches(breachesData.breaches)
-      if (isMountedRef.current) setTotalBreaches(breachesData.total)
-      if (isMountedRef.current) setDecisions(decisionsData.decisions)
-      if (isMountedRef.current) setTotalDecisions(decisionsData.total)
-    } catch (err) {
-      if (isMountedRef.current) setError(err instanceof Error ? err : new Error('Failed to fetch LGPD data'))
-    } finally {
-      if (isMountedRef.current) setIsLoading(false)
+      return {
+        stats: statsData,
+        dpo: dpoData,
+        breaches: breachesData.breaches,
+        totalBreaches: breachesData.total,
+        decisions: decisionsData.decisions,
+        totalDecisions: decisionsData.total,
+      }
     }
-  }, [clientId])
+  )
 
   const fetchBreaches = useCallback(async (params?: BreachListParams) => {
     if (!clientId) return
-
     try {
-      const data = await lgpdService.getBreaches(clientId, params)
-      setBreaches(data.breaches)
-      setTotalBreaches(data.total)
+      await lgpdService.getBreaches(clientId, params)
     } catch (err) {
     }
   }, [clientId])
 
   const fetchDecisions = useCallback(async (params?: AutomatedDecisionListParams) => {
     if (!clientId) return
-
     try {
-      const data = await lgpdService.getAutomatedDecisions(clientId, params)
-      setDecisions(data.decisions)
-      setTotalDecisions(data.total)
+      await lgpdService.getAutomatedDecisions(clientId, params)
     } catch (err) {
     }
   }, [clientId])
 
-  useEffect(() => {
-    isMountedRef.current = true
-    fetchData()
-    return () => { isMountedRef.current = false }
-  }, [fetchData])
-
   return {
-    stats,
-    dpo,
-    breaches,
-    decisions,
-    totalBreaches,
-    totalDecisions,
+    stats: data?.stats ?? null,
+    dpo: data?.dpo ?? null,
+    breaches: data?.breaches ?? [],
+    decisions: data?.decisions ?? [],
+    totalBreaches: data?.totalBreaches ?? 0,
+    totalDecisions: data?.totalDecisions ?? 0,
     isLoading,
-    error,
-    refetch: fetchData,
+    error: error instanceof Error ? error : error ? new Error(String(error)) : null,
+    refetch: () => mutate(),
     fetchBreaches,
     fetchDecisions,
   }

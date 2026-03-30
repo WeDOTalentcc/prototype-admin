@@ -1,6 +1,6 @@
-"use client"
+'use client'
 
-import useSWR from "swr"
+import useSWR from 'swr'
 
 interface AiCreditsBalance {
   id: string
@@ -53,7 +53,7 @@ interface UseAiConsumptionHistoryReturn {
 
 const jsonFetcher = (url: string) =>
   fetch(url).then(r => {
-    if (!r.ok) throw new Error()
+    if (!r.ok) throw new Error(`HTTP ${r.status}`)
     return r.json()
   })
 
@@ -63,14 +63,14 @@ export function useAiCredits(): UseAiCreditsReturn {
     error: balanceError,
     isLoading: balanceLoading,
     mutate: mutateBalance,
-  } = useSWR<AiCreditsBalance>("/api/backend-proxy/ai-credits?endpoint=balance", jsonFetcher)
+  } = useSWR<AiCreditsBalance>('/api/backend-proxy/ai-credits?endpoint=balance', jsonFetcher)
 
   const {
     data: summary,
     error: summaryError,
     isLoading: summaryLoading,
     mutate: mutateSummary,
-  } = useSWR<UsageSummary>("/api/backend-proxy/ai-credits?endpoint=summary", jsonFetcher)
+  } = useSWR<UsageSummary>('/api/backend-proxy/ai-credits?endpoint=summary', jsonFetcher)
 
   const error = balanceError?.message ?? summaryError?.message ?? null
 
@@ -100,7 +100,7 @@ export function useAiConsumptionHistory(days: number = 30): UseAiConsumptionHist
     error: agentError,
     isLoading: agentLoading,
   } = useSWR<{ usage_by_agent?: AgentUsage[] } | AgentUsage[]>(
-    "/api/backend-proxy/ai-credits?endpoint=by-agent",
+    '/api/backend-proxy/ai-credits?endpoint=by-agent',
     jsonFetcher
   )
 

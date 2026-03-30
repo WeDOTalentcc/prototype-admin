@@ -70,7 +70,7 @@ export interface UseDailyBriefingResult {
 
 const jsonFetcher = (url: string) =>
   fetch(url).then(r => {
-    if (!r.ok) throw new Error()
+    if (!r.ok) throw new Error(`HTTP ${r.status}`)
     return r.json()
   })
 
