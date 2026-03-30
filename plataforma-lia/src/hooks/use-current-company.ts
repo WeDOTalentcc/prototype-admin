@@ -22,11 +22,11 @@ export function useCurrentCompany(): UseCurrentCompanyReturn {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchCompany = useCallback(async () => {
+  const fetchCompany = useCallback(async (signal?: AbortSignal) => {
     setLoading(true)
     setError(null)
     try {
-      const response = await fetch('/api/backend-proxy/company/profile')
+      const response = await fetch('/api/backend-proxy/company/profile', { signal })
       if (response.ok) {
         const data = await response.json()
         setCompany(data)
@@ -34,6 +34,7 @@ export function useCurrentCompany(): UseCurrentCompanyReturn {
         setError('Não foi possível carregar dados da empresa')
       }
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') return
       setError('Erro ao carregar empresa')
     } finally {
       setLoading(false)
@@ -41,7 +42,9 @@ export function useCurrentCompany(): UseCurrentCompanyReturn {
   }, [])
 
   useEffect(() => {
-    fetchCompany()
+    const controller = new AbortController()
+    fetchCompany(controller.signal)
+    return () => controller.abort()
   }, [fetchCompany])
 
   return {

@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { memo } from "react"
 import {
   Search,
   ArrowLeft,
@@ -23,7 +23,7 @@ export interface SearchResultsHeaderProps {
   onOpenAdvancedSearch: () => void
 }
 
-export function SearchResultsHeader({
+const SearchResultsHeader = memo(function SearchResultsHeader({
   lastSearchQuery,
   lastSearchEntities,
   onBack,
@@ -230,4 +230,7 @@ export function SearchResultsHeader({
       </div>
     </div>
   )
-}
+))
+SearchResultsHeader.displayName = 'SearchResultsHeader'
+
+export { SearchResultsHeader }

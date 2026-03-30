@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { memo } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Users, Plus, Filter, ArrowUpDown } from "lucide-react"
@@ -15,7 +15,7 @@ interface CandidatesHeaderProps {
   showFilters: boolean
 }
 
-export function CandidatesHeader({
+const CandidatesHeader = memo(function CandidatesHeader({
   totalCount,
   selectedCount,
   onAddCandidate,
@@ -63,4 +63,7 @@ export function CandidatesHeader({
       </div>
     </div>
   )
-}
+))
+CandidatesHeader.displayName = 'CandidatesHeader'
+
+export { CandidatesHeader }

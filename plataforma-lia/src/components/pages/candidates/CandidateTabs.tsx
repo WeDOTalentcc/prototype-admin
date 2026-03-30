@@ -1,5 +1,7 @@
 "use client"
 
+import { memo } from 'react'
+
 /**
  * CandidateTabs — barra de navegação de abas do Funil de Talentos.
  *
@@ -19,7 +21,7 @@ interface CandidateTabsProps {
   onTabChange: (tabId: string) => void
 }
 
-export function CandidateTabs({ tabs, activeTab, onTabChange }: CandidateTabsProps) {
+const CandidateTabs = memo(function CandidateTabs({ tabs, activeTab, onTabChange }: CandidateTabsProps) {
   return (
     <div className="mb-0">
       <div className="border-b border-lia-border-subtle dark:border-lia-border-subtle">
@@ -51,4 +53,7 @@ export function CandidateTabs({ tabs, activeTab, onTabChange }: CandidateTabsPro
       </div>
     </div>
   )
-}
+))
+CandidateTabs.displayName = 'CandidateTabs'
+
+export { CandidateTabs }

@@ -158,6 +158,7 @@ export function useReturnEvents({
 
     let eventSource: EventSource | null = null
     let fallbackInterval: ReturnType<typeof setInterval> | null = null
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null
 
     const startPollingFallback = () => {
       if (!fallbackInterval) {
@@ -200,7 +201,7 @@ export function useReturnEvents({
           eventSource?.close()
           eventSource = null
           startPollingFallback()
-          setTimeout(connectSSE, 10000)
+          reconnectTimer = setTimeout(connectSSE, 10000)
         }
       } catch {
         startPollingFallback()
@@ -212,6 +213,7 @@ export function useReturnEvents({
     return () => {
       eventSource?.close()
       if (fallbackInterval) clearInterval(fallbackInterval)
+      if (reconnectTimer) clearTimeout(reconnectTimer)
     }
   }, [enabled, jobId, companyId, useSSE, pollingIntervalMs, fetchEvents, processEvent])
 

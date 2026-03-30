@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { memo } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -16,7 +16,7 @@ interface JobsHeaderProps {
   onCreateJob: () => void
 }
 
-export function JobsHeader({
+const JobsHeader = memo(function JobsHeader({
   metrics,
   currentTab,
   viewMode,
@@ -116,4 +116,7 @@ export function JobsHeader({
       </Tabs>
     </div>
   )
-}
+))
+JobsHeader.displayName = 'JobsHeader'
+
+export { JobsHeader }

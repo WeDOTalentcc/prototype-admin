@@ -1,5 +1,7 @@
 "use client"
 
+import { memo } from 'react'
+
 import {
   Target, X, Search, Zap, CheckCircle, Globe, Users,
   Building, MapPin, Briefcase, Share2, BarChart3, Bookmark,
@@ -47,7 +49,7 @@ interface TableFiltersPanelProps {
   onDeleteSavedSearch: (id: string) => void
 }
 
-export function TableFiltersPanel({
+const TableFiltersPanel = memo(function TableFiltersPanel({
   isOpen,
   onClose,
   searchTerm,
@@ -512,4 +514,7 @@ export function TableFiltersPanel({
       </Card>
     </div>
   )
-}
+))
+TableFiltersPanel.displayName = 'TableFiltersPanel'
+
+export { TableFiltersPanel }
