@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react"
 import authService, { User, SSOUser, AuthenticatedUser, AuthMethod } from "@/services/auth-service"
+import { clearSessionStorage } from "@/lib/session-cleanup"
 
 interface AuthContextType {
   user: AuthenticatedUser | null
@@ -108,6 +109,7 @@ export function JWTAuthProvider({ children }: { children: ReactNode }) {
   }
 
   const logout = async () => {
+    clearSessionStorage()  // limpa dados de sessão do localStorage
     await authService.logout()
     setUser(null)
     setAuthMethod(null)

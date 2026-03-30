@@ -81,5 +81,23 @@ export default defineConfig({
         },
       },
     ],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      exclude: [
+        'node_modules/',
+        'src/**/*.test.{ts,tsx}',
+        'src/**/*.stories.{ts,tsx}',
+        'src/types/',
+        '.next/',
+        'out/',
+      ],
+      thresholds: {
+        statements: 10,
+        branches: 8,
+        functions: 10,
+        lines: 10,
+      },
+    },
   },
 });
