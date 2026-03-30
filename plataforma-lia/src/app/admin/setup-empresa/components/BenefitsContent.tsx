@@ -97,7 +97,7 @@ export function BenefitsContent({
 
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin lia-text-400" />
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-400" />
         </div>
       ) : benefits.length === 0 ? (
         <Card className="border-dashed">

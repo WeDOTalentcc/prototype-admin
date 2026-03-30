@@ -13,7 +13,7 @@ import {
 } from "lucide-react"
 const BigFiveDashboardPage = dynamic(() => import("./big-five-dashboard-page").then(m => ({ default: m.BigFiveDashboardPage })), {
   ssr: false,
-  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />,
+  loading: () => <div className="h-64 bg-gray-100 animate-pulse motion-reduce:animate-none rounded-lg" />,
 })
 import { ModuleUpsell } from "@/components/module-access/module-upsell"
 import { hasModuleAccess } from "@/utils/license-manager"

@@ -103,7 +103,7 @@ export default function SetupEmpresaPage() {
           </p>
         </div>
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin lia-text-400" />
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-400" />
         </div>
       </div>
     )
@@ -152,7 +152,7 @@ export default function SetupEmpresaPage() {
                   </div>
                   <Button onClick={handleSaveProfile} disabled={isSavingProfile} className="gap-2 bg-gray-800">
                     {isSavingProfile ? (
-                      <><Loader2 className="w-4 h-4 animate-spin" />Salvando...</>
+                      <><Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />Salvando...</>
                     ) : (
                       <><Save className="w-4 h-4" />Salvar Perfil</>
                     )}
@@ -231,7 +231,7 @@ export default function SetupEmpresaPage() {
                     <Input value={companyProfile.linkedin_url || ""} onChange={(e) => setCompanyProfile({ ...companyProfile, linkedin_url: e.target.value })} placeholder="https://www.linkedin.com/company/nome-da-empresa" />
                   </div>
                   <Button onClick={handleEnrichProfile} disabled={isEnriching || !companyProfile.linkedin_url} className="gap-2 h-10 bg-gray-900">
-                    {isEnriching ? (<><Loader2 className="w-4 h-4 animate-spin" />Enriquecendo...</>) : (<><Brain className="w-4 h-4 text-wedo-cyan" />Enriquecer com IA</>)}
+                    {isEnriching ? (<><Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />Enriquecendo...</>) : (<><Brain className="w-4 h-4 text-wedo-cyan" />Enriquecer com IA</>)}
                   </Button>
                 </div>
                 {enrichmentError && (
@@ -299,7 +299,7 @@ export default function SetupEmpresaPage() {
                     <Star className="w-12 h-12 mx-auto mb-4 lia-text-300" />
                     <p className="text-sm mb-4 lia-text-500 dark:text-lia-text-tertiary">Nenhuma análise EVP gerada ainda. Enriqueça o perfil com LinkedIn/Glassdoor ou clique para gerar manualmente.</p>
                     <Button onClick={() => handleGenerateEvp()} disabled={isGeneratingEvp || !companyProfile.id} className="gap-2 bg-gray-900">
-                      {isGeneratingEvp ? (<><Loader2 className="w-4 h-4 animate-spin" />Gerando EVP...</>) : (<><Brain className="w-4 h-4 text-wedo-cyan" />Gerar EVP</>)}
+                      {isGeneratingEvp ? (<><Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />Gerando EVP...</>) : (<><Brain className="w-4 h-4 text-wedo-cyan" />Gerar EVP</>)}
                     </Button>
                   </div>
                 ) : (
@@ -340,7 +340,7 @@ export default function SetupEmpresaPage() {
                         <span>Gerado em: {new Date(evpData.generated_at).toLocaleDateString("pt-BR")}</span>
                       </div>
                       <Button variant="outline" size="sm" onClick={() => handleGenerateEvp()} disabled={isGeneratingEvp} className="gap-2 border-lia-border-default">
-                        {isGeneratingEvp ? (<Loader2 className="w-3 h-3 animate-spin" />) : (<Brain className="w-3 h-3 text-wedo-cyan" />)}
+                        {isGeneratingEvp ? (<Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />) : (<Brain className="w-3 h-3 text-wedo-cyan" />)}
                         Regenerar
                       </Button>
                     </div>
@@ -517,7 +517,7 @@ export default function SetupEmpresaPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowBenefitModal(false)}>Cancelar</Button>
             <Button onClick={() => editingBenefit && handleSaveBenefit(editingBenefit)} disabled={isSaving || !editingBenefit?.name || !editingBenefit?.category} className="bg-gray-800">
-              {isSaving ? (<><Loader2 className="w-4 h-4 mr-2 animate-spin" />Salvando...</>) : (<><CheckCircle className="w-4 h-4 mr-2" />Salvar Benefício</>)}
+              {isSaving ? (<><Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />Salvando...</>) : (<><CheckCircle className="w-4 h-4 mr-2" />Salvar Benefício</>)}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -571,7 +571,7 @@ export default function SetupEmpresaPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => { setShowImportModal(false); setImportFile(null) }}>Cancelar</Button>
             <Button onClick={handleImportFile} disabled={isImporting || !importFile} className="gap-2 bg-gray-800">
-              {isImporting ? (<><Loader2 className="w-4 h-4 animate-spin" />Processando...</>) : (<><Brain className="w-4 h-4 text-wedo-cyan" />Importar com LIA</>)}
+              {isImporting ? (<><Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />Processando...</>) : (<><Brain className="w-4 h-4 text-wedo-cyan" />Importar com LIA</>)}
             </Button>
           </DialogFooter>
         </DialogContent>

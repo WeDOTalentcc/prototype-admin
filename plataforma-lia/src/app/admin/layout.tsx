@@ -359,7 +359,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         onLogout={handleLogout}
       />
 
-      <main className="flex-1 flex flex-col overflow-hidden">
+      <main id="main-content" className="flex-1 flex flex-col overflow-hidden">
         <header 
           className="flex items-center justify-between h-16 px-6 border-b shrink-0 border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:lia-bg-950"
           
