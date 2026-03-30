@@ -4,7 +4,7 @@ import React from "react"
 import { Badge } from "@/components/ui/badge"
 import {
   Clock, Shield, Target, TrendingUp, Lightbulb, BarChart3, AlertCircle,
-  Share2, Linkedin, Briefcase
+  Share2, Linkedin, Briefcase, Brain, Globe
 } from "lucide-react"
 import { type Job } from "@/components/jobs"
 import { type JobVacancyMetrics } from "@/services/lia-api"
@@ -22,7 +22,7 @@ export function JobPipelineSection({
   isLoadingJobMetrics,
 }: JobPipelineSectionProps) {
   return (
-                  {/* Tab: Funil & Analytics Unificado */}
+                    <div className="space-y-4">
                       {/* Cards de Métricas Preditivas Principais */}
                       <div className="grid grid-cols-2 gap-2">
                         {/* Score de Sucesso */}
