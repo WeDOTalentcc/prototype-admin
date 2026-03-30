@@ -428,47 +428,45 @@
 
 **COMPLIANCE por etapa:**
 
-| Camada | E1 | E2 | E3 | E4 | E5 | E6 | E7 | E8 | E9 |
-|--------|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
-| FairnessGuard L1 | · | ◐ | ◐ | ● | ● | · | ◐ | ● | ◐ |
-| FairnessGuard L2 | · | ◐ | ◐ | ● | ● | · | ◐ | ● | ◐ |
-| FairnessGuard L3 | · | · | · | ◐ | · | · | ◐ | · | · |
-| PII Masking | ● | ● | ● | ● | ● | ● | ● | ● | ● |
-| Fact-Checker | · | · | ◐ | ◐ | · | · | ◐ | · | · |
-| Audit Trail | ◐ | ◐ | ◐ | ◐ | ◐ | ◐ | ◐ | ◐ | ◐ |
-| Policy Engine | ◐ | · | · | · | ● | · | ● | ● | · |
-| Rate Limiting | ◐ | · | · | · | · | ● | · | · | · |
-| LGPD | ◐ | ◐ | · | ● | ◐ | ○ | ○ | ◐ | ◐ |
+| Etapa | FG L1 | FG L2 | FG L3 | PII | Fact-Check | Audit | Policy Eng | Rate Limit | LGPD |
+|-------|:-----:|:-----:|:-----:|:---:|:----------:|:-----:|:----------:|:----------:|:----:|
+| E1 Login | · | · | · | ● | · | ◐ | · | ◐ | ◐ |
+| E2 Editar Vaga | ◐ | ◐ | · | ● | · | ◐ | · | · | ◐ |
+| E3 Roteiro WSI | ◐ | ◐ | · | ● | ◐ | ◐ | · | · | · |
+| E4 Buscar Candidatos | ● | ● | ◐ | ● | ◐ | ◐ | · | · | ● |
+| E5 Aprovar Mapeados | ● | ● | · | ● | · | ◐ | ● | · | ◐ |
+| E6 Contato Email | · | · | · | ● | · | ◐ | · | ● | ○ |
+| E7 Triagem WSI | ◐ | ◐ | ◐ | ● | ◐ | ◐ | ● | · | ○ |
+| E8 Aprovar Triados | ● | ● | · | ● | · | ◐ | ● | · | ◐ |
+| E9 Agendar + Feedback | ◐ | ◐ | · | ● | · | ◐ | · | · | ◐ |
 
 **INTELIGENCIA por etapa:**
 
-| Camada | E1 | E2 | E3 | E4 | E5 | E6 | E7 | E8 | E9 |
-|--------|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
-| Learning Loop | · | ● | ● | ● | ● | · | ● | ● | ◐ |
-| A/B Testing | · | ◐ | ◐ | ◐ | · | ◐ | ◐ | · | ◐ |
-| Routing Adaptativo | · | · | · | ● | ● | · | · | ● | · |
-| Template Learning | · | ● | · | · | · | ◐ | · | · | ◐ |
-| Calibration | · | · | · | ● | ● | · | ● | ● | · |
-| Score Normalization | · | · | · | ● | · | · | ● | · | · |
-| Predictive Analytics | · | ◐ | · | ◐ | · | · | · | · | · |
-| Model Drift | · | · | · | ● | ● | · | ● | ● | · |
-| Conv. Memory | · | ● | ● | ● | ● | ● | ● | · | · |
-| Semantic Search | · | ◐ | ◐ | ● | · | · | · | · | · |
-| Voice Analysis | · | · | · | · | · | · | ● | · | · |
-| Embedding Service | · | · | · | ◐ | · | · | · | · | ◐ |
-| Long-Term Memory | · | · | · | · | · | · | · | · | ◐ |
+| Etapa | Learn Loop | A/B Test | Routing | Template Lrn | Calibr. | Score Norm | Predictive | Model Drift | Conv Mem | Semantic | Voice | Embedding | Long-Term |
+|-------|:----------:|:--------:|:-------:|:------------:|:-------:|:----------:|:----------:|:-----------:|:--------:|:--------:|:-----:|:---------:|:---------:|
+| E1 Login | · | · | · | · | · | · | · | · | · | · | · | · | · |
+| E2 Editar Vaga | ● | ◐ | · | ● | · | · | ◐ | · | ● | ◐ | · | · | · |
+| E3 Roteiro WSI | ● | ◐ | · | · | · | · | · | · | ● | ◐ | · | · | · |
+| E4 Buscar Candidatos | ● | ◐ | ● | · | ● | ● | ◐ | ● | ● | ● | · | ◐ | · |
+| E5 Aprovar Mapeados | ● | · | ● | · | ● | · | · | ● | ● | · | · | · | · |
+| E6 Contato Email | · | ◐ | · | ◐ | · | · | · | · | ● | · | · | · | · |
+| E7 Triagem WSI | ● | ◐ | · | · | ● | ● | · | ● | ● | · | ● | · | · |
+| E8 Aprovar Triados | ● | · | ● | · | ● | · | · | ● | · | · | · | · | · |
+| E9 Agendar + Feedback | ◐ | ◐ | · | ◐ | · | · | · | · | · | · | · | ◐ | ◐ |
 
 **COMUNICACAO por etapa:**
 
-| Canal | E1 | E2 | E3 | E4 | E5 | E6 | E7 | E8 | E9 |
-|-------|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
-| Email (Resend/SG) | · | · | · | · | · | ● | ◐ | · | ● |
-| WhatsApp (Twilio) | · | · | · | · | · | ● | ● | · | ● |
-| Chat Web (candidato) | · | · | · | · | · | · | ⚠ | · | · |
-| Teams (Graph API) | · | · | · | · | · | ○ | · | · | ◐ |
-| Telefone/VoIP | · | · | · | · | · | · | ◐ | · | · |
-| Feedback Automatico | · | · | · | · | · | · | · | ◐ | ◐ |
-| Notificacao (Bell) | · | · | · | · | ○ | ○ | ○ | ○ | ○ |
+| Etapa | Email | WhatsApp | Chat Web | Teams | VoIP | Feedback Auto | Notificacao |
+|-------|:-----:|:--------:|:--------:|:-----:|:----:|:-------------:|:-----------:|
+| E1 Login | · | · | · | · | · | · | · |
+| E2 Editar Vaga | · | · | · | · | · | · | · |
+| E3 Roteiro WSI | · | · | · | · | · | · | · |
+| E4 Buscar Candidatos | · | · | · | · | · | · | · |
+| E5 Aprovar Mapeados | · | · | · | · | · | · | ○ |
+| E6 Contato Email | ● | ● | · | ○ | · | · | ○ |
+| E7 Triagem WSI | ◐ | ● | ⚠ | · | ◐ | · | ○ |
+| E8 Aprovar Triados | · | · | · | · | · | ◐ | ○ |
+| E9 Agendar + Feedback | ● | ● | · | ◐ | · | ◐ | ○ |
 
 > **Legenda:** ● Ativo | ◐ Disponivel (precisa ativar) | ○ A implementar | ⚠ Gap bloqueante | · N/A
 
