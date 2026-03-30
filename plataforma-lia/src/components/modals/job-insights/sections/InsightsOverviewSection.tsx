@@ -29,6 +29,7 @@ import type {
   StageBottleneck,
   InsightCategory,
   WSIScore,
+  DemographicDistribution,
 } from "../job-insights.types"
 import { CONVERSION_STATUS_COLORS, INSIGHT_TYPE_STYLES } from "../job-insights.constants"
 
@@ -102,6 +103,19 @@ interface InsightsOverviewSectionProps {
   getDaysRemaining: (deadline?: string) => number | null
 }
 
+function DemographicBar({ label, count, percentage }: DemographicDistribution) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-xs text-lia-text-secondary">{label}</span>
+      <div className="flex items-center gap-2">
+        <div className="w-16 h-2 bg-gray-200 dark:bg-lia-bg-elevated rounded-full overflow-hidden">
+          <div className="h-full bg-gray-900 dark:bg-gray-50" style={{ width: `${percentage}%` }} />
+        </div>
+        <span className="text-micro text-lia-text-secondary w-8 text-right">{count}</span>
+      </div>
+    </div>
+  )
+}
 
 export function InsightsOverviewSection({
   jobs,
