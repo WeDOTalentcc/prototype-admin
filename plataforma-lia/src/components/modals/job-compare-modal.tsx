@@ -960,7 +960,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                   <div className="grid grid-cols-4 gap-3">
                     {liaAnalysis.keyMetrics.map((metric, idx) => (
                       <div
-                        key={idx}
+                        key={`metric-${idx}`}
                         className={`p-3 rounded-md border ${
                           metric.highlight
                             ? "bg-gray-50 dark:bg-lia-bg-elevated border-lia-border-default dark:border-lia-border-default"

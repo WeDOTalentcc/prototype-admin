@@ -71,7 +71,7 @@ function TasksChecklist({ tasks }: { tasks: TaskItem[] }) {
       </p>
       {tasks.map((task, idx) => (
         <div
-          key={idx}
+          key={`task-${idx}`}
           className="flex items-start gap-1.5 py-0.5"
         >
           <CheckCircle2 className="w-3 h-3 text-chat-cyan flex-shrink-0 mt-0.5" />
@@ -134,7 +134,7 @@ function LearnedSuggestionsChips({ suggestions, onAccept }: { suggestions: Learn
       <div className="flex flex-wrap gap-1">
         {suggestions.map((s, idx) => (
           <button
-            key={idx}
+            key={`sug-${idx}`}
             onClick={() => onAccept(s)}
             className="inline-flex items-center gap-1 px-2 py-0.5 bg-status-warning/10 border border-status-warning/30 rounded-md text-micro text-status-warning hover:bg-status-warning/15 transition-colors motion-reduce:transition-none"
             

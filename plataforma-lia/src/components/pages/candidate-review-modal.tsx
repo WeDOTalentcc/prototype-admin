@@ -526,7 +526,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                       <div className="grid grid-cols-3 gap-2">
                         {currentCandidate.highlights.slice(0, 3).map((highlight, idx) => (
                           <div
-                            key={idx}
+                            key={`hl-${idx}`}
                             className="p-3 bg-gray-50 rounded-md border border-lia-border-subtle"
                           >
                             <div className="flex items-center gap-2 mb-1">
@@ -693,7 +693,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                           <div className="flex items-center gap-1">
                             {[...Array(reason.scores.total)].map((_, idx) => (
                               <div
-                                key={idx}
+                                key={`dot-${idx}`}
                                 className={`w-2 h-2 rounded-full ${
                                   idx < reason.scores!.current
                                     ? 'bg-gray-900 dark:bg-gray-50'

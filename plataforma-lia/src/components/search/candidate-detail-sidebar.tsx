@@ -219,9 +219,9 @@ export function CandidateDetailSidebar({
               <div>
                 <h4 className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2">Habilidades</h4>
                 <div className="flex flex-wrap gap-1.5">
-                  {candidate.skills.map((skill, idx) => (
+                  {candidate.skills.map((skill) => (
                     <Badge 
-                      key={idx} 
+                      key={skill} 
                       variant="secondary" 
                       className="bg-gray-100 dark:bg-lia-bg-secondary lia-text-800 dark:text-lia-text-primary font-normal"
                     >

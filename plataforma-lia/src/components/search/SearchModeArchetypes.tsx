@@ -212,9 +212,9 @@ export function SearchModeArchetypes({
                         )}
                         {!isExpanded && arch.tags && arch.tags.length > 0 && (
                           <div className="flex items-center gap-1 ml-auto flex-shrink-0 group-hover:hidden">
-                            {arch.tags.slice(0, 2).map((tag: string, idx: number) => (
+                            {arch.tags.slice(0, 2).map((tag: string) => (
                               <span
-                                key={idx}
+                                key={tag}
                                 className="text-micro px-1.5 py-0.5 rounded-full bg-gray-100"
                               >
                                 {tag}
@@ -263,7 +263,7 @@ export function SearchModeArchetypes({
                             <div className="flex flex-wrap gap-1">
                               {arch.tags.map((tag: string) => (
                                 <span
-                                  key={idx}
+                                  key={tag}
                                   className="text-micro px-1.5 py-0.5 rounded-full bg-gray-100"
                                 >
                                   {tag}
@@ -279,7 +279,7 @@ export function SearchModeArchetypes({
                             <div className="flex flex-wrap gap-1">
                               {arch.filters.skills.map((skill: string) => (
                                 <span
-                                  key={idx}
+                                  key={skill}
                                   className="text-micro px-1.5 py-0.5 rounded-full bg-gray-100"
                                 >
                                   {skill}
@@ -360,7 +360,7 @@ export function SearchModeArchetypes({
                             <div className="flex flex-wrap gap-1">
                               {arch.filters.languages.map((lang: string) => (
                                 <span
-                                  key={idx}
+                                  key={lang}
                                   className="px-1.5 py-0.5 rounded-full text-micro bg-gray-100"
                                 >
                                   {lang}

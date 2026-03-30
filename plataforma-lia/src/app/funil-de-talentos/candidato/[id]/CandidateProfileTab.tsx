@@ -291,7 +291,7 @@ export function CandidateProfileTab({
               {candidate.certifications.map((cert, idx) => {
                 const certName = typeof cert === 'string' ? cert : String((cert as { name?: string }).name || 'Certificação')
                 return (
-                  <Badge key={idx} variant="secondary" className="text-xs px-2 py-1">
+                  <Badge key={`cert-${idx}`} variant="secondary" className="text-xs px-2 py-1">
                     {certName}
                   </Badge>
                 )

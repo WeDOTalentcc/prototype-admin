@@ -148,7 +148,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
         {technicalItems.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
             {technicalItems.map((item: {competency?: string; name?: string; weight?: number} | string, idx: number) => (
-              <Badge key={idx} className="bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary text-micro px-2 py-0.5 h-5 font-medium">
+              <Badge key={`tech-${idx}`} className="bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary text-micro px-2 py-0.5 h-5 font-medium">
                 {getCompetencyName(item)}
               </Badge>
             ))}
@@ -168,7 +168,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
         {behavioralItems.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
             {behavioralItems.map((item: {competency?: string; name?: string; weight?: number} | string, idx: number) => (
-              <Badge key={idx} className="bg-wedo-purple/10 text-wedo-purple border border-wedo-purple/30 text-micro px-2 py-0.5 h-5 font-medium">
+              <Badge key={`behav-${idx}`} className="bg-wedo-purple/10 text-wedo-purple border border-wedo-purple/30 text-micro px-2 py-0.5 h-5 font-medium">
                 {getCompetencyName(item)}
               </Badge>
             ))}

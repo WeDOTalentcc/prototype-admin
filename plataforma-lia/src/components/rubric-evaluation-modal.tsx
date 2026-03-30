@@ -492,7 +492,7 @@ export function RubricEvaluationModal({
                     <div className="space-y-1.5 pl-5">
                       {mockParecer.pontos_fortes_impacto.map((pf, idx) => (
                         <div 
-                          key={idx} 
+                          key={`pf-${idx}`} 
                           className="p-2 rounded-md bg-gray-50"
                         >
                           <div className="flex items-start gap-2">
@@ -529,7 +529,7 @@ export function RubricEvaluationModal({
                         const nivelBgColor = rm.nivel === 'alto' ? 'var(--status-error-bg-15)' : rm.nivel === 'medio' ? 'var(--status-warning-bg-15)' : 'var(--gray-bg-15)'
                         return (
                           <div 
-                            key={idx} 
+                            key={`rm-${idx}`} 
                             className="p-2 rounded-md"
                             style={{borderLeft: `2px solid ${nivelColor}`}}
                           >
@@ -602,7 +602,7 @@ export function RubricEvaluationModal({
                 <div className="space-y-1.5">
                   {mockWhyCandidate.map((reason, idx) => (
                     <div 
-                      key={idx} 
+                      key={`why-${idx}`} 
                       className="flex items-start gap-2 p-2 rounded-md bg-gray-50"
                     >
                       <CheckCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 lia-text-base" />
@@ -633,7 +633,7 @@ export function RubricEvaluationModal({
                     const priorityStyle = getPriorityStyle(req.priority)
                     return (
                       <div 
-                        key={idx} 
+                        key={`req-${idx}`} 
                         className="p-2.5 rounded-md transition-colors motion-reduce:transition-none"
                         style={{backgroundColor: rubricStyle.bg,
                           border: `1px solid ${rubricStyle.border}`}}
@@ -700,7 +700,7 @@ export function RubricEvaluationModal({
                     const statusColor = flag.status === 'ok' ? 'var(--gray-950)' : flag.status === 'warning' ? 'var(--status-warning)' : 'var(--status-error)'
                     return (
                       <div 
-                        key={idx} 
+                        key={`rf-${idx}`} 
                         className="flex items-center justify-between p-2 rounded-md bg-gray-50"
                       >
                         <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">
@@ -776,7 +776,7 @@ export function RubricEvaluationModal({
                         { code: 'P', label: 'Parcial', color: 'var(--status-warning)', bgColor: 'var(--status-warning-bg-15)' },
                         { code: 'X', label: 'Ausente', color: 'var(--status-error)', bgColor: 'var(--status-error-bg-15)' },
                       ].map((item, idx) => (
-                        <div key={idx} className="flex items-center gap-1 p-1.5 rounded-md bg-gray-50">
+                        <div key={`detail-${idx}`} className="flex items-center gap-1 p-1.5 rounded-md bg-gray-50">
                           <span 
                             className="text-micro font-bold w-5 h-5 flex items-center justify-center rounded-md"
                             style={{backgroundColor: item.bgColor, color: item.color}}

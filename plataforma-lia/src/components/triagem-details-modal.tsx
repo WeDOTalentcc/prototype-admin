@@ -517,7 +517,7 @@ export function TriagemDetailsModal({
                       const finalScore = f11.final_score ?? resp.scores.final_score
                       const isOpen = expandedSections.has(`resp-${idx}`)
                       return (
-                        <div key={idx}>
+                        <div key={`resp-${idx}`}>
                           <button
                             className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors motion-reduce:transition-none text-left"
                             onClick={() => toggleSection(`resp-${idx}`)}
@@ -698,7 +698,7 @@ export function TriagemDetailsModal({
                               const gs = typeof g === 'string' ? { texto: g, severidade: 'baixa' } : (g as { texto?: string; severidade?: string })
                               const sc = sevConfig[(gs.severidade as keyof typeof sevConfig) || 'baixa']
                               return (
-                                <li key={i} className={`flex items-start gap-2.5 text-xs lia-text-base rounded-lg border px-3 py-2 ${sc.bg} ${sc.border}`}>
+                                <li key={`gap-${i}`} className={`flex items-start gap-2.5 text-xs lia-text-base rounded-lg border px-3 py-2 ${sc.bg} ${sc.border}`}>
                                   <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${sc.dot}`} />
                                   <span className="flex-1">{gs.texto || gs}</span>
                                   <span className={`text-micro font-bold tracking-wider shrink-0 ${sc.color}`}>{sc.label}</span>
@@ -867,7 +867,7 @@ export function TriagemDetailsModal({
                   {f11Report.cbi_questions.map((q: { severity?: string; question?: string; texto?: string; focus?: string; foco?: string }, i: number) => {
                     const sev = sevConfig[(q.severity as keyof typeof sevConfig) ?? 'baixa']
                     return (
-                      <div key={i} className={`border rounded-lg p-4 space-y-2 ${sev.bg} ${sev.border}`}>
+                      <div key={`cbi-${i}`} className={`border rounded-lg p-4 space-y-2 ${sev.bg} ${sev.border}`}>
                         <p className="text-xs lia-text-strong leading-relaxed">"{q.question || q.texto}"</p>
                         <div className="flex items-center gap-2">
                           <span className="text-micro lia-text-secondary">Foco:</span>

@@ -399,7 +399,7 @@ export function EditArchetypeModal({
                 <div className="flex flex-wrap gap-1.5 mb-1.5 min-h-[28px] p-2 rounded-md border border-lia-border-subtle">
                   {editArchetypeLanguages.map((lang, idx) => (
                     <span
-                      key={idx}
+                      key={`lang-${idx}`}
                       className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-wedo-cyan/15"
                     >
                       {lang}
@@ -472,7 +472,7 @@ export function EditArchetypeModal({
               <div className="flex flex-wrap gap-1.5 mb-1.5 min-h-[28px] p-2 rounded-md border border-lia-border-subtle">
                 {editArchetypeSkills.map((skill, idx) => (
                   <span
-                    key={idx}
+                    key={`skill-${idx}`}
                     className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-wedo-cyan/15"
                   >
                     {skill}
@@ -579,7 +579,7 @@ export function EditArchetypeModal({
                     )}
                     {semanticSkillSuggestions.map((suggestion, idx) => (
                       <button
-                        key={idx}
+                        key={`sem-skill-${idx}`}
                         type="button"
                         className="w-full text-left px-2 py-1.5 text-xs hover:bg-gray-50 transition-colors motion-reduce:transition-none flex items-center gap-1.5"
                         onMouseDown={(e) => {
@@ -630,7 +630,7 @@ export function EditArchetypeModal({
                       const isSelected = selectedAiSkills.includes(skill)
                       return (
                         <button
-                          key={idx}
+                          key={`ai-skill-${idx}`}
                           type="button"
                           onClick={() => {
                             if (isSelected) {
@@ -683,7 +683,7 @@ export function EditArchetypeModal({
               <div className="flex flex-wrap gap-1.5 mb-1.5 min-h-[28px] p-2 rounded-md border border-lia-border-subtle">
                 {editArchetypeTags.map((tag, idx) => (
                   <span
-                    key={idx}
+                    key={`tag-${idx}`}
                     className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium"
                   >
                     {tag}
@@ -790,7 +790,7 @@ export function EditArchetypeModal({
                     )}
                     {semanticTagSuggestions.map((suggestion, idx) => (
                       <button
-                        key={idx}
+                        key={`sem-tag-${idx}`}
                         type="button"
                         className="w-full text-left px-2 py-1.5 text-xs hover:bg-gray-50 transition-colors motion-reduce:transition-none flex items-center gap-1.5"
                         onMouseDown={(e) => {
@@ -841,7 +841,7 @@ export function EditArchetypeModal({
                       const isSelected = selectedAiTags.includes(tag)
                       return (
                         <button
-                          key={idx}
+                          key={`ai-tag-${idx}`}
                           type="button"
                           onClick={() => {
                             if (isSelected) {

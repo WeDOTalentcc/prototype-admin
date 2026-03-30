@@ -208,7 +208,7 @@ export function CandidatePageProfileTab({
                 </h4>
                 <ul className="space-y-0.5">
                   {(opinionsHistory[0]?.strengths || ['Ferramentas de design', 'Design systems', 'Liderança de equipes']).slice(0, 3).map((s: string, i: number) => (
-                    <li key={i} className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary flex items-start gap-1">
+                    <li key={`s-${i}`} className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary flex items-start gap-1">
                       <span className="text-status-success">•</span> {s}
                     </li>
                   ))}
@@ -221,7 +221,7 @@ export function CandidatePageProfileTab({
                 </h4>
                 <ul className="space-y-0.5">
                   {(opinionsHistory[0]?.concerns || ['Acessibilidade avançada', 'Analytics de UX', 'Motion design']).slice(0, 3).map((c: string, i: number) => (
-                    <li key={i} className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary flex items-start gap-1">
+                    <li key={`c-${i}`} className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary flex items-start gap-1">
                       <span className="text-status-warning">•</span> {c}
                     </li>
                   ))}

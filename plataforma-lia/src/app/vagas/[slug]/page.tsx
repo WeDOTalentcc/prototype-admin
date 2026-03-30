@@ -435,7 +435,7 @@ export default function PublicVacancyPage() {
             <div className="flex flex-wrap gap-2">
               {vacancy.technical_requirements.map((tech, idx) => (
                 <Badge 
-                  key={idx} 
+                  key={`tech-${idx}`} 
                   variant="outline"
                   className={
                     tech.required 
@@ -464,7 +464,7 @@ export default function PublicVacancyPage() {
             <div className="flex flex-wrap gap-2">
               {vacancy.languages.map((lang, idx) => (
                 <Badge 
-                  key={idx}
+                  key={`lang-${idx}`}
                   variant="outline"
                   className={
                     lang.required 
@@ -493,7 +493,7 @@ export default function PublicVacancyPage() {
             <div className="flex flex-wrap gap-2">
               {vacancy.behavioral_competencies.map((comp, idx) => (
                 <Badge 
-                  key={idx}
+                  key={`comp-${idx}`}
                   variant="outline"
                   className="border-neutral-200 dark:lia-border-600 text-neutral-600 dark:lia-text-300 font-normal"
                 >
@@ -512,7 +512,7 @@ export default function PublicVacancyPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {vacancy.benefits.map((benefit, idx) => (
                 <div 
-                  key={idx} 
+                  key={`benefit-${idx}`} 
                   className="flex items-center gap-3 text-neutral-700 dark:text-lia-text-primary py-2"
                 >
                   <CheckCircle2 className="w-4 h-4 text-neutral-300 dark:lia-text-600 flex-shrink-0" />

@@ -1150,7 +1150,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
                             <div className="grid grid-cols-3 gap-2">
                               {slots.map((slot, i: number) => (
                                 <button
-                                  key={i}
+                                  key={`slot-${i}-${slot.time}`}
                                   disabled={!slot.available}
                                   className={`p-2 rounded-md text-xs transition-transform motion-reduce:transition-none ${slot.available ? 'hover:scale-105' : 'opacity-50 cursor-not-allowed'}`}
                                   style={{backgroundColor: slot.available ? 'var(--green-50, #f0fdf4)' : 'var(--gray-100)',

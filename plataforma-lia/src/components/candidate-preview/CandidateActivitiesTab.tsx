@@ -195,7 +195,7 @@ export function CandidateActivitiesTab({
                   <p className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary mb-1">👥 Entrevistadores</p>
                   <div className="space-y-1">
                     {activity.details.interviewers.map((int: Record<string, unknown> | string, i: number) => (
-                      <div key={i} className="flex items-center gap-2 text-xs bg-gray-50 dark:bg-lia-bg-secondary p-1.5 rounded-md">
+                      <div key={`int-${i}`} className="flex items-center gap-2 text-xs bg-gray-50 dark:bg-lia-bg-secondary p-1.5 rounded-md">
                         <div className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-micro font-medium text-lia-text-secondary dark:text-lia-text-tertiary">
                           {typeof int === 'string' ? int.charAt(0) : String(int.name ?? '').charAt(0)}
                         </div>
@@ -463,7 +463,7 @@ export function CandidateActivitiesTab({
               {activity.details.benefits && (
                 <div className="flex flex-wrap gap-1">
                   {activity.details.benefits.map((b: Record<string, unknown> | string, i: number) => (
-                    <Badge key={i} variant="outline" className="text-micro px-1.5 py-0">
+                    <Badge key={`ben-${i}`} variant="outline" className="text-micro px-1.5 py-0">
                       {typeof b === 'object' ? String(b.name ?? '') : String(b)}
                     </Badge>
                   ))}

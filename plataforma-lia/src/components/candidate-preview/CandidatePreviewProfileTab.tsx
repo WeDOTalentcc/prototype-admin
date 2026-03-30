@@ -271,9 +271,9 @@ export function CandidatePreviewProfileTab({
                           </Tooltip>
                         </div>
                         <div className="flex flex-wrap gap-1 ml-3.5">
-                          {category.skills.map((skill: string, idx: number) => (
+                          {category.skills.map((skill: string) => (
                             <Badge 
-                              key={idx} 
+                              key={skill} 
                               className="text-micro px-1.5 py-0 bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary border-0"
                             >
                               {skill}
@@ -298,9 +298,9 @@ export function CandidatePreviewProfileTab({
                           </Tooltip>
                         </div>
                         <div className="flex flex-wrap gap-1 ml-3.5">
-                          {softSkillsList.map((skill: string, idx: number) => (
+                          {softSkillsList.map((skill: string) => (
                             <Badge 
-                              key={idx} 
+                              key={skill} 
                               className="text-micro px-1.5 py-0 border-0 bg-wedo-cyan/15 lia-text-strong"
                             >
                               {skill}
@@ -325,9 +325,9 @@ export function CandidatePreviewProfileTab({
                           </Tooltip>
                         </div>
                         <div className="flex flex-wrap gap-1 ml-3.5">
-                          {expertiseList.map((item: string, idx: number) => (
+                          {expertiseList.map((item: string) => (
                             <Badge
-                              key={idx}
+                              key={item}
                               className="text-micro px-1.5 py-0 border-0 bg-gray-200/30 lia-text-strong"
                             >
                               {item}
@@ -352,9 +352,9 @@ export function CandidatePreviewProfileTab({
                           </Tooltip>
                         </div>
                         <div className="flex flex-wrap gap-1 ml-3.5">
-                          {interests.map((interest: string, idx: number) => (
+                          {interests.map((interest: string) => (
                             <Badge 
-                              key={idx} 
+                              key={skill} 
                               className="text-micro px-1.5 py-0 bg-wedo-magenta/10 text-wedo-magenta border-0"
                             >
                               {interest}
@@ -379,9 +379,9 @@ export function CandidatePreviewProfileTab({
                           </Tooltip>
                         </div>
                         <div className="flex flex-wrap gap-1 ml-3.5">
-                          {tags.map((tag: string, idx: number) => (
+                          {tags.map((tag: string) => (
                             <Badge
-                              key={idx}
+                              key={tag}
                               className="text-micro px-1.5 py-0 border-0 bg-gray-200/30 lia-text-strong"
                             >
                               {tag}

@@ -246,7 +246,7 @@ export function CultureProfilePreview({
             <div className="flex flex-wrap gap-2">
               {editedProfile.values.map((value, index) => (
                 <span
-                  key={index}
+                  key={`value-${index}`}
                   className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium 
                     ${isEditing 
                       ? "bg-gray-200 lia-text-700 dark:bg-lia-bg-elevated dark:text-lia-text-secondary pr-1" 
@@ -297,7 +297,7 @@ export function CultureProfilePreview({
             <ul className="space-y-1.5">
               {editedProfile.evp_bullets.map((evp, index) => (
                 <li
-                  key={index}
+                  key={`evp-${index}`}
                   className="flex items-start gap-2 text-xs lia-text-800 dark:text-lia-text-primary"
                 >
                   <Lightbulb className="w-3.5 h-3.5 text-status-warning mt-0.5 flex-shrink-0" />
@@ -346,7 +346,7 @@ export function CultureProfilePreview({
           <div className="flex flex-wrap gap-2">
             {(editedProfile.core_competencies || []).map((competency, index) => (
               <span
-                key={index}
+                key={`comp-${index}`}
                 className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium 
                   ${isEditing 
                     ? "bg-gray-100 lia-text-700 dark:bg-lia-bg-secondary dark:text-lia-text-secondary pr-1" 
@@ -593,7 +593,7 @@ export function CultureProfilePreview({
                 <div className="flex flex-wrap gap-1.5">
                   {editedProfile.tech_stack.map((tech, index) => (
                     <span
-                      key={index}
+                      key={`tech-${index}`}
                       className="inline-flex items-center px-2 py-1 rounded-full text-micro font-medium bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300"
                     >
                       {tech}
