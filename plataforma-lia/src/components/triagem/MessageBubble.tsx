@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils"
 import { LIAIcon } from "@/components/ui/lia-icon"
 import { AudioPlayer } from "@/components/ui/audio-player"
 import type { TriagemMessage } from "@/components/triagem/types"
+import { sanitizeHtml } from "@/lib/sanitize"
 
 interface MessageBubbleProps {
   message: TriagemMessage
@@ -80,7 +81,7 @@ export function MessageBubble({ message, candidateName = "Candidato", className,
               ? "bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary"
               : "bg-gray-900 text-white"
           )}
-          dangerouslySetInnerHTML={{ __html: parseSimpleMarkdown(message.content) }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(parseSimpleMarkdown(message.content)) }}
         />
         {isLia && message.audioUrl && (
           <AudioPlayer

@@ -23,6 +23,7 @@ import { useExpandedChatContext, type TechnicalSkill, type BehavioralCompetency 
 import { formatTimestamp, formatSalaryAnalysisText } from "../utils/message-format-utils"
 import type { Message, FastTrackState } from "../types"
 import type { ToolExecutionResult } from "../hooks"
+import { sanitizeHtml } from "@/lib/sanitize"
 
 interface ChatMessageListProps {
   messages: Message[]
@@ -80,7 +81,7 @@ export function ChatMessageList({
     const textToShow = isLastTypingMessage && displayedText.length > 0 ? displayedText : content
     const cleaned = cleanAgentResponse(textToShow)
     const html = parseChatMarkdown(cleaned)
-    return <div dangerouslySetInnerHTML={{ __html: html }} />
+    return <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) }} />
   }
 
   return (

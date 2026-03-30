@@ -26,6 +26,7 @@ import { isClearChatCommand } from '@/lib/chat-commands'
 import { cleanAgentResponse, parseChatMarkdown, escapeHtml } from '@/lib/chat-format'
 import { MessageFeedback } from '@/components/chat/message-feedback'
 import type { ChatMessage, TaskItem, LearnedSuggestion } from '@/hooks/use-interpret-context'
+import { sanitizeHtml } from "@/lib/sanitize"
 
 interface TransitionChatPanelProps {
   messages: ChatMessage[]
@@ -164,7 +165,7 @@ function RichContent({ html, className }: { html: string; className?: string }) 
   return (
     <div
       className={className}
-      dangerouslySetInnerHTML={{ __html: html }}
+      dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) }}
     />
   )
 }

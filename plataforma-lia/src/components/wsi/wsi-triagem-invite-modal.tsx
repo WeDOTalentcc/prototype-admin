@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Switch } from "@/components/ui/switch"
 import { textStyles, cardStyles, badgeStyles } from "@/lib/design-tokens"
 import { MessageComposer } from "@/components/communication"
+import { sanitizeHtml } from "@/lib/sanitize"
 
 type ContactChannel = 'email' | 'whatsapp' | 'telefone' | 'both'
 
@@ -646,7 +647,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   <div className="p-4">
                     <div 
                       className={`${textStyles.body} leading-relaxed`}
-                      dangerouslySetInnerHTML={{ __html: formatPreviewMessage(message) || '<span class="lia-text-secondary">A mensagem aparecerá aqui...</span>' }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(formatPreviewMessage(message) || '<span class="lia-text-secondary">A mensagem aparecerá aqui...</span>') }}
                     />
                   </div>
                 </>
@@ -657,7 +658,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                     <div className="bg-whatsapp-bubble rounded-md p-3 max-w-[85%]">
                       <div 
                         className="text-xs lia-text-strong leading-relaxed whitespace-pre-wrap"
-                        dangerouslySetInnerHTML={{ __html: formatPreviewMessage(message) || '<span class="lia-text-secondary">A mensagem aparecerá aqui...</span>' }}
+                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(formatPreviewMessage(message) || '<span class="lia-text-secondary">A mensagem aparecerá aqui...</span>') }}
                       />
                       <div className="text-micro lia-text-secondary text-right mt-1">
                         {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} ✓✓
@@ -689,7 +690,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   <div className="p-4">
                     <div 
                       className="text-xs text-lia-text-primary dark:text-lia-text-primary leading-relaxed font-mono bg-gray-50 p-3 rounded-md border border-lia-border-subtle"
-                      dangerouslySetInnerHTML={{ __html: formatPreviewMessage(message) || '<span class="lia-text-secondary">O script aparecerá aqui...</span>' }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(formatPreviewMessage(message) || '<span class="lia-text-secondary">O script aparecerá aqui...</span>') }}
                     />
                   </div>
                 </>

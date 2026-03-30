@@ -33,6 +33,7 @@ import {
 } from "@/hooks/use-float-conversation"
 import { resolveScopeFromPathname } from "@/hooks/use-current-scope"
 import { cleanAgentResponse, parseChatMarkdown, escapeHtml } from "@/lib/chat-format"
+import { sanitizeHtml } from "@/lib/sanitize"
 
 const MAX_INPUT_CHARS = 2000
 
@@ -531,7 +532,7 @@ function RichContent({ html, className }: { html: string; className?: string }) 
   return (
     <div
       className={className}
-      dangerouslySetInnerHTML={{ __html: html }}
+      dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) }}
     />
   )
 }

@@ -17,6 +17,7 @@ import {
 } from "lucide-react"
 import { liaApi, type EmailTemplate, type CandidateLocal } from "@/services/lia-api"
 import { MessageComposer } from "@/components/communication"
+import { sanitizeEmailHtml } from "@/lib/sanitize"
 
 const api = liaApi as typeof liaApi & Record<string, unknown>
 
@@ -278,7 +279,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
                         <div
                           className="prose prose-sm max-w-none lia-text-strong text-xs leading-relaxed"
                           dangerouslySetInnerHTML={{
-                            __html: renderPreview(editedBody).replace(/\n/g, '<br/>'),
+                            __html: sanitizeEmailHtml(renderPreview(editedBody).replace(/\n/g, '<br/>')),
                           }}
                         />
                       ) : (

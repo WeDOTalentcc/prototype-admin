@@ -18,6 +18,7 @@ import { Switch } from "@/components/ui/switch"
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { CommunicationTemplate, TemplateSituation } from '@/hooks/use-communication-templates'
 import { MessageComposer } from '@/components/communication'
+import { sanitizeHtml } from "@/lib/sanitize"
 
 // Types
 export type CommunicationType = 'email' | 'whatsapp' | 'triagem' | 'agendamento' | 'feedback'
@@ -857,7 +858,7 @@ export function UnifiedCommunicationModal({
                     <div className="px-4 py-4">
                       <div 
                         className={`${textStyles.body} leading-relaxed`}
-                        dangerouslySetInnerHTML={{ __html: formatPreviewMessage(message) || '<span class="text-lia-text-secondary">A mensagem aparecerá aqui...</span>' }}
+                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(formatPreviewMessage(message) || '<span class="text-lia-text-secondary">A mensagem aparecerá aqui...</span>') }}
                       />
                     </div>
                   </div>
@@ -868,7 +869,7 @@ export function UnifiedCommunicationModal({
                       <div className="bg-whatsapp-bubble rounded-md p-3 max-w-[85%]">
                         <div 
                           className={`${textStyles.body} leading-relaxed whitespace-pre-wrap`}
-                          dangerouslySetInnerHTML={{ __html: formatPreviewMessage(message) || '<span class="text-lia-text-secondary">A mensagem aparecerá aqui...</span>' }}
+                          dangerouslySetInnerHTML={{ __html: sanitizeHtml(formatPreviewMessage(message) || '<span class="text-lia-text-secondary">A mensagem aparecerá aqui...</span>') }}
                         />
                         <div className={`${textStyles.caption} text-right mt-1`}>
                           {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} ✓✓

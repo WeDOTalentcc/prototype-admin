@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Calendar, Loader2, Send, Brain, AlertTriangle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { sanitizeHtml } from "@/lib/sanitize"
 
 interface InterviewSchedulingModalProps {
   open: boolean
@@ -192,7 +193,7 @@ export function InterviewSchedulingModal({
                     />
                     <div
                       className="p-3 rounded-md border border-lia-border-subtle text-xs overflow-y-auto max-h-[200px] bg-gray-50 lia-text-base"
-                      dangerouslySetInnerHTML={{ __html: emailTemplate.body }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(emailTemplate.body) }}
                     />
                   </div>
                 ) : (

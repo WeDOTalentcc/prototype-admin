@@ -7,6 +7,7 @@ import { ActionResultCard } from "@/components/chat/action-result-card"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { MessageFeedback } from "@/components/chat/message-feedback"
 import { cleanAgentResponse, parseChatMarkdown, escapeHtml } from "@/lib/chat-format"
+import { sanitizeHtml } from "@/lib/sanitize"
 
 interface MessageBubbleProps {
   sender: "lia" | "user"
@@ -28,7 +29,7 @@ function RichTextContent({ html, className }: { html: string; className?: string
   return (
     <div
       className={className}
-      dangerouslySetInnerHTML={{ __html: html }}
+      dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) }}
     />
   )
 }

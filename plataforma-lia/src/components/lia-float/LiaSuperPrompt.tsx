@@ -17,6 +17,7 @@ import { useNavigationIntent } from "@/hooks/use-navigation-intent"
 import { useActionIntent, actionTypeToDomain } from "@/hooks/use-action-intent"
 import { resolveScopeFromPathname } from "@/hooks/use-current-scope"
 import { cleanAgentResponse, parseChatMarkdown, escapeHtml } from "@/lib/chat-format"
+import { sanitizeHtml } from "@/lib/sanitize"
 import { MessageFeedback } from "@/components/chat/message-feedback"
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
 import { useRouter } from "next/navigation"
@@ -536,7 +537,7 @@ function SuperPromptBubble({ message, conversationId }: { message: { id: string;
               <div
                 className="text-base-ui leading-relaxed lia-text-base"
                
-                dangerouslySetInnerHTML={{ __html: html }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) }}
               />
             </div>
             <span className="text-xs lia-text-secondary px-1" style={{fontFamily: '"Inter", sans-serif'}}>
@@ -571,7 +572,7 @@ function SuperPromptBubble({ message, conversationId }: { message: { id: string;
           <div
             className="text-base-ui leading-relaxed lia-text-base"
            
-            dangerouslySetInnerHTML={{ __html: html }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) }}
           />
         </div>
         {conversationId && (
@@ -600,7 +601,7 @@ function SuperPromptStreamingBubble({ content }: { content: string }) {
         <div
           className="text-base-ui leading-relaxed lia-text-base"
          
-          dangerouslySetInnerHTML={{ __html: html }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) }}
         />
         <span className="inline-block w-1.5 h-3.5 bg-chat-cyan ml-0.5 animate-pulse motion-reduce:animate-none align-middle" />
       </div>

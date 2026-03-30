@@ -27,6 +27,7 @@ import {
 } from "lucide-react"
 import { liaApi, type EmailTemplate } from "@/services/lia-api"
 import { EmailTemplateFormModal } from "./email-template-form-modal"
+import { sanitizeEmailHtml } from "@/lib/sanitize"
 
 const CATEGORY_LABELS: Record<string, { label: string; color: string }> = {
   interview: { label: "Entrevista", color: "bg-wedo-cyan/10 text-wedo-cyan-dark dark:bg-wedo-cyan/15 dark:text-wedo-cyan" },
@@ -482,7 +483,7 @@ export function EmailTemplatesManager() {
                 <div
                   className="p-4 bg-lia-bg-primary prose prose-sm max-w-none"
                   dangerouslySetInnerHTML={{
-                    __html: selectedTemplate?.body_html || "",
+                    __html: sanitizeEmailHtml(selectedTemplate?.body_html || ""),
                   }}
                 />
               </div>

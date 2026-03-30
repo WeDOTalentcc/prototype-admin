@@ -5,13 +5,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import {
-  X, Mail, Send, Eye, Edit, Copy, FileText, Users, BarChart3,
+import {  X, Mail, Send, Eye, Edit, Copy, FileText, Users, BarChart3,
   Calendar, Clock, Target, TrendingUp, AlertTriangle, CheckCircle,
   Download, Share2, Building, MapPin, DollarSign, Star, Heart,
   User, Phone, MessageSquare, ExternalLink, Settings, RefreshCw,
   ChevronDown, ChevronUp, Plus, Trash2, Save
 } from "lucide-react"
+import { sanitizeEmailHtml } from "@/lib/sanitize"
 
 interface EmailTemplate {
   id: string
@@ -698,7 +698,7 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
                   <div
                     className="p-4 bg-lia-bg-primary"
                     dangerouslySetInnerHTML={{
-                      __html: processedContent
+                      __html: sanitizeEmailHtml(processedContent)
                     }}
                   />
                 )}

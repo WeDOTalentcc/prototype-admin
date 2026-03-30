@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { Mail, Save, X, Eye, Code, FileText, RefreshCw, Info, Copy } from "lucide-react"
 import { liaApi, type EmailTemplate, type EmailTemplateCreateRequest, type EmailTemplateUpdateRequest } from "@/services/lia-api"
+import { sanitizeEmailHtml } from "@/lib/sanitize"
 
 interface EmailTemplateFormModalProps {
   isOpen: boolean
@@ -315,7 +316,7 @@ export function EmailTemplateFormModal({
                         <div
                           className="p-4 bg-lia-bg-primary prose prose-sm max-w-none"
                           dangerouslySetInnerHTML={{
-                            __html: renderPreview(formData.body_html),
+                            __html: sanitizeEmailHtml(renderPreview(formData.body_html)),
                           }}
                         />
                       </div>
