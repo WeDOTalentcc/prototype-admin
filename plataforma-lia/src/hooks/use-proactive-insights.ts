@@ -1,11 +1,11 @@
-import { useState, useCallback } from react
-import useSWR from swr
+import { useState, useCallback } from "react"
+import useSWR from "swr"
 
 export interface ProactiveInsight {
   id: string
   title: string
   message: string
-  urgency: low | normal | high | urgent
+  urgency: "low" | "normal" | "high" | "urgent"
   type: string
   action_url?: string | null
   created_at: string
@@ -19,8 +19,8 @@ interface UseProactiveInsightsReturn {
   refresh: () => void
 }
 
-const REFRESH_INTERVAL_MS = 5 * 60 * 1000 // 5 minutos
-const STORAGE_KEY = proactive_dismissed_insights
+const REFRESH_INTERVAL_MS = 5 * 60 * 1000
+const STORAGE_KEY = "proactive_dismissed_insights"
 
 function getDismissed(): Set<string> {
   try {
@@ -52,7 +52,7 @@ export function useProactiveInsights(
   const [dismissed, setDismissed] = useState<Set<string>>(getDismissed)
 
   const key = companyId
-    ? &job_id=
+    ? `/api/backend-proxy/proactive-insights?company_id=${companyId}${jobId ? `&job_id=${jobId}` : ""}`
     : null
 
   const { data, isLoading, mutate } = useSWR<ProactiveInsight[]>(key, jsonFetcher, {

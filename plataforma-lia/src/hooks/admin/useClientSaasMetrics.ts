@@ -1,6 +1,6 @@
 "use client"
 
-import useSWR from swr
+import useSWR from "swr"
 import {
   saasMetricsClientService,
   ClientSaasMetrics,
@@ -9,7 +9,7 @@ import {
   ClientHealthMetrics,
   ClientPayment,
   ApiClientError,
-} from @/services/admin/saas-metrics-service
+} from "@/services/admin/saas-metrics-service"
 
 export interface UseClientSaasMetricsResult {
   metrics: ClientSaasMetrics | null
@@ -48,7 +48,7 @@ export interface UseClientPaymentsResult {
 
 export function useClientSaasMetrics(clientId: string): UseClientSaasMetricsResult {
   const { data, error, isLoading, mutate } = useSWR(
-    clientId ? [adminClientSaasMetrics, clientId] : null,
+    clientId ? ["adminClientSaasMetrics", clientId] : null,
     ([, id]) => saasMetricsClientService.getClientMetrics(id)
   )
 
@@ -64,7 +64,7 @@ export function useClientSaasMetrics(clientId: string): UseClientSaasMetricsResu
 
 export function useClientRevenue(clientId: string): UseClientRevenueResult {
   const { data, error, isLoading, mutate } = useSWR(
-    clientId ? [adminClientRevenue, clientId] : null,
+    clientId ? ["adminClientRevenue", clientId] : null,
     ([, id]) => saasMetricsClientService.getClientRevenue(id)
   )
 
@@ -80,7 +80,7 @@ export function useClientRevenue(clientId: string): UseClientRevenueResult {
 
 export function useClientUsage(clientId: string): UseClientUsageResult {
   const { data, error, isLoading, mutate } = useSWR(
-    clientId ? [adminClientUsage, clientId] : null,
+    clientId ? ["adminClientUsage", clientId] : null,
     ([, id]) => saasMetricsClientService.getClientUsage(id)
   )
 
@@ -96,7 +96,7 @@ export function useClientUsage(clientId: string): UseClientUsageResult {
 
 export function useClientHealth(clientId: string): UseClientHealthResult {
   const { data, error, isLoading, mutate } = useSWR(
-    clientId ? [adminClientHealth, clientId] : null,
+    clientId ? ["adminClientHealth", clientId] : null,
     ([, id]) => saasMetricsClientService.getClientHealth(id)
   )
 
@@ -112,7 +112,7 @@ export function useClientHealth(clientId: string): UseClientHealthResult {
 
 export function useClientPayments(clientId: string): UseClientPaymentsResult {
   const { data, error, isLoading, mutate } = useSWR(
-    clientId ? [adminClientPayments, clientId] : null,
+    clientId ? ["adminClientPayments", clientId] : null,
     ([, id]) => saasMetricsClientService.getClientPayments(id)
   )
 
