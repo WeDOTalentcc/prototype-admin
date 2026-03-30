@@ -199,15 +199,15 @@ export function InlineChatPanel({
       ) : (
         /* MODO GERAL - Prompt Expandido Original */
         <Card
-          className="h-full flex flex-col overflow-hidden border border-lia-border-default bg-gray-50 dark:bg-lia-bg-secondary"
+          className="h-full flex flex-col overflow-hidden border border-lia-border-default bg-white dark:bg-lia-bg-secondary"
           style={{maxHeight: "calc(100vh - 180px)"}}
         >
           {/* Mensagem de Apresentação da LIA */}
-          <div className="flex-shrink-0 px-4 py-3 bg-gray-50 dark:bg-lia-bg-secondary">
+          <div className="flex-shrink-0 px-4 py-3 bg-white dark:bg-lia-bg-secondary">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <div
-                  className="w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 bg-gray-50 dark:bg-lia-bg-secondary"
+                  className="w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 bg-gray-50 dark:bg-lia-bg-primary"
                 >
                   <Brain className="w-6 h-6 text-wedo-cyan" strokeWidth={2.5} />
                 </div>
@@ -458,7 +458,7 @@ export function InlineChatPanel({
 
           {/* Conteúdo das outras abas */}
           {(activeSearchTab === "job-description" || activeSearchTab === "templates") && (
-            <div className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-lia-bg-secondary">
+            <div className="flex-1 overflow-y-auto p-4 bg-white dark:bg-lia-bg-secondary">
               {/* ABA 2: JOB DESCRIPTION */}
               {activeSearchTab === "job-description" && (
                 <div className="space-y-3">

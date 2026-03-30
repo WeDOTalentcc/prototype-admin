@@ -48,7 +48,7 @@ export interface UseWizardStateOptions {
   onFieldChange?: (field: string, oldValue: unknown, newValue: unknown, source?: 'panel' | 'chat' | 'orchestrator') => void
 }
 
-export interface UseWizardStateReturn extends ExpandedChatContextValue {}
+export type UseWizardStateReturn = ExpandedChatContextValue
 
 export function useWizardState(options: UseWizardStateOptions = {}): UseWizardStateReturn {
   const { initialStage = 'input-evaluation', onStageChange, onPendingChanges, onFieldChange } = options

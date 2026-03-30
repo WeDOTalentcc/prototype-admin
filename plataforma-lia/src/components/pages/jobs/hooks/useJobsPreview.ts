@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { liaApi, type JobVacancyMetrics } from "@/services/lia-api"
-import { useScreeningConfig } from "@/hooks/useScreeningConfig"
+import { useScreeningConfig, limitToApprovalPreset } from "@/hooks/useScreeningConfig"
 import { toast } from "sonner"
 import type { Job, PreviewTab } from "@/components/jobs"
 
@@ -206,7 +206,6 @@ export function useJobsPreview({ setBackendJobs }: UseJobsPreviewOptions): UseJo
       setEditTimeoutHours(screeningConfig.settings?.response_timeout_hours ?? 48)
       setEditMaxRetries(screeningConfig.settings?.max_retries ?? 2)
        
-      const { limitToApprovalPreset } = require("@/hooks/useScreeningConfig")
       setEditAutoApprovalPreset(screeningConfig.settings?.auto_approval_preset ?? limitToApprovalPreset(screeningConfig.settings?.auto_approval_limit))
     }
   }, [screeningConfig, isEditingScreeningConfig])

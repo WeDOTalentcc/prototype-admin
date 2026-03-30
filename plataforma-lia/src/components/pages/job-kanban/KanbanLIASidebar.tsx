@@ -95,9 +95,9 @@ export function KanbanLIASidebar({
       className="flex-shrink-0 transition-colors duration-300 pl-4 py-4 pr-0 relative"
       style={{width: `${liaExpandedWidth}px`}}
     >
-      <Card className="h-[calc(100vh-16rem)] flex flex-col overflow-hidden border border-lia-border-default bg-gray-50 dark:bg-lia-bg-primary max-h-[calc(100vh-16rem)]">
+      <Card className="h-[calc(100vh-16rem)] flex flex-col overflow-hidden border border-lia-border-default bg-white dark:bg-lia-bg-secondary max-h-[calc(100vh-16rem)]">
         {/* Mensagem de Apresentação da LIA */}
-        <div className="flex-shrink-0 px-4 py-3 bg-gray-50 dark:bg-lia-bg-primary">
+        <div className="flex-shrink-0 px-4 py-3 bg-white dark:bg-lia-bg-secondary">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <div

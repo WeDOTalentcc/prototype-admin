@@ -213,14 +213,13 @@ export function LIASearchSidebar({
       style={{width: isLiaSuperChat ? 'auto' : `${liaWidth}px`,
         maxWidth: isLiaSuperChat ? 'none' : `${liaWidth}px`}}
     >
-      <Card className="h-[calc(100vh-9rem)] flex flex-col overflow-hidden border border-lia-border-default" style={{backgroundColor: 'var(--gray-50)'}}>
+      <Card className="h-[calc(100vh-9rem)] flex flex-col overflow-hidden border border-lia-border-default bg-white dark:bg-lia-bg-secondary">
         {/* Header do Prompt Expandido - Design Specs v3.1 */}
-        <div className="flex-shrink-0 px-4 py-3" style={{backgroundColor: 'var(--gray-50)'}}>
+        <div className="flex-shrink-0 px-4 py-3 bg-white dark:bg-lia-bg-secondary">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <div
-                className="w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0"
-                style={{backgroundColor: 'var(--gray-50)'}}
+                className="w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 bg-gray-50 dark:bg-lia-bg-primary"
               >
                 <Brain className="w-6 h-6 text-wedo-cyan" strokeWidth={2.5} />
               </div>
@@ -279,11 +278,11 @@ export function LIASearchSidebar({
         {/* Ações movidas para banner acima da tabela */}
 
         {/* Conteúdo das Abas */}
-        <div className="flex-1 overflow-y-auto p-4 mx-3 mb-3 rounded-md" style={{backgroundColor: 'var(--gray-50)'}}>
+        <div className="flex-1 flex flex-col overflow-hidden mx-3 mb-3">
 
           {/* ABA 1: IA NATURAL - Chat Format */}
           {activeSearchTab === 'ia-natural' && (
-            <div className="flex flex-col h-full min-h-[400px]">
+            <div className="flex flex-col flex-1 overflow-hidden">
               {/* Área de Chat - Histórico de Mensagens */}
               <div
                 ref={chatScrollRef}
@@ -587,7 +586,7 @@ export function LIASearchSidebar({
               </div>
 
               {/* Input de Chat - Fixo na parte inferior - Layout Inline Padronizado */}
-              <div className="mt-auto p-3 bg-lia-bg-primary rounded-md">
+              <div className="flex-shrink-0 p-3 bg-lia-bg-primary rounded-md">
                 {/* Banner de criação de arquétipo */}
                 {isCreatingArchetype && (
                   <div className="mb-2 p-2 rounded-md bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default flex items-center justify-between">
@@ -726,20 +725,14 @@ export function LIASearchSidebar({
                   <span className="text-micro font-medium text-lia-text-tertiary">Sugestões:</span>
                   <button
                     onClick={() => onAICommand('Top 5 candidatos')}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium rounded-full transition-[width,height]"
-
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--gray-200)'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--gray-50)'}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-lia-text-secondary bg-gray-100 rounded-full hover:bg-gray-200 transition-colors dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:hover:bg-gray-700"
                   >
                     <Star className="w-2.5 h-2.5 text-lia-text-tertiary" />
                     Top 5
                   </button>
                   <button
                     onClick={() => onAICommand('Resumir esta busca')}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium rounded-full transition-[width,height]"
-
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--gray-200)'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--gray-50)'}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-lia-text-secondary bg-gray-100 rounded-full hover:bg-gray-200 transition-colors dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:hover:bg-gray-700"
                   >
                     <FileText className="w-2.5 h-2.5 text-lia-text-tertiary" />
                     Resumir busca
@@ -755,7 +748,7 @@ export function LIASearchSidebar({
 
           {/* Abas removidas: JOB DESCRIPTION, SIMILAR, BOOLEAN - funcionalidades movidas para página principal */}
           {activeSearchTab === 'job-description' && (
-            <div className="space-y-4">
+            <div className="space-y-4 overflow-y-auto flex-1 p-4">
               {/* Descrição */}
               <p className="text-xs text-lia-text-tertiary">
                 Cole sua descrição de vaga e a IA extrairá os critérios automaticamente
@@ -1018,7 +1011,7 @@ export function LIASearchSidebar({
 
           {/* ABA 4: SIMILAR */}
           {activeSearchTab === 'similar' && (
-            <div className="space-y-4">
+            <div className="space-y-4 overflow-y-auto flex-1 p-4">
               <p className="text-xs text-lia-text-tertiary">
                 Encontre candidatos similares a um perfil específico
               </p>
@@ -1218,7 +1211,7 @@ export function LIASearchSidebar({
 
           {/* ABA 5: BOOLEAN */}
           {activeSearchTab === 'boolean' && (
-            <div className="space-y-4">
+            <div className="space-y-4 overflow-y-auto flex-1 p-4">
               <p className="text-xs text-lia-text-tertiary">
                 Use operadores booleanos para buscas avançadas
               </p>
@@ -1267,7 +1260,7 @@ export function LIASearchSidebar({
 
           {/* ABA 6: FILTROS - Padronizado com Modal */}
           {activeSearchTab === 'filtros' && (
-            <div className="space-y-4">
+            <div className="space-y-4 overflow-y-auto flex-1 p-4">
               {/* Dica contextual */}
               <div className="p-3 rounded-md bg-wedo-cyan/[0.06]">
                 <div className="flex items-start gap-2">
