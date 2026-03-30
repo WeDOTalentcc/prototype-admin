@@ -3,8 +3,8 @@
 /* Variáveis CSS para onboarding LIA */
 :root {
   /* Fontes Oficiais LIA (DS v4.1) */
-  --font-source-serif-pro: 'Open Sans', sans-serif;
-  --font-open-sans: 'Open Sans', sans-serif;
+  --font-source-serif-pro: Open Sans, sans-serif;
+  --font-open-sans: Open Sans, sans-serif;
 
   /* Paleta Primária LIA (das imagens) */
   --lia-coral: #E85A4A;           /* Coral vibrante */
@@ -30,120 +30,120 @@
 
 /* Classes para as fontes oficiais LIA - APENAS ONBOARDING */
 .lia-font-serif {
-  font-family: 'var(--font-open-sans)' !important;
+  font-family: var(--font-open-sans);
 }
 
 .lia-font-sans {
-  font-family: 'var(--font-open-sans)' !important;
+  font-family: var(--font-open-sans);
 }
 
 /* Cores da marca LIA - APENAS ONBOARDING */
-.lia-text-coral { color: 'var(--lia-coral)' !important; }
-.lia-text-blue { color: 'var(--lia-blue)' !important; }
-.lia-text-yellow { color: 'var(--lia-yellow)' !important; }
-.lia-text-salmon { color: 'var(--lia-salmon)' !important; }
-.lia-text-lavender { color: 'var(--lia-lavender)' !important; }
-.lia-text-cream { color: 'var(--lia-cream)' !important; }
-.lia-text-mint { color: 'var(--lia-mint)' !important; }
-.lia-text-black { color: 'var(--lia-black)' !important; }
-.lia-text-white { color: 'var(--lia-white)' !important; }
+.lia-text-coral { color: var(--lia-coral); }
+.lia-text-blue { color: var(--lia-blue); }
+.lia-text-yellow { color: var(--lia-yellow); }
+.lia-text-salmon { color: var(--lia-salmon); }
+.lia-text-lavender { color: var(--lia-lavender); }
+.lia-text-cream { color: var(--lia-cream); }
+.lia-text-mint { color: var(--lia-mint); }
+.lia-text-black { color: var(--lia-black); }
+.lia-text-white { color: var(--lia-white); }
 
-.lia-bg-coral { background-color: 'var(--lia-coral)' !important; }
-.lia-bg-blue { background-color: 'var(--lia-blue)' !important; }
-.lia-bg-yellow { background-color: 'var(--lia-yellow)' !important; }
-.lia-bg-salmon { background-color: 'var(--lia-salmon)' !important; }
-.lia-bg-lavender { background-color: 'var(--lia-lavender)' !important; }
-.lia-bg-cream { background-color: 'var(--lia-cream)' !important; }
-.lia-bg-mint { background-color: 'var(--lia-mint)' !important; }
-.lia-bg-white { background-color: 'var(--lia-white)' !important; }
-.lia-bg-black { background-color: 'var(--lia-black)' !important; }
+.lia-bg-coral { background-color: var(--lia-coral); }
+.lia-bg-blue { background-color: var(--lia-blue); }
+.lia-bg-yellow { background-color: var(--lia-yellow); }
+.lia-bg-salmon { background-color: var(--lia-salmon); }
+.lia-bg-lavender { background-color: var(--lia-lavender); }
+.lia-bg-cream { background-color: var(--lia-cream); }
+.lia-bg-mint { background-color: var(--lia-mint); }
+.lia-bg-white { background-color: var(--lia-white); }
+.lia-bg-black { background-color: var(--lia-black); }
 
 /* Gradientes orgânicos LIA (como na imagem do blob) */
 .lia-gradient-organic {
   background: linear-gradient(135deg,
-    'var(--lia-coral)' 0%,
-    'var(--lia-yellow)' 30%,
-    'var(--lia-blue)' 70%,
-    'var(--lia-mint)' 100%) !important;
+    var(--lia-coral) 0%,
+    var(--lia-yellow) 30%,
+    var(--lia-blue) 70%,
+    var(--lia-mint) 100%);
 }
 
 .lia-gradient-soft {
   background: linear-gradient(135deg,
-    'var(--lia-salmon)' 0%,
-    'var(--lia-lavender)' 50%,
-    'var(--lia-mint)' 100%) !important;
+    var(--lia-salmon) 0%,
+    var(--lia-lavender) 50%,
+    var(--lia-mint) 100%);
 }
 
 /* Typography LIA - DESIGN SOFISTICADO E IMPACTANTE */
 .lia-title-hero {
-  font-family: 'var(--font-open-sans)' !important;
+  font-family: var(--font-open-sans);
   font-weight: 700;
-  font-size: clamp(4rem, 8vw, 10rem) !important; /* Fontes MUITO maiores */
-  line-height: 0.9 !important;
-  letter-spacing: -0.04em !important;
-  color: 'var(--lia-black)' !important;
+  font-size: clamp(4rem, 8vw, 10rem); /* Fontes MUITO maiores */
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  color: var(--lia-black);
 }
 
 .lia-title-large {
-  font-family: 'var(--font-open-sans)' !important;
+  font-family: var(--font-open-sans);
   font-weight: 600;
-  font-size: clamp(2.5rem, 5vw, 6rem) !important; /* Títulos grandes */
-  line-height: 1.1 !important;
-  letter-spacing: -0.02em !important;
-  color: 'var(--lia-black)' !important;
+  font-size: clamp(2.5rem, 5vw, 6rem); /* Títulos grandes */
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--lia-black);
 }
 
 .lia-title-medium {
-  font-family: 'var(--font-open-sans)' !important;
+  font-family: var(--font-open-sans);
   font-weight: 500;
-  font-size: clamp(1.75rem, 3vw, 3rem) !important;
-  line-height: 1.2 !important;
-  letter-spacing: -0.01em !important;
-  color: 'var(--lia-black)' !important;
+  font-size: clamp(1.75rem, 3vw, 3rem);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--lia-black);
 }
 
 .lia-subtitle {
-  font-family: 'var(--font-open-sans)' !important;
+  font-family: var(--font-open-sans);
   font-weight: 400;
-  font-size: clamp(1.25rem, 2.5vw, 2rem) !important;
-  line-height: 1.3 !important;
-  color: 'var(--lia-gray-dark)' !important;
+  font-size: clamp(1.25rem, 2.5vw, 2rem);
+  line-height: 1.3;
+  color: var(--lia-gray-dark);
 }
 
 .lia-text-large {
-  font-family: 'var(--font-open-sans)' !important;
+  font-family: var(--font-open-sans);
   font-weight: 400;
-  font-size: clamp(1.125rem, 2vw, 1.5rem) !important; /* Textos maiores */
-  line-height: 1.6 !important;
-  color: 'var(--lia-gray-dark)' !important;
+  font-size: clamp(1.125rem, 2vw, 1.5rem); /* Textos maiores */
+  line-height: 1.6;
+  color: var(--lia-gray-dark);
 }
 
 .lia-text-medium {
-  font-family: 'var(--font-open-sans)' !important;
+  font-family: var(--font-open-sans);
   font-weight: 400;
-  font-size: clamp(1rem, 1.5vw, 1.25rem) !important;
-  line-height: 1.5 !important;
-  color: 'var(--lia-gray-medium)' !important;
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  line-height: 1.5;
+  color: var(--lia-gray-medium);
 }
 
 .lia-text-small {
-  font-family: 'var(--font-open-sans)' !important;
+  font-family: var(--font-open-sans);
   font-weight: 400;
-  font-size: clamp(0.875rem, 1.25vw, 1rem) !important;
-  line-height: 1.4 !important;
-  color: 'var(--lia-gray-medium)' !important;
+  font-size: clamp(0.875rem, 1.25vw, 1rem);
+  line-height: 1.4;
+  color: var(--lia-gray-medium);
 }
 
 .lia-text-bold {
-  font-family: 'var(--font-open-sans)' !important;
+  font-family: var(--font-open-sans);
   font-weight: 600;
-  line-height: 1.5 !important;
+  line-height: 1.5;
 }
 
 /* Elementos especiais LIA */
 .lia-blob-organic {
-  border-radius: 60% 40% 30% 70% / 60% 30% 70% 40% !important;
-  background: 'var(--lia-gradient-organic)';
+  border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+  background: var(--lia-gradient-organic);
   animation: lia-morph 8s ease-in-out infinite;
 }
 
@@ -155,49 +155,49 @@
 
 /* Cards LIA */
 .lia-card {
-  background: 'var(--lia-white)' !important;
-  border-radius: 24px !important;
-  padding: 32px !important;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.08) !important;
-  border: 1px solid rgba(0, 0, 0, 0.04) !important;
-  transition: all 0.3s ease !important;
+  background: var(--lia-white);
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
 }
 
 .lia-card:hover {
-  transform: translateY(-4px) !important;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.12) !important;
+  transform: translateY(-4px);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.12);
 }
 
 /* Containers de onboarding */
 .lia-onboarding-container {
-  min-height: 100vh !important;
-  font-family: 'var(--font-open-sans)' !important;
+  min-height: 100vh;
+  font-family: var(--font-open-sans);
 }
 
 .lia-onboarding-slide {
-  padding: 48px 24px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  text-align: center !important;
+  padding: 48px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 /* Compatibilidade com classes antigas (fallback) */
 .onboarding-title {
-  font-family: 'var(--font-open-sans)' !important;
+  font-family: var(--font-open-sans);
   font-weight: 700;
   line-height: 1.1;
   letter-spacing: -0.02em;
 }
 
 .onboarding-subtitle {
-  font-family: 'var(--font-open-sans)' !important;
+  font-family: var(--font-open-sans);
   font-weight: 400;
   line-height: 1.2;
 }
 
 .onboarding-text {
-  font-family: 'var(--font-open-sans)' !important;
+  font-family: var(--font-open-sans);
   font-weight: 400;
   line-height: 1.6;
 }
@@ -205,18 +205,18 @@
 /* Responsividade para diferentes telas */
 @media (max-width: 768px) {
   .lia-onboarding-slide {
-    padding: 24px 16px !important;
+    padding: 24px 16px;
   }
 
   .lia-card {
-    padding: 24px !important;
-    border-radius: 20px !important;
+    padding: 24px;
+    border-radius: 20px;
   }
 }
 
 /* Animações suaves */
 .lia-fade-in {
-  animation: lia-fadeIn 0.8s ease-out !important;
+  animation: lia-fadeIn 0.8s ease-out;
 }
 
 @keyframes lia-fadeIn {

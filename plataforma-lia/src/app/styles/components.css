@@ -252,7 +252,7 @@
 }
 
 .font-open-sans {
-  font-family: var(--font-open-sans) !important;
+  font-family: var(--font-open-sans);
 }
 
 /* Nome da LIA - Open Sans bold (DS v4.1) */
