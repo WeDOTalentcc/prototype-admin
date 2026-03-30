@@ -78,7 +78,7 @@ export function useDailyBriefing(): UseDailyBriefingResult {
   const { user } = useJWTAuth()
   const [refreshError, setRefreshError] = useState<string | null>(null)
 
-  const key = user?.id ?  : null
+  const key = user?.id ? `/api/backend-proxy/briefing?user_id=${user.id}` : null
 
   const { data, error, isLoading, mutate } = useSWR<DailyBriefingData>(key, jsonFetcher)
 

@@ -1,13 +1,14 @@
-'use client'
+"use client"
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useCallback } from "react"
+import useSWR from "swr"
 import {
   biasAuditService,
   BiasAuditReport,
   BiasAuditSummary,
   BiasResult,
   BiasAuditListParams,
-} from '@/services/admin/bias-service'
+} from "@/services/admin/bias-service"
 
 export interface UseBiasAuditsResult {
   summary: BiasAuditSummary | null
@@ -22,53 +23,28 @@ export interface UseBiasAuditsResult {
 }
 
 export function useBiasAudits(clientId: string): UseBiasAuditsResult {
-  const [summary, setSummary] = useState<BiasAuditSummary | null>(null)
-  const [latestAudit, setLatestAudit] = useState<BiasAuditReport | null>(null)
-  const [audits, setAudits] = useState<BiasAuditReport[]>([])
-  const [totalAudits, setTotalAudits] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
-
-  const isMountedRef = useRef(true)
-
-  const fetchData = useCallback(async () => {
-    if (!clientId) return
-
-    setIsLoading(true)
-    setError(null)
-
-    try {
+  const { data, error, isLoading, mutate } = useSWR(
+    clientId ? ["adminBiasAudits", clientId] : null,
+    async ([, id]) => {
       const [summaryData, latestData, auditsData] = await Promise.all([
-        biasAuditService.getSummary(clientId),
-        biasAuditService.getLatest(clientId),
-        biasAuditService.getAudits(clientId, { limit: 10 }),
+        biasAuditService.getSummary(id),
+        biasAuditService.getLatest(id),
+        biasAuditService.getAudits(id, { limit: 10 }),
       ])
-
-      if (isMountedRef.current) setSummary(summaryData)
-      if (isMountedRef.current) setLatestAudit(latestData)
-      if (isMountedRef.current) setAudits(auditsData.audits)
-      if (isMountedRef.current) setTotalAudits(auditsData.total)
-    } catch (err) {
-      if (isMountedRef.current) setError(err instanceof Error ? err : new Error('Failed to fetch bias audit data'))
-    } finally {
-      if (isMountedRef.current) setIsLoading(false)
+      return { summary: summaryData, latestAudit: latestData, audits: auditsData.audits, total: auditsData.total }
     }
-  }, [clientId])
+  )
 
   const fetchAudits = useCallback(async (params?: BiasAuditListParams) => {
     if (!clientId) return
-
     try {
-      const data = await biasAuditService.getAudits(clientId, params)
-      setAudits(data.audits)
-      setTotalAudits(data.total)
+      await biasAuditService.getAudits(clientId, params)
     } catch (err) {
     }
   }, [clientId])
 
   const fetchAudit = useCallback(async (auditId: string): Promise<BiasAuditReport | null> => {
     if (!clientId) return null
-
     try {
       return await biasAuditService.getAudit(clientId, auditId)
     } catch (err) {
@@ -76,20 +52,14 @@ export function useBiasAudits(clientId: string): UseBiasAuditsResult {
     }
   }, [clientId])
 
-  useEffect(() => {
-    isMountedRef.current = true
-    fetchData()
-    return () => { isMountedRef.current = false }
-  }, [fetchData])
-
   return {
-    summary,
-    latestAudit,
-    audits,
-    totalAudits,
+    summary: data?.summary ?? null,
+    latestAudit: data?.latestAudit ?? null,
+    audits: data?.audits ?? [],
+    totalAudits: data?.total ?? 0,
     isLoading,
-    error,
-    refetch: fetchData,
+    error: error instanceof Error ? error : error ? new Error(String(error)) : null,
+    refetch: () => mutate(),
     fetchAudits,
     fetchAudit,
   }
