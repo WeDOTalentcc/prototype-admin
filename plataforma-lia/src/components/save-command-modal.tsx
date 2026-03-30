@@ -284,7 +284,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
             </label>
             <div className="space-y-2">
               {examples.map((example, index) => (
-                <div key={index} className="flex items-center gap-2">
+                <div key={`example-${index}`} className="flex items-center gap-2">
                   <div className="flex-1 text-sm text-lia-text-primary dark:text-lia-text-primary bg-gray-50 dark:bg-lia-bg-elevated rounded-md px-3 py-2">
                     "{example}"
                   </div>
@@ -326,7 +326,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
               {tags.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {tags.map((tag, index) => (
-                    <Badge key={index} variant="secondary" className="text-xs">
+                    <Badge key={tag} variant="secondary" className="text-xs">
                       {tag}
                       <button
                         onClick={() => handleRemoveTag(tag)}

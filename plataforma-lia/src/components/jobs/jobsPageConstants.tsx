@@ -167,7 +167,7 @@ export function formatMessageWithVariables(message: string): React.ReactNode[] {
   return parts.map((part, index) => {
     if (part.match(/^\{[^}]+\}$/)) {
       return (
-        <span key={index} style={{fontWeight: 500}}>
+        <span key={`var-${index}`} style={{fontWeight: 500}}>
           {part}
         </span>
       )
@@ -181,7 +181,7 @@ export function formatMessageWithVariables(message: string): React.ReactNode[] {
         return <span key={`${index}-${bpIndex}`}>{bp}</span>
       })
     }
-    return <span key={index}>{part}</span>
+    return <span key={`part-${index}`}>{part}</span>
   })
 }
 

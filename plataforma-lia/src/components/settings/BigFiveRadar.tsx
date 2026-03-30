@@ -105,7 +105,7 @@ export function BigFiveRadar({
             const point = getPoint(index, 100)
             return (
               <line
-                key={index}
+                key={`trait-line-${index}`}
                 x1={center}
                 y1={center}
                 x2={point.x}
@@ -135,7 +135,7 @@ export function BigFiveRadar({
             const point = getPoint(index, value)
             return (
               <circle
-                key={index}
+                key={`data-point-${index}`}
                 cx={point.x}
                 cy={point.y}
                 r="4"

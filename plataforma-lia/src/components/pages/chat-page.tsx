@@ -354,7 +354,7 @@ export function ChatPage() {
                       <div className="flex flex-wrap gap-2">
                         {getQuickSuggestions().map((suggestion, index) => (
                           <Button
-                            key={index}
+                            key={suggestion}
                             size="sm"
                             onClick={() => setInput(suggestion)}
                             className="text-xs h-7 px-3 transition-transform motion-reduce:transition-none duration-200 hover:scale-105 text-lia-text-primary dark:text-lia-text-primary border border-lia-border-subtle bg-gray-50"
@@ -402,7 +402,7 @@ export function ChatPage() {
                       
                       return (
                         <div 
-                          key={index}
+                          key={file.name}
                           className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs bg-lia-bg-primary border border-lia-border-default"
                         >
                           <FileText className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />

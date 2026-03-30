@@ -54,7 +54,7 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
   return (
   <div className="space-y-3">
     {similarUrls.map((url, index) => (
-      <div key={index} className="relative">
+      <div key={`url-${index}`} className="relative">
         <div className="absolute left-3 top-1/2 -translate-y-1/2">
           <Linkedin className="w-3.5 h-3.5 lia-text-600" />
         </div>
@@ -123,7 +123,7 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
       {similarCvFiles.length > 0 ? (
         <div className="flex flex-wrap gap-2">
           {similarCvFiles.map((file, index) => (
-            <div key={index} className="flex items-center gap-2 px-2.5 py-1.5 rounded-full text-xs bg-gray-50">
+            <div key={file.name} className="flex items-center gap-2 px-2.5 py-1.5 rounded-full text-xs bg-gray-50">
               <FileText className="w-3 h-3 lia-text-500" />
               <span className="max-w-[150px] truncate lia-text-800 dark:text-lia-text-primary">{file.name}</span>
               <button onClick={() => removeCvFile(index)} className="hover:text-status-error">

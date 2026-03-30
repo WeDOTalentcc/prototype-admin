@@ -586,7 +586,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                         </div>
                         <ul className="space-y-1">
                           {liaAnalysis.strengths.map((strength: string, index: number) => (
-                            <li key={index} className="text-sm text-status-success flex items-start gap-2">
+                            <li key={`strength-${index}`} className="text-sm text-status-success flex items-start gap-2">
                               <span className="text-status-success mt-0.5">•</span>
                               {strength}
                             </li>
@@ -603,7 +603,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                         </div>
                         <ul className="space-y-1">
                           {liaAnalysis.improvements.map((improvement: string, index: number) => (
-                            <li key={index} className="text-sm text-wedo-orange flex items-start gap-2">
+                            <li key={`improvement-${index}`} className="text-sm text-wedo-orange flex items-start gap-2">
                               <span className="text-wedo-orange mt-0.5">•</span>
                               {improvement}
                             </li>

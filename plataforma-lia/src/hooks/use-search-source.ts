@@ -59,7 +59,7 @@ export function useSearchSource(): UseSearchSourceResult {
   // Carrega saldo de créditos quando fonte muda para global/hybrid
   useEffect(() => {
     if (searchSource !== 'local') {
-      creditEstimator.fetchBalance().catch(console.error)
+      creditEstimator.fetchBalance().catch(() => { /* TODO: integrar com Sentry */ })
     }
   }, [searchSource]) // eslint-disable-line react-hooks/exhaustive-deps
 

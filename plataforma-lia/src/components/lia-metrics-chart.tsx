@@ -121,7 +121,7 @@ export function LiaMetricsChart({ data, title, color = "var(--gray-600)", target
 
         {/* Data points */}
         {data.map((point, index) => (
-          <g key={index}>
+          <g key={`point-${index}`}>
             <circle
               cx={xScale(index)}
               cy={yScale(point.value)}
@@ -141,7 +141,7 @@ export function LiaMetricsChart({ data, title, color = "var(--gray-600)", target
           if (index % Math.ceil(data.length / 4) === 0 || index === data.length - 1) {
             return (
               <text
-                key={index}
+                key={`label-${index}`}
                 x={xScale(index)}
                 y={height - padding.bottom + 15}
                 textAnchor="middle"

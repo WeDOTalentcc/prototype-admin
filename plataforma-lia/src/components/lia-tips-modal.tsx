@@ -319,7 +319,7 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
                   <CardContent className="px-4 pb-3">
                     <div className="space-y-2">
                       {currentContextTips.map((tip, index) => (
-                        <div key={index} className="group p-2.5 bg-gray-50 dark:bg-lia-bg-primary/50 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:bg-white dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none">
+                        <div key={`ctx-tip-${index}`} className="group p-2.5 bg-gray-50 dark:bg-lia-bg-primary/50 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:bg-white dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none">
                           <div className="flex items-start gap-2">
                             <span className="lia-text-base mt-0.5 text-xs">•</span>
                             <div className="flex-1">
@@ -349,7 +349,7 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
                         {category.tips.map((tip, index) => (
                           <div
-                            key={index}
+                            key={`cat-tip-${index}`}
                             className="group p-2.5 bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle transition-colors motion-reduce:transition-none duration-200"
                           >
                             <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">

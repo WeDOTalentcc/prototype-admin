@@ -18,7 +18,6 @@ export default function Error({ error, reset }: ErrorProps) {
         // Sentry não disponível — ignora silenciosamente
       })
     }
-    console.error('[Error Boundary]', error)
   }, [error])
 
   return (

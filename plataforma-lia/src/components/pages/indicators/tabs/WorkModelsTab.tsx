@@ -104,7 +104,7 @@ export function WorkModelsTab() {
                 { dept: "Vendas", remote: 20, hybrid: 50, office: 30 },
                 { dept: "Operações", remote: 15, hybrid: 35, office: 50 },
               ].map((item, index) => (
-                <div key={index} className="space-y-2">
+                <div key={item.dept} className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">
                       {item.dept}
@@ -146,7 +146,7 @@ export function WorkModelsTab() {
                 { region: "Minas Gerais", count: 89, percentage: 16 },
                 { region: "Outros Estados", count: 78, percentage: 14 },
               ].map((item, index) => (
-                <div key={index} className="flex items-center justify-between">
+                <div key={item.region} className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-3 h-3 bg-status-success rounded-full" />
                     <span className="text-sm font-medium">{item.region}</span>

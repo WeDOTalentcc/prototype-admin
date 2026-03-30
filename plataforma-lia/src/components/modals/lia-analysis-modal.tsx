@@ -198,13 +198,13 @@ export function LiaAnalysisModal({
         // Check if it's a bullet point
         if (paragraph.trim().startsWith('•') || paragraph.trim().startsWith('-') || paragraph.trim().startsWith('*')) {
           return (
-            <p key={index} className="pl-2 mb-1.5">
+            <p key={`bullet-${index}`} className="pl-2 mb-1.5">
               {paragraph.trim()}
             </p>
           )
         }
         return (
-          <p key={index} className="mb-2 text-justify">
+          <p key={`para-${index}`} className="mb-2 text-justify">
             {paragraph.trim()}
           </p>
         )

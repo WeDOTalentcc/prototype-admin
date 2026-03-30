@@ -56,7 +56,7 @@ export function SimilarProfilesInput({
     <div className="space-y-3">
       {/* URL inputs — up to 2 */}
       {similarUrls.map((url, index) => (
-        <div key={index} className="relative">
+        <div key={`url-${index}`} className="relative">
           <div className="absolute left-3 top-1/2 -translate-y-1/2">
             <Linkedin className="w-4 h-4 lia-text-600" />
           </div>
@@ -122,7 +122,7 @@ export function SimilarProfilesInput({
           <div className="flex flex-wrap gap-2">
             {similarCvFiles.map((file, index) => (
               <div
-                key={index}
+                key={file.name}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs"
                 style={{backgroundColor: "var(--gray-100)"}}
               >

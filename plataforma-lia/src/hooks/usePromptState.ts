@@ -250,7 +250,7 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
 
   useEffect(() => {
     if (searchSource !== 'local') {
-      creditEstimator.fetchBalance().catch(console.error)
+      creditEstimator.fetchBalance().catch(() => { /* TODO: integrar com Sentry */ })
     }
   }, [searchSource])
 

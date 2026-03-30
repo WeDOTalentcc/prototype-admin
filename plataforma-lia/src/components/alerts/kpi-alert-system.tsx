@@ -771,7 +771,7 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
                             <h5 className="text-sm font-medium text-lia-text-primary mb-2">Ações Sugeridas:</h5>
                             <ul className="space-y-1">
                               {alert.suggestedActions.slice(0, 2).map((action, index) => (
-                                <li key={index} className="text-sm lia-text-base flex items-start gap-2">
+                                <li key={`action-${index}`} className="text-sm lia-text-base flex items-start gap-2">
                                   <span className="text-lia-text-secondary dark:text-lia-text-tertiary mt-1">•</span>
                                   {action}
                                 </li>
@@ -853,7 +853,7 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
                   <h4 className="font-medium mb-2">Todas as Ações Sugeridas:</h4>
                   <ul className="space-y-2">
                     {selectedAlert.suggestedActions.map((action, index) => (
-                      <li key={index} className="text-sm lia-text-base flex items-start gap-2 p-2 bg-gray-50 rounded-md">
+                      <li key={`sel-action-${index}`} className="text-sm lia-text-base flex items-start gap-2 p-2 bg-gray-50 rounded-md">
                         <span className="text-lia-text-secondary dark:text-lia-text-tertiary mt-1">•</span>
                         {action}
                       </li>

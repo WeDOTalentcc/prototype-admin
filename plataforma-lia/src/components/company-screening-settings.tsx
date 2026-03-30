@@ -276,7 +276,7 @@ Equipe de Recrutamento`
                   <CardContent>
                     <div className="space-y-3">
                       {approachSettings.structure.map((step, index) => (
-                        <div key={index} className="flex items-center gap-3">
+                        <div key={`step-${index}`} className="flex items-center gap-3">
                           <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center text-lia-text-secondary dark:text-lia-text-tertiary text-xs font-bold">
                             {index + 1}
                           </div>
@@ -444,7 +444,7 @@ Equipe de Recrutamento`
                   <CardContent>
                     <div className="space-y-3">
                       {approachSettings.guidelines.map((guideline, index) => (
-                        <div key={index} className="flex items-start gap-3">
+                        <div key={`guideline-${index}`} className="flex items-start gap-3">
                           <Star className="w-4 h-4 text-status-warning mt-0.5" />
                           <input
                             type="text"

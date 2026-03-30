@@ -227,7 +227,7 @@ function CompetencyCard({
               </div>
               <ul className="space-y-1">
                 {competency.behaviors.map((behavior, index) => (
-                  <li key={index} className="text-xs flex items-start gap-2 dark:text-lia-text-secondary">
+                  <li key={`behavior-${index}`} className="text-xs flex items-start gap-2 dark:text-lia-text-secondary">
                     <span className="mt-1 text-lia-text-secondary">•</span>
                     <span>{behavior}</span>
                   </li>
@@ -245,7 +245,7 @@ function CompetencyCard({
               <ul className="space-y-2">
                 {competency.questions.map((question, index) => (
                   <li
-                    key={index}
+                    key={`question-${index}`}
                     className="text-xs p-2 rounded-md border italic dark:text-lia-text-secondary dark:border-lia-border-subtle dark:bg-lia-bg-secondary bg-lia-bg-primary border-lia-border-subtle"
                   >
                     "{question}"

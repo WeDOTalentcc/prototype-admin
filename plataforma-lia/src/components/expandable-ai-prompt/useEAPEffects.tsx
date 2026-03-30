@@ -77,7 +77,7 @@ export function useEAPEffects(params: UseEAPEffectsParams) {
 
   useEffect(() => {
     if (searchSource !== 'local') {
-      creditEstimator.fetchBalance().catch(console.error)
+      creditEstimator.fetchBalance().catch(() => { /* TODO: integrar com Sentry */ })
     }
   }, [searchSource])
 
