@@ -21,7 +21,7 @@ export interface UseLGPDComplianceResult {
   totalDecisions: number
   isLoading: boolean
   error: Error | null
-  refetch: () => void
+  refetch: () => Promise<void>
   fetchBreaches: (params?: BreachListParams) => Promise<void>
   fetchDecisions: (params?: AutomatedDecisionListParams) => Promise<void>
 }

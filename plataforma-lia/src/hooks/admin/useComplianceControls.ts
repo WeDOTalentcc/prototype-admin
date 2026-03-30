@@ -23,7 +23,7 @@ export interface UseComplianceControlsResult {
   totalSoxControls: number
   isLoading: boolean
   error: Error | null
-  refetch: () => void
+  refetch: () => Promise<void>
   fetchControls: (params?: CompanyControlListParams) => Promise<void>
   fetchAudits: (framework?: string) => Promise<void>
   fetchSOXControls: (section?: string, testResult?: string) => Promise<void>

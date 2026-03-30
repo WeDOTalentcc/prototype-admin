@@ -17,7 +17,7 @@ export interface UseBiasAuditsResult {
   totalAudits: number
   isLoading: boolean
   error: Error | null
-  refetch: () => void
+  refetch: () => Promise<void>
   fetchAudits: (params?: BiasAuditListParams) => Promise<void>
   fetchAudit: (auditId: string) => Promise<BiasAuditReport | null>
 }

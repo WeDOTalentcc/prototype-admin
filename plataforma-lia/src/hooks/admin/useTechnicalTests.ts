@@ -18,7 +18,7 @@ export interface UseTechnicalTestsResult {
   isLoading: boolean
   isUpdating: boolean
   error: Error | null
-  refetch: () => void
+  refetch: () => Promise<void>
   toggleTestEnabled: (testId: string, enabled: boolean) => Promise<boolean>
   configureTest: (testId: string, config: ClientTestConfig) => Promise<boolean>
   seedTests: () => Promise<boolean>
