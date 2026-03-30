@@ -81,12 +81,12 @@ export function CandidatoActivitiesTab({
   const allItems: Array<Record<string, unknown>> = [
     ...activities.map((act) => ({ ...act, itemType: (act.activity_type as string) || (act.type as string) || "activity" })),
     ...candidateNotes.map(n => ({ ...n, itemType: "note" })),
-  ].sort((a, b) => {
-    const dateA = new Date((a.created_at || a.timestamp || 0) as string).getTime()
-    const dateB = new Date((b.created_at || b.timestamp || 0) as string).getTime()
+  ]
+  allItems.sort((a: Record<string, unknown>, b: Record<string, unknown>) => {
+    const dateA = new Date((String(a.created_at || a.timestamp || 0))).getTime()
+    const dateB = new Date((String(b.created_at || b.timestamp || 0))).getTime()
     return dateB - dateA
   })
-
   const filteredItems: Array<Record<string, unknown>> = allItems.filter(item => {
     if (activityFilter === "all") return true
     if (activityFilter === "notes") return item.itemType === "note"
@@ -267,10 +267,10 @@ export function CandidatoActivitiesTab({
                               <Badge className="text-xs px-1.5 py-0 bg-status-warning/15 text-status-warning border-status-warning/30">
                                 {getCategoryLabelLocal(item.category)}
                               </Badge>
-                              <span className="text-xs text-lia-text-secondary">{formatRelativeTime(item.created_at)}</span>
+                              <span className="text-xs text-lia-text-secondary">{formatRelativeTime(String(item.created_at || ""))}</span>
                             </div>
                             <p className="text-sm text-lia-text-secondary">{String(item.content || "")}</p>
-                            {item.user_name && (
+                            {!!item.user_name && (
                               <p className="text-xs text-lia-text-secondary mt-1">Por: {String(item.user_name)}</p>
                             )}
                           </div>
@@ -291,15 +291,15 @@ export function CandidatoActivitiesTab({
                               {String(item.activity_type || item.type || item.title || "Atividade")}
                             </span>
                             <span className="text-xs text-lia-text-secondary">
-                              {formatRelativeTime(item.created_at || item.timestamp)}
+                              {formatRelativeTime(String(item.created_at || item.timestamp || ""))}
                             </span>
                           </div>
-                          {(item.description || item.content || item.details) && (
+                          {!!(item.description || item.content || item.details) && (
                             <p className="text-sm text-lia-text-secondary">
                               {String(item.description || item.content || item.details || "")}
                             </p>
                           )}
-                          {item.user_name && (
+                          {!!item.user_name && (
                             <p className="text-xs text-lia-text-secondary mt-1">Por: {String(item.user_name)}</p>
                           )}
                         </div>

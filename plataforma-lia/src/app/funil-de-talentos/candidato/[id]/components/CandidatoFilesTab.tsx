@@ -171,7 +171,7 @@ export function CandidatoFilesTab({
               {visibleFiles.map((file) => {
                 const colors = getCategoryColor(String(file.file_type || ""))
                 return (
-                  <div key={file.id} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
+                  <div key={String(file.id)} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
                     <div className="p-3">
                       <div className="flex items-start gap-3">
                         <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">

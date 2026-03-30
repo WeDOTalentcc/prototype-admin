@@ -57,10 +57,11 @@ export function useCandidatesData({
       .then(r =>
         r?.items &&
         setCandidateListsForModal(
-          r.items.map((l: { id: string; name: string; color?: string }) => ({
-            id: l.id,
-            name: l.name,
-            color: l.color,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          r.items.map((l: any) => ({
+            id: l.id as string,
+            name: l.name as string,
+            color: l.color as string | undefined,
           }))
         )
       )

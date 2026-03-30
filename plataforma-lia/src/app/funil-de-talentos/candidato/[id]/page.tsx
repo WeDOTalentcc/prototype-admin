@@ -110,11 +110,11 @@ export default function CandidateProfilePage() {
                     <span className="text-xs font-mono text-lia-text-secondary bg-gray-100 px-2 py-0.5 rounded-md">
                       {getShortId(candidate.id)}
                     </span>
-                    {candidate.seniority_level && <Badge className={badgeStyles.primary}>{candidate.seniority_level}</Badge>}
-                    {candidate.years_of_experience && (
+                    {!!candidate.seniority_level && <Badge className={badgeStyles.primary}>{candidate.seniority_level}</Badge>}
+                    {!!candidate.years_of_experience && (
                       <Badge variant="outline" className="text-xs">{candidate.years_of_experience} anos exp.</Badge>
                     )}
-                    {candidate.communication_consent && (
+                    {!!candidate.communication_consent && (
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Badge className="text-xs bg-status-success/10 text-status-success border-status-success/30">
@@ -124,7 +124,7 @@ export default function CandidateProfilePage() {
                         <TooltipContent>Consentimento LGPD obtido</TooltipContent>
                       </Tooltip>
                     )}
-                    {candidate.is_blacklisted && (
+                    {!!candidate.is_blacklisted && (
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Badge className="text-xs bg-status-error/10 text-status-error border-status-error/30">⚠️ LCNU</Badge>
@@ -135,10 +135,10 @@ export default function CandidateProfilePage() {
                         </TooltipContent>
                       </Tooltip>
                     )}
-                    {candidate.is_tech && (
+                    {!!candidate.is_tech && (
                       <Badge variant="outline" className="text-xs bg-gray-100 text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-default">Tech</Badge>
                     )}
-                    {candidate.is_potential && (
+                    {!!candidate.is_potential && (
                       <Badge variant="outline" className="text-xs bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30">Potencial</Badge>
                     )}
                     <Badge className={`text-xs ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border}`}>
@@ -162,10 +162,10 @@ export default function CandidateProfilePage() {
 
                   {/* Title / Company */}
                   <div className="flex items-center gap-2 text-sm text-lia-text-primary mb-1">
-                    {candidate.current_title && (
+                    {!!candidate.current_title && (
                       <><Briefcase className="w-4 h-4 text-lia-text-secondary" /><span className="font-medium">{candidate.current_title}</span></>
                     )}
-                    {candidate.current_company && (
+                    {!!candidate.current_company && (
                       <><span className="text-lia-text-secondary">•</span><span>{candidate.current_company}</span></>
                     )}
                   </div>
@@ -180,7 +180,7 @@ export default function CandidateProfilePage() {
 
                   {/* Contact + Social */}
                   <div className="flex items-center gap-4 flex-wrap">
-                    {candidate.email && (
+                    {!!candidate.email && (
                       <a href={`mailto:${candidate.email}`} className="flex items-center gap-1.5 text-sm text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none">
                         <Mail className="w-4 h-4" />{candidate.email}
                       </a>
@@ -229,19 +229,19 @@ export default function CandidateProfilePage() {
                 {/* Right column — work prefs + dates */}
                 <div className="text-right space-y-3 min-w-sidebar-content">
                   <div className="flex flex-wrap gap-1.5 justify-end">
-                    {candidate.work_model && <Badge variant="outline" className="text-xs bg-gray-50 text-lia-text-primary border-lia-border-subtle">{String(candidate.work_model)}</Badge>}
-                    {candidate.work_mode && <Badge variant="outline" className="text-xs bg-gray-50 text-lia-text-primary border-lia-border-subtle">{String(candidate.work_mode)}</Badge>}
-                    {candidate.contract_type && <Badge variant="outline" className="text-xs bg-gray-50 text-lia-text-primary border-lia-border-subtle">{String(candidate.contract_type)}</Badge>}
-                    {candidate.is_remote && <Badge variant="outline" className="text-xs bg-gray-50 dark:bg-lia-bg-primary text-lia-text-primary border-lia-border-default">🌐 Remoto</Badge>}
-                    {candidate.willing_to_relocate && <Badge variant="outline" className="text-xs bg-status-success/10 text-status-success border-status-success/30">✈️ Aceita Mudança</Badge>}
-                    {candidate.mobility && <Badge variant="outline" className="text-xs bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30">🚗 Mobilidade</Badge>}
-                    {candidate.availability && <Badge variant="outline" className="text-xs bg-gray-50 text-lia-text-primary border-lia-border-subtle">{String(candidate.availability)}</Badge>}
+                    {!!candidate.work_model && <Badge variant="outline" className="text-xs bg-gray-50 text-lia-text-primary border-lia-border-subtle">{String(candidate.work_model)}</Badge>}
+                    {!!candidate.work_mode && <Badge variant="outline" className="text-xs bg-gray-50 text-lia-text-primary border-lia-border-subtle">{String(candidate.work_mode)}</Badge>}
+                    {!!candidate.contract_type && <Badge variant="outline" className="text-xs bg-gray-50 text-lia-text-primary border-lia-border-subtle">{String(candidate.contract_type)}</Badge>}
+                    {!!candidate.is_remote && <Badge variant="outline" className="text-xs bg-gray-50 dark:bg-lia-bg-primary text-lia-text-primary border-lia-border-default">🌐 Remoto</Badge>}
+                    {!!candidate.willing_to_relocate && <Badge variant="outline" className="text-xs bg-status-success/10 text-status-success border-status-success/30">✈️ Aceita Mudança</Badge>}
+                    {!!candidate.mobility && <Badge variant="outline" className="text-xs bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30">🚗 Mobilidade</Badge>}
+                    {!!candidate.availability && <Badge variant="outline" className="text-xs bg-gray-50 text-lia-text-primary border-lia-border-subtle">{String(candidate.availability)}</Badge>}
                   </div>
                   <div className="text-xs text-lia-text-secondary space-y-0.5">
                     <p className="font-semibold text-lia-text-primary">Datas</p>
-                    {candidate.updated_at && <p>Atualizado: {formatDate(String(candidate.updated_at))}</p>}
-                    {candidate.last_contact_at && <p>Último contato: {formatDate(String(candidate.last_contact_at))}</p>}
-                    {candidate.last_activity_at && <p>Última atividade: {formatDate(String(candidate.last_activity_at))}</p>}
+                    {!!candidate.updated_at && <p>Atualizado: {formatDate(String(candidate.updated_at))}</p>}
+                    {!!candidate.last_contact_at && <p>Último contato: {formatDate(String(candidate.last_contact_at))}</p>}
+                    {!!candidate.last_activity_at && <p>Última atividade: {formatDate(String(candidate.last_activity_at))}</p>}
                     {!candidate.updated_at && !candidate.last_contact_at && !candidate.last_activity_at && candidate.created_at && (
                       <p>Cadastro: {formatDate(String(candidate.created_at))}</p>
                     )}
@@ -290,7 +290,7 @@ export default function CandidateProfilePage() {
                 <Tooltip><TooltipTrigger asChild>
                   <Button
                     size="sm"
-                    variant={isFavorite ? "secondary" : "outline"}
+                    variant="outline"
                     onClick={handleToggleFavorite}
                     className={`gap-1.5 ${isFavorite ? "bg-wedo-magenta hover:bg-wedo-magenta text-white" : ""}`}
                   >
@@ -308,7 +308,7 @@ export default function CandidateProfilePage() {
                 <Tooltip><TooltipTrigger asChild>
                   <Button
                     size="sm"
-                    variant={isHidden ? "secondary" : "outline"}
+                    variant="outline"
                     onClick={handleHideCandidate}
                     className={`gap-1.5 ${isHidden ? "bg-gray-500 hover:bg-gray-600 text-white" : ""}`}
                   >

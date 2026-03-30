@@ -24,9 +24,9 @@ interface CandidatoOpinionsTabProps {
   setOpinionsSubTab: (v: OpinionsSubTab) => void
   setExpandedOpinionId: (v: string | null) => void
   setExpandedAnalysisId: (v: string | null) => void
-  formatDate: (v: unknown) => string
-  copyToClipboard: (text: unknown, label: string) => void
-  cleanMarkdown: (v: unknown) => string
+  formatDate: (dateStr: string | null | undefined) => string | null
+  copyToClipboard: (text: string, label?: string) => Promise<void>
+  cleanMarkdown: (text: string) => string
 }
 
 function getScoreColor(score: number | null | undefined): string {
@@ -185,7 +185,7 @@ export function CandidatoOpinionsTab({
                                         : `Score: ${Math.round(displayScore as number)}/100`}
                                     </span>
                                   )}
-                                  {opinion.archetype && <><span className="text-lia-text-secondary">•</span><span className="text-xs text-lia-text-secondary">{String(opinion.archetype)}</span></>}
+                                  {!!opinion.archetype && <><span className="text-lia-text-secondary">•</span><span className="text-xs text-lia-text-secondary">{String(opinion.archetype)}</span></>}
                                   <RecommendationBadge rec={opinion.recommendation} />
                                 </div>
                               </div>
@@ -202,7 +202,7 @@ export function CandidatoOpinionsTab({
                                         gapsList?.length ? `Gaps:\n${gapsList.join("\n")}` : "",
                                         opinion.next_steps ? `Próximos Passos: ${String(opinion.next_steps)}` : "",
                                       ].filter(Boolean).join("\n\n")
-                                      copyToClipboard(text, "Parecer")
+                                      void copyToClipboard(text, "Parecer")
                                     }}
                                     className="p-1.5 rounded-md hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                                   >
@@ -211,14 +211,14 @@ export function CandidatoOpinionsTab({
                                 </TooltipTrigger>
                                 <TooltipContent>Copiar Parecer</TooltipContent>
                               </Tooltip>
-                              {opinion.created_at && <span className="text-xs text-lia-text-secondary">{formatDate(String(opinion.created_at))}</span>}
+                              {!!opinion.created_at && <span className="text-xs text-lia-text-secondary">{formatDate(String(opinion.created_at))}</span>}
                               {isExpanded ? <ChevronUp className="w-4 h-4 text-lia-text-secondary" /> : <ChevronDown className="w-4 h-4 text-lia-text-secondary" />}
                             </div>
                           </button>
 
                           {isExpanded && (
                             <div className="px-4 pb-4 pt-0 border-t border-lia-border-subtle space-y-4">
-                              {opinion.summary && (
+                              {!!opinion.summary && (
                                 <div className="pt-4">
                                   <p className="text-sm text-lia-text-primary leading-relaxed">{String(opinion.summary)}</p>
                                 </div>
@@ -269,7 +269,7 @@ export function CandidatoOpinionsTab({
                                   </ul>
                                 </div>
                               )}
-                              {opinion.next_steps && (
+                              {!!opinion.next_steps && (
                                 <div>
                                   <h5 className="text-xs font-semibold text-lia-text-primary mb-2 flex items-center gap-1">
                                     <TrendingUp className="w-3.5 h-3.5" />Próximos Passos
@@ -337,7 +337,7 @@ export function CandidatoOpinionsTab({
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <button
-                                  onClick={(e) => { e.stopPropagation(); copyToClipboard(analysis.content, "Análise") }}
+                                  onClick={(e) => { e.stopPropagation(); void copyToClipboard(String(analysis.content ?? ""), "Análise") }}
                                   className="p-1.5 rounded-md hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                                 >
                                   <Copy className="w-4 h-4 text-lia-text-secondary" />
@@ -352,7 +352,7 @@ export function CandidatoOpinionsTab({
                         {isExpanded && (
                           <div className="px-4 pb-4 border-t border-lia-border-subtle pt-4">
                             <div className="text-sm text-lia-text-primary leading-relaxed whitespace-pre-wrap">
-                              {cleanMarkdown(analysis.content)}
+                              {cleanMarkdown(String(analysis.content || ""))}
                             </div>
                           </div>
                         )}
