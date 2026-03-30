@@ -79,7 +79,7 @@ export async function POST(
     
     const contentType = request.headers.get('content-type') || ''
     
-    let fetchOptions: RequestInit = {
+    const fetchOptions: RequestInit = {
       method: 'POST',
     }
     

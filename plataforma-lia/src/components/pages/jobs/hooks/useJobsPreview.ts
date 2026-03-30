@@ -205,7 +205,7 @@ export function useJobsPreview({ setBackendJobs }: UseJobsPreviewOptions): UseJo
       setEditMinScorePreset(screeningConfig.settings?.min_score_preset ?? 'recommended')
       setEditTimeoutHours(screeningConfig.settings?.response_timeout_hours ?? 48)
       setEditMaxRetries(screeningConfig.settings?.max_retries ?? 2)
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
+       
       const { limitToApprovalPreset } = require("@/hooks/useScreeningConfig")
       setEditAutoApprovalPreset(screeningConfig.settings?.auto_approval_preset ?? limitToApprovalPreset(screeningConfig.settings?.auto_approval_limit))
     }

@@ -217,7 +217,7 @@ export function AddCandidatesToVacancyModal({
   }, [currentRecruiterEmail])
 
   const sortedAndFilteredVacancies = useMemo(() => {
-    let filtered = vacancies.filter(v => 
+    const filtered = vacancies.filter(v => 
       v.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       v.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       v.location?.toLowerCase().includes(searchTerm.toLowerCase())

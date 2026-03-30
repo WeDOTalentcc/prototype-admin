@@ -356,7 +356,7 @@ export function useCandidatesFilterSort(params: UseCandidatesFilterSortParams) {
   const paginatedCandidates = getPaginatedCandidates().candidates
 
   const searchDisplayCandidates = React.useMemo(() => {
-    let sorted = [...sortedCandidates]
+    const sorted = [...sortedCandidates]
     
     switch (searchSortBy) {
       case 'score_desc':

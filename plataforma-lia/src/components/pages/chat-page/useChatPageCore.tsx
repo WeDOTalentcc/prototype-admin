@@ -940,7 +940,7 @@ Você pode me contar livremente ou colar uma descrição de vaga existente que e
 
   const highlightSearchTerm = useCallback((text: string, term: string) => {
     // Primeiro formata o conteúdo
-    let formatted = formatMessageContent(text)
+    const formatted = formatMessageContent(text)
     
     // Depois aplica o highlight se houver termo de busca
     if (!term) return formatted

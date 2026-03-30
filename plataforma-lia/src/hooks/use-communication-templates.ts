@@ -536,7 +536,7 @@ function stripHtmlTags(html: string): string {
   const isHtml = /<[a-z][\s\S]*>/i.test(html)
   if (!isHtml) return html
   
-  let text = html
+  const text = html
     .replace(/{{#if\s+\w+}}/gi, '')
     .replace(/{{\/if}}/gi, '')
     .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')

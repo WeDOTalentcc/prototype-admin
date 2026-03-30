@@ -351,7 +351,7 @@ export function extractCriteriaFromText(text: string, currentCriteria: DetectedC
 
   const seniorityMatch = text.match(/\b(júnior|junior|jr|pleno|pl|sênior|senior|sr|especialista|trainee|estagiário|estagiario|estágio|estagio)\b/i)
   if (seniorityMatch) {
-    let seniority = seniorityMatch[1].toLowerCase()
+    const seniority = seniorityMatch[1].toLowerCase()
     const seniorityMap: Record<string, string> = {
       'junior': 'Júnior', 'júnior': 'Júnior', 'jr': 'Júnior',
       'pleno': 'Pleno', 'pl': 'Pleno',
@@ -365,7 +365,7 @@ export function extractCriteriaFromText(text: string, currentCriteria: DetectedC
 
   const modeloMatch = text.match(/\b(remoto|100%\s*remoto|totalmente\s*remoto|híbrido|hibrido|presencial|home\s*office|trabalho\s*remoto)\b/i)
   if (modeloMatch) {
-    let modelo = modeloMatch[1].toLowerCase()
+    const modelo = modeloMatch[1].toLowerCase()
     if (modelo.includes('remoto') || modelo.includes('home')) {
       newCriteria.modeloTrabalho = 'Remoto'
     } else if (modelo.includes('híbrido') || modelo.includes('hibrido')) {
@@ -473,7 +473,7 @@ export function extractCriteriaFromText(text: string, currentCriteria: DetectedC
 
   const contratoMatch = text.match(/\b(clt|pj|pessoa\s*jurídica|pessoa\s*juridica|terceirizado|freelancer|temporário|temporario|efetivo|contrato\s*fixo|contratação\s*clt|contratacao\s*clt)\b/i)
   if (contratoMatch) {
-    let contrato = contratoMatch[1].toLowerCase()
+    const contrato = contratoMatch[1].toLowerCase()
     if (contrato.includes('clt') || contrato.includes('efetivo')) {
       newCriteria.tipoContrato = 'CLT'
     } else if (contrato.includes('pj') || contrato.includes('jurídica') || contrato.includes('juridica')) {
