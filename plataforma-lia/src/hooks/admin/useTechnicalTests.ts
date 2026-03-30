@@ -95,7 +95,7 @@ export function useTechnicalTests(clientId: string): UseTechnicalTestsResult {
     isLoading,
     isUpdating,
     error: error instanceof Error ? error : error ? new Error(String(error)) : null,
-    refetch: () => mutate(),
+    refetch: async () => { await mutate() },
     toggleTestEnabled,
     configureTest,
     seedTests,

@@ -80,7 +80,7 @@ export function useLGPDCompliance(clientId: string): UseLGPDComplianceResult {
     totalDecisions: data?.totalDecisions ?? 0,
     isLoading,
     error: error instanceof Error ? error : error ? new Error(String(error)) : null,
-    refetch: () => mutate(),
+    refetch: async () => { await mutate() },
     fetchBreaches,
     fetchDecisions,
   }

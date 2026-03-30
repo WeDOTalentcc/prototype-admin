@@ -63,6 +63,6 @@ export function usePlatformMetrics(): UsePlatformMetricsResult {
     error: error instanceof ApiClientError ? error.message
       : error instanceof Error ? error.message
       : error ? String(error) : null,
-    refetch: () => mutate(),
+    refetch: async () => { await mutate() },
   }
 }

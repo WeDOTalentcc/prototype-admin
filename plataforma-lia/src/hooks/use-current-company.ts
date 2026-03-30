@@ -35,6 +35,6 @@ export function useCurrentCompany(): UseCurrentCompanyReturn {
     companyId: data?.id ?? null,
     loading: isLoading,
     error: error?.message ?? null,
-    refetch: () => mutate(),
+    refetch: async () => { await mutate() },
   }
 }

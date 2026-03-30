@@ -63,7 +63,7 @@ export function useBiasAudits(clientId: string): UseBiasAuditsResult {
     totalAudits: data?.total ?? 0,
     isLoading,
     error: error instanceof Error ? error : error ? new Error(String(error)) : null,
-    refetch: () => mutate(),
+    refetch: async () => { await mutate() },
     fetchAudits,
     fetchAudit,
   }

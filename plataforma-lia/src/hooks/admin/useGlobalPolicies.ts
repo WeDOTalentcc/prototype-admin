@@ -1,12 +1,13 @@
-'use client'
+"use client"
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback } from "react"
+import useSWR from "swr"
 import {
   policiesService,
   Policy,
   PolicyCategory,
   PolicyHistoryEntry,
-} from '@/services/admin/policies-service'
+} from "@/services/admin/policies-service"
 
 export interface UseGlobalPoliciesResult {
   policies: Policy[]
@@ -28,47 +29,47 @@ export interface UseGlobalPoliciesResult {
 }
 
 export function useGlobalPolicies(initialCategory?: string): UseGlobalPoliciesResult {
-  const [policies, setPolicies] = useState<Policy[]>([])
-  const [history, setHistory] = useState<PolicyHistoryEntry[]>([])
-  const [categories, setCategories] = useState<PolicyCategory[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const [isUpdating, setIsUpdating] = useState(false)
-  const [error, setError] = useState<Error | null>(null)
+
+  const { data, error, isLoading, mutate } = useSWR(
+    ["adminGlobalPolicies", initialCategory ?? ""],
+    async ([, category]) => {
+      const [policiesResponse, historyResponse, categoriesResponse] = await Promise.all([
+        policiesService.getPolicies(category || undefined),
+        policiesService.getAllHistory(),
+        policiesService.getCategories(),
+      ])
+      return {
+        policies: policiesResponse.policies,
+        history: historyResponse.history,
+        categories: categoriesResponse.categories,
+      }
+    }
+  )
 
   const fetchPolicies = useCallback(async (category?: string) => {
-    setIsLoading(true)
-    setError(null)
-
     try {
-      const response = await policiesService.getPolicies(category)
-      setPolicies(response.policies)
+      const result = await policiesService.getPolicies(category)
+      await mutate(
+        (prev) => prev ? { ...prev, policies: result.policies } : prev,
+        false
+      )
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch policies'))
-    } finally {
-      setIsLoading(false)
     }
-  }, [])
+  }, [mutate])
 
   const fetchHistory = useCallback(async (policyId?: string) => {
     try {
-      if (policyId) {
-        const response = await policiesService.getPolicyHistory(policyId)
-        setHistory(response.history)
-      } else {
-        const response = await policiesService.getAllHistory()
-        setHistory(response.history)
-      }
+      const result = policyId
+        ? await policiesService.getPolicyHistory(policyId)
+        : await policiesService.getAllHistory()
+      await mutate(
+        (prev) => prev ? { ...prev, history: result.history } : prev,
+        false
+      )
     } catch (err) {
     }
-  }, [])
-
-  const fetchCategories = useCallback(async () => {
-    try {
-      const response = await policiesService.getCategories()
-      setCategories(response.categories)
-    } catch (err) {
-    }
-  }, [])
+  }, [mutate])
 
   const updatePolicy = useCallback(
     async (
@@ -77,91 +78,54 @@ export function useGlobalPolicies(initialCategory?: string): UseGlobalPoliciesRe
       reason?: string
     ): Promise<Policy | null> => {
       setIsUpdating(true)
-      setError(null)
-
       try {
         const updatedPolicy = await policiesService.updatePolicy(id, value, reason)
-        setPolicies((prev) =>
-          prev.map((p) => (p.id === id ? updatedPolicy : p))
-        )
-        await fetchHistory()
+        await mutate()
         return updatedPolicy
       } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to update policy'))
         return null
       } finally {
         setIsUpdating(false)
       }
     },
-    [fetchHistory]
+    [mutate]
   )
 
   const togglePolicy = useCallback(
     async (id: string, isActive: boolean): Promise<Policy | null> => {
       setIsUpdating(true)
-      setError(null)
-
       try {
         const updatedPolicy = await policiesService.togglePolicy(id, isActive)
-        setPolicies((prev) =>
-          prev.map((p) => (p.id === id ? updatedPolicy : p))
-        )
-        await fetchHistory()
+        await mutate()
         return updatedPolicy
       } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to toggle policy'))
         return null
       } finally {
         setIsUpdating(false)
       }
     },
-    [fetchHistory]
+    [mutate]
   )
 
   const seedPolicies = useCallback(async (): Promise<{ success: boolean; message: string }> => {
     try {
       const response = await policiesService.seedPolicies()
-      await fetchPolicies(initialCategory)
+      await mutate()
       return { success: true, message: response.message }
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to seed policies'
+      const message = err instanceof Error ? err.message : "Failed to seed policies"
       return { success: false, message }
     }
-  }, [fetchPolicies, initialCategory])
-
-  const refetch = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      const [policiesResponse, historyResponse, categoriesResponse] = await Promise.all([
-        policiesService.getPolicies(initialCategory),
-        policiesService.getAllHistory(),
-        policiesService.getCategories(),
-      ])
-
-      setPolicies(policiesResponse.policies)
-      setHistory(historyResponse.history)
-      setCategories(categoriesResponse.categories)
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch policies data'))
-    } finally {
-      setIsLoading(false)
-    }
-  }, [initialCategory])
-
-  useEffect(() => {
-    refetch()
-  }, [])
+  }, [mutate])
 
   return {
-    policies,
-    history,
-    categories,
+    policies: data?.policies ?? [],
+    history: data?.history ?? [],
+    categories: data?.categories ?? [],
     isLoading,
     isUpdating,
-    error,
-    refetch,
+    error: error instanceof Error ? error : error ? new Error(String(error)) : null,
+    refetch: async () => { await mutate() },
     fetchPolicies,
     fetchHistory,
     updatePolicy,

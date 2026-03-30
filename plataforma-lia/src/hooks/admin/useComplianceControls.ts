@@ -97,7 +97,7 @@ export function useComplianceControls(clientId: string): UseComplianceControlsRe
     totalSoxControls: data?.totalSoxControls ?? 0,
     isLoading,
     error: error instanceof Error ? error : error ? new Error(String(error)) : null,
-    refetch: () => mutate(),
+    refetch: async () => { await mutate() },
     fetchControls,
     fetchAudits,
     fetchSOXControls,

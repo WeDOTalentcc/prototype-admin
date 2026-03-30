@@ -58,7 +58,7 @@ export function useClientSaasMetrics(clientId: string): UseClientSaasMetricsResu
     error: error instanceof ApiClientError ? error.message
       : error instanceof Error ? error.message
       : error ? String(error) : null,
-    refetch: () => mutate(),
+    refetch: async () => { await mutate() },
   }
 }
 
@@ -74,7 +74,7 @@ export function useClientRevenue(clientId: string): UseClientRevenueResult {
     error: error instanceof ApiClientError ? error.message
       : error instanceof Error ? error.message
       : error ? String(error) : null,
-    refetch: () => mutate(),
+    refetch: async () => { await mutate() },
   }
 }
 
@@ -90,7 +90,7 @@ export function useClientUsage(clientId: string): UseClientUsageResult {
     error: error instanceof ApiClientError ? error.message
       : error instanceof Error ? error.message
       : error ? String(error) : null,
-    refetch: () => mutate(),
+    refetch: async () => { await mutate() },
   }
 }
 
@@ -106,7 +106,7 @@ export function useClientHealth(clientId: string): UseClientHealthResult {
     error: error instanceof ApiClientError ? error.message
       : error instanceof Error ? error.message
       : error ? String(error) : null,
-    refetch: () => mutate(),
+    refetch: async () => { await mutate() },
   }
 }
 
@@ -122,6 +122,6 @@ export function useClientPayments(clientId: string): UseClientPaymentsResult {
     error: error instanceof ApiClientError ? error.message
       : error instanceof Error ? error.message
       : error ? String(error) : null,
-    refetch: () => mutate(),
+    refetch: async () => { await mutate() },
   }
 }
