@@ -5,8 +5,14 @@ import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { TriagemDetailsModal } from "@/components/triagem-details-modal"
-import { JobReportModal } from "@/components/job-report-modal"
+const TriagemDetailsModal = dynamic(() => import("@/components/triagem-details-modal").then(m => ({ default: m.TriagemDetailsModal })), {
+  ssr: false,
+  loading: () => null,
+})
+const JobReportModal = dynamic(() => import("@/components/job-report-modal").then(m => ({ default: m.JobReportModal })), {
+  ssr: false,
+  loading: () => null,
+})
 import { SendEmailModal } from "@/components/email-templates/send-email-modal"
 import { UnifiedCommunicationModal } from "@/components/modals/unified-communication-modal"
 import { AddToListModal } from "@/components/modals/add-to-list-modal"

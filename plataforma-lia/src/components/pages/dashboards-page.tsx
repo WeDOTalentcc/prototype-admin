@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
+import dynamic from "next/dynamic"
 import type { ComponentType, CSSProperties } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -10,7 +11,10 @@ import {
   Heart, Award, CheckCircle, Activity, MapPin, Building,
   Lightbulb, AlertTriangle, ChevronLeft, ChevronRight, Lock, Unlock, Phone
 } from "lucide-react"
-import { BigFiveDashboardPage } from "./big-five-dashboard-page"
+const BigFiveDashboardPage = dynamic(() => import("./big-five-dashboard-page").then(m => ({ default: m.BigFiveDashboardPage })), {
+  ssr: false,
+  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />,
+})
 import { ModuleUpsell } from "@/components/module-access/module-upsell"
 import { hasModuleAccess } from "@/utils/license-manager"
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'

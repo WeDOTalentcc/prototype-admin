@@ -6,8 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import html2canvas from "html2canvas"
-import jsPDF from "jspdf"
 import {
   X, Download, Share2, Printer, Mail, FileText, Users,
   TrendingUp, Clock, Calendar, DollarSign, Target, CheckCircle,
@@ -124,6 +122,10 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
     if (!reportRef.current) return
     setIsGenerating(true)
     try {
+      const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+        import('html2canvas'),
+        import('jspdf'),
+      ])
       const canvas = await html2canvas(reportRef.current, {
         scale: 2,
         logging: false,

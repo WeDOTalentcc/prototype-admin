@@ -15,16 +15,29 @@ import { AISearchToggle } from"@/components/ai-search-toggle"
 import { IntelligenceNotifications } from"@/components/intelligence-notifications"
 import { Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clock, Layout, Layers3, Layers, ChevronDown, ChevronUp, ChevronLeft, BarChart3, TrendingUp, TrendingDown, FileText, ExternalLink, Briefcase, Building, Building2, Target, CheckCircle, CheckCircle2, XCircle, Linkedin, Globe, Shield, Hash, UserCheck, Heart, MoreHorizontal, Grid3X3, List, Maximize2, Minimize2, Star, Brain, Expand, Copy, MessageSquare, MoreVertical, Settings, Settings2, X, ChevronsLeftRight, Bell, Pin, Github, Mail, Lock, LockOpen, MessageCircle, AlertCircle, AlertTriangle, ShieldAlert, Lightbulb, ChevronRight, Home, Zap, ClipboardList, ListChecks, CalendarCheck, ThumbsUp, Phone, Send, Bookmark, Paperclip, Mic, GripVertical, ArrowUp, ArrowDown, ArrowUpDown, Filter, Award, Trash2, RefreshCw, ArrowRight, ArrowLeft, HelpCircle, Timer, GraduationCap, BookOpen, Scale, Loader2, History, Languages, UserCircle, CalendarDays, Link, Save, Check, RotateCcw, CalendarClock, Info, Archive, Gauge } from"lucide-react"
 import { JobKanbanPage } from"./job-kanban-page"
-import { JobReportModal } from"@/components/job-report-modal"
+const JobReportModal = dynamic(() => import("@/components/job-report-modal").then(m => ({ default: m.JobReportModal })), {
+  ssr: false,
+  loading: () => null,
+})
 import { JobActionsBar } from"@/components/job-actions-bar"
 import { JobCompareModal } from"@/components/modals/job-compare-modal"
 import { JobPublishModal } from"@/components/modals/job-publish-modal"
-import { JobUnpublishModal, type UnpublishData } from"@/components/modals/job-unpublish-modal"
+const JobUnpublishModal = dynamic(() => import("@/components/modals/job-unpublish-modal").then(m => ({ default: m.JobUnpublishModal })), {
+  ssr: false,
+  loading: () => null,
+})
+import type { UnpublishData } from"@/components/modals/job-unpublish-modal"
 import { JobInsightsModal } from"@/components/modals/job-insights-modal"
 import { JobDuplicateModal } from"@/components/modals/job-duplicate-modal"
-import { JobStatusModal } from"@/components/modals/job-status-modal"
+const JobStatusModal = dynamic(() => import("@/components/modals/job-status-modal").then(m => ({ default: m.JobStatusModal })), {
+  ssr: false,
+  loading: () => null,
+})
 import { JobAssignRecruiterModal } from"@/components/modals/job-assign-recruiter-modal"
-import { EditJobModal } from"@/components/modals/edit-job-modal"
+const EditJobModal = dynamic(() => import("@/components/modals/edit-job-modal").then(m => ({ default: m.EditJobModal })), {
+  ssr: false,
+  loading: () => null,
+})
 import { CreateJobModal } from"@/components/modals/create-job-modal"
 import { ActionResultCard } from"@/components/chat/action-result-card"
 import { ContextPill } from"@/components/ui/context-pill"

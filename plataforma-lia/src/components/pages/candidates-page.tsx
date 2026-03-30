@@ -14,7 +14,10 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { BatchApprovalModal } from "@/components/batch-approval-modal"
 import { RubricEvaluationModal } from "@/components/rubric-evaluation-modal"
-import { NewCandidateUnifiedModal } from "@/components/modals/new-candidate-unified-modal"
+const NewCandidateUnifiedModal = dynamic(() => import("@/components/modals/new-candidate-unified-modal").then(m => ({ default: m.NewCandidateUnifiedModal })), {
+  ssr: false,
+  loading: () => null,
+})
 import { ContactModal, ScheduleModal } from "@/components/quick-actions-modals"
 import { GlobalExpansionConfirmModal } from "@/components/pages/candidates/GlobalExpansionConfirmModal"
 import { SourceChangeConfirmModal } from "@/components/pages/candidates/SourceChangeConfirmModal"

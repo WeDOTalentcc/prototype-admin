@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-// import { Progress } from "@/components/ui/progress"
 import {
   Target, Users, Calendar, Mail, Phone, Linkedin,
   Clock, TrendingUp, AlertTriangle, CheckCircle,

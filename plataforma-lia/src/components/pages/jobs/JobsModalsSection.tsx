@@ -7,15 +7,44 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { JobReportModal } from "@/components/job-report-modal"
-import { JobCompareModal } from "@/components/modals/job-compare-modal"
-import { JobPublishModal } from "@/components/modals/job-publish-modal"
-import { JobUnpublishModal, type UnpublishData } from "@/components/modals/job-unpublish-modal"
-import { JobInsightsModal } from "@/components/modals/job-insights-modal"
-import { JobDuplicateModal } from "@/components/modals/job-duplicate-modal"
-import { JobStatusModal } from "@/components/modals/job-status-modal"
-import { JobAssignRecruiterModal } from "@/components/modals/job-assign-recruiter-modal"
-import { EditJobModal } from "@/components/modals/edit-job-modal"
+import dynamic from "next/dynamic"
+const JobReportModal = dynamic(() => import("@/components/job-report-modal").then(m => ({ default: m.JobReportModal })), {
+  ssr: false,
+  loading: () => null,
+})
+const JobCompareModal = dynamic(() => import("@/components/modals/job-compare-modal").then(m => ({ default: m.JobCompareModal })), {
+  ssr: false,
+  loading: () => null,
+})
+const JobPublishModal = dynamic(() => import("@/components/modals/job-publish-modal").then(m => ({ default: m.JobPublishModal })), {
+  ssr: false,
+  loading: () => null,
+})
+const JobUnpublishModal = dynamic(() => import("@/components/modals/job-unpublish-modal").then(m => ({ default: m.JobUnpublishModal })), {
+  ssr: false,
+  loading: () => null,
+})
+import type { UnpublishData } from "@/components/modals/job-unpublish-modal"
+const JobInsightsModal = dynamic(() => import("@/components/modals/job-insights-modal").then(m => ({ default: m.JobInsightsModal })), {
+  ssr: false,
+  loading: () => null,
+})
+const JobDuplicateModal = dynamic(() => import("@/components/modals/job-duplicate-modal").then(m => ({ default: m.JobDuplicateModal })), {
+  ssr: false,
+  loading: () => null,
+})
+const JobStatusModal = dynamic(() => import("@/components/modals/job-status-modal").then(m => ({ default: m.JobStatusModal })), {
+  ssr: false,
+  loading: () => null,
+})
+const JobAssignRecruiterModal = dynamic(() => import("@/components/modals/job-assign-recruiter-modal").then(m => ({ default: m.JobAssignRecruiterModal })), {
+  ssr: false,
+  loading: () => null,
+})
+const EditJobModal = dynamic(() => import("@/components/modals/edit-job-modal").then(m => ({ default: m.EditJobModal })), {
+  ssr: false,
+  loading: () => null,
+})
 import { CreateJobModal } from "@/components/modals/create-job-modal"
 import { ScreeningChannelsModal, ScreeningSettingsModal, ScreeningSchedulingModal } from "@/components/screening-config"
 import { WSITutorialModal } from "@/components/pages/jobs/WSITutorialModal"

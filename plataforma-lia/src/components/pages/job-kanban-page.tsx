@@ -36,8 +36,14 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { TriagemDetailsModal } from "@/components/triagem-details-modal"
-import { JobReportModal } from "@/components/job-report-modal"
+const TriagemDetailsModal = dynamic(() => import("@/components/triagem-details-modal").then(m => ({ default: m.TriagemDetailsModal })), {
+  ssr: false,
+  loading: () => null,
+})
+const JobReportModal = dynamic(() => import("@/components/job-report-modal").then(m => ({ default: m.JobReportModal })), {
+  ssr: false,
+  loading: () => null,
+})
 import { SendEmailModal } from "@/components/email-templates/send-email-modal"
 import { UnifiedCommunicationModal } from "@/components/modals/unified-communication-modal"
 import { AddToListModal } from "@/components/modals/add-to-list-modal"
@@ -88,7 +94,10 @@ import {
 import { OverrideApproveButton } from "@/components/kanban/components/OverrideApproveButton"
 import { DataRequestModal, type DataRequestSubmitData } from "@/components/modals/data-request-modal"
 import { CloseVacancyModal } from "@/components/modals/close-vacancy-modal"
-import { JobStatusModal } from "@/components/modals/job-status-modal"
+const JobStatusModal = dynamic(() => import("@/components/modals/job-status-modal").then(m => ({ default: m.JobStatusModal })), {
+  ssr: false,
+  loading: () => null,
+})
 import { ShareSearchModal } from "@/components/modals/share-search-modal"
 import { Checkbox } from "@/components/ui/checkbox"
 import { BulkActionModal } from "@/components/modals/bulk-action-modal"
