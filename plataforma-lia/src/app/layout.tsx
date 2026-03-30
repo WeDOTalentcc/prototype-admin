@@ -33,6 +33,17 @@ const crimsonText = Crimson_Text({
 export const metadata: Metadata = {
   title: "WeDo Talent - Plataforma de Recrutamento com IA",
   description: "Plataforma de recrutamento inteligente com LIA - sua assistente de IA para gestão de talentos",
+  openGraph: {
+    type: "website",
+    siteName: "WeDo Talent — Plataforma LIA",
+    title: "WeDo Talent — Recrutamento Inteligente com IA",
+    description: "Plataforma de recrutamento com inteligência artificial para o mercado brasileiro de RH.",
+    locale: "pt_BR",
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function RootLayout({
