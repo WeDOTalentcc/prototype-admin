@@ -21,13 +21,13 @@ const SoundWaveBars = React.memo(function SoundWaveBars({ size }: { size: string
             "inline-block w-0.5 rounded-full bg-chat-cyan lia-sound-wave-bar",
             barHeight
           )}
-          style={{animationDelay: }}
+          style={{animationDelay: `${i * 0.15}s`}}
         />
       ))}
     </div>
   )
 })
-SoundWaveBars.displayName = SoundWaveBars
+SoundWaveBars.displayName = 'SoundWaveBars'
 
 export const LIAIcon = React.memo(function LIAIcon({ className, size = "md", animate = false, speaking = false, useChatCyan = false }: LIAIconProps) {
   const sizeClasses = {
@@ -63,4 +63,4 @@ export const LIAIcon = React.memo(function LIAIcon({ className, size = "md", ani
     </div>
   )
 })
-LIAIcon.displayName = LIAIcon
+LIAIcon.displayName = 'LIAIcon'

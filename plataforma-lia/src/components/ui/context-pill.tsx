@@ -1,8 +1,8 @@
 "use client"
 
-import React from react
-import { MapPin, X } from lucide-react
-import { Button } from ./button
+import React from "react"
+import { MapPin, X } from "lucide-react"
+import { Button } from "./button"
 
 interface ContextPillProps {
   icon?: React.ReactNode
@@ -20,17 +20,17 @@ export const ContextPill = React.memo(function ContextPill({
   className = ""
 }: ContextPillProps) {
   return (
-    <div 
-      className={}
+    <div
+      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm border transition-[width,height] duration-200 bg-lia-bg-primary border-lia-border-default lia-text-strong ${className}`}
     >
       <span className="text-lia-text-secondary dark:text-lia-text-tertiary flex-shrink-0">
         {icon}
       </span>
-      
+
       <span className="font-medium">
         {primaryText}
       </span>
-      
+
       {secondaryText && (
         <>
           <span className="text-lia-text-disabled">•</span>
@@ -39,7 +39,7 @@ export const ContextPill = React.memo(function ContextPill({
           </span>
         </>
       )}
-      
+
       {onDismiss && (
         <Button
           variant="ghost"
