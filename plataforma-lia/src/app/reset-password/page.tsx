@@ -114,7 +114,7 @@ function ResetPasswordContent() {
 
           <div className="text-center mb-6">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <KeyRound className="w-8 h-8 lia-text-600" />
+              <KeyRound className="w-8 h-8 lia-text-600" aria-hidden="true" />
             </div>
             <h2 className="text-2xl font-bold lia-text-950 dark:lia-text-50 mb-3">Nova Senha</h2>
             <p className="lia-text-600 text-base leading-relaxed">
@@ -122,24 +122,28 @@ function ResetPasswordContent() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5" aria-label="Formulário de redefinição de senha">
             <div>
-              <label className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2">
+              <label htmlFor="campo-nova-senha" className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2">
                 Nova Senha
               </label>
               <div className="relative">
                 <input
+                  id="campo-nova-senha"
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Mínimo 8 caracteres"
                   className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors motion-reduce:transition-none"
                   required
+                  aria-required="true"
+                  aria-describedby={error ? "reset-error" : undefined}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 lia-text-600 hover:lia-text-700"
+                  aria-label={showPassword ? "Ocultar nova senha" : "Mostrar nova senha"}
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -147,22 +151,26 @@ function ResetPasswordContent() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2">
+              <label htmlFor="campo-confirmar-senha" className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2">
                 Confirmar Nova Senha
               </label>
               <div className="relative">
                 <input
+                  id="campo-confirmar-senha"
                   type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Digite a senha novamente"
                   className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors motion-reduce:transition-none"
                   required
+                  aria-required="true"
+                  aria-describedby={error ? "reset-error" : undefined}
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 lia-text-600 hover:lia-text-700"
+                  aria-label={showConfirmPassword ? "Ocultar confirmação de senha" : "Mostrar confirmação de senha"}
                 >
                   {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -170,8 +178,11 @@ function ResetPasswordContent() {
             </div>
 
             {error && (
-              <div className="p-3 rounded-md bg-status-error/10 border border-status-error/30">
-                <p className="text-status-error text-sm font-medium">{error}</p>
+              <div id="reset-error" role="alert" className="p-3 rounded-md bg-status-error/10 border border-status-error/30">
+                <p className="text-status-error text-sm font-medium">
+                  <span aria-hidden="true">⚠ </span>
+                  {error}
+                </p>
               </div>
             )}
 
@@ -182,7 +193,7 @@ function ResetPasswordContent() {
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mr-2" />
+                  <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mr-2" aria-hidden="true" />
                   Redefinindo...
                 </>
               ) : (

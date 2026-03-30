@@ -131,52 +131,62 @@ export default function RegisterPage() {
               </p>
             </div>
 
-            <form onSubmit={handleRegister} className="space-y-5">
+            <form onSubmit={handleRegister} className="space-y-5" aria-label="Formulário de cadastro">
               <div>
-                <label className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2">
+                <label htmlFor="campo-nome" className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2">
                   Nome Completo
                 </label>
                 <input
+                  id="campo-nome"
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Digite seu nome completo"
                   className="w-full px-4 py-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors motion-reduce:transition-none"
                   required
+                  aria-required="true"
+                  aria-describedby={error ? "register-error" : undefined}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2">
+                <label htmlFor="campo-email" className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2">
                   Email
                 </label>
                 <input
+                  id="campo-email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Digite seu email"
                   className="w-full px-4 py-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors motion-reduce:transition-none"
                   required
+                  aria-required="true"
+                  aria-describedby={error ? "register-error" : undefined}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2">
+                <label htmlFor="campo-senha" className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2">
                   Senha
                 </label>
                 <div className="relative">
                   <input
+                    id="campo-senha"
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Mínimo 8 caracteres"
                     className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors motion-reduce:transition-none"
                     required
+                    aria-required="true"
+                    aria-describedby={error ? "register-error" : undefined}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 lia-text-600 hover:lia-text-700"
+                    aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -184,22 +194,26 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2">
+                <label htmlFor="campo-confirmar-senha" className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2">
                   Confirmar Senha
                 </label>
                 <div className="relative">
                   <input
+                    id="campo-confirmar-senha"
                     type={showConfirmPassword ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Digite a senha novamente"
                     className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors motion-reduce:transition-none"
                     required
+                    aria-required="true"
+                    aria-describedby={error ? "register-error" : undefined}
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 lia-text-600 hover:lia-text-700"
+                    aria-label={showConfirmPassword ? "Ocultar confirmação de senha" : "Mostrar confirmação de senha"}
                   >
                     {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -207,12 +221,15 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label className="flex items-start gap-3">
+                <label htmlFor="campo-termos" className="flex items-start gap-3 cursor-pointer">
                   <input
+                    id="campo-termos"
                     type="checkbox"
                     checked={acceptTerms}
                     onChange={(e) => setAcceptTerms(e.target.checked)}
                     className="w-4 h-4 mt-1 lia-text-950 dark:lia-text-50 border-lia-border-default rounded-md focus:ring-gray-900"
+                    aria-required="true"
+                    aria-describedby={error ? "register-error" : undefined}
                   />
                   <span className="text-sm lia-text-600">
                     Li e aceito os{" "}
@@ -228,8 +245,11 @@ export default function RegisterPage() {
               </div>
 
               {error && (
-                <div className="p-3 rounded-md bg-status-error/10 border border-status-error/30">
-                  <p className="text-status-error text-sm font-medium">{error}</p>
+                <div id="register-error" role="alert" className="p-3 rounded-md bg-status-error/10 border border-status-error/30">
+                  <p className="text-status-error text-sm font-medium">
+                    <span aria-hidden="true">⚠ </span>
+                    {error}
+                  </p>
                 </div>
               )}
 
@@ -240,7 +260,7 @@ export default function RegisterPage() {
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mr-2" />
+                    <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mr-2" aria-hidden="true" />
                     Criando conta...
                   </>
                 ) : (
