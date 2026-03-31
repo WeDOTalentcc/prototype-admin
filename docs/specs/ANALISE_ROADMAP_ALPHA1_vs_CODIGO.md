@@ -453,7 +453,60 @@
 
 ---
 
-### NOTA: Agentes no `AgentType` que NÃO participam do fluxo Alpha 1
+### LISTA CONSOLIDADA — O que precisa ativar, implementar ou conectar
+
+#### ◐ PRECISA ATIVAR (código existe, precisa ligar)
+
+| # | O quê | Etapa | O que é | Por que precisa ativar |
+|---|-------|-------|---------|----------------------|
+| A1 | **FairnessGuard L1/L2 no JD** | E2 | Filtro que bloqueia (L1) ou alerta (L2) linguagem discriminatória no JD gerado pelo Claude | O código do FairnessGuard existe (`fairness_guard.py`), mas hoje roda como pre-check global no Orchestrator. Precisa ser plugado como middleware no endpoint `POST /api/v1/jd/generate` para filtrar o JD antes de salvar |
+| A2 | **FairnessGuard L1/L2 nas perguntas WSI** | E3 | Mesmo filtro, aplicado nas perguntas geradas pelo WSIQuestionGeneratorService | Perguntas discriminatórias invalidam o processo inteiro. O código existe mas precisa ser ativado como step pós-geração no endpoint `/api/v1/wsi/generate-questions` |
+| A3 | **FairnessGuard L1/L2 nas respostas do candidato** | E7 | Filtro nas respostas do candidato antes de enviar ao LLM avaliador (Ag.5) | Para que informações protegidas (idade, gênero, etnia mencionadas na resposta) não influenciem o scoring. O check existe no MainOrchestrator mas precisa estar ativo no fluxo de triagem |
+| A4 | **FairnessGuard L1/L2 no feedback** | E9 | Filtro no texto de feedback gerado pelo Ag.7 para reprovados | Para garantir que o feedback enviado ao candidato não contenha linguagem enviesada |
+| A5 | **Template Learning** | E6, E9 | Serviço que aprende quais templates de email têm melhor taxa de abertura/resposta e prioriza os melhores | O código existe (`template_learning`), mas precisa de dados de tracking (opens/clicks) para funcionar — depende de webhook de tracking (ver G5) |
+| A6 | **A/B Testing de templates** | E6 | Variantes de template de email testadas por cohort para medir performance | Código existe, precisa ser configurado com variantes e cohorts para começar a coletar dados |
+| A7 | **Embedding Service para re-discovery** | E9 | Gera embedding (Gemini 768-dim) do perfil completo do candidato reprovado para matching futuro em outras vagas | O serviço de embedding existe (`job_embedding_service.py`), precisa ser chamado automaticamente quando candidato é reprovado no Gate 2 |
+| A8 | **Voice Analysis (Deepgram + OpenAI TTS)** | E7 | STT transcreve áudio do candidato → texto; TTS gera áudio da pergunta | Serviços existem (`deepgram_service.py`, `voice_service.py`), precisam de API keys configuradas e ativação no fluxo de triagem |
+| A9 | **Teams como canal de notificação** | E9 | Notificações ao consultor via Microsoft Teams (agendamento, alertas) | Depende de configuração Graph API (tenant do cliente). O código de integração precisa do tenant ID |
+
+#### ○ PRECISA IMPLEMENTAR (código parcial ou inexistente)
+
+| # | O quê | Etapa | O que é | Por que precisa implementar |
+|---|-------|-------|---------|---------------------------|
+| I1 | **Scheduler para follow-up 7 dias** | E6 | Job em background que re-envia email a cada 24h por 7 dias se candidato não abriu/clicou | Hoje o código de envio existe (CommunicationReActAgent), mas não existe scheduler (Celery, cron ou background task) para disparar re-envios automáticos. Sem isso, o follow-up precisa ser manual |
+| I2 | **Chat web público para candidato** | E7 | Página web acessível via link no email onde o candidato faz a triagem WSI conversando com a LIA | **Gap mais crítico.** O backend da triagem existe (WSIInterviewGraph, WSIService), mas não existe frontend público para o candidato. O link no email precisa apontar para uma página funcional |
+| I3 | **Scheduler para timeouts 48h+48h** | E7 | Job que detecta inatividade do candidato durante triagem e envia lembretes automáticos (48h → 1º lembrete, +48h → 2º, depois alerta ao consultor) | Mesmo problema do I1: o fluxo está desenhado mas não existe mecanismo de background para monitorar inatividade |
+| I4 | **Tela de consentimento LGPD** | E7 | Página frontend onde o candidato dá consentimento antes de iniciar a triagem (coleta de dados, uso por IA, retenção) | Requisito legal. O candidato precisa consentir antes da triagem. Backend de LGPD existe parcialmente, mas a tela frontend não |
+| I5 | **Opt-out link nos emails** | E6 | Link de descadastramento no rodapé dos emails enviados pela LIA | Requisito LGPD. O candidato precisa poder parar de receber emails. Precisa de endpoint + lógica de unsubscribe |
+| I6 | **Webhook de tracking opens/clicks** | E6 | Webhook que recebe eventos do provedor de email (Resend/SendGrid) quando candidato abre ou clica no email | Necessário para saber se o candidato interagiu com o email (alimenta follow-up, Template Learning e A/B Testing) |
+
+#### ⚠ GAPS BLOQUEANTES POR ETAPA
+
+| # | O quê | Etapa | Impacto se não resolver |
+|---|-------|-------|------------------------|
+| G1 | **FG como middleware nos endpoints** | E2, E3 | JDs e perguntas com viés podem ser salvas sem filtro |
+| G2 | **check_rejection_fairness automática** | E5, E8 | Rejeições discriminatórias passam sem validação (hoje é tool sob demanda, precisa ser automática no pipeline) |
+| G3 | **WRF Dynamic K + LLM Job Classification validação e2e** | E4 | Busca pode retornar candidatos fora do perfil por K values mal calibrados |
+| G4 | **FG L3 (análise semântica sector-dependent)** | E4 | Viés sutil específico de setor (ex: "experiência militar" em área civil) não detectado |
+| G5 | **Apify API keys** | E4 | Enriquecimento de perfis (emails, dados complementares) não funciona sem credenciais |
+| G6 | **SCHEDULER** (Celery/cron/background) | E6, E7 | Follow-ups e timeouts são 100% manuais |
+| G7 | **Chat web público** | E7 | Candidato não tem onde fazer a triagem online — **bloqueante para MVP** |
+| G8 | **Consentimento LGPD frontend** | E7 | Triagem sem consentimento viola LGPD |
+| G9 | **Feedback auto → EmailService** | E8, E9 | Feedback gerado pelo Ag.7 não é enviado automaticamente, precisa integração com pipeline de envio |
+| G10 | **Teams Graph API tenant** | E9 | Notificações Teams ao consultor não funcionam sem configuração do tenant |
+
+#### PRIORIDADE SUGERIDA
+
+| Prioridade | Itens | Justificativa |
+|-----------|-------|---------------|
+| **P0 — Bloqueante MVP** | G7 (chat web), G6 (scheduler), G8 (LGPD), I2, I1, I3, I4 | Sem chat web e scheduler, o fluxo E6→E7 não funciona |
+| **P1 — Compliance** | G1, G2, G8, A1-A4, I5 | FairnessGuard e LGPD são requisitos legais |
+| **P2 — Integração** | G5, G9, G10, A8, A9 | Conexões externas que habilitam funcionalidades |
+| **P3 — Otimização** | A5, A6, A7, G3, G4 | Melhoram qualidade mas não bloqueiam o MVP |
+
+---
+
+### NOTA: Agentes no `AgentType` que participam fora do fluxo Alpha 1
 
 | Agente (enum) | Papel | Motivo de exclusão do fluxo |
 |---------------|-------|-----------------------------|
