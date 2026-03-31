@@ -709,29 +709,27 @@ def feedback_auto_send_task(self, feedback_id: str, company_id: str) -> dict:
             body_text = record.edited_body or record.body_text
             body_html = record.body_html
 
-            try:
-                from app.shared.compliance.fairness_guard import FairnessGuard
-                fg = FairnessGuard()
-                content_to_check = body_text or ""
-                fg_result = fg.check(content_to_check)
-                if fg_result and not fg_result.get("passed", True):
-                    logger.warning(
-                        "feedback.auto_send: FairnessGuard BLOCKED id=%s reason=%s",
-                        feedback_id, fg_result.get("reason", "bias_detected"),
-                    )
-                    await personalized_feedback_service.mark_as_failed(
-                        feedback_id=feedback_id,
-                        reason=f"FairnessGuard blocked: {fg_result.get('reason', 'bias_detected')}",
-                        db=db,
-                    )
-                    return {
-                        "feedback_id": feedback_id,
-                        "status": "blocked",
-                        "reason": "fairness_guard",
-                        "success": False,
-                    }
-            except Exception as fg_exc:
-                logger.debug("feedback.auto_send: FairnessGuard check skipped: %s", fg_exc)
+            from app.shared.compliance.fairness_guard import FairnessGuard
+            fg = FairnessGuard()
+            content_to_check = body_text or ""
+            fg_result = fg.check(content_to_check)
+            if fg_result.is_blocked:
+                logger.warning(
+                    "feedback.auto_send: FairnessGuard BLOCKED id=%s category=%s terms=%s",
+                    feedback_id, fg_result.category, fg_result.blocked_terms,
+                )
+                await personalized_feedback_service.mark_as_failed(
+                    feedback_id=feedback_id,
+                    reason=f"FairnessGuard blocked: {fg_result.category} — {fg_result.blocked_terms}",
+                    db=db,
+                )
+                return {
+                    "feedback_id": feedback_id,
+                    "status": "blocked",
+                    "reason": "fairness_guard",
+                    "category": fg_result.category,
+                    "success": False,
+                }
 
             send_result = {}
             channel_used = record.channel or "email"
