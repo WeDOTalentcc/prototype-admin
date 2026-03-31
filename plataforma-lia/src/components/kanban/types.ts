@@ -65,34 +65,9 @@ export interface KanbanCandidate {
   actionBehavior?: string
   lastActionDate?: string
   slaHours?: number
-  agendada?: string | boolean
+  agendada?: string
   interviewDate?: string
   stageId?: string
-  liaScore?: number
-  skillsMatch?: number
-  technicalTestScore?: number
-  englishTestScore?: number
-  bigFiveScores?: Record<string, number>
-  liatriagem?: string
-  contactChannelId?: string
-  typeOfInterview?: string
-  interviewCompleted?: boolean
-  interviewFeedback?: string
-  proposal?: boolean
-  proposalResponse?: string
-  negotiating?: boolean
-  startDate?: string
-  rejectionReason?: string
-  rejectionStage?: string
-  feedbackSent?: boolean
-  warning?: boolean
-  warningDays?: string
-  daysPaused?: number
-  expectativa?: string
-  approvalPending?: boolean
-  teamsLink?: string
-  triageComplete?: boolean
-  triageData?: Record<string, unknown>
   bigFive?: {
     openness: number
     conscientiousness: number

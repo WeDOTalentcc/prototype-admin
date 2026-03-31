@@ -377,7 +377,7 @@ export function JobEditTab({
                           <div>
                             <label className={labelClass}>Status</label>
                             <select
-                              value={jobEditForm.status || ""}
+                              value={(jobEditForm.status as string) || ""}
                               onChange={(e) => {
                                 const newStatus = e.target.value
                                 if (!newStatus) return
@@ -402,7 +402,7 @@ export function JobEditTab({
                           <div>
                             <label className={labelClass}>Prioridade</label>
                             <select
-                              value={jobEditForm.priority || ""}
+                              value={(jobEditForm.priority as string) || ""}
                               onChange={(e) => updateField("priority", e.target.value)}
                               disabled={!isEditing}
                               className={selectClass(!isEditing)}
@@ -466,15 +466,15 @@ export function JobEditTab({
                         <div className="grid grid-cols-2 gap-4">
                           <div className="col-span-2">
                             <label className={labelClass}>Título da Vaga<ScreeningBadge /></label>
-                            <input type="text" className={inputClass(!isEditing)} value={jobEditForm.title || ""} onChange={(e) => updateField("title", e.target.value)} disabled={!isEditing} placeholder="Ex: Analista de Sistemas Sênior" />
+                            <input type="text" className={inputClass(!isEditing)} value={(jobEditForm.title as string) || ""} onChange={(e) => updateField("title", e.target.value)} disabled={!isEditing} placeholder="Ex: Analista de Sistemas Sênior" />
                           </div>
                           <div>
                             <label className={labelClass}>Departamento<ScreeningBadge /></label>
-                            <input type="text" className={inputClass(!isEditing)} value={jobEditForm.department || ""} onChange={(e) => updateField("department", e.target.value)} disabled={!isEditing} placeholder="Ex: Tecnologia" />
+                            <input type="text" className={inputClass(!isEditing)} value={(jobEditForm.department as string) || ""} onChange={(e) => updateField("department", e.target.value)} disabled={!isEditing} placeholder="Ex: Tecnologia" />
                           </div>
                           <div>
                             <label className={labelClass}>Localização<ScreeningBadge /></label>
-                            <input type="text" className={inputClass(!isEditing)} value={jobEditForm.location || ""} onChange={(e) => updateField("location", e.target.value)} disabled={!isEditing} placeholder="Ex: São Paulo, SP" />
+                            <input type="text" className={inputClass(!isEditing)} value={(jobEditForm.location as string) || ""} onChange={(e) => updateField("location", e.target.value)} disabled={!isEditing} placeholder="Ex: São Paulo, SP" />
                           </div>
                         </div>
                       </CardContent>
@@ -494,7 +494,7 @@ export function JobEditTab({
                                 <span className="ml-1.5 text-micro text-wedo-cyan-dark dark:text-wedo-cyan font-normal">(padrão: {companyDefaults.workModel})</span>
                               )}
                             </label>
-                            <select value={jobEditForm.workModel || ""} onChange={(e) => updateField("workModel", e.target.value)} disabled={!isEditing} className={selectClass(!isEditing)}>
+                            <select value={(jobEditForm.workModel as string) || ""} onChange={(e) => updateField("workModel", e.target.value)} disabled={!isEditing} className={selectClass(!isEditing)}>
                               <option value="">{companyDefaults?.workModel ? `Usar padrão (${companyDefaults.workModel})` : "Selecione..."}</option>
                               <option value="Presencial">Presencial</option>
                               <option value="Remoto">Remoto</option>
@@ -513,7 +513,7 @@ export function JobEditTab({
                               const companyTypes = companyDefaults?.employmentTypes || []
                               const allTypes = [...new Set([...companyTypes, ...staticTypes])]
                               return (
-                                <select value={jobEditForm.type || ""} onChange={(e) => updateField("type", e.target.value)} disabled={!isEditing} className={selectClass(!isEditing)}>
+                                <select value={(jobEditForm.type as string) || ""} onChange={(e) => updateField("type", e.target.value)} disabled={!isEditing} className={selectClass(!isEditing)}>
                                   <option value="">{companyTypes[0] ? `Usar padrão (${companyTypes[0]})` : "Selecione..."}</option>
                                   {allTypes.map((t) => (
                                     <option key={t} value={t}>{t}{companyTypes.includes(t) && !staticTypes.includes(t) ? " (empresa)" : ""}</option>
@@ -524,7 +524,7 @@ export function JobEditTab({
                           </div>
                           <div>
                             <label className={labelClass}>Nível<ScreeningBadge /></label>
-                            <select value={jobEditForm.level || ""} onChange={(e) => updateField("level", e.target.value)} disabled={!isEditing} className={selectClass(!isEditing)}>
+                            <select value={(jobEditForm.level as string) || ""} onChange={(e) => updateField("level", e.target.value)} disabled={!isEditing} className={selectClass(!isEditing)}>
                               <option value="">Selecione...</option>
                               <option value="Estágio">Estágio</option>
                               <option value="Júnior">Júnior</option>
@@ -578,7 +578,7 @@ export function JobEditTab({
                       <CardContent className="p-4">
                         <div>
                           <label className={labelClass}>Descrição da Vaga<ScreeningBadge /></label>
-                          <textarea className={`${inputClass(!isEditing)} resize-vertical`} rows={16} value={jobEditForm.description || ""} onChange={(e) => updateField("description", e.target.value)} disabled={!isEditing} placeholder="Descrição detalhada da vaga..." style={{ minHeight: "280px" }} />
+                          <textarea className={`${inputClass(!isEditing)} resize-vertical`} rows={16} value={(jobEditForm.description as string) || ""} onChange={(e) => updateField("description", e.target.value)} disabled={!isEditing} placeholder="Descrição detalhada da vaga..." style={{ minHeight: "280px" }} />
                         </div>
                       </CardContent>
                     </Card>
@@ -666,7 +666,7 @@ export function JobEditTab({
                             </div>
                             <div>
                               <label className={labelClass}>Critério Principal</label>
-                              <select value={jobEditForm.affirmativeCriteriaPrimary || ""} onChange={(e) => updateField("affirmativeCriteriaPrimary", e.target.value)} disabled={!isEditing || !jobEditForm.isAffirmative} className={selectClass(!isEditing || !jobEditForm.isAffirmative)}>
+                              <select value={(jobEditForm.affirmativeCriteriaPrimary as string) || ""} onChange={(e) => updateField("affirmativeCriteriaPrimary", e.target.value)} disabled={!isEditing || !jobEditForm.isAffirmative} className={selectClass(!isEditing || !jobEditForm.isAffirmative)}>
                                 <option value="">Selecione...</option>
                                 <option value="gender">Gênero</option>
                                 <option value="race_ethnicity">Raça/Etnia</option>
@@ -684,7 +684,7 @@ export function JobEditTab({
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
                                   <label className={labelClass}>Critério Secundário (opcional)</label>
-                                  <select value={jobEditForm.affirmativeCriteriaSecondary || ""} onChange={(e) => updateField("affirmativeCriteriaSecondary", e.target.value)} disabled={!isEditing} className={selectClass(!isEditing)}>
+                                  <select value={(jobEditForm.affirmativeCriteriaSecondary as string) || ""} onChange={(e) => updateField("affirmativeCriteriaSecondary", e.target.value)} disabled={!isEditing} className={selectClass(!isEditing)}>
                                     <option value="">Nenhum</option>
                                     <option value="gender">Gênero</option>
                                     <option value="race_ethnicity">Raça/Etnia</option>
@@ -698,7 +698,7 @@ export function JobEditTab({
                                 </div>
                                 <div>
                                   <label className={labelClass}>Descrição</label>
-                                  <input type="text" className={inputClass(!isEditing)} value={jobEditForm.affirmativeDescription || ""} onChange={(e) => updateField("affirmativeDescription", e.target.value)} disabled={!isEditing} placeholder="Ex: Mulheres negras, PCD motora" />
+                                  <input type="text" className={inputClass(!isEditing)} value={(jobEditForm.affirmativeDescription as string) || ""} onChange={(e) => updateField("affirmativeDescription", e.target.value)} disabled={!isEditing} placeholder="Ex: Mulheres negras, PCD motora" />
                                 </div>
                               </div>
                               <div className="grid grid-cols-2 gap-4">
@@ -728,15 +728,15 @@ export function JobEditTab({
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className={labelClass}>Setor</label>
-                            <input type="text" className={inputClass(!isEditing)} value={jobEditForm.targetSector || ""} onChange={(e) => updateField("targetSector", e.target.value)} disabled={!isEditing} placeholder="Ex: Tecnologia" />
+                            <input type="text" className={inputClass(!isEditing)} value={(jobEditForm.targetSector as string) || ""} onChange={(e) => updateField("targetSector", e.target.value)} disabled={!isEditing} placeholder="Ex: Tecnologia" />
                           </div>
                           <div>
                             <label className={labelClass}>Segmento</label>
-                            <input type="text" className={inputClass(!isEditing)} value={jobEditForm.targetSegment || ""} onChange={(e) => updateField("targetSegment", e.target.value)} disabled={!isEditing} placeholder="Ex: Fintechs" />
+                            <input type="text" className={inputClass(!isEditing)} value={(jobEditForm.targetSegment as string) || ""} onChange={(e) => updateField("targetSegment", e.target.value)} disabled={!isEditing} placeholder="Ex: Fintechs" />
                           </div>
                           <div className="col-span-2">
                             <label className={labelClass}>Público-Alvo</label>
-                            <textarea className={`${inputClass(!isEditing)} resize-none`} rows={2} value={jobEditForm.targetAudience || ""} onChange={(e) => updateField("targetAudience", e.target.value)} disabled={!isEditing} placeholder="Descreva o perfil ideal do candidato..." />
+                            <textarea className={`${inputClass(!isEditing)} resize-none`} rows={2} value={(jobEditForm.targetAudience as string) || ""} onChange={(e) => updateField("targetAudience", e.target.value)} disabled={!isEditing} placeholder="Descreva o perfil ideal do candidato..." />
                           </div>
                         </div>
                       </CardContent>
@@ -793,7 +793,7 @@ export function JobEditTab({
                           <div className="grid grid-cols-2 gap-4">
                             <div>
                               <label className={labelClass}>Visibilidade</label>
-                              <select value={jobEditForm.visibility || ""} onChange={(e) => updateField("visibility", e.target.value)} disabled={!isEditing} className={selectClass(!isEditing)}>
+                              <select value={(jobEditForm.visibility as string) || ""} onChange={(e) => updateField("visibility", e.target.value)} disabled={!isEditing} className={selectClass(!isEditing)}>
                                 <option value="">Selecione...</option>
                                 <option value="Pública">Pública</option>
                                 <option value="Interna">Interna</option>
@@ -807,7 +807,7 @@ export function JobEditTab({
                           </div>
                           <div>
                             <label className={labelClass}>Nome da Empresa (mascarado)</label>
-                            <input type="text" className={inputClass(!isEditing)} value={jobEditForm.maskedCompanyName || ""} onChange={(e) => updateField("maskedCompanyName", e.target.value)} disabled={!isEditing} placeholder="Ex: Empresa do segmento de tecnologia" />
+                            <input type="text" className={inputClass(!isEditing)} value={(jobEditForm.maskedCompanyName as string) || ""} onChange={(e) => updateField("maskedCompanyName", e.target.value)} disabled={!isEditing} placeholder="Ex: Empresa do segmento de tecnologia" />
                           </div>
                         </div>
                       </CardContent>
@@ -854,11 +854,11 @@ export function JobEditTab({
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className={labelClass}>Nome</label>
-                            <input type="text" className={inputClass(!isEditing)} value={jobEditForm.recruiter || ""} onChange={(e) => updateField("recruiter", e.target.value)} disabled={!isEditing} placeholder="Nome do recrutador" />
+                            <input type="text" className={inputClass(!isEditing)} value={(jobEditForm.recruiter as string) || ""} onChange={(e) => updateField("recruiter", e.target.value)} disabled={!isEditing} placeholder="Nome do recrutador" />
                           </div>
                           <div>
                             <label className={labelClass}>Email</label>
-                            <input type="email" className={inputClass(!isEditing)} value={jobEditForm.recruiterEmail || ""} onChange={(e) => updateField("recruiterEmail", e.target.value)} disabled={!isEditing} placeholder="email@empresa.com" />
+                            <input type="email" className={inputClass(!isEditing)} value={(jobEditForm.recruiterEmail as string) || ""} onChange={(e) => updateField("recruiterEmail", e.target.value)} disabled={!isEditing} placeholder="email@empresa.com" />
                           </div>
                         </div>
                       </CardContent>
@@ -871,11 +871,11 @@ export function JobEditTab({
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className={labelClass}>Nome</label>
-                            <input type="text" className={inputClass(!isEditing)} value={jobEditForm.manager || ""} onChange={(e) => updateField("manager", e.target.value)} disabled={!isEditing} placeholder="Nome do gestor" />
+                            <input type="text" className={inputClass(!isEditing)} value={(jobEditForm.manager as string) || ""} onChange={(e) => updateField("manager", e.target.value)} disabled={!isEditing} placeholder="Nome do gestor" />
                           </div>
                           <div>
                             <label className={labelClass}>Email</label>
-                            <input type="email" className={inputClass(!isEditing)} value={jobEditForm.managerEmail || ""} onChange={(e) => updateField("managerEmail", e.target.value)} disabled={!isEditing} placeholder="email@empresa.com" />
+                            <input type="email" className={inputClass(!isEditing)} value={(jobEditForm.managerEmail as string) || ""} onChange={(e) => updateField("managerEmail", e.target.value)} disabled={!isEditing} placeholder="email@empresa.com" />
                           </div>
                         </div>
                       </CardContent>
@@ -1008,14 +1008,14 @@ export function JobEditTab({
                             <label className={labelClass}>Mínimo</label>
                             <div className="relative">
                               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs lia-text-400">R$</span>
-                              <input type="number" className={`${inputClass(!isEditing)} pl-9`} value={jobEditForm.salaryMin || ""} onChange={(e) => updateField("salaryMin", e.target.value)} disabled={!isEditing} placeholder="0,00" />
+                              <input type="number" className={`${inputClass(!isEditing)} pl-9`} value={(jobEditForm.salaryMin as string) || ""} onChange={(e) => updateField("salaryMin", e.target.value)} disabled={!isEditing} placeholder="0,00" />
                             </div>
                           </div>
                           <div>
                             <label className={labelClass}>Máximo</label>
                             <div className="relative">
                               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs lia-text-400">R$</span>
-                              <input type="number" className={`${inputClass(!isEditing)} pl-9`} value={jobEditForm.salaryMax || ""} onChange={(e) => updateField("salaryMax", e.target.value)} disabled={!isEditing} placeholder="0,00" />
+                              <input type="number" className={`${inputClass(!isEditing)} pl-9`} value={(jobEditForm.salaryMax as string) || ""} onChange={(e) => updateField("salaryMax", e.target.value)} disabled={!isEditing} placeholder="0,00" />
                             </div>
                           </div>
                         </div>
@@ -1031,14 +1031,14 @@ export function JobEditTab({
                             <label className={labelClass}>Mínimo</label>
                             <div className="relative">
                               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs lia-text-400">R$</span>
-                              <input type="number" className={`${inputClass(!isEditing)} pl-9`} value={jobEditForm.bonusMin || ""} onChange={(e) => updateField("bonusMin", e.target.value)} disabled={!isEditing} placeholder="0,00" />
+                              <input type="number" className={`${inputClass(!isEditing)} pl-9`} value={(jobEditForm.bonusMin as string) || ""} onChange={(e) => updateField("bonusMin", e.target.value)} disabled={!isEditing} placeholder="0,00" />
                             </div>
                           </div>
                           <div>
                             <label className={labelClass}>Máximo</label>
                             <div className="relative">
                               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs lia-text-400">R$</span>
-                              <input type="number" className={`${inputClass(!isEditing)} pl-9`} value={jobEditForm.bonusMax || ""} onChange={(e) => updateField("bonusMax", e.target.value)} disabled={!isEditing} placeholder="0,00" />
+                              <input type="number" className={`${inputClass(!isEditing)} pl-9`} value={(jobEditForm.bonusMax as string) || ""} onChange={(e) => updateField("bonusMax", e.target.value)} disabled={!isEditing} placeholder="0,00" />
                             </div>
                           </div>
                         </div>

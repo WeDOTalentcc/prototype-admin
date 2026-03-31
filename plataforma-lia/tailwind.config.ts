@@ -12,10 +12,6 @@ export default {
       boxShadow: {
         'lia-focus': '0 0 0 2px rgba(0,0,0,0.1)',
         'lia-focus-primary': '0 0 0 2px var(--wedo-coral)',
-        'lia-sm':      'var(--lia-shadow-sm)',
-        'lia-default': 'var(--lia-shadow-default)',
-        'lia-md':      'var(--lia-shadow-md)',
-        'lia-lg':      'var(--lia-shadow-lg)',
       },
       fontSize: {
         'xs':       ['var(--font-size-xs)',      { lineHeight: 'var(--line-height-normal)' }],
@@ -239,7 +235,12 @@ export default {
       // LIA SHADOW TOKENS — Fase 5
       // Uso: shadow-lia-sm, shadow-lia-default, shadow-lia-md, shadow-lia-lg
       // ──────────────────────────────────────────────
-
+      boxShadow: {
+        'lia-sm':      'var(--lia-shadow-sm)',
+        'lia-default': 'var(--lia-shadow-default)',
+        'lia-md':      'var(--lia-shadow-md)',
+        'lia-lg':      'var(--lia-shadow-lg)',
+      },
       // ──────────────────────────────────────────────
       // LAYOUT TOKENS — Sprint 5A (Design System v4.2.1)
       // Substituem valores arbitrários w-[Npx] / h-[Npx]

@@ -31,9 +31,9 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
     executiveSummary?: string
     candidateStatus?: { priority?: string; readiness?: string; timeline?: string }
     nextSteps?: Array<{ action?: string; priority?: string; timeframe?: string }>
-    analysis?: { strengths?: string[]; concerns?: string[]; redFlags?: string[] }
-    approachStrategy?: { primary?: string; timing?: string; talking_points?: string[]; tone?: string; focus?: string; urgency?: string }
-    dataInsights?: { matchStrength?: string; topSkillsMatch?: string[]; experienceLevel?: string; salaryAlignment?: string; locationFit?: string; availabilityScore?: string; compatibilityScore?: number; riskLevel?: string; successProbability?: string; keySkills?: string[] }
+    analysis?: { strengths?: string[]; concerns?: string[] }
+    approachStrategy?: { primary?: string; timing?: string; talking_points?: string[] }
+    dataInsights?: { matchStrength?: string; topSkillsMatch?: string[]; experienceLevel?: string; salaryAlignment?: string; locationFit?: string; availabilityScore?: string }
   }
   const [liaInsights, setLiaInsights] = useState<LiaInsights | null>(null)
   const [isLiaAnalyzing, setIsLiaAnalyzing] = useState(false)
@@ -46,17 +46,16 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
     await new Promise(resolve => setTimeout(resolve, 1500))
 
     const insights = analyzeCandidateQuickInsights(candidate)
-    if (insights) setLiaInsights(insights)
+    setLiaInsights(insights)
     setIsLiaAnalyzing(false)
   }, [candidate])
 
   const analyzeCandidateQuickInsights = (candidate: Candidate | null) => {
-    if (!candidate) return null
     const score = candidate.matchPercentage || candidate.score || 85
     const skills = candidate.skills || []
     const experience = candidate.experience || ''
-    const seniority = candidate.seniority || 'Pleno'
-    const role = candidate.role || ''
+    const seniority = candidate.seniority || candidate.level || 'Pleno'
+    const role = candidate.role || candidate.position || ''
 
     return {
       // Resumo executivo da LIA
@@ -239,22 +238,22 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                           <div className="flex items-center justify-between text-xs">
                             <span>Prioridade:</span>
                             <Badge className={`text-xs ${
- liaInsights.candidateStatus?.priority === 'alta' ? 'bg-status-error/15 text-status-error' :
-                              liaInsights.candidateStatus?.priority === 'média' ? 'bg-status-warning/15 text-status-warning' :
+ liaInsights.candidateStatus.priority === 'alta' ? 'bg-status-error/15 text-status-error' :
+                              liaInsights.candidateStatus.priority === 'média' ? 'bg-status-warning/15 text-status-warning' :
                               'bg-gray-100 text-lia-text-primary dark:text-lia-text-primary'
                             }`}>
-                              {liaInsights.candidateStatus?.priority?.toUpperCase()}
+                              {liaInsights.candidateStatus.priority.toUpperCase()}
                             </Badge>
                           </div>
-                          <div className="text-xs text-status-success">{liaInsights.candidateStatus?.readiness}</div>
+                          <div className="text-xs text-status-success">{liaInsights.candidateStatus.readiness}</div>
                         </div>
                       </div>
 
                       <div className="bg-lia-bg-primary rounded-md p-3 border border-status-success/30">
                         <h5 className="text-xs font-medium text-status-success mb-2">Estratégia:</h5>
                         <div className="space-y-1 text-xs text-status-success">
-                          <div><strong>Tom:</strong> {liaInsights.approachStrategy?.tone}</div>
-                          <div><strong>Urgência:</strong> {liaInsights.approachStrategy?.urgency}</div>
+                          <div><strong>Tom:</strong> {liaInsights.approachStrategy.tone}</div>
+                          <div><strong>Urgência:</strong> {liaInsights.approachStrategy.urgency}</div>
                         </div>
                       </div>
                     </div>
@@ -263,7 +262,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                     <div className="bg-lia-bg-primary rounded-md p-3 border border-status-success/30">
                       <h5 className="text-xs font-medium text-status-success mb-2">Próximos Passos Recomendados:</h5>
                       <div className="space-y-2">
-                        {liaInsights.nextSteps?.slice(0, 3).map((step, idx: number) => (
+                        {liaInsights.nextSteps.slice(0, 3).map((step: string, idx: number) => (
                           <div key={`step-${idx}`} className="flex items-center justify-between">
                             <div className="flex-1">
                               <span className="text-xs text-status-success">{step.action}</span>
@@ -291,7 +290,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                           Pontos Fortes:
                         </h5>
                         <ul className="text-xs text-status-success space-y-1">
-                          {liaInsights.analysis?.strengths?.slice(0, 3).map((strength: string, idx: number) => (
+                          {liaInsights.analysis.strengths.slice(0, 3).map((strength: string, idx: number) => (
                             <li key={`str-${idx}`}>• {strength}</li>
                           ))}
                         </ul>
@@ -303,7 +302,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                           Pontos de Atenção:
                         </h5>
                         <ul className="text-xs text-wedo-orange space-y-1">
-                          {liaInsights.analysis?.concerns?.slice(0, 3).map((concern: string, idx: number) => (
+                          {liaInsights.analysis.concerns.slice(0, 3).map((concern: string, idx: number) => (
                             <li key={`con-${idx}`}>• {concern}</li>
                           ))}
                         </ul>
@@ -315,20 +314,20 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                       <h5 className="text-xs font-medium text-status-success mb-2">Métricas da LIA:</h5>
                       <div className="grid grid-cols-3 gap-2 text-xs">
                         <div className="text-center">
-                          <div className="font-semibold text-status-success">{liaInsights.dataInsights?.compatibilityScore}%</div>
+                          <div className="font-semibold text-status-success">{liaInsights.dataInsights.compatibilityScore}%</div>
                           <div className="text-status-success">Match</div>
                         </div>
                         <div className="text-center">
-                          <div className="font-semibold text-status-success">{liaInsights.dataInsights?.successProbability}</div>
+                          <div className="font-semibold text-status-success">{liaInsights.dataInsights.successProbability}</div>
                           <div className="text-status-success">Sucesso</div>
                         </div>
                         <div className="text-center">
                           <div className={`font-semibold ${
- liaInsights.dataInsights?.riskLevel === 'Baixo' ? 'text-status-success' :
-                            liaInsights.dataInsights?.riskLevel === 'Médio' ? 'text-status-warning' :
+ liaInsights.dataInsights.riskLevel === 'Baixo' ? 'text-status-success' :
+                            liaInsights.dataInsights.riskLevel === 'Médio' ? 'text-status-warning' :
                             'text-status-error'
                           }`}>
-                            {liaInsights.dataInsights?.riskLevel}
+                            {liaInsights.dataInsights.riskLevel}
                           </div>
                           <div className="text-status-success">Risco</div>
                         </div>
