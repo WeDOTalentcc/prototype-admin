@@ -259,8 +259,6 @@
 
 > **Nota MVP:** Ag.8 ATSIntegrationReActAgent [ats_integration] atua nas etapas de Gate (E5, E8) para sync de status de volta ao ATS. ⚠ PÓS-MVP.
 
-> **Status:** `check_fairness` integrado como pre-check de input e post-check de output no endpoint `POST /api/v1/jd/generate` (`jd_generation.py`) — Task #68.
-
 ---
 
 ### ETAPA 3 — CONFIGURAR ROTEIRO WSI
@@ -277,8 +275,6 @@
 | **FairnessGuard L1/L2** | Pre-check nas perguntas geradas: L1 bloqueia perguntas com padrões discriminatórios; L2 alerta proxy terms | Porque perguntas de triagem discriminatórias invalidam o processo seletivo inteiro | ● |
 
 > **Serviços envolvidos:** **WSIQuestionGeneratorService** (`WSIScreeningQuestionGenerator`) gera as perguntas WSI. **JDGeneratorService** (`jd_generator_service.py`) gera/ajusta o JD quando o consultor usa a TAB Configurações. **Ag.4 WSIInterviewGraph** (`wsi_interview_graph.py`) conduz a entrevista na E7, aplicando as perguntas sequencialmente, coletando respostas e gerando feedback.
-
-> **Status:** `check_fairness` integrado como filtro pós-geração em cada pergunta no endpoint `/api/v1/wsi/generate-questions` (`wsi_questions.py`). Perguntas com viés são removidas automaticamente — Task #68.
 
 ---
 
@@ -302,8 +298,6 @@
 | **Score Normalization** | Normaliza scores por `difficulty_coefficient` da vaga para comparação justa entre vagas de dificuldades diferentes | Porque uma vaga "Senior ML Engineer" tem baseline diferente de "Junior Admin" | ● |
 | **Model Drift** | Monitora `score_drift` + `approval_drift` — alerta quando distribuição de scores muda significativamente | Porque drift indica que o modelo ou o comportamento do consultor mudou, exigindo recalibração | ● |
 
-> **GAP CRITICO:** WRF Dynamic K + LLM Job Classification precisa validação e2e. FG L3 (análise semântica sector-dependent) depende de sector rules no PolicyEngine. Apify API keys para enriquecimento.
-
 ---
 
 ### ETAPA 5 — APROVAR MAPEADOS (Gate 1)
@@ -323,8 +317,6 @@
 | **Calibration** | Implicit feedback: consultor avança candidato com low-score = sinal de que o score está subestimando | Porque calibração contínua corrige systematic bias nos scores | ● |
 | **Model Drift** | Trigger se `approval_drift` > 10 p.p. entre períodos → alerta para recalibração | Porque mudança brusca na taxa de aprovação indica problema no scoring ou mudança de critérios | ● |
 
-> **Status:** FairnessGuard auto-check integrado diretamente na tool `reject_candidate` em `candidate_tools.py` (Task #76, DEI-02): explicit bias bloqueia rejeição; implicit bias gera warning. Pipeline Transition Agent executa FG L3 check automático. Audit de overrides humanos sobre sugestão IA ainda pendente.
-
 ---
 
 ### ETAPA 6 — CONTATO VIA EMAIL + FOLLOW-UP
@@ -339,8 +331,6 @@
 | **Ag.7 CommunicationReActAgent** [communication] | Executa as tools de comunicação (`send_email`, `send_whatsapp`) registradas em `communication_tool_registry.py`. Personaliza template com dados do candidato/vaga | Porque as tools de envio estão no domínio communication, orquestradas pelo CommunicationReActAgent | ● |
 | **Template Learning** | Aprende quais templates de email têm melhor taxa de abertura/resposta → prioriza em envios futuros | Porque otimizar o template por performance reduz "sem_resposta" | ● |
 | **A/B Testing** | Variantes de template de email testadas por cohort para medir taxa de abertura/clique | Porque decisões de template devem ser data-driven, não por opinião | ● |
-
-> **Status:** Scheduler implementado via Celery Beat com `followup-check-hourly` (Task #70). Opt-out link LGPD com endpoint público, tokens HMAC-signed, ConsentEvent auditável (Task #68). A/B Testing seed com 3 experimentos (Task #72). Template Learning com UNION de fontes corrigida (Task #74, ARCH-05).
 
 ---
 
@@ -363,8 +353,6 @@
 | **Voice Analysis** | STT (Deepgram) + TTS (OpenAI): transcreve áudio do candidato → texto para avaliação; gera áudio da pergunta | Porque candidatos podem preferir responder por voz, e a plataforma precisa suportar multimodal | ● |
 | **Policy Engine** *(governa IA)* | Autonomy level por setor: define se Ag.5 pode auto-aprovar candidatos high-score ou precisa HITL (regra determinística, não IA) | Porque em setores regulados a decisão final não pode ser 100% automática | ● |
 
-> **Status:** Chat web público implementado (Fase 2, Tasks #67-#69). Timeouts 48h+48h via Celery Beat `wsi-abandoned-check` a cada 4h (Task #70). Consentimento LGPD explícito via checkbox obrigatório em WelcomeCard (Task #76, LGPD-01).
-
 ---
 
 ### ETAPA 8 — APROVAR TRIADOS (Gate 2)
@@ -384,8 +372,6 @@
 | **Model Drift** | Monitora `approval_drift` Gate 2 separadamente do Gate 1 | Porque os dois gates têm dinâmicas diferentes e drift em um não implica drift no outro | ● |
 | **Routing Adaptativo** | Correções de rota entre domínios alimentam `RoutingFeedback` → ajustes de confidence futuros | Porque erros de roteamento no Gate 2 (ex: rota errada para feedback vs. agendamento) precisam ser corrigidos | ● |
 
-> **Status:** FairnessGuard auto-check em `reject_candidate` (`candidate_tools.py`, Task #76, DEI-02): explicit bias bloqueia; implicit bias gera warning. Pipeline Transition Agent com FG L3 pré-check automático. Feedback automático para reprovados via Celery Beat `feedback-process-pending-sends` (Task #70).
-
 ---
 
 ### ETAPA 9 — AGENDAR ENTREVISTA + FEEDBACK
@@ -399,10 +385,8 @@
 | **Ag.6 SchedulingAgent** (LangGraph) | Recebe candidato aprovado → busca slots disponíveis → gera convite (ICS + link reunião) → envia via email + WhatsApp | Porque agendamento manual de entrevistas é trabalho repetitivo que a IA elimina | ● |
 | **Ag.7 AnalistaFeedback** (LangGraph) | Gera texto de feedback para reprovados: estrutura motivo + pontos fortes + sugestões de desenvolvimento | Porque feedback construtivo é valor diferencial WeDO e o LLM personaliza por candidato | ● |
 | **FairnessGuard L1/L2** | Valida texto de feedback gerado: L1 bloqueia linguagem discriminatória; L2 alerta proxy terms. Ativo no `rubric_evaluation.py` (reasoning check antes de persistir) | Porque feedback com viés prejudica o candidato e a marca do cliente | ● |
-| **Template Learning** | Aprende quais templates de feedback têm melhor recepção (NPS/reação) → prioriza variantes melhores. UNION de fontes corrigida (ARCH-05, Task #74) | Porque feedback que o candidato valoriza melhora employer branding measurably | ● |
-| **Embedding Service** (Gemini 768-dim) | Gera embedding do perfil completo do candidato para matching futuro em outras vagas. Cache via `embedding_cache_service.py` (Task #71). Falta auto-trigger no Gate 2 | Porque o candidato reprovado nesta vaga pode ser ideal para outra — o embedding permite re-discovery | ◐ |
-
-> **Status:** Teams integrado via Microsoft Graph API (Task #71 — `microsoft_graph_service.py`); depende de configuração de tenant para produção. Feedback auto-send via Celery Beat `feedback-process-pending-sends` a cada 2h (Task #70). ICS funciona standalone.
+| **Template Learning** | Aprende quais templates de feedback têm melhor recepção (NPS/reação) → prioriza variantes melhores | Porque feedback que o candidato valoriza melhora employer branding measurably | ● |
+| **Embedding Service** (Gemini 768-dim) | Gera embedding do perfil completo do candidato para matching futuro em outras vagas. Auto-trigger em `reject_candidate` para re-discovery | Porque o candidato reprovado nesta vaga pode ser ideal para outra — o embedding permite re-discovery | ● |
 
 ---
 
@@ -424,13 +408,13 @@
 
 | Etapa | FG L1 (block) | FG L2 (warn) | Onde atua |
 |-------|:------------:|:------------:|----------|
-| E2 Editar Vaga | ● | ● | No JD gerado por Claude — `check_fairness` em input+output no `jd_generation.py` (Task #68) |
-| E3 Roteiro WSI | ● | ● | Nas perguntas geradas por Gemini — filtro pós-geração no `wsi_questions.py` (Task #68) |
+| E2 Editar Vaga | ● | ● | No JD gerado por Claude — `check_fairness` em input+output no `jd_generation.py` |
+| E3 Roteiro WSI | ● | ● | Nas perguntas geradas por Gemini — filtro pós-geração no `wsi_questions.py` |
 | E4 Buscar Candidatos | ● | ● | No texto de busca do consultor (pre-check no Orchestrator) |
 | E5 Gate 1 | ● | ● | No motivo de rejeição (`check_rejection_reason` em `candidates.py`) |
-| E7 Triagem WSI | ● | ● | Nas respostas do candidato antes do LLM avaliador; reasoning check em `rubric_evaluation.py` (Task #68) |
+| E7 Triagem WSI | ● | ● | Nas respostas do candidato antes do LLM avaliador; reasoning check em `rubric_evaluation.py` |
 | E8 Gate 2 | ● | ● | No motivo de rejeição Gate 2 |
-| E9 Feedback | ● | ● | No texto de feedback/reasoning gerado — `fairness_guard.check` em `rubric_evaluation.py` (Task #68) |
+| E9 Feedback | ● | ● | No texto de feedback/reasoning gerado — `fairness_guard.check` em `rubric_evaluation.py` |
 
 **Inteligência adaptativa por etapa (somente onde há loop de aprendizado):**
 
@@ -457,28 +441,22 @@
 
 #### ◐ PRECISA ATIVAR (código existe, precisa ligar)
 
-| # | O quê | Etapa | O que é | Por que precisa ativar |
-|---|-------|-------|---------|----------------------|
-| A7 | **Embedding Service para re-discovery** | E9 | Gera embedding (Gemini 768-dim) do perfil completo do candidato reprovado para matching futuro em outras vagas | O serviço de embedding existe (`embedding_service.py`) com cache via `embedding_cache_service.py` (Task #71), precisa ser chamado automaticamente quando candidato é reprovado no Gate 2 |
-
-#### ○ PRECISA IMPLEMENTAR (código parcial ou inexistente)
-
-> Todos os itens desta seção foram resolvidos (Tasks #67-#76). Nenhum item pendente.
+> Todos os itens desta seção foram resolvidos. Embedding auto-trigger Gate 2 confirmado ATIVO via `_generate_rediscovery_embedding` em `reject_candidate`.
 
 #### ⚠ GAPS BLOQUEANTES POR ETAPA
 
 | # | O quê | Etapa | Impacto se não resolver |
 |---|-------|-------|------------------------|
-| G5 | **Apify API keys** | E4 | Apify service implementado com 5 actors (Task #71 — `apify_service.py`), mas depende de API keys de produção para funcionar |
+| G5 | **Apify API keys** | E4 | Apify service implementado com 5 actors (`apify_service.py`), mas depende de API keys de produção para funcionar |
 
 #### PRIORIDADE SUGERIDA
 
 | Prioridade | Itens | Justificativa |
 |-----------|-------|---------------|
-| **P0 — Bloqueante MVP** | **100% COMPLETO** | Todos os itens resolvidos (Tasks #67-#76) |
-| **P1 — Compliance** | **100% COMPLETO** | Todos os itens resolvidos (Tasks #68, #76) |
+| **P0 — Bloqueante MVP** | **100% COMPLETO** | Todos os itens resolvidos |
+| **P1 — Compliance** | **100% COMPLETO** | Todos os itens resolvidos |
 | **P2 — Integração** | G5 (Apify API keys) | Único item pendente: depende de contas de produção |
-| **P3 — Otimização** | A7 (embedding auto-trigger Gate 2) | Único item pendente: `embedding_service.py` precisa ser chamado automaticamente no Gate 2 |
+| **P3 — Otimização** | **100% COMPLETO** | Embedding auto-trigger Gate 2 confirmado ATIVO |
 
 ---
 
@@ -511,12 +489,12 @@
 
 O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios, 30+ tools registradas, 6+ agentes ReAct migrados para LangGraph, 6 camadas de compliance (FairnessGuard 3 camadas, PII Masking, Fact-Checker, Audit, Policy Engine, LGPD) e **11 camadas de inteligência** (Learning Loop, A/B Testing, Routing Adaptativo, Template Learning, Calibration, Score Normalization, Predictive Analytics, Model Drift, Conversation Memory, Semantic Search, Voice Analysis) implementadas. O frontend (`plataforma-lia`) tem integração real via proxy Next.js → FastAPI, incluindo **chat web público de triagem** (`/triagem/[token]`).
 
-**Após Fases 1-5 (Tasks 67-72) + Tasks #68-#76, a distância para MVP funcional reduziu drasticamente:**
+**A distância para MVP funcional reduziu drasticamente:**
 
-1. **Integração ponta-a-ponta** — WRF Dynamic K, LLM Job Classification, A/B Testing, Template Learning e FairnessGuard L3 estão **integrados e ativos** no RAG pipeline e communication services. ARCH-04 (kwargs) e ARCH-05 (data source) corrigidos (Task #74)
-2. **Compliance ativo nos endpoints** — FairnessGuard L1/L2 wired em `jd_generation.py`, `wsi_questions.py`, `rubric_evaluation.py`, `candidates.py` (Task #68). Opt-out LGPD com HMAC tokens (Task #68). PII Masking global. **GOV-01** (audit logging) ativo em JD generation e WSI questions (Task #76). **DEI-02** (FairnessGuard auto-check em rejeições) ativo em `reject_candidate` (Task #76). **LGPD-01** (consentimento explícito) com checkbox obrigatório em WelcomeCard (Task #76)
-3. **Scheduler completo** — Celery Beat com 13 tasks agendadas: follow-up horário, abandono WSI 4h, feedback 2h, drift diário, LGPD cleanup, RAGAS eval, LTM compression diária (Task #70)
-4. **Integrações externas** — Voice STT/TTS (Deepgram+OpenAI), Teams (Graph API), Apify (5 actors), Embedding (cache Redis) implementados (Task #71). A/B Testing seed com 3 experimentos (Task #72)
+1. **Integração ponta-a-ponta** — WRF Dynamic K, LLM Job Classification, A/B Testing, Template Learning e FairnessGuard L3 estão **integrados e ativos** no RAG pipeline e communication services
+2. **Compliance ativo nos endpoints** — FairnessGuard L1/L2 wired em `jd_generation.py`, `wsi_questions.py`, `rubric_evaluation.py`, `candidates.py`. Opt-out LGPD com HMAC tokens. PII Masking global. Audit logging ativo em JD generation e WSI questions. FairnessGuard auto-check em rejeições ativo em `reject_candidate`. Consentimento LGPD explícito com checkbox obrigatório em WelcomeCard
+3. **Scheduler completo** — Celery Beat com 13 tasks agendadas: follow-up horário, abandono WSI 4h, feedback 2h, drift diário, LGPD cleanup, RAGAS eval, LTM compression diária
+4. **Integrações externas** — Voice STT/TTS (Deepgram+OpenAI), Teams (Graph API), Apify (5 actors), Embedding (cache Redis), A/B Testing com 3 experimentos seed
 5. **Chat web público** — **IMPLEMENTADO** com 10 componentes React, voice mode, progress tracking, consentimento LGPD explícito
 6. **Infraestrutura externa restante** — ATS real (Gupy/Pandapé), Twilio WhatsApp, Resend/SendGrid, Apify, Microsoft Teams dependem de credenciais e configuração de produção
 
@@ -566,16 +544,16 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | **Tools** | `sync_candidate_to_ats`, `fetch_candidate_from_ats`, `validate_ats_fields` | Registradas | `ats_integration_tool_registry.py` |
 | **Frontend** | Página de vagas + edição | Implementado | `src/app/(dashboard)/jobs/` |
 | **COMPLIANCE** | | | |
-| ↳ FairnessGuard L1 | Bloquear requisitos discriminatórios no JD | ATIVO | `check_fairness` em `jd_generation.py` — input+output (Task #68) |
-| ↳ FairnessGuard L2 | Alertar termos proxy enviesados | ATIVO | `check_fairness` em `jd_generation.py` — warnings em output (Task #68) |
+| ↳ FairnessGuard L1 | Bloquear requisitos discriminatórios no JD | ATIVO | `check_fairness` em `jd_generation.py` — input+output |
+| ↳ FairnessGuard L2 | Alertar termos proxy enviesados | ATIVO | `check_fairness` em `jd_generation.py` — warnings em output |
 | ↳ PII Masking | Strip PII antes de enviar ao LLM | ATIVO (global) | `strip_pii_for_llm_prompt` |
 | ↳ Fact-Checker | N/A (não há claims numéricas) | — | — |
-| ↳ Audit Trail | Log de geração de JD | PARCIAL | `audit_service.log_decision` ativo em `jd_generation.py` (GOV-01, Task #76). Edições manuais de vaga ainda sem audit |
+| ↳ Audit Trail | Log de geração de JD | PARCIAL | `audit_service.log_decision` ativo em `jd_generation.py`. Edições manuais de vaga ainda sem audit |
 | ↳ Policy Engine | N/A nesta etapa | — | — |
 | ↳ LGPD | Dados do ATS com consentimento | PARCIAL | ATSSyncService filtra dados sensíveis (salário) com `"Dado sensível - não sincronizar"`. Consent explícito do candidato no ATS de origem (bypass Gate 1 COMP-8) |
 | **INTELIGÊNCIA** | | | |
 | ↳ Learning Loop | Captura edições do wizard (salary, skills, benefits) | ATIVO | `learning_loop_service.py` via `capture_from_wizard_update` |
-| ↳ A/B Testing | Variantes de prompt para JD generation | ATIVO | `ab_testing_service.py` — `seed_email_ab_tests` cria 3 experimentos na startup (Task #72). Testes de prompt JD-specific ainda precisam ser criados |
+| ↳ A/B Testing | Variantes de prompt para JD generation | ATIVO | `ab_testing_service.py` — `seed_email_ab_tests` cria 3 experimentos na startup. Testes de prompt JD-specific ainda precisam ser criados |
 | ↳ Routing Adaptativo | N/A (domínio fixo: job_management) | — | — |
 | ↳ Template Learning | Aprende templates após 3 vagas similares | ATIVO | `template_learning_service.py` |
 | ↳ Calibration | N/A (sem scoring nesta etapa) | — | — |
@@ -602,10 +580,10 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | **Tools** | `generate_screening_questions`, `analyze_jd_and_suggest_competencies` | Registradas | WSI domain tools |
 | **Frontend** | Modal WSI + Preview Vaga | Implementado | `src/components/modals/` |
 | **COMPLIANCE** | | | |
-| ↳ FairnessGuard L1-L2 | Perguntas geradas sem viés | ATIVO | `check_fairness` per-question em `wsi_questions.py` (Task #68) |
+| ↳ FairnessGuard L1-L2 | Perguntas geradas sem viés | ATIVO | `check_fairness` per-question em `wsi_questions.py` |
 | ↳ PII Masking | Strip antes de enviar JD ao LLM | ATIVO | `strip_pii_for_llm_prompt` |
 | ↳ Fact-Checker | Validar claims nas perguntas | ATIVO | `fact_checker.py` integrado no `DomainWorkflow._post_check` — `enable_fact_checker=True` por default. Valida claims contra dados de contexto (salários, contagens) |
-| ↳ Audit Trail | Log de geração de roteiro WSI | ATIVO | `audit_service.log_decision` em `wsi_questions.py` (GOV-01, Task #76) |
+| ↳ Audit Trail | Log de geração de roteiro WSI | ATIVO | `audit_service.log_decision` em `wsi_questions.py` |
 | ↳ Policy Engine | N/A | — | — |
 | ↳ LGPD | N/A (dados internos) | — | — |
 | **INTELIGÊNCIA** | | | |
@@ -636,11 +614,11 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | **Serviços** | SourcingPipelineService, CandidateEnrichmentService, CVScoringService | Implementados | `app/services/` |
 | **Tools** | `search_candidates`, `analyze_profile`, `score_candidate`, `enrich_profile` | Registradas | `sourcing_tool_registry.py` |
 | **Frontend** | Funil de Talentos (tabela + filtros + sidebar LIA) | Implementado | `src/app/(dashboard)/candidates/` |
-| **Busca** | Elasticsearch + PGVector + WRF | ATIVO | ES + PGVector + WRF Dynamic K ativo; LLM Classification + FG L3 sector **acessíveis** via RAG — `**kwargs` fix (Task #74, ARCH-04) |
+| **Busca** | Elasticsearch + PGVector + WRF | ATIVO | ES + PGVector + WRF Dynamic K ativo; LLM Classification + FG L3 sector acessíveis via RAG |
 | **COMPLIANCE** | | | |
 | ↳ FairnessGuard L1 | Bloquear buscas discriminatórias | ATIVO | `MainOrchestrator` L35-47 |
 | ↳ FairnessGuard L2 | Alertar proxy terms na busca | ATIVO | `MainOrchestrator` L48-62 |
-| ↳ FairnessGuard L3 | Análise semântica nas respostas do LLM | ATIVO | `check_with_sector()` ativo em pipeline_transition, rubric_evaluation, communication_tools, sourcing_agent, RAG pipeline (Task #74, ARCH-04 fix) |
+| ↳ FairnessGuard L3 | Análise semântica nas respostas do LLM | ATIVO | `check_with_sector()` ativo em pipeline_transition, rubric_evaluation, communication_tools, sourcing_agent, RAG pipeline |
 | ↳ PII Masking | Strip PII de candidatos antes do LLM | ATIVO | `strip_pii_for_llm_prompt` |
 | ↳ Fact-Checker | Validar claims nas análises LIA | ATIVO | `fact_checker.py` integrado no `DomainWorkflow._post_check` — `enable_fact_checker=True` por default |
 | ↳ Audit Trail | Log de buscas + scores | PRECISA ATIVAR | `audit_service.py` não integrado em `candidates.py` |
@@ -676,7 +654,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | **Tools** | `suggest_movements`, `check_rejection_fairness`, `identify_bottlenecks` | Registradas | `kanban_tool_registry.py` |
 | **Frontend** | Kanban board + SmartTransitionModal | Implementado | `src/app/(dashboard)/job-kanban/` |
 | **COMPLIANCE** | | | |
-| ↳ FairnessGuard | `check_rejection_fairness` auto-check | ATIVO | Auto-check em `reject_candidate` (`candidate_tools.py`, Task #76 DEI-02) + FG L3 pré-check no Pipeline Transition Agent |
+| ↳ FairnessGuard | `check_rejection_fairness` auto-check | ATIVO | Auto-check em `reject_candidate` (`candidate_tools.py`) + FG L3 pré-check no Pipeline Transition Agent |
 | ↳ PII Masking | Ativo globalmente | ATIVO | — |
 | ↳ Fact-Checker | N/A (decisão binária) | — | — |
 | ↳ Audit Trail | Log de aprovações/rejeições + overrides | PRECISA ATIVAR | `audit_service.py` — `record_human_review` |
@@ -716,12 +694,12 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | ↳ Fact-Checker | N/A | — | — |
 | ↳ Audit Trail | Log de envios + opens + clicks | PRECISA ATIVAR | `audit_service.py` |
 | ↳ Policy Engine / Rate Limiting | Limite de envio por empresa/dia | IMPLEMENTADO | `RateLimitRule` sliding window |
-| ↳ LGPD | Opt-out link no email | ATIVO | `communication_optout.py` — HMAC-signed tokens, ConsentEvent auditável (Task #68) |
+| ↳ LGPD | Opt-out link no email | ATIVO | `communication_optout.py` — HMAC-signed tokens, ConsentEvent auditável |
 | **INTELIGÊNCIA** | | | |
 | ↳ Learning Loop | N/A (email é ação, não sugestão) | — | — |
 | ↳ A/B Testing | Variantes de template de email | ATIVO | `seed_email_ab_tests` cria 3 experimentos no startup (Fase 5) |
 | ↳ Routing Adaptativo | N/A | — | — |
-| ↳ Template Learning | Templates de email aprendidos | ATIVO | `TemplateLearningService` com UNION de fontes corrigida (ARCH-05 fix, Task #74) |
+| ↳ Template Learning | Templates de email aprendidos | ATIVO | `TemplateLearningService` com UNION de fontes corrigida |
 | ↳ Calibration | N/A | — | — |
 | ↳ Score Normalization | N/A | — | — |
 | ↳ Predictive Analytics | N/A | — | — |
@@ -746,14 +724,14 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | **Tools** | `generate_screening_questions`, `analyze_response`, `calculate_wsi` | Registradas | WSI tools |
 | **Frontend Chat Web** | Chat page para candidato | **IMPLEMENTADO** | `src/app/triagem/[token]/page.tsx` (Fase 2) |
 | **COMPLIANCE** | | | |
-| ↳ FairnessGuard L1-L2 | Perguntas e análises sem viés | ATIVO | Reasoning check em `rubric_evaluation.py` (Task #68) |
-| ↳ FairnessGuard L3 | Análise semântica das respostas | ATIVO | `check_with_sector()` acessível via `**kwargs` no RAG pipeline (ARCH-04 fix, Task #74) |
+| ↳ FairnessGuard L1-L2 | Perguntas e análises sem viés | ATIVO | Reasoning check em `rubric_evaluation.py` |
+| ↳ FairnessGuard L3 | Análise semântica das respostas | ATIVO | `check_with_sector()` acessível via RAG pipeline |
 | ↳ PII Masking | Strip PII nas respostas antes do LLM | ATIVO | `strip_pii_for_llm_prompt` |
 | ↳ Fact-Checker | Validar scores e claims do WSI | ATIVO | `fact_checker.py` integrado no `DomainWorkflow._post_check` — `enable_fact_checker=True` por default |
 | ↳ Audit Trail | Log completo: cada pergunta/resposta/score | PRECISA ATIVAR | `audit_service.py` não integrado em `rubric_evaluation.py` |
 | ↳ Policy Engine | Autonomy level por setor | IMPLEMENTADO | `ALPHA1_SECTOR_RULES` |
-| ↳ LGPD | Consentimento antes da triagem | ATIVO | WelcomeCard com checkbox explícito obrigatório — botões desabilitados até aceite LGPD (Task #76, LGPD-01) |
-| ↳ Timeout/Abandono | Lembretes 48h + 48h | **IMPLEMENTADO** | Celery Beat `wsi-abandoned-check` a cada 4h (Task #70) |
+| ↳ LGPD | Consentimento antes da triagem | ATIVO | WelcomeCard com checkbox explícito obrigatório — botões desabilitados até aceite LGPD |
+| ↳ Timeout/Abandono | Lembretes 48h + 48h | ATIVO | Celery Beat `wsi-abandoned-check` a cada 4h |
 | **INTELIGÊNCIA** | | | |
 | ↳ Learning Loop | Captura padrões de resposta por competência | ATIVO | `learning_loop_service.py` |
 | ↳ A/B Testing | Variantes de prompt para análise de respostas | ATIVO | `ab_testing_service.py` — endpoints expostos via `api/v1/ab_testing.py` |
@@ -765,7 +743,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | ↳ Model Drift | Monitora drift em scores WSI | ATIVO | `model_drift_service.py` |
 | ↳ Conv. Memory | Estado da triagem por candidato | ATIVO | `conversation_state.py` |
 | ↳ Semantic Search | N/A (perguntas já definidas) | — | — |
-| ↳ Voice Analysis | STT/TTS para triagem por voz | ATIVO | `voice_service.py` — Deepgram (primário) + OpenAI Whisper (fallback) para STT; OpenAI TTS para síntese (Task #71) |
+| ↳ Voice Analysis | STT/TTS para triagem por voz | ATIVO | `voice_service.py` — Deepgram (primário) + OpenAI Whisper (fallback) para STT; OpenAI TTS para síntese |
 
 **Pendente:** Audit Trail precisa ativação em `rubric_evaluation.py` para log de cada pergunta/resposta/score.
 
@@ -781,7 +759,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | **Tools** | `suggest_movements`, `check_rejection_fairness` | Registradas | `kanban_tool_registry.py` |
 | **Frontend** | Kanban board (mesmo de Gate 1) | Implementado | `src/app/(dashboard)/job-kanban/` |
 | **COMPLIANCE** | | | |
-| ↳ FairnessGuard | Validação de rejeição (motivo) | ATIVO | Auto-check em `reject_candidate` (`candidate_tools.py`, Task #76 DEI-02) + FG L3 pré-check no Pipeline Transition Agent |
+| ↳ FairnessGuard | Validação de rejeição (motivo) | ATIVO | Auto-check em `reject_candidate` (`candidate_tools.py`) + FG L3 pré-check no Pipeline Transition Agent |
 | ↳ PII Masking | Ativo | ATIVO | — |
 | ↳ Audit Trail | Log de aprovação/rejeição Gate 2 | PRECISA ATIVAR | `audit_service.py` |
 | ↳ Policy Engine | HITL thresholds por setor | IMPLEMENTADO | `ALPHA1_SECTOR_RULES` |
@@ -808,7 +786,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | **Tools** | `schedule_interview`, `send_feedback` | Registradas | `communication_tools.py` |
 | **Frontend** | Scheduling UI | Implementado | `src/app/(dashboard)/` |
 | **COMPLIANCE** | | | |
-| ↳ FairnessGuard | Feedback sem viés | ATIVO | `fairness_guard.check` em `rubric_evaluation.py` (Task #68) |
+| ↳ FairnessGuard | Feedback sem viés | ATIVO | `fairness_guard.check` em `rubric_evaluation.py` |
 | ↳ PII Masking | Ativo | ATIVO | — |
 | ↳ Fact-Checker | N/A | — | — |
 | ↳ Audit Trail | Log de aprovação/rejeição + feedback enviado | PRECISA ATIVAR | `audit_service.py` |
@@ -817,7 +795,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | **INTELIGÊNCIA** | | | |
 | ↳ Learning Loop | Feedback sobre qualidade do feedback gerado | ATIVO | `learning_loop_service.py` — feedback loop no fluxo de avaliação |
 | ↳ A/B Testing | Variantes de template de feedback | ATIVO | `ab_testing_service.py` — endpoints expostos via `api/v1/ab_testing.py`. Falta criar experimentos de feedback-specific |
-| ↳ Template Learning | Templates de feedback aprendidos | ATIVO | `template_learning_service.py` com UNION corrigida (Task #74, ARCH-05) |
+| ↳ Template Learning | Templates de feedback aprendidos | ATIVO | `template_learning_service.py` com UNION de fontes corrigida |
 | ↳ Embedding Service | Embedding do perfil para matching futuro | ATIVO | `embedding_service.py` (Gemini 768-dim) com cache via `embedding_cache_service.py`. Auto-trigger em `reject_candidate` → `_generate_rediscovery_embedding` gera embedding para re-discovery futuro |
 | ↳ Long-Term Memory | Armazena episódios da vaga para referência | ATIVO | `long_term_memory.py` — integrado no `EnhancedAgentMixin._post_loop_learning` (episódios salvos após cada ReAct loop) + `_get_memory_context` para enriquecer prompts |
 | ↳ (demais) | N/A nesta etapa | — | — |
@@ -957,7 +935,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 
 | # | Gap | O que existe | O que falta |
 |---|-----|-------------|-------------|
-| C3 | **Audit Trail completo** | `AuditService` com 8 decision types; ativo em `jd_generation.py` e `wsi_questions.py` (GOV-01, Task #76) | Ativar em: `auth.py` (login), `candidates.py` (busca), pipeline tools (aprovação/rejeição), `rubric_evaluation.py` (triagem), communication (contato) |
+| C3 | **Audit Trail completo** | `AuditService` com 8 decision types; ativo em `jd_generation.py` e `wsi_questions.py` | Ativar em: `auth.py` (login), `candidates.py` (busca), pipeline tools (aprovação/rejeição), `rubric_evaluation.py` (triagem), communication (contato) |
 | C6 | **Bias Audit Report** | FairnessGuard coleta dados | Falta dashboard/relatório periódico de Four-Fifths Rule |
 | C7 | **EU AI Act Compliance** | Mencionado nos docs | Falta classificação de risco por agente e disclosure obrigatório |
 
