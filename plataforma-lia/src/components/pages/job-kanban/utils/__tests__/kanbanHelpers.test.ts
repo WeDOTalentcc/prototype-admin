@@ -206,15 +206,13 @@ describe('getFilteredAndSortedCandidates', () => {
   })
 
   it('filters by stage when tableStageFilter provided', () => {
-
-  it(filters by stage when tableStageFilter provided, () => {
     const withStages = [
-      { id: a, name: Alice, role: Engineer, skillsMatch: 80, stage: Triagem },
-      { id: b, name: Bob, role: Designer, skillsMatch: 40, stage: Entrevista },
-      { id: c, name: Charlie, role: Manager, skillsMatch: 60, stage: Entrevista },
+      { id: 'a', name: 'Alice', role: 'Engineer', skillsMatch: 80, stage: 'Triagem' },
+      { id: 'b', name: 'Bob', role: 'Designer', skillsMatch: 40, stage: 'Entrevista' },
+      { id: 'c', name: 'Charlie', role: 'Manager', skillsMatch: 60, stage: 'Entrevista' },
     ]
-    const result = getFilteredAndSortedCandidates(() => withStages, , [Triagem], notaLiaGeral, desc)
+    const result = getFilteredAndSortedCandidates(() => withStages, '', ['Triagem'], 'notaLiaGeral', 'desc')
     expect(result).toHaveLength(1)
-    expect(result[0].id).toBe(a)
+    expect(result[0].id).toBe('a')
   })
 })

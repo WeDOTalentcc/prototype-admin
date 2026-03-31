@@ -90,7 +90,7 @@ describe('SWR integration — wrapper configuration', () => {
     expect(result.current.error.message).toBe('fetch failed')
   })
 
-  it(two hooks with same key in isolated wrappers do not share cache, async () => {
+  it("two hooks with same key in isolated wrappers do not share cache", async () => {
     // Each swrWrapper creates a new Map() provider, so caches are isolated.
     // We verify this by running them sequentially and confirming the fetcher
     // is called for each independent instance.
@@ -101,7 +101,7 @@ describe('SWR integration — wrapper configuration', () => {
     }
     // First hook fetches from its own empty cache
     const { result: result1 } = renderHook(
-      () => useSWR(/api/isolation-test, fetcher),
+      () => useSWR("/api/isolation-test", fetcher),
       { wrapper: swrWrapper }
     )
     await waitFor(() => expect(result1.current.data).toBeDefined())
@@ -110,7 +110,7 @@ describe('SWR integration — wrapper configuration', () => {
 
     // Second hook has its own empty cache — fetcher must be called again
     const { result: result2 } = renderHook(
-      () => useSWR(/api/isolation-test-2, fetcher),
+      () => useSWR("/api/isolation-test-2", fetcher),
       { wrapper: swrWrapper }
     )
     await waitFor(() => expect(result2.current.data).toBeDefined())
