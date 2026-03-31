@@ -158,12 +158,12 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
               <title>Dashboard Estratégico - WeDo Talent</title>
               <style>
                 body { font-family: 'Open Sans', sans-serif; padding: 20px; }
-                h1 { color: #374151; }
+                h1 { color: var(--lia-text-primary, #374151); }
                 table { width: 100%; border-collapse: collapse; margin-top: 20px; }
                 th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                th { background-color: #111827; color: white; }
+                th { background-color: var(--lia-btn-primary-bg, #111827); color: white; }
                 .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-                .kpi-card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; }
+                .kpi-card { border: 1px solid var(--lia-border-subtle, #E5E7EB); border-radius: 8px; padding: 16px; }
               </style>
             </head>
             <body>

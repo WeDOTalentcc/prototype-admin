@@ -41,13 +41,13 @@ export function SearchPreviewCard({
     <Card 
       className="border overflow-hidden"
       style={{backgroundColor: 'var(--white)',
-        borderColor: 'var(--gray-300)'}}
+        borderColor: 'var(--lia-border-subtle)'}}
     >
       <CardContent className="p-0">
         <div 
           className="px-4 py-3 border-b flex items-center gap-2"
-          style={{backgroundColor: 'var(--gray-50)',
-            borderColor: 'var(--gray-300)'}}
+          style={{backgroundColor: 'var(--lia-bg-secondary)',
+            borderColor: 'var(--lia-border-subtle)'}}
         >
           <Search className="w-4 h-4 lia-text-700" />
           <span 
@@ -81,12 +81,12 @@ export function SearchPreviewCard({
                 selectedOption === "local" && "ring-2",
                 !hasLocalResults && !data.isSearchingLocal && "opacity-50 cursor-not-allowed"
               )}
-              style={{backgroundColor: selectedOption === "local" ? "rgb(249, 250, 251)" : 'var(--gray-50)',
-                borderColor: selectedOption === "local" ? "rgb(209, 213, 219)" : 'var(--gray-300)'}}
+              style={{backgroundColor: selectedOption === "local" ? "var(--lia-bg-secondary)" : 'var(--lia-bg-secondary)',
+                borderColor: selectedOption === "local" ? "var(--lia-border-default)" : 'var(--lia-border-subtle)'}}
             >
               <div 
                 className="p-2 rounded-md shrink-0"
-                style={{backgroundColor: "var(--green-50, #f0fdf4)"}}
+                style={{backgroundColor: "var(--wedo-green-light, #f0fdf4)"}}
               >
                 <Database className="w-4 h-4 lia-text-700" />
               </div>
@@ -127,12 +127,12 @@ export function SearchPreviewCard({
                 selectedOption === "hybrid" && "ring-2",
                 !hasPearchResults && !data.isEstimatingPearch && "opacity-50 cursor-not-allowed"
               )}
-              style={{backgroundColor: selectedOption === "hybrid" ? "rgb(249, 250, 251)" : 'var(--gray-50)',
-                borderColor: selectedOption === "hybrid" ? "rgb(209, 213, 219)" : 'var(--gray-300)'}}
+              style={{backgroundColor: selectedOption === "hybrid" ? "var(--lia-bg-secondary)" : 'var(--lia-bg-secondary)',
+                borderColor: selectedOption === "hybrid" ? "var(--lia-border-default)" : 'var(--lia-border-subtle)'}}
             >
               <div 
                 className="p-2 rounded-md shrink-0"
-                style={{backgroundColor: 'var(--gray-50)'}}
+                style={{backgroundColor: 'var(--lia-bg-secondary)'}}
               >
                 <Globe className="w-4 h-4 lia-text-700" />
               </div>
@@ -177,7 +177,7 @@ export function SearchPreviewCard({
           {selectedOption === "hybrid" && (
             <div 
               className="p-3 rounded-md text-sm"
-              style={{backgroundColor: "var(--green-50, #f0fdf4)",
+              style={{backgroundColor: "var(--wedo-green-light, #f0fdf4)",
                 color: 'var(--gray-800)'}}
             >
               <div className="flex items-center justify-between mb-2">
@@ -200,7 +200,7 @@ export function SearchPreviewCard({
               onClick={onCancel}
               className="flex-1"
               style={{color: 'var(--gray-500)',
-                borderColor: 'var(--gray-300)'}}
+                borderColor: 'var(--lia-border-subtle)'}}
             >
               <X className="w-4 h-4 mr-1" />
               Cancelar

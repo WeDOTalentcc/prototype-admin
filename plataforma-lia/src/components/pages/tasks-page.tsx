@@ -218,7 +218,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           return (
                             <div>
                               <div className="flex items-center gap-1.5 mb-1.5">
-                                <div className="w-1.5 h-1.5 rounded-full" style={{backgroundColor: 'var(--yellow-50, #fefce8)'}}></div>
+                                <div className="w-1.5 h-1.5 rounded-full" style={{backgroundColor: 'var(--wedo-amber-light, #fefce8)'}}></div>
                                 <h3 className="text-xs font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary">Sessão Manhã</h3>
                                 <span className="text-xs font-open-sans text-lia-text-primary dark:text-lia-text-tertiary">{morningTasks.length} atividades</span>
                               </div>
@@ -274,7 +274,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                               size="sm"
                                               onClick={() => handleConfirmTask(task)}
                                               className="h-5 px-2 text-xs gap-1 border-0"
-                                              style={{backgroundColor: 'var(--green-50, #f0fdf4)', color: 'var(--gray-800)'}}
+                                              style={{backgroundColor: 'var(--wedo-green-light, #f0fdf4)', color: 'var(--lia-text-primary)'}}
                                             >
                                               <MessageSquare className="w-2.5 h-2.5" />
                                               Avaliar
@@ -295,7 +295,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                               size="sm"
                                               onClick={() => handleConfirmTask(task)}
                                               className="h-5 px-2 text-xs gap-1 border-0"
-                                              style={{backgroundColor: 'var(--green-50, #f0fdf4)', color: 'var(--gray-800)'}}
+                                              style={{backgroundColor: 'var(--wedo-green-light, #f0fdf4)', color: 'var(--lia-text-primary)'}}
                                             >
                                               <Play className="w-2.5 h-2.5" />
                                               Iniciar
@@ -316,7 +316,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                               size="sm"
                                               onClick={() => handleConfirmTask(task)}
                                               className="h-5 px-2 text-xs gap-1 border-0"
-                                              style={{backgroundColor: 'var(--green-50, #f0fdf4)', color: 'var(--gray-800)'}}
+                                              style={{backgroundColor: 'var(--wedo-green-light, #f0fdf4)', color: 'var(--lia-text-primary)'}}
                                             >
                                               <Search className="w-2.5 h-2.5" />
                                               Buscar
@@ -367,7 +367,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           return (
                             <div>
                               <div className="flex items-center gap-1.5 mb-1.5">
-                                <div className="w-1.5 h-1.5 rounded-full" style={{backgroundColor: 'var(--blue-50, #eff6ff)'}}></div>
+                                <div className="w-1.5 h-1.5 rounded-full" style={{backgroundColor: 'var(--lia-info-light, #eff6ff)'}}></div>
                                 <h3 className="text-xs font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary">Sessão Tarde</h3>
                                 <span className="text-xs font-open-sans text-lia-text-primary dark:text-lia-text-tertiary">{afternoonTasks.length} atividades</span>
                               </div>
@@ -423,7 +423,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                               size="sm"
                                               onClick={() => handleConfirmTask(task)}
                                               className="h-5 px-2 text-xs gap-1 border-0"
-                                              style={{backgroundColor: 'var(--green-50, #f0fdf4)', color: 'var(--gray-800)'}}
+                                              style={{backgroundColor: 'var(--wedo-green-light, #f0fdf4)', color: 'var(--lia-text-primary)'}}
                                             >
                                               <MessageSquare className="w-2.5 h-2.5" />
                                               Avaliar
@@ -444,7 +444,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                               size="sm"
                                               onClick={() => handleConfirmTask(task)}
                                               className="h-5 px-2 text-xs gap-1 border-0"
-                                              style={{backgroundColor: 'var(--green-50, #f0fdf4)', color: 'var(--gray-800)'}}
+                                              style={{backgroundColor: 'var(--wedo-green-light, #f0fdf4)', color: 'var(--lia-text-primary)'}}
                                             >
                                               <Play className="w-2.5 h-2.5" />
                                               Iniciar
@@ -465,7 +465,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                               size="sm"
                                               onClick={() => handleConfirmTask(task)}
                                               className="h-5 px-2 text-xs gap-1 border-0"
-                                              style={{backgroundColor: 'var(--green-50, #f0fdf4)', color: 'var(--gray-800)'}}
+                                              style={{backgroundColor: 'var(--wedo-green-light, #f0fdf4)', color: 'var(--lia-text-primary)'}}
                                             >
                                               <Search className="w-2.5 h-2.5" />
                                               Buscar
@@ -540,19 +540,19 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                     <div className="flex items-center gap-1.5">
                       <Badge 
                         className="border-0 text-xs font-medium"
-                        style={{backgroundColor: 'var(--pink-50, #fdf2f8)', color: 'var(--gray-800)'}}
+                        style={{backgroundColor: 'var(--lia-brand-primary-light)', color: 'var(--lia-text-primary)'}}
                       >
                         {activeAlerts.filter(a => a.severity === 'high').length} Alto
                       </Badge>
                       <Badge 
                         className="border-0 text-xs font-medium"
-                        style={{backgroundColor: 'var(--yellow-50, #fefce8)', color: 'var(--gray-800)'}}
+                        style={{backgroundColor: 'var(--wedo-amber-light, #fefce8)', color: 'var(--lia-text-primary)'}}
                       >
                         {activeAlerts.filter(a => a.severity === 'medium').length} Médio
                       </Badge>
                       <Badge 
                         className="border-0 text-xs font-medium"
-                        style={{backgroundColor: 'var(--blue-50, #eff6ff)', color: 'var(--gray-800)'}}
+                        style={{backgroundColor: 'var(--lia-info-light, #eff6ff)', color: 'var(--lia-text-primary)'}}
                       >
                         {activeAlerts.filter(a => a.severity === 'low').length} Baixo
                       </Badge>
