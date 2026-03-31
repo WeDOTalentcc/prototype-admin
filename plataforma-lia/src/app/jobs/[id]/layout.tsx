@@ -7,7 +7,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params
   return {
-    title: ,
+    title: `Vaga ${id} | LIA`,
     description: "Detalhes da vaga, candidatos e kanban de seleção",
     robots: { index: false, follow: false },
   }

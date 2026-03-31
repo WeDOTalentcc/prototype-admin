@@ -28,6 +28,10 @@ const nextConfig = {
   },
   images: {
     unoptimized: false,
+    formats: ["image/avif", "image/webp"],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 3600,
     domains: [
       "source.unsplash.com",
       "images.unsplash.com",
@@ -54,6 +58,26 @@ const nextConfig = {
         protocol: "https",
         hostname: "ugc.same-assets.com",
         pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "**.linkedin.com",
+      },
+      {
+        protocol: "https",
+        hostname: "**.gravatar.com",
+      },
+      {
+        protocol: "https",
+        hostname: "**.googleusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "**.amazonaws.com",
+      },
+      {
+        protocol: "https",
+        hostname: "media.licdn.com",
       },
     ],
   },
