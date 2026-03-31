@@ -219,7 +219,19 @@
 
 **Regra:** Um componente só aparece se IA está envolvida. "IA" = LLM, embedding, modelo ML, heurística adaptativa, ou agente autônomo. Infraestrutura pura (auth, CRUD manual, PII masking, audit trail, LGPD) não aparece — são listados uma vez na seção de infraestrutura global.
 
-**Convenção de nomes:** Os rótulos Ag.0–Ag.8 vêm do Fluxo Alpha 1 v2 (source of truth do MVP). No código, os agentes estão registrados em `agents_registry.yaml` com nomes de domínio (pipeline, sourcing, wizard, talent, kanban, policy, jobs_management). A correspondência principal: Ag.0 = MainOrchestrator, Ag.2 = SourcingReActAgent, Ag.4 = WSIInterviewGraph (conduz entrevista), Ag.5 = scoring via WSIService, Ag.6 = SchedulingService, Ag.7 = AnalistaFeedback (domínio communication para envio, analytics para relatórios), Ag.8 = ATSIntegrationReActAgent. **Atenção:** A geração de perguntas WSI (E3) é feita pelo **WSIQuestionGeneratorService** (serviço), não pelo Ag.4 — o Ag.4 apenas conduz a entrevista (E7). As tools de comunicação (`send_email`, `send_whatsapp`) estão registradas no domínio `communication` (`communication_tool_registry.py`), executadas via CommunicationReActAgent (Ag.7), não diretamente pelo Ag.0.
+**Convenção de nomes:** Os rótulos Ag.0–Ag.8 vêm do Fluxo Alpha 1 v2 (source of truth do MVP). No código, os agentes estão registrados em `agents_registry.yaml` com nomes de domínio (pipeline, sourcing, wizard, talent, kanban, policy, jobs_management). Correspondência:
+
+| Rótulo | Classe no código | Domínio |
+|--------|-----------------|---------|
+| Ag.0 | MainOrchestrator | orchestrator |
+| Ag.2 | SourcingReActAgent | sourcing |
+| Ag.4 | WSIInterviewGraph | cv_screening |
+| Ag.5 | WSIService (scoring) | cv_screening |
+| Ag.6 | InterviewGraph | interview_scheduling |
+| Ag.7 | CommunicationReActAgent (envio) / PersonalizedFeedbackService (feedback) | communication / cv_screening |
+| Ag.8 | ATSIntegrationReActAgent ⚠ PÓS-MVP | ats_integration |
+| — | WSIQuestionGeneratorService (gera perguntas WSI, E3) | cv_screening |
+| — | JDGeneratorService (gera/ajusta JD, E2/E3) | job_management |
 
 **Legenda:** ● Ativo | ◐ Disponível (precisa ativar) | ○ A implementar | ⚠ Gap bloqueante
 
@@ -257,9 +269,9 @@ Estes componentes são infraestrutura de plataforma. Não envolvem IA e se aplic
 | **JDGeneratorService** (Claude) | Recebe dados da vaga (título, skills, benefícios, responsabilidades) → gera JD estruturada em markdown (seções: Sobre, Responsabilidades, Requisitos, Benefícios, Diversidade) + SEO title + tags | Porque o consultor precisa de um JD profissional a partir de dados brutos; Claude redige e estrutura sem inventar conteúdo | ● |
 | **FairnessGuard L1/L2** | Pre-check no texto do JD gerado: L1 bloqueia requisitos discriminatórios (13 categorias: gênero, idade, etnia...); L2 alerta termos proxy enviesados (log only) | Porque o JD gerado por LLM pode conter viés inadvertido; FG filtra antes de salvar | ◐ |
 
-> **Nota MVP:** Ag.8 IntegradorATS NÃO atua nesta etapa. No MVP, vagas já foram importadas previamente. Ag.8 entra nas etapas de Gate (E5, E8) para sync de status de volta ao ATS.
+> **Nota MVP:** Ag.8 ATSIntegrationReActAgent [ats_integration] atua nas etapas de Gate (E5, E8) para sync de status de volta ao ATS. ⚠ PÓS-MVP.
 
-> **GAP:** FG precisa virar middleware no endpoint `POST /api/v1/jd/generate` (hoje é pre-check global no Orchestrator, não no endpoint de JD).
+> **GAP:** FG precisa virar middleware no endpoint `POST /api/v1/jd/generate`.
 
 ---
 
@@ -276,7 +288,7 @@ Estes componentes são infraestrutura de plataforma. Não envolvem IA e se aplic
 | **WSIScreeningQuestionGenerator** (heurístico + calibração) | Gera perguntas via templates Big5/CBI/Bloom/Dreyfus quando o LLM não está disponível; aplica `SeniorityContextCalibrator` para ajustar Dreyfus target e Bloom levels por área/indústria | Porque o fallback garante geração mesmo sem LLM, e a calibração contextual adapta a dificuldade ao perfil real da vaga | ● |
 | **FairnessGuard L1/L2** | Pre-check nas perguntas geradas: L1 bloqueia perguntas com padrões discriminatórios; L2 alerta proxy terms | Porque perguntas de triagem discriminatórias invalidam o processo seletivo inteiro | ◐ |
 
-> **Nota importante:** Nesta etapa, quem **gera** as perguntas WSI é o **WSIQuestionGeneratorService** (`WSIScreeningQuestionGenerator` — serviço, não agente). O **Ag.4 EntrevistadorWSI** (`wsi_interview_graph.py`) **conduz** a entrevista na E7 — ele aplica as perguntas sequencialmente, coleta respostas e gera feedback. A distinção é: E3 = geração de perguntas (serviço), E7 = condução da entrevista (agente). O **JDGeneratorService** (`jd_generator_service.py`) também participa quando o consultor usa o modal para gerar ou ajustar o JD antes de configurar o roteiro.
+> **Serviços envolvidos:** **WSIQuestionGeneratorService** (`WSIScreeningQuestionGenerator`) gera as perguntas WSI. **JDGeneratorService** (`jd_generator_service.py`) gera/ajusta o JD quando o consultor usa a TAB Configurações. **Ag.4 WSIInterviewGraph** (`wsi_interview_graph.py`) conduz a entrevista na E7, aplicando as perguntas sequencialmente, coletando respostas e gerando feedback.
 
 > **GAP:** FG e Fact-Checker precisam ser ativados como step pós-geração no endpoint `/api/v1/wsi/generate-questions`.
 
@@ -317,7 +329,7 @@ Estes componentes são infraestrutura de plataforma. Não envolvem IA e se aplic
 | **Ag.0 Orchestrator** (LangGraph) | Coordena pós-aprovação: dispara contato para aprovados, feedback para reprovados, delega a Ag.7 e Ag.8 | Porque a ação de aprovar/reprovar desencadeia múltiplos fluxos paralelos que precisam de coordenação | ● |
 | **Ag.7 AnalistaFeedback** (LangGraph) | Gera parecer textual de feedback para candidatos reprovados baseado nos dados de triagem/score | Porque feedback personalizado e construtivo melhora employer branding e é requisito WeDO Talent Guide | ● |
 | **Ag.8 IntegradorATS** (LangGraph) | Sincroniza status de aprovação/reprovação de volta ao ATS (Gupy/Pandape) via `sync_candidate_to_ats` | Porque o ATS externo precisa refletir a decisão tomada na plataforma LIA para manter consistência | ● |
-| **Policy Engine** *(governa IA)* | Aplica `ALPHA1_SECTOR_RULES`: autonomy levels + HITL thresholds por setor determinam se a IA pode agir sozinha ou precisa confirmação humana. Nota: é regra determinística que controla o comportamento dos agentes IA, não é IA em si | Porque em setores regulados (saúde, finanças) a IA não pode tomar decisão final sem HITL | ● |
+| **Policy Engine** *(governa IA)* | Aplica `ALPHA1_SECTOR_RULES`: autonomy levels + HITL thresholds por setor determinam se a IA pode agir sozinha ou precisa confirmação humana. Regra determinística que controla o comportamento dos agentes IA | Porque em setores regulados (saúde, finanças) a IA precisa de HITL | ● |
 | **FairnessGuard L1** | `check_rejection_fairness` como tool: valida se motivo de rejeição contém padrão discriminatório | Porque rejeições discriminatórias são risco legal e reputacional | ● |
 | **Learning Loop** | Captura decisões consultor vs. sugestão IA (aceitar/rejeitar/modificar) → alimenta routing adjustments + score calibration | Porque o delta entre sugestão IA e decisão humana é o sinal mais forte para melhorar o modelo | ● |
 | **Calibration** | Implicit feedback: consultor avança candidato com low-score = sinal de que o score está subestimando | Porque calibração contínua corrige systematic bias nos scores | ● |
@@ -336,7 +348,7 @@ Estes componentes são infraestrutura de plataforma. Não envolvem IA e se aplic
 | Componente IA | O que faz | Por quê | Status |
 |--------------|----------|---------|--------|
 | **Ag.0 Orchestrator** (LangGraph) | Orquestra o fluxo de contato: recebe decisão de Gate 1, delega envio ao Ag.7 ou ao domínio communication. Follow-ups dependem de scheduler (não implementado no MVP) | Porque a coordenação pós-aprovação precisa disparar múltiplos canais de forma orquestrada | ● (contato) / ○ (follow-up) |
-| **Ag.7 AnalistaFeedback** (LangGraph) | Executa as tools de comunicação (`send_email`, `send_whatsapp`) registradas no domínio `communication` via CommunicationReActAgent. Personaliza template com dados do candidato/vaga | Porque as tools de envio estão registradas no CommunicationReActAgent (domínio communication, `communication_tool_registry.py`), não no Orchestrator diretamente | ● |
+| **Ag.7 CommunicationReActAgent** [communication] | Executa as tools de comunicação (`send_email`, `send_whatsapp`) registradas em `communication_tool_registry.py`. Personaliza template com dados do candidato/vaga | Porque as tools de envio estão no domínio communication, orquestradas pelo CommunicationReActAgent | ● |
 | **Template Learning** | Aprende quais templates de email têm melhor taxa de abertura/resposta → prioriza em envios futuros | Porque otimizar o template por performance reduz "sem_resposta" | ◐ |
 | **A/B Testing** | Variantes de template de email testadas por cohort para medir taxa de abertura/clique | Porque decisões de template devem ser data-driven, não por opinião | ◐ |
 
