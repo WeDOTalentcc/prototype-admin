@@ -292,7 +292,7 @@ export function JobEditTab({
                           Alterar Status para {statusChangeConfirm.newStatus}
                         </h3>
                         <p className="text-xs lia-text-500 dark:text-lia-text-tertiary">
-                          {job?.title || jobEditForm.title}
+                          {(job?.title as string) || (jobEditForm.title as string)}
                         </p>
                       </div>
                     </div>
@@ -679,7 +679,7 @@ export function JobEditTab({
                               </select>
                             </div>
                           </div>
-                          {jobEditForm.isAffirmative && (
+                          {(jobEditForm.isAffirmative as boolean) && (
                             <>
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -706,10 +706,10 @@ export function JobEditTab({
                                   <Switch checked={!!jobEditForm.affirmativeDocumentRequired} onCheckedChange={(val: boolean) => updateField("affirmativeDocumentRequired", val)} disabled={!isEditing} />
                                   <label className={textStyles.label}>Exige Documentação</label>
                                 </div>
-                                {jobEditForm.affirmativeDocumentRequired && (
+                                {(jobEditForm.affirmativeDocumentRequired as boolean) && (
                                   <div>
                                     <label className={labelClass}>Tipos de Documento</label>
-                                    <input type="text" className={inputClass(!isEditing)} value={(jobEditForm.affirmativeDocumentTypes || []).join(", ")} onChange={(e) => updateField("affirmativeDocumentTypes", e.target.value.split(",").map((s: string) => s.trim()).filter(Boolean))} disabled={!isEditing} placeholder="Ex: laudo_pcd, autodeclaracao_racial" />
+                                    <input type="text" className={inputClass(!isEditing)} value={((jobEditForm.affirmativeDocumentTypes as string[]) || []).join(", ")} onChange={(e) => updateField("affirmativeDocumentTypes", e.target.value.split(",").map((s: string) => s.trim()).filter(Boolean))} disabled={!isEditing} placeholder="Ex: laudo_pcd, autodeclaracao_racial" />
                                   </div>
                                 )}
                               </div>
@@ -823,11 +823,11 @@ export function JobEditTab({
                           <div className="space-y-2">
                             <p className="text-xs lia-text-500 dark:text-lia-text-tertiary font-['Open_Sans',sans-serif]">Link público para candidatos se candidatarem:</p>
                             <div className="flex items-center gap-2">
-                              <input type="text" readOnly value={publicLink || jobEditForm.public_url || ""} className="flex-1 px-3 py-2 text-xs lia-text-700 dark:text-lia-text-secondary bg-gray-50 dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md font-['Open_Sans',sans-serif]" onClick={(e) => (e.target as HTMLInputElement).select()} />
-                              <button onClick={() => { navigator.clipboard.writeText(publicLink || jobEditForm.public_url || ""); toast.success("Link copiado!") }} className="p-2 rounded-md bg-gray-900 text-white hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 transition-colors flex-shrink-0" title="Copiar link">
+                              <input type="text" readOnly value={publicLink || (jobEditForm.public_url as string) || ""} className="flex-1 px-3 py-2 text-xs lia-text-700 dark:text-lia-text-secondary bg-gray-50 dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md font-['Open_Sans',sans-serif]" onClick={(e) => (e.target as HTMLInputElement).select()} />
+                              <button onClick={() => { navigator.clipboard.writeText(publicLink || (jobEditForm.public_url as string) || ""); toast.success("Link copiado!") }} className="p-2 rounded-md bg-gray-900 text-white hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 transition-colors flex-shrink-0" title="Copiar link">
                                 <Copy className="w-3.5 h-3.5" />
                               </button>
-                              <a href={publicLink || jobEditForm.public_url || "#"} target="_blank" rel="noopener noreferrer" className="p-2 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle lia-text-600 dark:text-lia-text-tertiary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex-shrink-0" title="Abrir link">
+                              <a href={publicLink || (jobEditForm.public_url as string) || "#"} target="_blank" rel="noopener noreferrer" className="p-2 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle lia-text-600 dark:text-lia-text-tertiary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex-shrink-0" title="Abrir link">
                                 <ExternalLink className="w-3.5 h-3.5" />
                               </a>
                             </div>
