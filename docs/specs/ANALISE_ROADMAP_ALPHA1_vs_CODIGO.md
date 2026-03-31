@@ -1,7 +1,7 @@
 # Análise Profunda: Roadmap Alpha 1 vs. Código Existente
 
 **Data:** 31/03/2026  
-**Versão:** 6.0 — Atualizado com resultados Fases 1-5 (Tasks 67-72) + Auditoria Fase 6 + resultados Tasks #68-#76  
+**Versão:** 6.1 — Atualizado com resultados Fases 1-5 (Tasks 67-72) + Auditoria Fase 6 + resultados Tasks #68-#76 (incluindo GOV-01, LGPD-01, DEI-02)  
 **Escopo:** Cruzamento do Fluxo Alpha 1 (v2) com a implementação real no Replit  
 **Objetivo:** Listar APENAS componentes onde IA está envolvida (agente consome/produz algo via LLM, modelo, embedding ou heurística inteligente). Cada item explica concretamente a relação: qual agente consome o quê, produz o quê, e por quê.
 
@@ -323,7 +323,7 @@
 | **Calibration** | Implicit feedback: consultor avança candidato com low-score = sinal de que o score está subestimando | Porque calibração contínua corrige systematic bias nos scores | ● |
 | **Model Drift** | Trigger se `approval_drift` > 10 p.p. entre períodos → alerta para recalibração | Porque mudança brusca na taxa de aprovação indica problema no scoring ou mudança de critérios | ● |
 
-> **GAP:** `check_rejection_fairness` precisa ser automática no pipeline (hoje é tool sob demanda). Audit de overrides humanos sobre sugestão IA.
+> ~~**GAP:** `check_rejection_fairness` precisa ser automática no pipeline (hoje é tool sob demanda).~~ **RESOLVIDO (Task #76, DEI-02)** — FairnessGuard auto-check integrado diretamente na tool `reject_candidate` em `candidate_tools.py`: explicit bias bloqueia rejeição; implicit bias gera warning. Pipeline Transition Agent também executa FG L3 check automático em cada mensagem do recrutador. Audit de overrides humanos sobre sugestão IA ainda pendente.
 
 ---
 
@@ -363,7 +363,7 @@
 | **Voice Analysis** | STT (Deepgram) + TTS (OpenAI): transcreve áudio do candidato → texto para avaliação; gera áudio da pergunta | Porque candidatos podem preferir responder por voz, e a plataforma precisa suportar multimodal | ● |
 | **Policy Engine** *(governa IA)* | Autonomy level por setor: define se Ag.5 pode auto-aprovar candidatos high-score ou precisa HITL (regra determinística, não IA) | Porque em setores regulados a decisão final não pode ser 100% automática | ● |
 
-> ~~**GAP CRITICO ⚠:** Chat web público NÃO EXISTE (frontend). Timeouts 48h+48h precisam scheduler. Consentimento LGPD precisa tela frontend.~~ **ATUALIZADO:** Chat web público **IMPLEMENTADO** (Fase 2). Timeouts 48h+48h **IMPLEMENTADOS** via Celery Beat `wsi-abandoned-check` a cada 4h (Task #70). Consentimento LGPD implícito via WelcomeCard; consentimento explícito recomendado.
+> ~~**GAP CRITICO ⚠:** Chat web público NÃO EXISTE (frontend). Timeouts 48h+48h precisam scheduler. Consentimento LGPD precisa tela frontend.~~ **RESOLVIDO:** Chat web público **IMPLEMENTADO** (Fase 2). Timeouts 48h+48h **IMPLEMENTADOS** via Celery Beat `wsi-abandoned-check` a cada 4h (Task #70). Consentimento LGPD **EXPLÍCITO** via checkbox obrigatório em WelcomeCard — botões "Iniciar Conversa" desabilitados até candidato marcar aceite (Task #76, LGPD-01).
 
 ---
 
@@ -384,7 +384,7 @@
 | **Model Drift** | Monitora `approval_drift` Gate 2 separadamente do Gate 1 | Porque os dois gates têm dinâmicas diferentes e drift em um não implica drift no outro | ● |
 | **Routing Adaptativo** | Correções de rota entre domínios alimentam `RoutingFeedback` → ajustes de confidence futuros | Porque erros de roteamento no Gate 2 (ex: rota errada para feedback vs. agendamento) precisam ser corrigidos | ● |
 
-> **GAP:** `check_rejection_fairness` precisa ser automática. Feedback automático para reprovados precisa integração com EmailService.
+> ~~**GAP:** `check_rejection_fairness` precisa ser automática.~~ **RESOLVIDO (Task #76, DEI-02)** — FairnessGuard auto-check em `reject_candidate` (`candidate_tools.py`): explicit bias bloqueia; implicit bias gera warning. Pipeline Transition Agent com FG L3 pré-check automático. Feedback automático para reprovados integrado via Celery Beat `feedback-process-pending-sends` (Task #70).
 
 ---
 
@@ -476,7 +476,7 @@
 | I1 | ~~**Scheduler para follow-up 7 dias**~~ | E6 | Job em background que re-envia email a cada 24h por 7 dias se candidato não abriu/clicou | ~~RESOLVIDO (Task #70)~~ — Celery Beat `followup-check-hourly` (a cada hora) processa follow-ups pendentes. DLQ para falhas. Beat schedule completo em `celery_app.py` |
 | I2 | ~~**Chat web público para candidato**~~ | E7 | Página web acessível via link no email onde o candidato faz a triagem WSI conversando com a LIA | ~~RESOLVIDO (Fase 2, Tasks #67-#69)~~ — `/triagem/[token]` com 10 componentes React |
 | I3 | ~~**Scheduler para timeouts 48h+48h**~~ | E7 | Job que detecta inatividade do candidato durante triagem e envia lembretes automáticos (48h → 1º lembrete, +48h → 2º, depois alerta ao consultor) | ~~RESOLVIDO (Task #70)~~ — Celery Beat `wsi-abandoned-check` a cada 4h detecta sessões WSI abandonadas e envia lembretes automáticos |
-| I4 | **Tela de consentimento LGPD** | E7 | Página frontend onde o candidato dá consentimento antes de iniciar a triagem (coleta de dados, uso por IA, retenção) | PARCIAL — WelcomeCard serve como consent implícito; consent explícito (checkbox) recomendado para compliance total |
+| I4 | ~~**Tela de consentimento LGPD**~~ | E7 | Página frontend onde o candidato dá consentimento antes de iniciar a triagem (coleta de dados, uso por IA, retenção) | ~~RESOLVIDO (Task #76, LGPD-01)~~ — WelcomeCard com checkbox explícito obrigatório (`consentChecked` state). Botões "Iniciar Conversa" desabilitados até candidato marcar aceite LGPD. Texto referencia Política de Privacidade e LGPD |
 | I5 | ~~**Opt-out link nos emails**~~ | E6 | Link de descadastramento no rodapé dos emails enviados pela LIA | ~~RESOLVIDO (Task #68)~~ — Endpoint público `GET/POST /communication/unsubscribe/{token}` com tokens HMAC-signed, ConsentEvent auditável, páginas HTML completas (`communication_optout.py`) |
 | I6 | ~~**Webhook de tracking opens/clicks**~~ | E6 | Webhook que recebe eventos do provedor de email (Resend/SendGrid) quando candidato abre ou clica no email | ~~RESOLVIDO (Fase 3, Tasks #69-#70)~~ — `email_tracking.py` com tracking de opens/clicks. Feedback auto-send via Celery Beat `feedback-process-pending-sends` a cada 2h (Task #70) |
 
@@ -485,13 +485,13 @@
 | # | O quê | Etapa | Impacto se não resolver |
 |---|-------|-------|------------------------|
 | G1 | ~~**FG como middleware nos endpoints**~~ | E2, E3 | ~~RESOLVIDO (Task #68)~~ — `check_fairness` ativo em `jd_generation.py` (E2) e `wsi_questions.py` (E3) |
-| G2 | **check_rejection_fairness automática** | E5, E8 | `check_rejection_reason` ativo em `candidates.py` para rejeições. Parcialmente automática — completar para pipeline automático |
+| G2 | ~~**check_rejection_fairness automática**~~ | E5, E8 | ~~RESOLVIDO (Task #76, DEI-02)~~ — FairnessGuard auto-check em `reject_candidate` (`candidate_tools.py`): explicit bias bloqueia rejeição; implicit bias gera warning. Pipeline Transition Agent com FG L3 pré-check automático |
 | G3 | ~~**WRF Dynamic K + LLM Job Classification validação e2e**~~ | E4 | ~~RESOLVIDO (Task #74, ARCH-04)~~ — `**kwargs` pipeline fix em `rag_pipeline_service.py` permite que `job_title`, `job_area`, `job_requirements`, `sector` cheguem ao LLM classifier e FG L3 |
 | G4 | ~~**FG L3 (análise semântica sector-dependent)**~~ | E4 | ~~RESOLVIDO (Task #74, ARCH-04)~~ — `sector` kwarg agora chega ao pipeline de busca via `**kwargs` no `rag_pipeline_service.py`. FG L3 acessível no fluxo de busca |
 | G5 | **Apify API keys** | E4 | Apify service implementado com 5 actors (Task #71 — `apify_service.py`), mas depende de API keys de produção para funcionar |
 | G6 | ~~**SCHEDULER** (Celery/cron/background)~~ | E6, E7 | ~~RESOLVIDO (Task #70)~~ — Celery Beat com: `followup-check-hourly`, `wsi-abandoned-check` (4h), `feedback-process-pending-sends` (2h), DLQ via `LIATask.on_failure`, 13 scheduled tasks em `celery_app.py` |
 | G7 | ~~**Chat web público**~~ | E7 | ~~RESOLVIDO (Fase 2, Tasks #67-#69)~~ — `/triagem/[token]` com 10 componentes |
-| G8 | **Consentimento LGPD frontend** | E7 | PARCIAL — WelcomeCard como consent implícito; consent explícito (checkbox) recomendado |
+| G8 | ~~**Consentimento LGPD frontend**~~ | E7 | ~~RESOLVIDO (Task #76, LGPD-01)~~ — WelcomeCard com checkbox explícito obrigatório + botões desabilitados até aceite |
 | G9 | ~~**Feedback auto → EmailService**~~ | E8, E9 | ~~RESOLVIDO (Task #70)~~ — Celery Beat `feedback-process-pending-sends` a cada 2h processa feedback aprovado não enviado. `feedback.auto_send` task para envio automático |
 | G10 | ~~**Teams Graph API tenant**~~ | E9 | ~~RESOLVIDO (Task #71)~~ — `microsoft_graph_service.py` implementado. Depende de configuração de tenant do cliente para produção |
 
@@ -499,8 +499,8 @@
 
 | Prioridade | Itens | Justificativa |
 |-----------|-------|---------------|
-| ~~**P0 — Bloqueante MVP**~~ | ~~G7 (chat web), G6 (scheduler), G8 (LGPD), I2, I1, I3, I4~~ | **RESOLVIDO:** G7 (Tasks #67-#69), G6 (Task #70), I2 (Tasks #67-#69), I1 (Task #70), I3 (Task #70). Restam: G8 (LGPD consent explícito) e I4 (tela consent) — parciais |
-| ~~**P1 — Compliance**~~ | ~~G1, G2, G8, A1-A4, I5~~ | **MAIORIA RESOLVIDA:** G1 (Task #68), A1-A4 (Task #68), I5 (Task #68). Restam: G2 (automação completa), G8 (consent explícito) |
+| ~~**P0 — Bloqueante MVP**~~ | ~~G7 (chat web), G6 (scheduler), G8 (LGPD), I2, I1, I3, I4~~ | **RESOLVIDO:** G7 (Tasks #67-#69), G6 (Task #70), I2 (Tasks #67-#69), I1 (Task #70), I3 (Task #70), G8 (Task #76, LGPD-01), I4 (Task #76, LGPD-01). **100% completo** |
+| ~~**P1 — Compliance**~~ | ~~G1, G2, G8, A1-A4, I5~~ | **RESOLVIDO:** G1 (Task #68), A1-A4 (Task #68), I5 (Task #68), G2 (Task #76, DEI-02), G8 (Task #76, LGPD-01). **100% completo** |
 | ~~**P2 — Integração**~~ | ~~G5, G9, G10, A8, A9~~ | **MAIORIA RESOLVIDA:** G9 (Task #70), G10 (Task #71), A8 (Task #71), A9 (Task #71). Restam: G5 (Apify API keys de produção) |
 | ~~**P3 — Otimização**~~ | ~~A5, A6, A7, G3, G4~~ | **MAIORIA RESOLVIDA:** A5 (Task #74), A6 (Task #72), G3 (Task #74), G4 (Task #74). Restam: A7 (auto-trigger embedding no Gate 2) |
 
@@ -538,10 +538,10 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 **Após Fases 1-5 (Tasks 67-72) + Tasks #68-#76, a distância para MVP funcional reduziu drasticamente:**
 
 1. **Integração ponta-a-ponta** — WRF Dynamic K, LLM Job Classification, A/B Testing, Template Learning e FairnessGuard L3 estão **integrados e ativos** no RAG pipeline e communication services. ARCH-04 (kwargs) e ARCH-05 (data source) corrigidos (Task #74)
-2. **Compliance ativo nos endpoints** — FairnessGuard L1/L2 wired em `jd_generation.py`, `wsi_questions.py`, `rubric_evaluation.py`, `candidates.py` (Task #68). Opt-out LGPD com HMAC tokens (Task #68). PII Masking global
-3. **Scheduler completo** — Celery Beat com 13 tasks agendadas: follow-up horário, abandono WSI 4h, feedback 2h, drift diário, LGPD cleanup, RAGAS eval, LTM compression (Task #70)
+2. **Compliance ativo nos endpoints** — FairnessGuard L1/L2 wired em `jd_generation.py`, `wsi_questions.py`, `rubric_evaluation.py`, `candidates.py` (Task #68). Opt-out LGPD com HMAC tokens (Task #68). PII Masking global. **GOV-01** (audit logging) ativo em JD generation e WSI questions (Task #76). **DEI-02** (FairnessGuard auto-check em rejeições) ativo em `reject_candidate` (Task #76). **LGPD-01** (consentimento explícito) com checkbox obrigatório em WelcomeCard (Task #76)
+3. **Scheduler completo** — Celery Beat com 13 tasks agendadas: follow-up horário, abandono WSI 4h, feedback 2h, drift diário, LGPD cleanup, RAGAS eval, LTM compression diária (Task #70)
 4. **Integrações externas** — Voice STT/TTS (Deepgram+OpenAI), Teams (Graph API), Apify (5 actors), Embedding (cache Redis) implementados (Task #71). A/B Testing seed com 3 experimentos (Task #72)
-5. **Chat web público** — **IMPLEMENTADO** com 10 componentes React, voice mode, progress tracking, LGPD footer
+5. **Chat web público** — **IMPLEMENTADO** com 10 componentes React, voice mode, progress tracking, consentimento LGPD explícito
 6. **Infraestrutura externa restante** — ATS real (Gupy/Pandapé), Twilio WhatsApp, Resend/SendGrid, Apify, Microsoft Teams dependem de credenciais e configuração de produção
 
 ---
@@ -594,7 +594,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | ↳ FairnessGuard L2 | Alertar termos proxy enviesados | ATIVO | `check_fairness` em `jd_generation.py` — warnings em output (Task #68) |
 | ↳ PII Masking | Strip PII antes de enviar ao LLM | ATIVO (global) | `strip_pii_for_llm_prompt` |
 | ↳ Fact-Checker | N/A (não há claims numéricas) | — | — |
-| ↳ Audit Trail | Log de edições de vaga | PRECISA ATIVAR | `audit_service.py` |
+| ↳ Audit Trail | Log de geração de JD | PARCIAL | `audit_service.log_decision` ativo em `jd_generation.py` (GOV-01, Task #76). Edições manuais de vaga ainda sem audit |
 | ↳ Policy Engine | N/A nesta etapa | — | — |
 | ↳ LGPD | Dados do ATS com consentimento | PRECISA VERIFICAR | Verificar fluxo de import |
 | **INTELIGÊNCIA** | | | |
@@ -629,7 +629,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | ↳ FairnessGuard L1-L2 | Perguntas geradas sem viés | ATIVO | `check_fairness` per-question em `wsi_questions.py` (Task #68) |
 | ↳ PII Masking | Strip antes de enviar JD ao LLM | ATIVO | `strip_pii_for_llm_prompt` |
 | ↳ Fact-Checker | Validar claims nas perguntas | PRECISA ATIVAR | `fact_checker.py` |
-| ↳ Audit Trail | Log de geração de roteiro | PRECISA ATIVAR | `audit_service.py` |
+| ↳ Audit Trail | Log de geração de roteiro WSI | ATIVO | `audit_service.log_decision` em `wsi_questions.py` (GOV-01, Task #76) |
 | ↳ Policy Engine | N/A | — | — |
 | ↳ LGPD | N/A (dados internos) | — | — |
 | **INTELIGÊNCIA** | | | |
@@ -700,7 +700,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | **Tools** | `suggest_movements`, `check_rejection_fairness`, `identify_bottlenecks` | Registradas | `kanban_tool_registry.py` |
 | **Frontend** | Kanban board + SmartTransitionModal | Implementado | `src/app/(dashboard)/job-kanban/` |
 | **COMPLIANCE** | | | |
-| ↳ FairnessGuard | `check_rejection_fairness` como tool | REGISTRADA | Precisa ser automática, não sob demanda |
+| ↳ FairnessGuard | `check_rejection_fairness` auto-check | ATIVO | Auto-check em `reject_candidate` (`candidate_tools.py`, Task #76 DEI-02) + FG L3 pré-check no Pipeline Transition Agent |
 | ↳ PII Masking | Ativo globalmente | ATIVO | — |
 | ↳ Fact-Checker | N/A (decisão binária) | — | — |
 | ↳ Audit Trail | Log de aprovações/rejeições + overrides | PRECISA ATIVAR | `audit_service.py` — `record_human_review` |
@@ -720,7 +720,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | ↳ Semantic Search | N/A | — | — |
 | ↳ Voice Analysis | N/A | — | — |
 
-**Gap:** `check_rejection_fairness` precisa ser chamado automaticamente (não sob demanda). Audit de overrides humanos precisa ativação.
+~~**Gap:** `check_rejection_fairness` precisa ser chamado automaticamente (não sob demanda).~~ **RESOLVIDO (Task #76, DEI-02)** — FairnessGuard auto-check ativo em `reject_candidate`. Audit de overrides humanos precisa ativação.
 
 ---
 
@@ -776,7 +776,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | ↳ Fact-Checker | Validar scores e claims do WSI | PRECISA ATIVAR | `fact_checker.py` |
 | ↳ Audit Trail | Log completo: cada pergunta/resposta/score | PRECISA ATIVAR | `audit_service.py` |
 | ↳ Policy Engine | Autonomy level por setor | IMPLEMENTADO | `ALPHA1_SECTOR_RULES` |
-| ↳ LGPD | Consentimento antes da triagem | PARCIAL | WelcomeCard serve como consent implícito; consent explícito (checkbox) recomendado |
+| ↳ LGPD | Consentimento antes da triagem | ATIVO | WelcomeCard com checkbox explícito obrigatório — botões desabilitados até aceite LGPD (Task #76, LGPD-01) |
 | ↳ Timeout/Abandono | Lembretes 48h + 48h | **IMPLEMENTADO** | Celery Beat `wsi-abandoned-check` a cada 4h (Task #70) |
 | **INTELIGÊNCIA** | | | |
 | ↳ Learning Loop | Captura padrões de resposta por competência | ATIVO | `learning_loop_service.py` |
@@ -791,7 +791,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | ↳ Semantic Search | N/A (perguntas já definidas) | — | — |
 | ↳ Voice Analysis | STT/TTS para triagem por voz | ATIVO | `voice_service.py` — Deepgram (primário) + OpenAI Whisper (fallback) para STT; OpenAI TTS para síntese (Task #71) |
 
-**Gap ATUALIZADO (Fase 2 + Tasks #68-#70):** Chat web público **IMPLEMENTADO** (`/triagem/[token]` com 10 componentes: ChatContainer, WelcomeCard, MessageBubble, InputBar, ProgressBar, CompletionCard, ConfirmationCard, TypingIndicator, MultipleChoiceCard, LikertScaleCard). Voice mode integrado (Task #71). Timeouts 48h+48h **IMPLEMENTADOS** via Celery Beat `wsi-abandoned-check` a cada 4h (Task #70). FairnessGuard L1-L2 **ATIVO** no fluxo de avaliação (Task #68). Consentimento LGPD implícito via WelcomeCard; consent explícito recomendado.
+**Gap ATUALIZADO (Fase 2 + Tasks #68-#70, #76):** Chat web público **IMPLEMENTADO** (`/triagem/[token]` com 10 componentes: ChatContainer, WelcomeCard, MessageBubble, InputBar, ProgressBar, CompletionCard, ConfirmationCard, TypingIndicator, MultipleChoiceCard, LikertScaleCard). Voice mode integrado (Task #71). Timeouts 48h+48h **IMPLEMENTADOS** via Celery Beat `wsi-abandoned-check` a cada 4h (Task #70). FairnessGuard L1-L2 **ATIVO** no fluxo de avaliação (Task #68). Consentimento LGPD **EXPLÍCITO** via checkbox obrigatório em WelcomeCard (Task #76, LGPD-01).
 
 ---
 
@@ -805,7 +805,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | **Tools** | `suggest_movements`, `check_rejection_fairness` | Registradas | `kanban_tool_registry.py` |
 | **Frontend** | Kanban board (mesmo de Gate 1) | Implementado | `src/app/(dashboard)/job-kanban/` |
 | **COMPLIANCE** | | | |
-| ↳ FairnessGuard | Validação de rejeição (motivo) | REGISTRADA | `check_rejection_fairness` tool |
+| ↳ FairnessGuard | Validação de rejeição (motivo) | ATIVO | Auto-check em `reject_candidate` (`candidate_tools.py`, Task #76 DEI-02) + FG L3 pré-check no Pipeline Transition Agent |
 | ↳ PII Masking | Ativo | ATIVO | — |
 | ↳ Audit Trail | Log de aprovação/rejeição Gate 2 | PRECISA ATIVAR | `audit_service.py` |
 | ↳ Policy Engine | HITL thresholds por setor | IMPLEMENTADO | `ALPHA1_SECTOR_RULES` |
@@ -817,7 +817,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | ↳ Routing Adaptativo | Correções de rota entre domínios | ATIVO | `routing_learning_service.py` |
 | ↳ (demais) | N/A nesta etapa | — | — |
 
-**Gap:** Mesmo que Gate 1 — `check_rejection_fairness` precisa ser automática.
+~~**Gap:** Mesmo que Gate 1 — `check_rejection_fairness` precisa ser automática.~~ **RESOLVIDO (Task #76, DEI-02)** — FairnessGuard auto-check ativo em `reject_candidate`.
 
 ---
 
@@ -976,7 +976,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | G1 | ~~**Scheduler/Background Jobs**~~ — Follow-up 7 dias, timeout triagem 48h+48h, lembretes | ~~BLOQUEANTE~~ | **RESOLVIDO (Task #70)** — Celery Beat com 13 tasks: `followup-check-hourly`, `wsi-abandoned-check` (4h), `feedback-process-pending-sends` (2h), DLQ |
 | G2 | ~~**Chat Web Público (Candidato)**~~ | ~~BLOQUEANTE~~ | **RESOLVIDO (Tasks #67-#69)** — `src/app/triagem/[token]/page.tsx` com 10 componentes |
 | G3 | ~~**Webhook de Email**~~ | ~~ALTO~~ | **RESOLVIDO (Fase 3, Tasks #69-#70)** — `email_tracking.py` com tracking de opens/clicks |
-| G4 | **Consentimento LGPD (Tela de Aceite)** — Antes da triagem WSI | PARCIAL — WelcomeCard como consent implícito; explícito recomendado | MÉDIO |
+| G4 | ~~**Consentimento LGPD (Tela de Aceite)**~~ — Antes da triagem WSI | ~~RESOLVIDO (Task #76, LGPD-01)~~ — WelcomeCard com checkbox explícito obrigatório | ~~RESOLVIDO~~ |
 | G5 | ~~**Unsubscribe Link**~~ — Nos templates de email | ~~ALTO~~ | **RESOLVIDO (Task #68)** — `communication_optout.py` com HMAC tokens, ConsentEvent auditável |
 | G6 | ~~**Notificações (Teams/Email/Bell)**~~ — Sistema de alertas ao consultor | ~~ALTO~~ | **RESOLVIDO (Task #71)** — `microsoft_graph_service.py` (Teams), EmailService (já ativo). Bell notification pendente |
 | G7 | **Configuração de Infra Externa** — API keys: Twilio, Resend/SendGrid, Apify, ATS | Sem credenciais, tudo roda em "dev mode" | BLOQUEANTE |
@@ -988,7 +988,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | C1 | ~~**FairnessGuard ativo em todos os pontos**~~ | L1-L2 no Orchestrator + endpoints | **RESOLVIDO (Task #68)** — `check_fairness` ativo em: `jd_generation.py` (save JD), `wsi_questions.py` (geração WSI), `rubric_evaluation.py` (análise+feedback+scoring), `candidates.py` (rejeição) |
 | C2 | ~~**FairnessGuard L3 (Semântico)**~~ | **RESOLVIDO** (Task #74) | ~~ARCH-04 (kwargs)~~ corrigido — `**kwargs` em `rag_pipeline_service.py` permite `sector` chegar ao FG L3. `check_with_sector()` ativo em 5+ services |
 | C3 | **Audit Trail completo** | `AuditService` com 8 decision types | Ativar em: login, edição vaga, geração roteiro, busca, aprovação, contato, triagem, feedback |
-| C4 | **LGPD Consent Flow** | Endpoints de consentimento existem | Falta fluxo frontend + enforcement antes de processar candidato |
+| C4 | ~~**LGPD Consent Flow**~~ | Endpoints de consentimento existem + WelcomeCard com checkbox explícito (Task #76, LGPD-01) | ~~Fluxo frontend RESOLVIDO~~ — botões desabilitados até aceite. Enforcement backend (verificar `consent_given` antes de processar) recomendado |
 | C5 | **Fact-Checker em todos os outputs** | 4 checkers (salary, count, %, date) + 3 granulares (V5) | Ativar como middleware pós-resposta em todos os agentes |
 | C6 | **Bias Audit Report** | FairnessGuard coleta dados | Falta dashboard/relatório periódico de Four-Fifths Rule |
 | C7 | **EU AI Act Compliance** | Mencionado nos docs | Falta classificação de risco por agente e disclosure obrigatório |
@@ -1001,7 +1001,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | I2 | **Predictive Analytics não integrado no fluxo** | Serviço implementado | Precisa ser chamado na UI de criação de vaga (predict_time_to_fill, predict_optimal_salary) |
 | I3 | ~~**Template Learning sem trigger automático**~~ | **RESOLVIDO** (Task #74) | ~~ARCH-05~~ corrigido — UNION de `message_queue` + `communication_logs` com dedup em `template_learning_service.py` |
 | I4 | ~~**Voice Analysis não integrado na triagem web**~~ | **RESOLVIDO** (Fase 2) | InputBar com gravação de áudio na triagem (`onAudioTranscription`) |
-| I5 | **Long-Term Memory sem compressão ativa** | Código de compressão existe | Precisa de cron job para executar `compress_old_episodes` periodicamente |
+| I5 | ~~**Long-Term Memory sem compressão ativa**~~ | **RESOLVIDO** (Task #70) | Celery Beat `memory-compress-daily` executa `compress_old_episodes` diariamente às 03:00 UTC (`celery_app.py` linha 220) |
 | I6 | **Semantic Search parcialmente wired** | Expansão funciona | Precisa ser integrado no fluxo de busca de candidatos como step automático |
 
 ---
@@ -1055,7 +1055,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | P4.3 | LGPD DSR (Data Subject Requests) — export/delete | Backend | **PENDENTE** |
 | P4.4 | Criar primeiros A/B Tests (JD prompt, scoring prompt) | Backend | **PARCIAL (Task #72)** — `seed_email_ab_tests` cria 3 experimentos de **email templates** (screening_invite, follow_up, feedback). Testes de prompt JD/scoring ainda pendentes |
 | P4.5 | Integrar Predictive Analytics na UI de vagas | Frontend + Backend | **PENDENTE** |
-| P4.6 | ~~Ativar Long-Term Memory compression (cron)~~ | Infra | **PARCIAL (Task #70)** — Celery Beat tem `memory-compress-daily` (`memory.compress_old_episodes`) agendado |
+| P4.6 | ~~Ativar Long-Term Memory compression (cron)~~ | Infra | **RESOLVIDO (Task #70)** — Celery Beat `memory-compress-daily` executa `memory.compress_old_episodes` diariamente às 03:00 UTC |
 | P4.7 | SOX Audit Export (para auditoria externa) | Backend | **PENDENTE** |
 
 ---
@@ -1178,7 +1178,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 **Sim.** A sequência Login → Editar Vaga → Roteiro WSI → Buscar → Aprovar → Contato → Triagem → Gate 2 → Agendar/Feedback é o caminho natural de recrutamento assistido por IA. O backend suporta esse fluxo com 8 agentes, 30+ tools, 6 compliance layers e 11 intelligence layers.
 
 ### "Falta informação?"
-**Após Tasks #68-#76, a maioria dos gaps foi resolvida.** Restam: G2 (FG rejection automática completa), G5 (Apify API keys produção), G8 (LGPD consent explícito), A7 (auto-trigger embedding Gate 2), I4 (tela consent). Audit Trail e Fact-Checker precisam ativação em mais touchpoints. Credenciais de produção (ATS, Twilio, Resend) são pré-requisitos de deploy.
+**Após Tasks #68-#76, a grande maioria dos gaps foi resolvida.** G2 (FG rejection automática — Task #76, DEI-02), G8 (LGPD consent explícito — Task #76, LGPD-01) e I4 (tela consent — Task #76) foram resolvidos. Restam: G5 (Apify API keys produção), A7 (auto-trigger embedding Gate 2). Audit Trail (C3) e Fact-Checker (C5) precisam ativação em mais touchpoints. Credenciais de produção (ATS, Twilio, Resend) são pré-requisitos de deploy.
 
 ### "Faz sentido o mapa por camada?"
 **Absolutamente.** A matriz da seção 4 mostra que a maioria das intelligence layers está "implementada mas não integrada". O diferencial competitivo da plataforma está justamente nessas 11 camadas — Learning Loop silencioso, A/B Testing com significância estatística, Routing Adaptativo, Score Normalization, Predictive Analytics, e Voice Analysis são capacidades que concorrentes não têm.
