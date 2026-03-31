@@ -290,19 +290,19 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
   const renderKanbanColumn = (stageId: string, candidates: Record<string, unknown>[], colorClass: string, bgClass: string) => (
     <KanbanColumnRenderer
       stageId={stageId}
-      candidates={candidates}
+      candidates={candidates as unknown as Parameters<typeof KanbanColumnRenderer>[0]["candidates"]}
       colorClass={colorClass}
       bgClass={bgClass}
       dynamicStages={dynamicStages}
       searchQuery={searchQuery}
-      draggedCandidate={draggedCandidate}
+      draggedCandidate={draggedCandidate as unknown as Parameters<typeof KanbanColumnRenderer>[0]["draggedCandidate"]}
       dragOverColumn={dragOverColumn}
       selectedCandidates={selectedCandidates}
       selectedForCompare={selectedForCompare}
       viewedCandidateIds={viewedCandidateIds}
       favoriteCandidates={favoriteCandidates}
       shortListedCandidateIds={shortListedCandidateIds}
-      aiSuggestions={aiSuggestions}
+      aiSuggestions={aiSuggestions as unknown as Parameters<typeof KanbanColumnRenderer>[0]["aiSuggestions"]}
       kanbanScoreMin={kanbanScoreMin}
       kanbanStatusFilter={kanbanStatusFilter}
       kanbanWorkModelFilter={kanbanWorkModelFilter}
@@ -312,17 +312,17 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
       getColumnStyle={getColumnStyle}
       getStageCategory={getStageCategory}
       calculateNotaLiaGeral={calculateNotaLiaGeral}
-      getDataRequestForCandidate={getDataRequestForCandidate}
+      getDataRequestForCandidate={getDataRequestForCandidate as unknown as Parameters<typeof KanbanColumnRenderer>[0]["getDataRequestForCandidate"]}
       setSelectedCandidates={setSelectedCandidates}
       setSelectedForCompare={setSelectedForCompare}
-      setCandidatesData={setCandidatesData}
+      setCandidatesData={setCandidatesData as unknown as Parameters<typeof KanbanColumnRenderer>[0]["setCandidatesData"]}
       setTransitionInitialPrompt={setTransitionInitialPrompt}
       setTransitionInterviewAlert={setTransitionInterviewAlert}
       setTransitionAllowStageSelection={setTransitionAllowStageSelection}
       setDecisionFlowCandidate={setDecisionFlowCandidate}
       setDecisionFlowType={setDecisionFlowType}
       setShowDecisionFlowModal={setShowDecisionFlowModal}
-      onDragStart={handleDragStart}
+      onDragStart={handleDragStart as unknown as Parameters<typeof KanbanColumnRenderer>[0]["onDragStart"]}
       onDragEnd={handleDragEnd}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
@@ -333,13 +333,13 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
       onScheduleInterview={handleScheduleInterview}
       onToggleFavorite={handleToggleFavorite}
       onToggleShortList={handleToggleShortList}
-      onOpenAnalysis={handleOpenAnalysis}
+      onOpenAnalysis={handleOpenAnalysis as unknown as Parameters<typeof KanbanColumnRenderer>[0]["onOpenAnalysis"]}
       onOpenScoreModal={handleOpenScoreModal}
-      onOpenDecisionFlowModal={openDecisionFlowModal}
+      onOpenDecisionFlowModal={openDecisionFlowModal as unknown as Parameters<typeof KanbanColumnRenderer>[0]["onOpenDecisionFlowModal"]}
       onSendWSIInvite={handleSendWSIInvite}
       onSendFeedback={handleSendFeedback}
-      onApproveFromScreening={handleApproveFromScreening}
-      onRejectFromScreening={handleRejectFromScreening}
+      onApproveFromScreening={handleApproveFromScreening as unknown as Parameters<typeof KanbanColumnRenderer>[0]["onApproveFromScreening"]}
+      onRejectFromScreening={handleRejectFromScreening as unknown as Parameters<typeof KanbanColumnRenderer>[0]["onRejectFromScreening"]}
       onInlineRename={handleInlineRename}
       onInlineToggleActive={handleInlineToggleActive}
       onInlineRemove={handleInlineRemove}
@@ -351,7 +351,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
       onDataRequestViewDetails={handleDataRequestViewDetails}
       approveSuggestion={approveSuggestion}
       rejectSuggestion={rejectSuggestion}
-      openTransition={openTransition}
+      openTransition={openTransition as unknown as Parameters<typeof KanbanColumnRenderer>[0]["openTransition"]}
     />
   )
   // Renderização apenas no cliente para evitar erros de hidratação SSR
@@ -417,7 +417,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                   <h1 className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary whitespace-nowrap">
                     {currentJob.title as string}
                   </h1>
-                  {currentJob.jobId && (
+                  {!!(currentJob.jobId) && (
                     <span className="text-micro font-mono text-lia-text-secondary dark:text-lia-text-secondary bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle px-1.5 py-0.5 rounded-md whitespace-nowrap">
                       {currentJob.jobId as string}
                     </span>
@@ -479,7 +479,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                       completed: 'bg-wedo-cyan/10 text-wedo-cyan border border-wedo-cyan/30',
                     }
                     const handleScreeningStatusChange = async (newStatus: string) => {
-                      const jobId = currentJob.backendId || currentJob.jobId || currentJob.id
+                      const jobId = (currentJob.backendId || currentJob.jobId || currentJob.id) as string
                       try {
                         await liaApi.updateJobVacancy(jobId, { screeningStatus: newStatus } as Record<string, unknown>)
                         setJobEditForm((prev: Record<string, unknown>) => ({ ...prev, screeningStatus: newStatus }))
@@ -489,11 +489,11 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                       }
                     }
                     const badge = (
-                      <Badge className={`font-semibold whitespace-nowrap text-xs px-2 py-0.5 cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none select-none ${scrStyles[scrStatus] || scrStyles.not_configured}`}>
-                        {scrLabels[scrStatus] || 'Triagem: N/C'}
+                      <Badge className={`font-semibold whitespace-nowrap text-xs px-2 py-0.5 cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none select-none ${(scrStyles as Record<string, string>)[scrStatus as string] || scrStyles.not_configured}`}>
+                        {(scrLabels as Record<string, string>)[scrStatus as string] || 'Triagem: N/C'}
                       </Badge>
                     )
-                    if (scrStatus === 'completed') return badge
+                    if ((scrStatus as string) === 'completed') return badge
                     return (
                       <Popover>
                         <PopoverTrigger asChild>{badge}</PopoverTrigger>
@@ -558,7 +558,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                   })()}
                 </div>
                 <div className="flex items-center gap-1.5 flex-wrap mt-1">
-                  {currentJob.status === 'Rascunho' && (
+                  {(currentJob.status as string) === 'Rascunho' && (
                     <Badge className="bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 text-status-warning dark:text-status-warning font-semibold whitespace-nowrap text-micro px-1.5 py-0">
                       Rascunho
                     </Badge>
@@ -578,24 +578,24 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                   <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                     {currentJob.location as string}
                   </Badge>
-                  {currentJob.salary && (currentJob.salary as string) !== 'A combinar' && (
+                  {!!(currentJob.salary) && (currentJob.salary as string) !== 'A combinar' && (
                     <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       {currentJob.salary as string}
                     </Badge>
                   )}
-                  {currentJob.publishedLinkedIn && (
+                  {!!(currentJob.publishedLinkedIn) && (
                     <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       Publicada
                     </Badge>
                   )}
                   <span className="text-micro text-lia-text-disabled dark:text-lia-text-tertiary mx-0.5">|</span>
-                  {currentJob.openDate && (
+                  {!!(currentJob.openDate) && (
                     <span className="text-micro text-lia-text-secondary dark:text-lia-text-secondary whitespace-nowrap">
                       <Calendar className="w-3 h-3 inline mr-0.5 -mt-0.5" />
                       {new Date(currentJob.openDate as string).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </span>
                   )}
-                  {currentJob.openDate && (() => {
+                  {!!(currentJob.openDate) && (() => {
                     const days = Math.floor((Date.now() - new Date(currentJob.openDate as string).getTime()) / (1000 * 60 * 60 * 24))
                     if (days <= 0) return null
                     const isLate = days > 30
@@ -605,27 +605,27 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                       </span>
                     )
                   })()}
-                  {currentJob.updatedAt && (
+                  {!!(currentJob.updatedAt) && (
                     <span className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary whitespace-nowrap">
-                      Atualizada: {new Date(currentJob.updatedAt).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
+                      Atualizada: {new Date(currentJob.updatedAt as string).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
                     </span>
                   )}
-                  {currentJob.deadlineScreening && (
+                  {!!(currentJob.deadlineScreening) && (
                     <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       <Calendar className="w-3 h-3 mr-0.5" />
-                      Prazo triagem: {new Date(currentJob.deadlineScreening).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
+                      Prazo triagem: {new Date(currentJob.deadlineScreening as string).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
                     </Badge>
                   )}
-                  {currentJob.deadlineShortlist && (
+                  {!!(currentJob.deadlineShortlist) && (
                     <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       <Calendar className="w-3 h-3 mr-0.5" />
-                      Prazo short: {new Date(currentJob.deadlineShortlist).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
+                      Prazo short: {new Date(currentJob.deadlineShortlist as string).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
                     </Badge>
                   )}
-                  {currentJob.deadlineClosing && (
+                  {!!(currentJob.deadlineClosing) && (
                     <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       <Calendar className="w-3 h-3 mr-0.5" />
-                      Encerramento: {new Date(currentJob.deadlineClosing).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
+                      Encerramento: {new Date(currentJob.deadlineClosing as string).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
                     </Badge>
                   )}
                   {computedSuggestions.length > 0 && (
@@ -975,7 +975,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                         if (searchQuery) {
                           const query = searchQuery.toLowerCase()
                           const matchesSearch = 
-                            (candidate.name as string | undefined)?.toLowerCase() ?? ''.includes(query) ||
+                            ((candidate.name as string | undefined)?.toLowerCase() ?? '').includes(query) ||
                             (candidate.role as string | undefined)?.toLowerCase().includes(query) ||
                             (candidate.company as string | undefined)?.toLowerCase().includes(query) ||
                             (candidate.location as string | undefined)?.toLowerCase().includes(query) ||
@@ -990,7 +990,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
 
                         // Filtro de Status
                         if (kanbanStatusFilter.length > 0 && candidate.status) {
-                          const candidateStatus = (candidate.status as string | undefined)?.toLowerCase() ?? ''.replace(/ /g, '_')
+                          const candidateStatus = ((candidate.status as string | undefined)?.toLowerCase() ?? '').replace(/ /g, '_')
                           if (!kanbanStatusFilter.includes(candidateStatus)) return false
                         }
 
@@ -1032,7 +1032,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                       setSelectedCandidates(new Set())
                     } else {
                       // Selecionar todos os visíveis
-                      const allIds = new Set(visibleCandidates.map(c => c.id))
+                      const allIds = new Set(visibleCandidates.map(c => c.id as string))
                       setSelectedCandidates(allIds)
                     }
                   }}
@@ -1049,7 +1049,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                         if (searchQuery) {
                           const query = searchQuery.toLowerCase()
                           const matchesSearch = 
-                            (candidate.name as string | undefined)?.toLowerCase() ?? ''.includes(query) ||
+                            ((candidate.name as string | undefined)?.toLowerCase() ?? '').includes(query) ||
                             (candidate.role as string | undefined)?.toLowerCase().includes(query) ||
                             (candidate.company as string | undefined)?.toLowerCase().includes(query) ||
                             (candidate.location as string | undefined)?.toLowerCase().includes(query) ||
@@ -1064,7 +1064,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
 
                         // Filtro de Status
                         if (kanbanStatusFilter.length > 0 && candidate.status) {
-                          const candidateStatus = (candidate.status as string | undefined)?.toLowerCase() ?? ''.replace(/ /g, '_')
+                          const candidateStatus = ((candidate.status as string | undefined)?.toLowerCase() ?? '').replace(/ /g, '_')
                           if (!kanbanStatusFilter.includes(candidateStatus)) return false
                         }
 
@@ -1242,7 +1242,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
             {/* LIA Sidebar Unificada - Visível em ambos os modos (Kanban e Tabela) */}
             {showExpandedLIA && !showSuperChat && (
               <KanbanLIASidebar
-                liaMessages={liaMessages}
+                liaMessages={liaMessages as unknown as Parameters<typeof KanbanLIASidebar>[0]["liaMessages"]}
                 liaPromptValue={liaPromptValue}
                 isLiaLoading={isLiaLoading}
                 liaExpandedWidth={liaExpandedWidth}
@@ -1250,9 +1250,9 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                 showLiaSuggestionsPanel={showLiaSuggestionsPanel}
                 selectedCandidates={selectedCandidates}
                 isResizingLIA={isResizingLIA}
-                candidatesData={candidatesData}
-                chatScrollRef={chatScrollRef}
-                setLiaMessages={setLiaMessages}
+                candidatesData={candidatesData as unknown as Parameters<typeof KanbanLIASidebar>[0]["candidatesData"]}
+                chatScrollRef={chatScrollRef as unknown as Parameters<typeof KanbanLIASidebar>[0]["chatScrollRef"]}
+                setLiaMessages={setLiaMessages as unknown as Parameters<typeof KanbanLIASidebar>[0]["setLiaMessages"]}
                 setLiaPromptValue={setLiaPromptValue}
                 setLiaExpandedWidth={setLiaExpandedWidth}
                 setShowExpandedLIA={setShowExpandedLIA}
@@ -1349,14 +1349,15 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                       <AddColumnPopover
                         isOpen={showAddColumnPopover}
                         onClose={() => setShowAddColumnPopover(false)}
-                        dynamicStages={dynamicStages}
+                        dynamicStages={dynamicStages as unknown as Parameters<typeof AddColumnPopover>[0]["dynamicStages"]}
                         isAddingColumn={isAddingColumn}
                         onSetIsAddingColumn={setIsAddingColumn}
                         onAddStage={(stage) => {
+                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
                           setDynamicStages(prev => {
                             const finalStages = prev.filter(s => s.isFinal || s.isHired || s.isRejection)
                             const activeStages = prev.filter(s => !s.isFinal && !s.isHired && !s.isRejection)
-                            return [...activeStages, stage, ...finalStages]
+                            return [...activeStages, stage as unknown as typeof prev[0], ...finalStages]
                           })
                           setCandidatesData(prev => ({ ...prev, [stage.id]: [] }))
                         }}
@@ -1398,7 +1399,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                     onToggleFavorite={handleToggleFavorite}
                     onWSIScreening={handleSendWSIInvite}
                     onOpenTriagemDetails={handleOpenTriagem}
-                    isFavorite={previewCandidate ? favoriteCandidates.has(previewCandidate.id) : false}
+                    isFavorite={previewCandidate ? favoriteCandidates.has(previewCandidate.id as string) : false}
                     onSendEmail={(candidate) => handleSendEmail(candidate)}
                     onSendWhatsApp={(candidate) => handleSendWhatsApp(candidate)}
                     onSendTriagem={(candidate) => handleSendTriagem(candidate)}
@@ -1429,7 +1430,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                 }}
                 currentPage={currentPage}
                 onCurrentPageChange={setCurrentPage}
-                getPaginatedCandidates={getPaginatedCandidates}
+                getPaginatedCandidates={getPaginatedCandidates as unknown as Parameters<typeof KanbanTableView>[0]["getPaginatedCandidates"]}
                 showColumnConfig={showColumnConfig}
                 onShowColumnConfigChange={setShowColumnConfig}
                 tableColumns={tableColumns}
@@ -1439,33 +1440,33 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                 jobVacancyId={jobData?.id?.toString()}
                 saturationData={saturationData}
                 onColumnResize={handleTableColumnResize}
-                onCandidateClick={handleOpenPreview}
-                onStatusChange={handleInteractiveStatusChange}
-                onTransitionRequest={handleTableTransitionRequest}
-                onTransitionRequired={handleTransitionRequired}
+                onCandidateClick={handleOpenPreview as unknown as Parameters<typeof KanbanTableView>[0]["onCandidateClick"]}
+                onStatusChange={handleInteractiveStatusChange as unknown as Parameters<typeof KanbanTableView>[0]["onStatusChange"]}
+                onTransitionRequest={handleTableTransitionRequest as unknown as Parameters<typeof KanbanTableView>[0]["onTransitionRequest"]}
+                onTransitionRequired={handleTransitionRequired as unknown as Parameters<typeof KanbanTableView>[0]["onTransitionRequired"]}
                 calculateNotaLiaGeral={calculateNotaLiaGeral}
                 getLiaAlerts={getLiaAlerts}
                 viewedCandidateIds={viewedCandidateIds}
                 onOpenTriagem={handleOpenTriagem}
-                onOpenAnalysis={handleOpenAnalysis}
+                onOpenAnalysis={handleOpenAnalysis as unknown as Parameters<typeof KanbanTableView>[0]["onOpenAnalysis"]}
                 onSetSelectedCandidateForModal={setSelectedCandidateForModal}
-                onSetActiveModal={setActiveModal}
+                onSetActiveModal={setActiveModal as unknown as Parameters<typeof KanbanTableView>[0]["onSetActiveModal"]}
                 onSetShowBigFiveModal={setShowBigFiveModal}
                 onSetScoreModalCandidate={setScoreModalCandidate}
-                getDataRequestForCandidate={getDataRequestForCandidate}
+                getDataRequestForCandidate={getDataRequestForCandidate as unknown as Parameters<typeof KanbanTableView>[0]["getDataRequestForCandidate"]}
                 onDataRequestResend={handleDataRequestResend}
                 onDataRequestViewDetails={handleDataRequestViewDetails}
-                onApproveFromScreening={handleApproveFromScreening}
-                onRejectFromScreening={handleRejectFromScreening}
-                onApproveCandidate={handleApproveCandidate}
-                onRejectCandidate={handleRejectCandidate}
-                openDecisionFlowModal={openDecisionFlowModal}
+                onApproveFromScreening={handleApproveFromScreening as unknown as Parameters<typeof KanbanTableView>[0]["onApproveFromScreening"]}
+                onRejectFromScreening={handleRejectFromScreening as unknown as Parameters<typeof KanbanTableView>[0]["onRejectFromScreening"]}
+                onApproveCandidate={handleApproveCandidate as unknown as Parameters<typeof KanbanTableView>[0]["onApproveCandidate"]}
+                onRejectCandidate={handleRejectCandidate as unknown as Parameters<typeof KanbanTableView>[0]["onRejectCandidate"]}
+                openDecisionFlowModal={openDecisionFlowModal as unknown as Parameters<typeof KanbanTableView>[0]["openDecisionFlowModal"]}
                 onSetTransitionInitialPrompt={setTransitionInitialPrompt}
                 onSetTransitionAllowStageSelection={setTransitionAllowStageSelection}
                 onSetTransitionInterviewAlert={setTransitionInterviewAlert}
-                openTransition={openTransition}
+                openTransition={openTransition as unknown as Parameters<typeof KanbanTableView>[0]["openTransition"]}
                 isPreviewOpen={isPreviewOpen}
-                previewCandidate={previewCandidate}
+                previewCandidate={previewCandidate as unknown as Parameters<typeof KanbanTableView>[0]["previewCandidate"]}
                 isPreviewMaximized={isPreviewMaximized}
                 onClosePreview={handleClosePreview}
                 onTogglePreviewMaximize={handleTogglePreviewMaximize}
@@ -1473,15 +1474,15 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                 onCandidatePageOpen={handleCandidatePageOpen}
                 onScheduleInterview={handleScheduleInterview}
                 onAddToVacancy={handleAddToVacancy}
-                onToggleFavorite={handleToggleFavorite}
+                onToggleFavorite={handleToggleFavorite as unknown as Parameters<typeof KanbanTableView>[0]["onToggleFavorite"]}
                 favoriteCandidates={favoriteCandidates}
                 onSendWSIInvite={handleSendWSIInvite}
                 onSendEmail={handleSendEmail}
                 onSendWhatsApp={handleSendWhatsApp}
-                onSendTriagem={handleSendTriagem}
-                onSendAgendamento={handleSendAgendamento}
-                onSendFeedback={handleSendFeedback}
-                candidatesData={candidatesData}
+                onSendTriagem={handleSendTriagem as unknown as Parameters<typeof KanbanTableView>[0]["onSendTriagem"]}
+                onSendAgendamento={handleSendAgendamento as unknown as Parameters<typeof KanbanTableView>[0]["onSendAgendamento"]}
+                onSendFeedback={handleSendFeedback as unknown as Parameters<typeof KanbanTableView>[0]["onSendFeedback"]}
+                candidatesData={candidatesData as unknown as Parameters<typeof KanbanTableView>[0]["candidatesData"]}
               />
             )}
           </div>

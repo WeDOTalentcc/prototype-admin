@@ -109,11 +109,11 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
       {/* Modal de Detalhes da Triagem */}
       {isTriagemOpen && triagemCandidate && (
         <TriagemDetailsModal
-          candidate={triagemCandidate}
+          candidate={triagemCandidate as unknown as never}
           isOpen={isTriagemOpen}
           onClose={handleCloseTriagem}
-          onApprove={handleTriagemApprove}
-          onReject={handleTriagemReject}
+          onApprove={handleTriagemApprove as unknown as never}
+          onReject={handleTriagemReject as unknown as never}
         />
       )}
 
@@ -122,14 +122,14 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
         open={showTestLibrary}
         onClose={() => setShowTestLibrary(false)}
         onTestPreview={() => setShowTestPreview(true)}
-        onTestHistoryOpen={(testName) => { setSelectedTestForHistory(testName); setShowTestHistory(true) }}
+        onTestHistoryOpen={(testName) => { (setSelectedTestForHistory as unknown as (v: string) => void)(testName); setShowTestHistory(true) }}
       />
 
       {/* Modal de Histórico do Teste */}
       <TestHistoryModal
         open={showTestHistory}
         onClose={() => setShowTestHistory(false)}
-        testName={selectedTestForHistory}
+        testName={selectedTestForHistory as unknown as Parameters<typeof TestHistoryModal>[0]["testName"]}
       />
 
       {/* Painel Lateral de Sugestões da LIA */}
@@ -160,13 +160,13 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
           }}
           candidate={{
             id: String(emailCandidate.id),
-            name: emailCandidate.name || '',
-            email: emailCandidate.email || `${(emailCandidate.name || 'candidato')?.toLowerCase().replace(/\s+/g, '.')}@email.com`,
-            current_title: emailCandidate.role || emailCandidate.current_title || '',
-            current_company: emailCandidate.currentCompany || emailCandidate.current_company || '',
-            location_city: emailCandidate.location?.split(',')[0]?.trim() || emailCandidate.location_city || '',
-            location_state: emailCandidate.location?.split(',')[1]?.trim() || emailCandidate.location_state || '',
-          } as Record<string, unknown>}
+            name: (emailCandidate.name as string) || '',
+            email: (emailCandidate.email as string | undefined) || `${((emailCandidate.name as string) || 'candidato')?.toLowerCase().replace(/\s+/g, '.')}@email.com`,
+            current_title: (emailCandidate.role as string | undefined) || (emailCandidate.current_title as string | undefined) || '',
+            current_company: (emailCandidate.currentCompany as string | undefined) || (emailCandidate.current_company as string | undefined) || '',
+            location_city: (emailCandidate.location as string | undefined)?.split(',')[0]?.trim() || (emailCandidate.location_city as string | undefined) || '',
+            location_state: (emailCandidate.location as string | undefined)?.split(',')[1]?.trim() || (emailCandidate.location_state as string | undefined) || '',
+          } as unknown as Parameters<typeof SendEmailModal>[0]["candidate"]}
           onSuccess={() => {
             setShowEmailModal(false)
             setEmailCandidate(null)
@@ -179,17 +179,17 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
         isOpen={unifiedModalOpen}
         onClose={handleUnifiedModalClose}
         candidate={unifiedModalCandidate ? {
-          id: unifiedModalCandidate.id,
-          name: unifiedModalCandidate.name,
-          role: unifiedModalCandidate.role || unifiedModalCandidate.current_title || '',
-          email: unifiedModalCandidate.email,
-          phone: unifiedModalCandidate.phone,
-          location: unifiedModalCandidate.location,
-          avatar: unifiedModalCandidate.avatar,
-          score: unifiedModalCandidate.score || unifiedModalCandidate.fitScore,
-          matchPercentage: unifiedModalCandidate.score || unifiedModalCandidate.fitScore,
-          skills: unifiedModalCandidate.skills
-        } : null}
+          id: unifiedModalCandidate.id as string,
+          name: unifiedModalCandidate.name as string,
+          role: (unifiedModalCandidate.role as string | undefined) || (unifiedModalCandidate.current_title as string | undefined) || '',
+          email: unifiedModalCandidate.email as string | undefined,
+          phone: unifiedModalCandidate.phone as string | undefined,
+          location: unifiedModalCandidate.location as string | undefined,
+          avatar: unifiedModalCandidate.avatar as string | undefined,
+          score: (unifiedModalCandidate.score || unifiedModalCandidate.fitScore) as number | undefined,
+          matchPercentage: (unifiedModalCandidate.score || unifiedModalCandidate.fitScore) as number | undefined,
+          skills: unifiedModalCandidate.skills as unknown[]
+        } as unknown as Parameters<typeof UnifiedCommunicationModal>[0]["candidate"] : null}
         type={unifiedModalType}
         situation={unifiedModalSituation}
         companyId="demo"
@@ -210,10 +210,10 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
                 const candidate = allCandidates.find(c => c.id === id)
                 return {
                   id,
-                  name: candidate?.name || 'Candidato',
-                  email: candidate?.email,
-                  phone: candidate?.phone,
-                  avatar: candidate?.avatar
+                  name: (candidate?.name as string | undefined) || 'Candidato',
+                  email: candidate?.email as string | undefined,
+                  phone: candidate?.phone as string | undefined,
+                  avatar: candidate?.avatar as string | undefined
                 }
               })
             : []
@@ -243,7 +243,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
             setShowWSIModal(false)
             setWsiCandidate(null)
           }}
-          candidate={wsiCandidate}
+          candidate={wsiCandidate as unknown as Parameters<typeof WSITextScreeningModal>[0]["candidate"]}
           jobVacancyId={jobData.id?.toString()}
           jobTitle={jobData.title}
         />
@@ -256,16 +256,16 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
           setShowWSIInviteModal(false)
           setWsiInviteCandidate(null)
         }}
-        candidate={wsiInviteCandidate}
-        jobTitle={currentJob.title}
-        jobId={currentJob.id?.toString()}
+        candidate={wsiInviteCandidate as unknown as Parameters<typeof WSITriagemInviteModal>[0]["candidate"]}
+        jobTitle={currentJob.title as string | undefined}
+        jobId={(currentJob.id as string | number | undefined)?.toString()}
         screeningQuestions={
-          currentJob.screening_questions && currentJob.screening_questions.length > 0
-            ? currentJob.screening_questions.map((q: Record<string, unknown>, idx: number) => ({
-                id: q.id || `q-${idx}`,
-                question: q.question || q.text || q,
-                category: q.category || q.type || 'Triagem',
-                bloomLevel: q.bloom_level || q.bloomLevel
+          currentJob.screening_questions && (currentJob.screening_questions as unknown[]).length > 0
+            ? (currentJob.screening_questions as Record<string, unknown>[]).map((q: Record<string, unknown>, idx: number) => ({
+                id: (q.id as string | undefined) || `q-${idx}`,
+                question: ((q.question || q.text) as string | undefined) || '',
+                category: ((q.category || q.type) as string | undefined) || 'Triagem',
+                bloomLevel: (q.bloom_level || q.bloomLevel) as string | undefined
               }))
             : [
                 ...perguntasEliminatorias.map((q, idx) => ({
@@ -294,8 +294,8 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
           setShowAddToVacancyModal(false)
           setCandidateForVacancy(null)
         }}
-        candidateIds={candidateForVacancy ? [candidateForVacancy.id] : []}
-        candidateNames={candidateForVacancy ? [candidateForVacancy.name] : []}
+        candidateIds={candidateForVacancy ? [candidateForVacancy.id as string] : []}
+        candidateNames={candidateForVacancy ? [(candidateForVacancy.name as string) || ''] : []}
         currentRecruiterEmail={user?.email}
         onSuccess={() => {
           toast({
@@ -310,18 +310,18 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
         isOpen={showRubricModal}
         onClose={handleRubricModalClose}
         evaluation={rubricEvaluationData}
-        candidateId={rubricCandidate?.id || ''}
-        candidateName={rubricCandidate?.name}
+        candidateId={(rubricCandidate?.id as string) || ''}
+        candidateName={rubricCandidate?.name as string | undefined}
         jobId={jobData?.id?.toString() || ''}
         onApprove={async (candidateId: string, jobId: string) => {
           if (rubricCandidate) {
-            await handleApproveCandidate(rubricCandidate)
+            await handleApproveCandidate(rubricCandidate as unknown as Parameters<typeof handleApproveCandidate>[0])
             handleRubricModalClose()
           }
         }}
         onReject={async (candidateId: string, jobId: string) => {
           if (rubricCandidate) {
-            await handleRejectCandidate(rubricCandidate)
+            await handleRejectCandidate(rubricCandidate as unknown as Parameters<typeof handleRejectCandidate>[0])
             handleRubricModalClose()
           }
         }}
@@ -335,7 +335,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
           setSelectedCandidateForModal(null)
           setScoreModalCandidate(null)
         }}
-        candidate={selectedCandidateForModal || scoreModalCandidate}
+        candidate={(selectedCandidateForModal || scoreModalCandidate) as unknown as never}
       />
 
       {decisionFlowCandidate && (
@@ -346,15 +346,15 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
             setDecisionFlowCandidate(null)
           }}
           candidate={{
-            id: decisionFlowCandidate.id,
-            name: decisionFlowCandidate.name,
-            role: decisionFlowCandidate.role || decisionFlowCandidate.cargo,
-            currentCompany: decisionFlowCandidate.currentCompany || decisionFlowCandidate.empresa,
-            avatar: decisionFlowCandidate.avatar,
-            email: decisionFlowCandidate.email,
-            phone: decisionFlowCandidate.phone || decisionFlowCandidate.telefone,
+            id: decisionFlowCandidate.id as string,
+            name: decisionFlowCandidate.name as string,
+            role: (decisionFlowCandidate.role as string | undefined) || (decisionFlowCandidate.cargo as string | undefined),
+            currentCompany: (decisionFlowCandidate.currentCompany as string | undefined) || (decisionFlowCandidate.empresa as string | undefined),
+            avatar: decisionFlowCandidate.avatar as string | undefined,
+            email: decisionFlowCandidate.email as string | undefined,
+            phone: (decisionFlowCandidate.phone as string | undefined) || (decisionFlowCandidate.telefone as string | undefined),
             hasWhatsApp: decisionFlowCandidate.hasWhatsApp !== false,
-            stage: decisionFlowCandidate.stage || decisionFlowCandidate.etapa,
+            stage: (decisionFlowCandidate.stage as string | undefined) || (decisionFlowCandidate.etapa as string | undefined),
           }}
           flowType={decisionFlowType}
           onConfirm={handleDecisionFlowConfirm}
@@ -363,7 +363,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
             setUnifiedModalType('feedback')
             setUnifiedModalSituation('feedback_construtivo')
             setUnifiedModalOpen(true)
-            handleRejectCandidate(decisionFlowCandidate)
+            handleRejectCandidate(decisionFlowCandidate as unknown as Parameters<typeof handleRejectCandidate>[0])
           }}
         />
       )}
@@ -407,12 +407,12 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
               {/* Candidato Info */}
               <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
                 <Avatar className="w-10 h-10">
-                  <AvatarImage src={pendingMove.candidate.avatar} alt={pendingMove.candidate.name} />
-                  <AvatarFallback>{pendingMove.candidate.name?.split(' ').map((n: string) => n[0]).join('') || 'C'}</AvatarFallback>
+                  <AvatarImage src={pendingMove.candidate.avatar as string | undefined} alt={pendingMove.candidate.name as string} />
+                  <AvatarFallback>{(pendingMove.candidate.name as string | undefined)?.split(' ').map((n: string) => n[0]).join('') || 'C'}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium text-lia-text-primary dark:text-lia-text-primary">{pendingMove.candidate.name}</p>
-                  <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">{pendingMove.candidate.role || pendingMove.candidate.cargo || 'Candidato'}</p>
+                  <p className="font-medium text-lia-text-primary dark:text-lia-text-primary">{pendingMove.candidate.name as string}</p>
+                  <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">{((pendingMove.candidate.role as string | undefined) || (pendingMove.candidate.cargo as string | undefined) || 'Candidato')}</p>
                 </div>
               </div>
 
@@ -537,7 +537,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
                     {activeModal === 'testeTecnico' && 'Teste Técnico'}
                     {activeModal === 'testeIngles' && 'Teste Inglês'}
                   </h2>
-                  <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">{selectedCandidateForModal.name}</p>
+                  <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">{selectedCandidateForModal.name as string}</p>
                 </div>
               </div>
               <button
@@ -559,7 +559,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
                   <div className="text-center py-8">
                     <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gray-100 dark:bg-lia-bg-secondary mb-4">
                       <span className="text-4xl font-bold text-lia-text-primary dark:text-lia-text-primary">
-                        {calculateNotaLiaGeral(selectedCandidateForModal)}
+                        {calculateNotaLiaGeral(selectedCandidateForModal as unknown as Parameters<typeof calculateNotaLiaGeral>[0])}
                       </span>
                     </div>
                     <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">Pontuação Geral do Candidato</p>
@@ -568,28 +568,28 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
                     <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
                       <p className="text-xs text-lia-text-tertiary mb-1">Nota Triagem</p>
                       <p className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary">
-                        {formatScorePercent(selectedCandidateForModal.liaScore ?? selectedCandidateForModal.score, 0)}
+                        {formatScorePercent((selectedCandidateForModal.liaScore ?? selectedCandidateForModal.score) as number | null | undefined, 0)}
                       </p>
                     </div>
                     <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
                       <p className="text-xs text-lia-text-tertiary mb-1">Nota CV</p>
                       <p className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary">
-                        {formatScorePercent(selectedCandidateForModal.skillsMatch || selectedCandidateForModal.fitScore || 0, 0)}
+                        {formatScorePercent((selectedCandidateForModal.skillsMatch as number | undefined) || (selectedCandidateForModal.fitScore as number | undefined) || 0, 0)}
                       </p>
                     </div>
                     <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
                       <p className="text-xs text-lia-text-tertiary mb-1">Teste Técnico</p>
                       <p className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary">
-                        {selectedCandidateForModal.technicalTestScore !== null && selectedCandidateForModal.technicalTestScore !== undefined 
-                          ? formatScorePercent(selectedCandidateForModal.technicalTestScore, 0) 
+                        {(selectedCandidateForModal.technicalTestScore as number | null | undefined) !== null && selectedCandidateForModal.technicalTestScore !== undefined
+                          ? formatScorePercent(selectedCandidateForModal.technicalTestScore as number, 0)
                           : '—'}
                       </p>
                     </div>
                     <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
                       <p className="text-xs text-lia-text-tertiary mb-1">Teste Inglês</p>
                       <p className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary">
-                        {selectedCandidateForModal.englishTestScore !== null && selectedCandidateForModal.englishTestScore !== undefined 
-                          ? formatScorePercent(selectedCandidateForModal.englishTestScore, 0) 
+                        {(selectedCandidateForModal.englishTestScore as number | null | undefined) !== null && selectedCandidateForModal.englishTestScore !== undefined
+                          ? formatScorePercent(selectedCandidateForModal.englishTestScore as number, 0)
                           : '—'}
                       </p>
                     </div>
@@ -602,11 +602,10 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
                 <div className="space-y-6">
                   <div className="text-center py-6">
                     <div 
-                      className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4"
-                      className="bg-[var(--gray-100)]"
+                      className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4 bg-[var(--gray-100)]"
                     >
                       <span className="text-3xl font-bold text-lia-text-primary dark:text-lia-text-primary">
-                        {formatScorePercent(selectedCandidateForModal.liaScore ?? selectedCandidateForModal.score, 0)}
+                        {formatScorePercent((selectedCandidateForModal.liaScore ?? selectedCandidateForModal.score) as number | null | undefined, 0)}
                       </span>
                     </div>
                     <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">Score de Triagem LIA</p>
@@ -628,13 +627,13 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
                   <div className="text-center py-6">
                     <div 
                       className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4"
-                      style={{backgroundColor: selectedCandidateForModal.technicalTestScore >= 80 ? 'var(--status-success)' :
-                                         selectedCandidateForModal.technicalTestScore >= 60 ? 'var(--status-warning)' :
-                                         selectedCandidateForModal.technicalTestScore >= 40 ? 'var(--gray-400)' :
+                      style={{backgroundColor: (selectedCandidateForModal.technicalTestScore as number) >= 80 ? 'var(--status-success)' :
+                                         (selectedCandidateForModal.technicalTestScore as number) >= 60 ? 'var(--status-warning)' :
+                                         (selectedCandidateForModal.technicalTestScore as number) >= 40 ? 'var(--gray-400)' :
                                          'var(--gray-400)'}}
                     >
                       <span className="text-3xl font-bold text-lia-text-primary dark:text-lia-text-primary">
-                        {formatScorePercent(selectedCandidateForModal.technicalTestScore, 0)}
+                        {formatScorePercent(selectedCandidateForModal.technicalTestScore as number | null | undefined, 0)}
                       </span>
                     </div>
                     <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">Resultado do Teste Técnico</p>
@@ -656,13 +655,13 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
                   <div className="text-center py-6">
                     <div 
                       className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4"
-                      style={{backgroundColor: selectedCandidateForModal.englishTestScore >= 80 ? 'var(--status-success)' :
-                                         selectedCandidateForModal.englishTestScore >= 60 ? 'var(--gray-300)' :
-                                         selectedCandidateForModal.englishTestScore >= 40 ? 'var(--gray-400)' :
+                      style={{backgroundColor: (selectedCandidateForModal.englishTestScore as number) >= 80 ? 'var(--status-success)' :
+                                         (selectedCandidateForModal.englishTestScore as number) >= 60 ? 'var(--gray-300)' :
+                                         (selectedCandidateForModal.englishTestScore as number) >= 40 ? 'var(--gray-400)' :
                                          'var(--gray-400)'}}
                     >
                       <span className="text-3xl font-bold text-lia-text-primary dark:text-lia-text-primary">
-                        {formatScorePercent(selectedCandidateForModal.englishTestScore, 0)}
+                        {formatScorePercent(selectedCandidateForModal.englishTestScore as number | null | undefined, 0)}
                       </span>
                     </div>
                     <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">Resultado do Teste de Inglês</p>
@@ -699,17 +698,17 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
       <GeneralScoreModal
         isOpen={showGeneralScoreModal}
         onClose={() => setShowGeneralScoreModal(false)}
-        candidate={scoreModalCandidate}
+        candidate={scoreModalCandidate as unknown as Parameters<typeof GeneralScoreModal>[0]["candidate"]}
       />
       <TechnicalTestModal
         isOpen={showTechnicalTestModal}
         onClose={() => setShowTechnicalTestModal(false)}
-        candidate={scoreModalCandidate}
+        candidate={scoreModalCandidate as unknown as Parameters<typeof TechnicalTestModal>[0]["candidate"]}
       />
       <EnglishTestModal
         isOpen={showEnglishTestModal}
         onClose={() => setShowEnglishTestModal(false)}
-        candidate={scoreModalCandidate}
+        candidate={scoreModalCandidate as unknown as Parameters<typeof EnglishTestModal>[0]["candidate"]}
       />
 
       {/* D9 — Modal de Análise Comparativa */}
@@ -729,9 +728,9 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
             onClick={() => {
               const selectedIds = Array.from(selectedForCompare)
               const resolvedCandidates = allTableCandidates
-                .filter(c => selectedIds.includes(c.id))
-                .map(c => ({ id: c.id, name: c.name }))
-              setCompareCandidates(resolvedCandidates)
+                .filter(c => selectedIds.includes(c.id as string))
+.map(c => ({ id: c.id as string, name: (c.name as string) || '' }))
+              setCompareCandidates(resolvedCandidates as unknown as Parameters<typeof setCompareCandidates>[0])
               setShowCompareModal(true)
               setSelectedForCompare(new Set())
             }}
@@ -760,8 +759,8 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
         subStatusOptions={universalModalState.subStatusOptions}
         onConfirm={handleUniversalTransitionConfirm}
         onOpenSpecializedModal={handleOpenSpecializedModal}
-        companyId={user?.company}
-        jobTitle={job?.title}
+        companyId={user?.company as string | undefined}
+        jobTitle={currentJob?.title as string | undefined}
         initialPrompt={transitionInitialPrompt}
         availableStages={dynamicStages.map(s => ({ id: s.id, displayName: s.displayName, actionBehavior: s.actionBehavior }))}
         allowStageSelection={transitionAllowStageSelection}
@@ -777,13 +776,13 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
             setDataRequestModalCandidate(null)
           }}
           candidates={[{
-            id: dataRequestModalCandidate.id,
-            name: dataRequestModalCandidate.name,
-            email: dataRequestModalCandidate.email,
-            phone: dataRequestModalCandidate.phone,
-            avatar: dataRequestModalCandidate.avatar
+            id: dataRequestModalCandidate.id as string,
+            name: dataRequestModalCandidate.name as string,
+            email: dataRequestModalCandidate.email as string | undefined,
+            phone: dataRequestModalCandidate.phone as string | undefined,
+            avatar: dataRequestModalCandidate.avatar as string | undefined
           }]}
-          jobTitle={job?.title}
+          jobTitle={currentJob?.title as string | undefined}
           onSubmit={handleDataRequestSubmit}
         />
       )}
@@ -795,29 +794,29 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
           onClose={() => setShowBulkActionModal(false)}
           actionType={bulkActionType}
           candidates={allTableCandidates
-            .filter(c => selectedCandidates.has(c.id))
+            .filter(c => selectedCandidates.has(c.id as string))
             .map(c => ({
-              id: c.id,
-              name: c.name || '',
-              email: c.email,
-              avatar: c.avatar || c.avatar_url,
-              currentStage: c.stage
-            }))}
+              id: c.id as string,
+              name: (c.name as string | undefined) || '',
+              email: c.email as string | undefined,
+              avatar: (c.avatar as string | undefined) || (c.avatar_url as string | undefined),
+              currentStage: c.stage as string | undefined
+            })) as unknown as Parameters<typeof BulkActionModal>[0]["candidates"]}
           stages={dynamicStages.map(s => ({
             name: s.name,
             displayName: s.displayName,
-            stageOrder: s.order,
+            stageOrder: (s as unknown as Record<string, unknown>).order as number || 0,
             color: s.color,
             stageType: s.stageType,
             isInitial: s.isInitial,
             isFinal: s.isFinal,
             isHired: s.isHired,
             isRejection: s.isRejection,
-            icon: (s as Record<string, unknown>).icon || '',
-            stageCategory: (s as Record<string, unknown>).stageCategory || 'active',
-            allowedTransitions: (s as Record<string, unknown>).allowedTransitions || []
-          }))}
-          jobTitle={job?.title}
+            icon: (s as unknown as Record<string, unknown>).icon || '',
+            stageCategory: (s as unknown as Record<string, unknown>).stageCategory || 'active',
+            allowedTransitions: (s as unknown as Record<string, unknown>).allowedTransitions || []
+          })) as unknown as Parameters<typeof BulkActionModal>[0]["stages"]}
+          jobTitle={currentJob?.title as string | undefined}
           onExecute={handleBulkActionExecute}
         />
       )}
@@ -829,8 +828,8 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
           onClose={() => setShowJobStatusModal(false)}
           jobs={[{
             id: String(currentJob.backendId || currentJob.jobId || currentJob.id),
-            title: currentJob.title || '',
-            status: currentJob.status || '',
+            title: (currentJob.title as string) || '',
+            status: (currentJob.status as string) || '',
             candidates_count: Object.values(candidatesData).flat().length,
           }]}
           candidates={Object.entries(candidatesData)
@@ -838,9 +837,9 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
             .flatMap(([stageId, cands]: [string, Record<string, unknown>[]]) =>
               (cands as Record<string, unknown>[]).map((c: Record<string, unknown>) => ({
                 id: String(c.id),
-                name: c.name || 'Candidato',
-                email: c.email,
-                phone: c.phone,
+                name: (c.name as string | undefined) || 'Candidato',
+                email: c.email as string | undefined,
+                phone: c.phone as string | undefined,
                 stage: stageId,
                 jobId: String(currentJob.backendId || currentJob.jobId || currentJob.id),
               }))
@@ -858,16 +857,16 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
       {showCloseVacancyModal && (() => {
         const hiredList: Record<string, unknown>[] = candidatesData.hired || []
         const hiredCandidate = hiredList[0]
-          ? { id: String(hiredList[0].id), name: hiredList[0].name || 'Candidato', email: hiredList[0].email, phone: hiredList[0].phone }
+          ? { id: String(hiredList[0].id), name: (hiredList[0].name as string | undefined) || 'Candidato', email: hiredList[0].email as string | undefined, phone: hiredList[0].phone as string | undefined }
           : { id: '', name: '—', email: undefined as string | undefined, phone: undefined as string | undefined }
         const otherCandidates = Object.entries(candidatesData)
           .filter(([stageId]) => stageId !== 'hired')
           .flatMap(([stageId, cands]: [string, Record<string, unknown>[]]) =>
             (cands as Record<string, unknown>[]).map((c: Record<string, unknown>) => ({
               id: String(c.id),
-              name: c.name || 'Candidato',
-              email: c.email,
-              phone: c.phone,
+              name: (c.name as string | undefined) || 'Candidato',
+              email: c.email as string | undefined,
+              phone: c.phone as string | undefined,
               stage: stageId,
             }))
           )
@@ -877,8 +876,8 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
             onClose={() => setShowCloseVacancyModal(false)}
             vacancy={{
               id: String(currentJob.backendId || currentJob.jobId || currentJob.id),
-              title: currentJob.title || '',
-              department: currentJob.department,
+              title: (currentJob.title as string) || '',
+              department: currentJob.department as string | undefined,
             }}
             hiredCandidate={hiredCandidate}
             otherCandidates={otherCandidates}
