@@ -621,8 +621,9 @@ app.include_router(user_prefs_router, prefix="/api/v1", tags=["user-preferences"
 from app.api.v1.admin_lgpd import router as admin_lgpd_router
 app.include_router(admin_lgpd_router, prefix="/api/v1")
 
-from app.api.v1.email_tracking import router as email_tracking_router
+from app.api.v1.email_tracking import router as email_tracking_router, communication_webhook_router
 app.include_router(email_tracking_router, prefix="/api/v1", tags=["email-tracking"])
+app.include_router(communication_webhook_router, prefix="/api/v1", tags=["email-tracking"])
 
 from app.api.v1.admin_circuit_breakers import router as admin_cb_router
 app.include_router(admin_cb_router, prefix="/api/v1")

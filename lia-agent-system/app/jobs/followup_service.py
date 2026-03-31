@@ -48,8 +48,15 @@ async def process_email_followups(db: AsyncSession) -> dict[str, int]:
               AND n.created_at < :cutoff
               AND NOT EXISTS (
                   SELECT 1 FROM email_tracking_events e
-                  WHERE e.notification_id = n.id
-                    AND e.event_type IN ('open', 'click')
+                  WHERE (
+                      e.notification_id = n.id
+                      OR e.notification_id IN (
+                          SELECT fn.id::text FROM notifications fn
+                          WHERE fn.source_trigger = 'wsi_followup'
+                            AND fn.extra_data->>'parent_notification_id' = n.id::text
+                      )
+                  )
+                  AND e.event_type IN ('open', 'click')
               )
               AND (
                   n.extra_data->>'last_followup_at' IS NULL

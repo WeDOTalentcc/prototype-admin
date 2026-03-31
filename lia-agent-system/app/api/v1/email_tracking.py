@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db as get_async_db
 
 router = APIRouter(prefix="/email-tracking", tags=["Email Tracking"])
+communication_webhook_router = APIRouter(prefix="/communication/webhook", tags=["Email Tracking"])
 
 _SENDGRID_WEBHOOK_VERIFICATION_KEY = os.getenv("SENDGRID_WEBHOOK_VERIFICATION_KEY", "")
 
@@ -239,6 +240,24 @@ async def tracking_webhook(
                 except Exception as tl_exc:
                     logger.debug("[EmailTracking] template learning update skipped: %s", tl_exc)
 
+                try:
+                    from app.shared.learning.ab_testing_service import ABTestingService
+                    ab_service = ABTestingService()
+                    ab_variant = event.get("ab_variant", "")
+                    ab_test = event.get("ab_test", "")
+                    if ab_test and ab_variant and company_id:
+                        await ab_service.record_metric(
+                            test_name=ab_test,
+                            variant_name=ab_variant,
+                            session_id=sg_message_id,
+                            company_id=company_id,
+                            metric_name=f"email_{mapped_type}",
+                            metric_value=1.0,
+                            db=db,
+                        )
+                except Exception as ab_exc:
+                    logger.debug("[EmailTracking] A/B testing update skipped: %s", ab_exc)
+
             accepted += 1
         except Exception as e:
             errors += 1
@@ -274,3 +293,12 @@ async def get_tracking_stats(
         company_id=company_id,
     )
     return stats
+
+
+@communication_webhook_router.post("/tracking")
+async def communication_webhook_tracking(
+    request: Request,
+    db: AsyncSession = Depends(get_async_db),
+):
+    """Alias route: POST /api/v1/communication/webhook/tracking → tracking_webhook."""
+    return await tracking_webhook(request, db)

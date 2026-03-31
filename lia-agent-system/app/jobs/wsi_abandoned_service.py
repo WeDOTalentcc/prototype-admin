@@ -32,18 +32,17 @@ async def check_abandoned_sessions(db: AsyncSession) -> dict[str, int]:
     now = datetime.now(timezone.utc)
 
     try:
-        # Sessões em progresso com last activity > 48h atrás
         cutoff_first = now - timedelta(hours=FIRST_REMINDER_HOURS)
         result = await db.execute(text("""
             SELECT
                 s.id              AS session_id,
                 s.candidate_id    AS candidate_id,
                 s.job_vacancy_id  AS job_vacancy_id,
-                s.created_at      AS created_at,
+                COALESCE(s.updated_at, s.created_at) AS last_activity,
                 COALESCE(s.metadata->>'reminder_count', '0')::int AS reminder_count
             FROM wsi_sessions s
             WHERE s.status = 'in_progress'
-              AND s.created_at < :cutoff_first
+              AND COALESCE(s.updated_at, s.created_at) < :cutoff_first
         """), {"cutoff_first": cutoff_first})
         rows = result.fetchall()
     except Exception as exc:
@@ -55,7 +54,10 @@ async def check_abandoned_sessions(db: AsyncSession) -> dict[str, int]:
         candidate_id = str(row.candidate_id)
         job_vacancy_id = str(row.job_vacancy_id) if row.job_vacancy_id else None
         reminder_count: int = row.reminder_count
-        age_hours = (now - row.created_at.replace(tzinfo=timezone.utc)).total_seconds() / 3600
+        last_activity = row.last_activity
+        if last_activity.tzinfo is None:
+            last_activity = last_activity.replace(tzinfo=timezone.utc)
+        age_hours = (now - last_activity).total_seconds() / 3600
 
         try:
             if reminder_count >= 3:
