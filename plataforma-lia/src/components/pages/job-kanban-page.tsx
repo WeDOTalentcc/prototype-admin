@@ -44,25 +44,25 @@ const JobReportModal = dynamic(() => import("@/components/job-report-modal").the
   ssr: false,
   loading: () => null,
 })
-import { SendEmailModal } from "@/components/email-templates/send-email-modal"
-import { UnifiedCommunicationModal } from "@/components/modals/unified-communication-modal"
-import { AddToListModal } from "@/components/modals/add-to-list-modal"
-import { WSITextScreeningModal } from "@/components/wsi/wsi-text-screening-modal"
-import { WSITriagemInviteModal } from "@/components/wsi/wsi-triagem-invite-modal"
-import { AddCandidatesToVacancyModal } from "@/components/modals/add-candidates-to-vacancy-modal"
-import { RubricEvaluationModal } from "@/components/rubric-evaluation-modal"
+const SendEmailModal = dynamic(() => import("@/components/email-templates/send-email-modal").then(m => ({ default: m.SendEmailModal })), { ssr: false, loading: () => null })
+const UnifiedCommunicationModal = dynamic(() => import("@/components/modals/unified-communication-modal").then(m => ({ default: m.UnifiedCommunicationModal })), { ssr: false, loading: () => null })
+const AddToListModal = dynamic(() => import("@/components/modals/add-to-list-modal").then(m => ({ default: m.AddToListModal })), { ssr: false, loading: () => null })
+const WSITextScreeningModal = dynamic(() => import("@/components/wsi/wsi-text-screening-modal").then(m => ({ default: m.WSITextScreeningModal })), { ssr: false, loading: () => null })
+const WSITriagemInviteModal = dynamic(() => import("@/components/wsi/wsi-triagem-invite-modal").then(m => ({ default: m.WSITriagemInviteModal })), { ssr: false, loading: () => null })
+const AddCandidatesToVacancyModal = dynamic(() => import("@/components/modals/add-candidates-to-vacancy-modal").then(m => ({ default: m.AddCandidatesToVacancyModal })), { ssr: false, loading: () => null })
+const RubricEvaluationModal = dynamic(() => import("@/components/rubric-evaluation-modal").then(m => ({ default: m.RubricEvaluationModal })), { ssr: false, loading: () => null })
 import { ScoreIconButton } from "@/components/ui/score-icon-button"
 import { ScoreBreakdownBadgeLazy } from "@/components/score/ScoreBreakdownBadge"
-import { GeneralScoreModal } from "@/components/modals/general-score-modal"
-import { TechnicalTestModal } from "@/components/modals/technical-test-modal"
-import { EnglishTestModal } from "@/components/modals/english-test-modal"
-import { CandidateDecisionFlowModal } from "@/components/candidate-decision-flow-modal"
-import { TestPreviewModal } from "@/components/pages/job-kanban/TestPreviewModal"
-import { LIASuggestionsPanel } from "@/components/pages/job-kanban/LIASuggestionsPanel"
-import { TestLibraryModal } from "@/components/pages/job-kanban/TestLibraryModal"
-import { TestHistoryModal } from "@/components/pages/job-kanban/TestHistoryModal"
-import { LIAQuestionsPanel } from "@/components/pages/job-kanban/LIAQuestionsPanel"
-import { CandidateCompareModal } from "@/components/modals/candidate-compare-modal"
+const GeneralScoreModal = dynamic(() => import("@/components/modals/general-score-modal").then(m => ({ default: m.GeneralScoreModal })), { ssr: false, loading: () => null })
+const TechnicalTestModal = dynamic(() => import("@/components/modals/technical-test-modal").then(m => ({ default: m.TechnicalTestModal })), { ssr: false, loading: () => null })
+const EnglishTestModal = dynamic(() => import("@/components/modals/english-test-modal").then(m => ({ default: m.EnglishTestModal })), { ssr: false, loading: () => null })
+const CandidateDecisionFlowModal = dynamic(() => import("@/components/candidate-decision-flow-modal").then(m => ({ default: m.CandidateDecisionFlowModal })), { ssr: false, loading: () => null })
+const TestPreviewModal = dynamic(() => import("@/components/pages/job-kanban/TestPreviewModal").then(m => ({ default: m.TestPreviewModal })), { ssr: false, loading: () => null })
+const LIASuggestionsPanel = dynamic(() => import("@/components/pages/job-kanban/LIASuggestionsPanel").then(m => ({ default: m.LIASuggestionsPanel })), { ssr: false, loading: () => null })
+const TestLibraryModal = dynamic(() => import("@/components/pages/job-kanban/TestLibraryModal").then(m => ({ default: m.TestLibraryModal })), { ssr: false, loading: () => null })
+const TestHistoryModal = dynamic(() => import("@/components/pages/job-kanban/TestHistoryModal").then(m => ({ default: m.TestHistoryModal })), { ssr: false, loading: () => null })
+const LIAQuestionsPanel = dynamic(() => import("@/components/pages/job-kanban/LIAQuestionsPanel").then(m => ({ default: m.LIAQuestionsPanel })), { ssr: false, loading: () => null })
+const CandidateCompareModal = dynamic(() => import("@/components/modals/candidate-compare-modal").then(m => ({ default: m.CandidateCompareModal })), { ssr: false, loading: () => null })
 
 import { AISuggestionBadge } from "@/components/ai"
 import { 
@@ -92,13 +92,14 @@ import {
   STAGE_PASTEL_COLORS as STATUS_BADGE_PASTEL_COLORS
 } from "@/components/ui/status-badge"
 import { OverrideApproveButton } from "@/components/kanban/components/OverrideApproveButton"
-import { DataRequestModal, type DataRequestSubmitData } from "@/components/modals/data-request-modal"
-import { CloseVacancyModal } from "@/components/modals/close-vacancy-modal"
+import type { DataRequestSubmitData } from "@/components/modals/data-request-modal"
+const DataRequestModal = dynamic(() => import("@/components/modals/data-request-modal").then(m => ({ default: m.DataRequestModal })), { ssr: false, loading: () => null })
+const CloseVacancyModal = dynamic(() => import("@/components/modals/close-vacancy-modal").then(m => ({ default: m.CloseVacancyModal })), { ssr: false, loading: () => null })
 const JobStatusModal = dynamic(() => import("@/components/modals/job-status-modal").then(m => ({ default: m.JobStatusModal })), {
   ssr: false,
   loading: () => null,
 })
-import { ShareSearchModal } from "@/components/modals/share-search-modal"
+const ShareSearchModal = dynamic(() => import("@/components/modals/share-search-modal").then(m => ({ default: m.ShareSearchModal })), { ssr: false, loading: () => null })
 import { Checkbox } from "@/components/ui/checkbox"
 import { BulkActionModal } from "@/components/modals/bulk-action-modal"
 import { UnifiedBulkActionsBar, type BulkActionId } from "@/components/ui/unified-bulk-actions-bar"
