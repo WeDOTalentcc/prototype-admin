@@ -1,7 +1,21 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import type { ProactiveAlert } from '@/components/notifications/proactive-alert-toast'
+
+export interface ProactiveAlert {
+  id: string
+  condition: string
+  category: string
+  title: string
+  message: string
+  severity: 'info' | 'warning' | 'urgent' | 'success' | 'action_required'
+  suggestedAction?: string
+  actionLabel?: string
+  data?: Record<string, unknown>
+  timestamp: Date
+  autoDismiss: boolean
+  duration: number
+}
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
 
