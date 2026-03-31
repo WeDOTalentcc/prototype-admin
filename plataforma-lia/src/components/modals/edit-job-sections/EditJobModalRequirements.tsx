@@ -1,0 +1,369 @@
+"use client"
+
+import React from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  DollarSign,
+  Layers,
+  Heart,
+  CheckCircle,
+  Plus,
+  Trash2,
+  Loader2,
+  ClipboardList,
+} from "lucide-react"
+import {
+  inputStyle,
+} from '../edit-job-modal.constants'
+import type { InterviewStage, PipelineTemplate, Job } from '../edit-job/edit-job.types'
+import type { CompanyBenefit } from '@/types/benefits'
+
+interface EditJobModalRequirementsProps {
+  formData: Partial<Job>
+  setFormData: React.Dispatch<React.SetStateAction<Partial<Job>>>
+  newBenefit: string
+  setNewBenefit: (v: string) => void
+  companyBenefits: CompanyBenefit[]
+  addBenefit: () => void
+  removeBenefit: (idx: number) => void
+  // Interview stages
+  newInterviewStageName: string
+  setNewInterviewStageName: (v: string) => void
+  newInterviewStageSLA: string
+  setNewInterviewStageSLA: (v: string) => void
+  newInterviewStageType: string
+  setNewInterviewStageType: (v: string) => void
+  addInterviewStage: () => void
+  removeInterviewStage: (idx: number) => void
+  updateInterviewStage: (idx: number, field: string, value: string | number) => void
+  // Pipeline templates
+  pipelineTemplates: PipelineTemplate[]
+  isLoadingTemplates: boolean
+  selectedTemplateId: string
+  applyPipelineTemplate: (id: string) => void
+  fetchPipelineTemplates: () => void
+}
+
+export function EditJobModalRequirements({
+  formData,
+  setFormData,
+  newBenefit,
+  setNewBenefit,
+  companyBenefits,
+  addBenefit,
+  removeBenefit,
+  newInterviewStageName,
+  setNewInterviewStageName,
+  newInterviewStageSLA,
+  setNewInterviewStageSLA,
+  newInterviewStageType,
+  setNewInterviewStageType,
+  addInterviewStage,
+  removeInterviewStage,
+  updateInterviewStage,
+  pipelineTemplates,
+  isLoadingTemplates,
+  selectedTemplateId,
+  applyPipelineTemplate,
+}: EditJobModalRequirementsProps) {
+  return (
+    <>
+      <section>
+        <div className="flex items-center gap-2 mb-4">
+          <DollarSign className="w-4 h-4 text-lia-text-secondary" />
+          <h3 className="text-base-ui font-semibold text-lia-text-primary">Remuneração</h3>
+        </div>
+        
+        <div className="space-y-4">
+          <div>
+            <Label className="text-xs font-medium text-lia-text-primary mb-1 block">Faixa Salarial</Label>
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <span className="text-micro text-lia-text-tertiary mb-1 block">De</span>
+                <Input
+                  type="number"
+                  value={formData.salaryMin || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, salaryMin: Number(e.target.value) }))}
+                  className={inputStyle}
+                  placeholder="12.000"
+                />
+              </div>
+              <div className="flex-1">
+                <span className="text-micro text-lia-text-tertiary mb-1 block">Até</span>
+                <Input
+                  type="number"
+                  value={formData.salaryMax || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, salaryMax: Number(e.target.value) }))}
+                  className={inputStyle}
+                  placeholder="18.000"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <Label className="text-xs font-medium text-lia-text-primary mb-1 block">Bônus Anual (opcional)</Label>
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <span className="text-micro text-lia-text-tertiary mb-1 block">De</span>
+                <Input
+                  type="number"
+                  value={formData.bonusMin || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, bonusMin: Number(e.target.value) }))}
+                  className={inputStyle}
+                  placeholder="2.000"
+                />
+              </div>
+              <div className="flex-1">
+                <span className="text-micro text-lia-text-tertiary mb-1 block">Até</span>
+                <Input
+                  type="number"
+                  value={formData.bonusMax || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, bonusMax: Number(e.target.value) }))}
+                  className={inputStyle}
+                  placeholder="6.000"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <Label className="text-xs text-lia-text-secondary mb-2 block">Benefícios</Label>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {(formData.benefits || []).map((benefit, idx) => (
+                <Badge
+                  key={idx}
+                  variant="outline"
+                  className="flex items-center gap-1 py-0.5 px-2 text-xs bg-white dark:bg-lia-bg-primary"
+                >
+                  <button
+                    onClick={() => removeBenefit(idx)}
+                    className="text-lia-text-secondary dark:text-lia-text-tertiary hover:text-status-error dark:hover:text-status-error mr-0.5"
+                    type="button"
+                  >
+                    ×
+                  </button>
+                  {benefit}
+                  {companyBenefits.find(cb => cb.name === benefit)?.is_highlighted && (
+                    <Heart className="w-3 h-3 text-wedo-magenta fill-pink-500" />
+                  )}
+                </Badge>
+              ))}
+            </div>
+            {companyBenefits.length > 0 && (
+              <div className="mb-3">
+                <Label className="text-xs text-lia-text-tertiary mb-1.5 block">Sugestões da empresa</Label>
+                <div className="flex flex-wrap gap-1.5">
+                  {companyBenefits.map((benefit) => {
+                    const isAdded = (formData.benefits || []).includes(benefit.name)
+                    return (
+                      <Badge
+                        key={benefit.id}
+                        variant="outline"
+                        className={`text-xs px-2 py-0.5 cursor-pointer transition-colors motion-reduce:transition-none ${
+                          isAdded 
+                            ? 'bg-gray-100 border-gray-900 text-lia-text-primary' 
+                            : 'bg-gray-50 border-lia-border-subtle text-lia-text-secondary hover:bg-gray-100 hover:border-gray-400 hover:text-lia-text-primary'
+                        }`}
+                        onClick={() => {
+                          if (!isAdded) {
+                            setFormData(prev => ({
+                              ...prev,
+                              benefits: [...(prev.benefits || []), benefit.name]
+                            }))
+                          }
+                        }}
+                      >
+                        {isAdded && <CheckCircle className="w-3 h-3 mr-1" />}
+                        {benefit.is_highlighted && <Heart className="w-3 h-3 mr-1 text-wedo-magenta" />}
+                        {benefit.name}
+                        {!isAdded && <Plus className="w-3 h-3 ml-1" />}
+                      </Badge>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+            <div className="flex gap-2">
+              <Input
+                value={newBenefit}
+                onChange={(e) => setNewBenefit(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addBenefit())}
+                className={`${inputStyle} flex-1`}
+                placeholder="Ex: Vale Refeição, Plano de Saúde..."
+              />
+              <Button
+                variant="outline"
+                className="h-10 px-4 text-sm border-gray-900 text-lia-text-primary hover:bg-gray-100"
+                onClick={addBenefit}
+              >
+                <Plus className="w-4 h-4 mr-1.5" />
+                Adicionar
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <hr className="border-lia-border-subtle" />
+
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Layers className="w-4 h-4 text-lia-text-secondary" />
+            <h3 className="text-base-ui font-semibold text-lia-text-primary">Etapas do Processo Seletivo</h3>
+            {(formData.interviewStages || []).length > 0 && (
+              <Badge variant="outline" className="text-xs bg-gray-100 border-lia-border-default text-lia-text-secondary">
+                {(formData.interviewStages || []).length} etapas
+              </Badge>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <ClipboardList className="w-3.5 h-3.5 text-lia-text-disabled" />
+            <Select 
+              value={selectedTemplateId} 
+              onValueChange={(value) => {
+                if (value && value !== 'none') {
+                  applyPipelineTemplate(value)
+                }
+              }}
+            >
+              <SelectTrigger className="h-8 w-[180px] text-xs bg-lia-bg-secondary border-lia-border-subtle">
+                {isLoadingTemplates ? (
+                  <span className="flex items-center gap-1.5">
+                    <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
+                    Carregando...
+                  </span>
+                ) : (
+                  <SelectValue placeholder="Usar template" />
+                )}
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none" className="text-xs text-lia-text-disabled">Selecionar template...</SelectItem>
+                {pipelineTemplates.map(template => (
+                  <SelectItem key={template.id} value={template.id} className="text-xs">
+                    <div className="flex items-center gap-2">
+                      {template.is_default && <Badge variant="outline" className="text-micro px-1 py-0 h-4">Padrão</Badge>}
+                      {template.name}
+                      <span className="text-lia-text-disabled">({template.stages.length} etapas)</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        
+        <div className="space-y-2 mb-4">
+          {(formData.interviewStages || []).map((stage: InterviewStage, idx: number) => (
+            <div key={idx} className="flex items-center gap-3 p-3 bg-gray-50 rounded-md border border-lia-border-subtle">
+              <div className="flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 text-lia-text-secondary text-sm font-semibold shrink-0">
+                {stage.order || idx + 1}
+              </div>
+              <div className="flex-1 min-w-0">
+                <Input
+                  value={stage.stageName || ''}
+                  onChange={(e) => updateInterviewStage(idx, 'stageName', e.target.value)}
+                  className="h-8 text-sm bg-lia-bg-primary border-lia-border-subtle focus:border-gray-400"
+                  placeholder="Nome da etapa"
+                />
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-lia-text-tertiary">SLA:</span>
+                  <Select 
+                    value={String(stage.sla || 3)} 
+                    onValueChange={(v) => updateInterviewStage(idx, 'sla', parseInt(v))}
+                  >
+                    <SelectTrigger className="h-8 w-16 text-xs bg-lia-bg-secondary border-lia-border-subtle">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[1, 2, 3, 5, 7, 10, 14].map(d => (
+                        <SelectItem key={d} value={String(d)} className="text-xs">{d}d</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Select 
+                  value={stage.type || 'manual'} 
+                  onValueChange={(v) => updateInterviewStage(idx, 'type', v)}
+                >
+                  <SelectTrigger className="h-8 w-24 text-xs bg-lia-bg-secondary border-lia-border-subtle">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="automated" className="text-xs">Auto</SelectItem>
+                    <SelectItem value="manual" className="text-xs">Manual</SelectItem>
+                    <SelectItem value="hybrid" className="text-xs">Híbrido</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 hover:bg-status-error/10"
+                  onClick={() => removeInterviewStage(idx)}
+                >
+                  <Trash2 className="w-3.5 h-3.5 text-status-error" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        <div className="flex gap-2 items-end">
+          <div className="flex-1">
+            <Input
+              value={newInterviewStageName}
+              onChange={(e) => setNewInterviewStageName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addInterviewStage())}
+              className={`${inputStyle}`}
+              placeholder="Nova etapa (ex: Entrevista Técnica)"
+            />
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-xs text-lia-text-tertiary">SLA:</span>
+            <Select value={newInterviewStageSLA} onValueChange={setNewInterviewStageSLA}>
+              <SelectTrigger className="h-10 w-16 text-xs bg-gray-50 border-lia-border-subtle">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[1, 2, 3, 5, 7, 10, 14].map(d => (
+                  <SelectItem key={d} value={String(d)} className="text-xs">{d}d</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Select value={newInterviewStageType} onValueChange={setNewInterviewStageType}>
+            <SelectTrigger className="h-10 w-24 text-xs bg-gray-50 border-lia-border-subtle">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="automated" className="text-xs">Auto</SelectItem>
+              <SelectItem value="manual" className="text-xs">Manual</SelectItem>
+              <SelectItem value="hybrid" className="text-xs">Híbrido</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            className="h-10 px-4 text-sm border-gray-900 text-lia-text-primary hover:bg-gray-100"
+            onClick={addInterviewStage}
+          >
+            <Plus className="w-4 h-4 mr-1.5" />
+            Adicionar
+          </Button>
+        </div>
+      </section>
+    </>
+  )
+}

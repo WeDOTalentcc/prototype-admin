@@ -18,7 +18,14 @@ def _get_consent_event_model():
     return ConsentEvent
 
 
-_HMAC_SECRET = os.environ.get("UNSUBSCRIBE_HMAC_SECRET", "lia-lgpd-unsubscribe-default-key")
+_HMAC_SECRET = os.environ.get("UNSUBSCRIBE_HMAC_SECRET", "")
+if not _HMAC_SECRET:
+    import secrets as _secrets
+    _HMAC_SECRET = _secrets.token_hex(32)
+    logging.getLogger(__name__).warning(
+        "UNSUBSCRIBE_HMAC_SECRET not set — generated ephemeral key. "
+        "Set this env var for persistent unsubscribe tokens across restarts."
+    )
 
 logger = logging.getLogger(__name__)
 

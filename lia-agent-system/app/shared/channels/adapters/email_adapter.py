@@ -110,8 +110,9 @@ class EmailChannelAdapter(ChannelAdapter):
             if not (message.template_vars or {}).get("unsubscribe_url"):
                 if message.template_vars is None:
                     message.template_vars = {}
+                _cid = getattr(message, "company_id", None) or "00000000-0000-0000-0000-000000000000"
                 message.template_vars["unsubscribe_url"] = _generate_unsubscribe_url(
-                    message.recipient_contact, message.company_id or "system"
+                    message.recipient_contact, _cid
                 )
 
             # F7 — Adicionar footer de IA em emails gerados por agentes LIA
