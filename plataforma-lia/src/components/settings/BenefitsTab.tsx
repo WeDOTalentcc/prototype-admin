@@ -58,6 +58,7 @@ import {
 import { SmartImportZone } from "./SmartImportZone"
 import { LiaFieldToggle, defaultLiaFieldExamples } from "./LiaFieldToggle"
 import { useCompanyLiaInstructions } from "@/hooks/use-company-lia-instructions"
+import { BenefitItemCard } from "./benefits/BenefitItemCard"
 
 const BENEFIT_CATEGORIES = [
   { id: "health", name: "Saúde & Bem-estar", icon: Stethoscope, color: "text-status-error", bgColor: "bg-status-error/10 dark:bg-status-error/20" },
@@ -677,82 +678,14 @@ export function BenefitsTab() {
                   ) : (
                     <div className="divide-y divide-gray-100 dark:lia-divide-700">
                       {categoryBenefits.map((benefit) => (
-                        <div
+                        <BenefitItemCard
                           key={benefit.id}
-                          className={`p-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors motion-reduce:transition-none ${
-                            !benefit.is_active ? 'opacity-60' : ''
-                          }`}
-                        >
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h4 className={`${textStyles.subtitle} dark:text-lia-text-primary truncate`}>
-                                {benefit.name}
-                              </h4>
-                              {benefit.is_highlighted && (
-                                <Star className="w-3.5 h-3.5 text-status-warning fill-yellow-500" />
-                              )}
-                              {benefit.is_mandatory && (
-                                <Badge variant="secondary" className="text-micro">Obrigatório</Badge>
-                              )}
-                              {benefit.is_discount && (
-                                <Badge variant="outline" className="text-micro text-status-error border-status-error/30">Desconto</Badge>
-                              )}
-                            </div>
-                            <p className={`${textStyles.description} truncate mb-1.5`}>
-                              {benefit.description || 'Sem descrição'}
-                            </p>
-                            <div className="flex items-center gap-3 text-xs lia-text-600 dark:text-lia-text-tertiary">
-                              <span className="flex items-center gap-1">
-                                <DollarSign className="w-3.5 h-3.5" />
-                                {formatBenefitValue(benefit)}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Users className="w-3.5 h-3.5" />
-                                {getSeniorityLabel(benefit.seniority_levels)}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Clock className="w-3.5 h-3.5" />
-                                {getWaitingPeriodLabel(benefit.waiting_period_days)}
-                              </span>
-                              {benefit.provider && (
-                                <span className="lia-text-600 dark:text-lia-text-tertiary">
-                                  {benefit.provider}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3 ml-3">
-                            <Switch
-                              checked={benefit.is_active}
-                              onCheckedChange={() => handleToggleBenefitStatus(benefit)}
-                              disabled={!isEditingBenefits}
-                              className={!isEditingBenefits ? 'opacity-60' : ''}
-                            />
-                            {isEditingBenefits && (
-                              <>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7"
-                                  onClick={() => {
-                                    setEditingBenefit(benefit)
-                                    setShowBenefitModal(true)
-                                  }}
-                                >
-                                  <Pencil className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7 text-status-error hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error/20 dark:hover:text-status-error"
-                                  onClick={() => benefit.id && handleDeleteBenefit(benefit.id)}
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </Button>
-                              </>
-                            )}
-                          </div>
-                        </div>
+                          benefit={benefit}
+                          isEditingBenefits={isEditingBenefits}
+                          onToggleStatus={handleToggleBenefitStatus}
+                          onEdit={(b) => { setEditingBenefit(b); setShowBenefitModal(true) }}
+                          onDelete={handleDeleteBenefit}
+                        />
                       ))}
                     </div>
                   )}
