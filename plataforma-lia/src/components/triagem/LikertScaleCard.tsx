@@ -62,10 +62,10 @@ export function LikertScaleCard({
               aria-pressed={isSelected}
               aria-label={`${value} - ${labels[value - 1] || ""}`}
               className={cn(
- "flex-1 min-w-[44px] h-11 flex items-center justify-center rounded-md text-sm font-semibold font-['Inter',sans-serif] transition-colors duration-200 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:outline-none",
+ "flex-1 min-w-[44px] h-11 flex items-center justify-center rounded-lg text-sm font-semibold font-['Inter',sans-serif] transition-colors duration-200 focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none",
                 isSelected
-                  ? "bg-gray-900 text-white border border-gray-900"
-                  : "bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary border border-lia-border-default dark:border-lia-border-default hover:bg-gray-50 dark:hover:bg-gray-700",
+                  ? "bg-lia-btn-primary-bg text-lia-btn-primary-text border border-lia-btn-primary-bg"
+                  : "bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary border border-lia-border-default dark:border-lia-border-default hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-elevated",
                 (disabled || (selectedValue !== null && !isSelected)) && "opacity-50 cursor-not-allowed"
               )}
             >

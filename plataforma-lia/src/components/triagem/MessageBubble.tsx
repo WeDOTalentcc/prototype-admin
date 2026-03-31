@@ -76,10 +76,10 @@ const MessageBubble = memo(function MessageBubble({ message, candidateName = "Ca
       <div className="flex flex-col gap-1 max-w-[80%]">
         <div
           className={cn(
- "px-4 py-3 text-sm font-['Open_Sans',sans-serif] leading-relaxed rounded-md",
+ "px-4 py-3 text-sm font-['Open_Sans',sans-serif] leading-relaxed rounded-lg",
             isLia
               ? "bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary"
-              : "bg-gray-900 text-white"
+              : "bg-lia-btn-primary-bg text-lia-btn-primary-text"
           )}
           dangerouslySetInnerHTML={{ __html: sanitizeHtml(parseSimpleMarkdown(message.content)) }}
         />
@@ -106,7 +106,7 @@ const MessageBubble = memo(function MessageBubble({ message, candidateName = "Ca
       {!isLia && (
         <div className="flex-shrink-0 mt-1">
           <div
-            className="w-8 h-8 rounded-md bg-gray-200 dark:bg-lia-bg-elevated flex items-center justify-center text-xs font-semibold text-lia-text-secondary dark:text-lia-text-secondary font-['Inter',sans-serif]"
+            className="w-8 h-8 rounded-lg bg-lia-bg-tertiary dark:bg-lia-bg-elevated flex items-center justify-center text-xs font-semibold text-lia-text-secondary dark:text-lia-text-secondary font-['Inter',sans-serif]"
             aria-hidden="true"
           >
             {getInitials(candidateName)}

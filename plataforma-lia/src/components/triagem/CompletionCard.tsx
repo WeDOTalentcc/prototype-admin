@@ -20,7 +20,7 @@ export function CompletionCard({ candidateName, summary, onClose, className }: C
         className
       )}
     >
-      <div className="w-full max-w-md bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md shadow-lia-sm p-6 space-y-6">
+      <div className="w-full max-w-md bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl shadow-lia-sm p-6 space-y-6">
         <div className="flex flex-col items-center gap-3 text-center">
           <div className="w-12 h-12 rounded-full bg-status-success/15 dark:bg-status-success/30 flex items-center justify-center">
             <CheckCircle2 className="w-7 h-7 text-status-success dark:text-status-success" />
@@ -35,7 +35,7 @@ export function CompletionCard({ candidateName, summary, onClose, className }: C
 
         <div className="flex items-center justify-center gap-4 text-xs text-lia-text-tertiary dark:text-lia-text-tertiary font-['Inter',sans-serif]">
           <span>{summary.questionsAnswered} perguntas respondidas</span>
-          <span className="w-1 h-1 rounded-full bg-gray-300" />
+          <span className="w-1 h-1 rounded-full bg-lia-border-default dark:bg-lia-border-medium" />
           <span>{summary.durationMinutes} minutos</span>
         </div>
 
@@ -50,7 +50,7 @@ export function CompletionCard({ candidateName, summary, onClose, className }: C
                   key={i}
                   className="flex items-start gap-2 text-sm text-lia-text-secondary dark:text-lia-text-tertiary font-['Open_Sans',sans-serif]"
                 >
-                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-gray-100 dark:bg-lia-bg-elevated flex items-center justify-center text-micro font-['Inter',sans-serif] font-medium text-lia-text-tertiary dark:text-lia-text-tertiary mt-0.5">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-elevated flex items-center justify-center text-micro font-['Inter',sans-serif] font-medium text-lia-text-tertiary dark:text-lia-text-tertiary mt-0.5">
                     {i + 1}
                   </span>
                   {step}
@@ -65,7 +65,7 @@ export function CompletionCard({ candidateName, summary, onClose, className }: C
             type="button"
             onClick={onClose}
             aria-label="Fechar triagem"
-            className="w-full h-10 flex items-center justify-center rounded-md bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary text-sm font-medium border border-lia-border-default dark:border-lia-border-default hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:outline-none font-['Open_Sans',sans-serif]"
+            className="w-full h-10 flex items-center justify-center rounded-lg bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary text-sm font-medium border border-lia-border-default dark:border-lia-border-default hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-elevated transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none font-['Open_Sans',sans-serif]"
           >
             Fechar
           </button>

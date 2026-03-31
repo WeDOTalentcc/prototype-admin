@@ -54,10 +54,10 @@ export function MultipleChoiceCard({
               aria-pressed={isSelected}
               aria-label={option.label}
               className={cn(
- "w-full min-h-[44px] px-4 py-3 text-sm text-left rounded-md font-medium transition-colors duration-200 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:outline-none font-['Open_Sans',sans-serif]",
+ "w-full min-h-[44px] px-4 py-3 text-sm text-left rounded-lg font-medium transition-colors duration-200 focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none font-['Open_Sans',sans-serif]",
                 isSelected
-                  ? "bg-gray-900 text-white border border-gray-900"
-                  : "bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary border border-lia-border-default dark:border-lia-border-default hover:bg-gray-50 dark:hover:bg-gray-700",
+                  ? "bg-lia-btn-primary-bg text-lia-btn-primary-text border border-lia-btn-primary-bg"
+                  : "bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary border border-lia-border-default dark:border-lia-border-default hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-elevated",
                 (disabled || (!!selectedId && !isSelected)) && "opacity-50 cursor-not-allowed"
               )}
             >

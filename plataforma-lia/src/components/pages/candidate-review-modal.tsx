@@ -1,5 +1,6 @@
 'use client'
 
+import NextImage from "next/image"
 import React, { useState, useCallback, useEffect } from 'react'
 import { X, ChevronLeft, ChevronRight, ExternalLink, Check, XIcon, GripVertical, Plus, Linkedin, MapPin, Briefcase, GraduationCap, Award, TrendingUp, Building2, Clock, Star, Bookmark, Edit2, Trash2, Save, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'

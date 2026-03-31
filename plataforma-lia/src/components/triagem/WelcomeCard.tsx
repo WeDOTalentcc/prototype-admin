@@ -21,7 +21,7 @@ export function WelcomeCard({ config, onStart, isStarting = false, className }: 
         className
       )}
     >
-      <div className="w-full max-w-md bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md shadow-lia-sm p-6 space-y-6">
+      <div className="w-full max-w-md bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl shadow-lia-sm p-6 space-y-6">
         <div className="flex flex-col items-center gap-4 text-center">
           {config.companyLogoUrl ? (
             <img
@@ -30,7 +30,7 @@ export function WelcomeCard({ config, onStart, isStarting = false, className }: 
               className="h-12 object-contain"
             />
           ) : (
-            <div className="h-12 px-4 flex items-center justify-center bg-gray-100 dark:bg-lia-bg-elevated rounded-md">
+            <div className="h-12 px-4 flex items-center justify-center bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-lg">
               <span className="text-sm font-semibold text-lia-text-secondary dark:text-lia-text-secondary font-['Open_Sans',sans-serif]">
                 {config.companyName}
               </span>
@@ -42,7 +42,7 @@ export function WelcomeCard({ config, onStart, isStarting = false, className }: 
           </h1>
         </div>
 
-        <div className="flex items-start gap-3 p-4 bg-wedo-cyan/10 rounded-md">
+        <div className="flex items-start gap-3 p-4 bg-wedo-cyan/10 dark:bg-wedo-cyan/15 rounded-lg">
           <LIAIcon size="sm" className="flex-shrink-0 bg-wedo-cyan/10" />
           <div className="text-sm text-lia-text-secondary dark:text-lia-text-secondary font-['Open_Sans',sans-serif] leading-relaxed">
             <p className="font-semibold text-lia-text-primary dark:text-lia-text-primary mb-1">
@@ -66,7 +66,7 @@ export function WelcomeCard({ config, onStart, isStarting = false, className }: 
             onClick={() => onStart(false)}
             disabled={isStarting}
             aria-label="Iniciar conversa de triagem por texto"
-            className="w-full h-11 flex items-center justify-center rounded-md bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:outline-none font-['Open_Sans',sans-serif]"
+            className="w-full h-11 flex items-center justify-center rounded-lg bg-lia-btn-primary-bg text-lia-btn-primary-text text-sm font-medium hover:bg-lia-btn-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none font-['Open_Sans',sans-serif]"
           >
             {isStarting ? "Iniciando..." : "Iniciar Conversa"}
           </button>
@@ -77,7 +77,7 @@ export function WelcomeCard({ config, onStart, isStarting = false, className }: 
               onClick={() => onStart(true)}
               disabled={isStarting}
               aria-label="Iniciar conversa de triagem por voz"
-              className="w-full h-11 flex items-center justify-center gap-2 rounded-md border border-gray-900 bg-transparent text-lia-text-primary text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:outline-none font-['Open_Sans',sans-serif]"
+              className="w-full h-11 flex items-center justify-center gap-2 rounded-lg border border-lia-border-default dark:border-lia-border-default bg-transparent text-lia-text-primary dark:text-lia-text-primary text-sm font-medium hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-elevated disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none font-['Open_Sans',sans-serif]"
             >
               <Mic className="w-4 h-4" />
               {isStarting ? "Iniciando..." : "Iniciar Conversa por Voz"}
@@ -89,7 +89,7 @@ export function WelcomeCard({ config, onStart, isStarting = false, className }: 
           href={config.privacyPolicyUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center gap-1.5 text-xs text-lia-text-disabled hover:text-lia-text-secondary dark:hover:text-lia-text-disabled transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
+          className="flex items-center justify-center gap-1.5 text-xs text-lia-text-disabled hover:text-lia-text-secondary dark:hover:text-lia-text-tertiary transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
           aria-label="Política de privacidade"
         >
           <Shield className="w-3 h-3" />

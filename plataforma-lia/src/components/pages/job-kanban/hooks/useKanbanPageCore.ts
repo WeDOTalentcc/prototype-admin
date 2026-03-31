@@ -241,7 +241,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
 
   // Estados para candidatesData (hoisted before useKanbanTransitions)
   const [candidatesData, setCandidatesData] = useState<Record<string, KanbanCandidate[]>>(() => 
-    createInitialCandidatesData(mapInterviewStagesToKanban(job?.interviewStages as Parameters<typeof mapInterviewStagesToKanban>[0]))
+    createInitialCandidatesData(mapInterviewStagesToKanban(job?.interviewStages as Parameters<typeof mapInterviewStagesToKanban>[0])) as unknown as Record<string, KanbanCandidate[]>
   )
 
   // ── handleUniversalTransitionConfirm — extraído para useKanbanTransitions ──
@@ -548,17 +548,17 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
         }
 
         const kanbanCandidate: KanbanCandidate = {
-          id: matched.id as string,
-          name: matched.name as string,
-          email: (matched as Record<string, unknown>).email as string | undefined,
-          phone: (matched as Record<string, unknown>).phone as string | undefined,
-          avatar: (matched as Record<string, unknown>).avatar as string | undefined,
-          role: ((matched as Record<string, unknown>).role || (matched as Record<string, unknown>).currentTitle) as string | undefined,
-          currentTitle: (matched as Record<string, unknown>).currentTitle as string | undefined,
-          currentCompany: ((matched as Record<string, unknown>).currentCompany || (matched as Record<string, unknown>).company) as string | undefined,
-          location: (matched as Record<string, unknown>).location as string | undefined,
+          id: (matched as unknown as Record<string, unknown>).id as string,
+          name: (matched as unknown as Record<string, unknown>).name as string,
+          email: (matched as unknown as Record<string, unknown>).email as string | undefined,
+          phone: (matched as unknown as Record<string, unknown>).phone as string | undefined,
+          avatar: (matched as unknown as Record<string, unknown>).avatar as string | undefined,
+          role: ((matched as unknown as Record<string, unknown>).role || (matched as unknown as Record<string, unknown>).currentTitle) as string | undefined,
+          currentTitle: (matched as unknown as Record<string, unknown>).currentTitle as string | undefined,
+          currentCompany: ((matched as unknown as Record<string, unknown>).currentCompany || (matched as unknown as Record<string, unknown>).company) as string | undefined,
+          location: (matched as unknown as Record<string, unknown>).location as string | undefined,
           stage: fromStage,
-          sub_status: (matched as Record<string, unknown>).sub_status as string | undefined,
+          sub_status: (matched as unknown as Record<string, unknown>).sub_status as string | undefined,
           stageId: fromStage,
         }
 

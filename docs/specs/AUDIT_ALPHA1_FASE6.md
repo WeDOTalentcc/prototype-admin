@@ -407,15 +407,15 @@ Includes proxy detection for: "boa aparência", "bairros nobres", "universidades
 |----------|-----|----------|-------------|:---:|
 | CRITICAL | ARCH-04 | Architecture | `RAGPipelineService.search()` missing `**kwargs` — LLM Classification + FG L3 sector check silently skipped | **FIXED** (Task #74) |
 | MEDIUM | ARCH-05 | Architecture | Template Learning data source mismatch (`MessageQueue` vs `CommunicationLog`) | **FIXED** (Task #74) |
-| MEDIUM | DS-01 | Design | Card `rounded-md` should be `rounded-xl` per DS v4.2.1 | PENDING (Task #75) |
+| MEDIUM | DS-01 | Design | Card `rounded-md` should be `rounded-xl` per DS v4.2.1 | **FIXED** (Task #75) |
 | MEDIUM | GOV-01 | Governance | Audit Trail not systematically activated at all touchpoints | PENDING (Task #76) |
 | LOW | ARCH-06 | Architecture | Middleware order: 429 responses may lack CORS headers | **FIXED** (Task #74) |
-| LOW | DS-02 | Design | `ChatContainer` missing `dark:bg-lia-bg-primary` | PENDING (Task #75) |
-| LOW | DS-03 | Design | Buttons use `bg-gray-900` instead of semantic token | PENDING (Task #75) |
+| LOW | DS-02 | Design | `ChatContainer` missing `dark:bg-lia-bg-primary` | **FIXED** (Task #75) |
+| LOW | DS-03 | Design | Buttons use `bg-gray-900` instead of semantic token | **FIXED** (Task #75) |
 | LOW | LGPD-01 | LGPD | Consent flow could be more explicit (checkbox) | PENDING (Task #76) |
 | LOW | DEI-02 | DEI | `check_rejection_fairness` not auto-triggered | PENDING (Task #76) |
 | LOW | ARCH-02 | Architecture | Legacy `EmailService` class should be deprecated | **FIXED** (Task #74) |
-| INFO | DS-04 | Design | Non-standard max-width in ChatContainer | PENDING (Task #75) |
+| INFO | DS-04 | Design | Non-standard max-width in ChatContainer | **ACKNOWLEDGED** (Task #75) — intentional for focused triagem UX |
 | INFO | LGPD-02 | LGPD | CandidateQuarantine well-implemented | N/A |
 | INFO | DEI-01 | DEI | FairnessGuard L3 integrated in 5 services | N/A |
 | INFO | ARCH-01 | Architecture | Startup graceful degradation well-done | N/A |
@@ -427,8 +427,8 @@ Includes proxy detection for: "boa aparência", "bairros nobres", "universidades
 
 - **Total Findings:** 17
 - **CRITICAL:** 1 → **0** (ARCH-04 FIXED)
-- **MEDIUM:** 3 → **1** (ARCH-05 FIXED, DS-01 pending)
-- **LOW:** 6 → **4** (ARCH-06 FIXED, ARCH-02 FIXED)
+- **MEDIUM:** 3 → **0** (ARCH-05 FIXED, DS-01 FIXED)
+- **LOW:** 6 → **1** (ARCH-06 FIXED, ARCH-02 FIXED, DS-02 FIXED, DS-03 FIXED)
 - **INFO:** 4
 - **WATCH:** 1 → **0** (F-PERF-01 MITIGATED with TTL cache)
 - **PARTIAL:** 2

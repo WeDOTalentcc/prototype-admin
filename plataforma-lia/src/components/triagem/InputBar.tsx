@@ -97,9 +97,9 @@ export function InputBar({
                 onClick={onToggleMute}
                 aria-label={isMuted ? "Ativar áudio da LIA" : "Silenciar áudio da LIA"}
                 className={cn(
- "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors font-['Open_Sans',sans-serif]",
+ "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors font-['Open_Sans',sans-serif]",
                   isMuted
-                    ? "bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-300 dark:hover:bg-gray-600"
+                    ? "bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-secondary hover:bg-lia-border-default dark:hover:bg-lia-border-medium"
                     : "bg-wedo-cyan/10 text-wedo-cyan hover:bg-wedo-cyan/20"
                 )}
               >
@@ -114,7 +114,7 @@ export function InputBar({
               onClick={onEndConversation}
               disabled={isDisabled}
               aria-label="Finalizar conversa"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-status-error/10 dark:bg-status-error/20 text-status-error dark:text-status-error hover:bg-status-error/15 dark:hover:bg-status-error/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-status-error/10 dark:bg-status-error/20 text-status-error dark:text-status-error hover:bg-status-error/15 dark:hover:bg-status-error/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
             >
               <PhoneOff className="w-3.5 h-3.5" />
               Finalizar Conversa
@@ -132,7 +132,7 @@ export function InputBar({
           disabled={isDisabled}
           rows={1}
           aria-label="Campo de resposta"
-          className="flex-1 resize-none w-full px-3 py-2 text-sm border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary placeholder-gray-400 dark:placeholder-gray-500 focus:border-gray-900 dark:focus:border-lia-border-subtle focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-100/20 focus:outline-none disabled:opacity-50 font-['Open_Sans',sans-serif]"
+          className="flex-1 resize-none w-full px-3 py-2 text-sm border border-lia-border-default dark:border-lia-border-default rounded-lg bg-white dark:bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary placeholder-lia-input-placeholder dark:placeholder-lia-input-placeholder focus:border-lia-input-border-focus dark:focus:border-lia-input-border-focus focus:ring-2 focus:ring-wedo-cyan/20 focus:outline-none disabled:opacity-50 font-['Open_Sans',sans-serif]"
         />
 
         {audioEnabled && (
@@ -148,7 +148,7 @@ export function InputBar({
           onClick={handleSend}
           disabled={isDisabled || !text.trim()}
           aria-label="Enviar mensagem"
-          className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-md bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:outline-none"
+          className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none"
         >
           <Send className="w-4 h-4" />
         </button>

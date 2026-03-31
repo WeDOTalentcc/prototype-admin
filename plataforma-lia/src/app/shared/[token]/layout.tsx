@@ -1,8 +1,8 @@
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Triagem de Candidato",
-  description: "Processo de triagem automatizada com a assistente LIA",
+  title: "Relatório Compartilhado",
+  description: "Relatório de candidato compartilhado via Plataforma LIA WeDoTalent",
   robots: { index: false, follow: false },
 }
 

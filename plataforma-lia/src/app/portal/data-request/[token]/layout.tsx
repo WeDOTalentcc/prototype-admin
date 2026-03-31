@@ -1,8 +1,8 @@
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Triagem de Candidato",
-  description: "Processo de triagem automatizada com a assistente LIA",
+  title: "Solicitação de Dados — Portal LGPD",
+  description: "Exercício de direitos do titular de dados conforme a LGPD",
   robots: { index: false, follow: false },
 }
 

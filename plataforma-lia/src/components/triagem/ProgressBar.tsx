@@ -37,9 +37,9 @@ export function ProgressBar({ progress, className }: ProgressBarProps) {
           {percentage}%
         </span>
       </div>
-      <div className="w-full h-1.5 bg-gray-200 dark:bg-lia-bg-elevated rounded-full overflow-hidden">
+      <div className="w-full h-1.5 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-full overflow-hidden">
         <div
-          className="h-full bg-gray-900 rounded-full transition-[width,height] duration-500 ease-out"
+          className="h-full bg-lia-btn-primary-bg rounded-full transition-[width,height] duration-500 ease-out"
           style={{width: `${percentage}%`}}
         />
       </div>
