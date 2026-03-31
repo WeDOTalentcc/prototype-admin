@@ -15,6 +15,13 @@ import { Calendar, Loader2, Send, Brain, AlertTriangle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { sanitizeHtml } from "@/lib/sanitize"
 
+
+interface ScheduledInterviewData {
+  interviewer?: string
+  meeting_url?: string
+  [key: string]: unknown
+}
+
 interface InterviewSchedulingModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -45,7 +52,7 @@ export function InterviewSchedulingModal({
     body: string
   } | null>(null)
   const [schedulingPrompt, setSchedulingPrompt] = useState("")
-  const [scheduledInterview, setScheduledInterview] = useState<any>(null)
+  const [scheduledInterview, setScheduledInterview] = useState<ScheduledInterviewData | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {

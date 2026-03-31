@@ -94,6 +94,16 @@ const STATUS_CONFIG: Record<VoiceStatus, {
   }
 }
 
+
+interface WSIScreeningResult {
+  overall_wsi: number
+  technical_wsi: number
+  behavioral_wsi: number
+  classification: string
+  [key: string]: unknown
+}
+
+
 export function WSIVoiceScreeningStatus({
   isOpen,
   onClose,
@@ -107,7 +117,7 @@ export function WSIVoiceScreeningStatus({
   const [sessionId, setSessionId] = useState<string | null>(initialSessionId || null)
   const [callId, setCallId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [result, setResult] = useState<any>(null)
+  const [result, setResult] = useState<WSIScreeningResult | null>(null)
   const [elapsedTime, setElapsedTime] = useState(0)
   const [questionsCount, setQuestionsCount] = useState(0)
 
