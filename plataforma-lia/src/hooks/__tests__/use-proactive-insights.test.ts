@@ -127,4 +127,57 @@ describe('useProactiveInsights', () => {
     await act(async () => { vi.advanceTimersByTime(5 * 60 * 1000) })
     expect(global.fetch).toHaveBeenCalledTimes(2)
   })
+
+  // ── New tests ─────────────────────────────────────────────────────────────
+
+  it('updates fetch URL when jobId changes', async () => {
+    ;(global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: async () => [],
+    })
+
+    let jobId = 'job-first'
+    const { rerender } = renderHook(
+      ({ jid }: { jid: string }) => useProactiveInsights(jid, 'comp-1'),
+      { wrapper: swrWrapper, initialProps: { jid: 'job-first' } }
+    )
+
+    await act(async () => { await Promise.resolve() })
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('job_id=job-first')
+    )
+
+    rerender({ jid: 'job-second' })
+    await act(async () => { await Promise.resolve() })
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('job_id=job-second')
+    )
+  })
+
+  it('dismiss persists all dismissed IDs across multiple dismiss calls', async () => {
+    ;(global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: async () => MOCK_INSIGHTS,
+    })
+
+    const { result } = renderHook(() =>
+      useProactiveInsights('job-1', 'company-1'),
+      { wrapper: swrWrapper }
+    )
+
+    await act(async () => { await Promise.resolve() })
+    expect(result.current.insights).toHaveLength(2)
+
+    act(() => { result.current.dismiss('i1') })
+    act(() => { result.current.dismiss('i2') })
+
+    expect(result.current.insights).toHaveLength(0)
+    expect(result.current.dismissed.has('i1')).toBe(true)
+    expect(result.current.dismissed.has('i2')).toBe(true)
+
+    const stored = JSON.parse(mockSessionStorage['proactive_dismissed_insights'] ?? '[]') as string[]
+    expect(stored).toContain('i1')
+    expect(stored).toContain('i2')
+  })
 })
