@@ -39,11 +39,11 @@ interface CandidatesPageModalsProps {
   selectedCandidateForAction: Candidate | null
   contactModalCandidate: Candidate | null
   showContactModal: boolean
-  contactModalAction: string
+  contactModalAction: "general" | "wsi_screening" | "interview_invite"
   setShowContactModal: (v: boolean) => void
   setSelectedCandidateForAction: (v: Candidate | null) => void
   setContactModalCandidate: (v: Candidate | null) => void
-  setContactModalAction: (v: string) => void
+  setContactModalAction: (v: "general" | "wsi_screening" | "interview_invite") => void
   handleSendMessage: (...args: unknown[]) => unknown
 
   // Schedule Modal
@@ -88,7 +88,7 @@ interface CandidatesPageModalsProps {
   // Batch Approval Modal
   showBatchApproval: boolean
   setShowBatchApproval: (v: boolean) => void
-  convertCandidatesForBatch: (candidates: Candidate[]) => unknown[]
+  convertCandidatesForBatch: (candidates: Candidate[]) => any[]
   handleBatchApprovalComplete: (...args: unknown[]) => unknown
 
   // WSI Text Screening Modal
@@ -111,8 +111,8 @@ interface CandidatesPageModalsProps {
   setShowRubricModal: (v: boolean) => void
   rubricCandidate: Candidate | null
   setRubricCandidate: (v: Candidate | null) => void
-  rubricEvaluationData: unknown
-  setRubricEvaluationData: (v: unknown) => void
+  rubricEvaluationData: any
+  setRubricEvaluationData: (v: any) => void
   toast: (opts: { title: string; description?: string; variant?: string }) => void
 
   // Send Email Modal
@@ -127,7 +127,7 @@ interface CandidatesPageModalsProps {
   revealCandidate: Candidate | null
   setRevealCandidate: (v: Candidate | null) => void
   handleRevealContact: () => void
-  revealType: 'email' | 'phone' | string
+  revealType: 'email' | 'phone'
 
   // CV Preview Modal
   showCVPreviewModal: boolean
@@ -139,10 +139,10 @@ interface CandidatesPageModalsProps {
   // Credit Confirmation Modal
   showCreditConfirmation: boolean
   setShowCreditConfirmation: (v: boolean) => void
-  creditEstimate: unknown
-  pearchSearchOptions: unknown
-  setPearchSearchOptions: (v: unknown) => void
-  setPendingSearchRequest: (v: unknown) => void
+  creditEstimate: any
+  pearchSearchOptions: any
+  setPearchSearchOptions: (v: any) => void
+  setPendingSearchRequest: (v: any) => void
   handleConfirmPearchSearch: () => void
 
   // Global Expansion Confirm Modal
@@ -156,15 +156,15 @@ interface CandidatesPageModalsProps {
   // Source Change Confirm Modal
   showSourceChangeModal: boolean
   setShowSourceChangeModal: (v: boolean) => void
-  pendingSourceChange: unknown
-  setPendingSourceChange: (v: unknown) => void
+  pendingSourceChange: any
+  setPendingSourceChange: (v: any) => void
   confirmSourceChange: () => void
 
   // Contact Filter Confirm Modal
   showContactFilterModal: boolean
   setShowContactFilterModal: (v: boolean) => void
-  pendingContactFilter: unknown
-  setPendingContactFilter: (v: unknown) => void
+  pendingContactFilter: any
+  setPendingContactFilter: (v: any) => void
   confirmContactFilterChange: () => void
 
   // Save As Archetype Modal
@@ -177,14 +177,14 @@ interface CandidatesPageModalsProps {
   setArchetypeCreationStep: (v: string) => void
   newArchetypeData: Record<string, unknown>
   setNewArchetypeData: (v: Record<string, unknown>) => void
-  setUserArchetypes: (fn: (prev: unknown[]) => unknown[]) => void
-  setChatMessages: (fn: (prev: unknown[]) => unknown[]) => void
+  setUserArchetypes: (fn: (prev: any[]) => any[]) => void
+  setChatMessages: (fn: (prev: any[]) => any[]) => void
 
   // Advanced Filters Modal
   showAdvancedSearch: boolean
   setShowAdvancedSearch: (v: boolean) => void
-  activeSearchFilters: unknown
-  setActiveSearchFilters: (v: unknown) => void
+  activeSearchFilters: any
+  setActiveSearchFilters: (v: any) => void
   hideViewedCandidates: {
     setScope: (s: string) => void
     setPeriod: (p: string) => void
@@ -225,7 +225,7 @@ interface CandidatesPageModalsProps {
   setPendingTabChange: (v: unknown) => void
   handleSaveAllAndExit: () => void
   handleExitWithoutSaving: () => void
-  unsavedPearchCandidates: unknown[]
+  unsavedPearchCandidates: any[]
   isSavingToBase: boolean
 
   // Edit Query Modal
@@ -238,22 +238,22 @@ interface CandidatesPageModalsProps {
   setSearchTerm: (v: string) => void
   setLastSearchQuery: (v: string) => void
   setLastSearchMode: (v: string) => void
-  setLastSearchEntities: (v: unknown) => void
-  setLastSearchMetadata: (v: unknown) => void
-  executeSearch: (...args: unknown[]) => Promise<void>
+  setLastSearchEntities: (v: any) => void
+  setLastSearchMetadata: (v: any) => void
+  executeSearch: (...args: any[]) => Promise<void>
 
   // Preview Suggestion Modal
-  previewSuggestion: unknown
-  setPreviewSuggestion: (v: unknown) => void
-  previewingUserArchetype: unknown
-  setPreviewingUserArchetype: (v: unknown) => void
-  buildFiltersFromTags: (...args: unknown[]) => unknown
+  previewSuggestion: any
+  setPreviewSuggestion: (v: any) => void
+  previewingUserArchetype: any
+  setPreviewingUserArchetype: (v: any) => void
+  buildFiltersFromTags: (...args: any[]) => any
   setLiaPromptValue: (v: string) => void
   setActiveSearchTab: (v: string) => void
 
   // Delete Archetype Modal
-  archetypeToDelete: unknown
-  setArchetypeToDelete: (v: unknown) => void
+  archetypeToDelete: any
+  setArchetypeToDelete: (v: any) => void
 }
 
 export function CandidatesPageModals({
@@ -435,27 +435,28 @@ export function CandidatesPageModals({
           candidate={(() => {
             const c = contactModalCandidate || selectedCandidateForAction
             if (!c) return null
+            const ca = c as any
             return {
               id: c.id,
               name: c.name,
-              role: c.position || (c as Record<string, unknown>).role as string,
+              role: ca.position || ca.role,
               email: c.email,
-              phone: c.phone,
-              location: c.location,
-              avatar: c.avatar,
-              score: c.score || 0,
+              phone: ca.phone,
+              location: ca.location,
+              avatar: ca.avatar,
+              score: ca.score || 0,
               status: c.status || 'Novo',
-              matchPercentage: (c as Record<string, unknown>).liaAnalysis ? ((c as Record<string, unknown>).liaAnalysis as Record<string, unknown>)?.score as number : c.score || 0,
+              matchPercentage: ca.liaAnalysis?.score ?? ca.score ?? 0,
               riskLevel: 'low',
               culturalFit: 85,
               technicalMatch: 90,
-              experience: String(c.experience || ''),
-              seniority: (c as Record<string, unknown>).seniority as string || 'Pleno',
+              experience: String(ca.experience || ''),
+              seniority: ca.seniority || 'Pleno',
               availability: 'Imediata',
-              expectedSalary: (c as Record<string, unknown>).salary ? String(((c as Record<string, unknown>).salary as Record<string, unknown>)?.expected || '') : '',
-              preferredLocation: c.location,
-              linkedin: c.linkedin,
-              skills: c.skills || [],
+              expectedSalary: ca.salary?.expected ? String(ca.salary.expected) : '',
+              preferredLocation: ca.location,
+              linkedin: ca.linkedin,
+              skills: ca.skills || [],
               lastActivity: new Date().toISOString(),
               source: 'internal'
             }
@@ -473,31 +474,34 @@ export function CandidatesPageModals({
             setShowScheduleModal(false)
             setSelectedCandidateForAction(null)
           }}
-          candidate={{
+          candidate={(() => {
+            const sca = selectedCandidateForAction as any
+            return ({
             id: selectedCandidateForAction.id,
             name: selectedCandidateForAction.name,
-            role: selectedCandidateForAction.position,
+            role: sca.position,
             email: selectedCandidateForAction.email,
-            phone: selectedCandidateForAction.phone,
-            location: selectedCandidateForAction.location,
-            avatar: selectedCandidateForAction.avatar,
-            score: selectedCandidateForAction.score,
+            phone: sca.phone,
+            location: sca.location,
+            avatar: sca.avatar,
+            score: sca.score,
             status: selectedCandidateForAction.status,
-            matchPercentage: (selectedCandidateForAction as Record<string, unknown>).liaAnalysis ? ((selectedCandidateForAction as Record<string, unknown>).liaAnalysis as Record<string, unknown>)?.score as number : selectedCandidateForAction.score,
+            matchPercentage: sca.liaAnalysis?.score ?? sca.score,
             riskLevel: 'low',
             culturalFit: 85,
             technicalMatch: 90,
-            experience: String(selectedCandidateForAction.experience),
-            seniority: (selectedCandidateForAction as Record<string, unknown>).seniority as string || 'Pleno',
+            experience: String(sca.experience),
+            seniority: sca.seniority || 'Pleno',
             availability: 'Imediata',
-            expectedSalary: (selectedCandidateForAction as Record<string, unknown>).salary ? String(((selectedCandidateForAction as Record<string, unknown>).salary as Record<string, unknown>)?.expected || '') : '',
-            preferredLocation: selectedCandidateForAction.location,
-            linkedin: selectedCandidateForAction.linkedin,
-            skills: selectedCandidateForAction.skills,
+            expectedSalary: sca.salary?.expected ? String(sca.salary.expected) : '',
+            preferredLocation: sca.location,
+            linkedin: sca.linkedin,
+            skills: sca.skills,
             lastActivity: new Date().toISOString(),
             source: 'internal'
-          }}
-          onSchedule={handleScheduleComplete}
+          } as any)
+          })()}
+          onSchedule={handleScheduleComplete as any}
         />
       )}
 
@@ -505,18 +509,21 @@ export function CandidatesPageModals({
       <UnifiedCommunicationModal
         isOpen={unifiedModalOpen}
         onClose={handleUnifiedModalClose}
-        candidate={unifiedModalCandidate ? {
-          id: unifiedModalCandidate.id,
-          name: unifiedModalCandidate.name,
-          role: unifiedModalCandidate.position || (unifiedModalCandidate as Record<string, unknown>).current_title as string || '',
-          email: unifiedModalCandidate.email,
-          phone: unifiedModalCandidate.phone,
-          location: unifiedModalCandidate.location,
-          avatar: unifiedModalCandidate.avatar,
-          score: unifiedModalCandidate.score,
-          matchPercentage: (unifiedModalCandidate as Record<string, unknown>).liaAnalysis ? ((unifiedModalCandidate as Record<string, unknown>).liaAnalysis as Record<string, unknown>)?.score as number : unifiedModalCandidate.score,
-          skills: unifiedModalCandidate.skills
-        } : null}
+        candidate={unifiedModalCandidate ? (() => {
+          const umc = unifiedModalCandidate as any
+          return {
+            id: unifiedModalCandidate.id,
+            name: unifiedModalCandidate.name,
+            role: umc.position || umc.current_title || '',
+            email: unifiedModalCandidate.email,
+            phone: umc.phone,
+            location: umc.location,
+            avatar: umc.avatar,
+            score: umc.score,
+            matchPercentage: umc.liaAnalysis?.score ?? umc.score,
+            skills: umc.skills
+          }
+        })() : null}
         type={unifiedModalType}
         jobTitle={lastSearchQuery || undefined}
         onSend={handleUnifiedModalSend}
@@ -533,25 +540,25 @@ export function CandidatesPageModals({
             .map(c => ({
               id: c.id,
               name: c.name,
-              role: c.position,
+              role: (c as any).position,
               email: c.email,
-              phone: c.phone,
-              location: c.location,
-              avatar: c.avatar,
-              score: c.score,
+              phone: (c as any).phone,
+              location: (c as any).location,
+              avatar: (c as any).avatar,
+              score: (c as any).score,
               status: c.status,
-              matchPercentage: (c as Record<string, unknown>).liaAnalysis ? ((c as Record<string, unknown>).liaAnalysis as Record<string, unknown>)?.score as number : c.score,
+              matchPercentage: (c as any).liaAnalysis?.score ?? (c as any).score,
               riskLevel: 'low',
               culturalFit: 85,
               technicalMatch: 90,
-              experience: String(c.experience),
-              seniority: (c as Record<string, unknown>).seniority as string || 'Pleno',
+              experience: String((c as any).experience),
+              seniority: (c as any).seniority || 'Pleno',
               availability: 'Imediata',
-              expectedSalary: (c as Record<string, unknown>).salary ? String(((c as Record<string, unknown>).salary as Record<string, unknown>)?.expected || '') : '',
-              skills: c.skills,
+              expectedSalary: (c as any).salary?.expected ? String((c as any).salary.expected) : '',
+              skills: (c as any).skills,
               lastActivity: new Date().toISOString(),
               source: 'internal'
-            }))}
+            })) as any}
           onSelectCandidate={(candidateId) => {
             const candidate = candidates.find(c => c.id === candidateId)
             if (candidate) handleNavigateToFullProfile(candidate)
@@ -570,7 +577,7 @@ export function CandidatesPageModals({
       {/* Candidate Page Modal */}
       {showCandidatePage && selectedCandidate && (
         <CandidatePage
-          candidate={selectedCandidate}
+          candidate={selectedCandidate as any}
           isOpen={showCandidatePage}
           onClose={handleCloseCandidatePage}
           onBackToKanban={() => {}}
@@ -679,13 +686,13 @@ export function CandidatesPageModals({
         candidate={wsiInviteCandidate ? {
           id: wsiInviteCandidate.id,
           name: wsiInviteCandidate.name,
-          role: wsiInviteCandidate.position,
+          role: (wsiInviteCandidate as any).position,
           email: wsiInviteCandidate.email,
-          phone: wsiInviteCandidate.phone,
-          location: wsiInviteCandidate.location,
-          avatar: wsiInviteCandidate.avatar
+          phone: (wsiInviteCandidate as any).phone,
+          location: (wsiInviteCandidate as any).location,
+          avatar: (wsiInviteCandidate as any).avatar
         } : null}
-        jobTitle={wsiInviteCandidate?.position || 'Vaga'}
+        jobTitle={(wsiInviteCandidate as any)?.position || 'Vaga'}
         onSend={async (data) => {
           try {
             if (data.channel === 'email' && wsiInviteCandidate?.email) {
@@ -693,11 +700,11 @@ export function CandidatesPageModals({
                 recipient_email: wsiInviteCandidate.email,
                 recipient_name: wsiInviteCandidate.name,
                 candidate_id: wsiInviteCandidate.id,
-                subject_override: data.subject || `Convite para Triagem - ${wsiInviteCandidate.position || 'Vaga'}`,
-                body_override: data.message,
+                subject_override: (data as any).subject || `Convite para Triagem - ${(wsiInviteCandidate as any).position || 'Vaga'}`,
+                body_override: (data as any).message,
                 variables: {
                   candidate_name: wsiInviteCandidate.name,
-                  job_title: wsiInviteCandidate.position || 'Vaga'
+                  job_title: (wsiInviteCandidate as any).position || 'Vaga'
                 }
               })
             }
@@ -749,16 +756,16 @@ export function CandidatesPageModals({
           setShowSendEmailModal(false)
           setEmailCandidateSelected(null)
         }}
-        candidate={emailCandidateSelected ? {
+        candidate={emailCandidateSelected ? ({
           id: emailCandidateSelected.id,
           name: emailCandidateSelected.name,
           email: emailCandidateSelected.email,
-          phone: emailCandidateSelected.phone,
-          current_title: emailCandidateSelected.position,
-          technical_skills: emailCandidateSelected.skills,
+          phone: (emailCandidateSelected as any).phone,
+          current_title: (emailCandidateSelected as any).position,
+          technical_skills: (emailCandidateSelected as any).skills,
           source: 'internal',
           is_active: true,
-          is_remote: emailCandidateSelected.workModel === 'remoto',
+          is_remote: (emailCandidateSelected as any).workModel === 'remoto',
           willing_to_relocate: false,
           tags: emailCandidateSelected.tags,
           status: emailCandidateSelected.status,
@@ -766,7 +773,7 @@ export function CandidatesPageModals({
           soft_skills: [],
           languages: {},
           certifications: []
-        } : null}
+        } as any) : null}
         onSuccess={() => {
           setShowSendEmailModal(false)
           setEmailCandidateSelected(null)
@@ -781,7 +788,7 @@ export function CandidatesPageModals({
             setShowRevealModal(false)
             setRevealCandidate(null)
           }}
-          onConfirm={handleRevealContact}
+          onConfirm={handleRevealContact as any}
           revealType={revealType}
           candidateName={revealCandidate.name}
           creditsRequired={revealType === 'email' ? 2 : 14}
@@ -886,7 +893,7 @@ export function CandidatesPageModals({
             hideViewedCandidates.fetchViewedCandidates()
           }
         }}
-        initialFilters={activeSearchFilters}
+        initialFilters={activeSearchFilters as any}
         estimatedMatches={1000000}
       />
 
@@ -1015,7 +1022,7 @@ export function CandidatesPageModals({
             (a as Record<string, unknown>).id === id ? { ...(a as object), ...updates } : a
           ))
         }}
-        onSaveArchetype={(newArchetype) => setUserArchetypes(prev => [...prev, newArchetype as Record<string, unknown>])}
+        onSaveArchetype={(newArchetype) => setUserArchetypes(prev => [...prev, newArchetype as any])}
         onExecuteSearch={async (query, filters, mode, metadata, usePearch) => {
           await executeSearch(query, filters as Record<string, unknown>, mode as string, metadata as Record<string, unknown>, usePearch)
         }}
