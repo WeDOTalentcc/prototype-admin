@@ -118,12 +118,12 @@ export const ResizableTableHeader = React.memo(function ResizableTableHeader({
       )}
     </th>
   )
-}
+})
 
 interface TableHeaderRowProps {
   children: React.ReactNode
   className?: string
-})
+}
 ResizableTableHeader.displayName = 'ResizableTableHeader'
 
 export const TableHeaderRow = React.memo(function TableHeaderRow({ children, className }: TableHeaderRowProps) {
@@ -132,14 +132,14 @@ export const TableHeaderRow = React.memo(function TableHeaderRow({ children, cla
       <tr>{children}</tr>
     </thead>
   )
-}
+})
 
 interface ConnectedTableHeaderProps {
   column: ColumnConfig
   tableFeatures: UseTableFeaturesReturn
   children?: React.ReactNode
   className?: string
-})
+}
 TableHeaderRow.displayName = 'TableHeaderRow'
 
 export function ConnectedTableHeader({

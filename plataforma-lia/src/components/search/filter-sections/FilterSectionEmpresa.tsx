@@ -70,7 +70,7 @@ export const FilterSectionEmpresa = React.memo(function FilterSectionEmpresa({
       </div>
 
       <div>
-        <Label className="text-xs mb-2 block">Empresas Exluídas</Label>
+        <Label className="text-xs mb-2 block">Empresas Excluídas</Label>
         <ExcludedCompaniesInput
           value={filters.company?.excludedCompanyItems || []}
           onChange={(excludedCompanyItems) => setFilters(prev => ({

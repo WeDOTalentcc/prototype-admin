@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useEffect, useState, useRef } from "react"
+import NextImage from "next/image"
 import { useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -312,9 +313,11 @@ export default function PublicVacancyPage() {
         {showCompanyInfo && (
           <div className="flex items-center gap-4 mb-8">
             {vacancy.company_logo ? (
-              <img 
+              <NextImage 
                 src={vacancy.company_logo} 
                 alt={vacancy.company_name || "Logo"} 
+                width={56}
+                height={56}
                 className="w-14 h-14 rounded-md object-contain border border-neutral-100 dark:lia-border-700"
               />
             ) : (

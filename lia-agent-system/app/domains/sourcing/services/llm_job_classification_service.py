@@ -71,8 +71,18 @@ def _detect_area(text: str) -> Optional[str]:
     return None
 
 
-def _cache_key(job_title: str, candidate_title: str) -> str:
-    raw = f"{job_title.strip().lower()}||{candidate_title.strip().lower()}"
+def _cache_key(
+    job_title: str,
+    job_area: str,
+    job_requirements: str,
+    candidate_title: str,
+) -> str:
+    raw = (
+        f"{job_title.strip().lower()}|"
+        f"{job_area.strip().lower()}|"
+        f"{job_requirements.strip().lower()[:200]}|"
+        f"{candidate_title.strip().lower()}"
+    )
     return hashlib.md5(raw.encode()).hexdigest()
 
 
@@ -135,6 +145,8 @@ class LLMJobClassificationService:
     ) -> Dict[str, Any]:
         ck = _cache_key(
             job_info.get("title", ""),
+            job_info.get("area", ""),
+            str(job_info.get("requirements", ""))[:200],
             candidate.get("title", ""),
         )
         cached = _cache_get(ck)

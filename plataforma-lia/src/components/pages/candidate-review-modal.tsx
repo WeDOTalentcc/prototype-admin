@@ -477,7 +477,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
 
                 <div className="flex items-center gap-2 text-sm text-lia-text-primary dark:text-lia-text-primary mb-2">
                   {currentCandidate.companyLogo ? (
-                    <img src={currentCandidate.companyLogo} alt="" className="w-5 h-5 rounded-md" />
+                    <NextImage src={currentCandidate.companyLogo} alt="" width={20} height={20} className="w-5 h-5 rounded-md" />
                   ) : (
                     <Briefcase className="w-4 h-4 text-lia-text-secondary" />
                   )}
@@ -565,7 +565,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                           
                           <div className="flex items-start gap-3">
                             {exp.companyLogo ? (
-                              <img src={exp.companyLogo} alt={exp.company} className="w-10 h-10 rounded-md" />
+                              <NextImage src={exp.companyLogo} alt={exp.company} width={40} height={40} className="w-10 h-10 rounded-md" />
                             ) : (
                               <div className="w-10 h-10 rounded-md bg-gray-100 flex items-center justify-center">
                                 <Building2 className="w-5 h-5 text-lia-text-secondary" />

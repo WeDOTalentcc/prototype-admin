@@ -1,2 +1,7 @@
 export { LIASearchSidebarChat } from './LIASearchSidebarChat'
 export { LIASearchSidebarInput } from './LIASearchSidebarInput'
+export { TabJobDescription } from './TabJobDescription'
+export { TabSimilar } from './TabSimilar'
+export { TabBoolean } from './TabBoolean'
+export { TabFiltros } from './TabFiltros'
+export type { ChatMessage, SearchTab, SearchResults, ApiCandidate, ApiExperience, ApiEducation } from './lia-sidebar-types'

@@ -178,7 +178,7 @@ export function DataBlockingModal({
           <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
             <div className="w-10 h-10 bg-gray-200 dark:bg-lia-bg-elevated rounded-full flex items-center justify-center">
               {candidate.avatar ? (
-                <img src={candidate.avatar} alt="" className="w-10 h-10 rounded-full" />
+                <NextImage src={candidate.avatar} alt="" width={40} height={40} className="w-10 h-10 rounded-full" />
               ) : (
                 <User className="w-5 h-5 text-lia-text-tertiary" />
               )}
