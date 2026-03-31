@@ -692,11 +692,11 @@ export function TriagemDetailsModal({
                       <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-lia-text-primary">
                         <Target className="w-4 h-4 lia-text-base" />
                         Análise Técnica
-        {/* @ts-ignore */}
+        
                       </h3>
                       {(report.technical_analysis as any).pontos_fortes && (
                         <div className="mb-2">
-        {/* @ts-ignore */}
+        
                           <p className="text-micro font-medium text-status-success mb-1 flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5" /> Pontos Fortes:</p>
                           {(report.technical_analysis as any).pontos_fortes.map((p: string, i: number) => (
                             <div key={`pf-${i}`} className="flex items-start gap-1.5 mb-1">
@@ -705,19 +705,19 @@ export function TriagemDetailsModal({
                             </div>
                           ))}
                         </div>
-        {/* @ts-ignore */}
+        
                       )}
                       {(report.technical_analysis as any).gaps && (report.technical_analysis as any).gaps.length > 0 && (
                         <div className="mb-2">
                           <p className="text-micro font-medium lia-text-base mb-1 flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5 text-status-warning" /> Gaps Identificados:</p>
-        {/* @ts-ignore */}
+        
                           <ul className="space-y-2">
                             {(report.technical_analysis as any).gaps.map((g: unknown, i: number) => {
                               const gs = typeof g === 'string' ? { texto: g, severidade: 'baixa' } : (g as { texto?: string; severidade?: string })
                               const sc = sevConfig[(gs.severidade as keyof typeof sevConfig) || 'baixa']
                               return (
                                 <li key={`gap-${i}`} className={`flex items-start gap-2.5 text-xs lia-text-base rounded-lg border px-3 py-2 ${sc.bg} ${sc.border}`}>
-        {/* @ts-ignore */}
+        
                                   <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${sc.dot}`} />
                                   <span className="flex-1">{gs.texto || String(gs)}</span>
                                   <span className={`text-micro font-bold tracking-wider shrink-0 ${sc.color}`}>{sc.label}</span>
@@ -726,7 +726,7 @@ export function TriagemDetailsModal({
                             })}
                           </ul>
                         </div>
-        {/* @ts-ignore */}
+        
                       )}
                       {(report.technical_analysis as any).evidencias && (
                         <div>
@@ -853,15 +853,15 @@ export function TriagemDetailsModal({
                         <Award className="w-4 h-4 lia-text-base" />
                         Recomendação
                       </h3>
-        {/* @ts-ignore */}
+        
                       <div className="p-2.5 rounded-lg mb-2" style={{backgroundColor: decisionDisplay.bg}}>
                         <p className="text-xs font-semibold" style={{color: decisionDisplay.color}}>{(report.recommendation as any).decisao}</p>
                         <p className="text-xs mt-1 lia-text-base">{(report.recommendation as any).justificativa}</p>
-        {/* @ts-ignore */}
+        
                       </div>
                       {(report.recommendation as any).proximos_passos && (
                         <div>
-        {/* @ts-ignore */}
+        
                           <p className="text-micro font-medium lia-text-secondary mb-1">Próximos Passos:</p>
                           {(report.recommendation as any).proximos_passos.map((step: string, i: number) => (
                             <div key={`step-${i}`} className="flex items-center gap-1.5 mb-1">
@@ -972,7 +972,7 @@ export function TriagemDetailsModal({
                             feedback.personalized_tip || '',
                             feedback.next_steps || '',
                           ] : []),
-                  {/* @ts-ignore */}
+                  
                           ...(f11Feedback.length > 0 ? (feedback ? ['', '--- Avaliação detalhada ---'] : []).concat(f11Feedback) : []),
                         ].filter(Boolean).join('\n')
                         navigator.clipboard.writeText(text)

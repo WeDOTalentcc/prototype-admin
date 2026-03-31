@@ -1943,37 +1943,6 @@ Princípios aplicados:
 ```
 
 ---
-
-## GAPS CONSOLIDADOS — STATUS ATUALIZADO
-
-### Audit Trail — ✅ COMPLETO (todos ativados)
-
-| Etapa | Status | Arquivo | Observação |
-|-------|--------|---------|------------|
-| E1 Login | ✅ Ativado | auth.py | log_decision em login success + failure |
-| E2 Criar/Editar Vaga | ✅ Ativado | jd_generation.py | log_decision em geração de JD |
-| E3 Roteiro WSI | ✅ Ativado | wsi_questions.py | log_decision em geração de perguntas |
-| E4 Busca | ✅ Ativado | sourcing_react_agent.py | log_decision em buscas globais |
-| E5 Gate 1 | ✅ Ativado | pipeline.py + approvals.py | log_decision em aprovações/rejeições |
-| E6 Contato | ✅ Ativado | communication.py | log_decision em envios email + WhatsApp |
-| E7 Triagem | ✅ Ativado | rubric_evaluation.py | log_decision em avaliações + FG flags |
-| E8 Gate 2 | ✅ Ativado | pipeline.py + approvals.py | log_decision em aprovações Gate 2 |
-| E9A Scheduling | ✅ Ativado | scheduling.py | log_decision em agendamentos |
-| E9B Feedback | ✅ Ativado | communication.py | log_decision em feedback enviado |
-
-### Infraestrutura — Status Atualizado
-
-| Item | Status | Observação |
-|------|--------|------------|
-| Bell notification (in-app) | ✅ Implementado | Task #82 — hook, componente, 8 proxy routes, badge server-authoritative |
-| Bias Audit Dashboard (Four-Fifths Rule) | ✅ Implementado | BiasAuditService + página admin/compliance/auditoria/bias |
-| LGPD DSR completo (export/delete) | ✅ Implementado | DataSubjectRequestsService — access, erasure, portability, rectification, restriction |
-| SOX Audit Export | ✅ Implementado | CSV export via /api/v1/audit-logs/export + página de exportação |
-| Predictive Analytics UI | ✅ Implementado | ML predict salary + time-to-fill integrados no Kanban |
-| EU AI Act Risk Classification | ◐ Parcial | Referências no Trust Center + LiaScoreCard (Art. 13/14); sem classificador dinâmico dedicado |
-| API keys produção (Twilio, Resend, ATS) | ⚠ PÓS-MVP | Dependem de credenciais de produção do cliente |
-| Elasticsearch + PGVector produção | ⚠ PÓS-MVP | Infra de produção — busca local (PostgreSQL) funciona sem eles |
-
 ---
 
 *Documento gerado a partir do código real do lia-agent-system (Replit) e documentação specs existente. Complementa o `ANALISE_ROADMAP_ALPHA1_vs_CODIGO.md` com nível de detalhe técnico passo-a-passo por etapa. Última atualização de status: 31/03/2026.*
