@@ -36,10 +36,12 @@ async def preview_weekly_digest(
     from app.domains.analytics.services.weekly_digest_service import WeeklyDigestService
 
     svc = WeeklyDigestService()
-    uid = recruiter_id or str(current_user.id)
-    name = current_user.name or "Recrutador"
 
     if recruiter_id and recruiter_id != str(current_user.id):
+        if current_user.role != UserRole.admin:
+            raise HTTPException(status_code=403, detail="Apenas administradores podem visualizar digest de outros usuários")
+        uid = recruiter_id
+        name = "Recrutador"
         try:
             from sqlalchemy import select
             result = await db.execute(select(User).where(User.id == recruiter_id))
@@ -48,6 +50,9 @@ async def preview_weekly_digest(
                 name = getattr(user, "name", getattr(user, "email", "Recrutador"))
         except Exception:
             pass
+    else:
+        uid = str(current_user.id)
+        name = current_user.name or "Recrutador"
 
     digest = await svc.generate_digest(uid, name, db)
 
