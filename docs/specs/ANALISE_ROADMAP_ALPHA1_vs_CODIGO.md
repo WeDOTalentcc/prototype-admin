@@ -447,7 +447,7 @@
 
 | # | O quê | Etapa | Impacto se não resolver |
 |---|-------|-------|------------------------|
-| G5 | **Apify API keys** | E4 | Apify service implementado com 5 actors (`apify_service.py`), mas depende de API keys de produção para funcionar |
+| G5 | ~~**Apify API keys**~~ | E4 | **RESOLVIDO** — `APIFY_API_KEY` configurada como secret no Replit |
 
 #### PRIORIDADE SUGERIDA
 
@@ -455,7 +455,7 @@
 |-----------|-------|---------------|
 | **P0 — Bloqueante MVP** | **100% COMPLETO** | Todos os itens resolvidos |
 | **P1 — Compliance** | **100% COMPLETO** | Todos os itens resolvidos |
-| **P2 — Integração** | G5 (Apify API keys) | Único item pendente: depende de contas de produção |
+| **P2 — Integração** | **100% COMPLETO** | G5 Apify API key configurada |
 | **P3 — Otimização** | **100% COMPLETO** | Embedding auto-trigger Gate 2 confirmado ATIVO |
 
 ---
@@ -929,7 +929,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 
 | # | Gap | Impacto | Prioridade |
 |---|-----|---------|-----------|
-| G7 | **Configuração de Infra Externa** — API keys: Twilio, Resend/SendGrid, Apify, ATS | Sem credenciais, tudo roda em "dev mode" | BLOQUEANTE |
+| G7 | **Configuração de Infra Externa** — API keys: Twilio, Resend/SendGrid, ATS | Sem credenciais, tudo roda em "dev mode" (Apify já configurado) | BLOQUEANTE |
 
 ### 6.2 Gaps de Compliance
 
