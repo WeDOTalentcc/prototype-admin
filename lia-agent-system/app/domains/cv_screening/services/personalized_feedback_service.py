@@ -1201,12 +1201,14 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
             if not record:
                 return False
 
+            is_policy_block = "FairnessGuard blocked" in reason
             record.status = PersonalizedFeedbackStatus.FAILED.value
             record.send_result = send_result or {}
             record.extra_data = {
                 **(record.extra_data or {}),
                 "last_failure_reason": reason,
                 "last_failure_at": datetime.utcnow().isoformat(),
+                "failure_type": "policy_blocked" if is_policy_block else "transient",
             }
 
             await db.commit()

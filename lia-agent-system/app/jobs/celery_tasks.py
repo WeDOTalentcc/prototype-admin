@@ -837,8 +837,7 @@ def feedback_process_pending_sends_task(self) -> dict:
                         and_(
                             PersonalizedFeedbackRecord.status == PersonalizedFeedbackStatus.FAILED.value,
                             sa_text(
-                                "COALESCE(extra_data->>'last_failure_reason', '') "
-                                "NOT LIKE '%FairnessGuard blocked%'"
+                                "COALESCE(extra_data->>'failure_type', 'transient') != 'policy_blocked'"
                             ),
                         ),
                     ),
