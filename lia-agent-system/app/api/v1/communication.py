@@ -229,6 +229,7 @@ async def send_email(
             except Exception as log_error:
                 logger.warning(f"⚠️ Failed to log communication: {log_error}")
         
+        _masked_recipient = (request.to_email or "")[:3] + "***" if request.to_email else "unknown"
         if result.get("success"):
             try:
                 await audit_service.log_decision(
@@ -242,6 +243,7 @@ async def send_email(
                         f"Type: {request.communication_type or 'email'}",
                         f"Send result: {result.get('message_id', 'N/A')}",
                         f"Template: {getattr(request, 'template_id', 'custom') or 'custom'}",
+                        f"Recipient: {_masked_recipient}",
                     ],
                     criteria_used=["recipient_validation", "template_selection", "channel_availability"],
                     candidate_id=request.candidate_id,
@@ -250,6 +252,26 @@ async def send_email(
                 )
             except Exception as audit_err:
                 logger.warning(f"Audit log failed for send_email: {audit_err}")
+        else:
+            try:
+                await audit_service.log_decision(
+                    company_id=company_id,
+                    agent_name="communication_module",
+                    decision_type="send_message",
+                    action="send_email",
+                    decision="failed",
+                    reasoning=[
+                        "Email dispatch failed",
+                        f"Error: {result.get('error', 'unknown')}",
+                        f"Recipient: {_masked_recipient}",
+                    ],
+                    criteria_used=["recipient_validation", "channel_availability"],
+                    candidate_id=request.candidate_id,
+                    job_vacancy_id=request.vacancy_id,
+                    human_review_required=False,
+                )
+            except Exception as audit_err:
+                logger.warning(f"Audit log failed for send_email failure: {audit_err}")
 
         return SendResponse(
             success=result.get("success", False),
@@ -320,6 +342,7 @@ async def send_whatsapp(
             except Exception as log_error:
                 logger.warning(f"⚠️ Failed to log communication: {log_error}")
         
+        _masked_phone = (request.to_phone or "")[:4] + "***" if request.to_phone else "unknown"
         if result.get("success"):
             try:
                 await audit_service.log_decision(
@@ -333,6 +356,7 @@ async def send_whatsapp(
                         f"Type: {request.communication_type or 'whatsapp'}",
                         f"Send result: {result.get('message_id', 'N/A')}",
                         f"Template: {getattr(request, 'template_id', 'custom') or 'custom'}",
+                        f"Recipient: {_masked_phone}",
                     ],
                     criteria_used=["recipient_validation", "message_content", "channel_availability"],
                     candidate_id=request.candidate_id,
@@ -341,6 +365,26 @@ async def send_whatsapp(
                 )
             except Exception as audit_err:
                 logger.warning(f"Audit log failed for send_whatsapp: {audit_err}")
+        else:
+            try:
+                await audit_service.log_decision(
+                    company_id=company_id,
+                    agent_name="communication_module",
+                    decision_type="send_message",
+                    action="send_whatsapp",
+                    decision="failed",
+                    reasoning=[
+                        "WhatsApp dispatch failed",
+                        f"Error: {result.get('error', 'unknown')}",
+                        f"Recipient: {_masked_phone}",
+                    ],
+                    criteria_used=["recipient_validation", "channel_availability"],
+                    candidate_id=request.candidate_id,
+                    job_vacancy_id=request.vacancy_id,
+                    human_review_required=False,
+                )
+            except Exception as audit_err:
+                logger.warning(f"Audit log failed for send_whatsapp failure: {audit_err}")
 
         return SendResponse(
             success=result.get("success", False),
@@ -502,6 +546,7 @@ async def send_screening_invite(
             except Exception as log_error:
                 logger.warning(f"⚠️ Failed to log screening invite: {log_error}")
         
+        _masked_invite_recipient = (request.candidate_name or "")[:3] + "***" if request.candidate_name else "unknown"
         if result.get("success"):
             try:
                 await audit_service.log_decision(
@@ -516,6 +561,7 @@ async def send_screening_invite(
                         f"Send result: {result.get('message_id', 'N/A')}",
                         f"Mock: {result.get('mock', False)}",
                         f"Override saturation: {request.override_saturation}",
+                        f"Recipient: {_masked_invite_recipient}",
                     ],
                     criteria_used=["recipient_validation", "saturation_check", "channel_availability", "vacancy_active"],
                     candidate_id=request.candidate_id,
@@ -524,6 +570,27 @@ async def send_screening_invite(
                 )
             except Exception as audit_err:
                 logger.warning(f"Audit log failed for send_screening_invite: {audit_err}")
+        else:
+            try:
+                await audit_service.log_decision(
+                    company_id=company_id,
+                    agent_name="communication_module",
+                    decision_type="send_message",
+                    action="send_screening_invite",
+                    decision="failed",
+                    reasoning=[
+                        "Screening invite dispatch failed",
+                        f"Channel: {channel}",
+                        f"Error: {result.get('error', 'unknown')}",
+                        f"Recipient: {_masked_invite_recipient}",
+                    ],
+                    criteria_used=["recipient_validation", "saturation_check", "channel_availability"],
+                    candidate_id=request.candidate_id,
+                    job_vacancy_id=request.vacancy_id,
+                    human_review_required=False,
+                )
+            except Exception as audit_err:
+                logger.warning(f"Audit log failed for send_screening_invite failure: {audit_err}")
 
         return ScreeningInviteResponse(
             success=result.get("success", False),

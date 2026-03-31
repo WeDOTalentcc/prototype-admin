@@ -1220,12 +1220,15 @@ async def search_candidates(request: PearchSearchRequest):
         _search_type = getattr(request, "search_type", None) or getattr(request, "type", "fast")
         _limit = getattr(request, "limit", 10)
         _timeout = getattr(request, "timeout", 60)
+        import time as _time
+        _gs_start = _time.monotonic()
         result = await pearch_service.search_candidates(
             query=request.query,
             search_type=str(_search_type),
             limit=_limit,
             timeout=_timeout
         )
+        _gs_duration_ms = round((_time.monotonic() - _gs_start) * 1000, 1)
         try:
             _result_count = len(getattr(result, "candidates", [])) if result else 0
             await audit_service.log_decision(
@@ -1237,10 +1240,12 @@ async def search_candidates(request: PearchSearchRequest):
                 reasoning=[
                     f"Global search ({_search_type}) executed",
                     f"Results returned: {_result_count}",
+                    f"Duration: {_gs_duration_ms}ms",
+                    f"Query length: {len(request.query)} chars",
                     f"Limit: {_limit}",
                     f"Timeout: {_timeout}s",
                 ],
-                criteria_used=["query", "search_type", "limit"],
+                criteria_used=["query", "search_type", "limit", "timeout"],
                 score=float(_result_count),
                 human_review_required=False,
             )
