@@ -823,6 +823,7 @@ def feedback_auto_send_task(self, feedback_id: str, company_id: str) -> dict:
                     metadata={
                         "feedback_id": feedback_id,
                         "company_id": company_id,
+                        "template_id": f"feedback:{record.tone}:{record.wsi_classification}",
                     },
                 )
                 sg_message_id = getattr(email_result, "message_id", None)
@@ -831,32 +832,37 @@ def feedback_auto_send_task(self, feedback_id: str, company_id: str) -> dict:
                     "message_id": sg_message_id,
                 }
                 if sg_message_id:
-                    try:
-                        from app.domains.communication.models.message_queue import MessageQueue
-                        mq_entry = MessageQueue(
-                            company_id=company_id,
-                            candidate_id=record.candidate_id or "",
-                            candidate_name=record.candidate_name or "",
-                            candidate_email=record.candidate_email,
-                            vacancy_id=record.job_id,
-                            vacancy_title=record.job_title,
-                            channel="email",
-                            message_type="rejection_feedback",
-                            subject=subject,
-                            body_text=body_text,
-                            body_html=body_html,
-                            status="sent",
-                            extra_data={
-                                "sg_message_id": sg_message_id,
-                                "feedback_id": feedback_id,
-                                "template_id": f"feedback:{record.tone}:{record.wsi_classification}",
-                                "source": "feedback_auto_send",
-                            },
-                        )
-                        db.add(mq_entry)
-                        await db.commit()
-                    except Exception as mq_exc:
-                        logger.debug("feedback.auto_send: MessageQueue entry failed: %s", mq_exc)
+                    from app.domains.communication.models.message_queue import MessageQueue as MQModel
+                    from datetime import datetime as dt_util
+                    mq_entry = MQModel(
+                        company_id=company_id,
+                        candidate_id=record.candidate_id or "",
+                        candidate_name=record.candidate_name or "",
+                        candidate_email=record.candidate_email,
+                        vacancy_id=record.job_id,
+                        vacancy_title=record.job_title,
+                        channel="email",
+                        message_type="rejection_feedback",
+                        subject=subject,
+                        body_text=body_text,
+                        body_html=body_html,
+                        status="sent",
+                        provider_message_id=sg_message_id,
+                        sent_at=dt_util.utcnow(),
+                        created_by="feedback_auto_send",
+                        extra_data={
+                            "sg_message_id": sg_message_id,
+                            "feedback_id": feedback_id,
+                            "template_id": f"feedback:{record.tone}:{record.wsi_classification}",
+                            "source": "feedback_auto_send",
+                        },
+                    )
+                    db.add(mq_entry)
+                    await db.commit()
+                    logger.info(
+                        "feedback.auto_send: MessageQueue created id=%s sg_id=%s",
+                        mq_entry.id, sg_message_id,
+                    )
 
             if record.candidate_phone and channel_used in ("whatsapp", "both"):
                 from app.domains.communication.services.communication_dispatcher import CommunicationDispatcher

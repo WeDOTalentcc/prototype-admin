@@ -941,7 +941,12 @@ class SendGridEmailService:
             if categories:
                 for category in categories:
                     message.add_category(category)
-            
+
+            if metadata:
+                from sendgrid.helpers.mail import CustomArg
+                for key, value in metadata.items():
+                    message.add_custom_arg(CustomArg(key=str(key), value=str(value)))
+
             loop = asyncio.get_event_loop()
             response = await loop.run_in_executor(
                 None,
