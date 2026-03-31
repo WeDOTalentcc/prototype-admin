@@ -210,7 +210,7 @@ export function CandidatePageFilesTab({
                 className="h-7 text-xs gap-1"
                 onClick={() => {
                   setSelectedFile({
-                    name: ,
+                    name: `Triagem_Voz_${_candidate.name.split(" ")[0]}.mp3`,
                     type: "audio",
                     transcription: "Olá, meu nome é Maria Oliveira e sou UX Designer há 8 anos. Trabalho atualmente na empresa XYZ como Design Lead...",
                     aiAnalysis: { confidence: 92, communication: 88, enthusiasm: 85, clarity: 90 },
