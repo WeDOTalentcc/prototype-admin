@@ -1,20 +1,16 @@
 """
 Template Learning Service — G9.
 
-Tracks email template performance (open/click rates) per company using
-persistent EmailTrackingEvent records. Recommends the best-performing
-template variant for a given context.
-
-Data is derived from EmailTrackingEvent table — no in-memory state.
-Each webhook open/click records a tracking event that references the
-template via resolve_company_template(). This service queries those
-events for aggregated performance metrics.
+Tracks email template performance (open/click rates) per company.
+Uses MessageQueue + EmailTrackingEvent for persistent data:
+- MessageQueue stores send events with template_id in extra_data
+- EmailTrackingEvent stores open/click events linked by notification_id
+- Queries join the two to compute per-template open/click rates
 """
 import logging
-from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import select, func, case, and_
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
@@ -22,10 +18,11 @@ logger = logging.getLogger(__name__)
 
 class TemplateLearningService:
     """
-    Persistent template performance tracking via EmailTrackingEvent.
+    Persistent template performance tracking.
 
-    Provides record_* methods (fire-and-forget counters via tracking events)
-    and async query methods for recommendation and reporting.
+    record_send/open/click are lightweight log-only signals.
+    Actual data is derived from MessageQueue (sends) and
+    EmailTrackingEvent (opens/clicks) via SQL joins.
     """
 
     def record_send(
@@ -34,20 +31,20 @@ class TemplateLearningService:
         template_id: str,
         context: Optional[Dict[str, Any]] = None,
     ) -> None:
-        logger.debug(
-            "[TemplateLearning] send recorded company=%s template=%s",
+        logger.info(
+            "[TemplateLearning] send company=%s template=%s",
             company_id, template_id,
         )
 
     def record_open(self, company_id: str, template_id: str) -> None:
-        logger.debug(
-            "[TemplateLearning] open recorded company=%s template=%s",
+        logger.info(
+            "[TemplateLearning] open company=%s template=%s",
             company_id, template_id,
         )
 
     def record_click(self, company_id: str, template_id: str) -> None:
-        logger.debug(
-            "[TemplateLearning] click recorded company=%s template=%s",
+        logger.info(
+            "[TemplateLearning] click company=%s template=%s",
             company_id, template_id,
         )
 
@@ -61,41 +58,44 @@ class TemplateLearningService:
     ) -> str:
         """Return best-performing template_id for a company.
 
-        Queries EmailTrackingEvent for aggregated open rates per template.
-        Picks highest open_rate among templates with >= min_sends sends.
+        Joins MessageQueue (sends with template_id in extra_data) and
+        EmailTrackingEvent (opens) to compute open rates per template.
         """
         try:
-            from app.models.email_tracking import EmailTrackingEvent
-
-            stmt = (
-                select(
-                    func.split_part(EmailTrackingEvent.token, ":", 2).label("template_id"),
-                    func.count().filter(
-                        EmailTrackingEvent.event_type == "token"
-                    ).label("sends"),
-                    func.count().filter(
-                        EmailTrackingEvent.event_type == "open"
-                    ).label("opens"),
+            result = await db.execute(text("""
+                WITH sends AS (
+                    SELECT
+                        mq.extra_data->>'template_id' AS template_id,
+                        mq.id::text AS notification_id
+                    FROM message_queue mq
+                    WHERE mq.company_id = :company_id
+                      AND mq.extra_data->>'template_id' IS NOT NULL
+                ),
+                stats AS (
+                    SELECT
+                        s.template_id,
+                        COUNT(DISTINCT s.notification_id) AS send_count,
+                        COUNT(DISTINCT CASE WHEN e.event_type = 'open' THEN e.notification_id END) AS open_count
+                    FROM sends s
+                    LEFT JOIN email_tracking_events e ON e.notification_id = s.notification_id
+                    GROUP BY s.template_id
+                    HAVING COUNT(DISTINCT s.notification_id) >= :min_sends
                 )
-                .where(
-                    EmailTrackingEvent.company_id == company_id,
-                    EmailTrackingEvent.event_type.in_(["token", "open"]),
+                SELECT template_id, send_count, open_count,
+                       ROUND(open_count::numeric / NULLIF(send_count, 0), 4) AS open_rate
+                FROM stats
+                ORDER BY open_rate DESC NULLS LAST
+                LIMIT 1
+            """), {"company_id": company_id, "min_sends": min_sends})
+            row = result.fetchone()
+
+            if row:
+                logger.debug(
+                    "[TemplateLearning] recommend company=%s best=%s open_rate=%s",
+                    company_id, row.template_id, row.open_rate,
                 )
-                .group_by("template_id")
-                .having(func.count().filter(EmailTrackingEvent.event_type == "token") >= min_sends)
-            )
-            result = await db.execute(stmt)
-            rows = result.all()
-
-            if not rows:
-                return fallback_template_id
-
-            best = max(rows, key=lambda r: (r.opens / r.sends if r.sends > 0 else 0))
-            logger.debug(
-                "[TemplateLearning] recommend company=%s best=%s open_rate=%.2f",
-                company_id, best.template_id, best.opens / best.sends if best.sends > 0 else 0,
-            )
-            return best.template_id
+                return row.template_id
+            return fallback_template_id
         except Exception as exc:
             logger.debug("[TemplateLearning] recommend fallback: %s", exc)
             return fallback_template_id
@@ -106,28 +106,35 @@ class TemplateLearningService:
         company_id: str,
         template_id: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
-        """Get performance metrics from persistent tracking events."""
+        """Get performance metrics per template from persistent data."""
         try:
-            from app.models.email_tracking import EmailTrackingEvent
-
-            conditions = [EmailTrackingEvent.company_id == company_id]
+            params: Dict[str, Any] = {"company_id": company_id}
+            template_filter = ""
             if template_id:
-                conditions.append(
-                    func.split_part(EmailTrackingEvent.token, ":", 2) == template_id
-                )
+                template_filter = "AND mq.extra_data->>'template_id' = :template_id"
+                params["template_id"] = template_id
 
-            stmt = (
-                select(
-                    func.split_part(EmailTrackingEvent.token, ":", 2).label("template_id"),
-                    func.count().filter(EmailTrackingEvent.event_type == "token").label("sends"),
-                    func.count().filter(EmailTrackingEvent.event_type == "open").label("opens"),
-                    func.count().filter(EmailTrackingEvent.event_type == "click").label("clicks"),
+            result = await db.execute(text(f"""
+                WITH sends AS (
+                    SELECT
+                        mq.extra_data->>'template_id' AS template_id,
+                        mq.id::text AS notification_id
+                    FROM message_queue mq
+                    WHERE mq.company_id = :company_id
+                      AND mq.extra_data->>'template_id' IS NOT NULL
+                      {template_filter}
                 )
-                .where(and_(*conditions))
-                .group_by("template_id")
-            )
-            result = await db.execute(stmt)
-            rows = result.all()
+                SELECT
+                    s.template_id,
+                    COUNT(DISTINCT s.notification_id) AS sends,
+                    COUNT(DISTINCT CASE WHEN e.event_type = 'open' THEN e.notification_id END) AS opens,
+                    COUNT(DISTINCT CASE WHEN e.event_type = 'click' THEN e.notification_id END) AS clicks
+                FROM sends s
+                LEFT JOIN email_tracking_events e ON e.notification_id = s.notification_id
+                GROUP BY s.template_id
+                ORDER BY sends DESC
+            """), params)
+            rows = result.fetchall()
             return [
                 {
                     "template_id": r.template_id,

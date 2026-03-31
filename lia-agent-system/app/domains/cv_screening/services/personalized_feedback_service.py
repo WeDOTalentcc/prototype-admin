@@ -128,6 +128,7 @@ class PersonalizedFeedbackRequest(BaseModel):
     recruiter_notes: Optional[str] = None
     company_id: str = "default"
     requested_by: Optional[str] = None
+    auto_send: bool = False
     # Gap #11/#12: Caminho de decisão + gates ativados para template determinístico
     decision_type: Literal["REPROVADO", "EM_AVALIACAO", "APROVADO"] = "REPROVADO"
     failed_gates: List[str] = Field(default_factory=list)
@@ -440,7 +441,19 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
             await db.refresh(record)
             
             logger.info(f"Generated personalized feedback {feedback_id} for candidate {request.candidate.name}")
-            
+
+            if not guard_result.is_blocked and getattr(request, "auto_send", False):
+                record.status = PersonalizedFeedbackStatus.APPROVED.value
+                record.approved_by = "auto_send"
+                record.approved_at = datetime.utcnow()
+                await db.commit()
+                try:
+                    from app.jobs.celery_tasks import feedback_auto_send_task
+                    feedback_auto_send_task.delay(feedback_id, request.company_id)
+                    logger.info("feedback.auto_send dispatched post-generation id=%s", feedback_id)
+                except Exception as send_exc:
+                    logger.warning("feedback.auto_send dispatch failed id=%s: %s", feedback_id, send_exc)
+
             return PersonalizedFeedbackResult(
                 feedback_id=feedback_id,
                 subject=record.subject,
