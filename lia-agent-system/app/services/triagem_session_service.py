@@ -64,7 +64,7 @@ WSI_BLOCKS = [
 
 WELCOME_MESSAGE = (
     "Vou conduzir sua triagem para a vaga de {job_title} na {company_name}. "
-    "A conversa tem 7 etapas e dura aproximadamente 15-20 minutos. "
+    "A conversa tem {total_blocks} etapas e dura aproximadamente 15-20 minutos. "
     "Você pode responder por texto ou áudio. Vamos começar?"
 )
 
@@ -99,7 +99,7 @@ def _build_progress(current_block: int, questions_answered: int) -> Dict[str, An
     if current_block < len(WSI_BLOCKS):
         block_name = WSI_BLOCKS[current_block]["name"]
     remaining = max(0, TOTAL_QUESTIONS - questions_answered)
-    estimated_minutes = max(1, int(remaining * 1.5))
+    estimated_minutes = int(remaining * 1.5) if remaining > 0 else 0
     return {
         "current_block": current_block,
         "total_blocks": len(WSI_BLOCKS),
@@ -357,6 +357,7 @@ class TriagemSessionService:
                 candidate_name=session_data.get("candidate_name", "Candidato"),
                 job_title=session_data.get("job_title", "a vaga"),
                 company_name=session_data.get("company_name", "a empresa"),
+                total_blocks=len(WSI_BLOCKS),
             ),
         }
 
@@ -430,7 +431,7 @@ class TriagemSessionService:
             company_logo_url=company_logo_url,
             status="invited",
             current_block=0,
-            total_blocks=7,
+            total_blocks=len(WSI_BLOCKS),
             invite_channel=invite_channel,
             voice_mode=voice_mode,
             expires_at=datetime.utcnow() + timedelta(days=expires_days),
@@ -444,6 +445,7 @@ class TriagemSessionService:
             candidate_name=candidate_name or "candidato(a)",
             job_title=job_title or "a vaga",
             company_name=company_name or "a empresa",
+            total_blocks=len(WSI_BLOCKS),
         )
         welcome_msg = TriagemMessage(
             session_id=session.id,
@@ -881,8 +883,10 @@ class TriagemSessionService:
             actions["recruiter_notification"] = "failed"
 
         try:
-            await self._update_pipeline_stage(db, session)
-            if session.wsi_final_score and session.wsi_final_score >= 7.5:
+            updated = await self._update_pipeline_stage(db, session)
+            if not updated:
+                actions["pipeline_update"] = "skipped_no_pipeline_row"
+            elif session.wsi_final_score and session.wsi_final_score >= 7.5:
                 actions["pipeline_update"] = "auto_moved_to_interview"
             elif session.wsi_final_score and session.wsi_final_score < 5.5:
                 actions["pipeline_update"] = "marked_screened_low"
@@ -897,12 +901,12 @@ class TriagemSessionService:
 
     async def _update_pipeline_stage(
         self, db: AsyncSession, session: TriagemSession
-    ) -> None:
+    ) -> bool:
         from sqlalchemy import text as sql_text
 
         if not session.candidate_id or not session.job_id:
             logger.warning("[Triagem] Cannot update pipeline: missing candidate_id or job_id")
-            return
+            return False
 
         score = session.wsi_final_score or 0.0
         recommendation = session.recommendation or "aguardando"
@@ -934,18 +938,20 @@ class TriagemSessionService:
             },
         )
         rows = result.rowcount
+        await db.flush()
         if rows:
             logger.info(
                 f"[Triagem] Pipeline updated: candidate={session.candidate_id} "
                 f"→ stage={target_stage} status={target_status} score={score}"
             )
+            return True
         else:
             logger.warning(
                 f"[Triagem] No vacancy_candidates row found for "
                 f"candidate={session.candidate_id} job={session.job_id} — "
                 f"pipeline not updated (candidate may not be in pipeline yet)"
             )
-        await db.flush()
+            return False
 
 
 triagem_service = TriagemSessionService()

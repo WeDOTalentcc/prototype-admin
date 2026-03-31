@@ -38,7 +38,7 @@
     "next-env.d.ts",
     "out/types/**/*.ts"
   ],
-  "exclude": [
+  "exclude": ["exports", "docs", "scripts",
     "node_modules"
   ]
 }
