@@ -130,7 +130,7 @@ export function useProceedToNextStage({
         }
       }
 
-      const missingFields = getMissingCriticalFields(currentStageConfig.id, detectedCriteria)
+      const missingFields = getMissingCriticalFields(currentStageConfig.id, detectedCriteria as unknown as Record<string, unknown>)
       if (missingFields.recommended.length > 0) {
         transitionContent += `\n\n📝 *Campos opcionais não preenchidos: ${missingFields.recommended.join(', ')}*`
       }
