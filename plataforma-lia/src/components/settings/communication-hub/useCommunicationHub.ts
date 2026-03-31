@@ -56,7 +56,7 @@ export function useCommunicationHub(activeSubsection?: string) {
       const res = await fetch("/api/backend-proxy/digest/weekly/preferences", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: "default_user", enabled: newValue }),
+        body: JSON.stringify({ enabled: newValue }),
       })
       if (res.ok) {
         setWeeklyDigestEnabled(newValue)
@@ -215,7 +215,7 @@ export function useCommunicationHub(activeSubsection?: string) {
       }
 
       try {
-        const digestPrefRes = await fetch('/api/backend-proxy/digest/weekly/preferences?user_id=default_user')
+        const digestPrefRes = await fetch('/api/backend-proxy/digest/weekly/preferences')
         if (digestPrefRes.ok) {
           const prefData = await digestPrefRes.json()
           if (prefData && prefData.weekly_report_enabled !== undefined) {

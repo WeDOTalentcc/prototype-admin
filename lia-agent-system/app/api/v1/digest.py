@@ -5,7 +5,7 @@ Endpoints:
 - GET  /digest/weekly/preview      — Preview digest data for the authenticated user
 - POST /digest/weekly/send         — Trigger digest delivery for a specific user (admin)
 - POST /digest/weekly/send-all     — Trigger digest for all recruiters (admin, manual)
-- GET  /digest/weekly/preferences  — Get weekly digest preference for a user
+- GET  /digest/weekly/preferences  — Get weekly digest preference for current user
 - PUT  /digest/weekly/preferences  — Toggle weekly digest opt-in/opt-out
 """
 from fastapi import APIRouter, Depends, HTTPException
@@ -15,6 +15,8 @@ from typing import Optional
 import logging
 
 from app.core.database import get_db
+from app.auth.models import User, UserRole
+from app.auth.dependencies import get_current_user_or_demo
 
 logger = logging.getLogger(__name__)
 
@@ -22,26 +24,24 @@ router = APIRouter(prefix="/digest", tags=["digest"])
 
 
 class WeeklyDigestPreferenceRequest(BaseModel):
-    user_id: str
     enabled: bool
 
 
 @router.get("/weekly/preview")
 async def preview_weekly_digest(
     recruiter_id: Optional[str] = None,
+    current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
 ):
     from app.domains.analytics.services.weekly_digest_service import WeeklyDigestService
 
     svc = WeeklyDigestService()
-    uid = recruiter_id or "preview-user"
-    name = "Recrutador"
+    uid = recruiter_id or str(current_user.id)
+    name = current_user.name or "Recrutador"
 
-    if recruiter_id:
+    if recruiter_id and recruiter_id != str(current_user.id):
         try:
-            from app.auth.models import User
             from sqlalchemy import select
-
             result = await db.execute(select(User).where(User.id == recruiter_id))
             user = result.scalar_one_or_none()
             if user:
@@ -70,27 +70,24 @@ async def preview_weekly_digest(
 @router.post("/weekly/send")
 async def send_weekly_digest(
     recruiter_id: str,
+    current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
 ):
+    if current_user.role != UserRole.admin and str(current_user.id) != recruiter_id:
+        raise HTTPException(status_code=403, detail="Apenas administradores podem enviar digest para outros usuários")
+
     from app.domains.analytics.services.weekly_digest_service import WeeklyDigestService
+    from sqlalchemy import select
 
     svc = WeeklyDigestService()
 
     name = "Recrutador"
-    try:
-        from app.auth.models import User
-        from sqlalchemy import select
-
-        result = await db.execute(select(User).where(User.id == recruiter_id))
-        user = result.scalar_one_or_none()
-        if user:
-            name = getattr(user, "name", getattr(user, "email", "Recrutador"))
-        else:
-            raise HTTPException(status_code=404, detail="Recruiter not found")
-    except HTTPException:
-        raise
-    except Exception:
-        pass
+    result = await db.execute(select(User).where(User.id == recruiter_id))
+    user = result.scalar_one_or_none()
+    if user:
+        name = getattr(user, "name", getattr(user, "email", "Recrutador"))
+    else:
+        raise HTTPException(status_code=404, detail="Recruiter not found")
 
     result = await svc.generate_and_deliver(recruiter_id, name, db)
     return result
@@ -98,8 +95,12 @@ async def send_weekly_digest(
 
 @router.post("/weekly/send-all")
 async def send_weekly_digest_to_all(
+    current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
 ):
+    if current_user.role != UserRole.admin:
+        raise HTTPException(status_code=403, detail="Apenas administradores podem disparar digest para todos")
+
     from app.domains.analytics.services.weekly_digest_service import WeeklyDigestService
 
     svc = WeeklyDigestService()
@@ -109,28 +110,11 @@ async def send_weekly_digest_to_all(
 
 @router.get("/weekly/preferences")
 async def get_weekly_digest_preference(
-    user_id: str,
+    current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
 ):
-    import uuid as _uuid
-    try:
-        _uuid.UUID(user_id)
-    except (ValueError, AttributeError):
-        return {"user_id": user_id, "weekly_report_enabled": True}
-
-    from app.auth.models import User
-    from sqlalchemy import select
-
-    try:
-        result = await db.execute(select(User).where(User.id == user_id))
-        user = result.scalar_one_or_none()
-    except Exception:
-        return {"user_id": user_id, "weekly_report_enabled": True}
-
-    if not user:
-        return {"user_id": user_id, "weekly_report_enabled": True}
-
-    prefs = getattr(user, "notification_preferences", None) or {}
+    user_id = str(current_user.id)
+    prefs = getattr(current_user, "notification_preferences", None) or {}
     enabled = prefs.get("weekly_report_enabled", True)
 
     return {"user_id": user_id, "weekly_report_enabled": enabled}
@@ -139,49 +123,33 @@ async def get_weekly_digest_preference(
 @router.put("/weekly/preferences")
 async def update_weekly_digest_preference(
     body: WeeklyDigestPreferenceRequest,
+    current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
 ):
-    import uuid as _uuid
-    try:
-        _uuid.UUID(body.user_id)
-    except (ValueError, AttributeError):
-        return {
-            "user_id": body.user_id,
-            "weekly_report_enabled": body.enabled,
-            "message": "Preferência registrada (usuário temporário).",
-        }
-
-    from app.auth.models import User
-    from sqlalchemy import select
-
-    result = await db.execute(select(User).where(User.id == body.user_id))
-    user = result.scalar_one_or_none()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    prefs = getattr(user, "notification_preferences", None) or {}
+    prefs = getattr(current_user, "notification_preferences", None) or {}
     if not isinstance(prefs, dict):
         prefs = {}
 
     prefs["weekly_report_enabled"] = body.enabled
-    user.notification_preferences = prefs
+    current_user.notification_preferences = prefs
 
     try:
         from sqlalchemy.orm.attributes import flag_modified
-        flag_modified(user, "notification_preferences")
+        flag_modified(current_user, "notification_preferences")
     except Exception:
         pass
 
     await db.commit()
 
+    user_id = str(current_user.id)
     logger.info(
         "[WeeklyDigest] Preference updated user=%s weekly_report_enabled=%s",
-        body.user_id,
+        user_id,
         body.enabled,
     )
 
     return {
-        "user_id": body.user_id,
+        "user_id": user_id,
         "weekly_report_enabled": body.enabled,
         "message": "Preferência atualizada com sucesso.",
     }

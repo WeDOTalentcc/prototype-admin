@@ -6,11 +6,8 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:800
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('user_id') || 'default_user'
-
     const response = await fetch(
-      `${BACKEND_URL}/api/v1/digest/weekly/preferences?user_id=${userId}`,
+      `${BACKEND_URL}/api/v1/digest/weekly/preferences`,
       {
         method: 'GET',
         headers: getAuthHeaders(request),
