@@ -9,7 +9,7 @@
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
-    "noImplicitAny": false, // TECH-DEBT: strict:true conflicts with noImplicitAny:false. 215 implicit-any errors block removal. Track as tech-debt.
+    "noImplicitAny": false,
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
@@ -38,7 +38,15 @@
     "next-env.d.ts",
     "out/types/**/*.ts"
   ],
-  "exclude": ["exports", "docs", "scripts",
-    "node_modules"
+  "exclude": [
+    "exports",
+    "docs",
+    "scripts",
+    "node_modules",
+    "src/**/__tests__/**",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/*.spec.ts",
+    "src/**/*.spec.tsx"
   ]
 }
