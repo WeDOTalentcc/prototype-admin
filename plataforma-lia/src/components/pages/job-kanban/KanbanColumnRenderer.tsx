@@ -4,19 +4,6 @@
 import React from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ScoreIconButton } from "@/components/ui/score-icon-button"
-import { ScoreBreakdownBadgeLazy } from "@/components/score/ScoreBreakdownBadge"
-import { AISuggestionBadge } from "@/components/ai"
-import {
-  StatusBadge,
-  ChannelBadge,
-  SourceBadge,
-  WarningBadge,
-  DateTimeBadge,
-  OriginBadge,
-  AwaitingBadge,
-} from "@/components/ui/status-badge"
-import { OverrideApproveButton } from "@/components/kanban/components/OverrideApproveButton"
 import { SaturationBadge } from "@/components/kanban/components/SaturationBadge"
 import { ColumnContextMenu } from "@/components/kanban/components/ColumnContextMenu"
 import {
@@ -25,51 +12,18 @@ import {
   type RequestedField,
 } from "@/components/ui/data-request-indicator"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu"
-import {
   Briefcase,
   Building,
   MapPin,
   Flag,
-  MoreVertical,
   Eye,
-  Mail,
-  MessageCircle,
-  Calendar,
-  ClipboardList,
-  MessageSquareText,
-  Bookmark,
-  Heart,
-  Gauge,
-  BrainCircuit,
-  Target,
-  Code,
-  Globe,
-  Fingerprint,
-  User,
-  CheckCircle,
-  Clock,
-  CalendarCheck,
-  Star,
-  FileText,
-  Trophy,
-  XCircle,
-  DollarSign,
-  ThumbsUp,
-  ThumbsDown,
-  AlertCircle,
-  Video,
-  X,
 } from "lucide-react"
-import { getStageByName, isApplicationSource } from "@/lib/recruitment-stages"
-import { getSuggestionForCandidate } from "@/hooks/useCandidateSuggestions"
-import { formatScorePercent } from "@/lib/design-tokens"
+import { getStageByName } from "@/lib/recruitment-stages"
 import type { CandidateLocal } from "@/services/lia-api"
+import { KanbanCardActions } from "./KanbanCardActions"
+import { KanbanCardScores } from "./KanbanCardScores"
+import { KanbanCardStatusBadges } from "./KanbanCardStatusBadges"
+import { KanbanCardInterviewButtons } from "./KanbanCardInterviewButtons"
 
 type KanbanCandidate = CandidateLocal & {
   score?: number
@@ -324,9 +278,7 @@ export function KanbanColumnRenderer({
 
   return (
     <div
-      className={`flex flex-col flex-1 bg-lia-bg-primary rounded-md min-w-[275px] max-w-[368px] border border-lia-border-subtle transition-colors motion-reduce:transition-none duration-300 ${
-        isDropping ? "ring-2 ring-gray-400 bg-gray-50/20" : ""
-      } h-[calc(100vh-16rem)]`}
+      className={}
       onDragOver={(e) => onDragOver(e, stageId)}
       onDragLeave={onDragLeave}
       onDrop={(e) => onDrop(e, stageId)}
@@ -336,11 +288,9 @@ export function KanbanColumnRenderer({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 group">
             <div
-              className={`w-2 h-2 rounded-full ${columnStyle.dot} transition-transform motion-reduce:transition-none duration-300 ${
-                isDropping ? "scale-150" : ""
-              }`}
+              className={}
             ></div>
-            <h3 className={`font-medium text-xs ${columnStyle.header}`}>{displayTitle}</h3>
+            <h3 className={}>{displayTitle}</h3>
             <span className="text-micro text-lia-text-primary dark:text-lia-text-primary bg-gray-100 dark:bg-lia-bg-secondary px-1.5 py-0.5 rounded-full">
               {filteredCandidates.length}
             </span>
@@ -384,7 +334,7 @@ export function KanbanColumnRenderer({
                 }
               }}
               className="w-3.5 h-3.5 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
-              title={`Selecionar todos da etapa ${displayTitle}`}
+              title={}
             />
           )}
         </div>
@@ -398,28 +348,19 @@ export function KanbanColumnRenderer({
             draggable
             onDragStart={(e) => onDragStart(e, candidate, stageId)}
             onDragEnd={onDragEnd}
-            className={`bg-white dark:bg-lia-bg-secondary rounded-md border relative overflow-hidden ${
-              candidate.needsAction
-                ? "border-l-4 border-l-gray-800 border-lia-border-subtle dark:border-lia-border-subtle"
-                : (candidate.status === "triado_aprovado" || candidate.status === "triado") &&
-                  stageId === "screening"
-                ? "border-l-4 border-l-green-500 border-lia-border-subtle dark:border-lia-border-subtle bg-status-success/10/30 dark:bg-status-success/20"
-                : "border-lia-border-subtle dark:border-lia-border-subtle"
-            } transition-colors duration-300 cursor-move group`}
-            style={{animationDelay: `${index * 50}ms`,
+            className={}
+            style={{animationDelay: ,
               minHeight: "110px",
               transition: "all 0.3s ease",
               animation: isDropping ? "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite" : undefined}}
             onMouseEnter={(e) => {
               if (!draggedCandidate) {
                 e.currentTarget.style.transform = "translateY(-1px)"
-                
               }
             }}
             onMouseLeave={(e) => {
               if (!draggedCandidate) {
                 e.currentTarget.style.transform = "translateY(0)"
-                
               }
             }}
             onClick={() => !draggedCandidate && onOpenPreview(candidate)}
@@ -436,123 +377,19 @@ export function KanbanColumnRenderer({
 
             <div className="p-2 relative">
               {/* Ações rápidas - Posicionadas no canto direito */}
-              <div className="absolute right-2 top-8 flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none z-10">
-                {/* Menu de opções - Primeiro */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      className="p-1 hover:bg-gray-100 rounded-md transition-opacity motion-reduce:transition-none bg-lia-bg-primary/80"
-                      onClick={(e) => e.stopPropagation()}
-                      title="Mais opções"
-                      aria-label="Mais opções do candidato"
-                    >
-                      <MoreVertical className="w-3 h-3 text-lia-text-secondary" aria-hidden="true" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent side="right" align="start" sideOffset={8} className="w-48">
-                    <DropdownMenuItem
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onSendEmail(candidate)
-                      }}
-                      className="text-xs text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer"
-                    >
-                      <Mail className="w-3.5 h-3.5 mr-2 text-lia-text-tertiary" />
-                      Enviar Email
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onSendWhatsApp(candidate)
-                      }}
-                      className="text-xs text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer"
-                    >
-                      <MessageCircle className="w-3.5 h-3.5 mr-2 text-lia-text-tertiary" />
-                      Enviar WhatsApp
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onScheduleInterview(candidate)
-                      }}
-                      className="text-xs text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer"
-                    >
-                      <Calendar className="w-3.5 h-3.5 mr-2 text-lia-text-tertiary" />
-                      Agendar Entrevista
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onSendWSIInvite(candidate)
-                      }}
-                      className="text-xs text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer"
-                    >
-                      <ClipboardList className="w-3.5 h-3.5 mr-2 text-lia-text-tertiary" />
-                      Triagem WSI
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onSendFeedback(candidate)
-                      }}
-                      className="text-xs text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer"
-                    >
-                      <MessageSquareText className="w-3.5 h-3.5 mr-2 text-lia-text-tertiary" />
-                      Enviar Feedback
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onToggleShortList(candidate.id)
-                      }}
-                      className="text-xs text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer"
-                    >
-                      <Bookmark
-                        className={`w-3.5 h-3.5 mr-2 ${
-                          shortListedCandidateIds.has(candidate.id)
-                            ? "fill-gray-900 text-lia-text-primary dark:fill-gray-50 dark:text-lia-text-primary"
-                            : "text-lia-text-tertiary"
-                        }`}
-                      />
-                      {shortListedCandidateIds.has(candidate.id)
-                        ? "Remover da Short List"
-                        : "Adicionar à Short List"}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onToggleFavorite(candidate.id)
-                      }}
-                      className="text-xs text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer"
-                    >
-                      <Heart
-                        className={`w-3.5 h-3.5 mr-2 ${
-                          favoriteCandidates.has(candidate.id)
-                            ? "fill-red-500 text-status-error"
-                            : "text-lia-text-tertiary"
-                        }`}
-                      />
-                      {favoriteCandidates.has(candidate.id)
-                        ? "Remover dos Favoritos"
-                        : "Adicionar a Favoritos"}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                {/* Botão de Preview */}
-                <button
-                  className="p-1 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none bg-lia-bg-primary/80"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onOpenPreview(candidate)
-                  }}
-                  title="Ver detalhes do candidato"
-                  aria-label={`Ver detalhes de ${candidate.name}`}
-                >
-                  <Eye className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" aria-hidden="true" />
-                </button>
-              </div>
+              <KanbanCardActions
+                candidate={candidate}
+                shortListedCandidateIds={shortListedCandidateIds}
+                favoriteCandidates={favoriteCandidates}
+                onOpenPreview={onOpenPreview}
+                onSendEmail={onSendEmail}
+                onSendWhatsApp={onSendWhatsApp}
+                onScheduleInterview={onScheduleInterview}
+                onSendWSIInvite={onSendWSIInvite}
+                onSendFeedback={onSendFeedback}
+                onToggleShortList={onToggleShortList}
+                onToggleFavorite={onToggleFavorite}
+              />
 
               {/* Header do Card - Checkbox, Avatar, Nome */}
               <div className="flex items-center gap-1.5 mb-2 pr-6">
@@ -561,7 +398,7 @@ export function KanbanColumnRenderer({
                   type="checkbox"
                   checked={selectedCandidates.has(candidate.id)}
                   className="w-3 h-3 rounded-md cursor-pointer flex-shrink-0 border border-lia-border-subtle"
-                  aria-label={`Selecionar candidato ${candidate.name}`}
+                  aria-label={}
                   onClick={(e) => {
                     e.stopPropagation()
                     const newSelected = new Set(selectedCandidates)
@@ -592,7 +429,7 @@ export function KanbanColumnRenderer({
                     })
                   }}
                   onClick={(e) => e.stopPropagation()}
-                  aria-label={`Selecionar ${candidate.name} para comparação`}
+                  aria-label={}
                   title={
                     selectedForCompare.size >= 4 && !selectedForCompare.has(candidate.id)
                       ? "Máximo de 4 candidatos para comparação"
@@ -613,7 +450,7 @@ export function KanbanColumnRenderer({
                       }
                       const avatarIndex = Math.abs(hash % 70) + 1
                       const gender = Math.abs(hash % 2) === 0 ? "men" : "women"
-                      return `https://randomuser.me/api/portraits/thumb/${gender}/${avatarIndex}.jpg`
+                      return 
                     }
                     const kanbanAvatarUrl =
                       candidate.avatar?.startsWith("http")
@@ -666,63 +503,13 @@ export function KanbanColumnRenderer({
                 </div>
               </div>
 
-              {/* Scores - Todos os 6 indicadores (Geral, Triagem, CV, Técnico, Inglês, B5) */}
-              {(() => {
-                const geralScore = calculateNotaLiaGeral(candidate)
-                const triagemScore = candidate.liaScore ?? candidate.score
-                const cvScore = candidate.skillsMatch || candidate.fitScore
-                const tecnicoScore = candidate.technicalTestScore
-                const inglesScore = candidate.englishTestScore
-                const b5Data = candidate.bigFive || candidate.bigFiveScores
-                const b5Score = b5Data
-                  ? Math.round(
-                      (Object.values(b5Data).reduce(
-                        (a: number, b: unknown) => a + (typeof b === "number" ? b : 0),
-                        0
-                      ) as number) / Object.values(b5Data).length
-                    )
-                  : null
-
-                const scores = [
-                  { id: "geral", icon: Gauge, value: geralScore, label: "Geral", alwaysClickable: false },
-                  { id: "triagem", icon: BrainCircuit, value: triagemScore, label: "Triagem", alwaysClickable: true },
-                  { id: "cv", icon: Target, value: cvScore, label: "CV", alwaysClickable: true },
-                  { id: "tecnico", icon: Code, value: tecnicoScore, label: "Técnico", alwaysClickable: false },
-                  { id: "ingles", icon: Globe, value: inglesScore, label: "Inglês", alwaysClickable: false },
-                  { id: "b5", icon: Fingerprint, value: b5Score, label: "B5", alwaysClickable: false },
-                ]
-
-                return (
-                  <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
-                    {scores.map(({ id, icon: Icon, value, label, alwaysClickable }) => (
-                      <ScoreIconButton
-                        key={id}
-                        id={id}
-                        icon={Icon}
-                        value={value}
-                        formattedValue={value ? formatScorePercent(value, 0) : undefined}
-                        label={label}
-                        alwaysClickable={alwaysClickable}
-                        onClick={() =>
-                          onOpenScoreModal(
-                            candidate,
-                            id as "geral" | "triagem" | "cv" | "tecnico" | "ingles" | "b5"
-                          )
-                        }
-                      />
-                    ))}
-                    {/* E1 — Score clicável: badge lazy com detalhamento da rubrica */}
-                    {geralScore != null && _jobIdForSL && candidate.id && (
-                      <ScoreBreakdownBadgeLazy
-                        score={geralScore}
-                        jobId={_jobIdForSL}
-                        candidateId={String(candidate.id)}
-                        size="sm"
-                      />
-                    )}
-                  </div>
-                )
-              })()}
+              {/* Scores */}
+              <KanbanCardScores
+                candidate={candidate}
+                calculateNotaLiaGeral={calculateNotaLiaGeral}
+                _jobIdForSL={_jobIdForSL}
+                onOpenScoreModal={onOpenScoreModal}
+              />
 
               {/* Informações do candidato - Alinhadas à esquerda */}
               <div className="space-y-0 mb-1.5">
@@ -741,486 +528,33 @@ export function KanbanColumnRenderer({
               </div>
 
               {/* Tags de Status Compactas */}
-              <div className="mt-2 flex flex-wrap gap-1">
-                {/* AI Suggestion Badge */}
-                {(() => {
-                  const suggestion = getSuggestionForCandidate(aiSuggestions, candidate.id)
-                  if (suggestion) {
-                    return (
-                      <div onClick={(e) => e.stopPropagation()}>
-                        <AISuggestionBadge
-                          suggestion={suggestion}
-                          onApprove={(id) => Promise.resolve(approveSuggestion(id))}
-                          onReject={(id) => Promise.resolve(rejectSuggestion(id))}
-                          compact
-                        />
-                      </div>
-                    )
-                  }
-                  return null
-                })()}
-
-                {/* FUNIL - Candidatos sem triagem ainda */}
-                {stageId === "sourcing" && (
-                  <>
-                    <StatusBadge
-                      stageId={stageId}
-                      variant="standard"
-                      icon={User}
-                      label={
-                        candidate.source === "linkedin"
-                          ? "Aplicou via LinkedIn"
-                          : candidate.source === "website"
-                          ? "Aplicou no site"
-                          : candidate.source === "lia_database"
-                          ? "Mapeado pela LIA"
-                          : "Adicionado manual"
-                      }
-                    />
-                    <StatusBadge
-                      stageId={stageId}
-                      variant="accent"
-                      icon={BrainCircuit}
-                      label="LIA iniciará triagem"
-                      pulse
-                    />
-                  </>
-                )}
-
-                {/* TRIAGEM - Candidatos em contato com LIA */}
-                {stageId === "screening" && (
-                  <>
-                    {candidate.needsAction || candidate.status === "triado_aprovado" ? (
-                      <>
-                        <StatusBadge
-                          stageId={stageId}
-                          variant="dark"
-                          icon={CheckCircle}
-                          label="Triagem concluída"
-                        />
-                        <StatusBadge
-                          stageId={stageId}
-                          variant="accent"
-                          icon={Target}
-                          label="Decisão pendente"
-                          pulse
-                          onClick={() => onOpenAnalysis(candidate)}
-                          title="Clique para ver análise completa"
-                        />
-                      </>
-                    ) : (
-                      <StatusBadge
-                        stageId={stageId}
-                        variant="outlined"
-                        icon={MessageCircle}
-                        label={
-                          candidate.liatriagem === "respondendo"
-                            ? "Respondendo agora"
-                            : "Conversa em andamento"
-                        }
-                      />
-                    )}
-                    <ChannelBadge channel={candidate.contactChannelId || "whatsapp"} />
-                  </>
-                )}
-
-                {/* ENTREVISTA */}
-                {(stageId === "interview_hr" ||
-                  stageId === "interview_technical" ||
-                  stageId === "interview_manager") && (
-                  <>
-                    {candidate.agendada ? (
-                      <>
-                        <StatusBadge
-                          stageId={stageId}
-                          variant="scheduled"
-                          icon={CalendarCheck}
-                          label="Entrevista confirmada"
-                        />
-                        {candidate.interviewDate && (
-                          <DateTimeBadge date={candidate.interviewDate} />
-                        )}
-                        <ChannelBadge channel={candidate.typeOfInterview || "teams"} />
-                      </>
-                    ) : (
-                      <StatusBadge
-                        stageId={stageId}
-                        variant="accent"
-                        icon={Clock}
-                        label="Aguardando agendamento"
-                        pulse
-                      />
-                    )}
-                    {candidate.interviewCompleted && !candidate.interviewFeedback && (
-                      <StatusBadge
-                        stageId={stageId}
-                        variant="accent"
-                        icon={Clock}
-                        label="Feedback pendente"
-                        pulse
-                      />
-                    )}
-                  </>
-                )}
-
-                {/* FINAL */}
-                {stageId === "offer" && (
-                  <>
-                    <StatusBadge stageId={stageId} variant="standard" icon={Star} label="Finalista" />
-                    {candidate.proposal ? (
-                      <>
-                        <StatusBadge
-                          stageId={stageId}
-                          variant="dark"
-                          icon={FileText}
-                          label="Proposta enviada"
-                        />
-                        {!candidate.proposalResponse && (
-                          <StatusBadge
-                            stageId={stageId}
-                            variant="accent"
-                            icon={Clock}
-                            label="Aguardando resposta"
-                            pulse
-                          />
-                        )}
-                      </>
-                    ) : (
-                      <StatusBadge
-                        stageId={stageId}
-                        variant="accent"
-                        icon={Clock}
-                        label="Aguardando aprovação"
-                        pulse
-                      />
-                    )}
-                    {candidate.negotiating && (
-                      <StatusBadge
-                        stageId={stageId}
-                        variant="outlined"
-                        icon={MessageCircle}
-                        label="Em negociação"
-                      />
-                    )}
-                  </>
-                )}
-
-                {/* CONTRATADOS */}
-                {stageId === "hired" && (
-                  <>
-                    <StatusBadge stageId={stageId} variant="hired" icon={Trophy} label="Contratado" />
-                    {candidate.startDate && (
-                      <StatusBadge
-                        stageId={stageId}
-                        variant="standard"
-                        icon={Calendar}
-                        label={`Início: ${new Date(candidate.startDate).toLocaleDateString("pt-BR", {
-                          day: "2-digit",
-                          month: "2-digit",
-                        })}`}
-                      />
-                    )}
-                    {candidate.sub_status && (
-                      <StatusBadge stageId={stageId} subStatus={candidate.sub_status} />
-                    )}
-                  </>
-                )}
-
-                {/* REPROVADOS */}
-                {stageId === "rejected" && (
-                  <>
-                    <StatusBadge
-                      stageId={stageId}
-                      variant="rejected"
-                      icon={XCircle}
-                      label={
-                        candidate.rejectionReason === "withdrew"
-                          ? "Desistiu"
-                          : candidate.rejectionStage === "screening"
-                          ? "Reprovado triagem"
-                          : candidate.rejectionStage === "interview"
-                          ? "Reprovado entrevista"
-                          : "Reprovado"
-                      }
-                    />
-                    {candidate.feedbackSent && (
-                      <StatusBadge
-                        stageId={stageId}
-                        variant="dark"
-                        icon={CheckCircle}
-                        label="Feedback enviado"
-                      />
-                    )}
-                  </>
-                )}
-
-                {/* PROPOSTA RECUSADA */}
-                {stageId === "offer_declined" && (
-                  <>
-                    <StatusBadge
-                      stageId={stageId}
-                      variant="rejected"
-                      icon={XCircle}
-                      label="Proposta recusada"
-                    />
-                    {candidate.feedbackSent && (
-                      <StatusBadge
-                        stageId={stageId}
-                        variant="dark"
-                        icon={CheckCircle}
-                        label="Feedback enviado"
-                      />
-                    )}
-                  </>
-                )}
-
-                {/* Badge de Warning - Dias parado */}
-                {(candidate.warning || candidate.warningDays) && (
-                  <WarningBadge days={candidate.daysPaused} message={candidate.warningDays} />
-                )}
-
-                {/* Badge de expectativa salarial */}
-                {candidate.expectativa && (
-                  <StatusBadge
-                    stageId={stageId}
-                    variant={
-                      candidate.expectativa === "no budget"
-                        ? "dark"
-                        : candidate.expectativa === "acima do budget"
-                        ? "outlined"
-                        : "standard"
-                    }
-                    icon={DollarSign}
-                    label={candidate.expectativa}
-                  />
-                )}
-
-                {/* Badge de Origem */}
-                {candidate.origin && <OriginBadge origin={candidate.origin} />}
-
-                {/* Badge Aguardando (fila de saturação) + Override */}
-                {(candidate.status === "awaiting_screening" ||
-                  candidate.sub_status === "awaiting_screening" ||
-                  candidate.subStatus === "awaiting_screening") && (
-                  <>
-                    <AwaitingBadge />
-                    {(currentJob?.backendId || currentJob?.id) && (
-                      <OverrideApproveButton
-                        candidateId={candidate.id}
-                        candidateName={candidate.name}
-                        vacancyId={(currentJob.backendId || currentJob.id).toString()}
-                        onApproved={(cId: string) => {
-                          setCandidatesData((prev) => {
-                            const updated = { ...prev }
-                            Object.keys(updated).forEach((key) => {
-                              updated[key] = updated[key].map((c) =>
-                                c.id === cId
-                                  ? { ...c, status: "triado_aprovado", sub_status: undefined, subStatus: undefined }
-                                  : c
-                              )
-                            })
-                            return updated
-                          })
-                        }}
-                      />
-                    )}
-                  </>
-                )}
-
-                {/* Tag de Origem */}
-                <SourceBadge
-                  source={candidate.source || "website"}
-                  isApplication={isApplicationSource(candidate.source || "website")}
-                />
-
-                {/* Sub-Status Badge */}
-                {candidate.sub_status && !["hired", "rejected", "offer_declined"].includes(stageId) && (
-                  <StatusBadge stageId={stageId} subStatus={candidate.sub_status} />
-                )}
-              </div>
+              <KanbanCardStatusBadges
+                candidate={candidate}
+                stageId={stageId}
+                aiSuggestions={aiSuggestions}
+                currentJob={currentJob}
+                setCandidatesData={setCandidatesData}
+                onOpenAnalysis={onOpenAnalysis}
+                approveSuggestion={approveSuggestion}
+                rejectSuggestion={rejectSuggestion}
+              />
             </div>
 
             {/* Container de Ações */}
-            {(stageId === "sourcing" ||
-              stageId === "screening" ||
-              stageId.startsWith("interview_") ||
-              stageId === "offer") && (
-              <div className="border-t border-lia-border-subtle p-2 max-h-0 overflow-hidden opacity-0 group-hover:max-h-20 group-hover:opacity-100 transition-opacity motion-reduce:transition-none duration-200 ease-out relative z-20 bg-gray-50">
-                {/* Botões para FUNIL */}
-                {stageId === "sourcing" && (
-                  <div className="flex gap-1">
-                    <button
-                      className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onOpenDecisionFlowModal(candidate, "approve")
-                      }}
-                    >
-                      <ThumbsUp className="w-3 h-3" aria-hidden="true" />
-                      <span>Aprovar</span>
-                    </button>
-                    <button
-                      className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-status-error hover:bg-status-error text-white rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onOpenDecisionFlowModal(candidate, "reject")
-                      }}
-                    >
-                      <XCircle className="w-3 h-3" aria-hidden="true" />
-                      <span>Reprovar</span>
-                    </button>
-                  </div>
-                )}
-
-                {/* Botões para TRIAGEM */}
-                {stageId === "screening" && (
-                  <div className="flex gap-1">
-                    <button
-                      className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onApproveFromScreening(candidate)
-                      }}
-                    >
-                      <ThumbsUp className="w-3 h-3" aria-hidden="true" />
-                      <span>Aprovar</span>
-                    </button>
-                    <button
-                      className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-status-error hover:bg-status-error text-white rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onRejectFromScreening(candidate)
-                      }}
-                    >
-                      <XCircle className="w-3 h-3" aria-hidden="true" />
-                      <span>Reprovar</span>
-                    </button>
-                  </div>
-                )}
-
-                {/* Botões para ENTREVISTA */}
-                {(stageId === "interview_hr" ||
-                  stageId === "interview_technical" ||
-                  stageId === "interview_manager") && (
-                  <div className="flex gap-1">
-                    {candidate.agendada ? (
-                      <>
-                        <button
-                          className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            const teamsUrl =
-                              candidate.teamsLink || "https://teams.microsoft.com/l/meetup-join/..."
-                            window.open(teamsUrl, "_blank")
-                          }}
-                          title={`Entrar na reunião - ${
-                            candidate.interviewDate ||
-                            new Date(candidate.agendada).toLocaleDateString("pt-BR")
-                          }`}
-                        >
-                          <Video className="w-3 h-3 text-lia-text-secondary" />
-                          <span>
-                            {candidate.interviewDate ||
-                              new Date(candidate.agendada).toLocaleDateString("pt-BR", {
-                                day: "numeric",
-                                month: "short",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
-                          </span>
-                        </button>
-                        <button
-                          className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-status-warning hover:bg-status-warning text-white rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            const dateStr =
-                              candidate.interviewDate ||
-                              new Date(candidate.agendada).toLocaleDateString("pt-BR", {
-                                day: "numeric",
-                                month: "long",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })
-                            setTransitionInitialPrompt(
-                              `O recrutador quer alterar o horário da entrevista de ${candidate.name} agendada para ${dateStr}. Peça a nova data e horário preferido e confirme o reagendamento com o candidato.`
-                            )
-                            setTransitionInterviewAlert({ name: candidate.name, date: dateStr })
-                            openTransition([candidate], stageId, stageId)
-                          }}
-                          title="Alterar horário da entrevista"
-                        >
-                          <Calendar className="w-3 h-3" />
-                          <span>Alterar</span>
-                        </button>
-                        <button
-                          className="flex-shrink-0 flex items-center justify-center gap-1 px-2 py-1.5 bg-status-error/10 hover:bg-status-error/15 text-status-error border border-status-error/30 rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            const dateStr =
-                              candidate.interviewDate ||
-                              new Date(candidate.agendada).toLocaleDateString("pt-BR", {
-                                day: "numeric",
-                                month: "long",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })
-                            setTransitionInitialPrompt(
-                              `O recrutador quer cancelar a entrevista de ${candidate.name} agendada para ${dateStr}. Pergunte para qual etapa ele quer mover o candidato (ou se mantém na mesma) e confirme o cancelamento.`
-                            )
-                            setTransitionAllowStageSelection(true)
-                            setTransitionInterviewAlert({ name: candidate.name, date: dateStr })
-                            openTransition([candidate], stageId, stageId)
-                          }}
-                          title="Cancelar entrevista"
-                        >
-                          <XCircle className="w-3 h-3" />
-                          <span>Cancelar</span>
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-status-warning hover:bg-status-warning text-white rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setDecisionFlowCandidate(candidate)
-                            setDecisionFlowType("request_urgency")
-                            setShowDecisionFlowModal(true)
-                          }}
-                        >
-                          <AlertCircle className="w-3 h-3" />
-                          <span>Urgência</span>
-                        </button>
-                        <button
-                          className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setDecisionFlowCandidate(candidate)
-                            setDecisionFlowType("reschedule_interview")
-                            setShowDecisionFlowModal(true)
-                          }}
-                        >
-                          <Calendar className="w-3 h-3" />
-                          <span>Alterar Horário</span>
-                        </button>
-                      </>
-                    )}
-                  </div>
-                )}
-
-                {stageId === "offer" && (
-                  <button
-                    className="w-full flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover dark:text-lia-text-disabled rounded-full text-micro transition-colors motion-reduce:transition-none"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                    }}
-                  >
-                    <FileText className="w-3 h-3" />
-                    <span>Gerenciar Proposta</span>
-                  </button>
-                )}
-              </div>
-            )}
+            <KanbanCardInterviewButtons
+              candidate={candidate}
+              stageId={stageId}
+              setTransitionInitialPrompt={setTransitionInitialPrompt}
+              setTransitionInterviewAlert={setTransitionInterviewAlert}
+              setTransitionAllowStageSelection={setTransitionAllowStageSelection}
+              setDecisionFlowCandidate={setDecisionFlowCandidate}
+              setDecisionFlowType={setDecisionFlowType}
+              setShowDecisionFlowModal={setShowDecisionFlowModal}
+              onOpenDecisionFlowModal={onOpenDecisionFlowModal}
+              onApproveFromScreening={onApproveFromScreening}
+              onRejectFromScreening={onRejectFromScreening}
+              openTransition={openTransition}
+            />
           </div>
         ))}
       </div>

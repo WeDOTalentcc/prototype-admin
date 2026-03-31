@@ -1,0 +1,74 @@
+// @ts-nocheck
+"use client"
+
+import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { List, X, ArrowLeft } from "lucide-react"
+
+interface ViewingListBannerProps {
+  viewingList: { id: string; name: string; color?: string } | null
+  candidates: Array<{ id: string }>
+  setViewingList: (value: null) => void
+  setShowSearchResults: (value: boolean) => void
+  setSearchTerm: (value: string) => void
+  setLastSearchQuery: (value: string) => void
+  setActiveTab: (tab: string) => void
+}
+
+export function ViewingListBanner({
+  viewingList,
+  candidates,
+  setViewingList,
+  setShowSearchResults,
+  setSearchTerm,
+  setLastSearchQuery,
+  setActiveTab,
+}: ViewingListBannerProps) {
+  if (!viewingList) return null
+
+  return (
+    <Card className="bg-gray-50 dark:bg-lia-bg-secondary border-l-4" style={{borderLeftColor: viewingList.color || 'var(--gray-600)'}}>
+      <CardContent className="p-4">
+        <div className="flex items-center gap-3">
+          <div
+            className="w-10 h-10 rounded-md flex items-center justify-center"
+            style={{backgroundColor: viewingList.color || 'var(--gray-600)'}}
+          >
+            <List className="w-5 h-5 text-white" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-1">
+              📋 Visualizando Lista: {viewingList.name}
+            </h3>
+            <p className="text-sm text-lia-text-primary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
+              {candidates.length} {candidates.length === 1 ? 'candidato' : 'candidatos'} nesta lista
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setViewingList(null)
+                setShowSearchResults(false)
+                setSearchTerm('')
+                setLastSearchQuery('')
+              }}
+            >
+              <X className="w-3 h-3 mr-1" />
+              Fechar Lista
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setActiveTab('lists')}
+            >
+              <ArrowLeft className="w-3 h-3 mr-1" />
+              Voltar às Listas
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
