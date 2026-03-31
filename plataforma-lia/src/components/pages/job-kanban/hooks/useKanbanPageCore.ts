@@ -255,52 +255,52 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   const handleOpenSpecializedModal = useCallback((modalType: string, context: { candidates?: Record<string, unknown>[]; toStage?: string; [key: string]: unknown }) => {
     switch (modalType) {
       case 'wsi-triagem-invite':
-        if (context.candidates?.length > 0) {
-          setWsiInviteCandidate(context.candidates[0])
+        if ((context.candidates ?? []).length > 0) {
+          setWsiInviteCandidate(context.candidates![0])
           setShowWSIInviteModal(true)
         }
         break
       case 'scheduling':
-        if (context.candidates?.length > 0) {
-          setUnifiedModalCandidate(context.candidates[0])
+        if ((context.candidates ?? []).length > 0) {
+          setUnifiedModalCandidate(context.candidates![0])
           setUnifiedModalType('agendamento')
           setUnifiedModalSituation('agendamento')
           setUnifiedModalOpen(true)
         }
         break
       case 'data-request':
-        if (context.candidates?.length > 0) {
-          setDataRequestModalCandidate(context.candidates[0])
+        if ((context.candidates ?? []).length > 0) {
+          setDataRequestModalCandidate(context.candidates![0])
           setShowDataRequestModal(true)
         }
         break
       case 'decision-flow':
-        if (context.candidates?.length > 0) {
-          const candidate = context.candidates[0]
+        if ((context.candidates ?? []).length > 0) {
+          const candidate = context.candidates![0]
           setDecisionFlowCandidate(candidate)
           setDecisionFlowType(context.toStage === 'hired' ? 'confirm_hire' : 'reject_pre_triage')
           setShowDecisionFlowModal(true)
         }
         break
       case 'rejection-feedback':
-        if (context.candidates?.length > 0) {
-          setUnifiedModalCandidate(context.candidates[0])
+        if ((context.candidates ?? []).length > 0) {
+          setUnifiedModalCandidate(context.candidates![0])
           setUnifiedModalType('feedback')
           setUnifiedModalSituation('feedback_construtivo')
           setUnifiedModalOpen(true)
         }
         break
       case 'evaluation-send':
-        if (context.candidates?.length > 0) {
-          setUnifiedModalCandidate(context.candidates[0])
+        if ((context.candidates ?? []).length > 0) {
+          setUnifiedModalCandidate(context.candidates![0])
           setUnifiedModalType('email')
           setUnifiedModalSituation('avaliacao_tecnica')
           setUnifiedModalOpen(true)
         }
         break
       case 'offer-send':
-        if (context.candidates?.length > 0) {
-          setUnifiedModalCandidate(context.candidates[0])
+        if ((context.candidates ?? []).length > 0) {
+          setUnifiedModalCandidate(context.candidates![0])
           setUnifiedModalType('email')
           setUnifiedModalSituation('proposta')
           setUnifiedModalOpen(true)
