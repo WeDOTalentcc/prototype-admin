@@ -1105,29 +1105,3 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | `app/domains/ats_integration/` | ATS (Gupy/Pandapé/Merge/StackOne) |
 | `app/domains/interview_scheduling/services/scheduling_service.py` | Scheduling (ICS + Teams) |
 
----
-
-## 11. RESPOSTAS ÀS PERGUNTAS DO USUÁRIO
-
-### "Isso faz sentido?"
-**Sim.** A sequência Login → Editar Vaga → Roteiro WSI → Buscar → Aprovar → Contato → Triagem → Gate 2 → Agendar/Feedback é o caminho natural de recrutamento assistido por IA. O backend suporta esse fluxo com 8 agentes, 30+ tools, 6 compliance layers e 11 intelligence layers.
-
-### "Falta informação?"
-**Após Tasks #68-#76, a grande maioria dos gaps foi resolvida.** Restam itens genuinamente pendentes:
-- **G7** — Configuração de infra externa (Twilio, Resend, Apify, ATS API keys de produção)
-- **C3** — Audit Trail completo (ativo em JD/WSI, falta nos demais endpoints)
-- **C5** — Fact-Checker como middleware em todos os agentes
-- **C6** — Bias Audit Dashboard (Four-Fifths Rule)
-- **C7** — EU AI Act Risk Classification
-- **I2** — Predictive Analytics na UI de vagas
-- **I6** — Semantic Search integração completa
-- **A7** — Embedding auto-trigger no Gate 2
-- **P3.4** — Bell notification pendente
-
-### "Faz sentido o mapa por camada?"
-**Absolutamente.** A matriz da seção 4 mostra que a maioria das intelligence layers está "implementada mas não integrada". O diferencial competitivo da plataforma está justamente nessas 11 camadas — Learning Loop silencioso, A/B Testing com significância estatística, Routing Adaptativo, Score Normalization, Predictive Analytics, e Voice Analysis são capacidades que concorrentes não têm.
-
-### "Prioridade de ativação?"
-1. **Compliance first:** FairnessGuard em todos os pontos + Audit Trail completo (sem isso não vai para produção)
-2. **Intelligence core:** Learning Loop já ativo + Calibration + Score Normalization (já funcionam, só precisam de validação)
-3. **Intelligence advanced:** A/B Testing (criar primeiros testes) + Predictive Analytics (integrar na UI) + Voice Analysis (integrar na triagem web)
