@@ -435,28 +435,27 @@ export function CandidatesPageModals({
           candidate={(() => {
             const c = contactModalCandidate || selectedCandidateForAction
             if (!c) return null
-            const ca = c as any
             return {
               id: c.id,
               name: c.name,
-              role: ca.position || ca.role,
+              role: c.position || c.role || '',
               email: c.email,
-              phone: ca.phone,
-              location: ca.location,
-              avatar: ca.avatar,
-              score: ca.score || 0,
+              phone: c.phone,
+              location: c.location,
+              avatar: c.avatar,
+              score: c.score || 0,
               status: c.status || 'Novo',
-              matchPercentage: ca.liaAnalysis?.score ?? ca.score ?? 0,
-              riskLevel: 'low',
+              matchPercentage: c.liaAnalysis?.score ?? c.score ?? 0,
+              riskLevel: 'low' as const,
               culturalFit: 85,
               technicalMatch: 90,
-              experience: String(ca.experience || ''),
-              seniority: ca.seniority || 'Pleno',
+              experience: String(c.experience || ''),
+              seniority: c.seniority_level || 'Pleno',
               availability: 'Imediata',
-              expectedSalary: ca.salary?.expected ? String(ca.salary.expected) : '',
-              preferredLocation: ca.location,
-              linkedin: ca.linkedin,
-              skills: ca.skills || [],
+              expectedSalary: c.salary?.expected ? String(c.salary.expected) : '',
+              preferredLocation: c.location,
+              linkedin: c.linkedin,
+              skills: c.skills || [],
               lastActivity: new Date().toISOString(),
               source: 'internal'
             }
@@ -475,23 +474,23 @@ export function CandidatesPageModals({
             setSelectedCandidateForAction(null)
           }}
           candidate={(() => {
-            const sca = selectedCandidateForAction as any
+            const sca = selectedCandidateForAction
             return ({
-            id: selectedCandidateForAction.id,
-            name: selectedCandidateForAction.name,
+            id: sca.id,
+            name: sca.name,
             role: sca.position,
-            email: selectedCandidateForAction.email,
+            email: sca.email,
             phone: sca.phone,
             location: sca.location,
             avatar: sca.avatar,
             score: sca.score,
-            status: selectedCandidateForAction.status,
+            status: sca.status,
             matchPercentage: sca.liaAnalysis?.score ?? sca.score,
-            riskLevel: 'low',
+            riskLevel: 'low' as const,
             culturalFit: 85,
             technicalMatch: 90,
             experience: String(sca.experience),
-            seniority: sca.seniority || 'Pleno',
+            seniority: sca.seniority_level || 'Pleno',
             availability: 'Imediata',
             expectedSalary: sca.salary?.expected ? String(sca.salary.expected) : '',
             preferredLocation: sca.location,
@@ -499,9 +498,9 @@ export function CandidatesPageModals({
             skills: sca.skills,
             lastActivity: new Date().toISOString(),
             source: 'internal'
-          } as any)
+          })
           })()}
-          onSchedule={handleScheduleComplete as any}
+          onSchedule={handleScheduleComplete}
         />
       )}
 
@@ -510,12 +509,12 @@ export function CandidatesPageModals({
         isOpen={unifiedModalOpen}
         onClose={handleUnifiedModalClose}
         candidate={unifiedModalCandidate ? (() => {
-          const umc = unifiedModalCandidate as any
+          const umc = unifiedModalCandidate
           return {
-            id: unifiedModalCandidate.id,
-            name: unifiedModalCandidate.name,
+            id: umc.id,
+            name: umc.name,
             role: umc.position || umc.current_title || '',
-            email: unifiedModalCandidate.email,
+            email: umc.email,
             phone: umc.phone,
             location: umc.location,
             avatar: umc.avatar,
@@ -540,25 +539,25 @@ export function CandidatesPageModals({
             .map(c => ({
               id: c.id,
               name: c.name,
-              role: (c as any).position,
+              role: c.position,
               email: c.email,
-              phone: (c as any).phone,
-              location: (c as any).location,
-              avatar: (c as any).avatar,
-              score: (c as any).score,
+              phone: c.phone,
+              location: c.location,
+              avatar: c.avatar,
+              score: c.score,
               status: c.status,
-              matchPercentage: (c as any).liaAnalysis?.score ?? (c as any).score,
-              riskLevel: 'low',
+              matchPercentage: c.liaAnalysis?.score ?? c.score,
+              riskLevel: 'low' as const,
               culturalFit: 85,
               technicalMatch: 90,
-              experience: String((c as any).experience),
-              seniority: (c as any).seniority || 'Pleno',
+              experience: String(c.experience),
+              seniority: c.seniority_level || 'Pleno',
               availability: 'Imediata',
-              expectedSalary: (c as any).salary?.expected ? String((c as any).salary.expected) : '',
-              skills: (c as any).skills,
+              expectedSalary: c.salary?.expected ? String(c.salary.expected) : '',
+              skills: c.skills,
               lastActivity: new Date().toISOString(),
               source: 'internal'
-            })) as any}
+            }))}
           onSelectCandidate={(candidateId) => {
             const candidate = candidates.find(c => c.id === candidateId)
             if (candidate) handleNavigateToFullProfile(candidate)
@@ -577,7 +576,7 @@ export function CandidatesPageModals({
       {/* Candidate Page Modal */}
       {showCandidatePage && selectedCandidate && (
         <CandidatePage
-          candidate={selectedCandidate as any}
+          candidate={selectedCandidate}
           isOpen={showCandidatePage}
           onClose={handleCloseCandidatePage}
           onBackToKanban={() => {}}
@@ -686,25 +685,26 @@ export function CandidatesPageModals({
         candidate={wsiInviteCandidate ? {
           id: wsiInviteCandidate.id,
           name: wsiInviteCandidate.name,
-          role: (wsiInviteCandidate as any).position,
+          role: wsiInviteCandidate.position,
           email: wsiInviteCandidate.email,
-          phone: (wsiInviteCandidate as any).phone,
-          location: (wsiInviteCandidate as any).location,
-          avatar: (wsiInviteCandidate as any).avatar
+          phone: wsiInviteCandidate.phone,
+          location: wsiInviteCandidate.location,
+          avatar: wsiInviteCandidate.avatar
         } : null}
-        jobTitle={(wsiInviteCandidate as any)?.position || 'Vaga'}
+        jobTitle={wsiInviteCandidate?.position || 'Vaga'}
         onSend={async (data) => {
           try {
             if (data.channel === 'email' && wsiInviteCandidate?.email) {
+              const sendData = data as { subject?: string; message?: string; channel: string }
               await liaApi.sendEmail('wsi-triagem-invite', {
                 recipient_email: wsiInviteCandidate.email,
                 recipient_name: wsiInviteCandidate.name,
                 candidate_id: wsiInviteCandidate.id,
-                subject_override: (data as any).subject || `Convite para Triagem - ${(wsiInviteCandidate as any).position || 'Vaga'}`,
-                body_override: (data as any).message,
+                subject_override: sendData.subject || `Convite para Triagem - ${wsiInviteCandidate.position || 'Vaga'}`,
+                body_override: sendData.message,
                 variables: {
                   candidate_name: wsiInviteCandidate.name,
-                  job_title: (wsiInviteCandidate as any).position || 'Vaga'
+                  job_title: wsiInviteCandidate.position || 'Vaga'
                 }
               })
             }
@@ -760,12 +760,12 @@ export function CandidatesPageModals({
           id: emailCandidateSelected.id,
           name: emailCandidateSelected.name,
           email: emailCandidateSelected.email,
-          phone: (emailCandidateSelected as any).phone,
-          current_title: (emailCandidateSelected as any).position,
-          technical_skills: (emailCandidateSelected as any).skills,
+          phone: emailCandidateSelected.phone,
+          current_title: emailCandidateSelected.position,
+          technical_skills: emailCandidateSelected.skills,
           source: 'internal',
           is_active: true,
-          is_remote: (emailCandidateSelected as any).workModel === 'remoto',
+          is_remote: emailCandidateSelected.workModel === 'remoto',
           willing_to_relocate: false,
           tags: emailCandidateSelected.tags,
           status: emailCandidateSelected.status,
@@ -773,7 +773,7 @@ export function CandidatesPageModals({
           soft_skills: [],
           languages: {},
           certifications: []
-        } as any) : null}
+        }) : null}
         onSuccess={() => {
           setShowSendEmailModal(false)
           setEmailCandidateSelected(null)
@@ -788,7 +788,7 @@ export function CandidatesPageModals({
             setShowRevealModal(false)
             setRevealCandidate(null)
           }}
-          onConfirm={handleRevealContact as any}
+          onConfirm={handleRevealContact}
           revealType={revealType}
           candidateName={revealCandidate.name}
           creditsRequired={revealType === 'email' ? 2 : 14}
@@ -893,7 +893,7 @@ export function CandidatesPageModals({
             hideViewedCandidates.fetchViewedCandidates()
           }
         }}
-        initialFilters={activeSearchFilters as any}
+        initialFilters={activeSearchFilters}
         estimatedMatches={1000000}
       />
 
@@ -1022,7 +1022,7 @@ export function CandidatesPageModals({
             (a as Record<string, unknown>).id === id ? { ...(a as object), ...updates } : a
           ))
         }}
-        onSaveArchetype={(newArchetype) => setUserArchetypes(prev => [...prev, newArchetype as any])}
+        onSaveArchetype={(newArchetype) => setUserArchetypes(prev => [...prev, newArchetype as Record<string, unknown>])}
         onExecuteSearch={async (query, filters, mode, metadata, usePearch) => {
           await executeSearch(query, filters as Record<string, unknown>, mode as string, metadata as Record<string, unknown>, usePearch)
         }}

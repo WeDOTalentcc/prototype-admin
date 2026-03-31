@@ -119,7 +119,11 @@ def _verify_sendgrid_signature(request: Request, body: bytes) -> bool:
     (dev/staging only — production MUST set the key).
     """
     if not _SENDGRID_WEBHOOK_VERIFICATION_KEY:
-        logger.warning("[EmailTracking] webhook signature verification SKIPPED — SENDGRID_WEBHOOK_VERIFICATION_KEY not set")
+        _env = os.getenv("ENVIRONMENT", "development")
+        if _env in ("production", "staging"):
+            logger.warning("[EmailTracking] SENDGRID_WEBHOOK_VERIFICATION_KEY not set — rejecting in %s", _env)
+            return False
+        logger.debug("[EmailTracking] signature verification skipped (dev mode, key not set)")
         return True
 
     signature = request.headers.get("x-twilio-email-event-webhook-signature", "")
