@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
+import { getAuthHeaders } from "@/lib/api/auth-headers"
 
 const BACKEND_URL = process.env.LIA_BACKEND_URL || "http://127.0.0.1:8000"
 
@@ -9,9 +10,7 @@ export async function GET(request: NextRequest) {
     const userId = searchParams.get("user_id") || "default_user"
     
     const response = await fetch(`${BACKEND_URL}/api/v1/notifications/summary?user_id=${userId}`, {
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getAuthHeaders(request),
     })
     
     const data = await response.json()

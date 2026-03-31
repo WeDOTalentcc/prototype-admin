@@ -440,6 +440,46 @@ class ProactiveService:
             "pending_items": []
         }
     
+    async def _create_bell_notification(self, notification: Dict[str, Any]) -> bool:
+        from lia_messaging.notification_service import (
+            notification_service,
+            NotificationType as MsgNT,
+            NotificationChannel,
+        )
+
+        type_map = {
+            "critical_alert": MsgNT.URGENT,
+            NotificationType.CRITICAL_ALERT: MsgNT.URGENT,
+        }
+        notif_type_raw = notification.get("type", "")
+        notif_type_str = notif_type_raw.value if hasattr(notif_type_raw, "value") else str(notif_type_raw)
+        msg_type = type_map.get(notif_type_raw, type_map.get(notif_type_str, MsgNT.INFO))
+
+        category_map = {
+            "critical_alert": "system",
+            "daily_briefing": "productivity",
+            "end_of_day": "productivity",
+            "interview_reminder": "pipeline",
+            "screening_completed": "pipeline",
+            "pipeline_stagnation": "pipeline",
+        }
+        category = category_map.get(notif_type_str, "system")
+
+        try:
+            await notification_service.create_notification(
+                user_id=notification.get("recruiter_id", "default_user"),
+                title=notification.get("title", ""),
+                message=notification.get("message", ""),
+                notification_type=msg_type,
+                category=category,
+                source_agent="proactive_service",
+                channels=[NotificationChannel.BELL.value],
+            )
+            return True
+        except Exception:
+            logger.warning("Bell notification creation failed", exc_info=True)
+            return False
+
     async def _send_notification(self, notification: Dict[str, Any]) -> bool:
         """
         Send notification via configured channel.
@@ -448,6 +488,8 @@ class ProactiveService:
         channel = notification.get("channel", "teams")
         
         self.notification_history.append(notification)
+
+        await self._create_bell_notification(notification)
         
         if channel == "teams":
             return await self._send_via_teams(notification)
