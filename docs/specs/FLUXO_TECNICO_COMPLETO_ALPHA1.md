@@ -1511,6 +1511,661 @@ Princípios aplicados:
 
 ---
 
+## ARQUIVOS-CHAVE DO CÓDIGO — LISTA COMPLETA
+
+> **Última validação contra código-fonte:** 2026-03-31
+
+### Backend Core / Orchestrator
+
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| `app/orchestrator/main_orchestrator.py` | Orquestração central (3 fases) + FairnessGuard L1-L2 |
+| `app/orchestrator/intent_router.py` | Roteamento de intents por cascata de modelos |
+| `app/orchestrator/cascaded_router.py` | CascadedRouter — 6 tiers de roteamento (regex → keyword → LLM) |
+| `app/orchestrator/fast_router.py` | FastRouter — roteamento rápido sem LLM |
+| `app/orchestrator/llm_cascade.py` | LLM Cascade — escada de custo Haiku → Sonnet → Opus |
+| `app/orchestrator/semantic_cache.py` | Cache semântico de intenções roteadas |
+| `app/orchestrator/vector_semantic_cache.py` | Cache semântico vetorial (embeddings) |
+| `app/orchestrator/policy_engine.py` | Policy Engine no orchestrator (wrapper) |
+| `app/orchestrator/tenant_budget.py` | Controle de budget/tokens por tenant |
+| `app/orchestrator/memory_resolver.py` | Resolução de memória no orchestrator |
+| `app/orchestrator/action_executor.py` | Execução de ações decididas pelo orchestrator |
+| `app/orchestrator/context_adapter.py` | Adaptação de contexto entre domínios |
+
+### Agents Core (libs/agents-core)
+
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| `libs/agents-core/lia_agents_core/react_agent_registry.py` | Registry de agentes ReAct |
+| `libs/agents-core/lia_agents_core/langgraph_base.py` | Base LangGraph com checkpointer |
+| `libs/agents-core/lia_agents_core/langgraph_react_base.py` | Base LangGraph ReAct |
+| `libs/agents-core/lia_agents_core/react_loop.py` | ReAct Loop — ciclo Reason/Act/Observe |
+| `libs/agents-core/lia_agents_core/nodes.py` | Nós LangGraph compartilhados |
+| `libs/agents-core/lia_agents_core/enhanced_agent_mixin.py` | Mixin que injeta memory + autonomy + learning + tools em agentes |
+| `libs/agents-core/lia_agents_core/confidence.py` | ConfidenceNode — scoring de confiança no grafo |
+| `libs/agents-core/lia_agents_core/autonomy_engine.py` | Motor de autonomia — níveis de auto-decisão |
+| `libs/agents-core/lia_agents_core/proactive_worker.py` | Worker proativo — execução assíncrona de tarefas |
+| `libs/agents-core/lia_agents_core/state_machine.py` | Máquina de estados para agentes |
+| `libs/agents-core/lia_agents_core/streaming_callback.py` | Callback de streaming para respostas parciais |
+| `libs/agents-core/lia_agents_core/timed_tool_node.py` | Nó com timeout para execução de tools |
+| `libs/agents-core/lia_agents_core/long_term_memory.py` | Long-Term Memory (episodes + LLM compression após 30d) |
+| `libs/agents-core/lia_agents_core/working_memory.py` | Working Memory — estado de sessão atual |
+
+### Compliance (6 camadas)
+
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| `app/shared/compliance/fairness_guard.py` | FairnessGuard (3 camadas, ~90 regex patterns, 13 categorias) |
+| `app/shared/compliance/fairness_guard_middleware.py` | FairnessGuard como middleware reutilizável (G1) |
+| `app/shared/pii_masking.py` | PII Masking (4 camadas, Presidio opt-in) |
+| `app/shared/compliance/audit_service.py` | Audit Trail (SOX-compliant, 730-1825d retention, human override) |
+| `app/shared/compliance/fact_checker.py` | Fact-Checker (salary, count, %, date + V5 granulares) |
+| `app/shared/compliance/guardrail_repository.py` | Repositório de guardrails persistidos no banco |
+| `app/services/policy_engine_service.py` | Policy Engine + Rate Limiting + Escalation + Sector Rules |
+| `app/api/v1/lgpd.py` | LGPD endpoints (consent, DSR, anonymize) |
+| `app/models/guardrail.py` | Modelo SQLAlchemy do Guardrail |
+| `app/core/seeds/guardrails_seed.py` | Seed de guardrails padrão (6 primários + 7 secundários) |
+
+### IA / Persona / Prompts
+
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| `app/prompts/shared/lia_persona.yaml` | Persona LIA — tom, vocabulário HR, guidelines éticas |
+| `app/prompts/shared/defensive.yaml` | Defensive prompts — clarification, out-of-scope, error recovery |
+| `app/prompts/shared/agent_prompts.yaml` | System prompts compartilhados entre agentes |
+| `app/shared/prompts/anti_sycophancy_block.py` | Anti-Sycophancy — 3 variantes (OPERATIONAL, FULL, ORCHESTRATOR) |
+| `app/shared/prompts/prompt_registry.py` | Registry central de prompts |
+| `app/shared/prompts/interaction_patterns.py` | Padrões de interação conversacional |
+| `app/shared/prompts/few_shot_examples.py` | Few-shot examples para agentes |
+| `app/shared/prompts/intent_few_shot_examples.py` | Few-shot examples de roteamento de intents |
+| `app/shared/prompts/cot.py` | Chain-of-Thought prompts |
+| `app/shared/prompts/loader.py` | Loader YAML de prompts |
+| `app/core/prompt_version_loader.py` | Versionamento de prompts |
+| `app/services/prompt_version_registry.py` | Registry de versões de prompts |
+| `app/core/agent_model_config.py` | Configuração de modelos LLM por agente |
+
+### Domain Prompts (`app/prompts/domains/`)
+
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| `app/prompts/domains/analytics.yaml` | System prompt do agente Analytics |
+| `app/prompts/domains/ats_integration.yaml` | System prompt do agente ATS Integration |
+| `app/prompts/domains/automation.yaml` | System prompt do agente Automation |
+| `app/prompts/domains/communication.yaml` | System prompt do agente Communication |
+| `app/prompts/domains/cv_screening.yaml` | System prompt do agente CV Screening / WSI |
+| `app/prompts/domains/interview_scheduling.yaml` | System prompt do agente Interview Scheduling |
+| `app/prompts/domains/job_management.yaml` | System prompt do agente Job Management (Wizard) |
+| `app/prompts/domains/pipeline_transition.yaml` | System prompt do agente Pipeline / Kanban |
+| `app/prompts/domains/recruiter_assistant.yaml` | System prompt do agente Recruiter Assistant (Talent) |
+| `app/prompts/domains/sourcing.yaml` | System prompt do agente Sourcing |
+
+### Robustness / Defensive
+
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| `app/shared/robustness/defensive_prompts.py` | Defensive prompts — carrega YAML e expõe constantes |
+| `app/shared/robustness/input_validation.py` | Validação de entrada do usuário |
+| `app/shared/robustness/response_filter.py` | Filtro de respostas do LLM |
+| `app/shared/robustness/error_handling.py` | Tratamento de erros robusto |
+| `app/shared/robustness/context_management.py` | Gestão de contexto para agentes |
+| `app/shared/prompt_injection.py` | PromptInjectionGuard — detecção e sanitização |
+
+### Providers LLM
+
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| `app/shared/providers/llm_client.py` | Cliente unificado Anthropic (singleton) |
+| `app/shared/providers/llm_factory.py` | Factory de providers com fallback (claude → gemini → openai) |
+| `app/shared/providers/llm_provider.py` | ABC base para providers LLM |
+| `app/shared/providers/llm_gemini.py` | Provider Google Gemini |
+| `app/shared/providers/llm_claude.py` | Provider Anthropic Claude |
+| `app/shared/providers/llm_openai.py` | Provider OpenAI |
+| `app/shared/providers/voice_provider.py` | Provider de voz (STT/TTS) |
+
+### Governance / Monitoring
+
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| `app/shared/governance/agent_monitoring_service.py` | Monitoramento de agentes (métricas, health score, alertas) |
+| `app/shared/governance/feature_flag_service.py` | Feature flags — toggles por empresa/global com rollout % |
+| `app/services/bias_audit_service.py` | Bias Audit — adverse impact real (Four-Fifths Rule, chi2) |
+| `app/services/confidence_policy_service.py` | Confidence Policy — thresholds que disparam HITL |
+
+### Inteligência (11+ camadas)
+
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| `app/shared/learning/learning_loop_service.py` | Learning Loop (silent capture + FairnessGuard F1-02) |
+| `app/shared/learning/ab_testing_service.py` | A/B Testing (z-score, p-value, 95% CI) |
+| `app/services/routing_learning_service.py` | Routing Adaptativo (0.8x-1.2x confidence multipliers) |
+| `app/shared/learning/template_learning_service.py` | Template Learning (auto after 3 similar jobs) |
+| `app/services/calibration_service.py` | Calibration (explicit + implicit feedback → weight suggestions) |
+| `app/domains/cv_screening/services/score_normalization_service.py` | Score Normalization (difficulty coefficient) |
+| `app/services/ml/outcome_predictor.py` | Predictive Analytics (time-to-fill, optimal salary, skill success) |
+| `app/services/ml/feature_engineering.py` | Feature Engineering para modelos preditivos |
+| `app/services/ml/model_registry.py` | Registry de modelos ML |
+| `app/services/model_drift_service.py` | Model Drift (4 dimensions: score, approval, cost, latency) |
+| `app/shared/memory/conversation_state.py` | Conversation Memory (entity tracking, pronoun resolution) |
+| `app/shared/memory/reference_resolver.py` | Resolução de referências pronominais |
+| `app/shared/memory/candidate_list_store.py` | Store de listas de candidatos em memória |
+| `app/shared/intelligence/semantic_search_service.py` | Semantic Search (Gemini 768-dim, Redis cache, domain expansion) |
+| `app/shared/intelligence/embedding_service.py` | Embedding Service (Gemini text-embedding-004, 768-dim) |
+| `app/shared/intelligence/smart_extractor.py` | Extração inteligente de entidades |
+| `app/shared/intelligence/param_patterns.py` | Patterns de parâmetros para extração |
+| `app/services/voice_service.py` | Voice Analysis (STT: Deepgram/Whisper, TTS: OpenAI) |
+| `app/shared/learning/learning_snapshot_service.py` | Learning Snapshot (pre-learning rollback points, Z2-01) |
+| `app/shared/learning/finetuning_export.py` | Export de dados para fine-tuning |
+
+### Shared Tools
+
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| `app/shared/tools/export_tools.py` | Tools de exportação (CSV, Excel, PDF) |
+| `app/shared/tools/insight_tools.py` | Tools de insights — analytics e análise histórica |
+| `app/shared/tools/predictive_tools.py` | Tools preditivas — forecasting e recomendações |
+| `app/shared/tools/proactive_tools.py` | Tools proativas — detecção de riscos e alertas |
+
+### Policy / Middleware
+
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| `app/shared/policy_helper.py` | Helper de políticas para agentes |
+| `app/shared/policy_middleware.py` | Middleware de políticas FastAPI |
+| `app/shared/policy_sync_service.py` | Sincronização de políticas entre tenant |
+
+### Resilience / Observability
+
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| `app/shared/resilience/circuit_breaker.py` | CircuitBreaker — proteção contra falhas em cascata |
+| `app/shared/resilience/dlq_service.py` | Dead Letter Queue — mensagens falhadas |
+| `app/shared/resilience/stats_manager.py` | Gerenciador de estatísticas de resiliência |
+| `app/shared/observability/agent_metrics.py` | Métricas Prometheus de agentes |
+
+### Channels / Multi-Channel
+
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| `app/shared/channels/channel_router.py` | Roteador de canais (email, WhatsApp, SMS, Teams, in-app) |
+| `app/shared/channels/channel_adapter.py` | ABC base para adaptadores de canal |
+| `app/shared/channels/multi_channel_service.py` | Serviço multi-canal — envio unificado |
+| `app/shared/channels/adapters/email_adapter.py` | Adaptador de canal Email |
+| `app/shared/channels/adapters/whatsapp_adapter.py` | Adaptador de canal WhatsApp |
+| `app/shared/channels/adapters/sms_adapter.py` | Adaptador de canal SMS |
+| `app/shared/channels/adapters/teams_adapter.py` | Adaptador de canal Microsoft Teams |
+| `app/shared/channels/adapters/in_app_adapter.py` | Adaptador de canal in-app (notificações) |
+
+### Communication / Domain Services
+
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| `app/domains/communication/services/email_service.py` | Email service (Resend/SendGrid) |
+| `app/domains/communication/services/whatsapp_service.py` | WhatsApp service (Twilio) |
+| `app/domains/cv_screening/services/wsi_service.py` | WSI (CBI/Bloom/Dreyfus/Big Five) |
+| `app/domains/ats_integration/services/gupy_service.py` | ATS Client Gupy |
+| `app/domains/ats_integration/services/pandape_service.py` | ATS Client Pandapé |
+| `app/domains/ats_integration/services/merge_ats_service.py` | ATS Client Merge |
+| `app/domains/ats_integration/services/ats_sync_service.py` | Sincronização bidirecional ATS |
+| `app/domains/ats_integration/services/ats_clients/base.py` | ABC base para clientes ATS |
+| `app/domains/ats_integration/services/ats_clients/stackone.py` | ATS Client StackOne |
+| `app/domains/interview_scheduling/services/scheduling_service.py` | Scheduling (ICS + Teams) |
+
+### Documentação AI Existente (referência cruzada)
+
+| Arquivo | Conteúdo |
+|---------|---------|
+| `lia-agent-system/docs/ai-prompts/AI_PROMPT_CREATION_GUIDE.md` | Guia de criação de prompts para agentes |
+| `lia-agent-system/docs/ai-prompts/AI_PROMPTS_CATALOG.md` | Catálogo de todos os prompts da plataforma |
+| `lia-agent-system/docs/methodology/AI_GOVERNANCE.md` | Metodologia de governança IA |
+| `lia-agent-system/docs/methodology/AI_SOURCING_METHODOLOGY.md` | Metodologia de sourcing IA |
+| `lia-agent-system/docs/architecture/AI_AGENT_AUDIT_REPORT.md` | Relatório de auditoria de agentes |
+| `lia-agent-system/docs/CONCEITOS_IA_WEDOTALENT.md` | Conceitos fundamentais de IA WeDOTalent |
+| `lia-agent-system/docs/FAIRNESS_GUARD_COVERAGE.md` | Cobertura do FairnessGuard por endpoint/etapa |
+| `lia-agent-system/docs/FRIA_EU_AI_ACT.md` | Análise de risco EU AI Act (FRIA) |
+| `lia-agent-system/docs/MAPA_CAMADA_INTELIGENCIA.md` | Mapa detalhado da camada de inteligência |
+| `lia-agent-system/docs/PLANO_CICLO_FECHADO_LIA.md` | Plano do ciclo fechado de learning |
+
+---
+
+## CONTEÚDO DETALHADO DAS CAMADAS TRANSVERSAIS
+
+### FairnessGuard (`app/shared/compliance/fairness_guard.py`)
+
+**Propósito:** Middleware que bloqueia filtros discriminatórios em 3 camadas, antes e depois do processamento LLM.
+
+**Dataclasses exportadas:**
+- `FairnessCheckResult` — campos: `is_blocked`, `blocked_terms`, `category`, `educational_message`, `original_query`, `confidence`, `soft_warnings`; property `is_biased` (alias)
+- `LearningBatchValidationResult` — campos: `is_clean`, `blocked_patterns`, `warnings`
+
+**Classe principal: `FairnessGuard`**
+- `check(query) → FairnessCheckResult` — Layer 1: ~90 regex patterns compilados nas 13 categorias
+- `check_explicit_bias(text)` — alias semântico para `check()`
+- `check_implicit_bias(text) → List[str]` — Layer 2: termos implícitos do dict `IMPLICIT_BIAS_TERMS`
+- `check_semantic(text, context) → FairnessCheckResult` — Layer 3: análise semântica via LLM
+- `log_check(result, context, company_id)` — logging assíncrono
+- `validate_learning_batch(patterns) → LearningBatchValidationResult` — valida batch de learning contra F1-02
+
+**Constantes/Dicts importantes:**
+- `DISCRIMINATORY_CATEGORIES` — 13 categorias: `genero`, `raca_etnia`, `idade`, `religiao`, `orientacao_sexual`, `estado_civil`, `deficiencia`, `maternidade_paternidade`, `nacionalidade`, `antecedentes_criminais`, `saude_doenca`, `filiacao_sindical`, `aparencia_fisica`
+- `IMPLICIT_BIAS_TERMS` — ~30 termos com mensagens educativas (ex: "boa aparencia", "bairros nobres", "energia jovem", "sem obrigacoes")
+- `HIGH_IMPACT_ACTIONS` — set: `rejection`, `shortlist`, `wsi_score`, `policy_save`, `bulk_rejection`, `sourcing_search`, `jd_import`, `pipeline_move`
+- `_LEARNING_PROTECTED_FIELDS` — frozenset de 20+ campos protegidos que nunca geram padrões de learning
+- `_PATTERNS_VERSION = 3` — versionamento de patterns para recompilação
+
+**FairnessGuard Middleware (`fairness_guard_middleware.py`):**
+- `FairnessViolation(Exception)` — exceção com `result` e `field_name`
+- `FairnessCheckOutput` — agregador: `is_blocked`, `blocked_field`, `warnings`, `checked_fields`, `to_dict()`
+- `check_fairness(texts, context, company_id, raise_on_block)` — L1+L2 síncrono
+- `check_fairness_async(texts, ..., include_semantic)` — L1+L2+L3 assíncrono
+- `check_rejection_reason(reason, candidate_name, company_id)` — check especializado para rejeições (G2)
+
+---
+
+### PII Masking (`app/shared/pii_masking.py`)
+
+**Propósito:** Remove dados pessoais de logs e prompts LLM para compliance LGPD.
+
+**4 Patterns de Log:**
+- `CPF_PATTERN` → `***CPF***` — regex: `\b\d{3}[.\-]?\d{3}[.\-]?\d{3}[.\-/]?\d{2}\b`
+- `EMAIL_PATTERN` → `***EMAIL***`
+- `PHONE_BR_PATTERN` → `***PHONE***` — suporta +55, DDD, 9º dígito
+- `NAME_IN_LOG_PATTERN` → `***NAME***` — detecta `name=`, `nome=`, `candidato=`
+
+**Camadas pré-LLM (`strip_pii_for_llm_prompt`):**
+- Layer 1: Regex direto (CPF, email, telefone, RG, CNPJ) → `[CPF REMOVIDO]`, etc.
+- Layer 3 basic: Quasi-identificadores (ano de formatura, idade explícita, endereço/bairro)
+- Layer 4: NER via Microsoft Presidio (opt-in: `LLM_PROMPT_PRESIDIO_ENABLED=true`), entidades: `PERSON`, `EMAIL_ADDRESS`, `PHONE_NUMBER`, `LOCATION`, `DATE_TIME`, `NRP`
+
+**Classes/Funções:**
+- `PIIMaskingFilter(logging.Filter)` — filtro de logs que mascara PII em msg, args e exc_info
+- `get_masked_logger(name)` — cria logger com PIIMaskingFilter
+- `install_global_pii_masking()` — instala filtro no root logger + handlers
+- `mask_pii(text) → str` — mascaramento de 4 patterns
+- `strip_pii_for_llm_prompt(text) → str` — remoção pré-LLM (controlada por env `LLM_PROMPT_PII_STRIPPING_ENABLED`)
+
+---
+
+### Audit Service (`app/shared/compliance/audit_service.py`)
+
+**Propósito:** Logging de decisões IA com explainability completa, SOX-compliant.
+
+**Constantes:**
+- `DECISION_TYPE_MAPPING` — mapeamento de 12 ações para `DecisionType` enum: `cv_screening` → `SCORE_CANDIDATE`, `reject` → `REJECT_CANDIDATE`, `approve` → `APPROVE_CANDIDATE`, `proceed_to_wsi` → `MOVE_STAGE`, `generate_jd` → `GENERATE_FEEDBACK`
+- `PROTECTED_CRITERIA` — 10 campos protegidos: `age`, `gender`, `ethnicity`, `marital_status`, `photo`, `institution`, `address`, `religion`, `disability`, `cv_gaps`
+
+**Classe `AuditService`:**
+- `RETENTION_PERIODS` dict: `score_candidate` → 730d, `send_message` → 1825d, `schedule_interview` → 365d
+- `log_decision(company_id, agent_name, decision_type, action, decision, reasoning, criteria_used, ...) → AuditLog` — registra decisão com reasoning, criteria, retention
+- `get_candidate_decisions(company_id, candidate_id, ...) → Dict` — histórico de decisões por candidato
+- `get_decisions_by_agent(company_id, agent_name, ...)` — decisões por agente
+- `record_human_review(audit_log_id, reviewed_by, override)` — registra override humano
+- `get_pending_reviews(company_id)` — decisões pendentes de revisão
+- `get_decision_statistics(company_id, ...)` — estatísticas (total, by_type, by_decision, override_rate)
+
+---
+
+### Fact Checker (`app/shared/compliance/fact_checker.py`)
+
+**Propósito:** Validação pós-LLM de claims numéricas contra fontes de dados reais.
+
+**4 Tipos de Verificação:**
+1. **Salary** — `SALARY_PATTERN` (regex R$), range razoável: R$ 1.500 – R$ 200.000, desvio > 50% = inaccurate
+2. **Candidate Count** — `CANDIDATE_COUNT_PATTERN`, máximo: 50.000, desvio > 100% = inaccurate
+3. **Percentage** — `PERCENTAGE_PATTERN`, fora de 0-100 = inaccurate
+4. **Date** — `DATE_PATTERN` (DD/MM/YYYY), ano < 2020 ou > 2030 = inaccurate
+
+**Dataclasses:**
+- `FactCheckClaim` — `claim_type`, `original_value`, `verified_value`, `is_verified`, `is_accurate`, `deviation_pct`, `source`, `notes`
+- `FactCheckResult` — `confidence_verified`, `total_claims`, `verified_claims`, `accurate_claims`, `inaccurate_claims`, `overall_accuracy`, `claims[]`, `to_metadata()`
+
+**Métodos granulares (V5):**
+- `verify_count_claim(text, expected_count, tolerance_pct)` — verificação isolada de contagem
+- `verify_average_claim(text, expected_average, tolerance_pct)` — verificação de média/percentual
+- `verify_top_candidates_claim(text, expected_top_n, max_reasonable_top)` — verificação de top-N
+
+---
+
+### Policy Engine (`app/services/policy_engine_service.py`)
+
+**Propósito:** Motor de políticas setoriais com rate limiting e escalation.
+
+**Constante principal: `ALPHA1_SECTOR_RULES`** — regras por setor:
+| Setor | autonomy_level | hitl_threshold | auto_approve_threshold | max_pipeline_days | fairness_L3 |
+|-------|---------------|---------------|----------------------|-------------------|------------|
+| tech | high | 0.65 | 0.85 | 30 | true |
+| varejo | medium | 0.70 | 0.80 | 21 | false |
+| logistica | medium | 0.70 | 0.80 | 14 | false |
+| financeiro | low | 0.80 | 0.90 | 45 | true |
+| saude | low | 0.80 | 0.90 | 45 | true |
+| rpo | high | 0.60 | 0.82 | 25 | true |
+
+**Classes resultado:**
+- `EvaluationResult` — `result`, `allowed`, `reason`, `matching_rule`, `rate_limit_status`, `requires_approval`, `evaluation_time_ms`
+- `RateLimitResult` — `allowed`, `current_count`, `limit_value`, `window_seconds`, `remaining`, `reset_at`
+- `EscalationResult` — `success`, `escalation_log_id`, `action_taken`, `notifications_sent`
+
+**Classe `PolicyEngineService`:**
+- `evaluate(action, context, agent_name, company_id, check_rate_limit, dry_run) → EvaluationResult` — avalia business rules + rate limit
+- `check_rate_limit(target_type, target_id, action, increment) → RateLimitResult` — sliding window
+- `_action_matches(action, patterns)` — matching com fnmatch
+- `_conditions_match(conditions, action, context)` — avaliação de condições (equals, greater_than, between, contains, matches, etc.)
+
+---
+
+### Bias Audit Service (`app/services/bias_audit_service.py`)
+
+**Propósito:** Calcula adverse impact real com dados de `RubricEvaluation + Candidate`, LGPD-safe (apenas agregados).
+
+**4 Dimensões auditadas:**
+1. `gender` — masculino, feminino, outro/não informado
+2. `age_group` — <30, 30-44, 45+
+3. `disability` — com PCD, sem PCD
+4. `region` — por `location_state`
+
+**Constantes:**
+- `APPROVAL_THRESHOLD = 60.0` — score mínimo para aprovação
+- `FOUR_FIFTHS_THRESHOLD = 0.80` — limiar Four-Fifths Rule
+
+**Dataclasses:**
+- `DemographicAuditResult` — `dimension`, `groups`, `adverse_impact_ratio`, `below_threshold`, `alert_level`, `disparate_impact` (chi2, p_value, significant), `eeoc_compliant`
+- `BiasAuditReport` — `job_id`, `evaluated_at`, `total_candidates`, `dimensions[]`, `has_alerts`
+
+**Classe `BiasAuditService`:**
+- `get_adverse_impact_by_job(db, job_id, company_id) → BiasAuditReport` — calcula adverse impact nas 4 dimensões
+- `save_snapshot(db, company_id, report)` — persiste snapshot para rastreabilidade (SOX/ISO)
+- `get_snapshot_history(db, company_id, job_id)` — histórico de snapshots
+- `audit_ranking_results(results, dimension, top_n) → Dict` — FAR-5: audita disparate impact em ranking em tempo real
+
+**Testes estatísticos:** chi-quadrado de Pearson (scipy ou fallback Python puro)
+
+---
+
+### Prompt Injection Guard (`app/shared/prompt_injection.py`)
+
+**Propósito:** Detecta e bloqueia padrões de injeção de prompt adversarial.
+
+**6 Categorias de patterns detectados:**
+1. `system_prompt_override` — "ignore previous instructions", "desconsidere instruções" → risk: high, confidence: 0.9
+2. `role_manipulation` — "you are now a", "finja ser", "assuma o papel" → risk: high, confidence: 0.85
+3. `system_prompt_extraction` — "show your system prompt", "mostre seu prompt" → risk: medium, confidence: 0.8
+4. `delimiter_injection` — ````system`, `[SYSTEM]`, `<|im_start|>` → risk: high, confidence: 0.95
+5. `data_exfiltration` — URLs, base64, encode → risk: medium, confidence: 0.7
+6. `jailbreak_attempt` — "DAN", "developer mode", "bypass filter" → risk: high, confidence: 0.9
+
+**Dataclass:** `InjectionCheckResult` — `is_suspicious`, `risk_level` (none/low/medium/high), `matched_patterns`, `sanitized_input`, `confidence`
+
+**Classe `PromptInjectionGuard`:**
+- `check(user_input) → InjectionCheckResult` — detecção completa
+- `sanitize(user_input) → str` — remove delimitadores suspeitos
+- `get_stats() → Dict` — total_checks, total_blocks, block_rate
+
+---
+
+### Anti-Sycophancy (`app/shared/prompts/anti_sycophancy_block.py`)
+
+**Propósito:** Bloco canônico de prevenção de bajulação. Crença #11 do Manifesto WeDOTalent.
+
+**3 Variantes:**
+
+1. **`ANTI_SYCOPHANCY_OPERATIONAL`** — para Talent, Kanban, Jobs Management:
+   - Nunca concorde com pedidos que violem fairness
+   - Se filtros discriminatórios, recuse com dados
+   - Discordância com dados > concordância sem evidência
+   - Se insistir: "Ok, vou prosseguir... Registro que os dados indicam [X]"
+
+2. **`ANTI_SYCOPHANCY_FULL`** — para Wizard, Policy (consultivo/estratégico):
+   - Inclui tudo de OPERATIONAL +
+   - Verificação de premissas: "Se ele diz temos muitas vagas, VERIFIQUE"
+   - Se mudar de posição, EXPLIQUE com novos dados
+   - Discordar com DADOS + ALTERNATIVAS
+   - Verificar no histórico antes de confirmar afirmações
+
+3. **`ANTI_SYCOPHANCY_ORCHESTRATOR`** — para o Orchestrator:
+   - Versão compacta: nunca confirme pedidos discriminatórios, apresente alternativas com dados
+
+---
+
+### LIA Persona (`app/prompts/shared/lia_persona.yaml`)
+
+**Propósito:** Define identidade, tom de comunicação e vocabulário HR da LIA.
+
+**Identidade:** LIA (Learning Intelligence Assistant) — assistente de recrutamento da WeDOTalent
+
+**Tom:** Profissional, empático, direto e proativo. Formal mas acessível.
+
+**Evitar:** Gírias ("blz", "tmj", "vc"), emojis excessivos, linguagem informal, abreviações, palavras em inglês sem necessidade
+
+**Usar:** Termos técnicos de RH em português, frases completas, pontuação correta, linguagem inclusiva
+
+**Vocabulário HR incluído:** 80+ termos organizados em: Processo Seletivo, Avaliação de Candidatos, Níveis de Senioridade, Tipos de Contratação, Remuneração, Onboarding, Profissionais de RH, Vagas, Etapas do Processo, Modalidades de Trabalho
+
+**Seções adicionais:** `data_persistence_guidelines` (regras de persistência de dados), `ethical_guidelines` (critérios permitidos vs proibidos)
+
+---
+
+### Defensive Prompts (`app/prompts/shared/defensive.yaml` + `app/shared/robustness/defensive_prompts.py`)
+
+**Propósito:** Prompts defensivos para comportamento robusto de agentes.
+
+**Componentes:**
+- `clarification_triggers` — 9 triggers: `missing_job`, `missing_candidate`, `ambiguous_action`, `missing_date`, `missing_criteria`, `confirm_action`, `multiple_options`, `partial_match`, `empty_result`
+- `out_of_scope_responses` — 8 categorias: `general`, `medical`, `legal`, `financial`, `personal`, `inappropriate`, `technical_limit`, `external_system`
+- `what_i_can_do` — lista formatada de capacidades (vagas, candidatos, entrevistas, relatórios, integrações)
+- `ambiguity_detection_prompt` — prompt para LLM detectar ambiguidades (JSON output: is_ambiguous, ambiguity_type, missing_info, confidence)
+- `error_recovery_prompt` — prompt para recuperação de erros (recoverable, partial_data, retry)
+- `defensive_prompt_section` — seção completa para system prompts (quando pedir clarificação, out-of-scope, tratamento de erros, cancelamento)
+- `clarification_item_messages` — 9 mensagens formatadas por item (job_id, candidate_id, date, skills, etc.)
+
+---
+
+### Guardrails Seed (`app/core/seeds/guardrails_seed.py`)
+
+**Propósito:** Popula tabela `guardrails` com regras iniciais de compliance.
+
+**6 Guardrails Primários (todos os agentes):**
+1. Nunca revelar dados pessoais sem autorização
+2. Nunca discriminar por características protegidas
+3. Identificar comunicação como IA quando solicitado
+4. Nunca criar perguntas sobre vida pessoal
+5. Nunca salvar/transmitir dados sem consentimento
+6. Nunca gerar avaliação sem critérios objetivos auditáveis
+
+**7 Guardrails Secundários (por domínio):**
+1. `wsi_interviewer` — perguntas apenas sobre competências
+2. `communication` — email/mensagem com identificação de IA (tool: `send_bulk_email`)
+3. `sourcing` — nunca inferir atributos protegidos de nome/foto
+4. `cv_screening` — nunca rejeitar sem FairnessGuard
+5. `pipeline` — motivo auditável para rejeição (tool: `reject_candidate`)
+6. `pipeline` — confirmação para movimentações em lote (tool: `batch_move`)
+7. `pipeline` — confirmação para finalizar contratação (tool: `finalize_hiring`)
+
+---
+
+### Confidence Policy (`app/services/confidence_policy_service.py`)
+
+**Propósito:** Gerencia thresholds de confiança que disparam HITL no Job Wizard.
+
+**Thresholds padrão (`ConfidenceThresholds`):**
+- `silent_apply = 0.85` — auto-aplica sem notificação
+- `apply_notify = 0.70` — auto-aplica com notificação
+- `ask_user = 0.50` — apresenta como sugestão
+
+**Base de confiança por fonte (`SOURCE_BASE_CONFIDENCE`):**
+| Fonte | Confiança base |
+|-------|---------------|
+| fixed / session / system | 1.00 |
+| company_default | 0.85 |
+| recruiter_history | 0.80 |
+| similar_jobs | 0.75 |
+| calculation | 0.75 |
+| text_extraction | 0.70 |
+| ai_generation | 0.65 |
+| benchmark | 0.60 |
+
+**Ajustes:** `MULTI_SOURCE_AGREE_BONUS = +0.10`, `MULTI_SOURCE_DISAGREE_PENALTY = -0.30`, `MAX_CONFIDENCE = 0.95`
+
+**Actions:** `APPLY_SILENT`, `APPLY_NOTIFY`, `ASK_USER`, `ALERT_CONFLICT`
+
+---
+
+### Enhanced Agent Mixin (`libs/agents-core/lia_agents_core/enhanced_agent_mixin.py`)
+
+**Propósito:** Mixin que injeta memory, autonomy, learning e enhanced tools em todos os 6 agentes de domínio.
+
+**Capabilities injetadas:**
+- `MemoryIntegration` (WorkingMemory + LongTermMemory)
+- `AutonomyEngine` — motor de autonomia
+- `LearningExtractor` — extração de aprendizados pós-loop
+
+**Métodos públicos:**
+- `_setup_enhanced(domain)` — inicializa capabilities
+- `_get_memory_context(session_id, company_id) → str` — contexto enriquecido para system prompt
+- `_resolve_guardrails(company_id) → List[str]` — guardrails dinâmicos de CompanyHiringPolicy
+- `_post_loop_learning(state, company_id, session_id)` — extrai e salva learnings após ReAct loop
+- `_get_all_enhanced_tools()` — retorna insight_tools + proactive_tools + predictive_tools
+
+**FairnessGuard integrado:** Pre-check automático antes do processamento (P0-A — Inegociável #3)
+
+---
+
+### Learning Loop (`app/shared/learning/learning_loop_service.py`)
+
+**Propósito:** Captura silenciosa de feedback e geração de padrões de learning.
+
+**Ciclo: CAPTURE → ANALYZE → APPLY**
+
+**Enums:**
+- `FeedbackOutcome` — `ACCEPTED`, `MODIFIED`, `REJECTED`, `IGNORED`
+- `PatternType` — `SALARY_PREFERENCE`, `SKILL_PREFERENCE`, `BENEFIT_PREFERENCE`, `WORK_MODEL_PREFERENCE`, `SCREENING_PREFERENCE`, `JD_STYLE_PREFERENCE`, `SOURCE_TRUST`
+
+**Thresholds de confiança (por sample size):**
+- `high`: 20+ samples
+- `medium`: 10+ samples
+- `low`: 5+ samples
+- `promote`: acceptance_rate ≥ 0.75
+
+**FairnessGuard F1-02:** Valida batch de padrões aprendidos contra campos protegidos antes de aplicar
+
+---
+
+### Model Drift (`app/services/model_drift_service.py`)
+
+**Propósito:** Detecta drift em 4 dimensões comparando janela recente (7 dias) vs baseline (7 dias anteriores).
+
+**4 Dimensões monitoradas:**
+| Dimensão | Threshold | Descrição |
+|----------|----------|-----------|
+| `score_drift` | 0.5 pontos | Variação absoluta no score médio WSI |
+| `approval_drift` | 10 p.p. | Variação na taxa de aprovação |
+| `cost_drift` | 20% | Variação relativa no custo total |
+| `latency_drift` | 50% | Variação relativa no P95 de latência |
+
+**Dataclasses:**
+- `DriftTrigger` — `name`, `baseline_value`, `recent_value`, `delta`, `threshold`, `triggered`
+- `DriftStatus` — `company_id`, `triggers[]`, `drift_detected`, `alert_level` (ok/warning/critical)
+
+**Constantes:** `WINDOW_DAYS = 7`, `SCORE_APPROVAL_CUTOFF = 60.0`
+
+---
+
+### LLM Cascade (`app/orchestrator/llm_cascade.py`)
+
+**Propósito:** Roteador com escada de custo: Haiku → Sonnet → Opus.
+
+**Lógica de fallback (3 tiers):**
+1. **Tier 3a — Haiku:** Tenta modelo mais barato (`LLM_FAST_MODEL`) primeiro. Se confiança ≥ `LLM_CASCADE_FAST_THRESHOLD` (0.80), retorna resultado.
+2. **Tier 3b — Sonnet:** Se Haiku insuficiente, escalona para `LLM_PRIMARY_MODEL`. Se confiança ≥ `LLM_CASCADE_MID_THRESHOLD` (0.70), retorna resultado.
+3. **Tier 3c — Opus:** Se Sonnet insuficiente, escalona para `LLM_POWERFUL_MODEL`. Retorna o melhor resultado disponível (Opus > Sonnet > Haiku), ou fallback `recruiter_assistant` com confidence 0.3.
+
+**Nota:** `LLM_CASCADE_FALLBACK_THRESHOLD` (0.60) é armazenado mas não utilizado como gate no fluxo atual.
+
+**Multi-Model (E5):** Se `preferred_model` fornecido, tenta antes da cascata padrão. Se confiança ≥ `_mid_threshold`, retorna sem entrar na cascata.
+
+**Integração:** Tokens acumulados em todos os tiers e registrados via `TenantBudget.check_and_record()`.
+
+---
+
+### Governance: Agent Monitoring (`app/shared/governance/agent_monitoring_service.py`)
+
+**Propósito:** Monitoramento de atividades e health score de 7 agentes definidos.
+
+**Agentes definidos (`AGENT_DEFINITIONS`):**
+| ID | Nome | Daily Goal |
+|----|------|-----------|
+| job_intake | Job Intake | 15 |
+| sourcing | Sourcing | 50 |
+| screening | Screening | 30 |
+| scheduling | Scheduling | 20 |
+| communication | Communication | 40 |
+| analytics | Analytics | 10 |
+| recruiter_assistant | Assistente | 25 |
+
+**Health Score (0-100):** 4 drivers com pesos: Taxa de Sucesso (40%), SLA Compliance (30%), Tempo Médio (20%), Taxa de Erro (10%). Tiers: excellent (≥90), good (≥75), watch (≥60), critical (<60).
+
+**Métodos:** `get_global_metrics()`, `get_agent_summary(id)`, `get_agent_health(id)`, `get_activity_feed()`, `get_proactive_alerts()`, `log_activity()`
+
+---
+
+### Governance: Feature Flags (`app/shared/governance/feature_flag_service.py`)
+
+**Propósito:** Controle granular de funcionalidades com toggles por empresa/global.
+
+**11 Feature Flags default:**
+| Flag | Categoria | Default |
+|------|-----------|---------|
+| learning_hub_enabled | learning | true |
+| outcome_learning_enabled | learning | true |
+| stage_feedback_enabled | learning | true |
+| skills_deduplication_enabled | wizard | true |
+| analytics_dashboard_enabled | analytics | true |
+| ai_suggestions_enhanced | ai | true |
+| empty_field_notifications | wizard | true |
+| field_toggles_enabled | wizard | true |
+| ENABLE_AUTO_SCREENING | automation | false |
+| ENABLE_AUTO_SCHEDULING | automation | false |
+| ENABLE_AUTO_STAGE_ADVANCE | automation | false |
+
+**Prioridade:** Per-company > Global > Default. Suporta rollout_percentage e expires_at.
+
+---
+
+### ConfidenceNode (`libs/agents-core/lia_agents_core/confidence.py`)
+
+**Propósito:** Nó LangGraph que adiciona score de confiança ao state do grafo.
+
+**Heurística `compute_confidence()`:**
+| Condição | Score |
+|----------|-------|
+| Erro | 0.0 |
+| Sem resposta | 0.1 |
+| Resposta curta, sem tools | 0.50 |
+| Resposta média (>100 chars) | 0.70 |
+| Resposta longa (>300 chars) | 0.75 |
+| Com tools usadas | 0.80 |
+| Com tools + observações | 0.85 |
+| Resposta longa + tools + obs | 0.92 |
+
+**Classe `ConfidenceNode`:** Nó LangGraph que calcula confiança e adiciona ao state. Uso: `graph.add_node("score_confidence", ConfidenceNode(domain="pipeline"))`
+
+---
+
+### Providers LLM (`app/shared/providers/`)
+
+**`llm_client.py`** — Cliente singleton Anthropic via Replit AI Integrations:
+- `get_anthropic_client() → Anthropic` — env: `AI_INTEGRATIONS_ANTHROPIC_API_KEY` ou fallback `ANTHROPIC_API_KEY`
+- `llm_complete(prompt, system, model, max_tokens, temperature) → Optional[str]` — wrapper simples
+- Default model: `claude-sonnet-4-20250514`
+
+**`llm_factory.py`** — Factory com fallback:
+- `FALLBACK_ORDER = ["claude", "gemini", "openai"]`
+- `LLMProviderFactory.get(provider_name) → LLMProviderABC`
+- `LLMProviderFactory.get_default()` — env: `LLM_DEFAULT_PROVIDER` (default: "gemini")
+- `LLMProviderFactory.generate_with_fallback(prompt, system)` — tenta providers na ordem de fallback
+
+**`llm_provider.py`** — ABC base com interface `generate()`, `generate_with_system()`
+
+---
+
 ## GAPS CONSOLIDADOS — AÇÕES PENDENTES
 
 ### Audit Trail (Prioridade: MVP)
