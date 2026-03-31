@@ -97,6 +97,19 @@ async def login(
     user = result.scalar_one_or_none()
     
     if not user or not verify_password(login_data.password, user.password_hash):
+        try:
+            await audit_service.log_decision(
+                company_id="default",
+                agent_name="auth_module",
+                decision_type="reject_candidate",
+                action="user_login_failed",
+                decision="rejected",
+                reasoning=["Authentication failed: invalid credentials"],
+                criteria_used=["email", "password_hash"],
+                human_review_required=False,
+            )
+        except Exception:
+            pass
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
@@ -122,8 +135,8 @@ async def login(
         await audit_service.log_decision(
             company_id=str(_company) if _company else "default",
             agent_name="auth_module",
-            decision_type="approve_candidate",
-            action="user_login",
+            decision_type="move_stage",
+            action="user_login_success",
             decision="approved",
             reasoning=["User authenticated successfully via credentials"],
             criteria_used=["email", "password_hash", "is_active"],

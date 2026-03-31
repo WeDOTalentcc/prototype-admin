@@ -194,13 +194,19 @@ async def evaluate_candidate(
         await db.refresh(db_evaluation)
     
     try:
+        dimension_summary = [f"{e.requirement}: {e.score}/5" for e in (evaluation_result.evaluations or [])[:5]]
         await audit_service.log_decision(
             company_id=x_company_id or "default",
             agent_name="rubric_evaluation",
             decision_type="score_candidate",
             action="evaluate_candidate",
             decision="scored",
-            reasoning=[evaluation_result.reasoning[:500] if evaluation_result.reasoning else "Rubric evaluation completed"],
+            reasoning=[
+                "Rubric evaluation completed via BARS methodology",
+                f"Overall score: {evaluation_result.score}/5",
+                f"Model: claude-sonnet-4-6",
+                f"Fairness guard: {'blocked' if (guard_result and guard_result.is_blocked) else 'passed'}",
+            ] + dimension_summary[:3],
             criteria_used=[r.requirement for r in (requirements or [])[:10]],
             candidate_id=str(request.candidate_id) if request.candidate_id else None,
             job_vacancy_id=str(request.job_vacancy_id) if request.job_vacancy_id else None,

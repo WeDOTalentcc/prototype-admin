@@ -492,6 +492,23 @@ async def send_screening_invite(
             except Exception as log_error:
                 logger.warning(f"⚠️ Failed to log screening invite: {log_error}")
         
+        if result.get("success"):
+            try:
+                await audit_service.log_decision(
+                    company_id=company_id,
+                    agent_name="communication_module",
+                    decision_type="send_message",
+                    action="send_screening_invite",
+                    decision="sent",
+                    reasoning=["Screening invite dispatched", f"Channel: {channel}"],
+                    criteria_used=["recipient_validation", "saturation_check", "channel_availability"],
+                    candidate_id=request.candidate_id,
+                    job_vacancy_id=request.vacancy_id,
+                    human_review_required=False,
+                )
+            except Exception as audit_err:
+                logger.warning(f"Audit log failed for send_screening_invite: {audit_err}")
+
         return ScreeningInviteResponse(
             success=result.get("success", False),
             message_id=result.get("message_id"),

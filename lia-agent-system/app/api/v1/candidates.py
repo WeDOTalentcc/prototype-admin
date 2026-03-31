@@ -1211,12 +1211,26 @@ async def search_candidates(request: PearchSearchRequest):
     - "Data scientists with healthcare experience, 5+ years"
     """
     try:
-        return await pearch_service.search_candidates(
+        result = await pearch_service.search_candidates(
             query=request.query,
             search_type=request.search_type,
             limit=request.limit,
             timeout=request.timeout
         )
+        try:
+            await audit_service.log_decision(
+                company_id="default",
+                agent_name="candidate_search",
+                decision_type="score_candidate",
+                action="global_search",
+                decision="executed",
+                reasoning=[f"Global search ({request.search_type}) executed", f"Limit: {request.limit}"],
+                criteria_used=["query", "search_type"],
+                human_review_required=False,
+            )
+        except Exception as audit_err:
+            logger.warning(f"Audit log failed for global_search: {audit_err}")
+        return result
     except ValueError as e:
         raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:

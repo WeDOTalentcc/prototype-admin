@@ -72,8 +72,8 @@ async def execute_pipeline_action(
                 decision_type="move_stage",
                 action=request.action_id,
                 decision="executed",
-                reasoning=[f"Pipeline action '{request.action_id}' executed for candidate {request.candidate_id}"],
-                criteria_used=["action_id", "candidate_status"],
+                reasoning=[f"Pipeline action '{request.action_id}' executed", f"Result: {result.get('status', 'ok')}"],
+                criteria_used=["action_id", "candidate_status", "pipeline_rules"],
                 candidate_id=request.candidate_id,
                 human_review_required=False,
             )

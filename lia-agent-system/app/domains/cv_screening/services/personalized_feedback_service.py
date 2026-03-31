@@ -1188,6 +1188,23 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
             await db.commit()
             
             logger.info(f"Feedback {feedback_id} marked as sent via {channel}")
+
+            try:
+                await audit_service.log_decision(
+                    company_id=getattr(record, "company_id", None) or "default",
+                    agent_name="personalized_feedback",
+                    decision_type="send_message",
+                    action="feedback_sent",
+                    decision="sent",
+                    reasoning=["Personalized feedback delivered to candidate", f"Channel: {channel}"],
+                    criteria_used=["feedback_status", "channel_availability"],
+                    candidate_id=getattr(record, "candidate_id", None),
+                    job_vacancy_id=getattr(record, "job_vacancy_id", None),
+                    human_review_required=False,
+                )
+            except Exception as audit_err:
+                logger.warning(f"Audit log failed for feedback_sent: {audit_err}")
+
             return True
         finally:
             if should_close:
