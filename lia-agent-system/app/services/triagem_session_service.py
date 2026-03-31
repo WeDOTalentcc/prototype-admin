@@ -909,7 +909,6 @@ class TriagemSessionService:
             return False
 
         score = session.wsi_final_score or 0.0
-        recommendation = session.recommendation or "aguardando"
 
         if score >= 7.5:
             target_stage = "interview"
