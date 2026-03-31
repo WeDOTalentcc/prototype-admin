@@ -317,18 +317,36 @@ async def reject_candidate(
                 
                 candidate_name = getattr(candidate, 'name', 'Candidato') if candidate else 'Candidato'
 
-                if send_feedback and candidate:
-                    try:
-                        from app.jobs.celery_tasks import feedback_generate_and_send_task
-                        feedback_generate_and_send_task.delay(
-                            candidate_id=candidate_id,
-                            job_id=job_id,
-                            reason=reason,
-                            company_id=str(getattr(candidate, 'company_id', 'default')),
-                        )
-                        logger.info("Dispatched rejection feedback for candidate %s", candidate_id)
-                    except Exception as fb_exc:
-                        logger.warning("Failed to dispatch rejection feedback: %s", fb_exc)
+                confirmed = kwargs.get("confirmed", False)
+
+                if confirmed:
+                    if send_feedback and candidate:
+                        try:
+                            from app.jobs.celery_tasks import feedback_generate_and_send_task
+                            feedback_generate_and_send_task.delay(
+                                candidate_id=candidate_id,
+                                job_id=job_id,
+                                reason=reason,
+                                company_id=str(getattr(candidate, 'company_id', 'default')),
+                            )
+                            logger.info("Dispatched rejection feedback for candidate %s", candidate_id)
+                        except Exception as fb_exc:
+                            logger.warning("Failed to dispatch rejection feedback: %s", fb_exc)
+
+                    return {
+                        "success": True,
+                        "message": f"✅ {candidate_name} foi rejeitado. Motivo: {reason}",
+                        "action_taken": "reject_candidate",
+                        "affected_entities": [candidate_id],
+                        "data": {
+                            "candidate_id": candidate_id,
+                            "candidate_name": candidate_name,
+                            "job_id": job_id,
+                            "reason": reason,
+                            "feedback_sent": send_feedback,
+                            "new_stage": "Reprovado"
+                        }
+                    }
 
                 return {
                     "success": True,

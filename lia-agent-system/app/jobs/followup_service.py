@@ -59,6 +59,7 @@ async def process_email_followups(db: AsyncSession) -> dict[str, int]:
                   AND e.event_type IN ('open', 'click', 'unsubscribe')
               )
               AND COALESCE(n.extra_data->>'opted_out', 'false') != 'true'
+              AND COALESCE(n.extra_data->>'status', '') != 'sem_resposta'
               AND (
                   n.extra_data->>'last_followup_at' IS NULL
                   OR (n.extra_data->>'last_followup_at')::timestamp < :last_followup_cutoff
