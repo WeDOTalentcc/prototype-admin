@@ -231,6 +231,8 @@
 | Ag.7 | CommunicationReActAgent (envio) / PersonalizedFeedbackService (feedback) | communication / cv_screening |
 | Ag.8 | ATSIntegrationReActAgent ⚠ PÓS-MVP | ats_integration |
 | — | WSIQuestionGeneratorService (gera perguntas WSI, E3) | cv_screening |
+| — | WSIScreeningPipeline (triagem/screening, E4) | cv_screening |
+| — | WSIVoiceOrchestrator (triagem por voz, E7) | cv_screening |
 | — | JDGeneratorService (gera/ajusta JD, E2/E3) | job_management |
 
 **Legenda:** ● Ativo | ◐ Disponível (precisa ativar) | ○ A implementar | ⚠ Gap bloqueante
