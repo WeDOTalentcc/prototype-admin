@@ -29,7 +29,7 @@ interface ResizableTableHeaderProps {
   children?: React.ReactNode
 }
 
-export function ResizableTableHeader({
+export const ResizableTableHeader = React.memo(function ResizableTableHeader({
   columnId,
   label,
   width,
@@ -123,9 +123,10 @@ export function ResizableTableHeader({
 interface TableHeaderRowProps {
   children: React.ReactNode
   className?: string
-}
+})
+ResizableTableHeader.displayName = 'ResizableTableHeader'
 
-export function TableHeaderRow({ children, className }: TableHeaderRowProps) {
+export const TableHeaderRow = React.memo(function TableHeaderRow({ children, className }: TableHeaderRowProps) {
   return (
     <thead className={cn("bg-white dark:bg-lia-bg-primary border-b border-lia-border-subtle dark:border-lia-border-subtle sticky top-0 z-10", className)}>
       <tr>{children}</tr>
@@ -138,7 +139,8 @@ interface ConnectedTableHeaderProps {
   tableFeatures: UseTableFeaturesReturn
   children?: React.ReactNode
   className?: string
-}
+})
+TableHeaderRow.displayName = 'TableHeaderRow'
 
 export function ConnectedTableHeader({
   column,

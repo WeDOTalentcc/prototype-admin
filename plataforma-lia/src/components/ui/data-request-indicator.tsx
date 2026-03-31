@@ -80,7 +80,7 @@ function isExpired(date: Date | string | null | undefined): boolean {
   return d < new Date()
 }
 
-export function DataRequestIndicator({
+export const DataRequestIndicator = React.memo(function DataRequestIndicator({
   candidateId,
   status,
   fieldsRequested,
@@ -233,7 +233,8 @@ export function DataRequestIndicator({
       </Tooltip>
     </TooltipProvider>
   )
-}
+})
+DataRequestIndicator.displayName = 'DataRequestIndicator'
 
 export function getDataRequestStatusFromFields(
   fieldsRequested: RequestedField[],

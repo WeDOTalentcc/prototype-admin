@@ -178,3 +178,6 @@ export const KanbanCard = React.memo(function KanbanCard({
     </Card>
   )
 })
+
+// Vue migration prep: displayName for DevTools compatibility
+KanbanCard.displayName = 'KanbanCard'

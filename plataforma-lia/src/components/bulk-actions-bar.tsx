@@ -726,3 +726,6 @@ const BulkActionsBar = memo(function BulkActionsBar({
 })
 
 export default BulkActionsBar
+
+// Vue migration prep: displayName for DevTools compatibility
+BulkActionsBar.displayName = 'BulkActionsBar'

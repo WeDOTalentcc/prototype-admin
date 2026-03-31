@@ -1,3 +1,4 @@
+import React from "react"
 "use client"
 
 import { 
@@ -104,7 +105,7 @@ interface UnifiedBulkActionsBarProps {
   loadingActions?: BulkActionId[]
 }
 
-export function UnifiedBulkActionsBar({
+export const UnifiedBulkActionsBar = React.memo(function UnifiedBulkActionsBar({
   context,
   selectedCount,
   totalCount,
@@ -194,7 +195,8 @@ export function UnifiedBulkActionsBar({
       </div>
     </div>
   )
-}
+})
+UnifiedBulkActionsBar.displayName = 'UnifiedBulkActionsBar'
 
 export { BULK_ACTIONS }
 export type { BulkAction }

@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import {
   Toast,
   ToastClose,
@@ -10,7 +11,7 @@ import {
 } from "@/components/ui/toast"
 import { useToast } from "@/hooks/use-toast"
 
-export function Toaster() {
+const Toaster = React.memo(function Toaster() {
   const { toasts } = useToast()
 
   return (
@@ -32,4 +33,7 @@ export function Toaster() {
       <ToastViewport />
     </ToastProvider>
   )
-}
+})
+Toaster.displayName = 'Toaster'
+
+export { Toaster }
