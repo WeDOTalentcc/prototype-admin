@@ -206,6 +206,59 @@ class EmailTrackingService:
         }
 
 
+    async def record_webhook_event(
+        self,
+        db: AsyncSession,
+        sg_message_id: str,
+        event_type: str,
+        email: Optional[str] = None,
+        ip: Optional[str] = None,
+        user_agent: Optional[str] = None,
+        url: Optional[str] = None,
+        timestamp: Optional[int] = None,
+        raw_event: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        """
+        Record an event received from SendGrid Event Webhook.
+
+        Maps sg_message_id to a notification_id by looking up MessageQueue.
+        Falls back to storing with sg_message_id as notification_id.
+        """
+        notification_id = sg_message_id
+        company_id = ""
+
+        try:
+            from app.models.message_queue import MessageQueue
+            stmt = select(MessageQueue.id, MessageQueue.company_id).where(
+                MessageQueue.extra_data["sg_message_id"].astext == sg_message_id,
+            ).limit(1)
+            result = await db.execute(stmt)
+            row = result.first()
+            if row:
+                notification_id = str(row.id)
+                company_id = str(row.company_id or "")
+        except Exception:
+            pass
+
+        event_time = None
+        if timestamp:
+            try:
+                event_time = datetime.fromtimestamp(int(timestamp), tz=timezone.utc)
+            except (ValueError, OSError):
+                pass
+
+        tracking_event = EmailTrackingEvent(
+            notification_id=notification_id,
+            company_id=company_id,
+            token=f"webhook:{sg_message_id}:{event_type}:{secrets.token_hex(4)}",
+            event_type=event_type,
+            recipient_hash=_hash_email(email),
+            ip_hash=_hash_ip(ip),
+            user_agent=(user_agent or "")[:500],
+            link_url=(url or "")[:2000] if url else None,
+        )
+        db.add(tracking_event)
+
     def inject_pixel_and_links(
         self,
         html_body: str,

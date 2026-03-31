@@ -8,6 +8,10 @@ Tasks registradas:
   - agents.sourcing.search       — busca de candidatos via Pearch (async)
   - communication.email.send_bulk — envio de email em massa
   - briefing.send_daily          — envia briefing diário a todos os recrutadores ativos (P3-1)
+  - followup.process_pending     — reenvio automático de convites WSI não abertos (Gap A / I1)
+  - wsi.check_abandoned          — detecção de sessões WSI abandonadas + lembretes (Gap B / I3)
+  - feedback.auto_send           — envio automático de feedback aprovado (I6)
+  - feedback.process_pending_sends — batch safety net para feedback aprovado não enviado (I6)
   - ragas.evaluate_batch         — avaliação RAGAS de qualidade LLM (ACH-027)
 """
 import asyncio
@@ -654,6 +658,159 @@ def wsi_check_abandoned_task(self) -> dict:
         logger.error("wsi.check_abandoned falhou: %s", exc)
         raise self.retry(exc=exc, countdown=300)
 
+
+
+@celery_app.task(name="feedback.auto_send", bind=True, max_retries=3)
+def feedback_auto_send_task(self, feedback_id: str, company_id: str) -> dict:
+    """
+    Auto-send approved/edited rejection feedback via email/WhatsApp.
+
+    Triggered after recruiter approves feedback in the PersonalizedFeedbackService.
+    Sends via CommunicationDispatcher and marks the record as SENT.
+
+    Args:
+        feedback_id: UUID of the PersonalizedFeedbackRecord.
+        company_id: UUID da empresa (multi-tenant).
+
+    Returns:
+        Dict com { feedback_id, status, channel, success }
+    """
+    async def _run() -> dict:
+        from app.core.database import AsyncSessionLocal
+        from sqlalchemy import select
+        from app.domains.cv_screening.services.personalized_feedback_service import (
+            PersonalizedFeedbackRecord,
+            PersonalizedFeedbackStatus,
+            personalized_feedback_service,
+        )
+        from app.domains.communication.services.communication_dispatcher import CommunicationDispatcher
+
+        dispatcher = CommunicationDispatcher()
+
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(
+                select(PersonalizedFeedbackRecord).where(
+                    PersonalizedFeedbackRecord.id == feedback_id
+                )
+            )
+            record = result.scalar_one_or_none()
+
+            if not record:
+                return {"feedback_id": feedback_id, "status": "not_found", "success": False}
+
+            if record.status not in (
+                PersonalizedFeedbackStatus.APPROVED.value,
+                PersonalizedFeedbackStatus.EDITED.value,
+            ):
+                return {"feedback_id": feedback_id, "status": record.status, "success": False, "reason": "not_approved"}
+
+            subject = record.edited_subject or record.subject
+            body_text = record.edited_body or record.body_text
+            body_html = record.body_html
+
+            send_result = {}
+            channel_used = record.channel or "email"
+
+            if record.candidate_email and channel_used in ("email", "both"):
+                send_result["email"] = dispatcher.send_email(
+                    to_email=record.candidate_email,
+                    subject=subject,
+                    body_html=body_html or f"<p>{body_text}</p>",
+                    body_text=body_text,
+                )
+
+            if record.candidate_phone and channel_used in ("whatsapp", "both"):
+                msg = record.whatsapp_message or body_text[:500]
+                send_result["whatsapp"] = dispatcher.send_whatsapp(
+                    to_phone=record.candidate_phone,
+                    message=msg,
+                )
+
+            any_success = any(r.get("success") for r in send_result.values())
+
+            await personalized_feedback_service.mark_as_sent(
+                feedback_id=feedback_id,
+                channel=channel_used,
+                send_result=send_result,
+                db=db,
+            )
+
+            try:
+                from app.shared.intelligence.template_learning import template_learning_service
+                template_learning_service.record_send(
+                    company_id=company_id,
+                    template_id=f"feedback:{record.tone}:{record.wsi_classification}",
+                )
+            except Exception:
+                pass
+
+            logger.info(
+                "feedback.auto_send: id=%s channel=%s success=%s",
+                feedback_id, channel_used, any_success,
+            )
+            return {
+                "feedback_id": feedback_id,
+                "status": "sent",
+                "channel": channel_used,
+                "success": any_success,
+                "results": {k: {"success": v.get("success"), "message_id": v.get("message_id")} for k, v in send_result.items()},
+            }
+
+    try:
+        return asyncio.run(_run())
+    except Exception as exc:
+        logger.error("feedback.auto_send falhou id=%s: %s", feedback_id, exc)
+        raise self.retry(exc=exc, countdown=60)
+
+
+@celery_app.task(name="feedback.process_pending_sends", bind=True, max_retries=2)
+def feedback_process_pending_sends_task(self) -> dict:
+    """
+    Batch process: finds approved feedback records not yet sent and dispatches auto_send.
+
+    Safety net for any feedback that was approved but auto_send was not triggered.
+    Runs every 2 hours via Celery Beat.
+
+    Returns:
+        Dict com { dispatched, skipped, errors }
+    """
+    async def _run() -> dict:
+        from app.core.database import AsyncSessionLocal
+        from sqlalchemy import select, or_
+        from app.domains.cv_screening.services.personalized_feedback_service import (
+            PersonalizedFeedbackRecord,
+            PersonalizedFeedbackStatus,
+        )
+
+        dispatched = 0
+
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(
+                select(PersonalizedFeedbackRecord.id, PersonalizedFeedbackRecord.company_id).where(
+                    or_(
+                        PersonalizedFeedbackRecord.status == PersonalizedFeedbackStatus.APPROVED.value,
+                        PersonalizedFeedbackRecord.status == PersonalizedFeedbackStatus.EDITED.value,
+                    ),
+                    PersonalizedFeedbackRecord.sent_at.is_(None),
+                ).limit(50)
+            )
+            rows = result.fetchall()
+
+            for row in rows:
+                try:
+                    feedback_auto_send_task.delay(str(row.id), str(row.company_id))
+                    dispatched += 1
+                except Exception as exc:
+                    logger.warning("feedback.process_pending_sends: dispatch failed id=%s: %s", row.id, exc)
+
+        logger.info("feedback.process_pending_sends: dispatched=%d", dispatched)
+        return {"dispatched": dispatched}
+
+    try:
+        return asyncio.run(_run())
+    except Exception as exc:
+        logger.error("feedback.process_pending_sends falhou: %s", exc)
+        raise self.retry(exc=exc, countdown=120)
 
 
 @celery_app.task(name="ragas.evaluate_batch", bind=True, max_retries=1, queue="evaluation_normal")

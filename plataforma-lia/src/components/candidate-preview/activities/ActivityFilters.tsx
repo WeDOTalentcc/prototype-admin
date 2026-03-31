@@ -1,0 +1,131 @@
+"use client"
+
+import { Activity, GitBranch, List, PlusCircle } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+
+export type ActivityFilterType = 'all' | 'emails' | 'interviews' | 'lia' | 'applications' | 'tests' | 'offers' | 'evaluations'
+export type ActivityViewType = 'list' | 'timeline'
+export type PeriodFilterType = '7days' | '30days' | '3months' | 'all'
+
+interface ActivityFiltersProps {
+  totalCount: number
+  activityFilter: ActivityFilterType
+  activityView: ActivityViewType
+  periodFilter: PeriodFilterType
+  onActivityFilterChange: (filter: ActivityFilterType) => void
+  onActivityViewChange: (view: ActivityViewType) => void
+  onPeriodFilterChange: (period: PeriodFilterType) => void
+  onShowLiaModal: () => void
+}
+
+export function ActivityFilters({
+  totalCount,
+  activityFilter,
+  activityView,
+  periodFilter,
+  onActivityFilterChange,
+  onActivityViewChange,
+  onPeriodFilterChange,
+  onShowLiaModal,
+}: ActivityFiltersProps) {
+  return (
+    <div className="p-3 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary">
+      <div className="flex items-center justify-between mb-2">
+        <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
+          <Activity className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
+          Feed de Atividades
+          <Badge className="text-xs px-1 py-0">{totalCount}</Badge>
+        </h4>
+        <div className="flex items-center gap-2">
+          <select
+            value={periodFilter}
+            onChange={(e) => onPeriodFilterChange((e.target as HTMLSelectElement).value as PeriodFilterType)}
+            className="text-xs px-2 py-1 bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400"
+          >
+            <option value="7days">Últimos 7 dias</option>
+            <option value="30days">Últimos 30 dias</option>
+            <option value="3months">Últimos 3 meses</option>
+            <option value="all">Todo período</option>
+          </select>
+          <div className="flex items-center bg-lia-bg-primary rounded-md p-0.5 border border-lia-border-subtle dark:border-lia-border-subtle">
+            <button
+              onClick={() => onActivityViewChange('timeline')}
+              className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${activityView === 'timeline' ? 'bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary' : 'text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary'}`}
+              title="Visualização Timeline"
+            >
+              <GitBranch className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => onActivityViewChange('list')}
+              className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${activityView === 'list' ? 'bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary' : 'text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary'}`}
+              title="Visualização Lista"
+            >
+              <List className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <Button
+            onClick={onShowLiaModal}
+            size="sm"
+            className="gap-1 px-2 py-1 text-xs h-6 bg-gray-100 hover:bg-gray-200 text-lia-text-secondary dark:text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-subtle"
+          >
+            <PlusCircle className="w-3 h-3" />
+            Nova Atividade
+          </Button>
+        </div>
+      </div>
+      <div className="flex gap-1 flex-wrap">
+        <button
+          onClick={() => onActivityFilterChange('all')}
+          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'all' ? 'bg-gray-600 text-white' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-200'}`}
+        >
+          Todas
+        </button>
+        <button
+          onClick={() => onActivityFilterChange('emails')}
+          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'emails' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-200'}`}
+        >
+          📧 Emails
+        </button>
+        <button
+          onClick={() => onActivityFilterChange('interviews')}
+          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'interviews' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-200'}`}
+        >
+          🎤 Entrevistas
+        </button>
+        <button
+          onClick={() => onActivityFilterChange('tests')}
+          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'tests' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-200'}`}
+        >
+          📝 Testes
+        </button>
+        <button
+          onClick={() => onActivityFilterChange('lia')}
+          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'lia' ? 'text-white font-semibold' : 'hover:opacity-80'}`}
+          style={{backgroundColor: activityFilter === 'lia' ? 'var(--gray-950)' : 'var(--wedo-cyan-bg-15)',
+            color: activityFilter === 'lia' ? 'white' : 'var(--gray-600)'}}
+        >
+          🤖 LIA
+        </button>
+        <button
+          onClick={() => onActivityFilterChange('offers')}
+          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'offers' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-200'}`}
+        >
+          💼 Ofertas
+        </button>
+        <button
+          onClick={() => onActivityFilterChange('applications')}
+          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'applications' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-200'}`}
+        >
+          📋 Inscrições
+        </button>
+        <button
+          onClick={() => onActivityFilterChange('evaluations')}
+          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'evaluations' ? 'bg-gray-700 text-white font-semibold' : 'lia-text-base hover:dark:bg-lia-bg-secondary dark:hover:bg-gray-700'}`}
+        >
+          🎯 Avaliações
+        </button>
+      </div>
+    </div>
+  )
+}

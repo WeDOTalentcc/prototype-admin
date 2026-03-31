@@ -1035,6 +1035,13 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
             await db.refresh(record)
             
             logger.info(f"Feedback {feedback_id} approved by {approved_by}")
+
+            try:
+                from app.jobs.celery_tasks import feedback_auto_send_task
+                feedback_auto_send_task.delay(feedback_id, record.company_id)
+                logger.info("feedback.auto_send dispatched id=%s", feedback_id)
+            except Exception as send_exc:
+                logger.warning("feedback.auto_send dispatch failed id=%s: %s", feedback_id, send_exc)
             
             return {
                 "feedback_id": record.id,
@@ -1042,7 +1049,8 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
                 "approved_by": record.approved_by,
                 "approved_at": record.approved_at.isoformat() if record.approved_at else None,
                 "was_edited": bool(edited_subject or edited_body),
-                "ready_to_send": True
+                "ready_to_send": True,
+                "auto_send_dispatched": True,
             }
         finally:
             if should_close:

@@ -102,6 +102,81 @@ async def tracking_click(
         return RedirectResponse(url=url, status_code=302)
 
 
+@router.post("/webhook")
+async def tracking_webhook(
+    request: Request,
+    db: AsyncSession = Depends(get_async_db),
+):
+    """
+    SendGrid Event Webhook — receives delivery/open/click/bounce events.
+
+    SendGrid posts batched JSON arrays of event objects.
+    Each event contains: email, event, sg_message_id, timestamp, etc.
+    Mapped to internal EmailTrackingEvent records.
+
+    LGPD: email addresses are stored as SHA256 hashes only.
+    """
+    from app.services.email_tracking_service import email_tracking_service
+
+    try:
+        events = await request.json()
+    except Exception:
+        logger.warning("[EmailTracking] webhook: invalid JSON body")
+        return {"accepted": 0, "errors": 1}
+
+    if not isinstance(events, list):
+        events = [events]
+
+    accepted = 0
+    errors = 0
+
+    _EVENT_MAP = {
+        "delivered": "delivered",
+        "open": "open",
+        "click": "click",
+        "bounce": "bounce",
+        "dropped": "dropped",
+        "deferred": "deferred",
+        "spamreport": "spam",
+        "unsubscribe": "unsubscribe",
+    }
+
+    for event in events:
+        try:
+            sg_event = event.get("event", "")
+            mapped_type = _EVENT_MAP.get(sg_event)
+            if not mapped_type:
+                continue
+
+            sg_message_id = event.get("sg_message_id", "")
+            email_addr = event.get("email", "")
+
+            await email_tracking_service.record_webhook_event(
+                db=db,
+                sg_message_id=sg_message_id,
+                event_type=mapped_type,
+                email=email_addr,
+                ip=event.get("ip"),
+                user_agent=event.get("useragent", ""),
+                url=event.get("url"),
+                timestamp=event.get("timestamp"),
+                raw_event=event,
+            )
+            accepted += 1
+        except Exception as e:
+            errors += 1
+            logger.debug("[EmailTracking] webhook event error: %s", e)
+
+    if accepted > 0:
+        try:
+            await db.commit()
+        except Exception as commit_exc:
+            logger.warning("[EmailTracking] webhook commit error: %s", commit_exc)
+
+    logger.info("[EmailTracking] webhook processed accepted=%d errors=%d", accepted, errors)
+    return {"accepted": accepted, "errors": errors}
+
+
 @router.get("/stats/{notification_id}")
 async def get_tracking_stats(
     notification_id: str = Path(...),

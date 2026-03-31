@@ -136,6 +136,9 @@ celery_app.conf.update(
         # Baixa prioridade
         "agents.policy.*":               {"queue": "onboarding_low",    "priority": 3},
         "communication.email.*":         {"queue": "onboarding_low",    "priority": 3},
+        "followup.*":                    {"queue": "onboarding_low",    "priority": 3},
+        "wsi.*":                         {"queue": "evaluation_normal", "priority": 4},
+        "feedback.*":                    {"queue": "onboarding_low",    "priority": 3},
         "drift.run_batch":               {"queue": "onboarding_low",    "priority": 2},
     },
 
@@ -175,6 +178,12 @@ celery_app.conf.update(
             "task": "wsi.check_abandoned",
             "schedule": crontab(minute=0, hour="*/4"),  # 00h, 04h, 08h, 12h, 16h, 20h UTC
             "options": {"expires": 14000},
+        },
+        # I6 — Feedback auto-send: processa feedback aprovado não enviado a cada 2h
+        "feedback-process-pending-sends": {
+            "task": "feedback.process_pending_sends",
+            "schedule": crontab(minute=30, hour="*/2"),  # a cada 2h no minuto 30
+            "options": {"expires": 7000},
         },
         # ACH-027 — Avaliação RAGAS diária às 03h UTC (00h Brasília)
         "ragas-evaluate-daily": {
