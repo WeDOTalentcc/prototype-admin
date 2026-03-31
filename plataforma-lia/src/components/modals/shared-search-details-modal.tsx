@@ -220,14 +220,14 @@ export function SharedSearchDetailsModal({
       case 'expired':
         return <Badge className="bg-status-error/20 text-status-error border-status-error/30/30 text-micro">Expirado</Badge>
       case 'revoked':
-        return <Badge className="bg-zinc-600/50 text-zinc-400 border-zinc-500/30 text-micro">Revogado</Badge>
+        return <Badge className="bg-lia-bg-tertiary/50 text-lia-text-tertiary border-lia-border-default/30 text-micro">Revogado</Badge>
     }
   }
 
   const getDecisionBadge = (feedback?: CandidateFeedback) => {
     if (!feedback) {
       return (
-        <Badge className="bg-zinc-600/50 text-zinc-400 border-zinc-500/30 text-micro gap-1">
+        <Badge className="bg-lia-bg-tertiary/50 text-lia-text-tertiary border-lia-border-default/30 text-micro gap-1">
           <Clock className="w-3 h-3" />
           Pendente
         </Badge>
@@ -263,10 +263,10 @@ export function SharedSearchDetailsModal({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent 
-        className="max-w-3xl bg-zinc-900 border-zinc-700 text-white p-0 gap-0 max-h-[90vh] flex flex-col"
+        className="max-w-3xl bg-lia-bg-overlay border-lia-border-default text-white p-0 gap-0 max-h-[90vh] flex flex-col"
        
       >
-        <DialogHeader className="px-5 py-4 border-b border-zinc-700 flex-shrink-0">
+        <DialogHeader className="px-5 py-4 border-b border-lia-border-default flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <DialogTitle className="text-base font-semibold text-white flex items-center gap-2">
@@ -279,7 +279,7 @@ export function SharedSearchDetailsModal({
               </DialogTitle>
               {sharedSearch && (
                 <>
-                  <Badge className="bg-zinc-700 text-zinc-300 border-zinc-600 text-micro">
+                  <Badge className="bg-lia-bg-tertiary dark:bg-gray-700 text-lia-text-disabled border-lia-border-default text-micro">
                     {sharedSearch.share_type === 'search' ? 'Busca' : 'Lista'}
                   </Badge>
                   {getStatusBadge(sharedSearch.status)}
@@ -290,7 +290,7 @@ export function SharedSearchDetailsModal({
               variant="ghost"
               size="icon"
               onClick={onClose}
-              className="h-8 w-8 text-zinc-400 hover:text-white hover:bg-zinc-700"
+              className="h-8 w-8 text-lia-text-tertiary hover:text-white hover:bg-lia-bg-tertiary dark:bg-gray-700"
             >
               <X className="w-4 h-4" />
             </Button>
@@ -299,36 +299,36 @@ export function SharedSearchDetailsModal({
 
         {loading ? (
           <div className="flex items-center justify-center py-20" role="status" aria-live="polite" aria-label="Carregando...">
-            <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none text-zinc-500" />
+            <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
           </div>
         ) : sharedSearch ? (
           <>
             <div className="flex-1 overflow-y-auto">
               <div className="p-5 space-y-5">
-                <div className="bg-zinc-800 rounded-md p-4 border border-zinc-700">
+                <div className="bg-lia-bg-tertiary dark:bg-gray-800 rounded-md p-4 border border-lia-border-default">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div>
-                      <p className="text-zinc-400 text-xs mb-1">Compartilhado com</p>
+                      <p className="text-lia-text-tertiary text-xs mb-1">Compartilhado com</p>
                       <p className="text-white font-medium text-xs">
                         {recipient?.name || recipient?.email || '-'}
                       </p>
                       {recipient?.name && (
-                        <p className="text-zinc-500 text-micro">{recipient.email}</p>
+                        <p className="text-lia-text-secondary text-micro">{recipient.email}</p>
                       )}
                     </div>
                     <div>
-                      <p className="text-zinc-400 text-xs mb-1 flex items-center gap-1">
+                      <p className="text-lia-text-tertiary text-xs mb-1 flex items-center gap-1">
                         <Eye className="w-3 h-3" /> Primeiro Acesso
                       </p>
                       <p className="text-white font-medium text-xs">
                         {formatDate(recipient?.first_accessed_at)}
                       </p>
-                      <p className="text-zinc-500 text-micro">
+                      <p className="text-lia-text-secondary text-micro">
                         {recipient?.total_views || 0} visualizações
                       </p>
                     </div>
                     <div>
-                      <p className="text-zinc-400 text-xs mb-1 flex items-center gap-1">
+                      <p className="text-lia-text-tertiary text-xs mb-1 flex items-center gap-1">
                         <Calendar className="w-3 h-3" /> Expira em
                       </p>
                       <p className="text-white font-medium text-xs">
@@ -336,55 +336,55 @@ export function SharedSearchDetailsModal({
                       </p>
                     </div>
                     <div>
-                      <p className="text-zinc-400 text-xs mb-1">Progresso</p>
+                      <p className="text-lia-text-tertiary text-xs mb-1">Progresso</p>
                       <div className="flex items-center gap-2">
-                        <Progress value={progressPercent} className="h-2 flex-1 bg-zinc-700" />
-                        <span className="text-xs text-zinc-300 whitespace-nowrap">
+                        <Progress value={progressPercent} className="h-2 flex-1 bg-lia-bg-tertiary dark:bg-gray-700" />
+                        <span className="text-xs text-lia-text-disabled whitespace-nowrap">
                           {totalEvaluated}/{totalCandidates}
                         </span>
                       </div>
-                      <p className="text-zinc-500 text-micro mt-0.5" aria-live="polite" aria-atomic="true">candidatos avaliados</p>
+                      <p className="text-lia-text-secondary text-micro mt-0.5" aria-live="polite" aria-atomic="true">candidatos avaliados</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-4 gap-3">
-                  <div className="bg-zinc-800 rounded-md p-4 border border-zinc-700 text-center">
+                  <div className="bg-lia-bg-tertiary dark:bg-gray-800 rounded-md p-4 border border-lia-border-default text-center">
                     <div className="text-2xl mb-1">👍</div>
                     <p className="text-2xl font-bold text-status-success">{feedbackCounts.approved}</p>
-                    <p className="text-xs text-zinc-400">Interessados</p>
+                    <p className="text-xs text-lia-text-tertiary">Interessados</p>
                   </div>
-                  <div className="bg-zinc-800 rounded-md p-4 border border-zinc-700 text-center">
+                  <div className="bg-lia-bg-tertiary dark:bg-gray-800 rounded-md p-4 border border-lia-border-default text-center">
                     <div className="text-2xl mb-1">🤔</div>
                     <p className="text-2xl font-bold text-status-warning">{feedbackCounts.maybe}</p>
-                    <p className="text-xs text-zinc-400">Talvez</p>
+                    <p className="text-xs text-lia-text-tertiary">Talvez</p>
                   </div>
-                  <div className="bg-zinc-800 rounded-md p-4 border border-zinc-700 text-center">
+                  <div className="bg-lia-bg-tertiary dark:bg-gray-800 rounded-md p-4 border border-lia-border-default text-center">
                     <div className="text-2xl mb-1">👎</div>
                     <p className="text-2xl font-bold text-status-error">{feedbackCounts.rejected}</p>
-                    <p className="text-xs text-zinc-400">Não Interessados</p>
+                    <p className="text-xs text-lia-text-tertiary">Não Interessados</p>
                   </div>
-                  <div className="bg-zinc-800 rounded-md p-4 border border-zinc-700 text-center">
+                  <div className="bg-lia-bg-tertiary dark:bg-gray-800 rounded-md p-4 border border-lia-border-default text-center">
                     <div className="text-2xl mb-1">⏳</div>
-                    <p className="text-2xl font-bold text-zinc-400">{feedbackCounts.pending}</p>
-                    <p className="text-xs text-zinc-400">Pendentes</p>
+                    <p className="text-2xl font-bold text-lia-text-tertiary">{feedbackCounts.pending}</p>
+                    <p className="text-xs text-lia-text-tertiary">Pendentes</p>
                   </div>
                 </div>
 
                 <Tabs value={activeFilter} onValueChange={(v) => setActiveFilter(v as FilterType)}>
-                  <TabsList className="bg-zinc-800 border border-zinc-700 p-1 h-auto">
+                  <TabsList className="bg-lia-bg-tertiary dark:bg-gray-800 border border-lia-border-default p-1 h-auto">
                     <TabsTrigger 
                       value="all" 
-                      className="text-xs px-3 py-1.5 data-[state=active]:bg-zinc-700 data-[state=active]:text-white"
+                      className="text-xs px-3 py-1.5 data-[state=active]:bg-lia-bg-tertiary dark:bg-gray-700 data-[state=active]:text-white"
                     >
                       Todos
-                      <Badge className="ml-1.5 text-micro px-1.5 py-0 bg-zinc-600 text-zinc-300">
+                      <Badge className="ml-1.5 text-micro px-1.5 py-0 bg-lia-bg-tertiary text-lia-text-disabled">
                         {totalCandidates}
                       </Badge>
                     </TabsTrigger>
                     <TabsTrigger 
                       value="approved" 
-                      className="text-xs px-3 py-1.5 data-[state=active]:bg-zinc-700 data-[state=active]:text-white"
+                      className="text-xs px-3 py-1.5 data-[state=active]:bg-lia-bg-tertiary dark:bg-gray-700 data-[state=active]:text-white"
                     >
                       Interessados
                       <Badge className="ml-1.5 text-micro px-1.5 py-0 bg-status-success/20 text-status-success">
@@ -393,7 +393,7 @@ export function SharedSearchDetailsModal({
                     </TabsTrigger>
                     <TabsTrigger 
                       value="maybe" 
-                      className="text-xs px-3 py-1.5 data-[state=active]:bg-zinc-700 data-[state=active]:text-white"
+                      className="text-xs px-3 py-1.5 data-[state=active]:bg-lia-bg-tertiary dark:bg-gray-700 data-[state=active]:text-white"
                     >
                       Talvez
                       <Badge className="ml-1.5 text-micro px-1.5 py-0 bg-status-warning/20 text-status-warning">
@@ -402,7 +402,7 @@ export function SharedSearchDetailsModal({
                     </TabsTrigger>
                     <TabsTrigger 
                       value="rejected" 
-                      className="text-xs px-3 py-1.5 data-[state=active]:bg-zinc-700 data-[state=active]:text-white"
+                      className="text-xs px-3 py-1.5 data-[state=active]:bg-lia-bg-tertiary dark:bg-gray-700 data-[state=active]:text-white"
                     >
                       Não
                       <Badge className="ml-1.5 text-micro px-1.5 py-0 bg-status-error/20 text-status-error">
@@ -411,10 +411,10 @@ export function SharedSearchDetailsModal({
                     </TabsTrigger>
                     <TabsTrigger 
                       value="pending" 
-                      className="text-xs px-3 py-1.5 data-[state=active]:bg-zinc-700 data-[state=active]:text-white"
+                      className="text-xs px-3 py-1.5 data-[state=active]:bg-lia-bg-tertiary dark:bg-gray-700 data-[state=active]:text-white"
                     >
                       Pendentes
-                      <Badge className="ml-1.5 text-micro px-1.5 py-0 bg-zinc-600 text-zinc-400">
+                      <Badge className="ml-1.5 text-micro px-1.5 py-0 bg-lia-bg-tertiary text-lia-text-tertiary">
                         {feedbackCounts.pending}
                       </Badge>
                     </TabsTrigger>
@@ -423,16 +423,16 @@ export function SharedSearchDetailsModal({
 
                 <div className="space-y-2">
                   {approvedIds.length > 0 && (
-                    <div className="flex items-center gap-2 px-1 py-2 border-b border-zinc-700">
+                    <div className="flex items-center gap-2 px-1 py-2 border-b border-lia-border-default">
                       <Checkbox
                         id="select-all-approved"
                         checked={allApprovedSelected}
                         onCheckedChange={toggleAllApproved}
-                        className="border-zinc-500 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+                        className="border-lia-border-default data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
                       />
                       <label 
                         htmlFor="select-all-approved" 
-                        className="text-xs text-zinc-300 cursor-pointer"
+                        className="text-xs text-lia-text-disabled cursor-pointer"
                       >
                         Selecionar todos aprovados ({approvedIds.length})
                       </label>
@@ -440,7 +440,7 @@ export function SharedSearchDetailsModal({
                   )}
 
                   {filteredCandidates.length === 0 ? (
-                    <div className="text-center py-10 text-zinc-500 text-sm">
+                    <div className="text-center py-10 text-lia-text-secondary text-sm">
                       Nenhum candidato encontrado neste filtro
                     </div>
                   ) : (
@@ -449,25 +449,25 @@ export function SharedSearchDetailsModal({
                         <div 
                           key={candidate.id}
                           className={cn(
-                            "bg-zinc-800 rounded-md p-3 border border-zinc-700 flex items-start gap-3",
-                            "hover:border-zinc-600 transition-colors motion-reduce:transition-none"
+                            "bg-lia-bg-tertiary dark:bg-gray-800 rounded-md p-3 border border-lia-border-default flex items-start gap-3",
+                            "hover:border-lia-border-default transition-colors motion-reduce:transition-none"
                           )}
                         >
                           <Checkbox
                             checked={selectedIds.has(candidate.id)}
                             onCheckedChange={() => toggleCandidate(candidate.id)}
-                            className="mt-1 border-zinc-500 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+                            className="mt-1 border-lia-border-default data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
                           />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2">
                               <div>
                                 <p className="text-white font-medium text-xs">{candidate.name}</p>
-                                <p className="text-zinc-400 text-xs">
+                                <p className="text-lia-text-tertiary text-xs">
                                   {candidate.title}
                                   {candidate.company && ` • ${candidate.company}`}
                                 </p>
                                 {candidate.location && (
-                                  <p className="text-zinc-500 text-micro mt-0.5">{candidate.location}</p>
+                                  <p className="text-lia-text-secondary text-micro mt-0.5">{candidate.location}</p>
                                 )}
                               </div>
                               <div className="flex-shrink-0">
@@ -476,7 +476,7 @@ export function SharedSearchDetailsModal({
                             </div>
                             
                             {candidate.feedback && (
-                              <div className="mt-2 pt-2 border-t border-zinc-700/50">
+                              <div className="mt-2 pt-2 border-t border-lia-border-default/50">
                                 {candidate.feedback.rating && (
                                   <div className="flex items-center gap-1 mb-1">
                                     {[...Array(5)].map((_, i) => (
@@ -486,14 +486,14 @@ export function SharedSearchDetailsModal({
                                           "w-3 h-3",
                                           i < candidate.feedback!.rating!
                                             ? "text-status-warning fill-amber-400"
-                                            : "text-zinc-600"
+                                            : "text-lia-text-secondary"
                                         )}
                                       />
                                     ))}
                                   </div>
                                 )}
                                 {candidate.feedback.comment && (
-                                  <p className="text-zinc-400 text-xs italic">
+                                  <p className="text-lia-text-tertiary text-xs italic">
                                     "{candidate.feedback.comment}"
                                   </p>
                                 )}
@@ -508,9 +508,9 @@ export function SharedSearchDetailsModal({
               </div>
             </div>
 
-            <div className="flex-shrink-0 px-5 py-4 border-t border-zinc-700 bg-zinc-800/50">
+            <div className="flex-shrink-0 px-5 py-4 border-t border-lia-border-default bg-lia-bg-tertiary dark:bg-gray-800/50">
               <div className="flex items-center justify-between">
-                <p className="text-xs text-zinc-300">
+                <p className="text-xs text-lia-text-disabled">
                   <span className="font-semibold text-white">
                     {selectedIds.size}
                   </span>
@@ -522,7 +522,7 @@ export function SharedSearchDetailsModal({
                     size="sm"
                     onClick={handleCreateList}
                     disabled={selectedIds.size === 0}
-                    className="text-xs h-8 bg-transparent border-zinc-600 text-zinc-300 hover:bg-zinc-700 hover:text-white disabled:opacity-50"
+                    className="text-xs h-8 bg-transparent border-lia-border-default text-lia-text-disabled hover:bg-lia-bg-tertiary dark:bg-gray-700 hover:text-white disabled:opacity-50"
                   >
                     <ListPlus className="w-3.5 h-3.5 mr-1.5" />
                     Criar Lista
@@ -532,7 +532,7 @@ export function SharedSearchDetailsModal({
                     size="sm"
                     onClick={handleAddToJob}
                     disabled={selectedIds.size === 0}
-                    className="text-xs h-8 bg-transparent border-zinc-600 text-zinc-300 hover:bg-zinc-700 hover:text-white disabled:opacity-50"
+                    className="text-xs h-8 bg-transparent border-lia-border-default text-lia-text-disabled hover:bg-lia-bg-tertiary dark:bg-gray-700 hover:text-white disabled:opacity-50"
                   >
                     <Plus className="w-3.5 h-3.5 mr-1.5" />
                     Adicionar à Vaga
@@ -551,7 +551,7 @@ export function SharedSearchDetailsModal({
             </div>
           </>
         ) : (
-          <div className="flex items-center justify-center py-20 text-zinc-500">
+          <div className="flex items-center justify-center py-20 text-lia-text-secondary">
             Erro ao carregar detalhes
           </div>
         )}

@@ -151,12 +151,12 @@ export function AgentExplainabilityPanel({
     <Collapsible
       open={isOpen}
       onOpenChange={handleToggle}
-      className={cn("rounded-md border border-zinc-700/50", className)}
+      className={cn("rounded-md border border-lia-border-default/50", className)}
     >
       <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md bg-gray-900 px-4 py-3 transition-colors motion-reduce:transition-none hover:bg-gray-900/80">
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-wedo-cyan" />
-          <span className="text-sm font-medium text-zinc-200 font-[Inter]">
+          <span className="text-sm font-medium text-lia-text-disabled font-[Inter]">
             Raciocínio da LIA
           </span>
           {summary && !loading && (
@@ -170,18 +170,18 @@ export function AgentExplainabilityPanel({
         </div>
         <ChevronDown
           className={cn(
- "h-4 w-4 text-zinc-400 transition-transform duration-200",
+ "h-4 w-4 text-lia-text-tertiary transition-transform duration-200",
             isOpen && "rotate-180"
           )}
         />
       </CollapsibleTrigger>
 
       <CollapsibleContent>
-        <div className="border-t border-zinc-700/50 bg-gray-900 px-4 py-3" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="border-t border-lia-border-default/50 bg-gray-900 px-4 py-3" role="status" aria-live="polite" aria-label="Carregando...">
           {loading && (
             <div className="flex items-center justify-center gap-2 py-8" role="status" aria-live="polite" aria-label="Carregando...">
               <Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none text-wedo-cyan" />
-              <span className="text-sm text-zinc-400">
+              <span className="text-sm text-lia-text-tertiary">
                 Carregando raciocínio...
               </span>
             </div>
@@ -196,7 +196,7 @@ export function AgentExplainabilityPanel({
           {!loading && !error && steps.length === 0 && (
             <div className="flex flex-col items-center justify-center gap-2 py-8">
               <Brain className="h-8 w-8 text-wedo-cyan" />
-              <span className="text-sm text-zinc-500">
+              <span className="text-sm text-lia-text-secondary">
                 Nenhum passo de raciocínio disponível
               </span>
             </div>
@@ -217,13 +217,13 @@ export function AgentExplainabilityPanel({
  "flex h-6 w-6 items-center justify-center rounded-full text-micro font-bold",
                           isLast
                             ? "bg-wedo-cyan text-zinc-900"
-                            : "bg-zinc-600 text-zinc-300"
+                            : "bg-lia-bg-tertiary text-lia-text-disabled"
                         )}
                       >
                         {step.iteration}
                       </div>
                       {!isLast && (
-                        <div className="w-px flex-1 bg-zinc-700 my-1" />
+                        <div className="w-px flex-1 bg-lia-bg-tertiary dark:bg-gray-700 my-1" />
                       )}
                     </div>
 
@@ -257,13 +257,13 @@ export function AgentExplainabilityPanel({
                           {step.tool_used && (
                             <Badge
                               variant="outline"
-                              className="border-zinc-600 text-zinc-400 text-micro px-1.5 py-0 gap-1"
+                              className="border-lia-border-default text-lia-text-tertiary text-micro px-1.5 py-0 gap-1"
                             >
                               <Wrench className="h-2.5 w-2.5" />
                               {step.tool_used}
                             </Badge>
                           )}
-                          <div className="flex items-center gap-1 text-zinc-500">
+                          <div className="flex items-center gap-1 text-lia-text-secondary">
                             <Clock className="h-3 w-3" />
                             <span className="text-micro">
                               {formatDuration(step.duration_ms)}
@@ -272,7 +272,7 @@ export function AgentExplainabilityPanel({
                         </div>
                       </div>
 
-                      <p className="text-xs text-zinc-300 font-['Open_Sans'] leading-relaxed">
+                      <p className="text-xs text-lia-text-disabled font-['Open_Sans'] leading-relaxed">
                         {step.reasoning_summary || step.decision || step.tool_result_summary || ""}
                       </p>
                     </div>
@@ -286,34 +286,34 @@ export function AgentExplainabilityPanel({
             <div className="mt-4 grid grid-cols-2 gap-2 rounded-md bg-gray-900 p-3 sm:grid-cols-4">
               <div className="flex flex-col items-center gap-1">
                 <BarChart3 className="h-4 w-4 text-wedo-cyan" />
-                <span className="text-micro text-zinc-500 font-[Inter]">
+                <span className="text-micro text-lia-text-secondary font-[Inter]">
                   Passos
                 </span>
-                <span className="text-sm font-semibold text-zinc-200">
+                <span className="text-sm font-semibold text-lia-text-disabled">
                   {summary.total_steps}
                 </span>
               </div>
               <div className="flex flex-col items-center gap-1">
                 <Wrench className="h-4 w-4 text-status-warning" />
-                <span className="text-micro text-zinc-500 font-[Inter]">
+                <span className="text-micro text-lia-text-secondary font-[Inter]">
                   Ferramentas
                 </span>
-                <span className="text-sm font-semibold text-zinc-200">
+                <span className="text-sm font-semibold text-lia-text-disabled">
                   {summary.tools_used?.length || 0}
                 </span>
               </div>
               <div className="flex flex-col items-center gap-1">
                 <Clock className="h-4 w-4 text-status-success" />
-                <span className="text-micro text-zinc-500 font-[Inter]">
+                <span className="text-micro text-lia-text-secondary font-[Inter]">
                   Tempo Total
                 </span>
-                <span className="text-sm font-semibold text-zinc-200">
+                <span className="text-sm font-semibold text-lia-text-disabled">
                   {formatDuration(summary.duration_ms)}
                 </span>
               </div>
               <div className="flex flex-col items-center gap-1">
                 <Target className="h-4 w-4 text-wedo-purple" />
-                <span className="text-micro text-zinc-500 font-[Inter]">
+                <span className="text-micro text-lia-text-secondary font-[Inter]">
                   Confiança
                 </span>
                 <span className="text-sm font-semibold text-wedo-cyan">

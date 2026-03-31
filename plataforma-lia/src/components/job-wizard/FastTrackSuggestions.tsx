@@ -111,7 +111,7 @@ export function FastTrackSuggestions({
  "border rounded-md transition-colors duration-200",
                 isSelected 
                   ? "border-gray-900 bg-gray-100 dark:bg-lia-bg-secondary" 
-                  : "border-neutral-700 bg-neutral-800/50 hover:border-neutral-600"
+                  : "border-lia-border-default bg-gray-800/50 hover:border-lia-border-default"
               )}
             >
               <button
@@ -135,7 +135,7 @@ export function FastTrackSuggestions({
                       </Badge>
                     </div>
                     
-                    <div className="flex items-center gap-3 mt-1 text-xs text-neutral-400">
+                    <div className="flex items-center gap-3 mt-1 text-xs text-lia-text-tertiary">
                       {job.department && (
                         <span className="flex items-center gap-1">
                           <Briefcase className="w-3 h-3" />
@@ -158,7 +158,7 @@ export function FastTrackSuggestions({
                     )}
                   </div>
                   
-                  <div className="text-neutral-500">
+                  <div className="text-lia-text-secondary">
                     {isExpanded ? (
                       <ChevronDown className="w-4 h-4" />
                     ) : (
@@ -169,22 +169,22 @@ export function FastTrackSuggestions({
               </button>
               
               {isExpanded && (
-                <div className="px-3 pb-3 space-y-3 border-t border-neutral-700/50 pt-3">
+                <div className="px-3 pb-3 space-y-3 border-t border-lia-border-default/50 pt-3">
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     {job.location && (
-                      <div className="flex items-center gap-1 text-neutral-400">
+                      <div className="flex items-center gap-1 text-lia-text-tertiary">
                         <MapPin className="w-3 h-3" />
                         <span>{job.location}</span>
                       </div>
                     )}
                     {job.work_model && (
-                      <div className="flex items-center gap-1 text-neutral-400">
+                      <div className="flex items-center gap-1 text-lia-text-tertiary">
                         <Briefcase className="w-3 h-3" />
                         <span className="capitalize">{job.work_model}</span>
                       </div>
                     )}
                     {salary && (
-                      <div className="flex items-center gap-1 text-neutral-400 col-span-2">
+                      <div className="flex items-center gap-1 text-lia-text-tertiary col-span-2">
                         <DollarSign className="w-3 h-3" />
                         <span>{salary}</span>
                       </div>
@@ -193,7 +193,7 @@ export function FastTrackSuggestions({
                   
                   {job.skills && job.skills.length > 0 && (
                     <div>
-                      <div className="flex items-center gap-1 text-xs text-neutral-500 mb-1">
+                      <div className="flex items-center gap-1 text-xs text-lia-text-secondary mb-1">
                         <Code className="w-3 h-3" />
                         <span>Skills ({job.skills.length})</span>
                       </div>
@@ -202,7 +202,7 @@ export function FastTrackSuggestions({
                           <Badge 
                             key={skill} 
                             variant="outline" 
-                            className="text-xs bg-neutral-800 border-neutral-700 text-neutral-300"
+                            className="text-xs bg-gray-800 border-lia-border-default text-lia-text-disabled"
                           >
                             {skill}
                           </Badge>
@@ -210,7 +210,7 @@ export function FastTrackSuggestions({
                         {job.skills.length > 5 && (
                           <Badge 
                             variant="outline" 
-                            className="text-xs bg-neutral-800 border-neutral-700 text-neutral-500"
+                            className="text-xs bg-gray-800 border-lia-border-default text-lia-text-secondary"
                           >
                             +{job.skills.length - 5}
                           </Badge>
@@ -221,7 +221,7 @@ export function FastTrackSuggestions({
                   
                   {job.behavioral_competencies && job.behavioral_competencies.length > 0 && (
                     <div>
-                      <div className="flex items-center gap-1 text-xs text-neutral-500 mb-1">
+                      <div className="flex items-center gap-1 text-xs text-lia-text-secondary mb-1">
                         <Users className="w-3 h-3" />
                         <span>Comportamentais ({job.behavioral_competencies.length})</span>
                       </div>
@@ -232,7 +232,7 @@ export function FastTrackSuggestions({
                             <Badge 
                               key={`${compName}-${idx}`}
                               variant="outline" 
-                              className="text-xs bg-neutral-800 border-neutral-700 text-neutral-300"
+                              className="text-xs bg-gray-800 border-lia-border-default text-lia-text-disabled"
                             >
                               {compName}
                             </Badge>
@@ -241,7 +241,7 @@ export function FastTrackSuggestions({
                         {job.behavioral_competencies.length > 3 && (
                           <Badge 
                             variant="outline" 
-                            className="text-xs bg-neutral-800 border-neutral-700 text-neutral-500"
+                            className="text-xs bg-gray-800 border-lia-border-default text-lia-text-secondary"
                           >
                             +{job.behavioral_competencies.length - 3}
                           </Badge>
@@ -251,13 +251,13 @@ export function FastTrackSuggestions({
                   )}
                   
                   {job.wsi_questions && job.wsi_questions.length > 0 && (
-                    <div className="flex items-center gap-1 text-xs text-neutral-400">
+                    <div className="flex items-center gap-1 text-xs text-lia-text-tertiary">
                       <HelpCircle className="w-3 h-3" />
                       <span>{job.wsi_questions.length} perguntas WSI configuradas</span>
                     </div>
                   )}
                   
-                  <p className="text-xs text-neutral-500 italic mt-2" aria-live="polite" aria-atomic="true">
+                  <p className="text-xs text-lia-text-secondary italic mt-2" aria-live="polite" aria-atomic="true">
                     Responda no chat se quiser usar esta vaga como base
                   </p>
                 </div>
@@ -269,7 +269,7 @@ export function FastTrackSuggestions({
       
       <button
         onClick={onDismiss}
-        className="text-xs text-neutral-500 hover:text-neutral-400 transition-colors motion-reduce:transition-none"
+        className="text-xs text-lia-text-secondary hover:text-lia-text-tertiary transition-colors motion-reduce:transition-none"
       >
         Criar do zero
       </button>

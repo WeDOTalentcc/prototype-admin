@@ -79,16 +79,16 @@ function CollapsibleSection({
   const [isOpen, setIsOpen] = useState(defaultOpen)
   
   return (
-    <div className="border border-neutral-700 rounded-md overflow-hidden">
+    <div className="border border-lia-border-default rounded-md overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-3 bg-neutral-800/50 hover:bg-neutral-800 transition-colors motion-reduce:transition-none"
+        className="w-full flex items-center justify-between p-3 bg-gray-800/50 hover:bg-gray-800 transition-colors motion-reduce:transition-none"
       >
         <div className="flex items-center gap-2">
-          <span className="text-neutral-400">{icon}</span>
+          <span className="text-lia-text-tertiary">{icon}</span>
           <span className="text-sm font-medium text-white">{title}</span>
           {count !== undefined && (
-            <Badge variant="outline" className="text-xs border-neutral-600 text-neutral-400">
+            <Badge variant="outline" className="text-xs border-lia-border-default text-lia-text-tertiary">
               {count}
             </Badge>
           )}
@@ -97,21 +97,21 @@ function CollapsibleSection({
           {onEdit && (
             <button 
               onClick={(e) => { e.stopPropagation(); onEdit() }}
-              className="p-1 text-neutral-500 hover:lia-text-muted transition-colors motion-reduce:transition-none"
+              className="p-1 text-lia-text-secondary hover:lia-text-muted transition-colors motion-reduce:transition-none"
             >
               <Edit2 className="w-3 h-3" />
             </button>
           )}
           {isOpen ? (
-            <ChevronDown className="w-4 h-4 text-neutral-500" />
+            <ChevronDown className="w-4 h-4 text-lia-text-secondary" />
           ) : (
-            <ChevronRight className="w-4 h-4 text-neutral-500" />
+            <ChevronRight className="w-4 h-4 text-lia-text-secondary" />
           )}
         </div>
       </button>
       
       {isOpen && (
-        <div className="p-3 border-t border-neutral-700/50 bg-neutral-900/50">
+        <div className="p-3 border-t border-lia-border-default/50 bg-lia-bg-overlay/50">
           {children}
         </div>
       )}
@@ -177,7 +177,7 @@ export function FastTrackReviewPanel({
         
         <div className="space-y-3">
           <div className="space-y-1">
-            <Label htmlFor="gestor" className="text-xs text-neutral-400 flex items-center gap-1">
+            <Label htmlFor="gestor" className="text-xs text-lia-text-tertiary flex items-center gap-1">
               <User className="w-3 h-3" /> Gestor responsável
             </Label>
             <Input
@@ -185,12 +185,12 @@ export function FastTrackReviewPanel({
               value={sensitiveFields.gestor}
               onChange={(e) => handleFieldChange('gestor', e.target.value)}
               placeholder="Nome do gestor"
-              className="bg-neutral-800 border-neutral-700 text-white"
+              className="bg-gray-800 border-lia-border-default text-white"
             />
           </div>
           
           <div className="space-y-1">
-            <Label htmlFor="localidade" className="text-xs text-neutral-400 flex items-center gap-1">
+            <Label htmlFor="localidade" className="text-xs text-lia-text-tertiary flex items-center gap-1">
               <MapPin className="w-3 h-3" /> Localização
             </Label>
             <Input
@@ -198,13 +198,13 @@ export function FastTrackReviewPanel({
               value={sensitiveFields.localidade}
               onChange={(e) => handleFieldChange('localidade', e.target.value)}
               placeholder="Cidade, Estado"
-              className="bg-neutral-800 border-neutral-700 text-white"
+              className="bg-gray-800 border-lia-border-default text-white"
             />
           </div>
           
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label htmlFor="numeroVagas" className="text-xs text-neutral-400 flex items-center gap-1">
+              <Label htmlFor="numeroVagas" className="text-xs text-lia-text-tertiary flex items-center gap-1">
                 <Briefcase className="w-3 h-3" /> Nº de vagas
               </Label>
               <Input
@@ -213,12 +213,12 @@ export function FastTrackReviewPanel({
                 min="1"
                 value={sensitiveFields.numeroVagas}
                 onChange={(e) => handleFieldChange('numeroVagas', e.target.value)}
-                className="bg-neutral-800 border-neutral-700 text-white"
+                className="bg-gray-800 border-lia-border-default text-white"
               />
             </div>
             
             <div className="space-y-1">
-              <Label htmlFor="dataLimite" className="text-xs text-neutral-400 flex items-center gap-1">
+              <Label htmlFor="dataLimite" className="text-xs text-lia-text-tertiary flex items-center gap-1">
                 <Calendar className="w-3 h-3" /> Data limite
               </Label>
               <Input
@@ -226,13 +226,13 @@ export function FastTrackReviewPanel({
                 type="date"
                 value={sensitiveFields.dataLimite}
                 onChange={(e) => handleFieldChange('dataLimite', e.target.value)}
-                className="bg-neutral-800 border-neutral-700 text-white"
+                className="bg-gray-800 border-lia-border-default text-white"
               />
             </div>
           </div>
           
           <div className="space-y-2">
-            <Label className="text-xs text-neutral-400">Vaga afirmativa?</Label>
+            <Label className="text-xs text-lia-text-tertiary">Vaga afirmativa?</Label>
             <RadioGroup
               value={sensitiveFields.isAffirmative || ''}
               onValueChange={(value) => handleFieldChange('isAffirmative', value as 'yes' | 'no')}
@@ -240,11 +240,11 @@ export function FastTrackReviewPanel({
             >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="no" id="affirmative-no" />
-                <Label htmlFor="affirmative-no" className="text-sm text-neutral-300">Não</Label>
+                <Label htmlFor="affirmative-no" className="text-sm text-lia-text-disabled">Não</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="yes" id="affirmative-yes" />
-                <Label htmlFor="affirmative-yes" className="text-sm text-neutral-300">Sim</Label>
+                <Label htmlFor="affirmative-yes" className="text-sm text-lia-text-disabled">Sim</Label>
               </div>
             </RadioGroup>
           </div>
@@ -276,7 +276,7 @@ export function FastTrackReviewPanel({
       )}
       
       <div className="space-y-2">
-        <span className="text-xs text-neutral-500 uppercase tracking-wide">
+        <span className="text-xs text-lia-text-secondary uppercase tracking-wide">
           Campos copiados
         </span>
         
@@ -285,25 +285,25 @@ export function FastTrackReviewPanel({
           icon={<FileText className="w-4 h-4" />}
           onEdit={() => onEditSection('description')}
         >
-          <div className="space-y-2 text-sm text-neutral-300">
+          <div className="space-y-2 text-sm text-lia-text-disabled">
             <div>
-              <span className="text-neutral-500">Cargo:</span>{' '}
+              <span className="text-lia-text-secondary">Cargo:</span>{' '}
               {jobData.basicInfo.cargo || '-'}
             </div>
             <div>
-              <span className="text-neutral-500">Área:</span>{' '}
+              <span className="text-lia-text-secondary">Área:</span>{' '}
               {jobData.basicInfo.area || '-'}
             </div>
             <div>
-              <span className="text-neutral-500">Modelo:</span>{' '}
+              <span className="text-lia-text-secondary">Modelo:</span>{' '}
               {jobData.basicInfo.modeloTrabalho || '-'}
             </div>
             <div>
-              <span className="text-neutral-500">Contrato:</span>{' '}
+              <span className="text-lia-text-secondary">Contrato:</span>{' '}
               {jobData.basicInfo.tipoContrato || '-'}
             </div>
             {jobData.generatedDescription && (
-              <div className="mt-2 p-2 bg-neutral-800 rounded-md text-xs text-neutral-400 max-h-24 overflow-y-auto">
+              <div className="mt-2 p-2 bg-gray-800 rounded-md text-xs text-lia-text-tertiary max-h-24 overflow-y-auto">
                 {jobData.generatedDescription.slice(0, 200)}...
               </div>
             )}
@@ -325,7 +325,7 @@ export function FastTrackReviewPanel({
  "text-xs",
                   skill.required 
                     ? "bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default text-lia-text-secondary dark:text-lia-text-secondary" 
-                    : "bg-neutral-800 border-neutral-700 text-neutral-300"
+                    : "bg-gray-800 border-lia-border-default text-lia-text-disabled"
                 )}
               >
                 {skill.name}
@@ -347,7 +347,7 @@ export function FastTrackReviewPanel({
                 key={comp.id} 
                 className="flex items-center justify-between py-1"
               >
-                <span className="text-sm text-neutral-300">{comp.name}</span>
+                <span className="text-sm text-lia-text-disabled">{comp.name}</span>
                 <div className="flex items-center gap-1">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <div
@@ -371,8 +371,8 @@ export function FastTrackReviewPanel({
         >
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-neutral-500">Salário:</span>
-              <span className="text-neutral-300">
+              <span className="text-lia-text-secondary">Salário:</span>
+              <span className="text-lia-text-disabled">
                 {formatSalary(jobData.salaryInfo.minSalary)} - {formatSalary(jobData.salaryInfo.maxSalary)}
               </span>
             </div>
@@ -382,7 +382,7 @@ export function FastTrackReviewPanel({
                   <Badge 
                     key={benefit.id}
                     variant="outline" 
-                    className="text-xs bg-neutral-800 border-neutral-700 text-neutral-400"
+                    className="text-xs bg-gray-800 border-lia-border-default text-lia-text-tertiary"
                   >
                     {benefit.name}
                   </Badge>
@@ -402,11 +402,11 @@ export function FastTrackReviewPanel({
             <div className="space-y-2">
               {jobData.wsiQuestions.map((question, index) => (
                 <div key={question.id} className="text-sm">
-                  <span className="text-neutral-500">{index + 1}.</span>{' '}
-                  <span className="text-neutral-300">{question.question}</span>
+                  <span className="text-lia-text-secondary">{index + 1}.</span>{' '}
+                  <span className="text-lia-text-disabled">{question.question}</span>
                   <Badge 
                     variant="outline" 
-                    className="ml-2 text-xs border-neutral-700 text-neutral-500"
+                    className="ml-2 text-xs border-lia-border-default text-lia-text-secondary"
                   >
                     {question.type}
                   </Badge>
@@ -414,7 +414,7 @@ export function FastTrackReviewPanel({
               ))}
             </div>
           ) : (
-            <p className="text-sm text-neutral-500 italic">
+            <p className="text-sm text-lia-text-secondary italic">
               Nenhuma pergunta configurada. As perguntas globais da empresa serão aplicadas.
             </p>
           )}
@@ -428,7 +428,7 @@ export function FastTrackReviewPanel({
  "w-full",
           canPublish 
             ? "bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200" 
-            : "bg-neutral-700 text-neutral-500 cursor-not-allowed"
+            : "bg-neutral-700 text-lia-text-secondary cursor-not-allowed"
         )}
       >
         {isPublishing ? (

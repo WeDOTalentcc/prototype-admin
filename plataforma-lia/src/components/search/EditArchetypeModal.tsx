@@ -661,7 +661,7 @@ export function EditArchetypeModal({
                         onSelectedAiSkillsChange([])
                       }}
                       className="mt-2 w-full py-1 rounded-md text-micro font-medium transition-colors motion-reduce:transition-none bg-gray-900"
-                      style={{color: "white"}}
+                      className="text-white"
                     >
                       Adicionar {selectedAiSkills.length} Selecionado
                       {selectedAiSkills.length > 1 ? "s" : ""}
@@ -872,7 +872,7 @@ export function EditArchetypeModal({
                         onSelectedAiTagsChange([])
                       }}
                       className="mt-2 w-full py-1 rounded-md text-micro font-medium transition-colors motion-reduce:transition-none bg-gray-900"
-                      style={{color: "white"}}
+                      className="text-white"
                     >
                       Adicionar {selectedAiTags.length} Selecionado
                       {selectedAiTags.length > 1 ? "s" : ""}
@@ -891,7 +891,7 @@ export function EditArchetypeModal({
             <button
               onClick={onClose}
               className="px-4 py-2 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none hover:bg-gray-200 border border-lia-border-subtle"
-              style={{backgroundColor: "transparent"}}
+              className="bg-transparent"
             >
               Cancelar
             </button>

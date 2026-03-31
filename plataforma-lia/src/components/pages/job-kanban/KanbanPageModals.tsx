@@ -603,7 +603,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
                   <div className="text-center py-6">
                     <div 
                       className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4"
-                      style={{backgroundColor: 'var(--gray-100)'}}
+                      className="bg-[var(--gray-100)]"
                     >
                       <span className="text-3xl font-bold text-lia-text-primary dark:text-lia-text-primary">
                         {formatScorePercent(selectedCandidateForModal.liaScore ?? selectedCandidateForModal.score, 0)}

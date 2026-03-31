@@ -86,15 +86,15 @@ export function ActionResultCard({ actionType, result, className = "" }: ActionR
         <div className={`p-1 rounded-md ${badgeColor}`}>
           <Icon className={`w-4 h-4 ${iconColor}`} />
         </div>
-        <span className="text-sm font-medium text-zinc-200">{config.label}</span>
+        <span className="text-sm font-medium text-lia-text-disabled">{config.label}</span>
         <CheckCircle2 className="w-4 h-4 text-status-success ml-auto" />
       </div>
 
-      <div className="space-y-1 text-xs text-zinc-400">
+      <div className="space-y-1 text-xs text-lia-text-tertiary">
         {result.candidate_name && (
           <div className="flex items-center gap-2">
-            <span className="text-zinc-500">Candidato:</span>
-            <span className="text-zinc-200 font-medium">{result.candidate_name}</span>
+            <span className="text-lia-text-secondary">Candidato:</span>
+            <span className="text-lia-text-disabled font-medium">{result.candidate_name}</span>
           </div>
         )}
 
@@ -102,8 +102,8 @@ export function ActionResultCard({ actionType, result, className = "" }: ActionR
           <div className="flex items-center gap-2">
             {result.from_stage && (
               <>
-                <span className="px-1.5 py-0.5 rounded-md bg-zinc-700/50 text-zinc-300">{result.from_stage}</span>
-                <ArrowRight className="w-3 h-3 text-zinc-500" />
+                <span className="px-1.5 py-0.5 rounded-md bg-lia-bg-tertiary dark:bg-gray-700/50 text-lia-text-disabled">{result.from_stage}</span>
+                <ArrowRight className="w-3 h-3 text-lia-text-secondary" />
               </>
             )}
             <span className={`px-1.5 py-0.5 rounded-md ${badgeColor}`}>{result.to_stage}</span>
@@ -112,15 +112,15 @@ export function ActionResultCard({ actionType, result, className = "" }: ActionR
 
         {actionType === "send_email" && result.subject && (
           <div className="flex items-center gap-2">
-            <span className="text-zinc-500">Assunto:</span>
-            <span className="text-zinc-300">{result.subject}</span>
+            <span className="text-lia-text-secondary">Assunto:</span>
+            <span className="text-lia-text-disabled">{result.subject}</span>
           </div>
         )}
 
         {actionType === "schedule_interview" && result.datetime && (
           <div className="flex items-center gap-2">
-            <span className="text-zinc-500">Data:</span>
-            <span className="text-zinc-300">{result.datetime}</span>
+            <span className="text-lia-text-secondary">Data:</span>
+            <span className="text-lia-text-disabled">{result.datetime}</span>
           </div>
         )}
 
@@ -128,8 +128,8 @@ export function ActionResultCard({ actionType, result, className = "" }: ActionR
           <div className="flex items-center gap-2">
             {result.job_title && (
               <>
-                <span className="text-zinc-500">Vaga:</span>
-                <span className="text-zinc-200 font-medium">{String(result.job_title)}</span>
+                <span className="text-lia-text-secondary">Vaga:</span>
+                <span className="text-lia-text-disabled font-medium">{String(result.job_title)}</span>
               </>
             )}
           </div>
@@ -137,29 +137,29 @@ export function ActionResultCard({ actionType, result, className = "" }: ActionR
 
         {actionType === "duplicate_job" && result.new_job_id && (
           <div className="flex items-center gap-2">
-            <span className="text-zinc-500">Nova vaga ID:</span>
+            <span className="text-lia-text-secondary">Nova vaga ID:</span>
             <span className={`px-1.5 py-0.5 rounded-md ${badgeColor}`}>#{String(result.new_job_id)}</span>
           </div>
         )}
 
         {(actionType === "save_draft" || actionType === "publish_job") && result.completeness !== undefined && (
           <div className="flex items-center gap-2">
-            <span className="text-zinc-500">Completude:</span>
-            <span className="text-zinc-200 font-medium">{result.completeness as number}%</span>
+            <span className="text-lia-text-secondary">Completude:</span>
+            <span className="text-lia-text-disabled font-medium">{result.completeness as number}%</span>
           </div>
         )}
 
         {actionType === "generate_jd" && result.sections_count !== undefined && (
           <div className="flex items-center gap-2">
-            <span className="text-zinc-500">Seções geradas:</span>
-            <span className="text-zinc-200 font-medium">{result.sections_count as number}</span>
+            <span className="text-lia-text-secondary">Seções geradas:</span>
+            <span className="text-lia-text-disabled font-medium">{result.sections_count as number}</span>
           </div>
         )}
 
         {actionType === "generate_wsi" && result.questions_count !== undefined && (
           <div className="flex items-center gap-2">
-            <span className="text-zinc-500">Perguntas geradas:</span>
-            <span className="text-zinc-200 font-medium">{result.questions_count as number}</span>
+            <span className="text-lia-text-secondary">Perguntas geradas:</span>
+            <span className="text-lia-text-disabled font-medium">{result.questions_count as number}</span>
           </div>
         )}
 
