@@ -55,7 +55,7 @@ const REQUEST_TYPE_LABELS: Record<string, string> = {
   custom: 'Aprovação Personalizada'
 }
 
-const STATUS_CONFIG: Record<string, { label: string, color: string, icon: React.ComponentType<any> }> = {
+const STATUS_CONFIG: Record<string, { label: string, color: string, icon: React.ComponentType<{ className?: string }> }> = {
   pending: { label: 'Pendente', color: 'bg-status-warning/15 text-status-warning', icon: Clock },
   approved: { label: 'Aprovado', color: 'bg-status-success/15 text-status-success', icon: CheckCircle },
   rejected: { label: 'Rejeitado', color: 'bg-status-error/15 text-status-error', icon: XCircle },

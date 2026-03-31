@@ -9,7 +9,7 @@ import {
   FileText, Plus, Upload, Download, Eye, Play, Tag, X,
   File, FileVideo, Image, Video, Mic, Award, ChevronDown
 } from "lucide-react"
-import { FilePreviewModal } from "@/components/candidate-preview/FilePreviewModal"
+import { FilePreviewModal, type FileItem } from "@/components/candidate-preview/FilePreviewModal"
 
 interface CandidateFilesTabProps {
   candidate: Record<string, unknown>
@@ -23,7 +23,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
   const [uploadProgress, setUploadProgress] = useState(0)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
-  const [selectedFile, setSelectedFile] = useState<any>(null)
+  const [selectedFile, setSelectedFile] = useState<FileItem | null>(null)
   const [showPreview, setShowPreview] = useState(false)
   const [previewType, setPreviewType] = useState<'pdf' | 'image' | 'video' | 'audio' | null>(null)
   const [expandedActivity, setExpandedActivity] = useState<string | null>(null)

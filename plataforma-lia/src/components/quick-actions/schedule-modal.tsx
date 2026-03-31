@@ -39,7 +39,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
 
   // LIA states
   const [showLiaInsights, setShowLiaInsights] = useState(false)
-  const [liaRecommendations, setLiaRecommendations] = useState<any>(null)
+  const [liaRecommendations, setLiaRecommendations] = useState<Record<string, unknown> | null>(null)
   const [isLiaAnalyzing, setIsLiaAnalyzing] = useState(false)
   const [liaFocus, setLiaFocus] = useState<'technical' | 'behavioral' | 'cultural' | 'comprehensive'>('comprehensive')
 

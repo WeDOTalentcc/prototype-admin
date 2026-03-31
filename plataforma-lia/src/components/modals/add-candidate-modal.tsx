@@ -25,10 +25,24 @@ interface AddCandidateModalProps {
   onAdd: (candidate: Record<string, unknown>) => void
 }
 
+
+interface LIAAnalysis {
+  score?: number
+  fitScore?: number
+  culturalFit?: number
+  technicalFit?: number
+  strengths?: string[]
+  improvements?: string[]
+  recommendation?: string
+  suggestedSkills?: string[]
+  softSkills?: Record<string, number>
+}
+
+
 export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalProps) {
   const [activeTab, setActiveTab] = useState("basic")
   const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [liaAnalysis, setLiaAnalysis] = useState<any>(null)
+  const [liaAnalysis, setLiaAnalysis] = useState<LIAAnalysis | null>(null)
   const [skills, setSkills] = useState<string[]>([])
   const [newSkill, setNewSkill] = useState("")
 
@@ -585,7 +599,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                           <h4 className="font-semibold text-status-success">Pontos Fortes</h4>
                         </div>
                         <ul className="space-y-1">
-                          {liaAnalysis.strengths.map((strength: string, index: number) => (
+                          {(liaAnalysis.strengths || []).map((strength: string, index: number) => (
                             <li key={`strength-${index}`} className="text-sm text-status-success flex items-start gap-2">
                               <span className="text-status-success mt-0.5">•</span>
                               {strength}
@@ -602,7 +616,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                           <h4 className="font-semibold text-wedo-orange">Pontos de Atenção</h4>
                         </div>
                         <ul className="space-y-1">
-                          {liaAnalysis.improvements.map((improvement: string, index: number) => (
+                          {(liaAnalysis.improvements || []).map((improvement: string, index: number) => (
                             <li key={`improvement-${index}`} className="text-sm text-wedo-orange flex items-start gap-2">
                               <span className="text-wedo-orange mt-0.5">•</span>
                               {improvement}
@@ -629,7 +643,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                     <CardContent className="pt-4">
                       <h4 className="font-semibold mb-3">Habilidades Comportamentais</h4>
                       <div className="space-y-3">
-                        {Object.entries(liaAnalysis.softSkills).map(([skill, value]) => (
+                        {Object.entries(liaAnalysis.softSkills || {}).map(([skill, value]) => (
                           <div key={skill} className="flex items-center gap-3">
                             <span className="text-sm text-lia-text-primary dark:text-lia-text-primary capitalize w-32">
                               {skill === 'communication' ? 'Comunicação' :

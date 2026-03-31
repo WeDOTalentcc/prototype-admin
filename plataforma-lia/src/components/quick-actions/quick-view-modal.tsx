@@ -27,7 +27,7 @@ interface QuickViewModalProps {
 
 export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }: QuickViewModalProps) {
   const [showLiaInsights, setShowLiaInsights] = useState(true)
-  const [liaInsights, setLiaInsights] = useState<any>(null)
+  const [liaInsights, setLiaInsights] = useState<Record<string, unknown> | null>(null)
   const [isLiaAnalyzing, setIsLiaAnalyzing] = useState(false)
 
   // Gerar insights da LIA quando o modal abrir

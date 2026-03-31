@@ -106,8 +106,19 @@ interface DashboardsPageProps {
 }
 
 
+
+interface OpenMicAnalytics {
+  total_screenings?: number
+  analyzed_screenings?: number
+  average_scores?: { overall?: number; technical?: number }
+  recommendation_breakdown?: Record<string, unknown>
+  [key: string]: unknown
+}
+
+
 export function VoiceScreeningDashboard() {
-  const [analytics, setAnalytics] = useState<any>(null)
+  const [analytics, setAnalytics] = useState<OpenMicAnalytics | null>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [screenings, setScreenings] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -246,7 +257,7 @@ export function VoiceScreeningDashboard() {
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-              {Object.entries(analytics.recommendation_breakdown).map(([rec, count]: [string, any]) => (
+              {Object.entries(analytics.recommendation_breakdown).map(([rec, count]: [string, unknown]) => (
                 <div key={rec} className="p-3 bg-gray-50 dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
                   <p className={`${textStyles.description} mb-1`}>
                     {getRecommendationLabel(rec)}

@@ -4,7 +4,7 @@ import React from 'react'
 import { Check, Settings, Brain } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useWizardContext } from '../WizardContext'
-import { CompensationAnalysisPanel } from '@/components/job-creation/compensation-analysis-panel'
+import { CompensationAnalysisPanel, type CompensationAnalysisResult } from '@/components/job-creation/compensation-analysis-panel'
 
 interface DetectedCriteriaItem {
   key: string

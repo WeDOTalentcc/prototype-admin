@@ -34,6 +34,19 @@ const STATUS_CONFIG: Record<string, { label: string, color: string, icon: typeof
   'cancelled': { label: 'Cancelado', color: 'gray', icon: XCircle },
 }
 
+
+interface TrackingResult {
+  id?: string
+  status?: string
+  request_type?: string
+  created_at?: string
+  deadline_at?: string
+  completed_at?: string
+  response?: string
+  [key: string]: unknown
+}
+
+
 export default function PrivacidadePage() {
   const [activeTab, setActiveTab] = useState<'request' | 'track'>('request')
   const [requestType, setRequestType] = useState("")
@@ -49,7 +62,7 @@ export default function PrivacidadePage() {
 
   const [trackingId, setTrackingId] = useState("")
   const [tracking, setTracking] = useState(false)
-  const [trackingResult, setTrackingResult] = useState<any>(null)
+  const [trackingResult, setTrackingResult] = useState<TrackingResult | null>(null)
   const [trackingError, setTrackingError] = useState("")
 
   const formatCpf = (value: string) => {

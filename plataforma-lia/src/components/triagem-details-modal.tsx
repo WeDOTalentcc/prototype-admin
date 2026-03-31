@@ -133,6 +133,18 @@ const getFrameworkLabel = (framework: string) => {
   }
 }
 
+
+interface F11ReportData {
+  seniority?: string
+  seniority_weights?: { technical: number; behavioral: number }
+  mode?: string
+  question_count?: number
+  cbi_questions?: Array<{ severity?: string; question?: string; texto?: string; focus?: string; foco?: string }>
+  response_analyses?: Array<{ feedback?: string }>
+  [key: string]: unknown
+}
+
+
 export function TriagemDetailsModal({
   candidate,
   isOpen,
@@ -148,14 +160,14 @@ export function TriagemDetailsModal({
   const [ranking, setRanking] = useState<WSICandidateRanking | null>(null)
   const [vacancyRanking, setVacancyRanking] = useState<WSIVacancyRanking | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [feedbackStatus, setFeedbackStatus] = useState<any>(null)
+  const [feedbackStatus, setFeedbackStatus] = useState<Record<string, unknown> | null>(null)
   const [sendingFeedback, setSendingFeedback] = useState(false)
   const [feedbackSuccess, setFeedbackSuccess] = useState(false)
   const [feedbackError, setFeedbackError] = useState<string | null>(null)
   const [approving, setApproving] = useState(false)
   const [rejecting, setRejecting] = useState(false)
   const [confirmReject, setConfirmReject] = useState(false)
-  const [f11Report, setF11Report] = useState<any>(null)
+  const [f11Report, setF11Report] = useState<F11ReportData | null>(null)
   const [bigFiveHint, setBigFiveHint] = useState<string | null>(null)
   const [copiedFeedback, setCopiedFeedback] = useState(false)
 

@@ -22,8 +22,9 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { textStyles } from "@/lib/design-tokens"
 
-interface FileItem {
+export interface FileItem {
   name: string
+  type?: string
   url?: string
   videoType?: string
   audioType?: string

@@ -170,7 +170,7 @@ export interface CandidateSearchResultsViewProps {
   setIsCreatingArchetype: (value: boolean) => void
   archetypeCreationStep: 'initial' | 'input' | 'extracting' | 'review' | 'saving'
   setArchetypeCreationStep: (step: 'initial' | 'input' | 'extracting' | 'review' | 'saving') => void
-  setNewArchetypeData: React.Dispatch<React.SetStateAction<any>>
+  setNewArchetypeData: React.Dispatch<React.SetStateAction<Record<string, unknown>>>
   setShowSaveAsArchetypeModal: (value: boolean) => void
   setShowGlobalExpansionConfirm: (value: boolean) => void
   setCandidates: React.Dispatch<React.SetStateAction<Candidate[]>>

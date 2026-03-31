@@ -14,7 +14,7 @@ import {
   Filter, Search, SortAsc, SortDesc, Check, Minus, Plus,
   Calendar, Mail, Phone, MapPin, Building, Briefcase,
   Award, Globe, Eye, Edit, Trash2, MoreVertical, History,
-  Brain, Target, TrendingUp, BarChart3, PieChart, Activity
+  Target, TrendingUp, BarChart3, PieChart, Activity
 } from "lucide-react"
 
 interface BatchApprovalCandidate {
@@ -92,7 +92,7 @@ export function BatchApprovalModal({
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
   const [searchTerm, setSearchTerm] = useState('')
   const [processing, setProcessing] = useState(false)
-  const [results, setResults] = useState<any>(null)
+  const [results, setResults] = useState<{ total: number; approved: number; rejected: number; moved: number } | null>(null)
 
   // Available stages for moving candidates
   const availableStages = [
