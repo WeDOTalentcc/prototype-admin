@@ -271,7 +271,7 @@ export function KanbanTableView({
 
         return (
           <UnifiedCandidateTable
-            candidates={getPaginatedCandidates().candidates}
+            candidates={getPaginatedCandidates().candidates as unknown as Parameters<typeof UnifiedCandidateTable>[0]["candidates"]}
             columns={unifiedColumns}
             selectedIds={selectedCandidates}
             sortConfig={tableSortColumn ? {
@@ -285,13 +285,13 @@ export function KanbanTableView({
             isInteractive={true}
             jobVacancyId={jobVacancyId}
             onColumnResize={onColumnResize}
-            onCandidateClick={onCandidateClick}
+            onCandidateClick={onCandidateClick as unknown as Parameters<typeof UnifiedCandidateTable>[0]["onCandidateClick"]}
             onSelectionChange={(newSelection) => onSelectionChange(newSelection)}
             onSortChange={(config) => {
               onSortChange(config)
             }}
-            onStatusChange={onStatusChange}
-            onTransitionRequest={onTransitionRequest}
+            onStatusChange={onStatusChange as unknown as Parameters<typeof UnifiedCandidateTable>[0]["onStatusChange"]}
+            onTransitionRequest={onTransitionRequest as unknown as Parameters<typeof UnifiedCandidateTable>[0]["onTransitionRequest"]}
             renderCustomHeader={(columnId: string, defaultLabel: string) => {
               if (columnId === 'quickActions') {
                 const isSat = saturationData?.is_saturated || (saturationData?.saturation_percentage ?? 0) >= 90
@@ -316,10 +316,10 @@ export function KanbanTableView({
               }
               return null
             }}
-            renderCustomCell={(candidate: KanbanCandidate, columnId: string) => {
+            renderCustomCell={((candidate: KanbanCandidate, columnId: string): React.ReactNode => {
               const ranking = calculateNotaLiaGeral(candidate)
               const alerts = getLiaAlerts(candidate)
-              const urgency = getUrgencyLevel(ranking)
+              const urgency = getUrgencyLevel(ranking as number)
 
               switch (columnId) {
                 case 'id':
@@ -366,13 +366,13 @@ export function KanbanTableView({
                     >
                       <Brain className={`w-3.5 h-3.5 ${hasTriagem ? 'text-wedo-cyan' : 'text-lia-text-disabled'}`} strokeWidth={2} />
  <span className={`text-xs font-semibold ${hasTriagem ? 'text-lia-text-primary' : 'text-lia-text-disabled dark:text-lia-text-tertiary'}`}>
-                        {hasTriagem ? formatScorePercent(triagemValue, 0) : '—'}
+                        {hasTriagem ? formatScorePercent(triagemValue as number, 0) : '—'}
                       </span>
                     </div>
                   )
 
                 case 'fitScore':
-                  const hasFitScore = (candidate.skillsMatch !== null && candidate.skillsMatch !== undefined && candidate.skillsMatch > 0) || (candidate.fitScore !== null && candidate.fitScore !== undefined && candidate.fitScore > 0)
+                  const hasFitScore = (candidate.skillsMatch !== null && candidate.skillsMatch !== undefined && (candidate.skillsMatch as number) > 0) || (candidate.fitScore !== null && candidate.fitScore !== undefined && (candidate.fitScore as number) > 0)
                   const fitValue = candidate.skillsMatch || candidate.fitScore || 0
                   return (
                     <div
@@ -387,7 +387,7 @@ export function KanbanTableView({
                     >
                       <Target className="w-3.5 h-3.5" style={{color: hasFitScore ? 'var(--gray-950)' : 'var(--gray-400)'}} strokeWidth={2} />
  <span className={`text-xs font-semibold ${hasFitScore ? 'text-lia-text-primary' : 'text-lia-text-disabled dark:text-lia-text-tertiary'}`}>
-                        {hasFitScore ? formatScorePercent(fitValue, 0) : '—'}
+                        {hasFitScore ? formatScorePercent(fitValue as number, 0) : '—'}
                       </span>
                     </div>
                   )
@@ -409,7 +409,7 @@ export function KanbanTableView({
                       <Code className="w-3.5 h-3.5" style={{color: hasTechnical ? 'var(--gray-600)' : 'var(--gray-400)'}} strokeWidth={2} />
                       {hasTechnical && (
                         <span className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">
-                          {formatScorePercent(candidate.technicalTestScore, 0)}
+                          {formatScorePercent(candidate.technicalTestScore as number, 0)}
                         </span>
                       )}
                     </div>
@@ -432,7 +432,7 @@ export function KanbanTableView({
                       <Globe className="w-3.5 h-3.5" style={{color: hasEnglish ? 'var(--gray-600)' : 'var(--gray-400)'}} strokeWidth={2} />
                       {hasEnglish && (
                         <span className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">
-                          {formatScorePercent(candidate.englishTestScore, 0)}
+                          {formatScorePercent(candidate.englishTestScore as number, 0)}
                         </span>
                       )}
                     </div>
@@ -463,7 +463,7 @@ export function KanbanTableView({
                   )
 
                 case 'quickActions':
-                  const quickActionStage = (candidate.stage || candidate.etapa || 'funil').toLowerCase()
+                  const quickActionStage = ((candidate.stage as string | undefined) || (candidate.etapa as string | undefined) || 'funil').toLowerCase()
                   const isAlreadyDecided = quickActionStage === 'aprovados' || quickActionStage === 'reprovados'
                   const showNeedsAction = candidate.needsAction === true
 
@@ -526,14 +526,14 @@ export function KanbanTableView({
                     const gender = Math.abs(hash % 2) === 0 ? 'men' : 'women'
                     return `https://randomuser.me/api/portraits/${gender}/${avatarIndex}.jpg`
                   }
-                  const avatarUrl = candidate.avatar?.startsWith('http') ? candidate.avatar : getAvatarUrl(candidate.id || '', candidate.name || '')
-                  const isDemo = !candidate.avatar?.startsWith('http') || candidate.isDemo
+                  const avatarUrl = (candidate.avatar as string | undefined)?.startsWith('http') ? (candidate.avatar as string) : getAvatarUrl(candidate.id || '', candidate.name || '')
+                  const isDemo = !(candidate.avatar as string | undefined)?.startsWith('http') || candidate.isDemo
                   return (
                     <div className="flex items-center gap-2">
                       <div className="relative">
                         <Avatar className="w-8 h-8">
-                          <AvatarImage src={avatarUrl} alt={candidate.name} />
-                          <AvatarFallback>{candidate.name.split(' ').map((n: string) => n[0]).join('')}</AvatarFallback>
+                          <AvatarImage src={avatarUrl as string | undefined} alt={candidate.name as string} />
+                          <AvatarFallback>{(candidate.name as string || '').split(' ').map((n: string) => n[0]).join('')}</AvatarFallback>
                         </Avatar>
                         {viewedCandidateIds.has(candidate.id) && (
                           <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-gray-300 rounded-full flex items-center justify-center border border-white" title="Perfil visualizado">
@@ -546,18 +546,18 @@ export function KanbanTableView({
                           <span className="text-micro font-medium text-lia-text-disabled dark:text-lia-text-tertiary">[D]</span>
                         )}
                         <span className="font-medium text-sm text-lia-text-primary dark:text-lia-text-primary">
-                          {candidate.name}
+                          {candidate.name as string}
                         </span>
                         {(() => {
-                          const dataRequest = getDataRequestForCandidate(candidate.id)
+                          const dataRequest = getDataRequestForCandidate(candidate.id as string)
                           if (!dataRequest) return null
                           return (
                             <DataRequestIndicator
                               candidateId={candidate.id}
-                              status={dataRequest.status}
-                              fieldsRequested={dataRequest.fieldsRequested}
-                              fieldsCompleted={dataRequest.fieldsCompleted}
-                              expiresAt={dataRequest.expiresAt || undefined}
+                              status={dataRequest.status as unknown as Parameters<typeof DataRequestIndicator>[0]["status"]}
+                              fieldsRequested={dataRequest.fieldsRequested as unknown as Parameters<typeof DataRequestIndicator>[0]["fieldsRequested"]}
+                              fieldsCompleted={dataRequest.fieldsCompleted as unknown as Parameters<typeof DataRequestIndicator>[0]["fieldsCompleted"]}
+                              expiresAt={dataRequest.expiresAt as string | Date | null | undefined}
                               size="sm"
                               onResend={onDataRequestResend}
                               onViewDetails={onDataRequestViewDetails}
@@ -571,20 +571,20 @@ export function KanbanTableView({
                 case 'role':
                   return (
                     <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
-                      {candidate.role || candidate.position || 'UX Designer'}
+                      {((candidate.role as string | undefined) || (candidate.position as string | undefined) || 'UX Designer')}
                     </div>
                   )
 
                 case 'currentCompany':
                   return (
                     <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
-                      {candidate.currentCompany || (candidate.source === 'LinkedIn' ? 'TechCorp' : 'Digital Agency')}
+                      {((candidate.currentCompany as string | undefined) || ((candidate.source as string | undefined) === 'LinkedIn' ? 'TechCorp' : 'Digital Agency'))}
                     </div>
                   )
 
                 case 'stage': {
                   const stageDropdownStages = dynamicStages.map(s => ({ id: s.id, name: s.name, displayName: s.displayName, color: s.color }))
-                  const currentStageObj = stageDropdownStages.find(s => s.id === (candidate.stageId || candidate.stage))
+                  const currentStageObj = stageDropdownStages.find(s => s.id === ((candidate.stageId as string | undefined) || (candidate.stage as string | undefined)))
                   return (
                     <Popover>
                       <PopoverTrigger asChild>
@@ -593,7 +593,7 @@ export function KanbanTableView({
                             className="text-xs font-semibold border-0 whitespace-nowrap text-lia-text-primary dark:text-lia-text-primary cursor-pointer"
                             style={{backgroundColor: currentStageObj?.color || 'var(--gray-200)'}}
                           >
-                            {currentStageObj?.displayName || candidate.stage}
+                            {currentStageObj?.displayName || (candidate.stage as string | undefined)}
                           </Badge>
                           <ChevronDown className="w-3 h-3 text-lia-text-disabled group-hover/stage:text-lia-text-secondary transition-colors motion-reduce:transition-none" />
                         </button>
@@ -601,7 +601,7 @@ export function KanbanTableView({
                       <PopoverContent className="w-44 p-1.5" align="start" sideOffset={4}>
                         <div className="space-y-0.5">
                           {stageDropdownStages.map((stage) => {
-                            const isCurrent = stage.id === (candidate.stageId || candidate.stage)
+                            const isCurrent = stage.id === ((candidate.stageId as string | undefined) || (candidate.stage as string | undefined))
                             return (
                               <button
                                 key={stage.id}
@@ -613,7 +613,7 @@ export function KanbanTableView({
 
                                 onClick={() => {
                                   if (!isCurrent) {
-                                    onTransitionRequired([candidate], candidate.stageId || candidate.stage, stage.id)
+                                    onTransitionRequired([candidate], (candidate.stageId as string | undefined) || (candidate.stage as string | undefined) || '', stage.id)
                                   }
                                 }}
                               >
@@ -639,10 +639,10 @@ export function KanbanTableView({
                   return (
                     <div className="flex items-center gap-1.5">
                       <InteractiveSubStatusCell
-                        candidateId={candidate.id}
-                        candidateName={candidate.name}
-                        stage={candidate.stage}
-                        subStatus={candidate.sub_status || candidate.status}
+                        candidateId={candidate.id as string}
+                        candidateName={candidate.name as string}
+                        stage={candidate.stage as string | undefined}
+                        subStatus={(candidate.sub_status as string | undefined) || (candidate.status as string | undefined)}
                         jobVacancyId={jobVacancyId}
                         onStatusChange={onStatusChange}
                       />
@@ -650,15 +650,15 @@ export function KanbanTableView({
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
-                            const stage = candidate.stageId || candidate.stage || 'interview_hr'
-                            const dateStr = candidate.interviewDate || new Date(candidate.agendada).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
-                            onSetTransitionInitialPrompt(`O recrutador quer gerenciar a entrevista de ${candidate.name} agendada para ${dateStr}. Pergunte se quer alterar o horário (peça nova data/hora) ou cancelar. Se cancelar, pergunte para qual etapa quer mover o candidato.`)
+                            const stage = (candidate.stageId as string | undefined) || (candidate.stage as string | undefined) || 'interview_hr'
+                            const dateStr = (candidate.interviewDate as string | undefined) || new Date(candidate.agendada as string).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
+                            onSetTransitionInitialPrompt(`O recrutador quer gerenciar a entrevista de ${candidate.name as string} agendada para ${dateStr}. Pergunte se quer alterar o horário (peça nova data/hora) ou cancelar. Se cancelar, pergunte para qual etapa quer mover o candidato.`)
                             onSetTransitionAllowStageSelection(true)
-                            onSetTransitionInterviewAlert({ name: candidate.name, date: dateStr })
+                            onSetTransitionInterviewAlert({ name: candidate.name as string, date: dateStr })
                             openTransition([candidate], stage, stage)
                           }}
                           className="w-5 h-5 rounded-md flex items-center justify-center text-wedo-cyan-dark hover:bg-wedo-cyan/10 dark:hover:bg-wedo-cyan-dark/20 transition-colors motion-reduce:transition-none flex-shrink-0"
-                          title={`Gerenciar entrevista — ${candidate.interviewDate || new Date(candidate.agendada).toLocaleDateString('pt-BR')}`}
+                          title={`Gerenciar entrevista — ${(candidate.interviewDate as string | undefined) || new Date(candidate.agendada as string).toLocaleDateString('pt-BR')}`}
                         >
                           <Video className="w-3 h-3" />
                         </button>
@@ -690,7 +690,7 @@ export function KanbanTableView({
                   ) : <span className="text-xs text-lia-text-disabled">—</span>
 
                 case 'headline':
-                  return <span className="text-xs text-lia-text-primary dark:text-lia-text-primary truncate">{candidate.headline || ''}</span>
+                  return <span className="text-xs text-lia-text-primary dark:text-lia-text-primary truncate">{(candidate.headline as string | undefined) || ''}</span>
 
                 case 'expertise':
                   const expertiseArray = candidate.expertise
@@ -698,22 +698,22 @@ export function KanbanTableView({
 
                 case 'linkedin_followers_count':
                   return candidate.linkedin_followers_count ? (
-                    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">{candidate.linkedin_followers_count.toLocaleString('pt-BR')}</span>
+                    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">{(candidate.linkedin_followers_count as number).toLocaleString('pt-BR')}</span>
                   ) : <span className="text-xs text-lia-text-disabled">—</span>
 
                 case 'linkedin_connections_count':
                   return candidate.linkedin_connections_count ? (
-                    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">{candidate.linkedin_connections_count.toLocaleString('pt-BR')}</span>
+                    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">{(candidate.linkedin_connections_count as number).toLocaleString('pt-BR')}</span>
                   ) : <span className="text-xs text-lia-text-disabled">—</span>
 
                 case 'outreach_message':
                   return candidate.outreach_message ? (
                     <div className="flex items-center gap-1">
-                      <span className="text-xs text-lia-text-primary dark:text-lia-text-primary truncate max-w-sidebar-content">{candidate.outreach_message.slice(0, 50)}...</span>
+                      <span className="text-xs text-lia-text-primary dark:text-lia-text-primary truncate max-w-sidebar-content">{(candidate.outreach_message as string).slice(0, 50)}...</span>
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
-                          navigator.clipboard.writeText(candidate.outreach_message!)
+                          navigator.clipboard.writeText(candidate.outreach_message as string)
                         }}
                         className="p-0.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
                         title="Copiar mensagem"
@@ -725,8 +725,8 @@ export function KanbanTableView({
 
                 case 'best_personal_email':
                   return candidate.best_personal_email ? (
-                    <a href={`mailto:${candidate.best_personal_email}`} className="text-xs text-lia-text-secondary hover:text-lia-text-primary hover:underline truncate dark:text-lia-text-secondary dark:hover:text-lia-text-inverse">
-                      {candidate.best_personal_email}
+                    <a href={`mailto:${candidate.best_personal_email as string}`} className="text-xs text-lia-text-secondary hover:text-lia-text-primary hover:underline truncate dark:text-lia-text-secondary dark:hover:text-lia-text-inverse">
+                      {candidate.best_personal_email as string}
                     </a>
                   ) : <span className="text-xs text-lia-text-disabled">—</span>
 
@@ -741,13 +741,13 @@ export function KanbanTableView({
 
                 case 'estimated_age':
                   return candidate.estimated_age ? (
-                    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">{candidate.estimated_age} anos</span>
+                    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">{candidate.estimated_age as number} anos</span>
                   ) : <span className="text-xs text-lia-text-disabled">—</span>
 
                 case 'match_reasoning':
-                  return candidate.pearch_insights?.match_reasoning ? (
-                    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary truncate" title={candidate.pearch_insights.match_reasoning}>
-                      {candidate.pearch_insights.match_reasoning.slice(0, 60)}...
+                  return (candidate.pearch_insights as unknown as Record<string, string | undefined>)?.match_reasoning ? (
+                    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary truncate" title={(candidate.pearch_insights as unknown as Record<string, string>).match_reasoning}>
+                      {(candidate.pearch_insights as unknown as Record<string, string>).match_reasoning.slice(0, 60)}...
                     </span>
                   ) : <span className="text-xs text-lia-text-disabled">—</span>
 
@@ -793,18 +793,18 @@ export function KanbanTableView({
 
                 case 'middle_name':
                   return candidate.middle_name ? (
-                    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary truncate">{candidate.middle_name}</span>
+                    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary truncate">{candidate.middle_name as string}</span>
                   ) : <span className="text-xs text-lia-text-disabled">—</span>
 
                 case 'best_business_email':
                   return candidate.best_business_email ? (
-                    <a href={`mailto:${candidate.best_business_email}`} className="text-xs text-lia-text-secondary hover:text-lia-text-primary hover:underline truncate dark:text-lia-text-secondary dark:hover:text-lia-text-inverse">
-                      {candidate.best_business_email}
+                    <a href={`mailto:${candidate.best_business_email as string}`} className="text-xs text-lia-text-secondary hover:text-lia-text-primary hover:underline truncate dark:text-lia-text-secondary dark:hover:text-lia-text-inverse">
+                      {candidate.best_business_email as string}
                     </a>
                   ) : <span className="text-xs text-lia-text-disabled">—</span>
 
                 case 'personal_emails':
-                  const personalEmails = candidate.personal_emails
+                  const personalEmails = candidate.personal_emails as string[] | undefined
                   if (!personalEmails || personalEmails.length === 0) {
                     return <span className="text-xs text-lia-text-disabled">—</span>
                   }
@@ -815,7 +815,7 @@ export function KanbanTableView({
                   )
 
                 case 'business_emails':
-                  const businessEmails = candidate.business_emails
+                  const businessEmails = candidate.business_emails as string[] | undefined
                   if (!businessEmails || businessEmails.length === 0) {
                     return <span className="text-xs text-lia-text-disabled">—</span>
                   }
@@ -827,11 +827,11 @@ export function KanbanTableView({
 
                 case 'company_followers_count':
                   return candidate.company_followers_count != null ? (
-                    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">{candidate.company_followers_count.toLocaleString('pt-BR')}</span>
+                    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">{(candidate.company_followers_count as number).toLocaleString('pt-BR')}</span>
                   ) : <span className="text-xs text-lia-text-disabled">—</span>
 
                 case 'company_keywords':
-                  const companyKeywords = candidate.company_keywords
+                  const companyKeywords = candidate.company_keywords as string[] | undefined
                   if (!companyKeywords || companyKeywords.length === 0) {
                     return <span className="text-xs text-lia-text-disabled">—</span>
                   }
@@ -851,7 +851,7 @@ export function KanbanTableView({
                 case 'analise':
                   const candidateStage = candidate.stage || candidate.etapa || 'funil'
                   const hasAnalysisData = candidate.liaAnalysis || candidate.cvAnalysis || candidate.score
-                  const hasTriagemData = candidate.triagemHistory || candidate.screeningHistory || candidateStage.toLowerCase() !== 'funil'
+                  const hasTriagemData = candidate.triagemHistory || candidate.screeningHistory || (candidateStage as string).toLowerCase() !== 'funil'
                   return (
                     <div className="flex items-center justify-center gap-1">
                       <Button
@@ -934,7 +934,7 @@ export function KanbanTableView({
                           <button
                             onClick={(e) => {
                               e.stopPropagation()
-                              const cStage = (candidate.stage || candidate.etapa || 'funil').toLowerCase()
+                              const cStage = ((candidate.stage as string | undefined) || (candidate.etapa as string | undefined) || 'funil').toLowerCase()
                               if (cStage === 'screening' || cStage === 'triagem') {
                                 onApproveFromScreening(candidate)
                               } else {
@@ -949,7 +949,7 @@ export function KanbanTableView({
                           <button
                             onClick={(e) => {
                               e.stopPropagation()
-                              const cStage = (candidate.stage || candidate.etapa || 'funil').toLowerCase()
+                              const cStage = ((candidate.stage as string | undefined) || (candidate.etapa as string | undefined) || 'funil').toLowerCase()
                               if (cStage === 'screening' || cStage === 'triagem') {
                                 onRejectFromScreening(candidate)
                               } else {
@@ -969,13 +969,13 @@ export function KanbanTableView({
                 default:
                   return null
               }
-            }}
-            getNeedsAction={(candidate: KanbanCandidate) => {
-              const stage = (candidate.stage || candidate.etapa || 'funil').toLowerCase()
-              return stage === 'funil' || stage === 'triagem' || candidate.needsAction === true || candidate.status === 'triado_aprovado'
-            }}
-            renderActions={(candidate: KanbanCandidate) => {
-              const stage = (candidate.stage || candidate.etapa || 'funil').toLowerCase()
+            }) as unknown as Parameters<typeof UnifiedCandidateTable>[0]["renderCustomCell"]}
+            getNeedsAction={((candidate: KanbanCandidate): boolean => {
+              const stage = ((candidate.stage as string | undefined) || (candidate.etapa as string | undefined) || 'funil').toLowerCase()
+              return stage === 'funil' || stage === 'triagem' || candidate.needsAction === true || (candidate.status as string | undefined) === 'triado_aprovado'
+            }) as unknown as Parameters<typeof UnifiedCandidateTable>[0]["getNeedsAction"]}
+            renderActions={((candidate: KanbanCandidate): React.ReactNode => {
+              const stage = ((candidate.stage as string | undefined) || (candidate.etapa as string | undefined) || 'funil').toLowerCase()
               const showApproveReject = stage === 'funil' || stage === 'triagem'
               return (
                 <div className="flex items-center justify-center gap-1" onClick={(e) => e.stopPropagation()}>
@@ -1051,9 +1051,9 @@ export function KanbanTableView({
                   </DropdownMenu>
                 </div>
               )
-            }}
-            getStageBorderColor={(candidate: KanbanCandidate) => {
-              const stage = (candidate.stage || candidate.etapa || 'funil').toLowerCase()
+            }) as unknown as Parameters<typeof UnifiedCandidateTable>[0]["renderActions"]}
+            getStageBorderColor={((candidate: KanbanCandidate): string => {
+              const stage = ((candidate.stage as string | undefined) || (candidate.etapa as string | undefined) || 'funil').toLowerCase()
               const stageColors: Record<string, string> = {
                 'funil': 'var(--gray-600)',
                 'triagem': 'var(--status-warning)',
@@ -1063,7 +1063,7 @@ export function KanbanTableView({
                 'reprovados': 'var(--status-error)'
               }
               return stageColors[stage] || 'var(--gray-950)'
-            }}
+            }) as unknown as Parameters<typeof UnifiedCandidateTable>[0]["getStageBorderColor"]}
             className="max-h-[calc(100vh-22rem)]"
           />
         )
@@ -1175,17 +1175,17 @@ export function KanbanTableView({
             })()}
             onNavigateCandidate={onNavigateCandidate}
             onOpenFullPage={onCandidatePageOpen}
-            onScheduleInterview={onScheduleInterview}
-            onAddToVacancy={onAddToVacancy}
-            onToggleFavorite={onToggleFavorite}
-            onWSIScreening={onSendWSIInvite}
-            onOpenTriagemDetails={onOpenTriagem}
-            isFavorite={previewCandidate ? favoriteCandidates.has(previewCandidate.id) : false}
-            onSendEmail={(candidate) => onSendEmail(candidate)}
-            onSendWhatsApp={(candidate) => onSendWhatsApp(candidate)}
-            onSendTriagem={(candidate) => onSendTriagem(candidate)}
-            onSendAgendamento={(candidate) => onSendAgendamento(candidate)}
-            onSendFeedback={(candidate) => onSendFeedback(candidate)}
+            onScheduleInterview={onScheduleInterview as unknown as Parameters<typeof CandidatePreview>[0]["onScheduleInterview"]}
+            onAddToVacancy={onAddToVacancy as unknown as Parameters<typeof CandidatePreview>[0]["onAddToVacancy"]}
+            onToggleFavorite={onToggleFavorite as unknown as Parameters<typeof CandidatePreview>[0]["onToggleFavorite"]}
+            onWSIScreening={onSendWSIInvite as unknown as Parameters<typeof CandidatePreview>[0]["onWSIScreening"]}
+            onOpenTriagemDetails={onOpenTriagem as unknown as Parameters<typeof CandidatePreview>[0]["onOpenTriagemDetails"]}
+            isFavorite={previewCandidate ? favoriteCandidates.has(previewCandidate.id as string) : false}
+            onSendEmail={(candidate) => onSendEmail(candidate as unknown as Parameters<typeof onSendEmail>[0])}
+            onSendWhatsApp={(candidate) => onSendWhatsApp(candidate as unknown as Parameters<typeof onSendWhatsApp>[0])}
+            onSendTriagem={(candidate) => onSendTriagem(candidate as unknown as Parameters<typeof onSendTriagem>[0])}
+            onSendAgendamento={(candidate) => onSendAgendamento(candidate as unknown as Parameters<typeof onSendAgendamento>[0])}
+            onSendFeedback={(candidate) => onSendFeedback(candidate as unknown as Parameters<typeof onSendFeedback>[0])}
             jobId={jobVacancyId}
           />
         </React.Suspense>
