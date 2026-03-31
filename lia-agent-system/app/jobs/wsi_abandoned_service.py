@@ -47,7 +47,7 @@ async def check_abandoned_sessions(db: AsyncSession) -> dict[str, int]:
         rows = result.fetchall()
     except Exception as exc:
         logger.error("[wsi-abandoned] erro ao buscar sessões: %s", exc)
-        return {"first_reminders": 0, "second_reminders": 0, "errors": 1}
+        return {"first_reminders": 0, "second_reminders": 0, "consultant_alerts": 0, "errors": 1}
 
     for row in rows:
         session_id = str(row.session_id)
