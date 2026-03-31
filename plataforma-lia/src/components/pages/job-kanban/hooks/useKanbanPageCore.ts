@@ -241,7 +241,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
 
   // Estados para candidatesData (hoisted before useKanbanTransitions)
   const [candidatesData, setCandidatesData] = useState<Record<string, KanbanCandidate[]>>(() => 
-    createInitialCandidatesData(mapInterviewStagesToKanban(job?.interviewStages as Parameters<typeof mapInterviewStagesToKanban>[0])) as unknown as Record<string, KanbanCandidate[]>
+    createInitialCandidatesData(mapInterviewStagesToKanban(job?.interviewStages as Parameters<typeof mapInterviewStagesToKanban>[0]))
   )
 
   // ── handleUniversalTransitionConfirm — extraído para useKanbanTransitions ──

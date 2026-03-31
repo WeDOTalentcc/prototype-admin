@@ -1,24 +1,29 @@
 "use client"
 
-import { BatchApprovalModal } from "@/components/batch-approval-modal"
-import { RubricEvaluationModal } from "@/components/rubric-evaluation-modal"
-import { ContactModal, ScheduleModal } from "@/components/quick-actions-modals"
+const BatchApprovalModal = dynamic(() => import("@/components/batch-approval-modal").then(m => ({ default: m.BatchApprovalModal })), { ssr: false, loading: () => null })
+const RubricEvaluationModal = dynamic(() => import("@/components/rubric-evaluation-modal").then(m => ({ default: m.RubricEvaluationModal })), { ssr: false, loading: () => null })
+const ContactModal = dynamic(() => import("@/components/quick-actions-modals").then(m => ({ default: m.ContactModal })), { ssr: false, loading: () => null })
+const ScheduleModal = dynamic(() => import("@/components/quick-actions-modals").then(m => ({ default: m.ScheduleModal })), { ssr: false, loading: () => null })
 import { GlobalExpansionConfirmModal } from "@/components/pages/candidates/GlobalExpansionConfirmModal"
 import { SourceChangeConfirmModal } from "@/components/pages/candidates/SourceChangeConfirmModal"
 import { ContactFilterConfirmModal } from "@/components/pages/candidates/ContactFilterConfirmModal"
 import { DeleteArchetypeModal } from "@/components/pages/candidates/DeleteArchetypeModal"
-import { UnifiedCommunicationModal, type CommunicationType } from "@/components/modals/unified-communication-modal"
-import { CandidateComparison } from "@/components/candidate-comparison"
-import { AddToListModal } from "@/components/modals/add-to-list-modal"
-import { ShareSearchModal } from "@/components/modals/share-search-modal"
-import { AddCandidatesToVacancyModal } from "@/components/modals/add-candidates-to-vacancy-modal"
-import { AddListToVacanciesModal } from "@/components/modals/add-list-to-vacancies-modal"
+import type { CommunicationType } from "@/components/modals/unified-communication-modal"
+const UnifiedCommunicationModal = dynamic(() => import("@/components/modals/unified-communication-modal").then(m => ({ default: m.UnifiedCommunicationModal })), { ssr: false, loading: () => null })
+const CandidateComparison = dynamic(() => import("@/components/candidate-comparison").then(m => ({ default: m.CandidateComparison })), { ssr: false, loading: () => null })
+const AddToListModal = dynamic(() => import("@/components/modals/add-to-list-modal").then(m => ({ default: m.AddToListModal })), { ssr: false, loading: () => null })
+const ShareSearchModal = dynamic(() => import("@/components/modals/share-search-modal").then(m => ({ default: m.ShareSearchModal })), { ssr: false, loading: () => null })
+const AddCandidatesToVacancyModal = dynamic(() => import("@/components/modals/add-candidates-to-vacancy-modal").then(m => ({ default: m.AddCandidatesToVacancyModal })), { ssr: false, loading: () => null })
+const AddListToVacanciesModal = dynamic(() => import("@/components/modals/add-list-to-vacancies-modal").then(m => ({ default: m.AddListToVacanciesModal })), { ssr: false, loading: () => null })
 import { UnsavedPearchWarningModal } from "@/components/modals/unsaved-pearch-warning-modal"
-import { WSITextScreeningModal, WSIVoiceScreeningStatus, WSIScorecard } from "@/components/wsi"
-import { WSITriagemInviteModal } from "@/components/wsi/wsi-triagem-invite-modal"
-import { SendEmailModal } from "@/components/email-templates"
-import { CVPreview, type ParsedCVResponse } from "@/components/cv"
-import { RevealCreditsModal } from "@/components/reveal-credits-modal"
+const WSITextScreeningModal = dynamic(() => import("@/components/wsi").then(m => ({ default: m.WSITextScreeningModal })), { ssr: false, loading: () => null })
+const WSIVoiceScreeningStatus = dynamic(() => import("@/components/wsi").then(m => ({ default: m.WSIVoiceScreeningStatus })), { ssr: false, loading: () => null })
+const WSIScorecard = dynamic(() => import("@/components/wsi").then(m => ({ default: m.WSIScorecard })), { ssr: false, loading: () => null })
+const WSITriagemInviteModal = dynamic(() => import("@/components/wsi/wsi-triagem-invite-modal").then(m => ({ default: m.WSITriagemInviteModal })), { ssr: false, loading: () => null })
+const SendEmailModal = dynamic(() => import("@/components/email-templates").then(m => ({ default: m.SendEmailModal })), { ssr: false, loading: () => null })
+import type { ParsedCVResponse } from "@/components/cv"
+const CVPreview = dynamic(() => import("@/components/cv").then(m => ({ default: m.CVPreview })), { ssr: false, loading: () => null })
+const RevealCreditsModal = dynamic(() => import("@/components/reveal-credits-modal").then(m => ({ default: m.RevealCreditsModal })), { ssr: false, loading: () => null })
 import { CreditConfirmationModal } from "@/components/pages/candidates/CreditConfirmationModal"
 import { SaveAsArchetypeModal } from "@/components/pages/candidates/SaveAsArchetypeModal"
 import { EditQueryModal } from "@/components/pages/candidates/EditQueryModal"
