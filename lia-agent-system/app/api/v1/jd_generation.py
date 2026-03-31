@@ -183,6 +183,8 @@ async def generate_jd(
                     "warnings": fg_output.warnings,
                 }
             return response
+        except HTTPException:
+            raise
         except Exception as e2:
             logger.error(f"Fallback JD generation also failed: {e2}")
             return {"success": False, "error": str(e)}
