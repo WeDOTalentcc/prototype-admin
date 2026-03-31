@@ -527,10 +527,32 @@ class WSIInterviewNodes:
             except Exception as _inj_exc:
                 logger.debug("[WSIInterviewGraph] PromptInjectionGuard check skipped: %s", _inj_exc)
 
+            # A3/G1: FairnessGuard — mask protected info from candidate responses before scoring
+            masked_response = response_clean
+            try:
+                from app.shared.compliance.fairness_guard_middleware import check_fairness
+                _fg_resp = check_fairness(
+                    {"candidate_response": response_clean},
+                    context="wsi_candidate_response",
+                    company_id=str(state.candidate_profile.get("company_id", "")),
+                )
+                if _fg_resp.has_warnings:
+                    state.log_step("validate_response", {
+                        "status": "fairness_warnings",
+                        "warnings_count": len(_fg_resp.warnings),
+                    })
+                    logger.info(
+                        "[WSIInterviewGraph][A3] FairnessGuard L2 warnings on candidate response "
+                        "session=%s warnings=%d",
+                        state.session_id, len(_fg_resp.warnings),
+                    )
+            except Exception as _fg_exc:
+                logger.debug("[WSIInterviewGraph][A3] FairnessGuard check skipped: %s", _fg_exc)
+
             # Válida: vai para scoring
             # Armazena temporariamente para score_response
             state.candidate_profile["_pending_response"] = {
-                "text": response_clean,
+                "text": masked_response,
                 "question_block": state.current_question,
             }
             state.stage = WSIInterviewStage.SCORE_RESPONSE

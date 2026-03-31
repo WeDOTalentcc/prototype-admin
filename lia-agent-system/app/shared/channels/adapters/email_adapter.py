@@ -1,7 +1,10 @@
+import base64
 import logging
 import re
 import uuid
 from datetime import datetime
+
+from sqlalchemy import select, and_
 
 from app.shared.channels.channel_adapter import (
     ChannelAdapter, ChannelType, ChannelMessage, DeliveryResult, DeliveryStatus
@@ -35,6 +38,32 @@ def _add_ai_footer(body_text: str | None, body_html: str | None) -> tuple[str | 
     return body_text, body_html
 
 
+async def _is_opted_out(email: str) -> bool:
+    """Check if candidate has opted out of email communications (LGPD)."""
+    try:
+        from app.domains.analytics.models.observability import ConsentEvent
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(
+                select(ConsentEvent.id).where(
+                    and_(
+                        ConsentEvent.subject_email == email,
+                        ConsentEvent.event_type == "revoked",
+                        ConsentEvent.consent_given == False,
+                    )
+                ).limit(1)
+            )
+            return result.scalar_one_or_none() is not None
+    except Exception as e:
+        logger.debug(f"[EMAIL_ADAPTER] Opt-out check failed (fail-open): {e}")
+        return False
+
+
+def _generate_unsubscribe_url(email: str, company_id: str) -> str:
+    """Generate unsubscribe URL token for email opt-out link."""
+    token = base64.urlsafe_b64encode(f"{email}:{company_id}".encode()).decode()
+    return f"/api/v1/communication/unsubscribe/{token}"
+
+
 class EmailChannelAdapter(ChannelAdapter):
     channel_type = ChannelType.EMAIL
 
@@ -48,7 +77,27 @@ class EmailChannelAdapter(ChannelAdapter):
 
     async def send(self, message: ChannelMessage) -> DeliveryResult:
         message_id = str(uuid.uuid4())
+
+        # I5: LGPD opt-out check before sending
+        if await _is_opted_out(message.recipient_contact):
+            logger.info(f"[EMAIL_ADAPTER] Skipping email to {message.recipient_contact} — opted out (LGPD)")
+            return DeliveryResult(
+                success=False,
+                channel=self.channel_type,
+                message_id=message_id,
+                status=DeliveryStatus.FAILED,
+                error="Candidato optou por não receber comunicações (LGPD Art. 8°, §5°)",
+            )
+
         try:
+            # I5: Auto-inject unsubscribe URL into template variables
+            if not (message.template_vars or {}).get("unsubscribe_url"):
+                if message.template_vars is None:
+                    message.template_vars = {}
+                message.template_vars["unsubscribe_url"] = _generate_unsubscribe_url(
+                    message.recipient_contact, message.company_id or "system"
+                )
+
             # F7 — Adicionar footer de IA em emails gerados por agentes LIA
             if getattr(message, "ai_generated", False) or getattr(message, "source_agent", None):
                 message.body_text, message.body_html = _add_ai_footer(

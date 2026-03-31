@@ -12,6 +12,7 @@ from datetime import datetime
 import uuid
 import asyncio
 
+from app.shared.compliance.fairness_guard_middleware import check_rejection_reason
 from app.services.pearch_service import pearch_service
 from app.models.pearch import PearchSearchRequest, PearchSearchResponse
 from app.models.candidate import Candidate, CandidateSearch, ViewedCandidate, CandidateFavorite, CandidateHidden, VacancyCandidate
@@ -783,6 +784,24 @@ async def update_candidate_stage(
                     "compliance": ["LGPD art. 20", "EU AI Act art. 14"],
                 },
             )
+
+        # G2: FairnessGuard — check rejection sub_status for discriminatory bias
+        if is_rejection and stage_data.sub_status:
+            fg_rejection = check_rejection_reason(
+                reason=stage_data.sub_status,
+                candidate_name=candidate.name or "",
+                company_id=str(vacancy_candidate.company_id) if hasattr(vacancy_candidate, "company_id") else "",
+            )
+            if fg_rejection.is_blocked:
+                raise HTTPException(
+                    status_code=422,
+                    detail={
+                        "error": "fairness_blocked",
+                        "message": fg_rejection.blocked_result.educational_message if fg_rejection.blocked_result else "Viés detectado no motivo da rejeição.",
+                        "category": fg_rejection.blocked_result.category if fg_rejection.blocked_result else None,
+                        "compliance": ["Lei 9.029/95", "CLT Art. 373-A"],
+                    },
+                )
 
         # Update stage in VacancyCandidate
         previous_stage = vacancy_candidate.stage or "unknown"
@@ -1815,6 +1834,23 @@ async def screening_decision(
                     "compliance": ["LGPD art. 20", "EU AI Act art. 14"],
                 },
             )
+
+        # G2: FairnessGuard — check rejection reason for discriminatory bias
+        if request.decision == "rejected" and request.reason:
+            fg_rejection = check_rejection_reason(
+                reason=request.reason,
+                company_id=request.job_id or "",
+            )
+            if fg_rejection.is_blocked:
+                raise HTTPException(
+                    status_code=422,
+                    detail={
+                        "error": "fairness_blocked",
+                        "message": fg_rejection.blocked_result.educational_message if fg_rejection.blocked_result else "Viés detectado no motivo da rejeição.",
+                        "category": fg_rejection.blocked_result.category if fg_rejection.blocked_result else None,
+                        "compliance": ["Lei 9.029/95", "CLT Art. 373-A"],
+                    },
+                )
 
         result = await db.execute(
             select(Candidate).where(Candidate.id == candidate_id)

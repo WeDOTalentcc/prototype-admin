@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import Optional, List
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.services.jd_generator_service import jd_generator_service
+from app.shared.compliance.fairness_guard_middleware import check_fairness
 import logging
 
 logger = logging.getLogger(__name__)
@@ -29,11 +30,68 @@ class GenerateJDRequest(BaseModel):
     company_id: str = "default"
 
 
+def _build_tags(request: GenerateJDRequest) -> List[str]:
+    enforced_tags = []
+    if request.job_title:
+        enforced_tags.append(request.job_title.lower())
+    if request.department:
+        enforced_tags.append(request.department.lower())
+    for skill in request.technical_skills:
+        enforced_tags.append(skill.lower())
+    for comp in request.behavioral_competencies:
+        enforced_tags.append(comp.lower())
+    seen: set = set()
+    unique_tags: List[str] = []
+    for tag in enforced_tags:
+        if tag not in seen:
+            seen.add(tag)
+            unique_tags.append(tag)
+    return unique_tags
+
+
+def _fg_check_input(request: GenerateJDRequest, company_id: str):
+    """A1/G1: FairnessGuard on JD input fields before generation."""
+    input_texts: dict[str, str] = {}
+    if request.description:
+        input_texts["description"] = request.description
+    combined_responsibilities = " ".join(request.responsibilities) if request.responsibilities else ""
+    if combined_responsibilities:
+        input_texts["responsibilities"] = combined_responsibilities
+    if input_texts:
+        fg_input = check_fairness(input_texts, context="jd_generation_input", company_id=company_id)
+        if fg_input.is_blocked:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error": "fairness_blocked",
+                    "field": fg_input.blocked_field,
+                    "message": fg_input.blocked_result.educational_message if fg_input.blocked_result else "Viés detectado.",
+                    "category": fg_input.blocked_result.category if fg_input.blocked_result else None,
+                },
+            )
+        return fg_input
+    return None
+
+
+def _fg_check_output(full_description: str, company_id: str):
+    """A1/G1: FairnessGuard on generated JD output."""
+    if not full_description:
+        return None
+    fg_output = check_fairness(
+        {"full_description": full_description},
+        context="jd_generation_output",
+        company_id=company_id,
+    )
+    return fg_output
+
+
 @router.post("/generate")
 async def generate_jd(
     request: GenerateJDRequest,
     current_user: User = Depends(get_current_user_or_demo),
 ):
+    _fg_check_input(request, request.company_id)
+
     try:
         job_data = {
             "title": request.job_title,
@@ -57,27 +115,27 @@ async def generate_jd(
             company_id=request.company_id,
         )
         
-        # Enforce tags from provided data only
-        enforced_tags = []
-        if request.job_title:
-            enforced_tags.append(request.job_title.lower())
-        if request.department:
-            enforced_tags.append(request.department.lower())
-        for skill in request.technical_skills:
-            enforced_tags.append(skill.lower())
-        for comp in request.behavioral_competencies:
-            enforced_tags.append(comp.lower())
-        # Deduplicate while preserving order
-        seen = set()
-        unique_tags = []
-        for tag in enforced_tags:
-            if tag not in seen:
-                seen.add(tag)
-                unique_tags.append(tag)
-        result["tags"] = unique_tags
+        result["tags"] = _build_tags(request)
         result["summary"] = ""
-        
-        return {"success": True, **result}
+
+        fg_output = _fg_check_output(result.get("full_description", ""), request.company_id)
+        response = {"success": True, **result}
+        if fg_output:
+            if fg_output.is_blocked:
+                response["fairness_warning"] = {
+                    "blocked": True,
+                    "message": fg_output.blocked_result.educational_message if fg_output.blocked_result else "Viés detectado na descrição gerada.",
+                    "category": fg_output.blocked_result.category if fg_output.blocked_result else None,
+                }
+            elif fg_output.has_warnings:
+                response["fairness_warning"] = {
+                    "blocked": False,
+                    "warnings": fg_output.warnings,
+                }
+
+        return response
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error generating JD: {e}")
         try:
@@ -96,33 +154,22 @@ async def generate_jd(
             }
             desc = jd_generator_service.generate_description(job_data_sync)
             
-            # Enforce tags from provided data only
-            enforced_tags = []
-            if request.job_title:
-                enforced_tags.append(request.job_title.lower())
-            if request.department:
-                enforced_tags.append(request.department.lower())
-            for skill in request.technical_skills:
-                enforced_tags.append(skill.lower())
-            for comp in request.behavioral_competencies:
-                enforced_tags.append(comp.lower())
-            # Deduplicate while preserving order
-            seen = set()
-            unique_tags = []
-            for tag in enforced_tags:
-                if tag not in seen:
-                    seen.add(tag)
-                    unique_tags.append(tag)
-            
-            return {
+            fg_output = _fg_check_output(desc, request.company_id)
+            response = {
                 "success": True,
                 "full_description": desc,
                 "sections": {},
                 "summary": "",
                 "seo_title": request.job_title,
-                "tags": unique_tags,
+                "tags": _build_tags(request),
                 "from_cache": False,
             }
+            if fg_output and fg_output.has_warnings:
+                response["fairness_warning"] = {
+                    "blocked": False,
+                    "warnings": fg_output.warnings,
+                }
+            return response
         except Exception as e2:
             logger.error(f"Fallback JD generation also failed: {e2}")
             return {"success": False, "error": str(e)}

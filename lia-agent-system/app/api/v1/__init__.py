@@ -16,3 +16,4 @@ from app.api.v1 import task_planner
 from app.api.v1 import cache
 from app.api.v1 import ml_predictions
 from app.api.v1 import jd_import
+from app.api.v1 import communication_optout

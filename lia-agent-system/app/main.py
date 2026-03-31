@@ -30,6 +30,7 @@ else:
 from app.core.config import settings
 from app.core.database import init_db
 from app.api.v1 import chat, teams, calendar, candidates, voice, openmic, activities, test_activities, job_vacancies, job_drafts, credits, interviews, ats, auth, email_templates, bulk_actions, cv_parser, tasks, task_lifecycle, alerts, reports, sourcing_pipeline, admin, briefing, notifications, automation, pipeline, agent_monitoring, predictive_analytics, calibration, candidate_search, company, workforce, applications, recruitment_stages, voice_screening_test, company_culture, goals, benefits, search_assistant, candidate_lists, analysis, email, scheduling, communications, attachments, approvals, kanban_assistant, file_analysis, transcription, autocomplete, opinions, journey_mapping, integrations_hub, recruitment_journey, admin_settings, settings_progress, screening, search_archetypes, dashboard_data, automations, webhooks, integrations, communication_settings, communication, admin_templates, policies, communication_matrix, clients, billing, observability, client_users, ai_consumption, saas_metrics, lgpd_compliance, compliance_controls, trust_center, audit_logs, default_templates, global_policies, technical_tests, workforce_planning, big_five, experience_highlights, lia_profile_analysis, data_subject_requests, consent_management, insurance, risk_register, sod_matrix, continuity, health_check, rubric_evaluation, task_planner, policy_engine, semantic_search, workos, interview_notes, external_webhooks, automation_rules, merge_webhooks, whatsapp, company_benefits, screening_questions, pipeline_templates, sourcing, job_board, job_status_webhooks, recruitment_email_templates, interview_analysis, data_request, lia_assistant, job_analytics, orchestrated_job_chat, orchestrated_talent_chat, orchestrated_jobs_management, shared_searches, lia_field_toggles, organization_catalog, intelligence, recruiter_profiles, microsoft_graph, cache, ml_predictions, affirmative, conversations, skills_catalog, multi_channel, admin_token_budget
+from app.api.v1 import communication_optout
 from app.api.v1 import task_monitoring
 from app.api.v1 import fairness_reports
 from app.api.v1 import search_feedback
@@ -503,6 +504,7 @@ app.include_router(experience_highlights.router, prefix="/api/v1", tags=["experi
 app.include_router(lia_profile_analysis.router, prefix="/api/v1", tags=["lia-profile-analysis"])
 app.include_router(data_subject_requests.router, prefix="/api/v1", tags=["data-subject-requests"])
 app.include_router(consent_management.router, prefix="/api/v1", tags=["consent-management"])
+app.include_router(communication_optout.router, prefix="/api/v1", tags=["communication-optout"])
 app.include_router(insurance.router, prefix="/api/v1", tags=["insurance"])
 app.include_router(risk_register.router, prefix="/api/v1", tags=["risk-register"])
 app.include_router(sod_matrix.router, prefix="/api/v1", tags=["sod-matrix"])

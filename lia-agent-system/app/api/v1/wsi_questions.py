@@ -6,6 +6,7 @@ Provides:
 - Regenerate questions when competencies change
 - Validate question quality with WSI minimums (3+ technical, 2+ behavioral)
 - Template fallback if LLM is unavailable
+- A2/G1: FairnessGuard check on generated question texts
 """
 import logging
 import json
@@ -15,6 +16,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field, validator
+
+from app.shared.compliance.fairness_guard_middleware import check_fairness
 
 router = APIRouter(prefix="/wsi", tags=["WSI Questions"])
 logger = logging.getLogger(__name__)
@@ -460,22 +463,45 @@ async def generate_wsi_questions(request: GenerateQuestionsRequest):
                 max_questions=request.max_questions
             )
 
+        # A2/G1: FairnessGuard check on generated question texts
+        filtered_questions: List[WSIQuestion] = []
+        fg_removed = 0
+        for q in questions:
+            fg_result = check_fairness(
+                {"question": q.question},
+                context="wsi_question_generation",
+                company_id=request.company_id,
+            )
+            if fg_result.is_blocked:
+                logger.warning(
+                    "[WSI][A2] FairnessGuard blocked question id=%s category=%s",
+                    q.id, fg_result.blocked_result.category if fg_result.blocked_result else "unknown",
+                )
+                fg_removed += 1
+            else:
+                filtered_questions.append(q)
+
+        if fg_removed:
+            logger.info("[WSI][A2] %d question(s) removed by FairnessGuard", fg_removed)
+
         warnings = validate_question_coverage(
-            questions,
+            filtered_questions,
             request.technical_skills,
             request.behavioral_competencies
         )
+        if fg_removed:
+            warnings.append(f"{fg_removed} pergunta(s) removida(s) pelo FairnessGuard por conterem viés discriminatório.")
 
         block_distribution = {}
-        for q in questions:
+        for q in filtered_questions:
             bid = q.block_id or (3 if q.skill_type == "technical" else 4)
             block_distribution[bid] = block_distribution.get(bid, 0) + 1
 
         return QuestionsResponse(
             success=True,
-            questions=questions,
-            questions_added=len(questions),
-            questions_removed=0,
+            questions=filtered_questions,
+            questions_added=len(filtered_questions),
+            questions_removed=fg_removed,
             quality_warnings=warnings,
             block_distribution=block_distribution
         )

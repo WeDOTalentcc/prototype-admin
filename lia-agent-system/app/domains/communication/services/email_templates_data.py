@@ -13,7 +13,7 @@ DEFAULT_TEMPLATES = [
         "category": "interview",
         "channel": "email",
         "situation": "entrevista",
-        "variables": ["candidate_name", "job_title", "company_name", "interview_date", "interview_time", "interview_location", "interviewer_name"],
+        "variables": ["candidate_name", "job_title", "company_name", "interview_date", "interview_time", "interview_location", "interviewer_name", "unsubscribe_url"],
         "body_html": """
 <html>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
@@ -42,6 +42,12 @@ DEFAULT_TEMPLATES = [
         Equipe de Recrutamento<br>
         {{company_name}}
     </p>
+    <div style="margin-top: 40px; padding-top: 15px; border-top: 1px solid #e5e7eb; text-align: center;">
+        <p style="color: #9ca3af; font-size: 12px;">
+            Você está recebendo este email porque participou de um processo seletivo gerenciado pela Plataforma LIA.<br>
+            Se não deseja mais receber comunicações, <a href="{{unsubscribe_url}}" style="color: #6b7280; text-decoration: underline;">clique aqui para cancelar</a> (LGPD Art. 8°, §5°).
+        </p>
+    </div>
 </body>
 </html>
 """,
@@ -65,6 +71,10 @@ Boa sorte!
 Atenciosamente,
 Equipe de Recrutamento
 {{company_name}}
+
+---
+Se não deseja mais receber comunicações, acesse: {{unsubscribe_url}}
+(LGPD Art. 8°, §5°)
 """
     },
     {
@@ -73,7 +83,7 @@ Equipe de Recrutamento
         "category": "followup",
         "channel": "email",
         "situation": "triagem",
-        "variables": ["candidate_name", "job_title", "company_name"],
+        "variables": ["candidate_name", "job_title", "company_name", "unsubscribe_url"],
         "body_html": """
 <html>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
@@ -92,6 +102,12 @@ Equipe de Recrutamento
         Equipe de Recrutamento<br>
         {{company_name}}
     </p>
+    <div style="margin-top: 40px; padding-top: 15px; border-top: 1px solid #e5e7eb; text-align: center;">
+        <p style="color: #9ca3af; font-size: 12px;">
+            Você está recebendo este email porque participou de um processo seletivo gerenciado pela Plataforma LIA.<br>
+            Se não deseja mais receber comunicações, <a href="{{unsubscribe_url}}" style="color: #6b7280; text-decoration: underline;">clique aqui para cancelar</a> (LGPD Art. 8°, §5°).
+        </p>
+    </div>
 </body>
 </html>
 """,
@@ -109,6 +125,10 @@ Enquanto isso, fique à vontade para conhecer mais sobre nossa empresa e cultura
 Atenciosamente,
 Equipe de Recrutamento
 {{company_name}}
+
+---
+Se não deseja mais receber comunicações, acesse: {{unsubscribe_url}}
+(LGPD Art. 8°, §5°)
 """
     },
     {
@@ -117,7 +137,7 @@ Equipe de Recrutamento
         "category": "rejection",
         "channel": "email",
         "situation": "rejeicao",
-        "variables": ["candidate_name", "job_title", "company_name", "feedback_message"],
+        "variables": ["candidate_name", "job_title", "company_name", "feedback_message", "unsubscribe_url"],
         "body_html": """
 <html>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
@@ -140,6 +160,12 @@ Equipe de Recrutamento
         Equipe de Recrutamento<br>
         {{company_name}}
     </p>
+    <div style="margin-top: 40px; padding-top: 15px; border-top: 1px solid #e5e7eb; text-align: center;">
+        <p style="color: #9ca3af; font-size: 12px;">
+            Você está recebendo este email porque participou de um processo seletivo gerenciado pela Plataforma LIA.<br>
+            Se não deseja mais receber comunicações, <a href="{{unsubscribe_url}}" style="color: #6b7280; text-decoration: underline;">clique aqui para cancelar</a> (LGPD Art. 8°, §5°).
+        </p>
+    </div>
 </body>
 </html>
 """,
@@ -161,6 +187,10 @@ Desejamos muito sucesso em sua jornada profissional!
 Atenciosamente,
 Equipe de Recrutamento
 {{company_name}}
+
+---
+Se não deseja mais receber comunicações, acesse: {{unsubscribe_url}}
+(LGPD Art. 8°, §5°)
 """
     },
     {
@@ -169,7 +199,7 @@ Equipe de Recrutamento
         "category": "offer",
         "channel": "email",
         "situation": "proposta",
-        "variables": ["candidate_name", "job_title", "company_name", "salary", "start_date", "benefits", "hiring_manager"],
+        "variables": ["candidate_name", "job_title", "company_name", "salary", "start_date", "benefits", "hiring_manager", "unsubscribe_url"],
         "body_html": """
 <html>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
@@ -198,6 +228,12 @@ Equipe de Recrutamento
         Equipe de Recrutamento<br>
         {{company_name}}
     </p>
+    <div style="margin-top: 40px; padding-top: 15px; border-top: 1px solid #e5e7eb; text-align: center;">
+        <p style="color: #9ca3af; font-size: 12px;">
+            Você está recebendo este email porque participou de um processo seletivo gerenciado pela Plataforma LIA.<br>
+            Se não deseja mais receber comunicações, <a href="{{unsubscribe_url}}" style="color: #6b7280; text-decoration: underline;">clique aqui para cancelar</a> (LGPD Art. 8°, §5°).
+        </p>
+    </div>
 </body>
 </html>
 """,
@@ -221,6 +257,10 @@ Estamos ansiosos para tê-lo(a) em nossa equipe!
 Atenciosamente,
 Equipe de Recrutamento
 {{company_name}}
+
+---
+Se não deseja mais receber comunicações, acesse: {{unsubscribe_url}}
+(LGPD Art. 8°, §5°)
 """
     },
     {
@@ -229,7 +269,7 @@ Equipe de Recrutamento
         "category": "screening",
         "channel": "email",
         "situation": "avaliacao_tecnica",
-        "variables": ["candidate_name", "job_title", "company_name", "recruiter_name"],
+        "variables": ["candidate_name", "job_title", "company_name", "recruiter_name", "unsubscribe_url"],
         "body_html": """
 <html>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
@@ -256,6 +296,12 @@ Equipe de Recrutamento
         {{recruiter_name}}<br>
         {{company_name}}
     </p>
+    <div style="margin-top: 40px; padding-top: 15px; border-top: 1px solid #e5e7eb; text-align: center;">
+        <p style="color: #9ca3af; font-size: 12px;">
+            Você está recebendo este email porque participou de um processo seletivo gerenciado pela Plataforma LIA.<br>
+            Se não deseja mais receber comunicações, <a href="{{unsubscribe_url}}" style="color: #6b7280; text-decoration: underline;">clique aqui para cancelar</a> (LGPD Art. 8°, §5°).
+        </p>
+    </div>
 </body>
 </html>
 """,
@@ -276,6 +322,10 @@ Aguardamos sua participação!
 Atenciosamente,
 {{recruiter_name}}
 {{company_name}}
+
+---
+Se não deseja mais receber comunicações, acesse: {{unsubscribe_url}}
+(LGPD Art. 8°, §5°)
 """
     },
     {
@@ -284,7 +334,7 @@ Atenciosamente,
         "category": "interview",
         "channel": "email",
         "situation": "agendamento",
-        "variables": ["candidate_name", "job_title", "company_name", "interview_date", "interview_time", "interview_location", "interviewer_name", "preparation_tips"],
+        "variables": ["candidate_name", "job_title", "company_name", "interview_date", "interview_time", "interview_location", "interviewer_name", "preparation_tips", "unsubscribe_url"],
         "body_html": """
 <html>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
@@ -318,6 +368,12 @@ Atenciosamente,
         Equipe de Recrutamento<br>
         {{company_name}}
     </p>
+    <div style="margin-top: 40px; padding-top: 15px; border-top: 1px solid #e5e7eb; text-align: center;">
+        <p style="color: #9ca3af; font-size: 12px;">
+            Você está recebendo este email porque participou de um processo seletivo gerenciado pela Plataforma LIA.<br>
+            Se não deseja mais receber comunicações, <a href="{{unsubscribe_url}}" style="color: #6b7280; text-decoration: underline;">clique aqui para cancelar</a> (LGPD Art. 8°, §5°).
+        </p>
+    </div>
 </body>
 </html>
 """,
@@ -344,6 +400,10 @@ Boa sorte! Estamos torcendo por você! 🍀
 Atenciosamente,
 Equipe de Recrutamento
 {{company_name}}
+
+---
+Se não deseja mais receber comunicações, acesse: {{unsubscribe_url}}
+(LGPD Art. 8°, §5°)
 """
     },
     {
@@ -623,7 +683,7 @@ Abraços! 😊"""
         "category": "followup",
         "channel": "email",
         "situation": "initial_contact",
-        "variables": ["candidate_name", "job_title", "company_name", "job_challenge", "recruiter_name", "privacy_policy_url"],
+        "variables": ["candidate_name", "job_title", "company_name", "job_challenge", "recruiter_name", "privacy_policy_url", "unsubscribe_url"],
         "body_html": """<html>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
     <p>Olá <strong>{{candidate_name}}</strong>,</p>
@@ -657,6 +717,12 @@ Abraços! 😊"""
         {{recruiter_name}}<br>
         {{company_name}}
     </p>
+    <div style="margin-top: 40px; padding-top: 15px; border-top: 1px solid #e5e7eb; text-align: center;">
+        <p style="color: #9ca3af; font-size: 12px;">
+            Você está recebendo este email porque participou de um processo seletivo gerenciado pela Plataforma LIA.<br>
+            Se não deseja mais receber comunicações, <a href="{{unsubscribe_url}}" style="color: #6b7280; text-decoration: underline;">clique aqui para cancelar</a> (LGPD Art. 8°, §5°).
+        </p>
+    </div>
 </body>
 </html>""",
         "body_text": """Olá {{candidate_name}},
@@ -683,7 +749,11 @@ Caso prefira conversar via WhatsApp, responda este email informando seu número.
 
 Atenciosamente,
 {{recruiter_name}}
-{{company_name}}"""
+{{company_name}}
+
+---
+Se não deseja mais receber comunicações, acesse: {{unsubscribe_url}}
+(LGPD Art. 8°, §5°)"""
     },
     {
         "name": "Lembrete de Triagem (Email)",
@@ -691,7 +761,7 @@ Atenciosamente,
         "category": "followup",
         "channel": "email",
         "situation": "screening_reminder",
-        "variables": ["candidate_name", "job_title", "hours_remaining"],
+        "variables": ["candidate_name", "job_title", "hours_remaining", "unsubscribe_url"],
         "body_html": """<html>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
     <p>Olá <strong>{{candidate_name}}</strong>,</p>
@@ -706,6 +776,12 @@ Atenciosamente,
         Atenciosamente,<br>
         LIA - Assistente de Recrutamento
     </p>
+    <div style="margin-top: 40px; padding-top: 15px; border-top: 1px solid #e5e7eb; text-align: center;">
+        <p style="color: #9ca3af; font-size: 12px;">
+            Você está recebendo este email porque participou de um processo seletivo gerenciado pela Plataforma LIA.<br>
+            Se não deseja mais receber comunicações, <a href="{{unsubscribe_url}}" style="color: #6b7280; text-decoration: underline;">clique aqui para cancelar</a> (LGPD Art. 8°, §5°).
+        </p>
+    </div>
 </body>
 </html>""",
         "body_text": """Olá {{candidate_name}},
@@ -717,7 +793,11 @@ Você tem mais {{hours_remaining}} horas para finalizar a conversa.
 Se tiver qualquer dificuldade ou dúvida, é só responder este email.
 
 Atenciosamente,
-LIA - Assistente de Recrutamento"""
+LIA - Assistente de Recrutamento
+
+---
+Se não deseja mais receber comunicações, acesse: {{unsubscribe_url}}
+(LGPD Art. 8°, §5°)"""
     },
     {
         "name": "Triagem Aprovada (Email)",
@@ -777,7 +857,7 @@ Atenciosamente,
         "category": "rejection",
         "channel": "email",
         "situation": "screening_failed",
-        "variables": ["candidate_name", "job_title", "strengths", "development_areas"],
+        "variables": ["candidate_name", "job_title", "strengths", "development_areas", "unsubscribe_url"],
         "body_html": """<html>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
     <p>Olá <strong>{{candidate_name}}</strong>,</p>
@@ -804,6 +884,12 @@ Atenciosamente,
         Atenciosamente,<br>
         LIA - Assistente de Recrutamento
     </p>
+    <div style="margin-top: 40px; padding-top: 15px; border-top: 1px solid #e5e7eb; text-align: center;">
+        <p style="color: #9ca3af; font-size: 12px;">
+            Você está recebendo este email porque participou de um processo seletivo gerenciado pela Plataforma LIA.<br>
+            Se não deseja mais receber comunicações, <a href="{{unsubscribe_url}}" style="color: #6b7280; text-decoration: underline;">clique aqui para cancelar</a> (LGPD Art. 8°, §5°).
+        </p>
+    </div>
 </body>
 </html>""",
         "body_text": """Olá {{candidate_name}},
@@ -823,7 +909,11 @@ Esta decisão não diminui suas qualificações profissionais. Seu perfil perman
 Desejamos sucesso em sua jornada profissional!
 
 Atenciosamente,
-LIA - Assistente de Recrutamento"""
+LIA - Assistente de Recrutamento
+
+---
+Se não deseja mais receber comunicações, acesse: {{unsubscribe_url}}
+(LGPD Art. 8°, §5°)"""
     },
     {
         "name": "Rejeição Pós-Entrevista (Email)",
@@ -831,7 +921,7 @@ LIA - Assistente de Recrutamento"""
         "category": "rejection",
         "channel": "email",
         "situation": "rejection_post_interview",
-        "variables": ["candidate_name", "job_title", "feedback"],
+        "variables": ["candidate_name", "job_title", "feedback", "unsubscribe_url"],
         "body_html": """<html>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
     <p>Olá <strong>{{candidate_name}}</strong>,</p>
@@ -850,6 +940,12 @@ LIA - Assistente de Recrutamento"""
         Atenciosamente,<br>
         Equipe de Recrutamento
     </p>
+    <div style="margin-top: 40px; padding-top: 15px; border-top: 1px solid #e5e7eb; text-align: center;">
+        <p style="color: #9ca3af; font-size: 12px;">
+            Você está recebendo este email porque participou de um processo seletivo gerenciado pela Plataforma LIA.<br>
+            Se não deseja mais receber comunicações, <a href="{{unsubscribe_url}}" style="color: #6b7280; text-decoration: underline;">clique aqui para cancelar</a> (LGPD Art. 8°, §5°).
+        </p>
+    </div>
 </body>
 </html>""",
         "body_text": """Olá {{candidate_name}},
@@ -865,7 +961,11 @@ Seu perfil permanece em nosso banco de talentos e entraremos em contato caso sur
 Desejamos sucesso em sua carreira!
 
 Atenciosamente,
-Equipe de Recrutamento"""
+Equipe de Recrutamento
+
+---
+Se não deseja mais receber comunicações, acesse: {{unsubscribe_url}}
+(LGPD Art. 8°, §5°)"""
     },
     {
         "name": "Processo Encerrado (Email)",
@@ -873,7 +973,7 @@ Equipe de Recrutamento"""
         "category": "rejection",
         "channel": "email",
         "situation": "process_closed",
-        "variables": ["candidate_name", "job_title"],
+        "variables": ["candidate_name", "job_title", "unsubscribe_url"],
         "body_html": """<html>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
     <p>Olá <strong>{{candidate_name}}</strong>,</p>
@@ -890,6 +990,12 @@ Equipe de Recrutamento"""
         Atenciosamente,<br>
         LIA - Assistente de Recrutamento
     </p>
+    <div style="margin-top: 40px; padding-top: 15px; border-top: 1px solid #e5e7eb; text-align: center;">
+        <p style="color: #9ca3af; font-size: 12px;">
+            Você está recebendo este email porque participou de um processo seletivo gerenciado pela Plataforma LIA.<br>
+            Se não deseja mais receber comunicações, <a href="{{unsubscribe_url}}" style="color: #6b7280; text-decoration: underline;">clique aqui para cancelar</a> (LGPD Art. 8°, §5°).
+        </p>
+    </div>
 </body>
 </html>""",
         "body_text": """Olá {{candidate_name}},
@@ -903,7 +1009,11 @@ Seu perfil ficará em nosso banco de talentos e entraremos em contato caso surja
 Desejamos sucesso em sua carreira!
 
 Atenciosamente,
-LIA - Assistente de Recrutamento"""
+LIA - Assistente de Recrutamento
+
+---
+Se não deseja mais receber comunicações, acesse: {{unsubscribe_url}}
+(LGPD Art. 8°, §5°)"""
     },
     {
         "name": "Contato Inicial (WhatsApp)",
@@ -1448,7 +1558,7 @@ LIA - Assistente de Recrutamento
         "category": "offer",
         "channel": "email",
         "situation": "proposta",
-        "variables": ["recruiter_name", "candidate_name", "job_title", "company_name", "start_date"],
+        "variables": ["recruiter_name", "candidate_name", "job_title", "company_name", "start_date", "unsubscribe_url"],
         "body_html": """
 <html>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
@@ -1482,6 +1592,12 @@ LIA - Assistente de Recrutamento
         Atenciosamente,<br>
         LIA - Assistente de Recrutamento
     </p>
+    <div style="margin-top: 40px; padding-top: 15px; border-top: 1px solid #e5e7eb; text-align: center;">
+        <p style="color: #9ca3af; font-size: 12px;">
+            Você está recebendo este email porque participou de um processo seletivo gerenciado pela Plataforma LIA.<br>
+            Se não deseja mais receber comunicações, <a href="{{unsubscribe_url}}" style="color: #6b7280; text-decoration: underline;">clique aqui para cancelar</a> (LGPD Art. 8°, §5°).
+        </p>
+    </div>
 </body>
 </html>
 """,
@@ -1508,6 +1624,10 @@ Parabéns pelo excelente trabalho! 🏆
 
 Atenciosamente,
 LIA - Assistente de Recrutamento
+
+---
+Se não deseja mais receber comunicações, acesse: {{unsubscribe_url}}
+(LGPD Art. 8°, §5°)
 """
     },
     {
@@ -1516,7 +1636,7 @@ LIA - Assistente de Recrutamento
         "category": "offer",
         "channel": "email",
         "situation": "proposta",
-        "variables": ["recruiter_name", "candidate_name", "job_title", "rejection_reason"],
+        "variables": ["recruiter_name", "candidate_name", "job_title", "rejection_reason", "unsubscribe_url"],
         "body_html": """
 <html>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
@@ -1546,6 +1666,12 @@ LIA - Assistente de Recrutamento
         Atenciosamente,<br>
         LIA - Assistente de Recrutamento
     </p>
+    <div style="margin-top: 40px; padding-top: 15px; border-top: 1px solid #e5e7eb; text-align: center;">
+        <p style="color: #9ca3af; font-size: 12px;">
+            Você está recebendo este email porque participou de um processo seletivo gerenciado pela Plataforma LIA.<br>
+            Se não deseja mais receber comunicações, <a href="{{unsubscribe_url}}" style="color: #6b7280; text-decoration: underline;">clique aqui para cancelar</a> (LGPD Art. 8°, §5°).
+        </p>
+    </div>
 </body>
 </html>
 """,
@@ -1568,6 +1694,10 @@ Sugestões de próximos passos:
 
 Atenciosamente,
 LIA - Assistente de Recrutamento
+
+---
+Se não deseja mais receber comunicações, acesse: {{unsubscribe_url}}
+(LGPD Art. 8°, §5°)
 """
     },
     {
