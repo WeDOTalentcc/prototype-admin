@@ -3,7 +3,7 @@ import { TrendingUp, Users, AlertTriangle, Globe, Brain, Layout, Trophy, Target,
 import type { ActiveTab, ViewMode } from "./indicators.types"
 
 // Dados dos recrutadores (mock data expandido)
-const recruitersData = {
+export const recruitersData = {
   ana_silva: {
     name: "Ana Silva",
     role: "Recrutadora Sênior",
