@@ -1,10 +1,15 @@
 """
-Apify Service for enriching company profiles with LinkedIn and Glassdoor data.
-Uses Apify actors to scrape company information from external sources.
+Apify Service for enriching company and candidate profiles with LinkedIn and Glassdoor data.
+Uses Apify actors to scrape information from external sources.
+
+Supports:
+- Company profile enrichment (LinkedIn, Glassdoor)
+- Candidate profile enrichment (LinkedIn person profiles, email discovery)
+- Salary benchmarking data
 """
 import os
 import logging
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 import httpx
 
@@ -14,6 +19,8 @@ APIFY_API_KEY = os.environ.get("APIFY_API_KEY", "")
 APIFY_BASE_URL = "https://api.apify.com/v2"
 
 LINKEDIN_ACTOR_ID = "voyager/linkedin-company-profile-scraper"
+LINKEDIN_PERSON_ACTOR_ID = "anchor/linkedin-profile-scraper"
+EMAIL_FINDER_ACTOR_ID = "curious_coder/email-finder"
 GLASSDOOR_ACTOR_ID = "bebity/glassdoor-scraper"
 
 
@@ -272,6 +279,162 @@ class ApifyService:
         
         return extracted
 
+
+    async def enrich_candidate_profile(
+        self,
+        linkedin_url: Optional[str] = None,
+        candidate_name: Optional[str] = None,
+        candidate_email: Optional[str] = None,
+    ) -> Dict:
+        """
+        Enrich a candidate profile with data from LinkedIn and email discovery.
+
+        Used by SourcingReActAgent (E4) to gather complementary data for
+        candidates found during talent search.
+
+        Args:
+            linkedin_url: LinkedIn profile URL of the candidate
+            candidate_name: Full name of the candidate (for fallback search)
+            candidate_email: Known email for reverse lookup
+
+        Returns:
+            Dict with enriched profile data:
+            {
+                "linkedin": {...},   # LinkedIn profile data
+                "emails": [...],     # Discovered email addresses
+                "social_profiles": [...],
+                "source": "apify",
+            }
+        """
+        enriched: Dict = {"source": "apify"}
+
+        if linkedin_url:
+            try:
+                linkedin_data = await self._scrape_linkedin_person(linkedin_url)
+                if linkedin_data:
+                    enriched["linkedin"] = linkedin_data
+            except Exception as e:
+                logger.warning("[Apify] LinkedIn person scrape failed: %s", e)
+
+        if candidate_name and not candidate_email:
+            try:
+                email_data = await self._discover_email(candidate_name, linkedin_url)
+                if email_data:
+                    enriched["emails"] = email_data
+            except Exception as e:
+                logger.warning("[Apify] Email discovery failed: %s", e)
+
+        if not enriched.get("linkedin") and not enriched.get("emails"):
+            logger.info("[Apify] No enrichment data found for candidate")
+
+        return enriched
+
+    async def _scrape_linkedin_person(self, linkedin_url: str) -> Dict:
+        """Scrape a LinkedIn person profile via Apify actor."""
+        if not linkedin_url:
+            return {}
+
+        logger.info("[Apify] Scraping LinkedIn person: %s", linkedin_url)
+
+        input_data = {
+            "startUrls": [{"url": linkedin_url}],
+            "proxy": {"useApifyProxy": True},
+        }
+
+        result = await self.run_apify_actor(LINKEDIN_PERSON_ACTOR_ID, input_data)
+        if not result:
+            return {}
+
+        if "items" in result:
+            result = result["items"][0] if result["items"] else {}
+
+        extracted = {}
+        field_map = {
+            "firstName": "first_name",
+            "lastName": "last_name",
+            "headline": "headline",
+            "summary": "summary",
+            "location": "location",
+            "industryName": "industry",
+            "connectionCount": "connections",
+        }
+        for src_key, dst_key in field_map.items():
+            if result.get(src_key):
+                extracted[dst_key] = result[src_key]
+
+        if result.get("experience"):
+            experiences = result["experience"]
+            if isinstance(experiences, list):
+                extracted["experience"] = [
+                    {
+                        "title": exp.get("title", ""),
+                        "company": exp.get("companyName", ""),
+                        "duration": exp.get("timePeriod", ""),
+                        "location": exp.get("locationName", ""),
+                    }
+                    for exp in experiences[:10]
+                ]
+
+        if result.get("skills"):
+            skills = result["skills"]
+            if isinstance(skills, list):
+                extracted["skills"] = [
+                    s.get("name", s) if isinstance(s, dict) else str(s)
+                    for s in skills[:30]
+                ]
+
+        if result.get("education"):
+            education = result["education"]
+            if isinstance(education, list):
+                extracted["education"] = [
+                    {
+                        "school": edu.get("schoolName", ""),
+                        "degree": edu.get("degreeName", ""),
+                        "field": edu.get("fieldOfStudy", ""),
+                    }
+                    for edu in education[:5]
+                ]
+
+        if result.get("certifications"):
+            certs = result["certifications"]
+            if isinstance(certs, list):
+                extracted["certifications"] = [
+                    c.get("name", c) if isinstance(c, dict) else str(c)
+                    for c in certs[:10]
+                ]
+
+        extracted["source"] = "linkedin"
+        return extracted
+
+    async def _discover_email(
+        self, candidate_name: str, linkedin_url: Optional[str] = None
+    ) -> List[str]:
+        """Attempt to discover candidate emails via Apify email finder."""
+        if not candidate_name:
+            return []
+
+        logger.info("[Apify] Discovering email for: %s", candidate_name)
+
+        input_data: Dict = {"name": candidate_name}
+        if linkedin_url:
+            input_data["linkedinUrl"] = linkedin_url
+
+        result = await self.run_apify_actor(EMAIL_FINDER_ACTOR_ID, input_data)
+        if not result:
+            return []
+
+        emails: List[str] = []
+        if isinstance(result, dict):
+            if result.get("email"):
+                emails.append(result["email"])
+            if result.get("emails") and isinstance(result["emails"], list):
+                emails.extend(result["emails"])
+            if result.get("items") and isinstance(result["items"], list):
+                for item in result["items"]:
+                    if isinstance(item, dict) and item.get("email"):
+                        emails.append(item["email"])
+
+        return list(set(emails))
 
     async def scrape_salary_data(
         self,

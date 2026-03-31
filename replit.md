@@ -39,6 +39,10 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 -   **PUB-001 Public Triagem Chat Page**: Public candidate-facing chat web page for WSI screening with text and bidirectional audio support (TTS/STT).
 -   **Multi-Channel Communication Dispatcher**: `dispatch_message()` sends to ALL available channels (email + WhatsApp) by default.
 -   **Celery Scheduler & Automations (Task #70)**: Background automations via Celery Beat — `followup.process_pending` (7-day email follow-up for WSI invites), `wsi.check_abandoned` (48h/96h timeout reminders), `feedback.auto_send` (auto-send approved rejection feedback via email/WhatsApp), `feedback.process_pending_sends` (safety net batch), SendGrid Event Webhook (`POST /email-tracking/webhook`), and Template Learning stub service (`template_learning_service`) with open-rate recommendation.
+-   **Voice Analysis Integration (Task #71)**: Deepgram STT + OpenAI TTS for triagem voice mode. Domain services: `cv_screening/services/deepgram_service.py` (DeepgramTriagemService) and `cv_screening/services/voice_service.py` (TriagemVoiceService). API endpoints: `POST /triagem/{token}/audio` (audio transcription), `POST /triagem/{token}/tts` (speech synthesis), `GET /triagem/{token}/voice-status` (availability check). Delegates to shared `VoiceService` with triagem-specific defaults (pt-BR, nova-2).
+-   **Microsoft Teams Notifications (Task #71)**: TeamsBot with lazy initialization (no crash when credentials absent). Event dispatchers: `notify_triagem_completed()`, `notify_scheduling_confirmed()`, `notify_candidate_timeout()`. Each generates dedicated Adaptive Cards with facts/actions. Notification types also available via `send_notification()` with type string.
+-   **Apify Candidate Enrichment (Task #71)**: `ApifyService.enrich_candidate_profile()` enriches candidates via LinkedIn person scraper (`anchor/linkedin-profile-scraper`) and email discovery (`curious_coder/email-finder`). Sourcing tool `enrich_candidate_profile` registered for `talent-search` and `profile-analysis` stages.
+-   **Gate 2 Re-Discovery Embedding (Task #71)**: `reject_candidate()` automatically generates a Gemini 768-dim embedding via `JobEmbeddingService` for rejected candidates. Embedding stored with `outcome_status=rejected_gate2` for future vector-similarity matching against new vacancies.
 -   **Production Readiness**: Includes a unified health endpoint, `RequestIdMiddleware` for distributed tracing, structured JSON logging, global exception handlers, auth protection, and rate limiting middleware.
 -   **FairnessGuard in Agent Outputs**: Integrated `FairnessGuard.check()` and `check_implicit_bias()` across various agent outputs to prevent bias and ensure fairness.
 -   **LGPD Log Retention (L6)**: Implemented scheduled deletion for `ai_consumption` logs after 365 days.
@@ -80,6 +84,8 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 -   Merge
 -   HubSpot
 -   Stripe
+-   Apify
+-   SendGrid
 -   Mailgun
 -   PostgreSQL
 -   Redis

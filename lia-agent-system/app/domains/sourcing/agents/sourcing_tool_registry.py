@@ -1216,12 +1216,70 @@ TOOL_DEFINITIONS.append(
     )
 )
 
+async def _wrap_enrich_candidate_profile(**kwargs: Any) -> Dict[str, Any]:
+    """Enrich a candidate profile with Apify (LinkedIn person + email discovery)."""
+    logger.info(f"[sourcing_tools] enrich_candidate_profile called with: {list(kwargs.keys())}")
+    try:
+        from app.domains.sourcing.services.apify_service import apify_service
+        linkedin_url = kwargs.get("linkedin_url", "")
+        candidate_name = kwargs.get("candidate_name", "")
+        candidate_email = kwargs.get("candidate_email", "")
+
+        if not linkedin_url and not candidate_name:
+            return {
+                "success": False,
+                "data": {},
+                "message": "Forneça linkedin_url ou candidate_name para enriquecimento.",
+            }
+
+        result = await apify_service.enrich_candidate_profile(
+            linkedin_url=linkedin_url or None,
+            candidate_name=candidate_name or None,
+            candidate_email=candidate_email or None,
+        )
+
+        has_data = bool(result.get("linkedin") or result.get("emails"))
+        return {
+            "success": True,
+            "data": result,
+            "message": (
+                f"Perfil enriquecido com sucesso. Dados encontrados: "
+                f"{'LinkedIn ' if result.get('linkedin') else ''}"
+                f"{'Emails ' if result.get('emails') else ''}"
+            ) if has_data else "Nenhum dado complementar encontrado para este candidato.",
+        }
+    except Exception as e:
+        logger.error(f"[sourcing_tools] enrich_candidate_profile error: {e}", exc_info=True)
+        return {"success": False, "data": {}, "message": str(e)}
+
+
+TOOL_DEFINITIONS.append(
+    ToolDefinition(
+        name="enrich_candidate_profile",
+        description=(
+            "Enriquece perfil de candidato via Apify. "
+            "Busca dados do LinkedIn (experiência, skills, educação) e descobre emails. "
+            "Use após identificar candidatos interessantes no sourcing."
+        ),
+        parameters={
+            "type": "object",
+            "properties": {
+                "linkedin_url": {"type": "string", "description": "URL do perfil LinkedIn do candidato"},
+                "candidate_name": {"type": "string", "description": "Nome completo do candidato"},
+                "candidate_email": {"type": "string", "description": "Email conhecido do candidato (opcional)"},
+            },
+            "required": [],
+        },
+        function=_wrap_enrich_candidate_profile,
+    )
+)
+
 _TOOL_MAP: Dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
 
 STAGE_TOOLS: Dict[str, List[str]] = {
     "search-criteria": ["set_search_criteria", "suggest_skills"],
-    "talent-search": ["search_candidates", "filter_results", "view_candidate"],
-    "profile-analysis": ["analyze_profile", "compare_candidates", "score_candidate"],
+    "talent-search": ["search_candidates", "filter_results", "view_candidate", "enrich_candidate_profile"],
+    "profile-analysis": ["analyze_profile", "compare_candidates", "score_candidate", "enrich_candidate_profile"],
     "shortlist-creation": ["add_to_shortlist", "remove_from_shortlist", "rank_candidates", "generate_report"],
     "outreach": ["send_outreach", "generate_message", "track_response"],
 }

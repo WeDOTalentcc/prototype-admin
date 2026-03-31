@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, Header, status
+from fastapi import APIRouter, HTTPException, Depends, Header, UploadFile, File, Form, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
@@ -207,3 +207,94 @@ async def start_triagem(
         raise HTTPException(status_code=404, detail="Sessão não encontrada")
 
     return JSONResponse(content=result)
+
+
+@router.post("/{token}/audio")
+async def transcribe_audio(
+    token: str,
+    audio: UploadFile = File(...),
+    question_index: Optional[int] = Form(None),
+    db: AsyncSession = Depends(get_db),
+):
+    """Transcribe candidate audio using Deepgram STT (fallback OpenAI Whisper)."""
+    validation = await triagem_service.validate_token(db, token)
+    if not validation.get("valid"):
+        error = validation.get("error")
+        if error == "not_found":
+            raise HTTPException(status_code=404, detail="Token inválido")
+        if error == "expired":
+            raise HTTPException(status_code=410, detail="Link expirado")
+    if validation.get("completed"):
+        raise HTTPException(status_code=409, detail="Triagem já foi concluída")
+
+    audio_data = await audio.read()
+    if not audio_data:
+        raise HTTPException(status_code=400, detail="Arquivo de áudio vazio")
+
+    from app.domains.cv_screening.services.deepgram_service import deepgram_triagem_service
+
+    result = await deepgram_triagem_service.transcribe_candidate_audio(
+        audio_data=audio_data,
+        session_token=token,
+        question_index=question_index,
+        filename=audio.filename,
+    )
+
+    if result.get("error") and not result.get("text"):
+        raise HTTPException(status_code=502, detail=f"Falha na transcrição: {result['error']}")
+
+    return JSONResponse(content=result)
+
+
+class TTSRequest(BaseModel):
+    text: str
+    voice: str = "nova"
+    speed: float = 1.0
+    question_index: Optional[int] = None
+
+
+@router.post("/{token}/tts")
+async def synthesize_speech(
+    token: str,
+    request: TTSRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Generate TTS audio for a triagem question using OpenAI TTS."""
+    validation = await triagem_service.validate_token(db, token)
+    if not validation.get("valid"):
+        error = validation.get("error")
+        if error == "not_found":
+            raise HTTPException(status_code=404, detail="Token inválido")
+        if error == "expired":
+            raise HTTPException(status_code=410, detail="Link expirado")
+
+    from app.domains.cv_screening.services.voice_service import triagem_voice_service
+
+    result = await triagem_voice_service.synthesize_question(
+        text=request.text,
+        session_token=token,
+        question_index=request.question_index,
+        voice=request.voice,
+        speed=request.speed,
+    )
+
+    if result.get("error") and not result.get("audio_base64"):
+        raise HTTPException(status_code=502, detail=f"Falha na síntese: {result['error']}")
+
+    return JSONResponse(content=result)
+
+
+@router.get("/{token}/voice-status")
+async def voice_status(token: str, db: AsyncSession = Depends(get_db)):
+    """Check availability of voice services (STT/TTS) for the session."""
+    validation = await triagem_service.validate_token(db, token)
+    if not validation.get("valid"):
+        raise HTTPException(status_code=404, detail="Token inválido")
+
+    from app.domains.cv_screening.services.deepgram_service import deepgram_triagem_service
+    from app.domains.cv_screening.services.voice_service import triagem_voice_service
+
+    return JSONResponse(content={
+        "stt_available": deepgram_triagem_service.is_available(),
+        "tts_available": triagem_voice_service.is_available(),
+    })

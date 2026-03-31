@@ -277,6 +277,65 @@ async def add_candidate_to_vacancy(
         }
 
 
+async def _generate_rediscovery_embedding(
+    candidate_id: str,
+    job_id: str,
+    candidate: Any = None,
+) -> None:
+    """
+    Gate 2 re-discovery: generate an embedding for a rejected candidate
+    so they can be matched to future vacancies via vector search.
+    """
+    try:
+        from app.domains.job_management.services.job_embedding_service import JobEmbeddingService
+        from app.core.database import AsyncSessionLocal
+        from sqlalchemy import select, text
+
+        embedding_svc = JobEmbeddingService()
+
+        candidate_name = getattr(candidate, "name", "") if candidate else ""
+        skills: List[str] = []
+        description = ""
+
+        async with AsyncSessionLocal() as db:
+            try:
+                row = await db.execute(text(
+                    "SELECT skills, summary, job_title, department "
+                    "FROM candidates WHERE id = :cid LIMIT 1"
+                ), {"cid": candidate_id})
+                data = row.mappings().first()
+                if data:
+                    raw_skills = data.get("skills")
+                    if isinstance(raw_skills, list):
+                        skills = raw_skills
+                    elif isinstance(raw_skills, str):
+                        skills = [s.strip() for s in raw_skills.split(",") if s.strip()]
+                    description = data.get("summary") or ""
+                    job_title = data.get("job_title") or candidate_name
+                    department = data.get("department") or ""
+            except Exception:
+                job_title = candidate_name
+                department = ""
+
+        company_id = str(getattr(candidate, "company_id", "default")) if candidate else "default"
+
+        await embedding_svc.create_or_update_job_embedding(
+            company_id=company_id,
+            job_id=job_id,
+            job_title=f"[Candidato] {candidate_name or candidate_id}",
+            department=department if department else None,
+            skills=skills,
+            description=description,
+            outcome_status="rejected_gate2",
+        )
+        logger.info(
+            "Gate 2 embedding created for rejected candidate %s (job %s)",
+            candidate_id, job_id,
+        )
+    except Exception as exc:
+        logger.warning("Gate 2 embedding generation failed for %s: %s", candidate_id, exc)
+
+
 async def reject_candidate(
     candidate_id: str,
     job_id: str,
@@ -332,6 +391,17 @@ async def reject_candidate(
                             logger.info("Dispatched rejection feedback for candidate %s", candidate_id)
                         except Exception as fb_exc:
                             logger.warning("Failed to dispatch rejection feedback: %s", fb_exc)
+
+                    try:
+                        import asyncio as _asyncio
+                        _asyncio.create_task(_generate_rediscovery_embedding(
+                            candidate_id=candidate_id,
+                            job_id=job_id,
+                            candidate=candidate,
+                        ))
+                        logger.info("Gate 2: dispatched re-discovery embedding for rejected candidate %s", candidate_id)
+                    except Exception as emb_exc:
+                        logger.warning("Gate 2: failed to dispatch embedding: %s", emb_exc)
 
                     return {
                         "success": True,
