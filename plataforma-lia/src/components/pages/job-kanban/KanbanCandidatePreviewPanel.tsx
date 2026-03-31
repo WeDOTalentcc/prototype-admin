@@ -4,7 +4,6 @@ import React from "react"
 
 const CandidatePreviewDynamic = React.lazy(() =>
   import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview }))
-)
 
 interface KanbanCandidatePreviewPanelProps {
   isPreviewOpen: boolean
@@ -51,9 +50,7 @@ export function KanbanCandidatePreviewPanel({
   candidatesData,
   jobVacancyId,
 }: KanbanCandidatePreviewPanelProps) {
-  if (!isPreviewOpen || !previewCandidate) {
-    return null
-  }
+  if (!isPreviewOpen || !previewCandidate) return null
 
   const currentColumn = Object.keys(candidatesData).find(col =>
     candidatesData[col].some((c) => c.id === previewCandidate?.id)
@@ -63,35 +60,46 @@ export function KanbanCandidatePreviewPanel({
     ? candidatesData[currentColumn].findIndex((c) => c.id === previewCandidate?.id)
     : 0
 
-  return (
-    <div className={}>
-      <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
-        <React.Suspense fallback={null}>
-          <CandidatePreviewDynamic
-            candidate={previewCandidate as never}
-            isOpen={isPreviewOpen}
-            onClose={onClosePreview}
-            isMaximized={isPreviewMaximized}
-            onToggleMaximize={onTogglePreviewMaximize}
-            candidates={columnCandidates as never}
-            currentIndex={currentIndex}
-            onNavigateCandidate={onNavigateCandidate as never}
-            onOpenFullPage={onCandidatePageOpen as never}
-            onScheduleInterview={onScheduleInterview as never}
-            onAddToVacancy={onAddToVacancy as never}
-            onToggleFavorite={onToggleFavorite as never}
-            onWSIScreening={onSendWSIInvite as never}
-            onOpenTriagemDetails={onOpenTriagem as never}
-            isFavorite={previewCandidate ? favoriteCandidates.has(previewCandidate.id as string) : false}
-            onSendEmail={(candidate) => onSendEmail(candidate as never)}
-            onSendWhatsApp={(candidate) => onSendWhatsApp(candidate as never)}
-            onSendTriagem={(candidate) => onSendTriagem(candidate as never)}
-            onSendAgendamento={(candidate) => onSendAgendamento(candidate as never)}
-            onSendFeedback={(candidate) => onSendFeedback(candidate as never)}
-            jobId={jobVacancyId}
-          />
-        </React.Suspense>
-      </div>
+{isPreviewOpen && previewCandidate && (
+  <div className={`flex-shrink-0 transition-colors motion-reduce:transition-none duration-300 ${isPreviewMaximized ? 'w-[600px]' : 'w-panel-lg'}`}>
+    <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
+    <React.Suspense fallback={null}>
+      <CandidatePreviewDynamic
+        candidate={previewCandidate}
+        isOpen={isPreviewOpen}
+        onClose={onClosePreview}
+        isMaximized={isPreviewMaximized}
+        onToggleMaximize={onTogglePreviewMaximize}
+        candidates={(() => {
+          const currentColumn = Object.keys(candidatesData).find(col =>
+            candidatesData[col].some((c) => c.id === previewCandidate?.id)
+          )
+          return currentColumn ? candidatesData[currentColumn] : []
+        })()}
+        currentIndex={(() => {
+          const currentColumn = Object.keys(candidatesData).find(col =>
+            candidatesData[col].some((c) => c.id === previewCandidate?.id)
+          )
+          return currentColumn ? candidatesData[currentColumn].findIndex((c) => c.id === previewCandidate?.id) : 0
+        })()}
+        onNavigateCandidate={onNavigateCandidate as unknown as never}
+        onOpenFullPage={onCandidatePageOpen as unknown as never}
+        onScheduleInterview={onScheduleInterview as unknown as never}
+        onAddToVacancy={onAddToVacancy as unknown as never}
+        onToggleFavorite={onToggleFavorite as unknown as never}
+        onWSIScreening={onSendWSIInvite as unknown as never}
+        onOpenTriagemDetails={onOpenTriagem as unknown as never}
+        isFavorite={previewCandidate ? favoriteCandidates.has(previewCandidate.id as string) : false}
+        onSendEmail={(candidate) => onSendEmail(candidate as unknown as Parameters<typeof onSendEmail>[0])}
+        onSendWhatsApp={(candidate) => onSendWhatsApp(candidate as unknown as Parameters<typeof onSendWhatsApp>[0])}
+        onSendTriagem={(candidate) => onSendTriagem(candidate as unknown as Parameters<typeof onSendTriagem>[0])}
+        onSendAgendamento={(candidate) => onSendAgendamento(candidate as unknown as Parameters<typeof onSendAgendamento>[0])}
+        onSendFeedback={(candidate) => onSendFeedback(candidate as unknown as Parameters<typeof onSendFeedback>[0])}
+        jobId={jobVacancyId}
+      />
+    </React.Suspense>
     </div>
-  )
+  </div>
+)}
+
 }

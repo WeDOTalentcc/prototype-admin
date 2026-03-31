@@ -23,11 +23,7 @@ export function KanbanTablePagination({
   onCurrentPageChange,
 }: KanbanTablePaginationProps) {
   const paginated = getPaginatedCandidates()
-
-  if (paginated.totalPages <= 1) {
-    return null
-  }
-
+  if (paginated.totalPages <= 1) return null
   return (
     <div className="bg-white dark:bg-lia-bg-primary rounded-md p-3">
       <div className="flex items-center justify-between">
@@ -53,8 +49,6 @@ export function KanbanTablePagination({
           >
             Anterior
           </Button>
-
-          {/* Page numbers */}
           <div className="flex items-center gap-1">
             {Array.from({ length: paginated.totalPages }, (_, i) => i + 1)
               .filter(page => {
@@ -79,7 +73,6 @@ export function KanbanTablePagination({
               ))
             }
           </div>
-
           <Button
             variant="outline"
             size="sm"

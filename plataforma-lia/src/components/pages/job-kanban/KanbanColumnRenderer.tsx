@@ -4,6 +4,19 @@
 import React from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Checkbox } from "@/components/ui/checkbox"
+import { ScoreIconButton } from "@/components/ui/score-icon-button"
+import { ScoreBreakdownBadgeLazy } from "@/components/score/ScoreBreakdownBadge"
+import { AISuggestionBadge } from "@/components/ai"
+import {
+  StatusBadge,
+  ChannelBadge,
+  SourceBadge,
+  WarningBadge,
+  DateTimeBadge,
+  OriginBadge,
+  AwaitingBadge,
+} from "@/components/ui/status-badge"
+import { OverrideApproveButton } from "@/components/kanban/components/OverrideApproveButton"
 import { SaturationBadge } from "@/components/kanban/components/SaturationBadge"
 import { ColumnContextMenu } from "@/components/kanban/components/ColumnContextMenu"
 import {
@@ -12,13 +25,50 @@ import {
   type RequestedField,
 } from "@/components/ui/data-request-indicator"
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
+import {
   Briefcase,
   Building,
   MapPin,
   Flag,
+  MoreVertical,
   Eye,
+  Mail,
+  MessageCircle,
+  Calendar,
+  ClipboardList,
+  MessageSquareText,
+  Bookmark,
+  Heart,
+  Gauge,
+  BrainCircuit,
+  Target,
+  Code,
+  Globe,
+  Fingerprint,
+  User,
+  CheckCircle,
+  Clock,
+  CalendarCheck,
+  Star,
+  FileText,
+  Trophy,
+  XCircle,
+  DollarSign,
+  ThumbsUp,
+  ThumbsDown,
+  AlertCircle,
+  Video,
+  X,
 } from "lucide-react"
-import { getStageByName } from "@/lib/recruitment-stages"
+import { getStageByName, isApplicationSource } from "@/lib/recruitment-stages"
+import { getSuggestionForCandidate } from "@/hooks/useCandidateSuggestions"
+import { formatScorePercent } from "@/lib/design-tokens"
 import type { CandidateLocal } from "@/services/lia-api"
 import { KanbanCardActions } from "./KanbanCardActions"
 import { KanbanCardScores } from "./KanbanCardScores"
@@ -278,7 +328,9 @@ export function KanbanColumnRenderer({
 
   return (
     <div
-      className={}
+      className={`flex flex-col flex-1 bg-lia-bg-primary rounded-md min-w-[275px] max-w-[368px] border border-lia-border-subtle transition-colors motion-reduce:transition-none duration-300 ${
+        isDropping ? "ring-2 ring-gray-400 bg-gray-50/20" : ""
+      } h-[calc(100vh-16rem)]`}
       onDragOver={(e) => onDragOver(e, stageId)}
       onDragLeave={onDragLeave}
       onDrop={(e) => onDrop(e, stageId)}
@@ -288,9 +340,11 @@ export function KanbanColumnRenderer({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 group">
             <div
-              className={}
+              className={`w-2 h-2 rounded-full ${columnStyle.dot} transition-transform motion-reduce:transition-none duration-300 ${
+                isDropping ? "scale-150" : ""
+              }`}
             ></div>
-            <h3 className={}>{displayTitle}</h3>
+            <h3 className={`font-medium text-xs ${columnStyle.header}`}>{displayTitle}</h3>
             <span className="text-micro text-lia-text-primary dark:text-lia-text-primary bg-gray-100 dark:bg-lia-bg-secondary px-1.5 py-0.5 rounded-full">
               {filteredCandidates.length}
             </span>
@@ -334,7 +388,7 @@ export function KanbanColumnRenderer({
                 }
               }}
               className="w-3.5 h-3.5 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
-              title={}
+              title={`Selecionar todos da etapa ${displayTitle}`}
             />
           )}
         </div>
@@ -348,19 +402,28 @@ export function KanbanColumnRenderer({
             draggable
             onDragStart={(e) => onDragStart(e, candidate, stageId)}
             onDragEnd={onDragEnd}
-            className={}
-            style={{animationDelay: ,
+            className={`bg-white dark:bg-lia-bg-secondary rounded-md border relative overflow-hidden ${
+              candidate.needsAction
+                ? "border-l-4 border-l-gray-800 border-lia-border-subtle dark:border-lia-border-subtle"
+                : (candidate.status === "triado_aprovado" || candidate.status === "triado") &&
+                  stageId === "screening"
+                ? "border-l-4 border-l-green-500 border-lia-border-subtle dark:border-lia-border-subtle bg-status-success/10/30 dark:bg-status-success/20"
+                : "border-lia-border-subtle dark:border-lia-border-subtle"
+            } transition-colors duration-300 cursor-move group`}
+            style={{animationDelay: `${index * 50}ms`,
               minHeight: "110px",
               transition: "all 0.3s ease",
               animation: isDropping ? "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite" : undefined}}
             onMouseEnter={(e) => {
               if (!draggedCandidate) {
                 e.currentTarget.style.transform = "translateY(-1px)"
+                
               }
             }}
             onMouseLeave={(e) => {
               if (!draggedCandidate) {
                 e.currentTarget.style.transform = "translateY(0)"
+                
               }
             }}
             onClick={() => !draggedCandidate && onOpenPreview(candidate)}
@@ -398,7 +461,7 @@ export function KanbanColumnRenderer({
                   type="checkbox"
                   checked={selectedCandidates.has(candidate.id)}
                   className="w-3 h-3 rounded-md cursor-pointer flex-shrink-0 border border-lia-border-subtle"
-                  aria-label={}
+                  aria-label={`Selecionar candidato ${candidate.name}`}
                   onClick={(e) => {
                     e.stopPropagation()
                     const newSelected = new Set(selectedCandidates)
@@ -429,7 +492,7 @@ export function KanbanColumnRenderer({
                     })
                   }}
                   onClick={(e) => e.stopPropagation()}
-                  aria-label={}
+                  aria-label={`Selecionar ${candidate.name} para comparação`}
                   title={
                     selectedForCompare.size >= 4 && !selectedForCompare.has(candidate.id)
                       ? "Máximo de 4 candidatos para comparação"
@@ -450,7 +513,7 @@ export function KanbanColumnRenderer({
                       }
                       const avatarIndex = Math.abs(hash % 70) + 1
                       const gender = Math.abs(hash % 2) === 0 ? "men" : "women"
-                      return 
+                      return `https://randomuser.me/api/portraits/thumb/${gender}/${avatarIndex}.jpg`
                     }
                     const kanbanAvatarUrl =
                       candidate.avatar?.startsWith("http")
@@ -555,6 +618,7 @@ export function KanbanColumnRenderer({
               onRejectFromScreening={onRejectFromScreening}
               openTransition={openTransition}
             />
+            )}
           </div>
         ))}
       </div>

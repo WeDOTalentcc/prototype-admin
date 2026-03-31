@@ -2,6 +2,13 @@
 
 import React from "react"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,17 +27,21 @@ import {
 import { KanbanColumnConfigPanel } from "@/components/pages/job-kanban/KanbanColumnConfigPanel"
 import { KanbanTableFiltersPanel } from "@/components/pages/job-kanban/KanbanTableFiltersPanel"
 import {
+  DataRequestIndicator,
+} from "@/components/ui/data-request-indicator"
+import {
   Filter, X, Brain, Target, Code, Globe, Fingerprint, Gauge,
   ThumbsUp, XCircle, Flag, Eye, ChevronDown, CheckCircle,
   MoreVertical, Video, Copy, BrainCircuit,
   AlertTriangle,
 } from "lucide-react"
+import { textStyles, badgeStyles, formatScorePercent } from "@/lib/design-tokens"
 import { getUrgencyLevel } from "@/components/kanban/utils/status-utils"
 import type { CandidateLocal } from "@/services/lia-api"
+
 import { KanbanTablePagination } from "./KanbanTablePagination"
 import { KanbanCandidatePreviewPanel } from "./KanbanCandidatePreviewPanel"
 import { createKanbanCellRenderer } from "./KanbanTableCellRenderer"
-
 type QueryInsight = {
   match_level?: string
   subquery?: string
@@ -64,31 +75,50 @@ interface PaginatedResult {
 }
 
 interface KanbanTableViewProps {
+  // Visibility / mode
   showSuperChat: boolean
+
+  // Filter panel state
   showTableFiltersPanel: boolean
   onShowTableFiltersPanelChange: (value: boolean) => void
+
+  // Stage filter
   dynamicStages: DynamicStageItem[]
   tableStageFilter: string[]
   onTableStageFilterChange: (value: string[]) => void
+
+  // Sort state
   tableSortColumn: string
-  tableSortDirection: "asc" | "desc"
+  tableSortDirection: 'asc' | 'desc'
   onSortChange: (config: TableSortConfig) => void
+
+  // Pagination
   currentPage: number
   onCurrentPageChange: (page: number) => void
   getPaginatedCandidates: () => PaginatedResult
+
+  // Column config
   showColumnConfig: boolean
   onShowColumnConfigChange: (value: boolean) => void
   tableColumns: TableColumn[]
   onTableColumnsChange: (columns: TableColumn[]) => void
+
+  // Selection
   selectedCandidates: Set<string>
   onSelectionChange: (newSelection: Set<string>) => void
+
+  // Job data
   jobVacancyId?: string
   saturationData: SaturationData | null
+
+  // Candidate actions
   onColumnResize: (columnId: string, width: number) => void
   onCandidateClick: (candidate: KanbanCandidate) => void
   onStatusChange: (candidateId: string, newSubStatus: string, stage: string, jobVacancyId?: string) => Promise<boolean>
   onTransitionRequest: (candidate: KanbanCandidate, fromStage: string, toStage: string) => void
   onTransitionRequired: (candidates: KanbanCandidate[], fromStage: string, toStage: string) => void
+
+  // Callbacks para células customizadas
   calculateNotaLiaGeral: (candidate: KanbanCandidate) => number | null
   getLiaAlerts: (candidate: KanbanCandidate) => Record<string, unknown>[]
   viewedCandidateIds: Set<string>
@@ -105,11 +135,15 @@ interface KanbanTableViewProps {
   onRejectFromScreening: (candidate: KanbanCandidate) => void
   onApproveCandidate: (candidate: KanbanCandidate) => void
   onRejectCandidate: (candidate: KanbanCandidate) => void
-  openDecisionFlowModal: (candidate: KanbanCandidate, action: "approve" | "reject") => void
+  openDecisionFlowModal: (candidate: KanbanCandidate, action: 'approve' | 'reject') => void
+
+  // Interview management
   onSetTransitionInitialPrompt: (prompt: string) => void
   onSetTransitionAllowStageSelection: (allow: boolean) => void
   onSetTransitionInterviewAlert: (alert: { name: string; date: string }) => void
   openTransition: (candidates: KanbanCandidate[], fromStage: string, toStage: string) => void
+
+  // Preview panel
   isPreviewOpen: boolean
   previewCandidate: KanbanCandidate | null | undefined
   isPreviewMaximized: boolean
@@ -129,6 +163,9 @@ interface KanbanTableViewProps {
   onSendFeedback: (candidate: KanbanCandidate) => void
   candidatesData: Record<string, KanbanCandidate[]>
 }
+
+
+)
 
 export function KanbanTableView({
   showTableFiltersPanel,
@@ -197,6 +234,7 @@ export function KanbanTableView({
 }: KanbanTableViewProps) {
   const itemsPerPage = 50
 
+
   const renderCustomCell = createKanbanCellRenderer({
     dynamicStages,
     jobVacancyId,
@@ -225,7 +263,6 @@ export function KanbanTableView({
     onStatusChange,
     onCandidateClick,
   })
-
   return (
     <>
     {/* Painel de Filtros - TABLE */}
@@ -238,28 +275,29 @@ export function KanbanTableView({
       />
     )}
 
-    {/* Conteudo da Tabela */}
+    {/* Conteúdo da Tabela */}
     <div className="flex-1 overflow-hidden bg-gray-50 dark:bg-lia-bg-primary flex flex-col min-w-0">
       <div className="flex-1 overflow-auto px-4 py-2">
+      {/* Tabela Elegante - Unified Component */}
       {(() => {
-        const nameCol = getColumnDefinition("candidate")
-        const titleCol = getColumnDefinition("role")
-        const companyCol = getColumnDefinition("currentCompany")
+        const nameCol = getColumnDefinition('candidate')
+        const titleCol = getColumnDefinition('role')
+        const companyCol = getColumnDefinition('currentCompany')
 
         const unifiedColumns: TableColumn[] = [
-          { id: "quickActions", label: "Aprovacao", visible: true, sortable: false, align: "center", width: 120 },
-          { id: "id", label: "ID", visible: true, sortable: false, width: 55 },
-          { id: "score", label: "Geral", visible: true, sortable: true, width: 70 },
-          { id: "liaScore", label: "Triagem", visible: true, sortable: true, width: 80 },
-          { id: "fitScore", label: "CV", visible: true, sortable: true, width: 60 },
-          { id: "technicalTestScore", label: "Tecnico", visible: true, sortable: true, width: 75 },
-          { id: "englishTestScore", label: "Ingles", visible: true, sortable: true, width: 70 },
-          { id: "bigFive", label: "B5", visible: true, sortable: false, width: 55 },
-          { id: "name", label: nameCol?.label || "Candidato", visible: true, sortable: nameCol?.sortable ?? true, width: 280 },
-          { id: "role", label: titleCol?.label || "Cargo", visible: true, sortable: titleCol?.sortable ?? false, width: 150 },
-          { id: "currentCompany", label: companyCol?.label || "Empresa", visible: true, sortable: companyCol?.sortable ?? false, width: companyCol?.width || 130 },
-          { id: "stage", label: "Etapa", visible: true, sortable: true, width: 85 },
-          { id: "status", label: "Status", visible: true, sortable: false, width: 85 }
+          { id: 'quickActions', label: 'Aprovação', visible: true, sortable: false, align: 'center', width: 120 },
+          { id: 'id', label: 'ID', visible: true, sortable: false, width: 55 },
+          { id: 'score', label: 'Geral', visible: true, sortable: true, width: 70 },
+          { id: 'liaScore', label: 'Triagem', visible: true, sortable: true, width: 80 },
+          { id: 'fitScore', label: 'CV', visible: true, sortable: true, width: 60 },
+          { id: 'technicalTestScore', label: 'Técnico', visible: true, sortable: true, width: 75 },
+          { id: 'englishTestScore', label: 'Inglês', visible: true, sortable: true, width: 70 },
+          { id: 'bigFive', label: 'B5', visible: true, sortable: false, width: 55 },
+          { id: 'name', label: nameCol?.label || 'Candidato', visible: true, sortable: nameCol?.sortable ?? true, width: 280 },
+          { id: 'role', label: titleCol?.label || 'Cargo', visible: true, sortable: titleCol?.sortable ?? false, width: 150 },
+          { id: 'currentCompany', label: companyCol?.label || 'Empresa', visible: true, sortable: companyCol?.sortable ?? false, width: companyCol?.width || 130 },
+          { id: 'stage', label: 'Etapa', visible: true, sortable: true, width: 85 },
+          { id: 'status', label: 'Status', visible: true, sortable: false, width: 85 }
         ]
 
         return (
@@ -286,15 +324,19 @@ export function KanbanTableView({
             onStatusChange={onStatusChange as unknown as Parameters<typeof UnifiedCandidateTable>[0]["onStatusChange"]}
             onTransitionRequest={onTransitionRequest as unknown as Parameters<typeof UnifiedCandidateTable>[0]["onTransitionRequest"]}
             renderCustomHeader={(columnId: string, defaultLabel: string) => {
-              if (columnId === "quickActions") {
+              if (columnId === 'quickActions') {
                 const isSat = saturationData?.is_saturated || (saturationData?.saturation_percentage ?? 0) >= 90
                 return (
                   <span className="flex items-center gap-1 whitespace-nowrap">
                     {defaultLabel}
                     {isSat && saturationData && (
                       <span
-                        className={}
-                        title={}
+                        className={`inline-flex items-center gap-0.5 px-1 py-0.5 rounded-md text-micro font-medium font-['Open_Sans'] ${
+                          saturationData.is_saturated
+                            ? 'text-status-error bg-status-error/10 border border-status-error/30'
+                            : 'text-status-warning bg-status-warning/10 border border-status-warning/30'
+                        }`}
+                        title={`Pipeline ${saturationData.is_saturated ? 'Saturado' : 'Quase saturado'} (${saturationData.approved_count}/${saturationData.saturation_threshold})`}
                       >
                         <AlertTriangle className="w-2.5 h-2.5" />
                         {saturationData.approved_count}/{saturationData.saturation_threshold}
@@ -306,13 +348,14 @@ export function KanbanTableView({
               return null
             }}
             renderCustomCell={renderCustomCell as unknown as Parameters<typeof UnifiedCandidateTable>[0]["renderCustomCell"]}
+            }) as unknown as Parameters<typeof UnifiedCandidateTable>[0]["renderCustomCell"]}
             getNeedsAction={((candidate: KanbanCandidate): boolean => {
-              const stage = ((candidate.stage as string | undefined) || (candidate.etapa as string | undefined) || "funil").toLowerCase()
-              return stage === "funil" || stage === "triagem" || candidate.needsAction === true || (candidate.status as string | undefined) === "triado_aprovado"
+              const stage = ((candidate.stage as string | undefined) || (candidate.etapa as string | undefined) || 'funil').toLowerCase()
+              return stage === 'funil' || stage === 'triagem' || candidate.needsAction === true || (candidate.status as string | undefined) === 'triado_aprovado'
             }) as unknown as Parameters<typeof UnifiedCandidateTable>[0]["getNeedsAction"]}
             renderActions={((candidate: KanbanCandidate): React.ReactNode => {
-              const stage: string = ((candidate.stage as string | undefined) || (candidate.etapa as string | undefined) || "funil").toLowerCase()
-              const showApproveReject = stage === "funil" || stage === "triagem"
+              const stage: string = ((candidate.stage as string | undefined) || (candidate.etapa as string | undefined) || 'funil').toLowerCase()
+              const showApproveReject = stage === 'funil' || stage === 'triagem'
               return (
                 <div className="flex items-center justify-center gap-1" onClick={(e) => e.stopPropagation()}>
                   {showApproveReject && (
@@ -338,7 +381,7 @@ export function KanbanTableView({
                         onClick={(e) => {
                           e.stopPropagation()
                           const rejectStage = stage as string
-                          if (rejectStage === "screening" || rejectStage === "triagem") {
+                          if (rejectStage === 'screening' || rejectStage === 'triagem') {
                             onRejectFromScreening(candidate)
                           } else {
                             onRejectCandidate(candidate)
@@ -363,7 +406,7 @@ export function KanbanTableView({
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => onOpenAnalysis(candidate)}>
                         <Target className="w-4 h-4 mr-2" />
-                        Analise CV
+                        Análise CV
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => onOpenTriagem(candidate)}>
                         <Brain className="w-4 h-4 mr-2 text-wedo-cyan" />
@@ -375,7 +418,7 @@ export function KanbanTableView({
                         Aprovar
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => {
-                        if (stage === "screening" || stage === "triagem") {
+                        if (stage === 'screening' || stage === 'triagem') {
                           onRejectFromScreening(candidate)
                         } else {
                           onRejectCandidate(candidate)
@@ -390,32 +433,35 @@ export function KanbanTableView({
               )
             }) as unknown as Parameters<typeof UnifiedCandidateTable>[0]["renderActions"]}
             getStageBorderColor={((candidate: KanbanCandidate): string => {
-              const stage = ((candidate.stage as string | undefined) || (candidate.etapa as string | undefined) || "funil").toLowerCase()
+              const stage = ((candidate.stage as string | undefined) || (candidate.etapa as string | undefined) || 'funil').toLowerCase()
               const stageColors: Record<string, string> = {
-                funil: "var(--gray-600)",
-                triagem: "var(--status-warning)",
-                entrevista: "var(--wedo-purple)",
-                final: "var(--gray-600)",
-                aprovados: "var(--status-success)",
-                reprovados: "var(--status-error)"
+                'funil': 'var(--gray-600)',
+                'triagem': 'var(--status-warning)',
+                'entrevista': 'var(--wedo-purple)',
+                'final': 'var(--gray-600)',
+                'aprovados': 'var(--status-success)',
+                'reprovados': 'var(--status-error)'
               }
-              return stageColors[stage] || "var(--gray-950)"
+              return stageColors[stage] || 'var(--gray-950)'
             }) as unknown as Parameters<typeof UnifiedCandidateTable>[0]["getStageBorderColor"]}
             className="max-h-[calc(100vh-22rem)]"
           />
         )
       })()}
 
-      {/* Paginacao */}
+      {/* Paginação */}
       <KanbanTablePagination
         currentPage={currentPage}
         itemsPerPage={itemsPerPage}
         getPaginatedCandidates={getPaginatedCandidates}
         onCurrentPageChange={onCurrentPageChange}
       />
+      )}
       </div>
     </div>
+    {/* Fecha o Conteúdo da Tabela */}
 
+    {/* Preview do Candidato - Painel Lateral Direito */}
     {/* Preview do Candidato - Painel Lateral Direito */}
     <KanbanCandidatePreviewPanel
       isPreviewOpen={isPreviewOpen}

@@ -47,18 +47,13 @@ export function KanbanCardInterviewButtons({
   onRejectFromScreening,
   openTransition,
 }: KanbanCardInterviewButtonsProps) {
-  if (
-    !(
-      stageId === "sourcing" ||
-      stageId === "screening" ||
-      stageId.startsWith("interview_") ||
-      stageId === "offer"
-    )
-  ) {
-    return null
-  }
-
   return (
+    <>
+  {/* Container de Ações */}
+  {(stageId === "sourcing" ||
+    stageId === "screening" ||
+    stageId.startsWith("interview_") ||
+    stageId === "offer") && (
     <div className="border-t border-lia-border-subtle p-2 max-h-0 overflow-hidden opacity-0 group-hover:max-h-20 group-hover:opacity-100 transition-opacity motion-reduce:transition-none duration-200 ease-out relative z-20 bg-gray-50">
       {/* Botões para FUNIL */}
       {stageId === "sourcing" && (
@@ -127,12 +122,15 @@ export function KanbanCardInterviewButtons({
                     candidate.teamsLink || "https://teams.microsoft.com/l/meetup-join/..."
                   window.open(teamsUrl, "_blank")
                 }}
-                title={}
+                title={`Entrar na reunião - ${
+                  candidate.interviewDate ||
+                  new Date(candidate.agendada).toLocaleDateString("pt-BR")
+                }`}
               >
                 <Video className="w-3 h-3 text-lia-text-secondary" />
                 <span>
                   {candidate.interviewDate ||
-                    new Date(candidate.agendada as string).toLocaleDateString("pt-BR", {
+                    new Date(candidate.agendada).toLocaleDateString("pt-BR", {
                       day: "numeric",
                       month: "short",
                       hour: "2-digit",
@@ -146,14 +144,14 @@ export function KanbanCardInterviewButtons({
                   e.stopPropagation()
                   const dateStr =
                     candidate.interviewDate ||
-                    new Date(candidate.agendada as string).toLocaleDateString("pt-BR", {
+                    new Date(candidate.agendada).toLocaleDateString("pt-BR", {
                       day: "numeric",
                       month: "long",
                       hour: "2-digit",
                       minute: "2-digit",
                     })
                   setTransitionInitialPrompt(
-                    
+                    `O recrutador quer alterar o horário da entrevista de ${candidate.name} agendada para ${dateStr}. Peça a nova data e horário preferido e confirme o reagendamento com o candidato.`
                   )
                   setTransitionInterviewAlert({ name: candidate.name, date: dateStr })
                   openTransition([candidate], stageId, stageId)
@@ -169,14 +167,14 @@ export function KanbanCardInterviewButtons({
                   e.stopPropagation()
                   const dateStr =
                     candidate.interviewDate ||
-                    new Date(candidate.agendada as string).toLocaleDateString("pt-BR", {
+                    new Date(candidate.agendada).toLocaleDateString("pt-BR", {
                       day: "numeric",
                       month: "long",
                       hour: "2-digit",
                       minute: "2-digit",
                     })
                   setTransitionInitialPrompt(
-                    
+                    `O recrutador quer cancelar a entrevista de ${candidate.name} agendada para ${dateStr}. Pergunte para qual etapa ele quer mover o candidato (ou se mantém na mesma) e confirme o cancelamento.`
                   )
                   setTransitionAllowStageSelection(true)
                   setTransitionInterviewAlert({ name: candidate.name, date: dateStr })
@@ -231,5 +229,7 @@ export function KanbanCardInterviewButtons({
         </button>
       )}
     </div>
+  )}
+    </>
   )
 }
