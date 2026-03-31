@@ -415,21 +415,21 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <h1 className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary whitespace-nowrap">
-                    {currentJob.title}
+                    {currentJob.title as string}
                   </h1>
                   {currentJob.jobId && (
                     <span className="text-micro font-mono text-lia-text-secondary dark:text-lia-text-secondary bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle px-1.5 py-0.5 rounded-md whitespace-nowrap">
-                      {currentJob.jobId}
+                      {currentJob.jobId as string}
                     </span>
                   )}
                   <Popover>
                     <PopoverTrigger asChild>
                       <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-xs px-2 py-0.5 cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none select-none">
-                        {jobEditForm.status || currentJob.status}
+                        {(((jobEditForm.status || currentJob.status) as string) as string) as string}
                       </Badge>
                     </PopoverTrigger>
                     <PopoverContent className="w-44 p-1" align="start">
-                      {(() => { const st = jobEditForm.status || currentJob.status; return st === 'Ativa' || st === 'active' })() ? (
+                      {(() => { const st = ((jobEditForm.status || currentJob.status) as string) as string; return st === 'Ativa' || st === 'active' })() ? (
                         <>
                           <button
                             className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-lia-text-secondary hover:bg-gray-100 transition-colors motion-reduce:transition-none"
@@ -564,23 +564,23 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                     </Badge>
                   )}
                   <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-semibold whitespace-nowrap text-micro px-1.5 py-0">
-                    {currentJob.level}
+                    {currentJob.level as string}
                   </Badge>
                   <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium capitalize whitespace-nowrap text-micro px-1.5 py-0">
-                    {currentJob.workModel || '—'}
+                    {(currentJob.workModel as string | undefined) || '—'}
                   </Badge>
                   <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
-                    {currentJob.type || '—'}
+                    {(currentJob.type as string | undefined) || '—'}
                   </Badge>
                   <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
-                    {currentJob.department}
+                    {currentJob.department as string}
                   </Badge>
                   <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
-                    {currentJob.location}
+                    {currentJob.location as string}
                   </Badge>
-                  {currentJob.salary && currentJob.salary !== 'A combinar' && (
+                  {currentJob.salary && (currentJob.salary as string) !== 'A combinar' && (
                     <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
-                      {currentJob.salary}
+                      {currentJob.salary as string}
                     </Badge>
                   )}
                   {currentJob.publishedLinkedIn && (
@@ -592,11 +592,11 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                   {currentJob.openDate && (
                     <span className="text-micro text-lia-text-secondary dark:text-lia-text-secondary whitespace-nowrap">
                       <Calendar className="w-3 h-3 inline mr-0.5 -mt-0.5" />
-                      {new Date(currentJob.openDate).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      {new Date(currentJob.openDate as string).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </span>
                   )}
                   {currentJob.openDate && (() => {
-                    const days = Math.floor((Date.now() - new Date(currentJob.openDate).getTime()) / (1000 * 60 * 60 * 24))
+                    const days = Math.floor((Date.now() - new Date(currentJob.openDate as string).getTime()) / (1000 * 60 * 60 * 24))
                     if (days <= 0) return null
                     const isLate = days > 30
                     return (
@@ -663,7 +663,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                 if (selectedCandidates.size > 0) {
                   setShowShareGestorModal(true)
                 } else {
-                  setSelectedCandidates(new Set(allTableCandidates.map(c => c.id)))
+                  setSelectedCandidates(new Set(allTableCandidates.map(c => c.id as string)))
                   toast({
                     title: "Modo Compartilhamento",
                     description: "Todos os candidatos foram selecionados. Ajuste a seleção e clique em Compartilhar na barra de ações.",
@@ -838,7 +838,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                   if (selectedCandidates.size === allTableCandidates.length) {
                     setSelectedCandidates(new Set())
                   } else {
-                    setSelectedCandidates(new Set(allTableCandidates.map(c => c.id)))
+                    setSelectedCandidates(new Set(allTableCandidates.map(c => c.id as string)))
                   }
                 }}
                 onDeselectAll={() => setSelectedCandidates(new Set())}
@@ -975,33 +975,33 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                         if (searchQuery) {
                           const query = searchQuery.toLowerCase()
                           const matchesSearch = 
-                            candidate.name.toLowerCase().includes(query) ||
-                            candidate.role?.toLowerCase().includes(query) ||
-                            candidate.company?.toLowerCase().includes(query) ||
-                            candidate.location?.toLowerCase().includes(query) ||
-                            candidate.currentCompany?.toLowerCase().includes(query)
+                            (candidate.name as string | undefined)?.toLowerCase() ?? ''.includes(query) ||
+                            (candidate.role as string | undefined)?.toLowerCase().includes(query) ||
+                            (candidate.company as string | undefined)?.toLowerCase().includes(query) ||
+                            (candidate.location as string | undefined)?.toLowerCase().includes(query) ||
+                            (candidate.currentCompany as string | undefined)?.toLowerCase().includes(query)
                           if (!matchesSearch) return false
                         }
 
                         // Filtro de Score LIA Mínimo
-                        if (kanbanScoreMin > 0 && candidate.score && candidate.score < kanbanScoreMin) {
+                        if (kanbanScoreMin > 0 && candidate.score && (candidate.score as number | undefined)! < kanbanScoreMin) {
                           return false
                         }
 
                         // Filtro de Status
                         if (kanbanStatusFilter.length > 0 && candidate.status) {
-                          const candidateStatus = candidate.status.toLowerCase().replace(/ /g, '_')
+                          const candidateStatus = (candidate.status as string | undefined)?.toLowerCase() ?? ''.replace(/ /g, '_')
                           if (!kanbanStatusFilter.includes(candidateStatus)) return false
                         }
 
                         // Filtro de Modelo de Trabalho
                         if (kanbanWorkModelFilter.length > 0 && candidate.workModel) {
-                          const workModel = candidate.workModel.toLowerCase()
+                          const workModel = (candidate.workModel as string | undefined)?.toLowerCase() ?? ''
                           if (!kanbanWorkModelFilter.includes(workModel)) return false
                         }
 
                         if (kanbanOriginFilter.length > 0) {
-                          const candidateOrigin = (candidate.origin || '').toLowerCase()
+                          const candidateOrigin = ((candidate.origin as string | undefined) || '').toLowerCase()
                           if (!candidateOrigin || !kanbanOriginFilter.includes(candidateOrigin)) return false
                         }
 
@@ -1049,33 +1049,33 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                         if (searchQuery) {
                           const query = searchQuery.toLowerCase()
                           const matchesSearch = 
-                            candidate.name.toLowerCase().includes(query) ||
-                            candidate.role?.toLowerCase().includes(query) ||
-                            candidate.company?.toLowerCase().includes(query) ||
-                            candidate.location?.toLowerCase().includes(query) ||
-                            candidate.currentCompany?.toLowerCase().includes(query)
+                            (candidate.name as string | undefined)?.toLowerCase() ?? ''.includes(query) ||
+                            (candidate.role as string | undefined)?.toLowerCase().includes(query) ||
+                            (candidate.company as string | undefined)?.toLowerCase().includes(query) ||
+                            (candidate.location as string | undefined)?.toLowerCase().includes(query) ||
+                            (candidate.currentCompany as string | undefined)?.toLowerCase().includes(query)
                           if (!matchesSearch) return false
                         }
 
                         // Filtro de Score LIA Mínimo
-                        if (kanbanScoreMin > 0 && candidate.score && candidate.score < kanbanScoreMin) {
+                        if (kanbanScoreMin > 0 && candidate.score && (candidate.score as number | undefined)! < kanbanScoreMin) {
                           return false
                         }
 
                         // Filtro de Status
                         if (kanbanStatusFilter.length > 0 && candidate.status) {
-                          const candidateStatus = candidate.status.toLowerCase().replace(/ /g, '_')
+                          const candidateStatus = (candidate.status as string | undefined)?.toLowerCase() ?? ''.replace(/ /g, '_')
                           if (!kanbanStatusFilter.includes(candidateStatus)) return false
                         }
 
                         // Filtro de Modelo de Trabalho
                         if (kanbanWorkModelFilter.length > 0 && candidate.workModel) {
-                          const workModel = candidate.workModel.toLowerCase()
+                          const workModel = (candidate.workModel as string | undefined)?.toLowerCase() ?? ''
                           if (!kanbanWorkModelFilter.includes(workModel)) return false
                         }
 
                         if (kanbanOriginFilter.length > 0) {
-                          const candidateOrigin = (candidate.origin || '').toLowerCase()
+                          const candidateOrigin = ((candidate.origin as string | undefined) || '').toLowerCase()
                           if (!candidateOrigin || !kanbanOriginFilter.includes(candidateOrigin)) return false
                         }
 
