@@ -118,7 +118,7 @@ interface OpenMicAnalytics {
 
 export function VoiceScreeningDashboard() {
   const [analytics, setAnalytics] = useState<OpenMicAnalytics | null>(null)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const [screenings, setScreenings] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
 

@@ -660,8 +660,7 @@ export function EditArchetypeModal({
                         onAiSuggestedSkillsChange(aiSuggestedSkills.filter((s) => !selectedAiSkills.includes(s)))
                         onSelectedAiSkillsChange([])
                       }}
-                      className="mt-2 w-full py-1 rounded-md text-micro font-medium transition-colors motion-reduce:transition-none bg-gray-900"
-                      className="text-white"
+                      className="mt-2 w-full py-1 rounded-md text-micro font-medium transition-colors motion-reduce:transition-none bg-gray-900 text-white"
                     >
                       Adicionar {selectedAiSkills.length} Selecionado
                       {selectedAiSkills.length > 1 ? "s" : ""}
@@ -871,8 +870,7 @@ export function EditArchetypeModal({
                         onAiSuggestedTagsChange(aiSuggestedTags.filter((t) => !selectedAiTags.includes(t)))
                         onSelectedAiTagsChange([])
                       }}
-                      className="mt-2 w-full py-1 rounded-md text-micro font-medium transition-colors motion-reduce:transition-none bg-gray-900"
-                      className="text-white"
+                      className="mt-2 w-full py-1 rounded-md text-micro font-medium transition-colors motion-reduce:transition-none bg-gray-900 text-white"
                     >
                       Adicionar {selectedAiTags.length} Selecionado
                       {selectedAiTags.length > 1 ? "s" : ""}
@@ -890,8 +888,7 @@ export function EditArchetypeModal({
           <div className="flex gap-2">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none hover:bg-gray-200 border border-lia-border-subtle"
-              className="bg-transparent"
+              className="px-4 py-2 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none hover:bg-gray-200 border border-lia-border-subtle bg-transparent"
             >
               Cancelar
             </button>

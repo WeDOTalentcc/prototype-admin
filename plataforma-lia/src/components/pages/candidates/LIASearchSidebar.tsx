@@ -114,7 +114,7 @@ export function LIASearchSidebar({
                   <TooltipTrigger asChild>
                     <Button
                       variant="ghost" size="sm"
-                      onClick={() => { isLiaSuperChat ? setIsLiaSuperChat(false) : (setIsLiaSuperChat(true), setSuperChatWidth(Math.max(superChatWidth, 600))) }}
+                      onClick={() => { if (isLiaSuperChat) { setIsLiaSuperChat(false) } else { setIsLiaSuperChat(true); setSuperChatWidth(Math.max(superChatWidth, 600)) } }}
                       className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors motion-reduce:transition-none flex-shrink-0"
                     >
                       {isLiaSuperChat ? <PanelLeftClose className="w-4 h-4 text-lia-text-secondary" /> : <Maximize2 className="w-4 h-4 text-lia-text-tertiary" />}

@@ -120,37 +120,52 @@ export function useNotifications({
 
   const markAsRead = useCallback(async (notificationId: string) => {
     try {
-      await fetchNotificationsApi(`/notifications/${notificationId}/read?user_id=${userId}`, {
+      const response = await fetchNotificationsApi(`/notifications/${notificationId}/read?user_id=${userId}`, {
         method: 'POST'
       })
 
-      setNotifications(prev =>
-        prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
-      )
-      setUnreadCount(prev => Math.max(0, prev - 1))
+      if (response.success) {
+        setNotifications(prev => {
+          const target = prev.find(n => n.id === notificationId)
+          if (target && !target.is_read) {
+            setUnreadCount(c => Math.max(0, c - 1))
+          }
+          return prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
+        })
+      }
     } catch {
     }
   }, [userId])
 
   const markAllAsRead = useCallback(async () => {
     try {
-      await fetchNotificationsApi(`/notifications/read-all?user_id=${userId}`, {
+      const response = await fetchNotificationsApi(`/notifications/read-all?user_id=${userId}`, {
         method: 'POST'
       })
 
-      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
-      setUnreadCount(0)
+      if (response.success) {
+        setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
+        setUnreadCount(0)
+      }
     } catch {
     }
   }, [userId])
 
   const dismissNotification = useCallback(async (notificationId: string) => {
     try {
-      await fetchNotificationsApi(`/notifications/${notificationId}/dismiss?user_id=${userId}`, {
+      const response = await fetchNotificationsApi(`/notifications/${notificationId}/dismiss?user_id=${userId}`, {
         method: 'POST'
       })
 
-      setNotifications(prev => prev.filter(n => n.id !== notificationId))
+      if (response.success) {
+        setNotifications(prev => {
+          const target = prev.find(n => n.id === notificationId)
+          if (target && !target.is_read) {
+            setUnreadCount(c => Math.max(0, c - 1))
+          }
+          return prev.filter(n => n.id !== notificationId)
+        })
+      }
     } catch {
     }
   }, [userId])

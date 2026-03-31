@@ -191,8 +191,7 @@ export function ProactiveAlertToast({
               variant="default"
               size="sm"
               onClick={() => onNavigateToChat(alert)}
-              className="h-8 px-3 text-xs gap-1.5"
-              className="bg-[var(--wedo-blue)]"
+              className="h-8 px-3 text-xs gap-1.5 bg-[var(--wedo-blue)]"
             >
               <LIAIcon size="xs" className="w-3.5 h-3.5" />
               Reanalisar

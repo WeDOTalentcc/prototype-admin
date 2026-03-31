@@ -21,7 +21,7 @@ import {
 } from "lucide-react"
 
 export interface ActivityDetail {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   [key: string]: any
 }
 

@@ -1,9 +1,9 @@
 "use client"
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react"
+import { createPortal } from "react-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { X, Bell, CheckCircle, AlertCircle, Info, Clock, Loader2 } from "lucide-react"
 
 interface Notification {
@@ -116,9 +116,9 @@ const NotificationItem = React.memo(({
 
   return (
     <div
-      className={`relative p-2.5 rounded-md cursor-pointer transition-colors motion-reduce:transition-none duration-200 hover:bg-lia-bg-primary dark:hover:bg-gray-800 ${
+      className={`relative p-2.5 rounded-md cursor-pointer transition-colors motion-reduce:transition-none duration-200 hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-tertiary ${
  !notification.read 
-          ? "bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle" 
+          ? "bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle" 
           : "bg-transparent border border-transparent"
       }`}
       onClick={handleClick}
@@ -132,7 +132,7 @@ const NotificationItem = React.memo(({
                 : notification.type === 'warning' ? 'bg-status-warning/15 dark:bg-status-warning/30'
                 : notification.type === 'error' ? 'bg-status-error/15 dark:bg-status-error/30'
                 : 'bg-wedo-cyan/15'
-              : 'bg-gray-100 dark:bg-lia-bg-secondary'
+              : 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary'
           }`}>
             {getIcon}
           </div>
@@ -189,7 +189,12 @@ export function NotificationSystem({
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
   const lastFetchRef = useRef<number>(0)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
+  const cleanupRef = useRef<(() => void) | null>(null)
+  const [portalPosition, setPortalPosition] = useState({ top: 0, right: 0 })
 
   const backoffRef = useRef(0)
 
@@ -234,40 +239,57 @@ export function NotificationSystem({
 
   const markAsRead = useCallback(async (id: string) => {
     try {
-      setNotifications(prev =>
-        prev.map(n => n.id === id ? { ...n, read: true } : n)
-      )
-      
-      await fetch(`/api/backend-proxy/notifications/${id}/read?user_id=${userId}`, {
+      const response = await fetch(`/api/backend-proxy/notifications/${id}/read?user_id=${userId}`, {
         method: "POST"
       })
-    } catch (err) {
+      const data = await response.json()
+      if (data.success) {
+        setNotifications(prev =>
+          prev.map(n => n.id === id ? { ...n, read: true } : n)
+        )
+      }
+    } catch {
     }
   }, [userId])
 
   const markAllAsRead = useCallback(async () => {
     try {
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })))
-      
-      await fetch(`/api/backend-proxy/notifications/read-all?user_id=${userId}`, {
+      const response = await fetch(`/api/backend-proxy/notifications/read-all?user_id=${userId}`, {
         method: "POST"
       })
-    } catch (err) {
+      const data = await response.json()
+      if (data.success) {
+        setNotifications(prev => prev.map(n => ({ ...n, read: true })))
+      }
+    } catch {
     }
   }, [userId])
 
   const removeNotification = useCallback(async (id: string) => {
     try {
-      setNotifications(prev => prev.filter(n => n.id !== id))
-      
-      await fetch(`/api/backend-proxy/notifications/${id}/dismiss?user_id=${userId}`, {
+      const response = await fetch(`/api/backend-proxy/notifications/${id}/dismiss?user_id=${userId}`, {
         method: "POST"
       })
-    } catch (err) {
+      const data = await response.json()
+      if (data.success) {
+        setNotifications(prev => prev.filter(n => n.id !== id))
+      }
+    } catch {
     }
   }, [userId])
 
+  const updatePosition = useCallback(() => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect()
+      setPortalPosition({
+        top: rect.bottom + 4,
+        right: window.innerWidth - rect.right,
+      })
+    }
+  }, [])
+
   const toggleOpen = useCallback(() => {
+    updatePosition()
     setIsOpen(prev => {
       const newState = !prev
       if (newState && Date.now() - lastFetchRef.current > 5000) {
@@ -275,7 +297,7 @@ export function NotificationSystem({
       }
       return newState
     })
-  }, [fetchNotifications])
+  }, [fetchNotifications, updatePosition])
 
   const unreadCount = useMemo(() =>
     notifications.filter(n => !n.read).length,
@@ -288,6 +310,10 @@ export function NotificationSystem({
   )
 
   useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
     fetchNotifications()
   }, [fetchNotifications])
 
@@ -297,149 +323,139 @@ export function NotificationSystem({
   }, [fetchNotifications, pollingInterval])
 
   useEffect(() => {
-    if ("Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission()
+    if (!isOpen) return
+    const timeoutId = setTimeout(() => {
+      const handleClickOutside = (e: MouseEvent) => {
+        if (
+          panelRef.current && !panelRef.current.contains(e.target as Node) &&
+          buttonRef.current && !buttonRef.current.contains(e.target as Node)
+        ) {
+          setIsOpen(false)
+        }
+      }
+      document.addEventListener('mousedown', handleClickOutside)
+      cleanupRef.current = () => document.removeEventListener('mousedown', handleClickOutside)
+    }, 100)
+    return () => {
+      clearTimeout(timeoutId)
+      cleanupRef.current?.()
+      cleanupRef.current = null
     }
-  }, [])
+  }, [isOpen])
 
-  return (
-    <div className="relative">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={toggleOpen}
-        className="h-7 w-7 p-0 relative text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800"
-      >
-        <Bell className="w-3.5 h-3.5" />
-        {unreadCount > 0 && (
-          <Badge
-            className="absolute -top-0.5 -right-0.5 h-4 w-4 text-xs p-0 flex items-center justify-center bg-status-error text-white border-0"
-          >
-            {unreadCount > 9 ? "9+" : unreadCount}
-          </Badge>
-        )}
-      </Button>
-
-      {isOpen && (
-        <Card className="absolute right-0 top-9 w-[340px] max-h-[420px] overflow-hidden z-50 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
-          <CardContent className="p-0">
-            <div className="px-4 py-3 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-lia-text-primary">
-                  Notificações
-                  {unreadCount > 0 && (
-                    <span className="ml-2 text-xs font-medium px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary">
-                      {unreadCount} nova{unreadCount > 1 ? 's' : ''}
-                    </span>
-                  )}
-                </h3>
-                <div className="flex items-center gap-1" role="status" aria-live="polite" aria-label="Carregando...">
-                  {isLoading && (
-                    <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none lia-text-base" />
-                  )}
-                  {unreadCount > 0 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={markAllAsRead}
-                      className="text-xs h-6 px-2 text-lia-text-primary dark:text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
-                     
-                    >
-                      Marcar lidas
-                    </Button>
-                  )}
+  const panelContent = isOpen ? (
+    <div
+      ref={panelRef}
+      className="fixed z-[9999]"
+      style={{ top: portalPosition.top, right: portalPosition.right }}
+    >
+      <Card className="w-[340px] max-h-[420px] overflow-hidden border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl shadow-lg">
+        <CardContent className="p-0">
+          <div className="px-4 py-3 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-lia-text-primary">
+                Notificações
+                {unreadCount > 0 && (
+                  <span className="ml-2 text-xs font-medium px-1.5 py-0.5 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary">
+                    {unreadCount} nova{unreadCount > 1 ? 's' : ''}
+                  </span>
+                )}
+              </h3>
+              <div className="flex items-center gap-1" role="status" aria-live="polite" aria-label="Carregando...">
+                {isLoading && (
+                  <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none lia-text-base" />
+                )}
+                {unreadCount > 0 && (
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={toggleOpen}
-                    className="h-6 w-6 p-0 lia-text-base hover:lia-text-base dark:hover:lia-text-muted"
+                    onClick={markAllAsRead}
+                    className="text-xs h-6 px-2 text-lia-text-primary dark:text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
                   >
-                    <X className="w-3.5 h-3.5" />
+                    Marcar lidas
                   </Button>
-                </div>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleOpen}
+                  className="h-6 w-6 p-0 lia-text-base hover:lia-text-base dark:hover:lia-text-muted"
+                  aria-label="Fechar notificações"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </Button>
               </div>
             </div>
+          </div>
 
-            <div className="max-h-[340px] overflow-y-auto bg-gray-50 dark:bg-lia-bg-primary/50">
-              {error ? (
-                <div className="py-10 px-4 text-center">
-                  <AlertCircle className="w-8 h-8 mx-auto mb-2 text-status-error" />
-                  <p className="text-sm text-status-error">{error}</p>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={fetchNotifications}
-                    className="mt-2 text-xs"
-                  >
-                    Tentar novamente
-                  </Button>
-                </div>
-              ) : hasNotifications ? (
-                <div className="p-2 space-y-1.5">
-                  {notifications.map((notification) => (
-                    <NotificationItem
-                      key={notification.id}
-                      notification={notification}
-                      onMarkAsRead={markAsRead}
-                      onRemove={removeNotification}
-                      onClick={onNotificationClick}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="py-10 px-4 text-center">
-                  <Bell className="w-8 h-8 mx-auto mb-2 text-lia-text-disabled" />
-                  <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">
-                    {isLoading ? "Carregando..." : "Nenhuma notificação"}
-                  </p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+          <div className="max-h-[340px] overflow-y-auto bg-lia-bg-secondary dark:bg-lia-bg-primary/50" aria-live="polite">
+            {error ? (
+              <div className="py-10 px-4 text-center">
+                <AlertCircle className="w-8 h-8 mx-auto mb-2 text-status-error" />
+                <p className="text-sm text-status-error">{error}</p>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={fetchNotifications}
+                  className="mt-2 text-xs"
+                >
+                  Tentar novamente
+                </Button>
+              </div>
+            ) : hasNotifications ? (
+              <div className="p-2 space-y-1.5">
+                {notifications.map((notification) => (
+                  <NotificationItem
+                    key={notification.id}
+                    notification={notification}
+                    onMarkAsRead={markAsRead}
+                    onRemove={removeNotification}
+                    onClick={onNotificationClick}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="py-10 px-4 text-center">
+                <Bell className="w-8 h-8 mx-auto mb-2 text-lia-text-disabled" aria-hidden="true" />
+                <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">
+                  {isLoading ? "Carregando..." : "Nenhuma notificação"}
+                </p>
+                {!isLoading && (
+                  <p className="text-xs text-lia-text-secondary mt-1">Você está em dia com tudo!</p>
+                )}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  ) : null
+
+  return (
+    <div className="relative">
+      <button
+        ref={buttonRef}
+        type="button"
+        onClick={toggleOpen}
+        className="inline-flex items-center justify-center h-7 w-7 p-0 relative rounded-lg border-0 bg-transparent text-lia-text-primary dark:text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-tertiary cursor-pointer transition-colors"
+        aria-label={unreadCount > 0 ? `Notificações, ${unreadCount} não lidas` : 'Notificações'}
+        aria-expanded={isOpen}
+        aria-haspopup="true"
+        data-testid="notification-bell"
+      >
+        <Bell className="w-3.5 h-3.5" aria-hidden="true" />
+        {unreadCount > 0 && (
+          <span
+            role="status"
+            aria-label={`${unreadCount} notificações não lidas`}
+            className="absolute -top-0.5 -right-0.5 h-4 w-4 text-[10px] leading-none p-0 flex items-center justify-center rounded-full bg-status-error text-lia-bg-primary dark:text-lia-bg-primary font-medium"
+          >
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </span>
+        )}
+      </button>
+
+      {mounted && panelContent && createPortal(panelContent, document.body)}
     </div>
   )
-}
-
-export async function sendNotification(
-  userId: string,
-  title: string,
-  message: string,
-  options?: {
-    channels?: string[]
-    notificationType?: string
-    proactiveType?: string
-    priority?: string
-    data?: Record<string, unknown>
-    relatedJobId?: string
-    relatedCandidateId?: string
-    suggestedActions?: string[]
-  }
-): Promise<{ success: boolean; data?: unknown }> {
-  try {
-    const response = await fetch("/api/backend-proxy/notifications/send", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        user_id: userId,
-        title,
-        message,
-        channels: options?.channels || ["chat", "bell"],
-        notification_type: options?.notificationType || "info",
-        proactive_type: options?.proactiveType,
-        priority: options?.priority || "normal",
-        data: options?.data,
-        related_job_id: options?.relatedJobId,
-        related_candidate_id: options?.relatedCandidateId,
-        suggested_actions: options?.suggestedActions,
-      }),
-    })
-
-    return await response.json()
-  } catch (error) {
-    return { success: false }
-  }
 }
