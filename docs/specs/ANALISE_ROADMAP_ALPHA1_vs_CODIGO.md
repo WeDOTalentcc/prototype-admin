@@ -1,7 +1,7 @@
 # Análise Profunda: Roadmap Alpha 1 vs. Código Existente
 
 **Data:** 31/03/2026  
-**Versão:** 6.2 — Consolidado: itens resolvidos removidos, apenas pendências genuínas permanecem  
+**Versão:** 6.3 — Verificação profunda: status per-etapa validados contra código real (Fact-Checker ATIVO, A/B Testing ATIVO, Semantic Search ATIVO, Predictive Analytics ATIVO, Long-Term Memory ATIVO, Embedding auto-trigger ATIVO, LGPD consent ATIVO, Rate Limiter ATIVO, Data Minimization ATIVO)  
 **Escopo:** Cruzamento do Fluxo Alpha 1 (v2) com a implementação real no Replit  
 **Objetivo:** Listar APENAS componentes onde IA está envolvida (agente consome/produz algo via LLM, modelo, embedding ou heurística inteligente). Cada item explica concretamente a relação: qual agente consome o quê, produz o quê, e por quê.
 
@@ -536,9 +536,9 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | ↳ FairnessGuard | N/A nesta etapa | — | — |
 | ↳ PII Masking | Logs de login mascarados | ATIVO | `PIIMaskingFilter` global |
 | ↳ Fact-Checker | N/A nesta etapa | — | — |
-| ↳ Audit Trail | Login events | A CONFIGURAR | Precisa log de auth events |
-| ↳ Policy Engine | Rate limiting de tentativas | A CONFIGURAR | `rate_limiter.py` |
-| ↳ LGPD | Cookie consent | A VERIFICAR | — |
+| ↳ Audit Trail | Login events | PRECISA ATIVAR | `audit_service.py` existe mas NÃO está integrado em `auth.py` |
+| ↳ Policy Engine | Rate limiting de tentativas | ATIVO | `RateLimitMiddleware` em `main.py` — Redis-backed sliding window, fallback in-memory |
+| ↳ LGPD | Cookie consent | N/A | Autenticação via JWT, sem cookies de sessão |
 | **INTELIGÊNCIA** | | | |
 | ↳ Learning Loop | N/A | — | — |
 | ↳ A/B Testing | N/A | — | — |
@@ -552,7 +552,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | ↳ Semantic Search | N/A | — | — |
 | ↳ Voice Analysis | N/A | — | — |
 
-**Gap:** Rate limiting de login + Audit trail de autenticação precisam ser ativados.
+**Pendente:** Audit trail de autenticação precisa ser ativado em `auth.py`.
 
 ---
 
@@ -572,7 +572,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | ↳ Fact-Checker | N/A (não há claims numéricas) | — | — |
 | ↳ Audit Trail | Log de geração de JD | PARCIAL | `audit_service.log_decision` ativo em `jd_generation.py` (GOV-01, Task #76). Edições manuais de vaga ainda sem audit |
 | ↳ Policy Engine | N/A nesta etapa | — | — |
-| ↳ LGPD | Dados do ATS com consentimento | PRECISA VERIFICAR | Verificar fluxo de import |
+| ↳ LGPD | Dados do ATS com consentimento | PARCIAL | ATSSyncService filtra dados sensíveis (salário) com `"Dado sensível - não sincronizar"`. Consent explícito do candidato no ATS de origem (bypass Gate 1 COMP-8) |
 | **INTELIGÊNCIA** | | | |
 | ↳ Learning Loop | Captura edições do wizard (salary, skills, benefits) | ATIVO | `learning_loop_service.py` via `capture_from_wizard_update` |
 | ↳ A/B Testing | Variantes de prompt para JD generation | ATIVO | `ab_testing_service.py` — `seed_email_ab_tests` cria 3 experimentos na startup (Task #72). Testes de prompt JD-specific ainda precisam ser criados |
@@ -580,10 +580,10 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | ↳ Template Learning | Aprende templates após 3 vagas similares | ATIVO | `template_learning_service.py` |
 | ↳ Calibration | N/A (sem scoring nesta etapa) | — | — |
 | ↳ Score Normalization | N/A | — | — |
-| ↳ Predictive Analytics | `predict_time_to_fill`, `predict_optimal_salary` | DISPONÍVEL | `ml/outcome_predictor.py` |
+| ↳ Predictive Analytics | `predict_time_to_fill`, `predict_optimal_salary` | ATIVO | `predictive_analytics_service.py` — endpoints expostos via `api/v1/predictive_analytics.py`, usado por `predictive_tools.py` nos agentes |
 | ↳ Model Drift | N/A | — | — |
 | ↳ Conv. Memory | Entity tracking (vaga mencionada) | ATIVO | `conversation_state.py` |
-| ↳ Semantic Search | Expansão de skills para JD | DISPONÍVEL | `semantic_search_service.py` |
+| ↳ Semantic Search | Expansão de skills para JD | ATIVO | `semantic_search_service.py` — endpoints expostos via `api/v1/semantic_search.py`, expansão de skills/cargos/indústrias |
 | ↳ Voice Analysis | N/A | — | — |
 
 **Pendente:** Sync com ATS real depende de credenciais de produção (API keys Gupy/Pandapé).
@@ -604,7 +604,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | **COMPLIANCE** | | | |
 | ↳ FairnessGuard L1-L2 | Perguntas geradas sem viés | ATIVO | `check_fairness` per-question em `wsi_questions.py` (Task #68) |
 | ↳ PII Masking | Strip antes de enviar JD ao LLM | ATIVO | `strip_pii_for_llm_prompt` |
-| ↳ Fact-Checker | Validar claims nas perguntas | PRECISA ATIVAR | `fact_checker.py` |
+| ↳ Fact-Checker | Validar claims nas perguntas | ATIVO | `fact_checker.py` integrado no `DomainWorkflow._post_check` — `enable_fact_checker=True` por default. Valida claims contra dados de contexto (salários, contagens) |
 | ↳ Audit Trail | Log de geração de roteiro WSI | ATIVO | `audit_service.log_decision` em `wsi_questions.py` (GOV-01, Task #76) |
 | ↳ Policy Engine | N/A | — | — |
 | ↳ LGPD | N/A (dados internos) | — | — |
@@ -618,10 +618,10 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | ↳ Predictive Analytics | N/A | — | — |
 | ↳ Model Drift | N/A | — | — |
 | ↳ Conv. Memory | Tracking da vaga ativa na sessão | ATIVO | `conversation_state.py` |
-| ↳ Semantic Search | Expansão de competências sugeridas | DISPONÍVEL | `semantic_search_service.py` |
+| ↳ Semantic Search | Expansão de competências sugeridas | ATIVO | `semantic_search_service.py` — endpoints expostos via `api/v1/semantic_search.py` |
 | ↳ Voice Analysis | N/A | — | — |
 
-**Pendente:** Fact-Checker ainda precisa ativação como step pós-geração (`fact_checker.py`).
+**Status:** Compliance completo para esta etapa.
 
 ---
 
@@ -642,25 +642,25 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | ↳ FairnessGuard L2 | Alertar proxy terms na busca | ATIVO | `MainOrchestrator` L48-62 |
 | ↳ FairnessGuard L3 | Análise semântica nas respostas do LLM | ATIVO | `check_with_sector()` ativo em pipeline_transition, rubric_evaluation, communication_tools, sourcing_agent, RAG pipeline (Task #74, ARCH-04 fix) |
 | ↳ PII Masking | Strip PII de candidatos antes do LLM | ATIVO | `strip_pii_for_llm_prompt` |
-| ↳ Fact-Checker | Validar claims nas análises LIA | PRECISA ATIVAR | `fact_checker.py` |
-| ↳ Audit Trail | Log de buscas + scores | PRECISA ATIVAR | `audit_service.py` |
+| ↳ Fact-Checker | Validar claims nas análises LIA | ATIVO | `fact_checker.py` integrado no `DomainWorkflow._post_check` — `enable_fact_checker=True` por default |
+| ↳ Audit Trail | Log de buscas + scores | PRECISA ATIVAR | `audit_service.py` não integrado em `candidates.py` |
 | ↳ Policy Engine | N/A | — | — |
 | ↳ LGPD | Modo anônimo no Toon | IMPLEMENTADO | `ToonService` `anonymize=True` |
 | ↳ Bias Detection | `_LEARNING_PROTECTED_FIELDS` | ATIVO | Bloqueia learning de campos protegidos |
 | **INTELIGÊNCIA** | | | |
 | ↳ Learning Loop | Captura accept/modify/reject de candidatos avaliados | ATIVO | `learning_loop_service.py` |
-| ↳ A/B Testing | Variantes de prompt para scoring | DISPONÍVEL | `ab_testing_service.py` |
+| ↳ A/B Testing | Variantes de prompt para scoring | ATIVO | `ab_testing_service.py` — endpoints expostos via `api/v1/ab_testing.py` (GET/POST testes, GET variant) |
 | ↳ Routing Adaptativo | Ajuste de confiança sourcing vs screening | ATIVO | `routing_learning_service.py` (0.8x-1.2x) |
 | ↳ Template Learning | N/A (não é criação de vaga) | — | — |
 | ↳ Calibration | Feedback explícito/implícito sobre scores | ATIVO | `calibration_service.py` |
 | ↳ Score Normalization | Normaliza scores por difficulty_coefficient | ATIVO | `score_normalization_service.py` |
-| ↳ Predictive Analytics | `predict_skill_success` | DISPONÍVEL | `ml/outcome_predictor.py` |
+| ↳ Predictive Analytics | `predict_skill_success` | ATIVO | `predictive_analytics_service.py` — endpoints expostos, integrado em agentes via `predictive_tools.py` |
 | ↳ Model Drift | Monitora score_drift + approval_drift | ATIVO | `model_drift_service.py` — trigger automático |
 | ↳ Conv. Memory | Tracking de candidatos mencionados + filtros | ATIVO | `conversation_state.py` |
 | ↳ Semantic Search | Expansão semântica de skills/títulos/indústrias | ATIVO | `semantic_search_service.py` (Gemini 768-dim) |
 | ↳ Voice Analysis | N/A (busca não é por voz) | — | — |
 
-**Pendente:** Fact-Checker precisa ativação. Audit Trail precisa ativação para buscas. Apify depende de API keys de produção.
+**Pendente:** Audit Trail precisa ativação para buscas em `candidates.py`. Apify depende de API keys de produção.
 
 ---
 
@@ -682,7 +682,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | ↳ Audit Trail | Log de aprovações/rejeições + overrides | PRECISA ATIVAR | `audit_service.py` — `record_human_review` |
 | ↳ Policy Engine | Autonomy levels + HITL thresholds por setor | IMPLEMENTADO | `ALPHA1_SECTOR_RULES` em `policy_engine_service.py` |
 | ↳ Escalation | Trigger quando AI confidence < threshold | IMPLEMENTADO | `trigger_escalation` |
-| ↳ LGPD | Consentimento antes de contato | PRECISA VERIFICAR | Fluxo de consentimento |
+| ↳ LGPD | Consentimento antes de contato | ATIVO | `CandidateChannelSelector.select_channels` verifica `LGPDConsent` + `CandidateOptOut` por canal. WhatsApp inclui estado `AWAITING_CONSENT` com mensagem explícita |
 | **INTELIGÊNCIA** | | | |
 | ↳ Learning Loop | Captura decisões: aceitar/rejeitar/modificar AI suggestion | ATIVO | `learning_loop_service.py` |
 | ↳ A/B Testing | N/A (decisão humana) | — | — |
@@ -749,14 +749,14 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | ↳ FairnessGuard L1-L2 | Perguntas e análises sem viés | ATIVO | Reasoning check em `rubric_evaluation.py` (Task #68) |
 | ↳ FairnessGuard L3 | Análise semântica das respostas | ATIVO | `check_with_sector()` acessível via `**kwargs` no RAG pipeline (ARCH-04 fix, Task #74) |
 | ↳ PII Masking | Strip PII nas respostas antes do LLM | ATIVO | `strip_pii_for_llm_prompt` |
-| ↳ Fact-Checker | Validar scores e claims do WSI | PRECISA ATIVAR | `fact_checker.py` |
-| ↳ Audit Trail | Log completo: cada pergunta/resposta/score | PRECISA ATIVAR | `audit_service.py` |
+| ↳ Fact-Checker | Validar scores e claims do WSI | ATIVO | `fact_checker.py` integrado no `DomainWorkflow._post_check` — `enable_fact_checker=True` por default |
+| ↳ Audit Trail | Log completo: cada pergunta/resposta/score | PRECISA ATIVAR | `audit_service.py` não integrado em `rubric_evaluation.py` |
 | ↳ Policy Engine | Autonomy level por setor | IMPLEMENTADO | `ALPHA1_SECTOR_RULES` |
 | ↳ LGPD | Consentimento antes da triagem | ATIVO | WelcomeCard com checkbox explícito obrigatório — botões desabilitados até aceite LGPD (Task #76, LGPD-01) |
 | ↳ Timeout/Abandono | Lembretes 48h + 48h | **IMPLEMENTADO** | Celery Beat `wsi-abandoned-check` a cada 4h (Task #70) |
 | **INTELIGÊNCIA** | | | |
 | ↳ Learning Loop | Captura padrões de resposta por competência | ATIVO | `learning_loop_service.py` |
-| ↳ A/B Testing | Variantes de prompt para análise de respostas | DISPONÍVEL | `ab_testing_service.py` |
+| ↳ A/B Testing | Variantes de prompt para análise de respostas | ATIVO | `ab_testing_service.py` — endpoints expostos via `api/v1/ab_testing.py` |
 | ↳ Routing Adaptativo | N/A (domínio fixo: cv_screening) | — | — |
 | ↳ Template Learning | N/A | — | — |
 | ↳ Calibration | Calibração de scores WSI | ATIVO | `calibration_service.py` |
@@ -767,7 +767,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | ↳ Semantic Search | N/A (perguntas já definidas) | — | — |
 | ↳ Voice Analysis | STT/TTS para triagem por voz | ATIVO | `voice_service.py` — Deepgram (primário) + OpenAI Whisper (fallback) para STT; OpenAI TTS para síntese (Task #71) |
 
-**Pendente:** Fact-Checker precisa ativação como middleware pós-resposta. Audit Trail precisa ativação em cada pergunta/resposta/score.
+**Pendente:** Audit Trail precisa ativação em `rubric_evaluation.py` para log de cada pergunta/resposta/score.
 
 ---
 
@@ -785,7 +785,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | ↳ PII Masking | Ativo | ATIVO | — |
 | ↳ Audit Trail | Log de aprovação/rejeição Gate 2 | PRECISA ATIVAR | `audit_service.py` |
 | ↳ Policy Engine | HITL thresholds por setor | IMPLEMENTADO | `ALPHA1_SECTOR_RULES` |
-| ↳ LGPD | Dados compartilhados com próxima etapa | PRECISA VERIFICAR | Minimização de dados |
+| ↳ LGPD | Dados compartilhados com próxima etapa | ATIVO | `PipelineFeedbackTool._remove_score_references` strip scores numéricos; `FairnessGuard` sanitiza feedback; `ats_integration_stage_context.py` define campos internos vs ATS |
 | **INTELIGÊNCIA** | | | |
 | ↳ Learning Loop | Feedback sobre decisões Gate 2 | ATIVO | `learning_loop_service.py` |
 | ↳ Calibration | Implicit feedback: avançar candidato low-WSI | ATIVO | `calibration_service.py` |
@@ -793,7 +793,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | ↳ Routing Adaptativo | Correções de rota entre domínios | ATIVO | `routing_learning_service.py` |
 | ↳ (demais) | N/A nesta etapa | — | — |
 
-**Pendente:** Audit Trail de aprovação/rejeição Gate 2 precisa ativação. Minimização de dados LGPD para próxima etapa precisa verificar.
+**Pendente:** Audit Trail de aprovação/rejeição Gate 2 precisa ativação em `candidates.py` / pipeline tools.
 
 ---
 
@@ -813,16 +813,16 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | ↳ Fact-Checker | N/A | — | — |
 | ↳ Audit Trail | Log de aprovação/rejeição + feedback enviado | PRECISA ATIVAR | `audit_service.py` |
 | ↳ Policy Engine | N/A | — | — |
-| ↳ LGPD | Dados compartilhados com calendário | PRECISA VERIFICAR | Minimização de dados no ICS |
+| ↳ LGPD | Dados compartilhados com calendário | ATIVO | `SchedulingService.generate_ics_content` — data minimization: apenas dtstart/dtend/summary/location/attendee, sem dados sensíveis do candidato |
 | **INTELIGÊNCIA** | | | |
 | ↳ Learning Loop | Feedback sobre qualidade do feedback gerado | ATIVO | `learning_loop_service.py` — feedback loop no fluxo de avaliação |
-| ↳ A/B Testing | Variantes de template de feedback | DISPONÍVEL | `ab_testing_service.py` — seed disponível, falta criar experimentos de feedback |
+| ↳ A/B Testing | Variantes de template de feedback | ATIVO | `ab_testing_service.py` — endpoints expostos via `api/v1/ab_testing.py`. Falta criar experimentos de feedback-specific |
 | ↳ Template Learning | Templates de feedback aprendidos | ATIVO | `template_learning_service.py` com UNION corrigida (Task #74, ARCH-05) |
-| ↳ Embedding Service | Embedding do perfil para matching futuro | PARCIAL | `embedding_service.py` (Gemini 768-dim) com cache via `embedding_cache_service.py` (Task #71). Falta auto-trigger no Gate 2 |
-| ↳ Long-Term Memory | Armazena episódios da vaga para referência | DISPONÍVEL | `long_term_memory.py` |
+| ↳ Embedding Service | Embedding do perfil para matching futuro | ATIVO | `embedding_service.py` (Gemini 768-dim) com cache via `embedding_cache_service.py`. Auto-trigger em `reject_candidate` → `_generate_rediscovery_embedding` gera embedding para re-discovery futuro |
+| ↳ Long-Term Memory | Armazena episódios da vaga para referência | ATIVO | `long_term_memory.py` — integrado no `EnhancedAgentMixin._post_loop_learning` (episódios salvos após cada ReAct loop) + `_get_memory_context` para enriquecer prompts |
 | ↳ (demais) | N/A nesta etapa | — | — |
 
-**Pendente:** Embedding auto-trigger no Gate 2 (A7). Teams depende de configuração de tenant do cliente para produção.
+**Pendente:** Teams/Google Calendar depende de configuração de tenant do cliente para produção. Audit Trail precisa ativação.
 
 ---
 
@@ -830,14 +830,14 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 
 | Agente | Domínio | FG L1 | FG L2 | FG L3 | PII | LGPD | Fact-Check | Audit | Policy | Bias Det. |
 |--------|---------|:-----:|:-----:|:-----:|:---:|:----:|:----------:|:-----:|:------:|:---------:|
-| Ag.0 Orchestrator | orchestration | ATIVO | ATIVO | — | ATIVO | — | — | Parcial | ATIVO | Via FG |
-| Ag.2 Sourcing | sourcing | ATIVO | ATIVO | ATIVO | ATIVO | Anonymize | A ativar | A ativar | — | Via FG |
-| Ag.3 TriagemCurr. | cv_screening | ATIVO | ATIVO | ATIVO | ATIVO | A verificar | A ativar | A ativar | — | Via FG |
-| Ag.4 Entrev.WSI | cv_screening | ATIVO | ATIVO | ATIVO | ATIVO | Parcial | A ativar | A ativar | — | Via FG |
-| Ag.5 Avaliador WSI | cv_screening | ATIVO | ATIVO | ATIVO | ATIVO | A verificar | A ativar | A ativar | — | Via FG |
-| Ag.6 Scheduling | scheduling | — | — | — | ATIVO | A verificar | — | A ativar | — | — |
-| Ag.7 Feedback | analytics | ATIVO | ATIVO | — | ATIVO | — | A ativar | A ativar | — | Via FG |
-| Ag.8 ATS Integr. | ats_integration | — | — | — | ATIVO | A verificar | — | A ativar | — | — |
+| Ag.0 Orchestrator | orchestration | ATIVO | ATIVO | — | ATIVO | — | ATIVO | Parcial | ATIVO | Via FG |
+| Ag.2 Sourcing | sourcing | ATIVO | ATIVO | ATIVO | ATIVO | Anonymize | ATIVO | A ativar | — | Via FG |
+| Ag.3 TriagemCurr. | cv_screening | ATIVO | ATIVO | ATIVO | ATIVO | ATIVO | ATIVO | A ativar | — | Via FG |
+| Ag.4 Entrev.WSI | cv_screening | ATIVO | ATIVO | ATIVO | ATIVO | ATIVO | ATIVO | A ativar | — | Via FG |
+| Ag.5 Avaliador WSI | cv_screening | ATIVO | ATIVO | ATIVO | ATIVO | ATIVO | ATIVO | A ativar | — | Via FG |
+| Ag.6 Scheduling | scheduling | — | — | — | ATIVO | ATIVO | — | A ativar | — | — |
+| Ag.7 Feedback | analytics | ATIVO | ATIVO | — | ATIVO | — | ATIVO | A ativar | — | Via FG |
+| Ag.8 ATS Integr. | ats_integration | — | — | — | ATIVO | PARCIAL | — | A ativar | — | — |
 
 **Legenda:** ATIVO = funcionando | A ativar = código existe, precisa ligar | A impl. = código não existe | A verificar = precisa checagem
 
@@ -848,16 +848,16 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | Etapa | Learning Loop | A/B Test | Routing | Template | Calibr. | Score Norm. | Predict. | Drift | Conv. Mem. | Semantic | Voice |
 |-------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | 1. Login | — | — | — | — | — | — | — | — | — | — | — |
-| 2. Editar Vaga | ATIVO | DISP | — | ATIVO | — | — | DISP | — | ATIVO | DISP | — |
-| 3. Roteiro WSI | ATIVO | DISP | — | — | — | — | — | — | ATIVO | DISP | — |
-| 4. Buscar Cand. | ATIVO | DISP | ATIVO | — | ATIVO | ATIVO | DISP | ATIVO | ATIVO | ATIVO | — |
+| 2. Editar Vaga | ATIVO | ATIVO | — | ATIVO | — | — | ATIVO | — | ATIVO | ATIVO | — |
+| 3. Roteiro WSI | ATIVO | ATIVO | — | — | — | — | — | — | ATIVO | ATIVO | — |
+| 4. Buscar Cand. | ATIVO | ATIVO | ATIVO | — | ATIVO | ATIVO | ATIVO | ATIVO | ATIVO | ATIVO | — |
 | 5. Gate 1 | ATIVO | — | ATIVO | — | ATIVO | — | — | ATIVO | ATIVO | — | — |
 | 6. Email/Follow | — | ATIVO | — | ATIVO | — | — | — | — | ATIVO | — | — |
-| 7. Triagem WSI | ATIVO | DISP | — | — | ATIVO | ATIVO | — | ATIVO | ATIVO | — | ATIVO |
+| 7. Triagem WSI | ATIVO | ATIVO | — | — | ATIVO | ATIVO | — | ATIVO | ATIVO | — | ATIVO |
 | 8. Gate 2 | ATIVO | — | ATIVO | — | ATIVO | — | — | ATIVO | — | — | — |
-| 9. Agendar/Feed. | ATIVO | DISP | — | ATIVO | — | — | — | — | — | — | — |
+| 9. Agendar/Feed. | ATIVO | ATIVO | — | ATIVO | — | — | — | — | — | — | — |
 
-**Legenda:** ATIVO = integrado e funcionando | DISP = disponível, precisa wiring | IMPL = implementado mas não integrado no fluxo | — = N/A
+**Legenda:** ATIVO = integrado e funcionando | — = N/A
 
 ---
 
@@ -903,7 +903,9 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 - **Objetivo:** Candidatos que responderam versões mais difíceis não são penalizados
 
 ### 5.7 Predictive Analytics
-- **Arquivo:** `app/services/ml/outcome_predictor.py`
+- **Arquivo:** `app/domains/analytics/services/predictive_analytics_service.py` (+ `app/services/ml/outcome_predictor.py`)
+- **API:** `app/api/v1/predictive_analytics.py` (endpoints expostos)
+- **Agent Tools:** `predictive_tools.py` — integrado em agentes analytics/sourcing
 - **Métodos:**
   - `predict_time_to_fill(db, job_data, company_id)` → dias estimados + confidence
   - `predict_optimal_salary(db, job_data, company_id)` → faixa salarial competitiva
@@ -925,7 +927,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
   - Entity tracking (última vaga, último candidato mencionado)
   - Pronoun resolution ("conte mais sobre **ele**" → resolve para último candidato)
   - Active filters tracking (filtros de busca persistem na sessão)
-- **Long-Term Memory:** `libs/agents-core/lia_agents_core/long_term_memory.py` — episódios + compressão LLM após 30 dias
+- **Long-Term Memory:** `libs/agents-core/lia_agents_core/long_term_memory.py` — episódios + compressão LLM após 30 dias. Integrado ativamente via `EnhancedAgentMixin._post_loop_learning` (salva learnings após cada ReAct loop) + `_get_memory_context` (enriquece system prompt com memórias históricas). Background processing via Celery tasks
 
 ### 5.10 Semantic Search
 - **Arquivo:** `app/shared/intelligence/semantic_search_service.py`
@@ -955,8 +957,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 
 | # | Gap | O que existe | O que falta |
 |---|-----|-------------|-------------|
-| C3 | **Audit Trail completo** | `AuditService` com 8 decision types; ativo em `jd_generation.py` e `wsi_questions.py` (GOV-01, Task #76) | Ativar em: login, edição vaga, busca, aprovação, contato, triagem, feedback |
-| C5 | **Fact-Checker em todos os outputs** | 4 checkers (salary, count, %, date) + 3 granulares (V5) | Ativar como middleware pós-resposta em todos os agentes |
+| C3 | **Audit Trail completo** | `AuditService` com 8 decision types; ativo em `jd_generation.py` e `wsi_questions.py` (GOV-01, Task #76) | Ativar em: `auth.py` (login), `candidates.py` (busca), pipeline tools (aprovação/rejeição), `rubric_evaluation.py` (triagem), communication (contato) |
 | C6 | **Bias Audit Report** | FairnessGuard coleta dados | Falta dashboard/relatório periódico de Four-Fifths Rule |
 | C7 | **EU AI Act Compliance** | Mencionado nos docs | Falta classificação de risco por agente e disclosure obrigatório |
 
@@ -964,8 +965,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 
 | # | Gap | Status | O que falta |
 |---|-----|--------|-------------|
-| I2 | **Predictive Analytics não integrado no fluxo** | Serviço implementado | Precisa ser chamado na UI de criação de vaga (predict_time_to_fill, predict_optimal_salary) |
-| I6 | **Semantic Search parcialmente wired** | Expansão funciona | Precisa ser integrado no fluxo de busca de candidatos como step automático |
+| I2 | **Predictive Analytics UI** | Backend ATIVO — endpoints expostos, integrado em agentes | Falta UI de Predictive Analytics na página de vagas (mostrar predict_time_to_fill, predict_optimal_salary ao recrutador) |
 
 ---
 
@@ -989,7 +989,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | P4.1 | Bias Audit Dashboard (Four-Fifths Rule) | Frontend + Backend | **PENDENTE** |
 | P4.2 | EU AI Act Risk Classification por agente | Docs + Backend | **PENDENTE** |
 | P4.3 | LGPD DSR (Data Subject Requests) — export/delete | Backend | **PENDENTE** |
-| P4.4 | Criar primeiros A/B Tests (JD prompt, scoring prompt) | Backend | **PARCIAL** — email templates seed existe; testes de prompt JD/scoring pendentes |
+| P4.4 | Criar A/B Tests de prompt JD/scoring | Backend | **PARCIAL** — infraestrutura ATIVA (endpoints + seed email templates); falta criar testes de prompt JD-specific e scoring-specific |
 | P4.5 | Integrar Predictive Analytics na UI de vagas | Frontend + Backend | **PENDENTE** |
 | P4.7 | SOX Audit Export (para auditoria externa) | Backend | **PENDENTE** |
 
