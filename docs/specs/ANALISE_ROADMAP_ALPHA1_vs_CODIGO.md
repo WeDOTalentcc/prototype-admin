@@ -32,7 +32,8 @@
              │  • Acessa página de vagas WeDo, seleciona vaga existente        │
              │  • NÃO cria vaga na WeDo — edita dados importados              │
              │  • Define requisitos, benefícios, faixa salarial, modelo        │
-             │  • 🤖 Ag.8 IntegradorATS (sync dados do ATS) ⚠ PÓS-MVP         │
+             │  • 🤖 Ag.8 ATSIntegrationReActAgent [ats_integration]              │
+             │    (sync dados do ATS) ⚠ PÓS-MVP                               │
              │                                                                  │
              │                              2B. VAGA CRIADA WeDO (agora possível)
              │  ──────────────────────────────────────────────────────────────► │
@@ -96,9 +97,11 @@
              │  • Like/Dislike feedback por candidato (otimiza busca)           │
              │  • Prompt expandido da LIA (lado esquerdo da tabela):           │
              │    - Análise de perfil, comparação, ranking, skills             │
-             │    - 🤖 Ag.2 SourcingAgent (busca/perfis similares)             │
-             │    - 🤖 Ag.3 TriagemCurricular (triagem/screening)              │
-             │    - 🤖 AvaliadorWSI (análise/comparação/ranking)               │
+             │    - 🤖 Ag.2 SourcingReActAgent [sourcing]                        │
+             │      (busca/perfis similares)                                    │
+             │    - 🤖 WSIScreeningPipeline [cv_screening] (triagem/screening) │
+             │      (NÃO é agente — é serviço; "Ag.3" do fluxo original)      │
+             │    - 🤖 WSIService [cv_screening] (análise/comparação/ranking)  │
              │  • Pearch + Apify (captura emails + enriquecimento)             │
              │  • Email OBRIGATÓRIO | Telefone opcional                         │
              │                                                                  │
@@ -117,8 +120,10 @@
              │  • Etapas críticas → SmartTransitionModal pede confirmação      │
              │  • Aprovados → LIA inicia contato | Reprovados → Feedback       │
              │  ⚡ Inscritos via web BYPASS Gate 1 → triagem automática          │
-             │  • 🤖 Ag.0 Orchestrator | 🤖 Ag.7 AnalistaFeedback              │
-             │  • 🤖 Ag.8 IntegradorATS (sync status)                          │
+             │  • 🤖 Ag.0 MainOrchestrator [orchestrator]                        │
+             │  • 🤖 Ag.7 CommunicationReActAgent [communication] (feedback)   │
+             │  • 🤖 Ag.8 ATSIntegrationReActAgent [ats_integration]           │
+             │    (sync status) ⚠ PÓS-MVP                                     │
              │                                                                  │
              ├──────────────────────────────────────────────────────────────────┤
              │                                                                  │
@@ -128,7 +133,9 @@
              │  • Email com 2 opções:                                           │
              │    A) Link para triagem via CHAT WEB (canal principal)           │
              │    B) Solicita nº celular → WhatsApp (canal secundário)         │
-             │  • 🤖 Ag.0 Orchestrator dispara contato                         │
+             │  • 🤖 Ag.0 MainOrchestrator [orchestrator] dispara contato        │
+             │  • 🤖 Ag.7 CommunicationReActAgent [communication]              │
+             │    (executa send_email/send_whatsapp)                            │
              │                                                                  │
              ├──────────────────────────────────────────────────────────────────┤
              │                                                                  │
@@ -171,9 +178,9 @@
              │                                                                  │
              │                              7B. FEEDBACK PÓS-TRIAGEM           │
              │  ◄────────────────────────────────────────────────────────────── │
-             │  • Ag.4 EntrevistadorWSI agradece, dá feedback,                 │
-             │    informa próximos passos                                       │
-             │  • Canal: mesmo da triagem (chat web ou WhatsApp)               │
+             │  • 🤖 Ag.4 WSIInterviewGraph [cv_screening] agradece,           │
+             │    dá feedback, informa próximos passos                         │
+             │  • Canal: mesmo da triagem (chat web, WhatsApp ou voz)          │
              │                                                                  │
              ├──────────────────────────────────────────────────────────────────┤
              │                                                                  │
@@ -182,7 +189,10 @@
              │  • Consultor recebeu alerta Teams (7B)                           │
              │  • Revisa score WSI + parecer LIA na plataforma                 │
              │  • Aprova → SHORT LIST | Reprova → FEEDBACK                     │
-             │  • 🤖 Ag.7 AnalistaFeedback | 🤖 Ag.8 IntegradorATS             │
+             │  • 🤖 Ag.7 PersonalizedFeedbackService [cv_screening]           │
+             │    (gera parecer/feedback)                                       │
+             │  • 🤖 Ag.8 ATSIntegrationReActAgent [ats_integration]           │
+             │    (sync status) ⚠ PÓS-MVP                                     │
              │                                                                  │
              ├──────────────────────────────────────────────────────────────────┤
              │                                                                  │
@@ -190,13 +200,14 @@
              │  ◄────────────────────────────────────────────────────────────── │
              │  (Se APROVADO) LIA agenda entrevista                             │
              │  • Email + WhatsApp ao candidato (data/hora + link reunião)      │
-             │  • 🤖 Ag.6 SchedulingAgent                                       │
+             │  • 🤖 Ag.6 InterviewGraph [interview_scheduling]                  │
              │  • Se NÃO encontra horário → alerta ao consultor via Teams      │
              │                                                                  │
              │                              9B. ENVIAR FEEDBACK                 │
              │  ◄────────────────────────────────────────────────────────────── │
              │  (Se REPROVADO) LIA envia feedback via email e/ou WhatsApp      │
-             │  • 🤖 Ag.7 AnalistaFeedback                                      │
+             │  • 🤖 Ag.7 PersonalizedFeedbackService [cv_screening]           │
+             │  • 🤖 CommunicationReActAgent [communication] (envia)           │
              │                                                                  │
              ▼                                                                  ▼
     ┌────────────────────────────────────────────────────────────────────────────────────────┐
