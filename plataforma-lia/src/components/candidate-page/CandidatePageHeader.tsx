@@ -155,7 +155,7 @@ export function CandidatePageHeader({
                     variant="ghost"
                     size="sm"
                     className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    onClick={() => onSendEmail ? onSendEmail(candidate) : (_candidate.email && window.open(, _self))}
+                    onClick={() => onSendEmail ? onSendEmail(candidate) : (_candidate.email && window.open(`mailto:${_candidate.email}`, '_self'))}
                     disabled={!_candidate.email && !onSendEmail}
                   >
                     <Mail className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
@@ -174,7 +174,7 @@ export function CandidatePageHeader({
                       if (onSendWhatsApp) {
                         onSendWhatsApp(candidate)
                       } else if (_candidate.phone) {
-                        window.open(, _blank)
+                        window.open(`https://wa.me/${_candidate.phone.replace(/\D/g, '')}`, '_blank')
                       }
                     }}
                     disabled={!_candidate.phone && !onSendWhatsApp}

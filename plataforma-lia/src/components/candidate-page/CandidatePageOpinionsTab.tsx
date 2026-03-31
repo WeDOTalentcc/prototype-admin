@@ -73,7 +73,7 @@ export function CandidatePageOpinionsTab({
     if (!rec) return null
     if (rec === "approved") {
       return (
-        <Badge className={}>
+        <Badge className={`${badgeStyles.success} flex items-center gap-0.5`}>
           <CheckCircle className="w-2.5 h-2.5" />
           APROVADO
         </Badge>
@@ -81,7 +81,7 @@ export function CandidatePageOpinionsTab({
     }
     if (rec === "pending_review") {
       return (
-        <Badge className={}>
+        <Badge className={`${badgeStyles.warning} flex items-center gap-0.5`}>
           <Clock className="w-2.5 h-2.5" />
           PENDENTE
         </Badge>
@@ -89,7 +89,7 @@ export function CandidatePageOpinionsTab({
     }
     if (rec === "not_approved") {
       return (
-        <Badge className={}>
+        <Badge className={`${badgeStyles.error} flex items-center gap-0.5`}>
           <X className="w-2.5 h-2.5" />
           NÃO APROVADO
         </Badge>
@@ -105,7 +105,11 @@ export function CandidatePageOpinionsTab({
         <div className="flex items-center gap-1 border-b border-lia-border-subtle dark:border-lia-border-subtle pb-2">
           <button
             onClick={() => setOpinionsSubTab("pareceres")}
-            className={}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors motion-reduce:transition-none ${
+              opinionsSubTab === "pareceres"
+                ? "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary border-b-2 border-gray-900 dark:border-lia-border-subtle"
+                : "text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-disabled hover:bg-gray-50 dark:hover:bg-gray-800"
+            }`}
           >
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
             Pareceres da LIA
@@ -117,7 +121,11 @@ export function CandidatePageOpinionsTab({
           </button>
           <button
             onClick={() => setOpinionsSubTab("analises")}
-            className={}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors motion-reduce:transition-none ${
+              opinionsSubTab === "analises"
+                ? "bg-wedo-purple/10 dark:bg-wedo-purple/20 text-wedo-purple dark:text-wedo-purple border-b-2 border-wedo-purple/30"
+                : "text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-disabled hover:bg-gray-50 dark:hover:bg-gray-800"
+            }`}
           >
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
             Análises
@@ -160,7 +168,7 @@ export function CandidatePageOpinionsTab({
                   <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-lia-bg-elevated flex items-center justify-center mx-auto mb-3">
                     <FileText className="w-6 h-6 lia-text-secondary" />
                   </div>
-                  <p className={}>Nenhum parecer disponível</p>
+                  <p className={`${textStyles.subtitle} mb-1`}>Nenhum parecer disponível</p>
                   <p className={textStyles.description}>
                     Os pareceres serão gerados automaticamente após triagens ou análises da LIA.
                   </p>
@@ -184,7 +192,9 @@ export function CandidatePageOpinionsTab({
                         className="p-3 flex items-center justify-between hover:bg-gray-50 transition-colors motion-reduce:transition-none cursor-pointer"
                       >
                         <div className="flex items-center gap-2">
-                          <div className={}>
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            isWsiOpinion ? "bg-wedo-purple/15" : "bg-gray-100 dark:bg-lia-bg-secondary"
+                          }`}>
                             {isWsiOpinion ? (
                               <Target className="w-4 h-4 text-wedo-purple" />
                             ) : (
@@ -209,8 +219,8 @@ export function CandidatePageOpinionsTab({
                             </div>
                             <div className="flex items-center gap-2 mt-0.5">
                               {displayScore !== null && displayScore !== undefined && (
-                                <span className={}>
-                                  {isWsiOpinion ?  : }
+                                <span className={`text-micro font-semibold ${getOpinionScoreColor(displayScore, isWsiOpinion)}`}>
+                                  {isWsiOpinion ? `WSI: ${(displayScore as number).toFixed(1)}/5` : `Score: ${Math.round(displayScore as number)}/100`}
                                 </span>
                               )}
                               {opinion.archetype && (
@@ -238,7 +248,7 @@ export function CandidatePageOpinionsTab({
                                 }}
                                 className="p-1 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
                               >
-                                {copiedItemId ===  ? (
+                                {copiedItemId === `opinion-${opinion.id as string}` ? (
                                   <Check className="w-3.5 h-3.5 text-status-success" />
                                 ) : (
                                   <Copy className="w-3.5 h-3.5 lia-text-secondary hover:lia-text-base" />
@@ -266,7 +276,7 @@ export function CandidatePageOpinionsTab({
                           )}
                           {!!(opinion.score_breakdown) && Object.keys(opinion.score_breakdown as Record<string, unknown>).length > 0 && (
                             <div>
-                              <h5 className={}>
+                              <h5 className={`${textStyles.label} mb-1.5 flex items-center gap-1`}>
                                 <BarChart3 className="w-3 h-3" />
                                 Score Breakdown
                               </h5>
@@ -274,8 +284,8 @@ export function CandidatePageOpinionsTab({
                                 {Object.entries(opinion.score_breakdown as Record<string, unknown>).map(([key, value]: [string, unknown]) => (
                                   value !== null && value !== undefined && (
                                     <div key={key} className="flex items-center justify-between text-micro bg-gray-50 dark:bg-lia-bg-elevated rounded-full px-2 py-1">
-                                      <span className="lia-text-base capitalize">{key.replace(/_/g, " ")}</span>
-                                      <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">{typeof value === "number" ?  : value}</span>
+                                      <span className="lia-text-base capitalize">{key.replace(/_/g, ' ')}</span>
+                                      <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">{typeof value === "number" ? `${Math.round(value)}%` : value}</span>
                                     </div>
                                   )
                                 ))}
@@ -284,13 +294,13 @@ export function CandidatePageOpinionsTab({
                           )}
                           {opinion.strengths && (opinion.strengths as string[]).length > 0 && (
                             <div>
-                              <h5 className={}>
+                              <h5 className={`${textStyles.label} text-status-success mb-1 flex items-center gap-1`}>
                                 <CheckCircle className="w-3 h-3" />
                                 Pontos Fortes
                               </h5>
                               <ul className="space-y-0.5">
                                 {(opinion.strengths as string[]).map((s: string, i: number) => (
-                                  <li key={i} className={}>
+                                  <li key={i} className={`${textStyles.caption} lia-text-base flex items-start gap-1`}>
                                     <span className="text-status-success mt-0.5">•</span>
                                     {s}
                                   </li>
@@ -300,13 +310,13 @@ export function CandidatePageOpinionsTab({
                           )}
                           {opinion.concerns && (opinion.concerns as string[]).length > 0 && (
                             <div>
-                              <h5 className={}>
+                              <h5 className={`${textStyles.label} text-status-warning mb-1 flex items-center gap-1`}>
                                 <AlertCircle className="w-3 h-3" />
                                 Pontos de Atenção
                               </h5>
                               <ul className="space-y-0.5">
                                 {(opinion.concerns as string[]).map((c: string, i: number) => (
-                                  <li key={i} className={}>
+                                  <li key={i} className={`${textStyles.caption} lia-text-base flex items-start gap-1`}>
                                     <span className="text-status-warning mt-0.5">•</span>
                                     {c}
                                   </li>
@@ -316,11 +326,11 @@ export function CandidatePageOpinionsTab({
                           )}
                           {!!(opinion.next_steps) && (
                             <div>
-                              <h5 className={}>
+                              <h5 className={`${textStyles.label} mb-1 flex items-center gap-1`}>
                                 <TrendingUp className="w-3 h-3" />
                                 Próximos Passos
                               </h5>
-                              <p className={}>{opinion.next_steps as string}</p>
+                              <p className={`${textStyles.caption} lia-text-base`}>{opinion.next_steps as string}</p>
                             </div>
                           )}
                         </div>
@@ -364,9 +374,9 @@ export function CandidatePageOpinionsTab({
                   <div className="w-12 h-12 rounded-full bg-wedo-purple/10 flex items-center justify-center mx-auto mb-3">
                     <Brain className="w-6 h-6 text-wedo-purple" />
                   </div>
-                  <p className={}>Nenhuma análise disponível</p>
+                  <p className={`${textStyles.subtitle} mb-1`}>Nenhuma análise disponível</p>
                   <p className={textStyles.description}>
-                    Use o ícone 🧠 no header para gerar análises de perfil e salvá-las aqui.
+                    Use o ícone no header para gerar análises de perfil e salvá-las aqui.
                   </p>
                 </CardContent>
               </Card>
@@ -394,12 +404,12 @@ export function CandidatePageOpinionsTab({
                           </div>
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className={}>Análise LIA</span>
+                              <span className={`${textStyles.bodySmall} font-medium`}>Análise LIA</span>
                               <Badge className="text-micro px-1.5 py-0 h-4 bg-wedo-purple/15 text-wedo-purple">
                                 {analysisLabels[analysis.analysis_type as string] || analysis.analysis_type as string}
                               </Badge>
                             </div>
-                            <span className={}>
+                            <span className={`${textStyles.caption} lia-text-secondary`}>
                               {analysis.created_at ? new Date(analysis.created_at as string).toLocaleDateString("pt-BR", {
                                 day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit",
                               }) : "Data não disponível"}
@@ -416,7 +426,7 @@ export function CandidatePageOpinionsTab({
                                 }}
                                 className="p-1 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
                               >
-                                {copiedItemId ===  ? (
+                                {copiedItemId === `analysis-${analysis.id}` ? (
                                   <Check className="w-3.5 h-3.5 text-status-success" />
                                 ) : (
                                   <Copy className="w-3.5 h-3.5 lia-text-secondary hover:lia-text-base" />
@@ -425,13 +435,13 @@ export function CandidatePageOpinionsTab({
                             </TooltipTrigger>
                             <TooltipContent side="top" className="text-micro">Copiar análise</TooltipContent>
                           </Tooltip>
-                          <ChevronDown className={} />
+                          <ChevronDown className={`w-4 h-4 lia-text-secondary transition-transform motion-reduce:transition-none ${isExpanded ? "rotate-180" : ""}`} />
                         </div>
                       </div>
 
                       {isExpanded && (
                         <div className="px-3 pb-3 border-t border-gray-50">
-                          <div className={}>
+                          <div className={`${textStyles.description} text-lia-text-primary dark:text-lia-text-primary leading-relaxed whitespace-pre-wrap bg-gray-50 rounded-md p-3 mt-2`}>
                             {cleanTextForCopy(analysis.content as string)}
                           </div>
                           <div className="flex justify-end mt-2">
