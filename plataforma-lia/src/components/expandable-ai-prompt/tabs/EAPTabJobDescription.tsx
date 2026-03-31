@@ -1,0 +1,47 @@
+"use client"
+
+import React from 'react'
+import { Brain, Lightbulb } from "lucide-react"
+import { useExpandableAIPromptCore } from "../useExpandableAIPromptCore"
+
+type EAPTabJobDescriptionProps = Pick<
+  ReturnType<typeof useExpandableAIPromptCore>,
+  'jobDescriptionText' | 'setJobDescriptionText' | 'onCommand'
+>
+
+export const EAPTabJobDescription = React.memo(function EAPTabJobDescription(props: EAPTabJobDescriptionProps) {
+  const { jobDescriptionText, setJobDescriptionText, onCommand } = props
+
+  return (
+    <div className="space-y-3">
+      <p className="text-xs text-lia-text-primary dark:text-lia-text-primary" aria-live="polite" aria-atomic="true">
+        Cole a descrição da vaga para extrair requisitos automaticamente
+      </p>
+      <textarea
+        value={jobDescriptionText}
+        onChange={(e) => setJobDescriptionText(e.target.value)}
+        placeholder="Cole aqui a descrição completa da vaga..."
+        className="border border-input bg-background rounded-lg text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring w-full px-4 py-2.5 text-sm resize-none"
+        rows={3}
+      />
+      <div className="flex justify-between items-center">
+        {/* Dica contextual */}
+        <div className="flex items-start gap-2 flex-1">
+          <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 lia-text-base" />
+          <p className="text-xs lia-body">
+            <strong>Dica:</strong> Cole a descrição do cargo completa para extrair automaticamente requisitos técnicos e comportamentais.
+          </p>
+        </div>
+        <button
+          className="ml-3 px-3 py-1.5 lia-btn-primary text-xs disabled:opacity-50"
+          onClick={() => jobDescriptionText.trim() && onCommand(jobDescriptionText, 'extract_from_jd')}
+          disabled={!jobDescriptionText.trim()}
+        >
+          <Brain className="w-3 h-3 inline mr-1 text-wedo-cyan" />
+          Extrair Requisitos
+        </button>
+      </div>
+    </div>
+  )
+})
+EAPTabJobDescription.displayName = 'EAPTabJobDescription'
