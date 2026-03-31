@@ -4,16 +4,14 @@ import { textStyles, cardStyles, badgeStyles, formatScorePercent } from '@/lib/d
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
-  Brain, ChevronDown,
+  Activity, Brain, GitBranch, List, PlusCircle, ChevronDown,
   Calendar, ExternalLink, CheckCircle, Mail, Download, Linkedin,
   Mic, Play, ClipboardCheck, FileText, Code, Gift, UserCheck,
-  Shield, Users, Building, Clock, AlertCircle,
+  Shield, Users, Building, Clock, AlertCircle, FileVideo,
   Eye, Video, Target, Briefcase, ThumbsUp, ThumbsDown
 } from "lucide-react"
 import { ScreeningQuestion, TranscriptionSegment } from "@/components/modals/screening-media-modal"
 import { getDemoActivities, Activity as ActivityData } from "@/data/demo-activities"
-import { ActivityFilters, type ActivityFilterType, type ActivityViewType, type PeriodFilterType } from "./activities/ActivityFilters"
-import { ActivityTimeline } from "./activities/ActivityTimeline"
 
 interface CandidateActivitiesTabProps {
   candidate: Record<string, unknown>
@@ -67,9 +65,9 @@ export function CandidateActivitiesTab({
   onSetShowPreview,
 }: CandidateActivitiesTabProps) {
   const [expandedActivity, setExpandedActivity] = useState<string | null>(null)
-  const [activityFilter, setActivityFilter] = useState<ActivityFilterType>('all')
-  const [activityView, setActivityView] = useState<ActivityViewType>('timeline')
-  const [periodFilter, setPeriodFilter] = useState<PeriodFilterType>('all')
+  const [activityFilter, setActivityFilter] = useState<'all' | 'emails' | 'interviews' | 'lia' | 'applications' | 'tests' | 'offers' | 'evaluations'>('all')
+  const [activityView, setActivityView] = useState<'list' | 'timeline'>('timeline')
+  const [periodFilter, setPeriodFilter] = useState<'7days' | '30days' | '3months' | 'all'>('all')
 
   const useDemoData = process.env.NEXT_PUBLIC_USE_DEMO_DATA !== 'false'
   const activities: ActivityData[] = useDemoData ? getDemoActivities() : []
@@ -1047,26 +1045,178 @@ export function CandidateActivitiesTab({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Filters bar - extracted to ActivityFilters */}
-      <ActivityFilters
-        totalCount={filteredActivities.length}
-        activityFilter={activityFilter}
-        activityView={activityView}
-        periodFilter={periodFilter}
-        onActivityFilterChange={setActivityFilter}
-        onActivityViewChange={setActivityView}
-        onPeriodFilterChange={setPeriodFilter}
-        onShowLiaModal={onShowLiaModal}
-      />
+      <div className="p-3 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary">
+        <div className="flex items-center justify-between mb-2">
+          <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
+            <Activity className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
+            Feed de Atividades
+            <Badge className="text-xs px-1 py-0">{filteredActivities.length}</Badge>
+          </h4>
+          <div className="flex items-center gap-2">
+            <select
+              value={periodFilter}
+              onChange={(e) => setPeriodFilter((e.target as HTMLSelectElement).value as typeof periodFilter)}
+              className="text-xs px-2 py-1 bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400"
+            >
+              <option value="7days">Últimos 7 dias</option>
+              <option value="30days">Últimos 30 dias</option>
+              <option value="3months">Últimos 3 meses</option>
+              <option value="all">Todo período</option>
+            </select>
+            <div className="flex items-center bg-lia-bg-primary rounded-md p-0.5 border border-lia-border-subtle dark:border-lia-border-subtle">
+              <button
+                onClick={() => setActivityView('timeline')}
+                className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${activityView === 'timeline' ? 'bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary' : 'text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary'}`}
+                title="Visualização Timeline"
+              >
+                <GitBranch className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setActivityView('list')}
+                className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${activityView === 'list' ? 'bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary' : 'text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary'}`}
+                title="Visualização Lista"
+              >
+                <List className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            <Button
+              onClick={onShowLiaModal}
+              size="sm"
+              className="gap-1 px-2 py-1 text-xs h-6 bg-gray-100 hover:bg-gray-200 text-lia-text-secondary dark:text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-subtle"
+            >
+              <PlusCircle className="w-3 h-3" />
+              Nova Atividade
+            </Button>
+          </div>
+        </div>
+        <div className="flex gap-1 flex-wrap">
+          <button
+            onClick={() => setActivityFilter('all')}
+            className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'all' ? 'bg-gray-600 text-white' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-200'}`}
+          >
+            Todas
+          </button>
+          <button
+            onClick={() => setActivityFilter('emails')}
+            className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'emails' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-200'}`}
+          >
+            📧 Emails
+          </button>
+          <button
+            onClick={() => setActivityFilter('interviews')}
+            className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'interviews' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-200'}`}
+          >
+            🎤 Entrevistas
+          </button>
+          <button
+            onClick={() => setActivityFilter('tests')}
+            className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'tests' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-200'}`}
+          >
+            📝 Testes
+          </button>
+          <button
+            onClick={() => setActivityFilter('lia')}
+            className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'lia' ? 'text-white font-semibold' : 'hover:opacity-80'}`}
+            style={{backgroundColor: activityFilter === 'lia' ? 'var(--gray-950)' : 'var(--wedo-cyan-bg-15)',
+              color: activityFilter === 'lia' ? 'white' : 'var(--gray-600)'}}
+          >
+            🤖 LIA
+          </button>
+          <button
+            onClick={() => setActivityFilter('offers')}
+            className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'offers' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-200'}`}
+          >
+            💼 Ofertas
+          </button>
+          <button
+            onClick={() => setActivityFilter('applications')}
+            className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'applications' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-200'}`}
+          >
+            📋 Inscrições
+          </button>
+          <button
+            onClick={() => setActivityFilter('evaluations')}
+            className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'evaluations' ? 'bg-gray-700 text-white font-semibold' : 'lia-text-base hover:dark:bg-lia-bg-secondary dark:hover:bg-gray-700'}`}
+          >
+            🎯 Avaliações
+          </button>
+        </div>
+      </div>
 
-      {/* Timeline/List content - extracted to ActivityTimeline */}
       <div className="flex-1 overflow-y-auto p-3">
-        <ActivityTimeline
-          filteredActivities={filteredActivities}
-          activityView={activityView}
-          candidateName={String(candidate.name ?? '')}
-          renderActivityCard={renderActivityCard}
-        />
+        {activityView === 'timeline' ? (
+          <div className="relative">
+            {filteredActivities.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-12 px-4">
+                <div className="w-16 h-16 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center mb-4">
+                  <Activity className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                </div>
+                <h3 className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Nenhuma atividade registrada ainda</h3>
+                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary text-center max-w-xs">As atividades aparecerão aqui conforme o processo avança</p>
+              </div>
+            )}
+
+            {filteredActivities.length > 0 && (
+              <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-wedo-green opacity-20"></div>
+            )}
+
+            {filteredActivities.length > 0 && (() => {
+              const groupedActivities: { [key: string]: typeof activities } = {}
+              filteredActivities.forEach(activity => {
+                let dateKey = activity.date
+                if (activity.date.includes('Hoje')) dateKey = 'Hoje'
+                else if (activity.date.includes('Ontem')) dateKey = 'Ontem'
+                else if (activity.date.includes('2 dias')) dateKey = 'Esta Semana'
+                else if (activity.date.includes('3 dias')) dateKey = 'Esta Semana'
+                else if (activity.date.includes('4 dias')) dateKey = 'Esta Semana'
+                else if (activity.date.includes('5 dias')) dateKey = 'Esta Semana'
+                else if (activity.date.includes('6 dias')) dateKey = 'Esta Semana'
+                else if (activity.date.includes('semana')) dateKey = 'Últimas Semanas'
+                else dateKey = 'Anteriormente'
+                if (!groupedActivities[dateKey]) groupedActivities[dateKey] = []
+                groupedActivities[dateKey].push(activity)
+              })
+              const dateOrder = ['Hoje', 'Ontem', 'Esta Semana', 'Últimas Semanas', 'Anteriormente']
+              return dateOrder.map(dateKey => {
+                if (!groupedActivities[dateKey]) return null
+                return (
+                  <div key={dateKey} className="mb-6">
+                    <div className="relative flex items-center mb-3">
+                      <div className="absolute left-4 w-4 h-4 bg-white dark:bg-lia-bg-primary rounded-full border-2 border-gray-400 dark:border-lia-border-medium z-10"></div>
+                      <h3 className="ml-12 text-xs font-bold text-lia-text-primary dark:text-lia-text-primary">{dateKey}</h3>
+                      <div className="ml-3 flex-1 h-px bg-gray-200 dark:bg-lia-bg-elevated"></div>
+                    </div>
+                    <div className="space-y-3">
+                      {groupedActivities[dateKey].map((activity) => renderActivityCard(activity, true))}
+                    </div>
+                  </div>
+                )
+              }).filter(Boolean)
+            })()}
+
+            {filteredActivities.length > 0 && (
+              <div className="relative flex items-center mt-6">
+                <div className="absolute left-4 w-4 h-4 bg-wedo-green rounded-full z-10"></div>
+                <span className="ml-12 text-xs text-lia-text-primary dark:text-lia-text-primary">
+                  Início do processo • {String(candidate.name ?? '')} adicionado ao banco de talentos
+                </span>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {filteredActivities.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-12 px-4">
+                <div className="w-16 h-16 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center mb-4">
+                  <Activity className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                </div>
+                <h3 className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Nenhuma atividade registrada ainda</h3>
+                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary text-center max-w-xs">As atividades aparecerão aqui conforme o processo avança</p>
+              </div>
+            )}
+            {filteredActivities.map((activity) => renderActivityCard(activity, false))}
+          </div>
+        )}
       </div>
     </div>
   )

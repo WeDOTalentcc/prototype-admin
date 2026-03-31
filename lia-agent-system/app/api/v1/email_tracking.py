@@ -9,8 +9,6 @@ POST /api/v1/email-tracking/webhook             — SendGrid Event Webhook
 LGPD disclosure obrigatória nos emails:
 "Este email contém pixels de rastreamento para medir abertura. Veja nossa Política de Privacidade."
 """
-import hashlib
-import hmac
 import logging
 import os
 from fastapi import APIRouter, Request, Depends, Path, Query, HTTPException
@@ -109,7 +107,12 @@ async def tracking_click(
 
 
 def _verify_sendgrid_signature(request: Request, body: bytes) -> bool:
-    """Verify SendGrid Event Webhook signature (v3 ECDSA or v1 HMAC fallback).
+    """Verify SendGrid Event Webhook signature using ECDSA (v3).
+
+    SendGrid signs payloads with ECDSA P-256 and provides:
+      - x-twilio-email-event-webhook-signature: base64-encoded ECDSA signature
+      - x-twilio-email-event-webhook-timestamp: Unix timestamp string
+    Verification key is the public ECDSA key from SendGrid's Event Webhook settings.
 
     If SENDGRID_WEBHOOK_VERIFICATION_KEY is not set, verification is skipped
     (dev/staging only — production MUST set the key).
@@ -126,13 +129,26 @@ def _verify_sendgrid_signature(request: Request, body: bytes) -> bool:
         return False
 
     try:
-        payload = timestamp + body.decode("utf-8")
-        expected = hmac.new(
-            _SENDGRID_WEBHOOK_VERIFICATION_KEY.encode("utf-8"),
-            payload.encode("utf-8"),
-            hashlib.sha256,
-        ).hexdigest()
-        return hmac.compare_digest(expected, signature)
+        import base64
+        from cryptography.hazmat.primitives import hashes, serialization
+        from cryptography.hazmat.primitives.asymmetric.ec import ECDSA
+        from cryptography.exceptions import InvalidSignature
+
+        payload = timestamp.encode("utf-8") + body
+        decoded_signature = base64.b64decode(signature)
+
+        public_key_pem = _SENDGRID_WEBHOOK_VERIFICATION_KEY
+        if not public_key_pem.startswith("-----"):
+            public_key_pem = base64.b64decode(public_key_pem)
+            public_key = serialization.load_der_public_key(public_key_pem)
+        else:
+            public_key = serialization.load_pem_public_key(public_key_pem.encode("utf-8"))
+
+        public_key.verify(decoded_signature, payload, ECDSA(hashes.SHA256()))
+        return True
+    except InvalidSignature:
+        logger.warning("[EmailTracking] webhook ECDSA signature verification failed — invalid signature")
+        return False
     except Exception as exc:
         logger.warning("[EmailTracking] webhook signature verification error: %s", exc)
         return False

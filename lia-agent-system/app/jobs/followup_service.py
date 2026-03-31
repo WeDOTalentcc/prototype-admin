@@ -34,7 +34,6 @@ async def process_email_followups(db: AsyncSession) -> dict[str, int]:
     sent = skipped = errors = marked_no_response = 0
 
     try:
-        # Busca notificações wsi_invite enviadas há > 24h
         cutoff = datetime.now(timezone.utc) - timedelta(hours=FOLLOWUP_INTERVAL_HOURS)
         result = await db.execute(text("""
             SELECT
@@ -52,7 +51,11 @@ async def process_email_followups(db: AsyncSession) -> dict[str, int]:
                   WHERE e.notification_id = n.id
                     AND e.event_type IN ('open', 'click')
               )
-        """), {"cutoff": cutoff})
+              AND (
+                  n.extra_data->>'last_followup_at' IS NULL
+                  OR (n.extra_data->>'last_followup_at')::timestamp < :last_followup_cutoff
+              )
+        """), {"cutoff": cutoff, "last_followup_cutoff": cutoff})
         rows = result.fetchall()
     except Exception as exc:
         logger.error("[followup] erro ao buscar notificações pendentes: %s", exc)
