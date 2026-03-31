@@ -194,7 +194,7 @@
 
 **Regra:** Um componente só aparece se IA está envolvida. "IA" = LLM, embedding, modelo ML, heurística adaptativa, ou agente autônomo. Infraestrutura pura (auth, CRUD manual, PII masking, audit trail, LGPD) não aparece — são listados uma vez na seção de infraestrutura global.
 
-**Convenção de nomes:** Os rótulos Ag.0–Ag.8 vêm do Fluxo Alpha 1 v2 (source of truth do MVP). No código, os agentes estão registrados em `agents_registry.yaml` com nomes de domínio (pipeline, sourcing, wizard, talent, kanban, policy, jobs_management). A correspondência principal: Ag.0 = MainOrchestrator, Ag.2 = SourcingReActAgent, Ag.4 = WSIInterviewGraph, Ag.5 = scoring via WSIService, Ag.6 = SchedulingService, Ag.7 = AnalistaFeedback (pipeline domain), Ag.8 = ATSIntegrationReActAgent.
+**Convenção de nomes:** Os rótulos Ag.0–Ag.8 vêm do Fluxo Alpha 1 v2 (source of truth do MVP). No código, os agentes estão registrados em `agents_registry.yaml` com nomes de domínio (pipeline, sourcing, wizard, talent, kanban, policy, jobs_management). A correspondência principal: Ag.0 = MainOrchestrator, Ag.2 = SourcingReActAgent, Ag.4 = WSIInterviewGraph (conduz entrevista), Ag.5 = scoring via WSIService, Ag.6 = SchedulingService, Ag.7 = AnalistaFeedback (domínio communication para envio, analytics para relatórios), Ag.8 = ATSIntegrationReActAgent. **Atenção:** A geração de perguntas WSI (E3) é feita pelo **WSIQuestionGeneratorService** (serviço), não pelo Ag.4 — o Ag.4 apenas conduz a entrevista (E7). As tools de comunicação (`send_email`, `send_whatsapp`) estão registradas no domínio `communication` (`communication_tool_registry.py`), executadas via CommunicationReActAgent (Ag.7), não diretamente pelo Ag.0.
 
 **Legenda:** ● Ativo | ◐ Disponível (precisa ativar) | ○ A implementar | ⚠ Gap bloqueante
 
@@ -250,6 +250,8 @@ Estes componentes são infraestrutura de plataforma. Não envolvem IA e se aplic
 | **WSI Question Generator** (Gemini) | Recebe JD + competências técnicas + comportamentais + senioridade → gera perguntas WSI organizadas em Blocos 2 (elegibilidade), 3 (técnico), 4 (comportamental) via `POST /api/v1/wsi/generate-questions`. Há também o pipeline unificado `POST /api/v1/wsi/screening-pipeline` (`WSIScreeningPipeline`) que orquestra geração + calibração + scoring em fluxo único | Porque as perguntas de triagem precisam ser calibradas por senioridade (Dreyfus), complexidade cognitiva (Bloom), traços de personalidade (Big Five) e competência (CBI) | ● |
 | **WSIScreeningQuestionGenerator** (heurístico + calibração) | Gera perguntas via templates Big5/CBI/Bloom/Dreyfus quando o LLM não está disponível; aplica `SeniorityContextCalibrator` para ajustar Dreyfus target e Bloom levels por área/indústria | Porque o fallback garante geração mesmo sem LLM, e a calibração contextual adapta a dificuldade ao perfil real da vaga | ● |
 | **FairnessGuard L1/L2** | Pre-check nas perguntas geradas: L1 bloqueia perguntas com padrões discriminatórios; L2 alerta proxy terms | Porque perguntas de triagem discriminatórias invalidam o processo seletivo inteiro | ◐ |
+
+> **Nota importante:** Nesta etapa, quem **gera** as perguntas WSI é o **WSIQuestionGeneratorService** (`WSIScreeningQuestionGenerator` — serviço, não agente). O **Ag.4 EntrevistadorWSI** (`wsi_interview_graph.py`) **conduz** a entrevista na E7 — ele aplica as perguntas sequencialmente, coleta respostas e gera feedback. A distinção é: E3 = geração de perguntas (serviço), E7 = condução da entrevista (agente). O **JDGeneratorService** (`jd_generator_service.py`) também participa quando o consultor usa o modal para gerar ou ajustar o JD antes de configurar o roteiro.
 
 > **GAP:** FG e Fact-Checker precisam ser ativados como step pós-geração no endpoint `/api/v1/wsi/generate-questions`.
 
@@ -308,7 +310,8 @@ Estes componentes são infraestrutura de plataforma. Não envolvem IA e se aplic
 
 | Componente IA | O que faz | Por quê | Status |
 |--------------|----------|---------|--------|
-| **Ag.0 Orchestrator** (LangGraph) | Dispara contato via EmailService/WhatsAppService: seleciona template, personaliza com dados do candidato/vaga. Follow-ups dependem de scheduler (não implementado no MVP) | Porque o contato inicial precisa ser personalizado por candidato e vaga sem intervenção manual | ● (contato) / ○ (follow-up) |
+| **Ag.0 Orchestrator** (LangGraph) | Orquestra o fluxo de contato: recebe decisão de Gate 1, delega envio ao Ag.7 ou ao domínio communication. Follow-ups dependem de scheduler (não implementado no MVP) | Porque a coordenação pós-aprovação precisa disparar múltiplos canais de forma orquestrada | ● (contato) / ○ (follow-up) |
+| **Ag.7 AnalistaFeedback** (LangGraph) | Executa as tools de comunicação (`send_email`, `send_whatsapp`) registradas no domínio `communication` via CommunicationReActAgent. Personaliza template com dados do candidato/vaga | Porque as tools de envio estão registradas no CommunicationReActAgent (domínio communication, `communication_tool_registry.py`), não no Orchestrator diretamente | ● |
 | **Template Learning** | Aprende quais templates de email têm melhor taxa de abertura/resposta → prioriza em envios futuros | Porque otimizar o template por performance reduz "sem_resposta" | ◐ |
 | **A/B Testing** | Variantes de template de email testadas por cohort para medir taxa de abertura/clique | Porque decisões de template devem ser data-driven, não por opinião | ◐ |
 
@@ -384,10 +387,10 @@ Estes componentes são infraestrutura de plataforma. Não envolvem IA e se aplic
 |-------|-----------|-----------|---------------------|--------|
 | E1 Login | — | — | — | sem IA |
 | E2 Editar Vaga | — | Claude (JDGenerator) | JDGeneratorService | ● (condicional) |
-| E3 Roteiro WSI | Ag.4 (indiretamente) | Claude + Gemini | JDGeneratorService + WSI Question Generator | ● |
+| E3 Roteiro WSI | — (serviços, não agentes) | Claude + Gemini | JDGeneratorService + WSIQuestionGeneratorService | ● |
 | E4 Buscar Candidatos | Ag.2, Ag.3, Ag.5 | LLM cascade + Gemini embeddings | CascadedRouter + SourcingPipeline + CVScoring | ● |
 | E5 Gate 1 | Ag.0, Ag.7, Ag.8 | LLM (feedback) | PolicyEngine + LearningLoop | ● |
-| E6 Contato Email | Ag.0 | LLM (template personalization) | EmailService + TemplateLearning | ● |
+| E6 Contato Email | Ag.0, Ag.7 | LLM (template personalization) | EmailService + TemplateLearning | ● |
 | E7 Triagem WSI | Ag.0, Ag.4, Ag.5 | LLM (avaliação) + Deepgram + OpenAI TTS | WSIService + VoiceService | ● |
 | E8 Gate 2 | Ag.7, Ag.8 | LLM (feedback) | PolicyEngine + LearningLoop | ● |
 | E9 Agendar + Feedback | Ag.6, Ag.7 | LLM (feedback) + Gemini (embedding) | SchedulingService + EmbeddingService | ● |
@@ -422,6 +425,29 @@ Estes componentes são infraestrutura de plataforma. Não envolvem IA e se aplic
 | E9 Agendar + Feedback | ● | ● | — | ◐ | — |
 
 > **Legenda:** ● Ativo | ◐ Disponível (precisa ativar) | ○ A implementar | ⚠ Gap bloqueante
+
+---
+
+### NOTA: Agentes no `AgentType` que NÃO participam do fluxo Alpha 1
+
+| Agente (enum) | Papel | Motivo de exclusão do fluxo |
+|---------------|-------|-----------------------------|
+| **RECRUITER_ASSISTANT** | Assistente pessoal do recrutador | Funciona como **fallback geral** quando o CascadedRouter não identifica um domínio específico. Não é acionado diretamente por nenhuma etapa E1–E9; responde a perguntas genéricas do consultor fora do fluxo de recrutamento. |
+| **TASK_PLANNER** | Planejador de tarefas | Existe no enum `AgentType` (Agente 9) mas **não possui implementação de agente dedicado** — sem arquivo de agente, sem tools registradas, sem system prompt. Reservado para uso futuro. |
+
+> **Referência:** `lia-agent-system/app/shared/agents/agent_types.py` linhas 53-57.
+
+### NOTA: Domínios implementados FORA do escopo Alpha 1
+
+| Domínio | Descrição | Por que não aparece no fluxo |
+|---------|-----------|------------------------------|
+| `automation` | Automação de workflows internos | Infraestrutura para automações futuras; nenhuma etapa Alpha 1 depende dele |
+| `hiring_policy` | Políticas de contratação por empresa/setor | Consumido internamente pelo PolicyEngine, mas não exposto como agente no fluxo |
+| `pipeline` | Gestão de pipeline de candidatos (Kanban backend) | Backend do Kanban que é usado pelas etapas E5/E8, mas como infraestrutura, não como agente autônomo |
+| `policy` | Motor de regras e sector rules | Suporte ao PolicyEngine e ALPHA1_SECTOR_RULES; opera como serviço interno, não como agente |
+| `recruiter_assistant` | Domínio do assistente pessoal do recrutador | Agente de fallback (ver nota acima); fora do fluxo linear E1-E9 |
+
+> Estes domínios existem no código (`lia-agent-system/app/domains/`) mas não são acionados diretamente como agentes no fluxo de 9 etapas do Alpha 1.
 
 ---
 
@@ -511,9 +537,11 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 
 | Dimensão | Componente | Status | Arquivo Replit |
 |----------|-----------|--------|----------------|
-| **Agente** | Ag.4 EntrevistadorWSI | Implementado | `app/domains/cv_screening/` |
-| **Domínio** | `cv_screening` (WSI) + `wizard` | Implementado | `app/domains/` |
-| **Serviços** | WSIService, JDGeneratorService | Implementado | `wsi_service.py`, `jd_generator_service.py` |
+| **Serviço** | WSIQuestionGeneratorService (gera perguntas WSI) | Implementado | `app/domains/cv_screening/services/wsi_question_generator.py` |
+| **Serviço** | JDGeneratorService (gera/ajusta JD) | Implementado | `app/domains/job_management/services/jd_generator_service.py` |
+| **Agente** | Ag.4 EntrevistadorWSI (conduz a entrevista, não gera perguntas) | Implementado | `app/domains/cv_screening/agents/wsi_interview_graph.py` |
+| **Domínio** | `cv_screening` (WSI) + `job_management` + `wizard` | Implementado | `app/domains/` |
+| **Serviços** | WSIService, WSIScreeningPipeline | Implementado | `wsi_service.py`, `wsi_screening_pipeline.py` |
 | **Tools** | `generate_screening_questions`, `analyze_jd_and_suggest_competencies` | Registradas | WSI domain tools |
 | **Frontend** | Modal WSI + Preview Vaga | Implementado | `src/components/modals/` |
 | **COMPLIANCE** | | | |
@@ -620,9 +648,10 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | Dimensão | Componente | Status | Arquivo Replit |
 |----------|-----------|--------|----------------|
 | **Agente** | Ag.0 Orchestrator | Implementado | `main_orchestrator.py` |
+| **Agente** | Ag.7 AnalistaFeedback (via CommunicationReActAgent) | Implementado | `app/domains/communication/agents/communication_react_agent.py` |
 | **Domínio** | `communication` | Implementado | `app/domains/communication/` |
 | **Serviços** | EmailService (Resend/SendGrid), WhatsAppService (Twilio) | Implementados | `email_service.py`, `whatsapp_service.py` |
-| **Tools** | `send_email`, `send_whatsapp`, `send_bulk_email`, `send_feedback` | Registradas | `communication_tools.py` |
+| **Tools (ReAct)** | `send_email`, `send_whatsapp`, `get_communication_history`, `schedule_message`, `check_rate_limit` | Registradas | `communication_tool_registry.py` (canonical ReAct registry). Nota: `communication_tools.py` (legacy) também registra `send_feedback` e `send_bulk_email` |
 | **Frontend** | Templates de email | Implementado | `src/components/` |
 | **COMPLIANCE** | | | |
 | ↳ FairnessGuard | N/A (email é template) | — | — |
@@ -913,10 +942,10 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 |---|------|---------|------------|-------------|---------|
 | P1.1 | Login funcional + rate limiting | — | Rate Limiting, Audit | — | 1 dia |
 | P1.2 | Import/Edição de Vaga do ATS | Ag.8 | FG L1-L2, Audit | Template Learning, Predictive | 2-3 dias |
-| P1.3 | Configurar Roteiro WSI | Ag.4 | FG L1-L2, Fact-Check | A/B Testing, Learning Loop | 2-3 dias |
+| P1.3 | Configurar Roteiro WSI | WSIQuestionGeneratorService, JDGeneratorService | FG L1-L2, Fact-Check | A/B Testing, Learning Loop | 2-3 dias |
 | P1.4 | Busca de Candidatos | Ag.2, Ag.3 | FG L1-L3, PII, Audit | Semantic Search, Calibration, Score Norm. | 5-7 dias |
 | P1.5 | Aprovação Kanban (Gate 1) | Ag.0, Ag.7, Ag.8 | check_rejection_fairness, Policy, Audit | Calibration, Learning Loop | 3-4 dias |
-| P1.6 | Envio de Email de Contato | Ag.0 | Rate Limiting, LGPD (opt-out), Audit | A/B Testing (templates) | 2-3 dias |
+| P1.6 | Envio de Email de Contato | Ag.0, Ag.7 | Rate Limiting, LGPD (opt-out), Audit | A/B Testing (templates) | 2-3 dias |
 
 ### Fase 2: TRIAGEM + AUTOMAÇÃO (Semana 4-6)
 
