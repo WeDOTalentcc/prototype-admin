@@ -30,8 +30,8 @@ import { type DataRequestSubmitData } from "@/components/modals/data-request-mod
 import {
   mapInterviewStagesToKanban,
   createInitialCandidatesData,
-  type DynamicStage,
 } from "@/components/pages/job-kanban/utils/kanbanStageUtils"
+import { type DynamicStage } from "@/components/kanban"
 import { calculateNotaLiaGeral } from "@/components/pages/job-kanban/utils/kanbanHelpers"
 import { useKanbanBulkActions } from "@/components/pages/job-kanban/hooks/useKanbanBulkActions"
 import { useKanbanLIAHandlers } from "@/components/pages/job-kanban/hooks/useKanbanLIAHandlers"
@@ -189,7 +189,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
 
   // Estados para etapas dinâmicas do Kanban
   const [dynamicStages, setDynamicStages] = useState<DynamicStage[]>(() =>
-    mapInterviewStagesToKanban(job?.interviewStages as Parameters<typeof mapInterviewStagesToKanban>[0])
+    mapInterviewStagesToKanban(job?.interviewStages as Parameters<typeof mapInterviewStagesToKanban>[0]) as unknown as DynamicStage[]
   )
 
   // Enriquece as etapas com sub-statuses ativos do pipeline da empresa (fonte: DB)
@@ -228,26 +228,27 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
 
     if (isFromInterview && candidateWithInterview) {
       const c = candidateWithInterview
-      const dateStr = c.interviewDate || new Date(c.agendada).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
+      const dateStr = (c.interviewDate as string | undefined) || new Date(c.agendada as string).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
       setTransitionInitialPrompt(
-        `O recrutador está movendo ${c.name} da etapa de entrevista. Este candidato tem uma entrevista agendada para ${dateStr}. Isso significa cancelar a entrevista? Ou prefere alterar o horário e mantê-lo na entrevista? Pergunte e aguarde a resposta do recrutador.`
+        `O recrutador está movendo ${c.name as string} da etapa de entrevista. Este candidato tem uma entrevista agendada para ${dateStr}. Isso significa cancelar a entrevista? Ou prefere alterar o horário e mantê-lo na entrevista? Pergunte e aguarde a resposta do recrutador.`
       )
       setTransitionAllowStageSelection(true)
-      setTransitionInterviewAlert({ name: c.name, date: dateStr })
+      setTransitionInterviewAlert({ name: c.name as string, date: dateStr })
     }
 
     openTransition(candidates, fromStage, toStage)
   }, [openTransition])
 
   // Estados para candidatesData (hoisted before useKanbanTransitions)
-  const [candidatesData, setCandidatesData] = useState<Record<string, KanbanCandidate[]>>(() => 
+  const [candidatesData, setCandidatesData] = useState<Record<string, Record<string, unknown>[]>>(() =>
     createInitialCandidatesData(mapInterviewStagesToKanban(job?.interviewStages as Parameters<typeof mapInterviewStagesToKanban>[0]))
   )
 
   // ── handleUniversalTransitionConfirm — extraído para useKanbanTransitions ──
   const { handleUniversalTransitionConfirm } = useKanbanTransitions({
-    candidatesData, setCandidatesData,
-    universalModalState,
+    candidatesData,
+    setCandidatesData,
+    universalModalState: universalModalState as unknown as Parameters<typeof useKanbanTransitions>[0]["universalModalState"],
     closeTransition,
     toast,
   })
@@ -344,11 +345,11 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
       .find((c: Record<string, unknown>) => c.id === candidateId)
     
     if (candidate) {
-      setDataRequestModalCandidate(candidate)
+      setDataRequestModalCandidate(candidate as unknown as Parameters<typeof setDataRequestModalCandidate>[0])
       setShowDataRequestModal(true)
       toast({
         title: "Reenviar Solicitação",
-        description: `Preparando reenvio de solicitação para ${candidate.name}`,
+        description: `Preparando reenvio de solicitação para ${candidate.name as string}`,
       })
     }
   }, [candidatesData, toast])
@@ -357,24 +358,15 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     const candidate = Object.values(candidatesData)
       .flat()
       .find((c: Record<string, unknown>) => c.id === candidateId)
-    
+
     if (candidate) {
-      setSelectedCandidate(candidate)
+      setSelectedCandidate(candidate as unknown as Parameters<typeof setSelectedCandidate>[0])
       toast({
         title: "Detalhes da Solicitação",
         description: `Visualizando detalhes de ${candidate.name}`,
       })
     }
   }, [candidatesData, toast])
-
-  const handleDataRequestSubmit = useCallback(async (data: DataRequestSubmitData) => {
-    toast({
-      title: "Solicitação Enviada",
-      description: `Solicitação de dados enviada para ${dataRequestModalCandidate?.name || 'candidato'}`,
-    })
-    setShowDataRequestModal(false)
-    setDataRequestModalCandidate(null)
-  }, [dataRequestModalCandidate, toast])
 
   // ── Carregamento de candidatos — extraído para useKanbanCandidateLoader ──
   const candidateLoader = useKanbanCandidateLoader({ job, dynamicStages, setCandidatesData })
@@ -385,7 +377,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   const [searchQuery, setSearchQuery] = useState("")
 
   // ── Modais e UI — extraído para useKanbanUIModals ──
-  const uiModals = useKanbanUIModals({ job, toast })
+  const uiModals = useKanbanUIModals({ job, toast: toast as unknown as Parameters<typeof useKanbanUIModals>[0]["toast"] })
   const {
     previewCandidate, isPreviewOpen, showCandidatePage, isPreviewMaximized,
     triagemCandidate, showReport, isTriagemOpen, showTestPreview, editingQuestion,
@@ -444,22 +436,31 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     openSuperChat, returnToExpandedPrompt,
   } = uiModals.actions
 
+  const handleDataRequestSubmit = useCallback(async (_data: DataRequestSubmitData) => {
+    toast({
+      title: "Solicitação Enviada",
+      description: `Solicitação de dados enviada para ${(dataRequestModalCandidate as Record<string,unknown>|null)?.name as string || 'candidato'}`,
+    })
+    setShowDataRequestModal(false)
+    setDataRequestModalCandidate(null)
+  }, [dataRequestModalCandidate, toast, setShowDataRequestModal, setDataRequestModalCandidate])
+
   const { handleBulkAction, handleBulkActionExecute } = useKanbanBulkActions({
     selectedCandidates,
     setSelectedCandidates,
-    allTableCandidates,
+    allTableCandidates: allTableCandidates as unknown as Parameters<typeof useKanbanBulkActions>[0]["allTableCandidates"],
     toast,
     setBulkActionType,
     setShowBulkActionModal,
-    setDataRequestModalCandidate,
+    setDataRequestModalCandidate: setDataRequestModalCandidate as unknown as Parameters<typeof useKanbanBulkActions>[0]["setDataRequestModalCandidate"],
     setShowDataRequestModal,
     setUnifiedModalType,
-    setUnifiedModalCandidate,
+    setUnifiedModalCandidate: setUnifiedModalCandidate as unknown as Parameters<typeof useKanbanBulkActions>[0]["setUnifiedModalCandidate"],
     setUnifiedModalOpen,
-    setWsiInviteCandidate,
+    setWsiInviteCandidate: setWsiInviteCandidate as unknown as Parameters<typeof useKanbanBulkActions>[0]["setWsiInviteCandidate"],
     setShowWSIInviteModal,
     setShowShareGestorModal,
-    setCandidatesData,
+    setCandidatesData: setCandidatesData as unknown as Parameters<typeof useKanbanBulkActions>[0]["setCandidatesData"],
   })
 
   // Favorites State
@@ -539,7 +540,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
             'cultural': 'interview_hr',
             'final': 'interview_final',
           }
-          const interviewStageId = interviewSlugMap[(nav as Record<string, unknown>).interviewType] || 'interview_hr'
+          const interviewStageId = interviewSlugMap[(nav as Record<string, unknown>).interviewType as string] || 'interview_hr'
           const matchedStage = dynamicStages.find(s => s.id === interviewStageId || s.actionBehavior === 'scheduling')
           if (matchedStage) {
             fromStage = matchedStage.id
@@ -576,7 +577,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
         setShowExpandedLIA(true)
       }
       if (matched) {
-        setPreviewCandidate(matched)
+        setPreviewCandidate(matched as unknown as Parameters<typeof setPreviewCandidate>[0])
         setIsPreviewOpen(true)
       }
     }
@@ -674,9 +675,9 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
         deadlineShortlist: currentJob.deadlineShortlist || '',
         deadlineClosing: currentJob.deadlineClosing || '',
         salaryMin: (currentJob.salaryRange as Record<string,unknown>|undefined)?.min || currentJob.salaryMin || '',
-        salaryMax: currentJob.salaryRange?.max || currentJob.salaryMax || '',
+        salaryMax: (currentJob.salaryRange as Record<string,unknown>|undefined)?.max || currentJob.salaryMax || '',
         bonusMin: (currentJob.bonusRange as Record<string,unknown>|undefined)?.min || (currentJob.bonus_range as Record<string,unknown>|undefined)?.min || '',
-        bonusMax: currentJob.bonusRange?.max || currentJob.bonus_range?.max || '',
+        bonusMax: (currentJob.bonusRange as Record<string,unknown>|undefined)?.max || (currentJob.bonus_range as Record<string,unknown>|undefined)?.max || '',
         benefits: currentJob.benefits || [],
         targetAudience: currentJob.targetAudience || '',
         targetSector: currentJob.targetSector || '',
@@ -725,7 +726,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
 
   useEffect(() => {
     if (!companyDefaults?.defaultLanguages?.length) return
-    if (jobEditForm.languages && jobEditForm.languages.length > 0) return
+    if (jobEditForm.languages && (jobEditForm.languages as unknown[]).length > 0) return
 
     const prefilled = companyDefaults.defaultLanguages.map((lang: string) => ({
       language: lang,
@@ -751,7 +752,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
           const updated: Record<string, Record<string, unknown>[]> = {}
           for (const [stageId, candidates] of Object.entries(prev)) {
             updated[stageId] = candidates.map((c: Record<string, unknown>) => {
-              const wsiData = data.candidates[c.id]
+              const wsiData = data.candidates[c.id as string]
               if (!wsiData) return c
               return {
                 ...c,
@@ -777,14 +778,14 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   }, [allTableCandidates])
 
   const openUnifiedModal = useCallback((candidate: Record<string, unknown>, type: CommunicationType) => {
-    setUnifiedModalCandidate(candidate)
+    setUnifiedModalCandidate(candidate as unknown as Parameters<typeof setUnifiedModalCandidate>[0])
     setUnifiedModalType(type)
     setUnifiedModalOpen(true)
-  }, [])
+  }, [setUnifiedModalCandidate, setUnifiedModalType, setUnifiedModalOpen])
 
   const { handleLiaUiAction, handleAICommand, handleOrchestratedMessage } = useKanbanLIAHandlers({
     liaMessages,
-    setLiaMessages,
+    setLiaMessages: setLiaMessages as unknown as Parameters<typeof useKanbanLIAHandlers>[0]["setLiaMessages"],
     setLiaPromptValue,
     setIsLiaLoading,
     setShowExpandedLIA,
@@ -793,20 +794,20 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     liaConversationId,
     setLiaConversationId,
     currentJob,
-    allTableCandidates,
+    allTableCandidates: allTableCandidates as unknown as Parameters<typeof useKanbanLIAHandlers>[0]["allTableCandidates"],
     selectedCandidates,
-    candidatesData,
+    candidatesData: candidatesData as unknown as Parameters<typeof useKanbanLIAHandlers>[0]["candidatesData"],
     user,
-    findCandidateById,
-    openUnifiedModal,
+    findCandidateById: findCandidateById as unknown as Parameters<typeof useKanbanLIAHandlers>[0]["findCandidateById"],
+    openUnifiedModal: openUnifiedModal as unknown as Parameters<typeof useKanbanLIAHandlers>[0]["openUnifiedModal"],
     openTransition,
-    setWsiCandidate,
+    setWsiCandidate: setWsiCandidate as unknown as Parameters<typeof useKanbanLIAHandlers>[0]["setWsiCandidate"],
     setShowWSIModal,
-    setWsiInviteCandidate,
+    setWsiInviteCandidate: setWsiInviteCandidate as unknown as Parameters<typeof useKanbanLIAHandlers>[0]["setWsiInviteCandidate"],
     setShowWSIInviteModal,
-    setDataRequestModalCandidate,
+    setDataRequestModalCandidate: setDataRequestModalCandidate as unknown as Parameters<typeof useKanbanLIAHandlers>[0]["setDataRequestModalCandidate"],
     setShowDataRequestModal,
-    setRubricCandidate,
+    setRubricCandidate: setRubricCandidate as unknown as Parameters<typeof useKanbanLIAHandlers>[0]["setRubricCandidate"],
     setShowRubricModal,
   })
 
@@ -831,30 +832,30 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
 
   // ── computedSuggestions + LIA briefing — extraídos para useKanbanLIASuggestions ──
   const { computedSuggestions, hasShownProactiveSuggestion, lastBriefingJobId } = useKanbanLIASuggestions({
-    dynamicStages,
-    candidatesData,
-    allTableCandidates,
+    dynamicStages: dynamicStages as unknown as Parameters<typeof useKanbanLIASuggestions>[0]["dynamicStages"],
+    candidatesData: candidatesData as unknown as Parameters<typeof useKanbanLIASuggestions>[0]["candidatesData"],
+    allTableCandidates: allTableCandidates as unknown as Parameters<typeof useKanbanLIASuggestions>[0]["allTableCandidates"],
     currentJob,
     liaMessages,
     companyId: _companyIdForSL,
-    setLiaMessages,
+    setLiaMessages: setLiaMessages as unknown as Parameters<typeof useKanbanLIASuggestions>[0]["setLiaMessages"],
   })
 
   const { handleDragStart, handleDragEnd, handleDragOver, handleDragLeave, getSuggestedSubStatus, getAvailableSubStatuses, getSubStatusColor, stagesRequiringConfirmation, handleDrop, confirmMove, cancelMove } = useKanbanDragDrop({
-    draggedCandidate,
-    setDraggedCandidate,
+    draggedCandidate: draggedCandidate as unknown as Parameters<typeof useKanbanDragDrop>[0]["draggedCandidate"],
+    setDraggedCandidate: setDraggedCandidate as unknown as Parameters<typeof useKanbanDragDrop>[0]["setDraggedCandidate"],
     dragOverColumn,
     setDragOverColumn,
     dynamicStages,
     openTransition,
-    pendingMove,
-    setPendingMove,
+    pendingMove: pendingMove as unknown as Parameters<typeof useKanbanDragDrop>[0]["pendingMove"],
+    setPendingMove: setPendingMove as unknown as Parameters<typeof useKanbanDragDrop>[0]["setPendingMove"],
     statusModalOpen,
     setStatusModalOpen,
     selectedSubStatus,
     setSelectedSubStatus,
-    setCandidatesData,
-    job,
+    setCandidatesData: setCandidatesData as unknown as Parameters<typeof useKanbanDragDrop>[0]["setCandidatesData"],
+    job: job as unknown as Parameters<typeof useKanbanDragDrop>[0]["job"],
   })
 
   const getStageDisplayName = (stageId: string): string => {
@@ -1044,7 +1045,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   }, [openTransition])
 
   const handleScheduleInterview = (candidate: Record<string, unknown>) => {
-    setUnifiedModalCandidate(candidate)
+    setUnifiedModalCandidate(candidate as unknown as Parameters<typeof setUnifiedModalCandidate>[0])
     setUnifiedModalType('agendamento')
     setUnifiedModalOpen(true)
   }
@@ -1055,7 +1056,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
       data[col].some((c: Record<string, unknown>) => c.id === previewCandidate?.id)
     )
     if (currentColumn && data[currentColumn][index]) {
-      setPreviewCandidate(data[currentColumn][index])
+      setPreviewCandidate(data[currentColumn][index] as unknown as Parameters<typeof setPreviewCandidate>[0])
     }
   }
 
@@ -1079,19 +1080,19 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   // Funções para abrir modal de fluxo de decisão
   const { handleDecisionFlowConfirm, handleApproveCandidate, handleRejectCandidate, handleApproveFromScreening, handleRejectFromScreening, handleTriagemApprove, handleTriagemReject, handleOpenAnalysis, openDecisionFlowModal } = useKanbanCandidateDecisions({
     toast,
-    job,
+    job: job as unknown as Parameters<typeof useKanbanCandidateDecisions>[0]["job"],
     dynamicStages,
-    setCandidatesData,
+    setCandidatesData: setCandidatesData as unknown as Parameters<typeof useKanbanCandidateDecisions>[0]["setCandidatesData"],
     setShowDecisionFlowModal,
-    setDecisionFlowCandidate,
-    decisionFlowCandidate,
+    setDecisionFlowCandidate: setDecisionFlowCandidate as unknown as Parameters<typeof useKanbanCandidateDecisions>[0]["setDecisionFlowCandidate"],
+    decisionFlowCandidate: decisionFlowCandidate as unknown as Parameters<typeof useKanbanCandidateDecisions>[0]["decisionFlowCandidate"],
     openTransition,
     setTransitionInitialPrompt,
     onCloseTriagem: handleCloseTriagem,
-    setRubricCandidate,
+    setRubricCandidate: setRubricCandidate as unknown as Parameters<typeof useKanbanCandidateDecisions>[0]["setRubricCandidate"],
     setShowRubricModal,
-    setRubricEvaluationData,
-    setDecisionFlowType,
+    setRubricEvaluationData: setRubricEvaluationData as unknown as Parameters<typeof useKanbanCandidateDecisions>[0]["setRubricEvaluationData"],
+    setDecisionFlowType: setDecisionFlowType as unknown as Parameters<typeof useKanbanCandidateDecisions>[0]["setDecisionFlowType"],
   })
 
   const handleOpenTriagem = useCallback((candidate: Record<string, unknown>) => {
@@ -1110,7 +1111,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
         handleOpenTriagem(candidate)
         break
       case 'cv':
-        handleOpenAnalysis(candidate)
+        handleOpenAnalysis(candidate as unknown as Parameters<typeof handleOpenAnalysis>[0])
         break
       case 'tecnico':
         setShowTechnicalTestModal(true)
@@ -1125,15 +1126,15 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   }
 
   const { handleSaveJobSection, handleInlineRename, handleInlineToggleActive, handleInlineRemove, handleInlineMoveLeft, handleInlineMoveRight, handleInlineUpdateSLA } = useKanbanJobEditing({
-    toast,
-    currentJob,
+    toast: toast as unknown as Parameters<typeof useKanbanJobEditing>[0]["toast"],
+    currentJob: currentJob as unknown as Parameters<typeof useKanbanJobEditing>[0]["currentJob"],
     jobEditForm,
     setSavingJobSection,
     setEditingSection,
-    setDynamicStages,
+    setDynamicStages: setDynamicStages as unknown as Parameters<typeof useKanbanJobEditing>[0]["setDynamicStages"],
     setCandidatesData,
-    mapInterviewStagesToKanban,
-    createInitialCandidatesData,
+    mapInterviewStagesToKanban: mapInterviewStagesToKanban as unknown as Parameters<typeof useKanbanJobEditing>[0]["mapInterviewStagesToKanban"],
+    createInitialCandidatesData: createInitialCandidatesData as unknown as Parameters<typeof useKanbanJobEditing>[0]["createInitialCandidatesData"],
   })
 
   // Funções para o relatório

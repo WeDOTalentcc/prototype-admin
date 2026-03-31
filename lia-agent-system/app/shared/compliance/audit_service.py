@@ -30,6 +30,8 @@ DECISION_TYPE_MAPPING = {
     "rejected": DecisionType.REJECT_CANDIDATE,
     "approve": DecisionType.APPROVE_CANDIDATE,
     "approved": DecisionType.APPROVE_CANDIDATE,
+    "generate_jd": DecisionType.GENERATE_FEEDBACK,
+    "generate_wsi_questions": DecisionType.GENERATE_FEEDBACK,
 }
 
 PROTECTED_CRITERIA = [

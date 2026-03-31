@@ -372,26 +372,30 @@ async def reject_candidate(
     """
     logger.info(f"❌ Rejecting candidate {candidate_id} from job {job_id}")
     
-    from app.shared.compliance.fairness_guard import FairnessGuard
-    _fg = FairnessGuard()
-    fg_explicit = _fg.check(reason)
-    if fg_explicit.is_blocked:
-        logger.warning(
-            "DEI-02: rejection blocked by FairnessGuard — explicit bias detected "
-            "candidate=%s category=%s terms=%s",
-            candidate_id, fg_explicit.category, fg_explicit.blocked_terms,
-        )
-        return {
-            "success": False,
-            "blocked_by_fairness": True,
-            "message": f"⚠️ Rejeição bloqueada: motivo contém viés discriminatório ({fg_explicit.category}). "
-                       f"Por favor, reformule o motivo da rejeição.",
-            "educational_message": fg_explicit.educational_message,
-            "category": fg_explicit.category,
-        }
-    fg_implicit = _fg.check_implicit_bias(reason)
-    if fg_implicit:
-        logger.info("DEI-02: implicit bias warnings for rejection of candidate=%s: %s", candidate_id, fg_implicit)
+    fg_implicit = []
+    try:
+        from app.shared.compliance.fairness_guard import FairnessGuard
+        _fg = FairnessGuard()
+        fg_explicit = _fg.check(reason)
+        if fg_explicit.is_blocked:
+            logger.warning(
+                "DEI-02: rejection blocked by FairnessGuard — explicit bias detected "
+                "candidate=%s category=%s terms=%s",
+                candidate_id, fg_explicit.category, fg_explicit.blocked_terms,
+            )
+            return {
+                "success": False,
+                "blocked_by_fairness": True,
+                "message": f"⚠️ Rejeição bloqueada: motivo contém viés discriminatório ({fg_explicit.category}). "
+                           f"Por favor, reformule o motivo da rejeição.",
+                "educational_message": fg_explicit.educational_message,
+                "category": fg_explicit.category,
+            }
+        fg_implicit = _fg.check_implicit_bias(reason)
+        if fg_implicit:
+            logger.info("DEI-02: implicit bias warnings for rejection of candidate=%s: %s", candidate_id, fg_implicit)
+    except Exception as fg_err:
+        logger.error("DEI-02: FairnessGuard check failed for candidate=%s, proceeding with rejection: %s", candidate_id, fg_err)
 
     try:
         from app.core.database import AsyncSessionLocal

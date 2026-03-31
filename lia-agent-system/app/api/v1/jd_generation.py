@@ -202,6 +202,26 @@ async def generate_jd(
                     "blocked": False,
                     "warnings": fg_output.warnings,
                 }
+
+            try:
+                await audit_service.log_decision(
+                    company_id=request.company_id or "default",
+                    agent_name="jd_generator",
+                    decision_type="generate_jd",
+                    action="generate_description_fallback",
+                    decision="generated",
+                    reasoning=[
+                        f"JD gerada (fallback sync) para '{request.job_title}'",
+                        f"FairnessGuard: {'warnings' if (fg_output and fg_output.has_warnings) else 'passed'}",
+                    ],
+                    criteria_used=["job_title", "department", "seniority", "responsibilities", "technical_skills", "behavioral_competencies"],
+                    job_vacancy_id=None,
+                    confidence=0.8,
+                    human_review_required=False,
+                )
+            except Exception as audit_err:
+                logger.warning("GOV-01: audit log failed for JD fallback generation: %s", audit_err)
+
             return response
         except HTTPException:
             raise

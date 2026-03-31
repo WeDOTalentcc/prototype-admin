@@ -272,7 +272,7 @@ export function CompanyDataSection({
         <div className="grid grid-cols-1 gap-3">
           {/* Logo - Card especial com logo antes do nome e largura auto */}
           <div className="inline-flex items-center gap-3 bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md px-4 py-3 w-fit">
-            <div className="w-14 h-14 rounded-md bg-gray-100 dark:bg-lia-bg-secondary border-2 border-dashed border-lia-border-default flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors motion-reduce:transition-none hover:border-gray-900 dark:hover:border-gray-50 flex-shrink-0">
+            <div className="relative w-14 h-14 rounded-md bg-gray-100 dark:bg-lia-bg-secondary border-2 border-dashed border-lia-border-default flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors motion-reduce:transition-none hover:border-gray-900 dark:hover:border-gray-50 flex-shrink-0 overflow-hidden">
               {companyData.logo ? (
                 <NextImage src={companyData.logo} alt="Logo" fill className="object-cover rounded-md" />
               ) : (

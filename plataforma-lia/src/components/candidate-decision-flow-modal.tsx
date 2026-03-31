@@ -318,7 +318,7 @@ Equipe de Recrutamento`
 
         <div className="px-5 py-4">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center overflow-hidden">
+            <div className="relative w-10 h-10 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center overflow-hidden">
               {candidate.avatar ? (
                 <NextImage src={candidate.avatar} alt={candidate.name} fill className="object-cover" />
               ) : (
