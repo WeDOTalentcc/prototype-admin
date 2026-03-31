@@ -91,6 +91,25 @@ PRE_COMPLETION_MESSAGE = (
     "Deseja revisar alguma resposta antes de finalizar?"
 )
 
+TOTAL_QUESTIONS = sum(len(b["questions"]) for b in WSI_BLOCKS)
+
+
+def _build_progress(current_block: int, questions_answered: int) -> Dict[str, Any]:
+    block_name = "Concluído"
+    if current_block < len(WSI_BLOCKS):
+        block_name = WSI_BLOCKS[current_block]["name"]
+    remaining = max(0, TOTAL_QUESTIONS - questions_answered)
+    estimated_minutes = max(1, int(remaining * 1.5))
+    return {
+        "current_block": current_block,
+        "total_blocks": len(WSI_BLOCKS),
+        "block_name": block_name,
+        "questions_answered": questions_answered,
+        "total_questions": TOTAL_QUESTIONS,
+        "estimated_minutes_remaining": estimated_minutes,
+    }
+
+
 MAX_CONSECUTIVE_OFF_SCRIPT = 3
 
 OFF_SCRIPT_SYSTEM_PROMPT = """Você é a LIA, assistente de recrutamento da empresa {company_name}.
@@ -348,12 +367,10 @@ class TriagemSessionService:
             "completed": validation.get("completed", False),
             "session": session_data,
             "config": config,
-            "progress": {
-                "current_block": session_data.get("current_block", 0),
-                "total_blocks": session_data.get("total_blocks", 7),
-                "block_name": WSI_BLOCKS[session_data.get("current_block", 0)]["name"] if session_data.get("current_block", 0) < len(WSI_BLOCKS) else "Concluído",
-                "messages_count": len(messages),
-            },
+            "progress": _build_progress(
+                session_data.get("current_block", 0),
+                len([m for m in messages if m.sender == "candidate"]),
+            ),
         }
 
         if messages_data:
@@ -481,11 +498,7 @@ class TriagemSessionService:
         return {
             "session": session.to_dict(),
             "lia_response": lia_msg.to_dict(),
-            "progress": {
-                "current_block": session.current_block,
-                "total_blocks": session.total_blocks,
-                "block_name": WSI_BLOCKS[session.current_block]["name"] if session.current_block < len(WSI_BLOCKS) else "Concluído",
-            },
+            "progress": _build_progress(session.current_block, 0),
         }
 
     async def process_message(
@@ -544,14 +557,20 @@ class TriagemSessionService:
         db.add(lia_msg)
         await db.flush()
 
+        all_cand_result = await db.execute(
+            select(TriagemMessage).where(
+                and_(
+                    TriagemMessage.session_id == session.id,
+                    TriagemMessage.sender == "candidate",
+                )
+            )
+        )
+        answered_count = len(all_cand_result.scalars().all())
+
         return {
             "candidate_message": candidate_msg.to_dict(),
             "lia_response": lia_msg.to_dict(),
-            "progress": {
-                "current_block": session.current_block,
-                "total_blocks": session.total_blocks,
-                "block_name": WSI_BLOCKS[session.current_block]["name"] if session.current_block < len(WSI_BLOCKS) else "Concluído",
-            },
+            "progress": _build_progress(session.current_block, answered_count),
             "is_pre_completion": lia_response.get("is_pre_completion", False),
         }
 
@@ -862,23 +881,71 @@ class TriagemSessionService:
             actions["recruiter_notification"] = "failed"
 
         try:
+            await self._update_pipeline_stage(db, session)
             if session.wsi_final_score and session.wsi_final_score >= 7.5:
-                logger.info(
-                    f"[Triagem] Pipeline auto-move: candidate {session.candidate_id} "
-                    f"→ 'Entrevista' (score {session.wsi_final_score} >= 7.5)"
-                )
                 actions["pipeline_update"] = "auto_moved_to_interview"
+            elif session.wsi_final_score and session.wsi_final_score < 5.5:
+                actions["pipeline_update"] = "marked_screened_low"
             else:
-                logger.info(
-                    f"[Triagem] AI Suggestion created for recruiter: "
-                    f"candidate {session.candidate_id} score {session.wsi_final_score}"
-                )
-                actions["pipeline_update"] = "suggestion_created"
+                actions["pipeline_update"] = "marked_screened"
         except Exception as e:
             logger.warning(f"[Triagem] Failed to update pipeline: {e}")
             actions["pipeline_update"] = "failed"
 
         return actions
+
+
+    async def _update_pipeline_stage(
+        self, db: AsyncSession, session: TriagemSession
+    ) -> None:
+        from sqlalchemy import text as sql_text
+
+        if not session.candidate_id or not session.job_id:
+            logger.warning("[Triagem] Cannot update pipeline: missing candidate_id or job_id")
+            return
+
+        score = session.wsi_final_score or 0.0
+        recommendation = session.recommendation or "aguardando"
+
+        if score >= 7.5:
+            target_stage = "interview"
+            target_status = "approved"
+        elif score < 5.5:
+            target_stage = "screened"
+            target_status = "screened_low"
+        else:
+            target_stage = "screened"
+            target_status = "screened"
+
+        result = await db.execute(
+            sql_text(
+                "UPDATE vacancy_candidates "
+                "SET stage = :target_stage, status = :target_status, "
+                "    lia_score = :score, stage_entered_at = NOW(), updated_at = NOW() "
+                "WHERE candidate_id = CAST(:candidate_id AS UUID) "
+                "  AND vacancy_id = CAST(:job_id AS UUID)"
+            ),
+            {
+                "target_stage": target_stage,
+                "target_status": target_status,
+                "score": score,
+                "candidate_id": session.candidate_id,
+                "job_id": session.job_id,
+            },
+        )
+        rows = result.rowcount
+        if rows:
+            logger.info(
+                f"[Triagem] Pipeline updated: candidate={session.candidate_id} "
+                f"→ stage={target_stage} status={target_status} score={score}"
+            )
+        else:
+            logger.warning(
+                f"[Triagem] No vacancy_candidates row found for "
+                f"candidate={session.candidate_id} job={session.job_id} — "
+                f"pipeline not updated (candidate may not be in pipeline yet)"
+            )
+        await db.flush()
 
 
 triagem_service = TriagemSessionService()
