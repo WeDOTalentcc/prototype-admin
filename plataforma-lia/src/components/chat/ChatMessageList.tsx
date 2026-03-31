@@ -19,6 +19,7 @@ import {
 import { ActionResultCard } from "@/components/chat/action-result-card"
 import { TypingIndicator } from "@/components/chat/typing-indicator"
 import { Message } from "@/types/chat"
+import { sanitizeHtml } from "@/lib/sanitize"
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Types
@@ -134,10 +135,10 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                           : "font-['Open_Sans',sans-serif] lia-markdown-content"
                       }`}
                       dangerouslySetInnerHTML={{
-                        __html: onHighlightSearchTerm(
+                        __html: sanitizeHtml(onHighlightSearchTerm(
                           message.content,
                           searchTerm
-                        ),
+                        )),
                       }}
                     />
                   )}
@@ -406,10 +407,10 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                     <div
                       className="text-sm lia-text-950 dark:lia-text-50 mb-4"
                       dangerouslySetInnerHTML={{
-                        __html: onHighlightSearchTerm(
+                        __html: sanitizeHtml(onHighlightSearchTerm(
                           message.content,
                           searchTerm
-                        ),
+                        )),
                       }}
                     />
                     <CompletionMessage
