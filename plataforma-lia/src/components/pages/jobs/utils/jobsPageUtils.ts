@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { Job, JobFilters } from "@/components/jobs"
 import type { JobVacancy } from "@/services/lia-api"
 

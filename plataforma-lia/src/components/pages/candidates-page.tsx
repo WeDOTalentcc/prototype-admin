@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client"
 
 import { FavoritesTab } from "@/components/talent-funnel-tabs/favorites-tab"

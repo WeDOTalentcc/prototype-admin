@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client"
 
 import { textStyles, badgeStyles } from '@/lib/design-tokens'

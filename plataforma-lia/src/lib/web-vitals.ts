@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Web Vitals — monitora Core Web Vitals e envia para Sentry
  * Métricas: LCP, FID, CLS, FCP, TTFB

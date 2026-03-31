@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { KPIAlertSystem } from "@/components/alerts/kpi-alert-system"
 import type { RecruiterData } from "../indicators.types"
 

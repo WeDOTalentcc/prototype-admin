@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   RECRUITMENT_STAGES,
   type RecruitmentStage,

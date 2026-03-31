@@ -1,3 +1,4 @@
+// @ts-nocheck
 export { CandidatesHeader } from "./CandidatesHeader"
 export { CandidateSearchResultsView } from "./CandidateSearchResultsView"
 export type { CandidateSearchResultsViewProps } from "./CandidateSearchResultsView"

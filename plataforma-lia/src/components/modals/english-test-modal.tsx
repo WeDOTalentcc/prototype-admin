@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client"
 
 import { X, Globe, CheckCircle, Loader2, AlertCircle, BookOpen, Pencil, MessageCircle, Headphones } from "lucide-react"

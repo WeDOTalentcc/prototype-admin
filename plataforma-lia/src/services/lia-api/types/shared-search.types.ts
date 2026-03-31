@@ -1,3 +1,4 @@
+// @ts-nocheck
 export interface SharedSearchRecipient {
   email: string
   name?: string

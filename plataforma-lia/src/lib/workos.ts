@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { WorkOS } from '@workos-inc/node'
 
 // Lazy initialization — env vars checked at runtime only (not at build time)

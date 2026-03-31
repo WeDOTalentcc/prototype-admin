@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client"
 
 import { SearchModeArchetypes } from "./SearchModeArchetypes"

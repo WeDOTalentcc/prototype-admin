@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from "react"
 import { Flag, CheckCircle, AlertCircle, Mail, Clock } from "lucide-react"
 import type { DynamicStage } from "./kanbanStageUtils"

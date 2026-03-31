@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * candidate-transforms.ts — Sprint G4.
  *

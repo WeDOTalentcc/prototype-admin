@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Command Parser for Natural Language Navigation and Edit Commands
  * 

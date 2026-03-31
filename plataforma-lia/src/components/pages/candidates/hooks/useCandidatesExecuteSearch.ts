@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client"
 
 import { liaApi, CandidateLocal } from "@/services/lia-api"

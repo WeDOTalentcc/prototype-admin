@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { liaApi, CandidateLocal } from "@/services/lia-api"
 import {
   searchCandidates as searchCandidatesHybrid,

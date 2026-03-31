@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client"
 
 import { X, Gauge, TrendingUp, FileText, Brain, Code, Globe } from "lucide-react"

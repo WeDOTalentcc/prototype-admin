@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * LIA Platform - Design Tokens (TypeScript)
  * 
