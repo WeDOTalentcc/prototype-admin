@@ -984,7 +984,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | # | Gap | O que existe | O que falta |
 |---|-----|-------------|-------------|
 | C1 | **FairnessGuard ativo em todos os pontos** | L1-L2 no Orchestrator | Ativar em: save JD, geração WSI, análise de resposta, feedback, scoring |
-| C2 | ~~**FairnessGuard L3 (Semântico)**~~ | **RESOLVIDO** (Fase 5) | `check_with_sector()` ativo em 5 services (RAG, pipeline, rubric, communication, sourcing) |
+| C2 | ~~**FairnessGuard L3 (Semântico)**~~ | **PARCIAL** (Fase 5) | `check_with_sector()` ativo em 4 services (pipeline, rubric, communication, sourcing); **inacessível no RAG pipeline** por ARCH-04 (kwargs) |
 | C3 | **Audit Trail completo** | `AuditService` com 8 decision types | Ativar em: login, edição vaga, geração roteiro, busca, aprovação, contato, triagem, feedback |
 | C4 | **LGPD Consent Flow** | Endpoints de consentimento existem | Falta fluxo frontend + enforcement antes de processar candidato |
 | C5 | **Fact-Checker em todos os outputs** | 4 checkers (salary, count, %, date) + 3 granulares (V5) | Ativar como middleware pós-resposta em todos os agentes |
@@ -997,7 +997,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 |---|-----|--------|-------------|
 | I1 | ~~**A/B Testing sem testes criados**~~ | **RESOLVIDO** (Fase 5) | `seed_email_ab_tests` cria 3 experimentos (screening_invite, follow_up, feedback) no startup |
 | I2 | **Predictive Analytics não integrado no fluxo** | Serviço implementado | Precisa ser chamado na UI de criação de vaga (predict_time_to_fill, predict_optimal_salary) |
-| I3 | ~~**Template Learning sem trigger automático**~~ | **RESOLVIDO** (Fase 5) | `TemplateLearningService` com tracking persistente (record_send/open/click + recommend_template) |
+| I3 | ~~**Template Learning sem trigger automático**~~ | **PARCIAL** (Fase 5) | `TemplateLearningService` implementado mas data source mismatch entre read (MessageQueue) e write (CommunicationLog) — ARCH-05 |
 | I4 | ~~**Voice Analysis não integrado na triagem web**~~ | **RESOLVIDO** (Fase 2) | InputBar com gravação de áudio na triagem (`onAudioTranscription`) |
 | I5 | **Long-Term Memory sem compressão ativa** | Código de compressão existe | Precisa de cron job para executar `compress_old_episodes` periodicamente |
 | I6 | **Semantic Search parcialmente wired** | Expansão funciona | Precisa ser integrado no fluxo de busca de candidatos como step automático |
