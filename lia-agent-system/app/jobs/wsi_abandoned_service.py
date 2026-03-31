@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 FIRST_REMINDER_HOURS = 48   # 1º lembrete ao candidato
 SECOND_REMINDER_HOURS = 96  # 2º lembrete + alerta recruiter
+CONSULTANT_ALERT_HOURS = 120  # +24h após 2º lembrete → alerta consultor/gestor
 
 
 async def check_abandoned_sessions(db: AsyncSession) -> dict[str, int]:
@@ -25,9 +26,9 @@ async def check_abandoned_sessions(db: AsyncSession) -> dict[str, int]:
     Verifica sessões WSI abandonadas e envia lembretes.
 
     Returns:
-        dict com first_reminders, second_reminders, errors
+        dict com first_reminders, second_reminders, consultant_alerts, errors
     """
-    first_reminders = second_reminders = errors = 0
+    first_reminders = second_reminders = consultant_alerts = errors = 0
     now = datetime.now(timezone.utc)
 
     try:
@@ -57,8 +58,16 @@ async def check_abandoned_sessions(db: AsyncSession) -> dict[str, int]:
         age_hours = (now - row.created_at.replace(tzinfo=timezone.utc)).total_seconds() / 3600
 
         try:
-            if reminder_count >= 2:
-                # Já enviou 2 lembretes — não fazer mais nada (recruiter já foi notificado)
+            if reminder_count >= 3:
+                continue
+
+            if age_hours >= CONSULTANT_ALERT_HOURS and reminder_count == 2:
+                await _notify_consultant_escalation(db, candidate_id, job_vacancy_id, session_id)
+                await _increment_reminder_count(db, session_id, 3)
+                consultant_alerts += 1
+                logger.info(
+                    "[wsi-abandoned] consultor escalado session=%s candidate=%s", session_id, candidate_id
+                )
                 continue
 
             if age_hours >= SECOND_REMINDER_HOURS and reminder_count < 2:
@@ -92,10 +101,15 @@ async def check_abandoned_sessions(db: AsyncSession) -> dict[str, int]:
                 pass
 
     logger.info(
-        "[wsi-abandoned] batch completo first=%d second=%d errors=%d",
-        first_reminders, second_reminders, errors,
+        "[wsi-abandoned] batch completo first=%d second=%d consultant=%d errors=%d",
+        first_reminders, second_reminders, consultant_alerts, errors,
     )
-    return {"first_reminders": first_reminders, "second_reminders": second_reminders, "errors": errors}
+    return {
+        "first_reminders": first_reminders,
+        "second_reminders": second_reminders,
+        "consultant_alerts": consultant_alerts,
+        "errors": errors,
+    }
 
 
 async def _send_candidate_reminder(
@@ -165,6 +179,44 @@ async def _notify_recruiter_abandoned(
     except Exception as exc:
         logger.warning(
             "[wsi-abandoned] erro ao notificar recruiter job=%s: %s", job_vacancy_id, exc
+        )
+
+
+async def _notify_consultant_escalation(
+    db: AsyncSession,
+    candidate_id: str,
+    job_vacancy_id: str | None,
+    session_id: str,
+) -> None:
+    """Escalation alert to consultant/manager +24h after 2nd reminder with no response."""
+    try:
+        recruiter_result = await db.execute(text("""
+            SELECT created_by FROM job_vacancies WHERE id = :job_id LIMIT 1
+        """), {"job_id": job_vacancy_id})
+        recruiter_row = recruiter_result.fetchone()
+        if not recruiter_row or not recruiter_row.created_by:
+            return
+
+        from app.services.notification_service import notification_service
+        await notification_service.create_notification(
+            user_id=str(recruiter_row.created_by),
+            title="Escalação: candidato sem resposta há 5 dias",
+            message=(
+                f"O candidato {candidate_id} não respondeu após 2 lembretes (120h). "
+                "Recomendação: contato telefônico ou remoção do pipeline."
+            ),
+            category="candidate_escalation",
+            source_trigger="wsi_abandoned_consultant_alert",
+            related_candidate_id=candidate_id,
+            related_job_id=job_vacancy_id,
+            channels=["bell", "email", "teams"],
+            metadata={"session_id": session_id, "escalation": True},
+            db=db,
+        )
+        await db.commit()
+    except Exception as exc:
+        logger.warning(
+            "[wsi-abandoned] erro ao escalar consultor job=%s: %s", job_vacancy_id, exc
         )
 
 

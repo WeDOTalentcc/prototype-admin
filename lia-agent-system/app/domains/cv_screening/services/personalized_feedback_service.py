@@ -1161,6 +1161,49 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
             if should_close:
                 await db.close()
     
+    async def mark_as_failed(
+        self,
+        feedback_id: str,
+        reason: str,
+        send_result: Optional[Dict[str, Any]] = None,
+        db: Optional[AsyncSession] = None,
+    ) -> bool:
+        """
+        Mark feedback as failed — preserves APPROVED/EDITED status so
+        process_pending_sends can retry on the next run.
+        """
+        should_close = False
+        if db is None:
+            db = AsyncSessionLocal()
+            should_close = True
+
+        try:
+            result = await db.execute(
+                select(PersonalizedFeedbackRecord).where(
+                    PersonalizedFeedbackRecord.id == feedback_id
+                )
+            )
+            record = result.scalar_one_or_none()
+
+            if not record:
+                return False
+
+            record.status = PersonalizedFeedbackStatus.FAILED.value
+            record.send_result = send_result or {}
+            record.extra_data = {
+                **(record.extra_data or {}),
+                "last_failure_reason": reason,
+                "last_failure_at": datetime.utcnow().isoformat(),
+            }
+
+            await db.commit()
+
+            logger.info("Feedback %s marked as failed: %s", feedback_id, reason)
+            return True
+        finally:
+            if should_close:
+                await db.close()
+
     async def get_analytics(
         self,
         company_id: str,

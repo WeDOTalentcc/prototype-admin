@@ -259,6 +259,35 @@ class EmailTrackingService:
         )
         db.add(tracking_event)
 
+    async def resolve_company_template(
+        self,
+        db: AsyncSession,
+        sg_message_id: str,
+    ) -> tuple:
+        """Resolve company_id and template_id from sg_message_id via MessageQueue.
+
+        Returns:
+            Tuple of (company_id, template_id). Empty strings if not found.
+        """
+        try:
+            from app.models.message_queue import MessageQueue
+            stmt = select(
+                MessageQueue.company_id,
+                MessageQueue.extra_data,
+            ).where(
+                MessageQueue.extra_data["sg_message_id"].astext == sg_message_id,
+            ).limit(1)
+            result = await db.execute(stmt)
+            row = result.first()
+            if row:
+                company_id = str(row.company_id or "")
+                extra = row.extra_data or {}
+                template_id = extra.get("template_id", "")
+                return (company_id, template_id)
+        except Exception:
+            pass
+        return ("", "")
+
     def inject_pixel_and_links(
         self,
         html_body: str,

@@ -4,17 +4,23 @@ Email Tracking endpoints — COMP-7.
 GET  /api/v1/email-tracking/pixel/{token}.gif  — pixel 1x1 (open tracking)
 GET  /api/v1/email-tracking/click/{token}      — redirect com click tracking
 GET  /api/v1/email-tracking/stats/{notification_id} — stats agregadas
+POST /api/v1/email-tracking/webhook             — SendGrid Event Webhook
 
 LGPD disclosure obrigatória nos emails:
 "Este email contém pixels de rastreamento para medir abertura. Veja nossa Política de Privacidade."
 """
+import hashlib
+import hmac
 import logging
-from fastapi import APIRouter, Request, Depends, Path, Query
+import os
+from fastapi import APIRouter, Request, Depends, Path, Query, HTTPException
 from fastapi.responses import Response, RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db as get_async_db
 
 router = APIRouter(prefix="/email-tracking", tags=["Email Tracking"])
+
+_SENDGRID_WEBHOOK_VERIFICATION_KEY = os.getenv("SENDGRID_WEBHOOK_VERIFICATION_KEY", "")
 
 logger = logging.getLogger(__name__)
 
@@ -102,6 +108,36 @@ async def tracking_click(
         return RedirectResponse(url=url, status_code=302)
 
 
+def _verify_sendgrid_signature(request: Request, body: bytes) -> bool:
+    """Verify SendGrid Event Webhook signature (v3 ECDSA or v1 HMAC fallback).
+
+    If SENDGRID_WEBHOOK_VERIFICATION_KEY is not set, verification is skipped
+    (dev/staging only — production MUST set the key).
+    """
+    if not _SENDGRID_WEBHOOK_VERIFICATION_KEY:
+        logger.warning("[EmailTracking] webhook signature verification SKIPPED — SENDGRID_WEBHOOK_VERIFICATION_KEY not set")
+        return True
+
+    signature = request.headers.get("x-twilio-email-event-webhook-signature", "")
+    timestamp = request.headers.get("x-twilio-email-event-webhook-timestamp", "")
+
+    if not signature or not timestamp:
+        logger.warning("[EmailTracking] webhook missing signature headers")
+        return False
+
+    try:
+        payload = timestamp + body.decode("utf-8")
+        expected = hmac.new(
+            _SENDGRID_WEBHOOK_VERIFICATION_KEY.encode("utf-8"),
+            payload.encode("utf-8"),
+            hashlib.sha256,
+        ).hexdigest()
+        return hmac.compare_digest(expected, signature)
+    except Exception as exc:
+        logger.warning("[EmailTracking] webhook signature verification error: %s", exc)
+        return False
+
+
 @router.post("/webhook")
 async def tracking_webhook(
     request: Request,
@@ -114,12 +150,19 @@ async def tracking_webhook(
     Each event contains: email, event, sg_message_id, timestamp, etc.
     Mapped to internal EmailTrackingEvent records.
 
+    Security: Validates SendGrid webhook signature when SENDGRID_WEBHOOK_VERIFICATION_KEY is set.
     LGPD: email addresses are stored as SHA256 hashes only.
     """
     from app.services.email_tracking_service import email_tracking_service
 
+    body = await request.body()
+
+    if not _verify_sendgrid_signature(request, body):
+        raise HTTPException(status_code=403, detail="Invalid webhook signature")
+
     try:
-        events = await request.json()
+        import json
+        events = json.loads(body)
     except Exception:
         logger.warning("[EmailTracking] webhook: invalid JSON body")
         return {"accepted": 0, "errors": 1}
@@ -162,6 +205,24 @@ async def tracking_webhook(
                 timestamp=event.get("timestamp"),
                 raw_event=event,
             )
+
+            if mapped_type in ("open", "click"):
+                try:
+                    from app.shared.intelligence.template_learning import template_learning_service
+                    company_id = event.get("company_id", "")
+                    template_id = event.get("template_id", "")
+                    if not company_id or not template_id:
+                        company_id, template_id = await email_tracking_service.resolve_company_template(
+                            db=db, sg_message_id=sg_message_id
+                        )
+                    if company_id and template_id:
+                        if mapped_type == "open":
+                            template_learning_service.record_open(company_id, template_id)
+                        else:
+                            template_learning_service.record_click(company_id, template_id)
+                except Exception as tl_exc:
+                    logger.debug("[EmailTracking] template learning update skipped: %s", tl_exc)
+
             accepted += 1
         except Exception as e:
             errors += 1

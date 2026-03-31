@@ -701,12 +701,38 @@ def feedback_auto_send_task(self, feedback_id: str, company_id: str) -> dict:
             if record.status not in (
                 PersonalizedFeedbackStatus.APPROVED.value,
                 PersonalizedFeedbackStatus.EDITED.value,
+                PersonalizedFeedbackStatus.FAILED.value,
             ):
                 return {"feedback_id": feedback_id, "status": record.status, "success": False, "reason": "not_approved"}
 
             subject = record.edited_subject or record.subject
             body_text = record.edited_body or record.body_text
             body_html = record.body_html
+
+            if record.status == PersonalizedFeedbackStatus.EDITED.value:
+                try:
+                    from app.shared.compliance.fairness_guard import FairnessGuard
+                    fg = FairnessGuard()
+                    edited_content = record.edited_body or record.body_text
+                    fg_result = fg.check(edited_content)
+                    if fg_result and not fg_result.get("passed", True):
+                        logger.warning(
+                            "feedback.auto_send: FairnessGuard BLOCKED id=%s reason=%s",
+                            feedback_id, fg_result.get("reason", "bias_detected"),
+                        )
+                        await personalized_feedback_service.mark_as_failed(
+                            feedback_id=feedback_id,
+                            reason=f"FairnessGuard blocked: {fg_result.get('reason', 'bias_detected')}",
+                            db=db,
+                        )
+                        return {
+                            "feedback_id": feedback_id,
+                            "status": "blocked",
+                            "reason": "fairness_guard",
+                            "success": False,
+                        }
+                except Exception as fg_exc:
+                    logger.debug("feedback.auto_send: FairnessGuard check skipped: %s", fg_exc)
 
             send_result = {}
             channel_used = record.channel or "email"
@@ -728,12 +754,20 @@ def feedback_auto_send_task(self, feedback_id: str, company_id: str) -> dict:
 
             any_success = any(r.get("success") for r in send_result.values())
 
-            await personalized_feedback_service.mark_as_sent(
-                feedback_id=feedback_id,
-                channel=channel_used,
-                send_result=send_result,
-                db=db,
-            )
+            if any_success:
+                await personalized_feedback_service.mark_as_sent(
+                    feedback_id=feedback_id,
+                    channel=channel_used,
+                    send_result=send_result,
+                    db=db,
+                )
+            else:
+                await personalized_feedback_service.mark_as_failed(
+                    feedback_id=feedback_id,
+                    reason="all_channels_failed",
+                    send_result=send_result,
+                    db=db,
+                )
 
             try:
                 from app.shared.intelligence.template_learning import template_learning_service
@@ -750,7 +784,7 @@ def feedback_auto_send_task(self, feedback_id: str, company_id: str) -> dict:
             )
             return {
                 "feedback_id": feedback_id,
-                "status": "sent",
+                "status": "sent" if any_success else "failed",
                 "channel": channel_used,
                 "success": any_success,
                 "results": {k: {"success": v.get("success"), "message_id": v.get("message_id")} for k, v in send_result.items()},
@@ -790,6 +824,7 @@ def feedback_process_pending_sends_task(self) -> dict:
                     or_(
                         PersonalizedFeedbackRecord.status == PersonalizedFeedbackStatus.APPROVED.value,
                         PersonalizedFeedbackRecord.status == PersonalizedFeedbackStatus.EDITED.value,
+                        PersonalizedFeedbackRecord.status == PersonalizedFeedbackStatus.FAILED.value,
                     ),
                     PersonalizedFeedbackRecord.sent_at.is_(None),
                 ).limit(50)

@@ -50,7 +50,7 @@ async def process_email_followups(db: AsyncSession) -> dict[str, int]:
               AND NOT EXISTS (
                   SELECT 1 FROM email_tracking_events e
                   WHERE e.notification_id = n.id
-                    AND e.event_type = 'open'
+                    AND e.event_type IN ('open', 'click')
               )
         """), {"cutoff": cutoff})
         rows = result.fetchall()
