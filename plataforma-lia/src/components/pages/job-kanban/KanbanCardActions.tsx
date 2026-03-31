@@ -53,6 +53,7 @@ export function KanbanCardActions({
   onToggleFavorite,
 }: KanbanCardActionsProps) {
   return (
+    <>
 {/* Ações rápidas - Posicionadas no canto direito */}
 <div className="absolute right-2 top-8 flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none z-10">
   {/* Menu de opções - Primeiro */}
@@ -171,6 +172,6 @@ export function KanbanCardActions({
     <Eye className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" aria-hidden="true" />
   </button>
 </div>
-
+    </>
   )
 }

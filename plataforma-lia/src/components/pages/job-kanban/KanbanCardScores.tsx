@@ -32,6 +32,7 @@ export function KanbanCardScores({
   onOpenScoreModal,
 }: KanbanCardScoresProps) {
   return (
+    <>
 {/* Scores - Todos os 6 indicadores (Geral, Triagem, CV, Técnico, Inglês, B5) */}
 {(() => {
   const geralScore = calculateNotaLiaGeral(candidate)
@@ -91,5 +92,6 @@ export function KanbanCardScores({
 })()}
 
 {/* Informações do candidato - Alinhadas à esquerda */}
+    </>
   )
 }

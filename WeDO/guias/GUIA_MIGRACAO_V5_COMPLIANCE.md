@@ -1,7 +1,7 @@
 # Guia de Migração v5 → Compliance Compartilhada
 
 > **Plataforma LIA — WeDO Talent**
-> Versão: 1.0 | Data: 2026-03-31
+> Versão: 1.1 | Data: 2026-03-31
 > Fonte: `WeDO/analises/diagnostico_arquitetura_codigo_lia_vs_v5.md` (8070 linhas)
 > Caminho recomendado: **Caminho 2 — ComplianceDomainPrompt** (~23.5h, 3 sprints)
 
@@ -10,8 +10,11 @@
 ## Índice
 
 0. [Entendendo a Migração — Perguntas Frequentes](#0-entendendo-a-migração--perguntas-frequentes)
+   - 0.1–0.9: Arquiteturas, ComplianceDomainPrompt, contrato, duplicados, fluxos, domínios, agentes
+   - 0.10: [O Que São "Tools" no Contexto de Agentes IA](#010-o-que-são-tools-no-contexto-de-agentes-ia)
+   - 0.11: [Onde Cada Controle Atua no Pipeline](#011-onde-cada-controle-atua-no-pipeline)
 1. [Contexto Rápido](#1-contexto-rápido)
-2. [Pré-Requisitos: 6 Controles de Compliance](#2-pré-requisitos-6-controles-de-compliance)
+2. [Pré-Requisitos: 9 Controles de Compliance](#2-pré-requisitos-9-controles-de-compliance)
 3. [ComplianceDomainPrompt — Classe Completa](#3-compliancedomainprompt--classe-completa)
 4. [Migração dos 8 Domínios](#4-migração-dos-8-domínios)
 5. [Anti-Duplicação (Limpeza pós-Caminho 1)](#5-anti-duplicação-limpeza-pós-caminho-1)
@@ -42,16 +45,20 @@ Quando lemos o código dos 8 domínios, descobrimos que eles não seguem uma arq
 │  │ GRUPO 1: FLAT   │  │ GRUPO 2:        │  │ GRUPO 3:            │   │
 │  │                 │  │ LANGGRAPH       │  │ MULTI-AGENT         │   │
 │  │ jobs            │  │                 │  │                     │   │
-│  │ messaging       │  │ evaluation      │  │ sourced_profile     │   │
-│  │ scheduling      │  │ applies (*)     │  │ autonomous          │   │
-│  │                 │  │ insights        │  │                     │   │
-│  │ query → keyword │  │ query → graph   │  │ query → subagentes  │   │
-│  │ matching → LLM  │  │ → nós → edges   │  │ → loop ReAct        │   │
-│  │ → ação          │  │ → resultado     │  │ → tools → resultado │   │
+│  │ messaging       │  │ evaluation      │  │ autonomous          │   │
+│  │ scheduling      │  │ applies (*)     │  │                     │   │
+│  │                 │  │ insights        │  │ query → subagentes  │   │
+│  │ query → keyword │  │ sourcing (**)   │  │ → loop ReAct        │   │
+│  │ matching → LLM  │  │ query → graph   │  │ → tools → resultado │   │
+│  │ → ação          │  │ → nós → edges   │  │                     │   │
+│  │                 │  │ → resultado     │  │                     │   │
 │  └─────────────────┘  └─────────────────┘  └─────────────────────┘   │
 │                                                                       │
-│  (*) applies é híbrido: estrutura Flat mas tem react_agent.py com     │
-│      LangGraph interno — evidência de convergência não coordenada     │
+│  (*)  applies é híbrido: estrutura Flat mas tem react_agent.py com    │
+│       LangGraph interno — evidência de convergência não coordenada    │
+│  (**) sourcing (sourced_profile_sourcing) usa StateGraph (LangGraph)  │
+│       mas também tem BaseAgent ABC — outro híbrido. domain.py segue  │
+│       padrão LangGraph para fins de migração                         │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -234,7 +241,11 @@ O `applies` tem compliance em **dois níveis**:
 
 Esse segundo nível é necessário porque o LLM pode gerar tool calls com critérios discriminatórios mesmo quando a query original era limpa.
 
-#### Grupo 3 — Multi-Agent (autonomous, sourced_profile_sourcing)
+#### Grupo 3 — Multi-Agent (autonomous)
+
+> **Nota:** `sourced_profile_sourcing` é híbrido — seu `domain.py` segue o padrão LangGraph (Grupo 2),
+> mas internamente usa `BaseAgent` ABC com características de multi-agent. Para fins de migração,
+> ele é tratado no Grupo 2 (seção 4.3). Aqui mostramos apenas o `autonomous`, que é puramente multi-agent.
 
 ```
 ANTES (autonomous):
@@ -364,6 +375,203 @@ Isso é intencional: resolver o problema mais urgente (compliance) com o menor r
 
 ---
 
+### 0.10 O Que São "Tools" no Contexto de Agentes IA
+
+Ao longo deste guia (e do código), a palavra **"tool"** aparece frequentemente. Se você vem de desenvolvimento web tradicional, pode não ser óbvio o que isso significa.
+
+**Um "tool" é uma função que o LLM pode decidir chamar.** O LLM não acessa APIs, bancos de dados ou serviços diretamente. Em vez disso, ele recebe uma lista de ferramentas disponíveis (tools) e, quando precisa fazer algo no mundo real, gera uma "tool call" — uma instrução estruturada dizendo qual tool quer usar e com quais argumentos.
+
+```
+EXEMPLO CONCRETO — domínio applies:
+
+O recrutador pergunta: "Quais candidatos aplicaram para a vaga de DevOps?"
+
+1. LLM recebe a query + lista de tools disponíveis:
+   - filter_applications(job_id, filters)
+   - rank_candidates(job_id, criteria)
+   - get_application_details(application_id)
+   - send_notification(candidate_id, template)
+
+2. LLM decide chamar: filter_applications(job_id="devops-01", filters={})
+
+3. O código Python EXECUTA filter_applications() → consulta banco → retorna lista
+
+4. LLM recebe o resultado e formula a resposta para o recrutador
+```
+
+**Por que isso importa para compliance:**
+
+O LLM pode gerar tool calls com critérios problemáticos. Por exemplo:
+
+```
+Recrutador: "Mostre candidatos qualificados para a vaga"
+LLM gera:   filter_applications(job_id="abc", filters={"age": "<35"})
+                                                        ^^^^^^^^^^
+                                            Critério discriminatório gerado pelo LLM,
+                                            NÃO pelo recrutador!
+```
+
+É por isso que o `applies` tem compliance em **dois níveis**:
+1. Na query do recrutador (ComplianceDomainPrompt intercepta)
+2. Nos argumentos das tool calls (fairness check no `call_tools()`)
+
+**Cada domínio tem tools diferentes, adequadas ao seu propósito:**
+
+| Domínio | Exemplos de tools | Quantidade típica |
+|---------|-------------------|-------------------|
+| `evaluation` | `evaluate_candidate`, `generate_report`, `compare_candidates` | 8-12 |
+| `applies` | `filter_applications`, `rank_candidates`, `update_status` | 10-15 |
+| `autonomous` | Todas as tools de todos os domínios (cross-domain) | 30+ |
+| `scheduling` | `check_availability`, `book_interview`, `send_invite` | 5-8 |
+| `messaging` | `send_email`, `get_templates`, `personalize_message` | 4-6 |
+| `jobs` | `create_job`, `update_job`, `search_jobs` | 5-8 |
+| `sourcing` | `search_profiles`, `enrich_profile`, `score_match` | 8-12 |
+| `insights` | `query_metrics`, `generate_chart`, `aggregate_data` | 6-10 |
+
+**Na LIA**, as tools são o principal diferenciador entre agentes — todos usam a mesma base, mas cada um tem seu conjunto de tools. No v5, as tools são definidas por domínio e passadas ao LLM via `get_capabilities()` e `get_allowed_actions()`.
+
+---
+
+### 0.11 Onde Cada Controle Atua no Pipeline
+
+O pipeline completo de processamento tem **6 fases**. Cada controle de compliance atua em um ponto específico:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                     PIPELINE COMPLETO DE UM REQUEST                        │
+│                                                                            │
+│  ┌──────────┐   ┌──────────┐   ┌───────┐   ┌──────────┐   ┌───────────┐  │
+│  │  INPUT   │──►│ PRE-LLM  │──►│  LLM  │──►│ POST-LLM │──►│  OUTPUT   │  │
+│  │          │   │          │   │       │   │          │   │           │  │
+│  │ Query do │   │ Limpar   │   │ Gera  │   │ Validar  │   │ Resposta  │  │
+│  │ recruta- │   │ texto    │   │ ação  │   │ qualidade│   │ final ao  │  │
+│  │ dor      │   │ antes de │   │ ou    │   │ e fatos  │   │ recruta-  │  │
+│  │          │   │ enviar   │   │ tool  │   │          │   │ dor       │  │
+│  │          │   │          │   │ call  │   │          │   │           │  │
+│  └──────────┘   └──────────┘   └───────┘   └──────────┘   └───────────┘  │
+│       │              │             │             │              │          │
+│       ▼              ▼             ▼             ▼              ▼          │
+│  ┌──────────────────────────────────────────────────────────────────────┐  │
+│  │                    AUDIT (paralelo a tudo)                           │  │
+│  │              Grava cada etapa — imutável — evidência legal           │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Mapa de onde cada controle atua:**
+
+| # | Controle | Fase | O que faz | Quando bloqueia |
+|---|----------|------|-----------|-----------------|
+| 1 | **PromptInjectionGuard** | INPUT | Detecta tentativas de manipulação do LLM (OWASP LLM01). Analisa padrões como "ignore instruções anteriores", "revele o system prompt" | `risk_level == "high"` → bloqueia antes de qualquer processamento |
+| 2 | **FairnessGuard (query)** | INPUT | Verifica se a query do recrutador contém viés discriminatório (gênero, idade, etnia, PCD, estado civil, religião) | `is_blocked == True` → retorna mensagem educativa, não executa |
+| 3 | **PII Stripping** | PRE-LLM | Remove CPF, email, telefone, RG, CNPJ, idade explícita, ano de formatura e endereço do texto ANTES de enviar ao LLM | Nunca bloqueia — substitui por placeholders `[CPF REMOVIDO]`, `[EMAIL REMOVIDO]`, etc. |
+| 4 | **Guardrails** | PRE-LLM | Verifica se a ação planejada é permitida pelas políticas do tenant. Regras configuráveis por empresa | Regra regex match → bloqueia com mensagem do guardrail. Só atua no `autonomous` |
+| 5 | **FairnessGuard (tool args)** | LLM/TOOLS | Verifica se os argumentos das tool calls geradas pelo LLM contêm critérios discriminatórios | `is_blocked == True` → tool call não é executada; retorna erro ao LLM. Só atua no `applies` |
+| 6 | **ConfidenceNode** | POST-LLM | Calcula score de confiança (0.0–1.0) baseado em: número de tool calls, observações verificadas, tamanho da resposta, presença de erros | Nunca bloqueia — adiciona `"confidence": 0.xx` ao resultado |
+| 7 | **FactChecker** | POST-LLM | Valida afirmações do LLM contra dados reais do banco. Ex: LLM diz "15 anos de experiência" mas currículo diz 3 anos | Nunca bloqueia — adiciona `"fact_check": {has_discrepancies, claims}` ao resultado |
+| 8 | **BiasAuditSnapshot** | POST-LLM | Agrega métricas por dimensão (gênero, idade, PCD, região) após ciclos de avaliação. Detecta drift discriminatório ao longo do tempo | Nunca bloqueia execuções individuais — monitora padrões estatísticos para auditoria |
+| 9 | **AuditCallback** | PARALELO | Grava tudo que aconteceu em cada etapa. Logs imutáveis (`ON CONFLICT DO NOTHING`) — evidência legal inalterável (SOX/BCB-498) | Nunca bloqueia — opera em paralelo. Falha do audit nunca impede execução (fail-safe) |
+
+**Diagrama detalhado do fluxo com todos os controles:**
+
+```
+QUERY DO RECRUTADOR
+        │
+        ▼
+┌─ process_intent() ──────────────────────────────────────────────────────┐
+│                                                                         │
+│   [1] PromptInjectionGuard ──── risk=="high"? ──► BLOQUEIO             │
+│         │ ok                                                            │
+│         ▼                                                               │
+│   [2] FairnessGuard (query) ── is_blocked? ──► BLOQUEIO + msg educativa│
+│         │ ok                                                            │
+│         ▼                                                               │
+│   [3] PII Strip ── remove CPF, email, idade, etc. ──► query limpa      │
+│         │                                                               │
+│         ▼                                                               │
+│   [4] _domain_process_intent() ── lógica de negócio do domínio         │
+│         │                         (keyword match / LLM classifica)      │
+│         ▼                                                               │
+│   Retorna: action_id + params                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+        │
+        ▼
+┌─ execute_action() ──────────────────────────────────────────────────────┐
+│                                                                         │
+│   [5] Sanitizar params ── injection + PII nos argumentos de texto       │
+│         │                                                               │
+│         ▼                                                               │
+│   [6] _domain_execute_action() ── lógica de negócio do domínio         │
+│         │                                                               │
+│         │   ┌─ Caso applies: call_tools() ──────────────────────┐      │
+│         │   │  [7] FairnessGuard (tool args) ── verifica args   │      │
+│         │   │       de filter/rank/search antes de executar tool │      │
+│         │   └───────────────────────────────────────────────────┘      │
+│         │                                                               │
+│         │   ┌─ Caso autonomous: agent.py.execute() ─────────────┐      │
+│         │   │  [8] Guardrails ── verifica política do tenant     │      │
+│         │   │       antes do loop ReAct                          │      │
+│         │   └───────────────────────────────────────────────────┘      │
+│         │                                                               │
+│         ▼                                                               │
+│   [9] ConfidenceNode ── calcula score de confiança                     │
+│         │                                                               │
+│         ▼                                                               │
+│   [10] _post_execute_hook() ── extensões por domínio                   │
+│         │                                                               │
+│         ├── evaluation: BiasAuditSnapshot + FactChecker                │
+│         ├── insights: FactChecker                                      │
+│         └── outros: nenhum hook adicional                              │
+│                                                                         │
+│   Retorna: resultado + confidence + fact_check (se aplicável)          │
+└─────────────────────────────────────────────────────────────────────────┘
+        │
+        ▼
+   RESPOSTA AO RECRUTADOR
+        │
+        ▼
+   [PARALELO] AuditCallback grava tudo ── imutável ── evidência legal
+```
+
+**Limitações conhecidas (Caminho 2):**
+
+| Limitação | Detalhe | Quando resolve |
+|-----------|---------|----------------|
+| PII na saída | O LLM pode "reinventar" dados que foram removidos do input. Ex: se removemos a idade, o LLM pode inferir "candidato jovem" pelo ano de formatura | Caminho 3 — PII check na saída (output filter) |
+| Fairness na saída | O relatório/parecer gerado pode conter viés mesmo com query limpa | Caminho 3 — FairnessGuard na saída |
+| Feature flags | Não é possível desabilitar um controle específico por domínio sem editar código | Caminho 3 — feature flags por concern × domínio |
+| Monitoramento | BiasAuditSnapshot só existe em `evaluation`. Outros domínios que filtram candidatos (`applies`, `sourcing`) não têm audit agregado | Sprint 2+ — estender BiasAudit para applies e sourcing |
+
+**Comparação: Pontos de interceptação Caminho 2 vs Caminho 3:**
+
+| Fase | Caminho 2 (agora) | Caminho 3 (2027) |
+|------|-------------------|-------------------|
+| **INPUT** | InjectionGuard + FairnessGuard | Mesmos + feature flag por domínio |
+| **PRE-LLM** | PII Strip + Guardrails (autonomous) | Mesmos + Guardrails para todos os domínios |
+| **LLM/TOOLS** | FairnessGuard em tool args (applies) | Mesmos + em todos que usam tools |
+| **POST-LLM** | Confidence + FactCheck + BiasAudit | Mesmos + output sanitization |
+| **OUTPUT** | Nenhum filtro | **NOVO:** PII output filter + Fairness output check |
+| **AUDIT** | AuditCallback imutável | Mesmos + log por concern separado |
+
+**O que é HiringPolicy / PolicyMiddleware?**
+
+Diferente dos controles acima (que são de **compliance/segurança**), o `HiringPolicy` é um controle de **regras de negócio** configuráveis por empresa (tenant):
+
+```
+HiringPolicy (por tenant, configurável)
+├── Dias permitidos para agendamento (scheduling)
+├── Limites de candidatos por vaga (applies)
+├── Templates de comunicação obrigatórios (messaging)
+├── Regras de aprovação em X etapas (evaluation)
+└── Restrições de sourcing por região (sourcing)
+```
+
+No Caminho 2, `HiringPolicy` é resolvido parcialmente — o `ComplianceDomainPrompt` pode injetar policies via `context`, mas sem feature flags granulares. No Caminho 3, vira um mixin separado com configuração completa por tenant.
+
+O `PolicyMiddleware` na LIA (`app/shared/policy_middleware.py`, 100L) é a referência de implementação — ele intercepta chamadas e aplica regras do tenant antes da execução.
+
+---
+
 ## 1. Contexto Rápido
 
 ### 1.1 Três Arquiteturas no v5
@@ -406,22 +614,28 @@ O v5 disponibiliza serviços em `src/services/` (pii_filter, circuit_breaker, au
 
 ---
 
-## 2. Pré-Requisitos: 6 Controles de Compliance
+## 2. Pré-Requisitos: 9 Controles de Compliance
 
-Antes de criar a `ComplianceDomainPrompt`, os 6 controles devem estar disponíveis em `src/services/compliance/`.
+Antes de criar a `ComplianceDomainPrompt`, os controles devem estar disponíveis em `src/services/compliance/`. São 6 controles principais (usados diretamente pelo ComplianceDomainPrompt) + 3 complementares (usados por domínios específicos ou como infraestrutura).
 
 ### 2.1 Estrutura de Destino
 
 ```
-src/services/compliance/
+src/services/compliance/                          ← DIRETÓRIO PRINCIPAL (criar)
 ├── __init__.py
-├── fairness_guard.py          ← Copiar de LIA (806L → ~600L após adaptar)
-├── prompt_injection.py        ← Copiar de LIA (177L — sem alteração)
-├── fact_checker.py            ← Copiar de LIA (391L → ~350L após adaptar)
-├── confidence.py              ← Copiar de LIA (89L — sem alteração)
-├── bias_audit_snapshot.py     ← Modelo SQLAlchemy (novo, ~40L)
-└── guardrail_repository.py   ← Copiar de LIA (185L → ~120L após adaptar)
+├── fairness_guard.py          ← [C1] Copiar de LIA (806L → ~600L após adaptar)
+├── prompt_injection.py        ← [C2] Copiar de LIA (177L — sem alteração)
+├── fact_checker.py            ← [C3] Copiar de LIA (391L → ~350L após adaptar)
+├── confidence.py              ← [C4] Copiar de LIA (89L — sem alteração)
+└── guardrail_repository.py   ← [C8] Copiar de LIA (185L → ~120L após adaptar)
+
+src/services/pii_filter.py     ← [C5] EXPANDIR existente (adicionar strip_pii_for_llm_prompt)
+src/services/audit/             ← [C6] CORRIGIR existente (ON CONFLICT DO NOTHING)
+src/models/bias_audit_snapshot.py ← [C7] Modelo SQLAlchemy NOVO (~40L)
 ```
+
+> **[C9] HiringPolicy/PolicyMiddleware** — no Caminho 2 é parcial (via `context`).
+> Implementação completa no Caminho 3. Ver seção 2.11 para detalhes.
 
 ### 2.2 Tabela de Origem → Destino
 
@@ -433,6 +647,9 @@ src/services/compliance/
 | 4 | **ConfidenceNode** | `lia-agent-system/libs/agents-core/lia_agents_core/confidence.py` (89L) | `src/services/compliance/confidence.py` | Nenhuma — 100% stdlib Python |
 | 5 | **PII Stripping** | `lia-agent-system/app/shared/pii_masking.py` (221L) | `src/services/pii_filter.py` (**expandir**) | NÃO substituir; ADICIONAR `strip_pii_for_llm_prompt()` ao arquivo existente |
 | 6 | **AuditCallback** | `lia-agent-system/libs/audit/lia_audit/audit_callback.py` (263L) | `src/services/audit/audit_callback.py` (**já existe**) | NÃO copiar; usar `AuditCallbackHandler` do v5; corrigir `ON CONFLICT DO UPDATE` → `DO NOTHING` |
+| 7 | **BiasAuditSnapshot** | — (não existe na LIA) | `src/models/bias_audit_snapshot.py` (**novo**) | Criar modelo SQLAlchemy ~40L; tabela `bias_audit_snapshots` |
+| 8 | **GuardrailRepository** | `lia-agent-system/app/shared/compliance/guardrail_repository.py` (185L) | `src/services/compliance/guardrail_repository.py` | Remover `from app.core.database import get_db`; aceitar `db` via parâmetro |
+| 9 | **HiringPolicy** | `lia-agent-system/app/shared/policy_middleware.py` (100L) | — (**parcial no Caminho 2**) | Referência para Sprint 2+; integração completa no Caminho 3 |
 
 ### 2.3 Controle 1 — FairnessGuard
 
@@ -667,6 +884,137 @@ async def cleanup_by_tier(db):
     )
     # Tier 2 (SOX/BCB-498): NÃO deletar — mover para cold storage
 ```
+
+### 2.9 Controle 7 — BiasAuditSnapshot (modelo de dados)
+
+**O que faz:** Modelo SQLAlchemy que persiste snapshots agregados de métricas de diversidade após ciclos de avaliação. Registra dimensões como gênero, idade, PCD e região — sem IDs individuais de candidatos (LGPD-safe). Usado no `_post_execute_hook()` do `evaluation` para detectar drift discriminatório ao longo do tempo.
+
+**Diferença dos outros controles:** Os controles 1-6 são **runtime guards** (interceptam e bloqueiam/transformam em tempo real). O BiasAuditSnapshot é um **modelo de monitoramento** — não bloqueia nada, mas permite que auditores identifiquem padrões estatísticos de viés.
+
+**Criar novo (não existe na LIA nem no v5):**
+
+```python
+# src/models/bias_audit_snapshot.py (~40 linhas)
+
+from sqlalchemy import Column, String, Integer, DateTime, Text
+from sqlalchemy.sql import func
+from src.models.base import Base
+
+class BiasAuditSnapshot(Base):
+    __tablename__ = "bias_audit_snapshots"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    company_id = Column(String, nullable=True, index=True)
+    job_id = Column(String, nullable=True, index=True)
+    total_candidates = Column(Integer, default=0)
+    dimensions_json = Column(Text, default="{}")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+```
+
+**Verificação rápida:**
+
+```python
+from src.models.bias_audit_snapshot import BiasAuditSnapshot
+
+snapshot = BiasAuditSnapshot(
+    company_id="acme",
+    job_id="devops-01",
+    total_candidates=50,
+    dimensions_json='{"gender": {"M": 30, "F": 20}, "pcd": {"yes": 3, "no": 47}}'
+)
+assert snapshot.company_id == "acme"
+```
+
+### 2.10 Controle 8 — GuardrailRepository (políticas por tenant)
+
+**O que faz:** Repositório que consulta regras de guardrails configuráveis por tenant/empresa. Cada guardrail é uma regra regex + mensagem de bloqueio que impede ações específicas no domínio `autonomous`. Ex: "não contatar candidatos reprovados", "não compartilhar dados salariais".
+
+**Diferença dos outros controles:** Os controles 1-6 são regras fixas no código. O GuardrailRepository é **configurável por empresa** — cada tenant define suas próprias políticas via banco de dados.
+
+**Copiar de LIA e adaptar:**
+
+```python
+# Arquivo LIA: lia-agent-system/app/shared/compliance/guardrail_repository.py (185L)
+# Destino v5:  src/services/compliance/guardrail_repository.py (~120L após adaptar)
+```
+
+**Adaptações no v5:**
+
+```python
+# REMOVER:
+from app.core.database import get_db  # v5 injeta db via parâmetro
+
+# ADAPTAR interface:
+class GuardrailRepository:
+    @staticmethod
+    async def get_active(db, domain: str, company_id: str = None) -> list:
+        """Retorna guardrails ativos para o domínio/tenant."""
+        query = "SELECT * FROM guardrails WHERE domain = %s AND active = true"
+        params = [domain]
+        if company_id:
+            query += " AND (company_id = %s OR company_id IS NULL)"
+            params.append(company_id)
+        return await db.fetch_all(query, params)
+```
+
+**Verificação rápida:**
+
+```python
+from src.services.compliance.guardrail_repository import GuardrailRepository
+
+# Pré-condição: inserir guardrail no banco de testes
+active = await GuardrailRepository.get_active(db, domain="autonomous", company_id="acme")
+assert len(active) >= 1
+assert active[0].domain == "autonomous"
+```
+
+### 2.11 Controle 9 — HiringPolicy / PolicyMiddleware (regras de negócio)
+
+**O que faz:** Middleware que aplica regras de negócio configuráveis por empresa (tenant). Diferente dos controles 1-8 que são de **compliance/segurança**, o HiringPolicy é de **regras de negócio** — define limites operacionais do recrutamento.
+
+**Exemplos de policies por domínio:**
+
+| Domínio | Policy | Exemplo |
+|---------|--------|---------|
+| `scheduling` | Dias permitidos para agendamento | "Só agendar seg-sex, 9h-18h" |
+| `applies` | Limite de candidatos por etapa | "Máximo 20 candidatos na shortlist" |
+| `messaging` | Templates obrigatórios | "Usar template `rejection_v3` para rejeições" |
+| `evaluation` | Etapas mínimas de aprovação | "Mínimo 2 avaliadores por candidato" |
+| `sourcing` | Restrições por região | "Sourcing apenas em SP, RJ, MG" |
+
+**Referência LIA:**
+
+```python
+# Arquivo LIA: lia-agent-system/app/shared/policy_middleware.py (100L)
+# Este middleware intercepta chamadas e aplica regras do tenant.
+# No Caminho 2, a integração é PARCIAL — inject via context.
+# No Caminho 3, vira mixin separado com feature flags.
+```
+
+**Status de implementação:**
+
+| Aspecto | Caminho 2 | Caminho 3 |
+|---------|-----------|-----------|
+| Policies por tenant | Via `context.policies` (manual) | Via `PolicyMixin` (automático) |
+| Feature flags | Não | Sim (por policy × domínio) |
+| Dashboard admin | Não | Sim |
+| Auditoria de policies | Via AuditCallback genérico | Via `policy_audit_mixin.py` dedicado |
+
+**Por que é parcial no Caminho 2:** O `ComplianceDomainPrompt` passa `context` para os domínios, e o domínio pode consultar `context.policies`. Mas não existe interceptação automática — o desenvolvedor do domínio precisa verificar as policies manualmente. No Caminho 3, isso se torna automático via mixin.
+
+### 2.12 Resumo dos 9 Controles
+
+| # | Controle | Tipo | Natureza | Novo/Existente | Sprint |
+|---|----------|------|----------|----------------|--------|
+| 1 | FairnessGuard | Runtime guard | Compliance | Copiar de LIA | Sprint 1 |
+| 2 | PromptInjectionGuard | Runtime guard | Segurança | Copiar de LIA | Sprint 1 |
+| 3 | FactChecker | Post-execution | Compliance | Copiar de LIA | Sprint 1 |
+| 4 | ConfidenceNode | Post-execution | Qualidade | Copiar de LIA | Sprint 1 |
+| 5 | PII Stripping | Pre-LLM filter | Privacidade (LGPD) | Expandir existente | Sprint 1 |
+| 6 | AuditCallback | Paralelo | Legal (SOX/BCB) | Corrigir existente | Sprint 1 |
+| 7 | BiasAuditSnapshot | Monitoramento | Compliance | Criar novo | Sprint 2 |
+| 8 | GuardrailRepository | Configurável/tenant | Segurança | Copiar de LIA | Sprint 2 |
+| 9 | HiringPolicy | Regras de negócio | Operacional | Parcial (Caminho 2) | Sprint 2+ |
 
 ---
 

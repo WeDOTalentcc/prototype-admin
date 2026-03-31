@@ -25,6 +25,7 @@ export function KanbanTablePagination({
   const paginated = getPaginatedCandidates()
   if (paginated.totalPages <= 1) return null
   return (
+    <>
 {/* Paginação */}
 {getPaginatedCandidates().totalPages > 1 && (
   <div className="bg-white dark:bg-lia-bg-primary rounded-md p-3">
@@ -102,5 +103,6 @@ export function KanbanTablePagination({
     </div>
   </div>
 )}
+    </>
   )
 }
