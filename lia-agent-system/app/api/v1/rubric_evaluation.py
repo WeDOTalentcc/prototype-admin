@@ -195,7 +195,7 @@ async def evaluate_candidate(
     
     try:
         _evals = evaluation_result.evaluations or []
-        dimension_summary = [f"{e.requirement}: {e.score}/5" for e in _evals[:5]]
+        dimension_summary = [f"{e.requirement}: {e.points}pts (w:{e.weighted_points})" for e in _evals[:5]]
         _n_dimensions = len(_evals)
         await audit_service.log_decision(
             company_id=x_company_id or "default",
