@@ -114,31 +114,81 @@ class TeamsBot:
         logger.info(f"Received invoke action: {action_data}")
         await turn_context.send_activity("Ação recebida! Processando...")
 
+    async def _send_via_webhook(self, card_payload: Dict[str, Any]) -> bool:
+        """Send an Adaptive Card via incoming webhook URL (no conversation reference needed)."""
+        webhook_url = getattr(settings, "TEAMS_WEBHOOK_URL", None)
+        if not webhook_url:
+            logger.debug("[TeamsBot] TEAMS_WEBHOOK_URL not configured — webhook fallback skipped")
+            return False
+        try:
+            payload = {
+                "type": "message",
+                "attachments": [
+                    {
+                        "contentType": "application/vnd.microsoft.card.adaptive",
+                        "content": card_payload,
+                    }
+                ],
+            }
+            async with httpx.AsyncClient(timeout=10) as client:
+                resp = await client.post(webhook_url, json=payload)
+                resp.raise_for_status()
+            logger.info("[TeamsBot] Notification sent via webhook")
+            return True
+        except Exception as exc:
+            logger.warning("[TeamsBot] Webhook send failed: %s", exc)
+            return False
+
+    async def _deliver_card(
+        self,
+        card_payload: Dict[str, Any],
+        conversation_reference: Optional[ConversationReference] = None,
+    ) -> bool:
+        """
+        Deliver an Adaptive Card via proactive message (if conversation_reference
+        is provided and adapter available) or via incoming webhook fallback.
+        """
+        if conversation_reference and self._ensure_adapter():
+            try:
+                async def callback(turn_context: TurnContext):
+                    await turn_context.send_activity(
+                        MessageFactory.attachment({
+                            "contentType": "application/vnd.microsoft.card.adaptive",
+                            "content": card_payload,
+                        })
+                    )
+
+                await self._adapter.continue_conversation(
+                    conversation_reference,
+                    callback,
+                    getattr(settings, "MICROSOFT_APP_ID", ""),
+                )
+                logger.info("[TeamsBot] Proactive message sent via adapter")
+                return True
+            except Exception as exc:
+                logger.warning("[TeamsBot] Proactive send failed, trying webhook: %s", exc)
+
+        return await self._send_via_webhook(card_payload)
+
     async def send_proactive_message(
         self,
         conversation_reference: ConversationReference,
         message: str,
         card_payload: Optional[Dict[str, Any]] = None
     ) -> bool:
+        if card_payload:
+            return await self._deliver_card(card_payload, conversation_reference)
         if not self._ensure_adapter():
             logger.warning("[TeamsBot] Cannot send proactive message — adapter not available")
             return False
         try:
             async def callback(turn_context: TurnContext):
-                if card_payload:
-                    await turn_context.send_activity(
-                        MessageFactory.attachment({
-                            "contentType": "application/vnd.microsoft.card.adaptive",
-                            "content": card_payload
-                        })
-                    )
-                else:
-                    await turn_context.send_activity(message)
+                await turn_context.send_activity(message)
 
             await self._adapter.continue_conversation(
                 conversation_reference,
                 callback,
-                settings.MICROSOFT_APP_ID
+                getattr(settings, "MICROSOFT_APP_ID", ""),
             )
             logger.info("Proactive message sent successfully")
             return True
@@ -148,28 +198,25 @@ class TeamsBot:
 
     async def send_notification(
         self,
-        conversation_reference: ConversationReference,
         notification_type: str,
-        data: Dict[str, Any]
+        data: Dict[str, Any],
+        conversation_reference: Optional[ConversationReference] = None,
     ) -> bool:
         card = self._create_adaptive_card(notification_type, data)
-        return await self.send_proactive_message(
-            conversation_reference,
-            message=data.get("message", ""),
-            card_payload=card
-        )
+        return await self._deliver_card(card, conversation_reference)
 
     async def notify_triagem_completed(
         self,
-        conversation_reference: ConversationReference,
         candidate_name: str,
         job_title: str,
         score: Optional[float] = None,
         classification: Optional[str] = None,
         details_url: Optional[str] = None,
+        conversation_reference: Optional[ConversationReference] = None,
     ) -> bool:
         """
         Notify recruiter that a candidate has completed triagem.
+        Uses incoming webhook if no conversation_reference is provided.
         """
         data = {
             "candidate_name": candidate_name,
@@ -184,21 +231,20 @@ class TeamsBot:
             data["details_url"] = details_url
 
         card = self._card_triagem_completed(data)
-        return await self.send_proactive_message(
-            conversation_reference, message="", card_payload=card
-        )
+        return await self._deliver_card(card, conversation_reference)
 
     async def notify_scheduling_confirmed(
         self,
-        conversation_reference: ConversationReference,
         candidate_name: str,
         job_title: str,
         scheduled_time: str,
         interview_type: str = "Entrevista",
         details_url: Optional[str] = None,
+        conversation_reference: Optional[ConversationReference] = None,
     ) -> bool:
         """
         Notify recruiter that an interview scheduling has been confirmed.
+        Uses incoming webhook if no conversation_reference is provided.
         """
         data = {
             "candidate_name": candidate_name,
@@ -210,21 +256,20 @@ class TeamsBot:
             data["details_url"] = details_url
 
         card = self._card_scheduling_confirmed(data)
-        return await self.send_proactive_message(
-            conversation_reference, message="", card_payload=card
-        )
+        return await self._deliver_card(card, conversation_reference)
 
     async def notify_candidate_timeout(
         self,
-        conversation_reference: ConversationReference,
         candidate_name: str,
         job_title: str,
         timeout_type: str = "triagem",
-        hours_elapsed: Optional[int] = None,
+        hours_elapsed: Optional[float] = None,
         details_url: Optional[str] = None,
+        conversation_reference: Optional[ConversationReference] = None,
     ) -> bool:
         """
         Notify recruiter that a candidate has timed out.
+        Uses incoming webhook if no conversation_reference is provided.
         """
         data = {
             "candidate_name": candidate_name,
@@ -237,9 +282,7 @@ class TeamsBot:
             data["details_url"] = details_url
 
         card = self._card_candidate_timeout(data)
-        return await self.send_proactive_message(
-            conversation_reference, message="", card_payload=card
-        )
+        return await self._deliver_card(card, conversation_reference)
 
     def _card_triagem_completed(self, data: Dict[str, Any]) -> Dict[str, Any]:
         facts = [

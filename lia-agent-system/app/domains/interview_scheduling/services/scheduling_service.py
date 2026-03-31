@@ -1033,8 +1033,7 @@ class SchedulingService:
                     await teams_bot.notify_scheduling_confirmed(
                         candidate_name=candidate_name,
                         job_title=job_title,
-                        interview_date=data_entrevista,
-                        interview_time=horario_entrevista,
+                        scheduled_time=f"{data_entrevista} às {horario_entrevista}",
                     )
                 except Exception as teams_err:
                     logger.warning(f"Teams scheduling notification failed: {teams_err}")

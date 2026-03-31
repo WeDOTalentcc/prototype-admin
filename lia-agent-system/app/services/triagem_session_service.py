@@ -879,8 +879,7 @@ class TriagemSessionService:
                 candidate_name=session.candidate_name or "Candidato",
                 job_title=session.job_title or "Vaga",
                 score=session.wsi_final_score,
-                recommendation=session.recommendation or "pendente",
-                session_id=session.token,
+                classification=session.recommendation or "pendente",
             )
             actions["recruiter_notification"] = "sent"
             logger.info(

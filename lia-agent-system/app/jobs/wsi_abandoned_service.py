@@ -257,8 +257,7 @@ async def _send_teams_timeout_notification(
         await teams_bot.notify_candidate_timeout(
             candidate_name=candidate_id,
             job_title=job_vacancy_id or "N/A",
-            idle_hours=round(age_hours, 1),
-            session_id=session_id,
+            hours_elapsed=round(age_hours, 1),
         )
     except Exception as exc:
         logger.warning("[wsi-abandoned] Teams timeout notification failed session=%s: %s", session_id, exc)
