@@ -1,7 +1,7 @@
 # Análise Profunda: Roadmap Alpha 1 vs. Código Existente
 
-**Data:** 30/03/2026  
-**Versão:** 4.0 — Foco IA: somente componentes onde IA atua, com justificativa concreta  
+**Data:** 31/03/2026  
+**Versão:** 5.0 — Atualizado com resultados Fases 1-5 (Tasks 67-72) + Auditoria Fase 6  
 **Escopo:** Cruzamento do Fluxo Alpha 1 (v2) com a implementação real no Replit  
 **Objetivo:** Listar APENAS componentes onde IA está envolvida (agente consome/produz algo via LLM, modelo, embedding ou heurística inteligente). Cada item explica concretamente a relação: qual agente consome o quê, produz o quê, e por quê.
 
@@ -533,13 +533,14 @@
 
 ### 1.1 Resumo Executivo
 
-O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios, 30+ tools registradas, 6+ agentes ReAct migrados para LangGraph, 6 camadas de compliance (FairnessGuard, PII Masking, Fact-Checker, Audit, Policy Engine, LGPD) e **11 camadas de inteligência** (Learning Loop, A/B Testing, Routing Adaptativo, Template Learning, Calibration, Score Normalization, Predictive Analytics, Model Drift, Conversation Memory, Semantic Search, Voice Analysis) implementadas. O frontend (`plataforma-lia`) tem integração real via proxy Next.js → FastAPI.
+O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios, 30+ tools registradas, 6+ agentes ReAct migrados para LangGraph, 6 camadas de compliance (FairnessGuard 3 camadas, PII Masking, Fact-Checker, Audit, Policy Engine, LGPD) e **11 camadas de inteligência** (Learning Loop, A/B Testing, Routing Adaptativo, Template Learning, Calibration, Score Normalization, Predictive Analytics, Model Drift, Conversation Memory, Semantic Search, Voice Analysis) implementadas. O frontend (`plataforma-lia`) tem integração real via proxy Next.js → FastAPI, incluindo **chat web público de triagem** (`/triagem/[token]`).
 
-**A distância entre "código existente" e "MVP funcional Alpha 1" está em 3 eixos:**
+**Após Fases 1-5 (Tasks 67-72), a distância para MVP funcional reduziu significativamente:**
 
-1. **Integração ponta-a-ponta** — Muitos serviços existem isolados mas não estão conectados no fluxo completo
-2. **Infraestrutura externa** — ATS real (Gupy/Pandapé), Twilio WhatsApp, Resend/SendGrid, Apify, Microsoft Teams dependem de credenciais e configuração de produção
-3. **Camadas de compliance ativas** — Existem no código mas precisam ser "ligadas" (feature flags, environment vars) em cada ponto do fluxo
+1. **Integração ponta-a-ponta** — WRF Dynamic K, LLM Job Classification, A/B Testing, Template Learning e FairnessGuard L3 estão **integrados e ativos** no RAG pipeline e communication services
+2. **Infraestrutura externa** — ATS real (Gupy/Pandapé), Twilio WhatsApp, Resend/SendGrid, Apify, Microsoft Teams dependem de credenciais e configuração de produção (sem mudança)
+3. **Camadas de compliance ativas** — FairnessGuard L3 ativo em 5 services; PII Masking global; restam ativações de Audit Trail e Fact-Checker em mais touchpoints
+4. **Chat web público** — **IMPLEMENTADO** com 10 componentes React, voice mode, progress tracking, LGPD footer
 
 ---
 
@@ -657,11 +658,11 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | **Serviços** | SourcingPipelineService, CandidateEnrichmentService, CVScoringService | Implementados | `app/services/` |
 | **Tools** | `search_candidates`, `analyze_profile`, `score_candidate`, `enrich_profile` | Registradas | `sourcing_tool_registry.py` |
 | **Frontend** | Funil de Talentos (tabela + filtros + sidebar LIA) | Implementado | `src/app/(dashboard)/candidates/` |
-| **Busca** | Elasticsearch + PGVector + WRF | PARCIAL | ES e PGVector configurados; WRF Dynamic K precisa validação |
+| **Busca** | Elasticsearch + PGVector + WRF | ATIVO | ES + PGVector + WRF Dynamic K integrado no RAG pipeline (Fase 5) |
 | **COMPLIANCE** | | | |
 | ↳ FairnessGuard L1 | Bloquear buscas discriminatórias | ATIVO | `MainOrchestrator` L35-47 |
 | ↳ FairnessGuard L2 | Alertar proxy terms na busca | ATIVO | `MainOrchestrator` L48-62 |
-| ↳ FairnessGuard L3 | Análise semântica nas respostas do LLM | PRECISA ATIVAR | `RubricEvaluationService` — sector rules |
+| ↳ FairnessGuard L3 | Análise semântica nas respostas do LLM | ATIVO | `check_with_sector()` integrado em RAG pipeline, pipeline_transition, rubric_evaluation, communication_tools, sourcing_agent (Fase 5) |
 | ↳ PII Masking | Strip PII de candidatos antes do LLM | ATIVO | `strip_pii_for_llm_prompt` |
 | ↳ Fact-Checker | Validar claims nas análises LIA | PRECISA ATIVAR | `fact_checker.py` |
 | ↳ Audit Trail | Log de buscas + scores | PRECISA ATIVAR | `audit_service.py` |
@@ -681,7 +682,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | ↳ Semantic Search | Expansão semântica de skills/títulos/indústrias | ATIVO | `semantic_search_service.py` (Gemini 768-dim) |
 | ↳ Voice Analysis | N/A (busca não é por voz) | — | — |
 
-**Gap CRÍTICO:** WRF Dynamic K + LLM Job Classification precisa validação end-to-end. FairnessGuard L3 precisa ser ativado explicitamente (depende de `ALPHA1_SECTOR_RULES[sector].fairness_layer3_enabled`). Integração com Pearch/Apify depende de API keys.
+**Gap ATUALIZADO (Fase 5):** WRF Dynamic K + LLM Job Classification **IMPLEMENTADOS E INTEGRADOS** no RAG pipeline. FairnessGuard L3 **ATIVO** com `check_with_sector()` (sector-dependent). Integração com Pearch/Apify ainda depende de API keys de produção.
 
 ---
 
@@ -740,9 +741,9 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | ↳ LGPD | Opt-out link no email | PRECISA IMPLEMENTAR | Template precisa unsubscribe |
 | **INTELIGÊNCIA** | | | |
 | ↳ Learning Loop | N/A (email é ação, não sugestão) | — | — |
-| ↳ A/B Testing | Variantes de template de email | DISPONÍVEL | `ab_testing_service.py` |
+| ↳ A/B Testing | Variantes de template de email | ATIVO | `seed_email_ab_tests` cria 3 experimentos no startup (Fase 5) |
 | ↳ Routing Adaptativo | N/A | — | — |
-| ↳ Template Learning | Templates de email aprendidos | DISPONÍVEL | `template_learning_service.py` |
+| ↳ Template Learning | Templates de email aprendidos | ATIVO | `TemplateLearningService` com tracking persistente (Fase 5) |
 | ↳ Calibration | N/A | — | — |
 | ↳ Score Normalization | N/A | — | — |
 | ↳ Predictive Analytics | N/A | — | — |
@@ -765,15 +766,15 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | **Domínio** | `cv_screening` + `communication` | Implementado | `app/domains/` |
 | **Serviços** | WSIService, WhatsAppService, VoiceService | Implementados | `app/services/` |
 | **Tools** | `generate_screening_questions`, `analyze_response`, `calculate_wsi` | Registradas | WSI tools |
-| **Frontend Chat Web** | Chat page para candidato | **NÃO EXISTE** | PRECISA SER CONSTRUÍDO |
+| **Frontend Chat Web** | Chat page para candidato | **IMPLEMENTADO** | `src/app/triagem/[token]/page.tsx` (Fase 2) |
 | **COMPLIANCE** | | | |
 | ↳ FairnessGuard L1-L2 | Perguntas e análises sem viés | PRECISA ATIVAR | Em cada step da triagem |
-| ↳ FairnessGuard L3 | Análise semântica das respostas | PRECISA ATIVAR | Sector-dependent: `fairness_layer3_enabled` |
+| ↳ FairnessGuard L3 | Análise semântica das respostas | ATIVO | `check_with_sector()` sector-dependent (Fase 5) |
 | ↳ PII Masking | Strip PII nas respostas antes do LLM | ATIVO | `strip_pii_for_llm_prompt` |
 | ↳ Fact-Checker | Validar scores e claims do WSI | PRECISA ATIVAR | `fact_checker.py` |
 | ↳ Audit Trail | Log completo: cada pergunta/resposta/score | PRECISA ATIVAR | `audit_service.py` |
 | ↳ Policy Engine | Autonomy level por setor | IMPLEMENTADO | `ALPHA1_SECTOR_RULES` |
-| ↳ LGPD | Consentimento antes da triagem | **PRECISA IMPLEMENTAR** | Tela de aceite frontend |
+| ↳ LGPD | Consentimento antes da triagem | PARCIAL | WelcomeCard serve como consent implícito; consent explícito (checkbox) recomendado |
 | ↳ Timeout/Abandono | Lembretes 48h + 48h | **PRECISA IMPLEMENTAR** | Scheduler |
 | **INTELIGÊNCIA** | | | |
 | ↳ Learning Loop | Captura padrões de resposta por competência | ATIVO | `learning_loop_service.py` |
@@ -788,7 +789,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | ↳ Semantic Search | N/A (perguntas já definidas) | — | — |
 | ↳ Voice Analysis | STT/TTS para triagem por voz | IMPLEMENTADO | `voice_service.py` (Deepgram + OpenAI) |
 
-**Gap CRÍTICO:** Chat web público para candidato NÃO existe. Timeouts 48h+48h precisam de scheduler. Consentimento LGPD precisa de tela frontend.
+**Gap ATUALIZADO (Fase 2):** Chat web público **IMPLEMENTADO** (`/triagem/[token]` com 10 componentes: ChatContainer, WelcomeCard, MessageBubble, InputBar, ProgressBar, CompletionCard, ConfirmationCard, TypingIndicator, MultipleChoiceCard, LikertScaleCard). Voice mode integrado. Timeouts 48h+48h ainda precisam de scheduler. Consentimento LGPD implícito via WelcomeCard.
 
 ---
 
@@ -873,7 +874,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | 3. Roteiro WSI | ATIVO | DISP | — | — | — | — | — | — | ATIVO | DISP | — |
 | 4. Buscar Cand. | ATIVO | DISP | ATIVO | — | ATIVO | ATIVO | DISP | ATIVO | ATIVO | ATIVO | — |
 | 5. Gate 1 | ATIVO | — | ATIVO | — | ATIVO | — | — | ATIVO | ATIVO | — | — |
-| 6. Email/Follow | — | DISP | — | DISP | — | — | — | — | ATIVO | — | — |
+| 6. Email/Follow | — | ATIVO | — | ATIVO | — | — | — | — | ATIVO | — | — |
 | 7. Triagem WSI | ATIVO | DISP | — | — | ATIVO | ATIVO | — | ATIVO | ATIVO | — | IMPL |
 | 8. Gate 2 | ATIVO | — | ATIVO | — | ATIVO | — | — | ATIVO | — | — | — |
 | 9. Agendar/Feed. | DISP | DISP | — | DISP | — | — | — | — | — | — | — |
@@ -971,9 +972,9 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | # | Gap | Impacto | Prioridade |
 |---|-----|---------|-----------|
 | G1 | **Scheduler/Background Jobs** — Follow-up 7 dias, timeout triagem 48h+48h, lembretes | Sem isso, etapas 6B e 7A não funcionam | BLOQUEANTE |
-| G2 | **Chat Web Público (Candidato)** — Página onde candidato faz triagem WSI | Sem isso, etapa 7 inteira não funciona | BLOQUEANTE |
-| G3 | **Webhook de Email** — Tracking de opens/clicks para follow-up inteligente | Follow-up fica "cego" sem saber se candidato leu | ALTO |
-| G4 | **Consentimento LGPD (Tela de Aceite)** — Antes da triagem WSI | Obrigatório legalmente | BLOQUEANTE |
+| G2 | ~~**Chat Web Público (Candidato)**~~ | ~~BLOQUEANTE~~ | **RESOLVIDO** (Fase 2) — `src/app/triagem/[token]/page.tsx` com 10 componentes |
+| G3 | ~~**Webhook de Email**~~ | ~~ALTO~~ | **RESOLVIDO** (Fase 3) — `email_tracking.py` com tracking de opens/clicks |
+| G4 | **Consentimento LGPD (Tela de Aceite)** — Antes da triagem WSI | PARCIAL — WelcomeCard como consent implícito; explícito recomendado | MÉDIO |
 | G5 | **Unsubscribe Link** — Nos templates de email | LGPD/CAN-SPAM compliance | ALTO |
 | G6 | **Notificações (Teams/Email/Bell)** — Sistema de alertas ao consultor | Mencionado no roadmap mas não implementado como sistema | ALTO |
 | G7 | **Configuração de Infra Externa** — API keys: Twilio, Resend/SendGrid, Apify, ATS | Sem credenciais, tudo roda em "dev mode" | BLOQUEANTE |
@@ -983,7 +984,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | # | Gap | O que existe | O que falta |
 |---|-----|-------------|-------------|
 | C1 | **FairnessGuard ativo em todos os pontos** | L1-L2 no Orchestrator | Ativar em: save JD, geração WSI, análise de resposta, feedback, scoring |
-| C2 | **FairnessGuard L3 (Semântico)** | Código existe, sector rules definidas | Ativar como step obrigatório pós-LLM (tech/financeiro/saude/rpo) |
+| C2 | ~~**FairnessGuard L3 (Semântico)**~~ | **RESOLVIDO** (Fase 5) | `check_with_sector()` ativo em 5 services (RAG, pipeline, rubric, communication, sourcing) |
 | C3 | **Audit Trail completo** | `AuditService` com 8 decision types | Ativar em: login, edição vaga, geração roteiro, busca, aprovação, contato, triagem, feedback |
 | C4 | **LGPD Consent Flow** | Endpoints de consentimento existem | Falta fluxo frontend + enforcement antes de processar candidato |
 | C5 | **Fact-Checker em todos os outputs** | 4 checkers (salary, count, %, date) + 3 granulares (V5) | Ativar como middleware pós-resposta em todos os agentes |
@@ -994,10 +995,10 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 
 | # | Gap | Status | O que falta |
 |---|-----|--------|-------------|
-| I1 | **A/B Testing sem testes criados** | Serviço implementado | Precisa definir e criar os primeiros testes (JD prompt, scoring prompt) |
+| I1 | ~~**A/B Testing sem testes criados**~~ | **RESOLVIDO** (Fase 5) | `seed_email_ab_tests` cria 3 experimentos (screening_invite, follow_up, feedback) no startup |
 | I2 | **Predictive Analytics não integrado no fluxo** | Serviço implementado | Precisa ser chamado na UI de criação de vaga (predict_time_to_fill, predict_optimal_salary) |
-| I3 | **Template Learning sem trigger automático** | Serviço implementado | Precisa hook pós-criação de vaga para chamar `learn_from_job_creation` |
-| I4 | **Voice Analysis não integrado na triagem web** | STT/TTS implementado | Precisa UI de gravação de áudio na página de triagem do candidato |
+| I3 | ~~**Template Learning sem trigger automático**~~ | **RESOLVIDO** (Fase 5) | `TemplateLearningService` com tracking persistente (record_send/open/click + recommend_template) |
+| I4 | ~~**Voice Analysis não integrado na triagem web**~~ | **RESOLVIDO** (Fase 2) | InputBar com gravação de áudio na triagem (`onAudioTranscription`) |
 | I5 | **Long-Term Memory sem compressão ativa** | Código de compressão existe | Precisa de cron job para executar `compress_old_episodes` periodicamente |
 | I6 | **Semantic Search parcialmente wired** | Expansão funciona | Precisa ser integrado no fluxo de busca de candidatos como step automático |
 
