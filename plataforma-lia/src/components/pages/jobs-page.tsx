@@ -5,7 +5,6 @@ import React, { useState, useRef, useEffect, useMemo } from"react"
 import { useRouter } from"next/navigation"
 import dynamic from"next/dynamic"
 import { Button } from"@/components/ui/button"
-import { WSITutorialModal } from"@/components/pages/jobs/WSITutorialModal"
 import { EmptyState } from"@/components/ui/empty-state"
 import { LiaPromptHeader } from"@/components/ui/lia-prompt-header"
 import { Card, CardContent } from"@/components/ui/card"
@@ -16,30 +15,9 @@ import { AISearchToggle } from"@/components/ai-search-toggle"
 import { IntelligenceNotifications } from"@/components/intelligence-notifications"
 import { Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clock, Layout, Layers3, Layers, ChevronDown, ChevronUp, ChevronLeft, BarChart3, TrendingUp, TrendingDown, FileText, ExternalLink, Briefcase, Building, Building2, Target, CheckCircle, CheckCircle2, XCircle, Linkedin, Globe, Shield, Hash, UserCheck, Heart, MoreHorizontal, Grid3X3, List, Maximize2, Minimize2, Star, Brain, Expand, Copy, MessageSquare, MoreVertical, Settings, Settings2, X, ChevronsLeftRight, Bell, Pin, Github, Mail, Lock, LockOpen, MessageCircle, AlertCircle, AlertTriangle, ShieldAlert, Lightbulb, ChevronRight, Home, Zap, ClipboardList, ListChecks, CalendarCheck, ThumbsUp, Phone, Send, Bookmark, Paperclip, Mic, GripVertical, ArrowUp, ArrowDown, ArrowUpDown, Filter, Award, Trash2, RefreshCw, ArrowRight, ArrowLeft, HelpCircle, Timer, GraduationCap, BookOpen, Scale, Loader2, History, Languages, UserCircle, CalendarDays, Link, Save, Check, RotateCcw, CalendarClock, Info, Archive, Gauge } from"lucide-react"
 import { JobKanbanPage } from"./job-kanban-page"
-const JobReportModal = dynamic(() => import("@/components/job-report-modal").then(m => ({ default: m.JobReportModal })), {
-  ssr: false,
-  loading: () => null,
-})
 import { JobActionsBar } from"@/components/job-actions-bar"
 import { JobCompareModal } from"@/components/modals/job-compare-modal"
 import { JobPublishModal } from"@/components/modals/job-publish-modal"
-const JobUnpublishModal = dynamic(() => import("@/components/modals/job-unpublish-modal").then(m => ({ default: m.JobUnpublishModal })), {
-  ssr: false,
-  loading: () => null,
-})
-import type { UnpublishData } from"@/components/modals/job-unpublish-modal"
-import { JobInsightsModal } from"@/components/modals/job-insights-modal"
-import { JobDuplicateModal } from"@/components/modals/job-duplicate-modal"
-const JobStatusModal = dynamic(() => import("@/components/modals/job-status-modal").then(m => ({ default: m.JobStatusModal })), {
-  ssr: false,
-  loading: () => null,
-})
-import { JobAssignRecruiterModal } from"@/components/modals/job-assign-recruiter-modal"
-const EditJobModal = dynamic(() => import("@/components/modals/edit-job-modal").then(m => ({ default: m.EditJobModal })), {
-  ssr: false,
-  loading: () => null,
-})
-import { CreateJobModal } from"@/components/modals/create-job-modal"
 import { ActionResultCard } from"@/components/chat/action-result-card"
 import { ContextPill } from"@/components/ui/context-pill"
 import { QuickActionChips, type QuickAction } from"@/components/ui/quick-action-chips"
@@ -58,8 +36,6 @@ import { Switch } from"@/components/ui/switch"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from"@/components/ui/dialog"
 import { toast } from"sonner"
 import { AudioRecordButton } from"@/components/ui/audio-record-button"
-import { ScreeningChannelsModal, ScreeningSettingsModal, ScreeningSchedulingModal } from"@/components/screening-config"
-import type { ScreeningStatus } from"@/components/screening-config"
 import { QuestionAdjustmentChat, QuestionDiffView, AdjustmentCounter, JDEvaluationPanel } from"@/components/wsi"
 import { 
   type Job, 
@@ -790,646 +766,96 @@ export function JobsPage(props: JobsPageProps) {
           onCloseCompareModal={() => setShowCompareModal(false)}
           showPublishModal={showPublishModal}
           onClosePublishModal={() => setShowPublishModal(false)}
+          showUnpublishModal={showUnpublishModal}
+          onCloseUnpublishModal={() => setShowUnpublishModal(false)}
+          showInsightsModal={showInsightsModal}
+          onCloseInsightsModal={() => setShowInsightsModal(false)}
+          showDuplicateModal={showDuplicateModal}
+          onCloseDuplicateModal={() => setShowDuplicateModal(false)}
+          showStatusModal={showStatusModal}
+          onCloseStatusModal={() => setShowStatusModal(false)}
+          statusModalMode={statusModalMode}
+          showAssignRecruiterModal={showAssignRecruiterModal}
+          onCloseAssignRecruiterModal={() => setShowAssignRecruiterModal(false)}
+          showCreateJobModal={showCreateJobModal}
+          onCloseCreateJobModal={() => setShowCreateJobModal(false)}
+          showEditJobModal={showEditJobModal}
+          onCloseEditJobModal={() => setShowEditJobModal(false)}
+          editingJob={editingJob}
+          showScreeningChannelsModal={showScreeningChannelsModal}
+          onCloseScreeningChannelsModal={() => setShowScreeningChannelsModal(false)}
+          showScreeningSettingsModal={showScreeningSettingsModal}
+          onCloseScreeningSettingsModal={() => setShowScreeningSettingsModal(false)}
+          showScreeningSchedulingModal={showScreeningSchedulingModal}
+          onCloseScreeningSchedulingModal={() => setShowScreeningSchedulingModal(false)}
+          screeningConfig={screeningConfig}
+          updateScreeningConfig={updateScreeningConfig}
+          showReactivateScreeningDialog={showReactivateScreeningDialog}
+          reactivateScreeningJobs={reactivateScreeningJobs}
+          reactivateEndDate={reactivateEndDate}
+          showWSITutorialModal={showWSITutorialModal}
+          onCloseWSITutorialModal={() => setShowWSITutorialModal(false)}
+          companyRecruiters={companyRecruiters}
+          activeFilter={activeFilter}
+          onDeselectAll={deselectAllJobs}
+          onRefreshJobs={loadBackendJobs}
+          onSetBackendJobs={setBackendJobs}
+          onSetSelectedJob={setSelectedJob}
+          onSetPreviewJob={setPreviewJob}
+          onSetEditingJob={setEditingJob}
+          onSetActiveFilter={setActiveFilter}
+          onOpenJobCreationChat={openJobCreationChat}
+          onSetPendingNavigateJobId={setPendingNavigateJobId}
+          onSetReactivateScreeningDialog={setShowReactivateScreeningDialog}
+          onSetReactivateScreeningJobs={setReactivateScreeningJobs}
+          onSetReactivateEndDate={setReactivateEndDate}
           jobs={allJobs.filter(job => selectedJobsForBatch.has(job.id)).map(job => ({
             id: String(job.id),
             code: job.jobId,
             title: job.title,
             status: job.status,
-            is_published: job.status ==='Ativa',
+            is_published: job.status === "Ativa",
             published_channels: []
           }))}
           onPublish={async (jobIds, channels, options) => {
             try {
               const selectedJobs = allJobs.filter(job => selectedJobsForBatch.has(job.id))
-              
               for (const job of selectedJobs) {
                 if (!job.backendId) continue
-                
-                await liaApi.updateJobVacancy(job.backendId, {
-                  status:'Ativa',
-                  published_website: channels.includes('portal')
-                })
-                
-                if (channels.includes('linkedin')) {
-                  try {
-                    const linkedInResult = await liaApi.publishToLinkedIn(job.backendId)
-                    if (linkedInResult.mock) {
-                      toast.info(`LinkedIn: ${linkedInResult.message}`)
-                    }
-                  } catch (err) {
-                  }
+                await liaApi.updateJobVacancy(job.backendId, { status: "Ativa", published_website: channels.includes("portal") })
+                if (channels.includes("linkedin")) {
+                  try { const r = await liaApi.publishToLinkedIn(job.backendId); if ((r as any).mock) toast.info("Publicação simulada no LinkedIn") } catch {}
                 }
-                
-                if (channels.includes('indeed')) {
-                  try {
-                    const indeedResult = await liaApi.publishToIndeed(job.backendId)
-                    if (indeedResult.note) {
-                      toast.info(`Indeed: ${indeedResult.note}`)
-                    }
-                  } catch (err) {
-                  }
+                if (channels.includes("indeed")) {
+                  try { const r = await liaApi.publishToIndeed(job.backendId); if ((r as any).note) toast.info("Publicação simulada no Indeed") } catch {}
                 }
               }
-              
-              toast.success(`${jobIds.length} vaga(s) publicada(s) em ${channels.length} canal(is)`)
+              toast.success("Vagas publicadas com sucesso")
               setShowPublishModal(false)
               deselectAllJobs()
               loadBackendJobs()
-            } catch (error) {
-              toast.error('Erro ao publicar vagas. Tente novamente.')
-            }
+            } catch { toast.error("Erro ao publicar vagas. Tente novamente.") }
           }}
           onUnpublish={async (jobIds, options) => {
             try {
               const selectedJobs = allJobs.filter(job => selectedJobsForBatch.has(job.id))
-              
               for (const job of selectedJobs) {
                 if (!job.backendId) continue
-                
-                // Despublicar das plataformas
-                if (job.publishedLinkedIn) {
-                  try {
-                    await liaApi.unpublishFromPlatform(job.backendId,'linkedin')
-                  } catch (err) {
-                  }
-                }
-                
-                if (job.publishedIndeed) {
-                  try {
-                    await liaApi.unpublishFromPlatform(job.backendId,'indeed')
-                  } catch (err) {
-                  }
-                }
-                
-                // Se congelar vaga está marcado, altera o status
-                if (options?.freezeJob) {
-                  try {
-                    // Atualiza o status para Paralisada
-                    await liaApi.updateJobVacancy(job.backendId, {
-                      status:'Paralisada'
-                    } as Record<string, unknown>)
-                  } catch (err) {
-                  }
-                }
+                if (job.publishedLinkedIn) { try { await liaApi.unpublishFromPlatform(job.backendId, "linkedin") } catch {} }
+                if (job.publishedIndeed) { try { await liaApi.unpublishFromPlatform(job.backendId, "indeed") } catch {} }
+                if (options?.freezeJob) { try { await liaApi.updateJobVacancy(job.backendId, { status: "Paralisada" }) } catch {} }
               }
-              
-              toast.success(`${jobIds.length} vaga(s) despublicada(s)`)
+              toast.success("Vagas despublicadas com sucesso")
               setShowPublishModal(false)
               deselectAllJobs()
               loadBackendJobs()
-            } catch (error) {
-              toast.error('Erro ao despublicar vagas. Tente novamente.')
-            }
+            } catch { toast.error("Erro ao despublicar vagas. Tente novamente.") }
           }}
           onOpenCommunicationModal={(jobIds, templateCategory) => {
-            const selectedJobsList = allJobs.filter(job => jobIds.includes(String(job.id)))
-            const jobTitles = selectedJobsList.map(j => j.title).join(',')
-            toast.info(
-              `Para notificar candidatos das vagas"${jobTitles}", acesse a página do Kanban de cada vaga e use o menu de comunicação.`,
-              { duration: 8000 }
-            )
+            const titles = allJobs.filter(job => jobIds.includes(String(job.id))).map(j => j.title).join(", ")
+            toast.info(`Comunicação para: ${titles}`, { duration: 8000 })
           }}
         />
-
-        <JobUnpublishModal
-          isOpen={showUnpublishModal}
-          onClose={() => setShowUnpublishModal(false)}
-          jobs={allJobs.filter(job => selectedJobsForBatch.has(job.id) && job.is_published).map(job => ({
-            id: String(job.id),
-            code: job.jobId,
-            title: job.title,
-            status: job.status,
-            is_published: job.is_published,
-            published_channels: job.published_channels
-          }))}
-          candidates={[]}
-          onUnpublish={async (data: UnpublishData) => {
-            try {
-              const response = await fetch('/api/backend-proxy/job-boards/unpublish-complete', {
-                method:'POST',
-                headers: {'Content-Type':'application/json' },
-                body: JSON.stringify({
-                  job_ids: data.jobIds,
-                  freeze_job: data.freezeJob,
-                  freeze_reason: data.freezeReason,
-                  freeze_start_date: data.freezeStartDate,
-                  unfreeze_date: data.unfreezeDate,
-                  notify_applicants: data.notifyApplicants,
-                  notification_channel: data.notificationChannel,
-                  notification_message: data.notificationMessage,
-                  notification_subject: data.notificationSubject,
-                  candidate_ids: data.candidateIds,
-                  cancel_scheduled_interviews: data.cancelScheduledInterviews,
-                  cancel_scheduled_screenings: data.cancelScheduledScreenings,
-                  send_recruiter_summary: data.sendRecruiterSummary
-                })
-              })
-              
-              if (!response.ok) {
-                throw new Error('Failed to unpublish')
-              }
-              
-              const result = await response.json()
-              
-              if (result.frozen_jobs?.length > 0) {
-                toast.success(`${result.frozen_jobs.length} vaga(s) congelada(s) com sucesso`)
-              } else if (result.unpublished_jobs?.length > 0) {
-                toast.success(`${result.unpublished_jobs.length} vaga(s) despublicada(s)`)
-              }
-              
-              deselectAllJobs()
-              loadBackendJobs()
-            } catch (error) {
-              throw error
-            }
-          }}
-          onComplete={() => {
-            loadBackendJobs()
-          }}
-          onNavigateToJobWithCommunication={(jobId, params) => {
-            const job = allJobs.find(j => String(j.id) === jobId)
-            if (job) {
-              const queryParams = new URLSearchParams({
-                action:'notify',
-                template: params.template,
-                channel: params.channel,
-                candidates: params.candidateIds.join(',')
-              }).toString()
-              
-              setSelectedJob(job)
-              setShowUnpublishModal(false)
-              
-              localStorage.setItem('pendingCommunicationAction', JSON.stringify({
-                template: params.template,
-                candidateIds: params.candidateIds,
-                channel: params.channel,
-                jobId: jobId
-              }))
-            }
-          }}
-        />
-
-        <JobInsightsModal
-          isOpen={showInsightsModal}
-          onClose={() => setShowInsightsModal(false)}
-          onSendEmail={(reportData) => {
-            const jobTitles = allJobs
-              .filter(job => reportData.jobIds.includes(String(job.id)))
-              .map(j => j.title)
-              .join(',')
-            const subject = encodeURIComponent(`Relatório de Insights - ${jobTitles}`)
-            const body = encodeURIComponent(`Segue relatório de insights das vagas selecionadas.\n\n${reportData.reportHtml.replace(/<[^>]*>/g,'')}`)
-            window.open(`mailto:?subject=${subject}&body=${body}`,'_blank')
-            toast.success('Abrindo cliente de email...')
-          }}
-          jobs={allJobs.filter(job => selectedJobsForBatch.has(job.id)).map(job => ({
-            id: String(job.id),
-            code: job.jobId,
-            title: job.title,
-            status: job.status,
-            priority: job.priority,
-            deadline: job.deadline,
-            candidates_count: job.funnel?.total || 0,
-            approved_count: job.funnel?.hired || 0,
-            screening_count: job.funnel?.screening || 0,
-            rejected_count: 0,
-            performance_score: job.funnel?.hired ? Math.round((job.funnel.hired / Math.max(job.funnel.total, 1)) * 100) : 0
-          }))}
-        />
-
-        <JobDuplicateModal
-          isOpen={showDuplicateModal}
-          onClose={() => setShowDuplicateModal(false)}
-          job={(() => {
-            const selectedJob = allJobs.find(job => selectedJobsForBatch.has(job.id))
-            return selectedJob ? {
-              id: String(selectedJob.id),
-              code: selectedJob.jobId,
-              title: selectedJob.title,
-              department: selectedJob.department,
-              location: selectedJob.location,
-              recruiter: selectedJob.recruiter,
-              recruiter_email: selectedJob.recruiterEmail,
-              candidates_count: selectedJob.funnel?.total || 0,
-              approved_count: selectedJob.funnel?.hired || 0
-            } : null
-          })()}
-          recruiters={companyRecruiters}
-          onDuplicate={async (options) => {
-            try {
-              const selectedJob = allJobs.find(job => selectedJobsForBatch.has(job.id))
-              if (!selectedJob?.backendId) {
-                toast.error('Vaga não encontrada')
-                return
-              }
-              
-              const includesCandidates = options.candidateOption !=='none'
-              const candidateFilter = options.candidateOption ==='approved' ?'approved' : (options.candidateOption ==='all' ?'all' : null)
-              const selectedRecruiter = companyRecruiters.find(r => r.id === options.recruiterId)
-              
-              const result = await liaApi.duplicateJobVacancy(selectedJob.backendId, {
-                copies: 1,
-                includeCandiates: includesCandidates,
-                candidateFilter: candidateFilter,
-                overrides: {
-                  title: options.newTitle,
-                  recruiter: selectedRecruiter?.name || selectedJob.recruiter,
-                  recruiter_email: selectedRecruiter?.email || selectedJob.recruiterEmail,
-                  status:'Rascunho',
-                  deadline_shortlist: options.deadlineShortlist,
-                  deadline_screening: options.deadlineScreening,
-                  deadline_closing: options.deadlineClosing
-                }
-              })
-              
-              const newJobId = result?.jobs?.[0]?.id
-              const candidatesIncluded = result?.total_candidates_cloned || 0
-              
-              if (includesCandidates && candidatesIncluded > 0) {
-                toast.success(`Vaga"${options.newTitle}" criada com ${candidatesIncluded} candidato(s)!`)
-              } else if (options.candidateOption ==='none') {
-                toast.success(`Vaga"${options.newTitle}" criada! Inicie a busca de candidatos.`)
-              } else {
-                toast.success(`Vaga"${options.newTitle}" criada com sucesso!`)
-              }
-              
-              setShowDuplicateModal(false)
-              deselectAllJobs()
-              await loadBackendJobs()
-              
-              if (options.candidateOption ==='none' && newJobId) {
-                router.push(`/jobs/${newJobId}?action=sourcing`)
-              }
-            } catch (error) {
-              toast.error('Erro ao duplicar vaga. Tente novamente.')
-            }
-          }}
-        />
-
-        <JobStatusModal
-          isOpen={showStatusModal}
-          onClose={() => setShowStatusModal(false)}
-          jobs={allJobs.filter(job => selectedJobsForBatch.has(job.id)).map(job => ({
-            id: String(job.id),
-            code: job.jobId,
-            title: job.title,
-            status: job.status,
-            candidates_count: job.funnel?.total || 0,
-            screening_count: job.funnel?.screening || 0,
-            interviews_scheduled: job.funnel?.interview || 0,
-            tests_scheduled: 0,
-            approved_count: job.funnel?.hired || 0,
-            paused_since: job.status ==='Paralisada' ? job.createdAt : undefined
-          }))}
-          mode={statusModalMode}
-          onPause={async (data) => {
-            try {
-              const selectedJobs = allJobs.filter(job => selectedJobsForBatch.has(job.id))
-              const updatePromises = selectedJobs.map(job => {
-                if (job.backendId) {
-                  return liaApi.updateJobVacancyStatus(job.backendId,'Paralisada')
-                }
-                return Promise.resolve(null)
-              })
-              await Promise.all(updatePromises)
-              
-              if (data.sendRecruiterSummary && data.recruiterNotificationChannel) {
-                const channelMap: Record<string, string[]> = {'email': ['email'],'teams': ['teams'],'bell': ['bell'],'email_teams': ['email','teams'],'all': ['email','teams','bell']
-                }
-                const channels = channelMap[data.recruiterNotificationChannel] || ['bell']
-                
-                const recruiterIds = [...new Set(selectedJobs
-                  .map(j => j.recruiter?.id || j.recruiterId)
-                  .filter(Boolean) as string[])]
-                
-                if (recruiterIds.length === 0) {
-                  recruiterIds.push('default_user')
-                }
-                
-                try {
-                  await liaApi.sendRecruiterActionNotification({
-                    recruiter_ids: recruiterIds,
-                    action:'pause',
-                    job_titles: selectedJobs.map(j => j.title),
-                    job_ids: selectedJobs.map(j => j.backendId || String(j.id)),
-                    channels,
-                    reason: data.pauseReason,
-                    cancelled_screenings: data.cancelScheduledScreenings,
-                    cancelled_interviews: data.cancelScheduledInterviews,
-                    cancelled_tests: data.cancelScheduledTests,
-                    notified_candidates_count: data.notifyApplicants ? data.candidateIds?.length || 0 : 0,
-                  })
-                } catch (notifError) {
-                }
-              }
-              
-              // Update local state to reflect status change + auto-pause screening
-              setBackendJobs(prev => prev.map(job => 
-                selectedJobsForBatch.has(job.id) 
-                  ? { ...job, status:'Paralisada' as string, screeningStatus: job.screeningStatus ==='active' ?'paused' : job.screeningStatus } 
-                  : job
-              ))
-              
-              // Auto-pause active screenings
-              for (const job of selectedJobs) {
-                if (job.backendId && (job.screeningStatus ==='active')) {
-                  try {
-                    await liaApi.updateScreeningStatus(job.backendId,'paused', { pause_reason:'Vaga pausada automaticamente' })
-                  } catch (err) {
-                  }
-                }
-              }
-              deselectAllJobs()
-            } catch (error) {
-              throw error
-            }
-          }}
-          onActivate={async (data) => {
-            try {
-              const selectedJobs = allJobs.filter(job => selectedJobsForBatch.has(job.id))
-              const updatePromises = selectedJobs.map(job => {
-                if (job.backendId) {
-                  return liaApi.updateJobVacancyStatus(job.backendId,'Ativa')
-                }
-                return Promise.resolve(null)
-              })
-              await Promise.all(updatePromises)
-              
-              if (data.sendRecruiterSummary && data.recruiterNotificationChannel) {
-                const channelMap: Record<string, string[]> = {'email': ['email'],'teams': ['teams'],'bell': ['bell'],'email_teams': ['email','teams'],'all': ['email','teams','bell']
-                }
-                const channels = channelMap[data.recruiterNotificationChannel] || ['bell']
-                
-                const recruiterIds = [...new Set(selectedJobs
-                  .map(j => j.recruiter?.id || j.recruiterId)
-                  .filter(Boolean) as string[])]
-                
-                if (recruiterIds.length === 0) {
-                  recruiterIds.push('default_user')
-                }
-                
-                try {
-                  await liaApi.sendRecruiterActionNotification({
-                    recruiter_ids: recruiterIds,
-                    action:'activate',
-                    job_titles: selectedJobs.map(j => j.title),
-                    job_ids: selectedJobs.map(j => j.backendId || String(j.id)),
-                    channels,
-                  })
-                } catch (notifError) {
-                }
-              }
-              
-              // Update local state to reflect status change
-              setBackendJobs(prev => prev.map(job => 
-                selectedJobsForBatch.has(job.id) 
-                  ? { ...job, status:'Ativa' as string } 
-                  : job
-              ))
-              
-              // Check if any reactivated jobs had paused screenings - ask to reactivate
-              const jobsWithPausedScreening = selectedJobs.filter(j => j.screeningStatus ==='paused' && j.screeningConfig)
-              if (jobsWithPausedScreening.length > 0) {
-                setReactivateScreeningJobs(jobsWithPausedScreening)
-                setShowReactivateScreeningDialog(true)
-              }
-              deselectAllJobs()
-            } catch (error) {
-              throw error
-            }
-          }}
-          onNavigateToJobWithCommunication={(jobId, params) => {
-            setShowStatusModal(false)
-            const job = allJobs.find(j => String(j.id) === jobId)
-            if (job) {
-              setSelectedJob(job)
-              setPreviewJob(job)
-              
-              localStorage.setItem('pendingCommunicationAction', JSON.stringify({
-                template: params.template,
-                candidateIds: params.candidateIds,
-                channel: params.channel,
-                jobId: jobId,
-                action:'pause_notification'
-              }))
-              
-              toast.success('Vaga pausada. O modal de comunicação será aberto para notificar candidatos.')
-            }
-          }}
-        />
-
-        <JobAssignRecruiterModal
-          isOpen={showAssignRecruiterModal}
-          onClose={() => setShowAssignRecruiterModal(false)}
-          jobs={allJobs.filter(job => selectedJobsForBatch.has(job.id)).map(job => ({
-            id: String(job.id),
-            code: job.jobId,
-            title: job.title,
-            recruiter: job.recruiter
-          }))}
-          recruiters={companyRecruiters}
-          onAssign={async (jobIds, recruiterId, options) => {
-            try {
-              const selectedJobs = allJobs.filter(job => selectedJobsForBatch.has(job.id))
-              const recruiter = companyRecruiters.find(r => r.id === recruiterId)
-              
-              if (!recruiter) {
-                toast.error('Recrutador não encontrado')
-                return
-              }
-              
-              const previousRecruiters = [...new Set(selectedJobs
-                .map(j => j.recruiter?.id || j.recruiterId)
-                .filter(Boolean) as string[])]
-              
-              const updatePromises = selectedJobs.map(job => {
-                if (job.backendId) {
-                  return liaApi.updateJobVacancy(job.backendId, {
-                    recruiter: recruiter.name,
-                    recruiter_email: recruiter.email
-                  })
-                }
-                return Promise.resolve(null)
-              })
-              await Promise.all(updatePromises)
-              
-              if (options.notifyRecruiter) {
-                try {
-                  await liaApi.sendRecruiterActionNotification({
-                    recruiter_ids: [recruiterId],
-                    action:'assign',
-                    job_titles: selectedJobs.map(j => j.title),
-                    job_ids: selectedJobs.map(j => j.backendId || String(j.id)),
-                    channels: ['bell','email','teams'],
-                  })
-                } catch (notifError) {
-                }
-              }
-              
-              if (options.transferCommunications && previousRecruiters.length > 0) {
-                try {
-                  await liaApi.transferCommunications({
-                    job_ids: selectedJobs.map(j => j.backendId || String(j.id)),
-                    from_recruiter_ids: previousRecruiters,
-                    to_recruiter_id: recruiterId
-                  })
-                } catch (transferError) {
-                  toast.warning('Comunicações não foram transferidas')
-                }
-              }
-              
-              setBackendJobs(prev => prev.map(job => 
-                selectedJobsForBatch.has(job.id) 
-                  ? { ...job, recruiter: recruiter.name, recruiterEmail: recruiter.email } 
-                  : job
-              ))
-              
-              toast.success(`Recrutador atribuído a ${jobIds.length} vaga(s)`)
-              setShowAssignRecruiterModal(false)
-              deselectAllJobs()
-            } catch (error) {
-              toast.error('Erro ao atribuir recrutador. Tente novamente.')
-            }
-          }}
-        />
-
-        {/* Modal de Criação de Vaga */}
-        <CreateJobModal
-          isOpen={showCreateJobModal}
-          onClose={() => setShowCreateJobModal(false)}
-          onCreateWithWizard={() => {
-            setShowCreateJobModal(false)
-            if (activeFilter ==='visao-geral') {
-              setActiveFilter('todas')
-              setTimeout(() => openJobCreationChat(), 100)
-            } else {
-              openJobCreationChat()
-            }
-          }}
-          onJobCreated={(jobId) => {
-            setShowCreateJobModal(false)
-            localStorage.setItem("jobCreationMode", jobId)
-            setPendingNavigateJobId(jobId)
-            setJobsRefreshKey(k => k + 1)
-          }}
-        />
-
-        {/* Modal de Edição de Vaga */}
-        <EditJobModal
-          isOpen={showEditJobModal}
-          onClose={() => {
-            setShowEditJobModal(false)
-            setEditingJob(null)
-          }}
-          job={editingJob}
-          onSave={async (jobId, updates) => {
-            try {
-              await liaApi.updateJobVacancy(jobId, updates)
-              toast.success('Vaga atualizada com sucesso!')
-              setShowEditJobModal(false)
-              setEditingJob(null)
-              // Recarregar para aplicar alterações (reload simples e confiável)
-              window.location.reload()
-            } catch (error) {
-              toast.error('Erro ao atualizar vaga. Tente novamente.')
-              throw error
-            }
-          }}
-        />
-
-        {/* Modais de Configuração de Triagem */}
-        <ScreeningChannelsModal
-          isOpen={showScreeningChannelsModal}
-          onClose={() => setShowScreeningChannelsModal(false)}
-          config={screeningConfig}
-          updateConfig={updateScreeningConfig}
-        />
-
-        <ScreeningSettingsModal
-          isOpen={showScreeningSettingsModal}
-          onClose={() => setShowScreeningSettingsModal(false)}
-          config={screeningConfig}
-          updateConfig={updateScreeningConfig}
-        />
-
-        <ScreeningSchedulingModal
-          isOpen={showScreeningSchedulingModal}
-          onClose={() => setShowScreeningSchedulingModal(false)}
-          config={screeningConfig}
-          updateConfig={updateScreeningConfig}
-        />
-
-
-        {showReactivateScreeningDialog && reactivateScreeningJobs.length > 0 && (
-          <Dialog open={showReactivateScreeningDialog} onOpenChange={(open) => !open && setShowReactivateScreeningDialog(false)}>
-            <DialogContent className="max-w-sm rounded-md bg-white border border-lia-border-subtle dark:bg-lia-bg-primary dark:border-lia-border-subtle">
-              <DialogHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
-                <DialogTitle className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif]">
-                  Reativar Triagem?
-                </DialogTitle>
-              </DialogHeader>
-              <div className="py-4 space-y-3">
-                <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
-                  {reactivateScreeningJobs.length === 1 
-                    ? `A vaga"${reactivateScreeningJobs[0]?.title}" tinha a triagem ativa antes de ser pausada. Deseja reativar a triagem?`
-                    : `${reactivateScreeningJobs.length} vagas tinham triagem ativa antes de serem pausadas. Deseja reativá-las?`
-                  }
-                </p>
-                <div className="space-y-2">
-                  <Label className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary">
-                    Nova data de término (opcional)
-                  </Label>
-                  <Input
-                    type="date"
-                    value={reactivateEndDate}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setReactivateEndDate(e.target.value)}
-                    className="h-8 text-xs border-lia-border-subtle dark:border-lia-border-default dark:bg-lia-bg-elevated"
-                  />
-                </div>
-              </div>
-              <DialogFooter className="gap-2 pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
-                <Button
-                  variant="outline"
-                  onClick={() => { setShowReactivateScreeningDialog(false); setReactivateScreeningJobs([]); setReactivateEndDate('') }}
-                  className="h-8 px-4 text-xs border-lia-border-default dark:border-lia-border-default"
-                >
-                  Não, manter pausada
-                </Button>
-                <Button
-                  onClick={async () => {
-                    for (const job of reactivateScreeningJobs) {
-                      if (job.backendId) {
-                        try {
-                          await liaApi.updateScreeningStatus(job.backendId,'active', { 
-                            scheduled_end_date: reactivateEndDate || undefined 
-                          })
-                        } catch (err) {
-                        }
-                      }
-                    }
-                    setBackendJobs(prev => prev.map(j => 
-                      reactivateScreeningJobs.some((rj: Record<string, unknown>) => rj.id === j.id) 
-                        ? { ...j, screeningStatus:'active' as string } 
-                        : j
-                    ))
-                    toast.success(`Triagem reativada para ${reactivateScreeningJobs.length} vaga(s)!`)
-                    setShowReactivateScreeningDialog(false)
-                    setReactivateScreeningJobs([])
-                    setReactivateEndDate('')
-                  }}
-                  className="h-8 px-4 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover"
-                >
-                  Sim, reativar triagem
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        )}
-
-        {/* Modal de Tutorial WSI - Metodologia WeDoTalent Skill Index */}
-        <WSITutorialModal open={showWSITutorialModal} onClose={() => setShowWSITutorialModal(false)} />
-
-
         {/* Job Creation Wizard Modal - DEPRECATED: Now using inline chat */}
         {/* Modal removido - usando super chat inline para criação de vaga */}
 
