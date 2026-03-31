@@ -1,4 +1,3 @@
-// @ts-nocheck
 export type BenefitCategory = 'health' | 'food' | 'transport' | 'education' | 'financial' | 'quality_life' | 'family' | 'security'
 
 export type BenefitValueType = 'monetary' | 'percentage' | 'informative'

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { textStyles, cardStyles, badgeStyles, formatScorePercent } from '@/lib/design-tokens'

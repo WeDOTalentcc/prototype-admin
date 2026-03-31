@@ -46,7 +46,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
     await new Promise(resolve => setTimeout(resolve, 1500))
 
     const insights = analyzeCandidateQuickInsights(candidate)
-    setLiaInsights(insights as unknown as LiaInsights)
+    if (insights) setLiaInsights(insights)
     setIsLiaAnalyzing(false)
   }, [candidate])
 
@@ -55,8 +55,8 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
     const score = candidate.matchPercentage || candidate.score || 85
     const skills = candidate.skills || []
     const experience = candidate.experience || ''
-    const seniority = candidate.seniority || (candidate as any).level || 'Pleno'
-    const role = candidate.role || (candidate as any).position || ''
+    const seniority = candidate.seniority || 'Pleno'
+    const role = candidate.role || ''
 
     return {
       // Resumo executivo da LIA

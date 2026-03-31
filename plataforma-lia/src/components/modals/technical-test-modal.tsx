@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { X, Code, Clock, Trophy, Users, CheckCircle, Loader2, AlertCircle, TrendingUp, TrendingDown, Minus } from "lucide-react"
