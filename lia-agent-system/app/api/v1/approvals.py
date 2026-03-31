@@ -320,8 +320,13 @@ async def approve_request(
                 decision_type="approve_candidate",
                 action="approval_request_approved",
                 decision="approved",
-                reasoning=[f"Approval request approved by {approved_by}", update.approval_notes or ""],
-                criteria_used=["approver_authorization", "request_type"],
+                reasoning=[
+                    "Approval request approved",
+                    f"Approved by role: {getattr(approval, 'approver_role', 'N/A')}",
+                    f"Request type: {getattr(approval, 'request_type', 'N/A')}",
+                    f"Notes provided: {'yes' if update.approval_notes else 'no'}",
+                ],
+                criteria_used=["approver_authorization", "request_type", "approval_policy"],
                 job_vacancy_id=approval.target_id,
                 human_review_required=False,
             )
@@ -396,8 +401,13 @@ async def reject_request(
                 decision_type="reject_candidate",
                 action="approval_request_rejected",
                 decision="rejected",
-                reasoning=[f"Approval request rejected by {rejected_by}", update.rejection_reason or ""],
-                criteria_used=["approver_authorization", "request_type"],
+                reasoning=[
+                    "Approval request rejected",
+                    f"Rejected by role: {getattr(approval, 'approver_role', 'N/A')}",
+                    f"Request type: {getattr(approval, 'request_type', 'N/A')}",
+                    f"Rejection reason provided: {'yes' if update.rejection_reason else 'no'}",
+                ],
+                criteria_used=["approver_authorization", "request_type", "rejection_policy"],
                 job_vacancy_id=approval.target_id,
                 human_review_required=True,
             )

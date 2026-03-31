@@ -1168,14 +1168,20 @@ async def search_candidates_local(
 
         try:
             _company = getattr(current_user, "company_id", None)
+            active_filters = [k for k, v in (filters.model_dump() or {}).items() if v]
             await audit_service.log_decision(
                 company_id=str(_company) if _company else "default",
                 agent_name="candidate_search",
                 decision_type="score_candidate",
                 action="local_search",
                 decision="executed",
-                reasoning=[f"Local search returned {len(candidates)} results in {search_duration_ms}ms"],
-                criteria_used=[k for k, v in (filters.model_dump() or {}).items() if v],
+                reasoning=[
+                    f"Local search returned {len(candidates)} results",
+                    f"Duration: {search_duration_ms}ms",
+                    f"Active filters: {len(active_filters)}",
+                    f"Total matches: {total_count or 0}",
+                ],
+                criteria_used=active_filters or ["no_filters"],
                 score=float(len(candidates)),
                 confidence=1.0,
                 human_review_required=False,
@@ -1211,21 +1217,31 @@ async def search_candidates(request: PearchSearchRequest):
     - "Data scientists with healthcare experience, 5+ years"
     """
     try:
+        _search_type = getattr(request, "search_type", None) or getattr(request, "type", "fast")
+        _limit = getattr(request, "limit", 10)
+        _timeout = getattr(request, "timeout", 60)
         result = await pearch_service.search_candidates(
             query=request.query,
-            search_type=request.search_type,
-            limit=request.limit,
-            timeout=request.timeout
+            search_type=str(_search_type),
+            limit=_limit,
+            timeout=_timeout
         )
         try:
+            _result_count = len(getattr(result, "candidates", [])) if result else 0
             await audit_service.log_decision(
                 company_id="default",
                 agent_name="candidate_search",
                 decision_type="score_candidate",
                 action="global_search",
                 decision="executed",
-                reasoning=[f"Global search ({request.search_type}) executed", f"Limit: {request.limit}"],
-                criteria_used=["query", "search_type"],
+                reasoning=[
+                    f"Global search ({_search_type}) executed",
+                    f"Results returned: {_result_count}",
+                    f"Limit: {_limit}",
+                    f"Timeout: {_timeout}s",
+                ],
+                criteria_used=["query", "search_type", "limit"],
+                score=float(_result_count),
                 human_review_required=False,
             )
         except Exception as audit_err:
@@ -2039,16 +2055,25 @@ async def screening_decision(
 
         try:
             _vc_company = getattr(vacancy_candidate, "company_id", None) if vacancy_candidate else None
+            _vc_score = getattr(vacancy_candidate, "wsi_score", None) if vacancy_candidate else None
+            _vc_ranking = getattr(vacancy_candidate, "ranking_position", None) if vacancy_candidate else None
             await audit_service.log_decision(
                 company_id=str(_vc_company) if _vc_company else "default",
                 agent_name="screening_module",
                 decision_type="approved" if request.decision == "approved" else "rejected",
                 action="screening_decision",
                 decision=request.decision,
-                reasoning=[f"Screening decision: {request.decision}", f"Stage transition: {new_stage}"],
-                criteria_used=["screening_evaluation", "recruiter_review"],
+                reasoning=[
+                    f"Screening decision: {request.decision}",
+                    f"Stage transition: {new_stage}",
+                    f"WSI score: {_vc_score}" if _vc_score else "WSI score: N/A",
+                    f"Ranking: {_vc_ranking}" if _vc_ranking else "Ranking: N/A",
+                    f"Recruiter notes: provided" if getattr(request, "notes", None) else "Recruiter notes: none",
+                ],
+                criteria_used=["screening_evaluation", "recruiter_review", "wsi_score", "ranking_position"],
                 candidate_id=str(candidate_id),
                 job_vacancy_id=request.job_id,
+                score=float(_vc_score) if _vc_score else None,
                 human_review_required=request.decision == "rejected",
             )
         except Exception as audit_err:
