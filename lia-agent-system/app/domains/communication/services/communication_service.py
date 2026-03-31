@@ -1897,6 +1897,20 @@ class CommunicationService:
                     "message": f"Template não encontrado (situation='{situation}', channel='{channel.value}')"
                 }
             
+            ab_body_override = None
+            if ab_variant_info and ab_variant_info.get("prompt_template"):
+                try:
+                    ab_body_override, _ = email_service.render_template(
+                        ab_variant_info["prompt_template"],
+                        variables,
+                    )
+                    logger.debug(
+                        "[ABTesting] Using variant '%s' body for %s",
+                        ab_variant_info.get("variant_name"), message_type.value,
+                    )
+                except Exception as _ab_render_exc:
+                    logger.debug("[ABTesting] Variant render failed, using default: %s", _ab_render_exc)
+
             rendered_subject, _ = email_service.render_template(
                 str(template.subject) if template.subject else "",
                 variables
@@ -1909,6 +1923,10 @@ class CommunicationService:
                 str(template.body_text) if template.body_text else "",
                 variables
             )
+
+            if ab_body_override:
+                rendered_body_text = ab_body_override
+                rendered_body_html = ab_body_override.replace("\n", "<br>")
             
             send_result = await self.send_message(
                 company_id=company_id,

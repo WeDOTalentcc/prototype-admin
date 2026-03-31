@@ -396,13 +396,18 @@ class RAGPipelineService:
         try:
             from app.services.wrf_dynamic_k_service import WRFDynamicKService
             wrf_svc = WRFDynamicKService()
-            # Injeta es_rank e pgv_rank para re-ranqueamento se não presentes
             for idx, item in enumerate(merged):
                 if "es_rank" not in item:
                     item["es_rank"] = idx + 1
                 if "pgv_rank" not in item:
                     item["pgv_rank"] = idx + 1
-            merged = wrf_svc.rank_candidates(merged)
+            es_scores = [float(r.get("bm25_score", 0)) for r in bm25_results] if bm25_results else None
+            pgv_scores = [float(r.get("semantic_score", 0)) for r in semantic_results] if semantic_results else None
+            merged = wrf_svc.rank_candidates(
+                merged,
+                es_scores=es_scores,
+                pgv_scores=pgv_scores,
+            )
             logger.debug("[RAGPipeline] WRF re-ranking applied: %d results", len(merged))
         except Exception as _wrf_exc:
             logger.debug("[RAGPipeline] WRF re-ranking skipped: %s", _wrf_exc)
@@ -432,8 +437,33 @@ class RAGPipelineService:
         except Exception as _cls_exc:
             logger.debug("[RAGPipeline] LLM classification skipped: %s", _cls_exc)
 
-        # --- FairnessGuard (diversidade de gênero no top-10) ---
+        # --- FairnessGuard (diversidade de gênero no top-10 + sector L3) ---
         fairness_ok = _check_fairness(merged, top_n=10)
+        try:
+            from app.shared.compliance.fairness_guard import FairnessGuard
+            _fg_post = FairnessGuard()
+            _sector = kwargs.get("sector")
+            if _sector and merged:
+                top_texts = [
+                    f"{c.get('name', '')} {c.get('title', '')} {c.get('experience', '')}"
+                    for c in merged[:10]
+                ]
+                for _txt in top_texts:
+                    if _txt.strip():
+                        _sector_result = await _fg_post.check_with_sector(
+                            text=_txt,
+                            sector=_sector,
+                            action="ranking_output",
+                        )
+                        if _sector_result.get("is_blocked"):
+                            logger.warning(
+                                "[RAGPipeline][FairnessGuard-L3] Sector bias detected: %s",
+                                _sector_result.get("category"),
+                            )
+                            fairness_ok = False
+                            break
+        except Exception as _fg_s_exc:
+            logger.debug("[RAGPipeline] FairnessGuard sector check skipped: %s", _fg_s_exc)
 
         # FAR-5: Auditoria de disparate impact em tempo real nos resultados
         ranking_audit: Dict[str, Any] = {}
@@ -490,6 +520,9 @@ class RAGPipelineService:
                 SELECT
                     id,
                     name,
+                    coalesce(summary, '') AS summary,
+                    coalesce(skills::text, '') AS skills,
+                    coalesce(title, '') AS title,
                     ts_rank(
                         to_tsvector('portuguese',
                             coalesce(name, '') || ' ' ||
@@ -515,7 +548,14 @@ class RAGPipelineService:
             result = await db.execute(sql, params)
             rows = result.fetchall()
             return [
-                {"id": str(r[0]), "name": r[1], "bm25_score": float(r[2])}
+                {
+                    "id": str(r[0]),
+                    "name": r[1],
+                    "experience": r[2],
+                    "skills": r[3],
+                    "title": r[4],
+                    "bm25_score": float(r[5]),
+                }
                 for r in rows
             ]
         except Exception as exc:
@@ -545,6 +585,9 @@ class RAGPipelineService:
                 SELECT
                     id,
                     name,
+                    coalesce(summary, '') AS summary,
+                    coalesce(skills::text, '') AS skills,
+                    coalesce(title, '') AS title,
                     1 - (embedding <=> :embedding::vector) AS semantic_score
                 FROM candidates
                 WHERE company_id = :company_id
@@ -565,7 +608,14 @@ class RAGPipelineService:
             result = await db.execute(sql, params)
             rows = result.fetchall()
             return [
-                {"id": str(r[0]), "name": r[1], "semantic_score": float(r[2])}
+                {
+                    "id": str(r[0]),
+                    "name": r[1],
+                    "experience": r[2],
+                    "skills": r[3],
+                    "title": r[4],
+                    "semantic_score": float(r[5]),
+                }
                 for r in rows
             ]
         except Exception as exc:
