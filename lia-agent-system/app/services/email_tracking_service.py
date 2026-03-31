@@ -259,6 +259,30 @@ class EmailTrackingService:
         )
         db.add(tracking_event)
 
+        _STATUS_MAP = {
+            "delivered": "delivered",
+            "open": "opened",
+            "click": "clicked",
+            "bounce": "bounced",
+            "dropped": "failed",
+            "spamreport": "spam_reported",
+            "unsubscribe": "unsubscribed",
+        }
+        if notification_id != sg_message_id and event_type in _STATUS_MAP:
+            try:
+                from app.models.message_queue import MessageQueue
+                from sqlalchemy import update as sql_update
+                await db.execute(
+                    sql_update(MessageQueue)
+                    .where(MessageQueue.id == notification_id)
+                    .values(
+                        status=_STATUS_MAP[event_type],
+                        updated_at=datetime.now(timezone.utc),
+                    )
+                )
+            except Exception as status_exc:
+                logger.debug("[EmailTracking] communication status update skipped: %s", status_exc)
+
     async def resolve_company_template(
         self,
         db: AsyncSession,

@@ -683,9 +683,9 @@ def feedback_auto_send_task(self, feedback_id: str, company_id: str) -> dict:
             PersonalizedFeedbackStatus,
             personalized_feedback_service,
         )
-        from app.domains.communication.services.communication_dispatcher import CommunicationDispatcher
+        from app.domains.communication.services.email_service import EmailService
 
-        dispatcher = CommunicationDispatcher()
+        email_service = EmailService()
 
         async with AsyncSessionLocal() as db:
             result = await db.execute(
@@ -737,14 +737,26 @@ def feedback_auto_send_task(self, feedback_id: str, company_id: str) -> dict:
             channel_used = record.channel or "email"
 
             if record.candidate_email and channel_used in ("email", "both"):
-                send_result["email"] = dispatcher.send_email(
+                email_result = await email_service.send_email(
                     to_email=record.candidate_email,
+                    to_name=record.candidate_name or None,
                     subject=subject,
+                    body=body_text or "",
                     body_html=body_html or f"<p>{body_text}</p>",
-                    body_text=body_text,
+                    categories=["rejection_feedback", "auto_send"],
+                    metadata={
+                        "feedback_id": feedback_id,
+                        "company_id": company_id,
+                    },
                 )
+                send_result["email"] = {
+                    "success": email_result.success if hasattr(email_result, "success") else True,
+                    "message_id": getattr(email_result, "message_id", None),
+                }
 
             if record.candidate_phone and channel_used in ("whatsapp", "both"):
+                from app.domains.communication.services.communication_dispatcher import CommunicationDispatcher
+                dispatcher = CommunicationDispatcher()
                 msg = record.whatsapp_message or body_text[:500]
                 send_result["whatsapp"] = dispatcher.send_whatsapp(
                     to_phone=record.candidate_phone,

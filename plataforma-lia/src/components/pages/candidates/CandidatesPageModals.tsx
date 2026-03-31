@@ -88,7 +88,7 @@ interface CandidatesPageModalsProps {
   // Batch Approval Modal
   showBatchApproval: boolean
   setShowBatchApproval: (v: boolean) => void
-  convertCandidatesForBatch: (candidates: Candidate[]) => any[]
+  convertCandidatesForBatch: (candidates: Candidate[]) => Record<string, unknown>[]
   handleBatchApprovalComplete: (...args: unknown[]) => unknown
 
   // WSI Text Screening Modal
@@ -111,8 +111,8 @@ interface CandidatesPageModalsProps {
   setShowRubricModal: (v: boolean) => void
   rubricCandidate: Candidate | null
   setRubricCandidate: (v: Candidate | null) => void
-  rubricEvaluationData: any
-  setRubricEvaluationData: (v: any) => void
+  rubricEvaluationData: Record<string, unknown> | null
+  setRubricEvaluationData: (v: Record<string, unknown> | null) => void
   toast: (opts: { title: string; description?: string; variant?: string }) => void
 
   // Send Email Modal
@@ -139,10 +139,10 @@ interface CandidatesPageModalsProps {
   // Credit Confirmation Modal
   showCreditConfirmation: boolean
   setShowCreditConfirmation: (v: boolean) => void
-  creditEstimate: any
-  pearchSearchOptions: any
-  setPearchSearchOptions: (v: any) => void
-  setPendingSearchRequest: (v: any) => void
+  creditEstimate: Record<string, unknown> | null
+  pearchSearchOptions: Record<string, unknown>
+  setPearchSearchOptions: (v: Record<string, unknown>) => void
+  setPendingSearchRequest: (v: Record<string, unknown> | null) => void
   handleConfirmPearchSearch: () => void
 
   // Global Expansion Confirm Modal
@@ -156,15 +156,15 @@ interface CandidatesPageModalsProps {
   // Source Change Confirm Modal
   showSourceChangeModal: boolean
   setShowSourceChangeModal: (v: boolean) => void
-  pendingSourceChange: any
-  setPendingSourceChange: (v: any) => void
+  pendingSourceChange: { source: string; label: string } | null
+  setPendingSourceChange: (v: { source: string; label: string } | null) => void
   confirmSourceChange: () => void
 
   // Contact Filter Confirm Modal
   showContactFilterModal: boolean
   setShowContactFilterModal: (v: boolean) => void
-  pendingContactFilter: any
-  setPendingContactFilter: (v: any) => void
+  pendingContactFilter: { filter: string; label: string } | null
+  setPendingContactFilter: (v: { filter: string; label: string } | null) => void
   confirmContactFilterChange: () => void
 
   // Save As Archetype Modal
@@ -177,14 +177,14 @@ interface CandidatesPageModalsProps {
   setArchetypeCreationStep: (v: string) => void
   newArchetypeData: Record<string, unknown>
   setNewArchetypeData: (v: Record<string, unknown>) => void
-  setUserArchetypes: (fn: (prev: any[]) => any[]) => void
-  setChatMessages: (fn: (prev: any[]) => any[]) => void
+  setUserArchetypes: (fn: (prev: Record<string, unknown>[]) => Record<string, unknown>[]) => void
+  setChatMessages: (fn: (prev: Record<string, unknown>[]) => Record<string, unknown>[]) => void
 
   // Advanced Filters Modal
   showAdvancedSearch: boolean
   setShowAdvancedSearch: (v: boolean) => void
-  activeSearchFilters: any
-  setActiveSearchFilters: (v: any) => void
+  activeSearchFilters: Record<string, unknown>
+  setActiveSearchFilters: (v: Record<string, unknown>) => void
   hideViewedCandidates: {
     setScope: (s: string) => void
     setPeriod: (p: string) => void
@@ -225,7 +225,7 @@ interface CandidatesPageModalsProps {
   setPendingTabChange: (v: unknown) => void
   handleSaveAllAndExit: () => void
   handleExitWithoutSaving: () => void
-  unsavedPearchCandidates: any[]
+  unsavedPearchCandidates: Record<string, unknown>[]
   isSavingToBase: boolean
 
   // Edit Query Modal
@@ -238,22 +238,22 @@ interface CandidatesPageModalsProps {
   setSearchTerm: (v: string) => void
   setLastSearchQuery: (v: string) => void
   setLastSearchMode: (v: string) => void
-  setLastSearchEntities: (v: any) => void
-  setLastSearchMetadata: (v: any) => void
-  executeSearch: (...args: any[]) => Promise<void>
+  setLastSearchEntities: (v: Record<string, unknown>) => void
+  setLastSearchMetadata: (v: Record<string, unknown>) => void
+  executeSearch: (...args: unknown[]) => Promise<void>
 
   // Preview Suggestion Modal
-  previewSuggestion: any
-  setPreviewSuggestion: (v: any) => void
-  previewingUserArchetype: any
-  setPreviewingUserArchetype: (v: any) => void
-  buildFiltersFromTags: (...args: any[]) => any
+  previewSuggestion: Record<string, unknown> | null
+  setPreviewSuggestion: (v: Record<string, unknown> | null) => void
+  previewingUserArchetype: Record<string, unknown> | null
+  setPreviewingUserArchetype: (v: Record<string, unknown> | null) => void
+  buildFiltersFromTags: (...args: unknown[]) => Record<string, unknown>
   setLiaPromptValue: (v: string) => void
   setActiveSearchTab: (v: string) => void
 
   // Delete Archetype Modal
-  archetypeToDelete: any
-  setArchetypeToDelete: (v: any) => void
+  archetypeToDelete: Record<string, unknown> | null
+  setArchetypeToDelete: (v: Record<string, unknown> | null) => void
 }
 
 export function CandidatesPageModals({
