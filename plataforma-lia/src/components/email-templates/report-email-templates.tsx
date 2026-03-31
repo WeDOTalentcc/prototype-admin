@@ -17,7 +17,7 @@ interface EmailTemplate {
   id: string
   name: string
   subject: string
-  type: summary | detailed | executive | weekly | custom
+  type: 'summary' | 'detailed' | 'executive' | 'weekly' | 'custom'
   category?: string
   htmlContent: string
   textContent: string
@@ -331,7 +331,7 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
       npsScore: String(jobData.nps || 0),
       department: String(jobData.department || ''),
       generated_date: new Date().toLocaleDateString('pt-BR'),
-      dashboard_link: 'https://app.wedotalent.com/jobs/' + jobData.jobId,
+      dashboard_link: 'https://app.wedotalent.com/jobs/' + String(jobData.jobId || ''),
       // Adicionar mais variáveis baseadas no template selecionado
       ...customizations
     }
@@ -450,7 +450,7 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as EmailTemplate['category'])}
+              onClick={() => setActiveTab(tab.id as 'templates' | 'recipients' | 'customize' | 'preview')}
               className={`flex items-center gap-2 px-6 py-3 text-sm font-medium transition-colors motion-reduce:transition-none ${
  activeTab === tab.id
                   ? 'text-lia-text-secondary dark:text-lia-text-tertiary border-b-2 border-gray-900 bg-gray-100 dark:bg-lia-bg-secondary'
