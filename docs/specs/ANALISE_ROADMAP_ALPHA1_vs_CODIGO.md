@@ -971,51 +971,25 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 
 ## 7. MAPA DE PRIORIDADES DE CONSTRUÇÃO
 
-### Fase 0: INFRAESTRUTURA — MAIORIA RESOLVIDA
+### Fase 0: INFRAESTRUTURA
 
 | # | Item | Tipo | Status |
 |---|------|------|--------|
 | P0.1 | Configurar credenciais de produção (Twilio, Resend, Apify, ATS) | Config | **PENDENTE** — depende de contas de produção |
 | P0.3 | Configurar Elasticsearch + PGVector em produção | Infra | **PENDENTE** — config de produção |
-| P0.4 | Ativar Audit Trail em todos os endpoints | Backend | **PENDENTE** — `audit_service.py` existe, ativo em JD/WSI (GOV-01), falta ativar nos demais touchpoints |
+| P0.4 | Ativar Audit Trail em todos os endpoints | Backend | **PENDENTE** — ativo em JD/WSI (GOV-01), falta ativar nos demais touchpoints |
 
-### Fase 1: FLUXO CORE — COMPLETA
+> Fases 1 (Fluxo Core), 2 (Triagem + Automação) e 3 (Gates + Scheduling) — **100% completas** (Tasks #67-#76). Único item parcial: P3.4 Bell notification pendente.
 
-| # | Item | Compliance | Status |
-|---|------|------------|--------|
-| P1.1 | Login funcional + rate limiting | Rate Limiting, Audit | **IMPLEMENTADO** |
-| P1.2 | Import/Edição de Vaga do ATS | FG L1-L2 **ATIVO** (Task #68) | **IMPLEMENTADO** — FG ativo em `jd_generation.py` |
-| P1.3 | Configurar Roteiro WSI | FG L1-L2 **ATIVO** (Task #68) | **IMPLEMENTADO** — FG ativo em `wsi_questions.py` |
-| P1.4 | Busca de Candidatos | FG L1-L3 **ATIVO** (Task #74) | **IMPLEMENTADO** — ARCH-04 `**kwargs` fix |
-| P1.5 | Aprovação Kanban (Gate 1) | `check_rejection_reason` | **IMPLEMENTADO** |
-| P1.6 | Envio de Email de Contato | Rate Limiting, LGPD opt-out **ATIVO** (Task #68) | **IMPLEMENTADO** — opt-out HMAC, A/B seed (Task #72) |
-
-### Fase 2: TRIAGEM + AUTOMAÇÃO — COMPLETA
-
-| # | Item | Status |
-|---|------|--------|
-| P2.1 | Chat Web Público para Triagem WSI | **RESOLVIDO (Tasks #67-#69)** — `/triagem/[token]` com 10 componentes, voice mode (Task #71) |
-| P2.2 | Follow-up Automático 7 dias | **RESOLVIDO (Task #70)** — Celery Beat `followup-check-hourly` |
-| P2.3 | Timeout + Abandono de Triagem | **RESOLVIDO (Task #70)** — Celery Beat `wsi-abandoned-check` a cada 4h |
-| P2.4 | Score WSI + Parecer Textual | **IMPLEMENTADO** — FG L1-L2 ativo em `rubric_evaluation.py` (Task #68) |
-
-### Fase 3: GATES + SCHEDULING — MAIORIA RESOLVIDA
-
-| # | Item | Status |
-|---|------|--------|
-| P3.1 | Gate 2 (Aprovar/Reprovar Triados) | **IMPLEMENTADO** |
-| P3.2 | Agendamento de Entrevista | **IMPLEMENTADO** — Teams via Graph API (Task #71), ICS standalone |
-| P3.3 | Feedback Automático (Reprovados) | **RESOLVIDO (Task #70)** — Celery Beat `feedback-process-pending-sends`, Template Learning ARCH-05 fix (Task #74) |
-| P3.4 | Notificações Teams/Email/Bell | **PARCIAL** — Teams (Task #71) e Email ativos; Bell notification pendente |
-
-### Fase 4: COMPLIANCE + INTELIGÊNCIA PROFUNDA — PENDENTE
+### Fase 4: COMPLIANCE + INTELIGÊNCIA PROFUNDA
 
 | # | Item | Tipo | Status |
 |---|------|------|--------|
+| P3.4 | Bell notification (notificações in-app) | Frontend | **PENDENTE** — Teams e Email ativos; falta bell |
 | P4.1 | Bias Audit Dashboard (Four-Fifths Rule) | Frontend + Backend | **PENDENTE** |
 | P4.2 | EU AI Act Risk Classification por agente | Docs + Backend | **PENDENTE** |
 | P4.3 | LGPD DSR (Data Subject Requests) — export/delete | Backend | **PENDENTE** |
-| P4.4 | Criar primeiros A/B Tests (JD prompt, scoring prompt) | Backend | **PARCIAL (Task #72)** — `seed_email_ab_tests` cria 3 experimentos de **email templates** (screening_invite, follow_up, feedback). Testes de prompt JD/scoring ainda pendentes |
+| P4.4 | Criar primeiros A/B Tests (JD prompt, scoring prompt) | Backend | **PARCIAL** — email templates seed existe; testes de prompt JD/scoring pendentes |
 | P4.5 | Integrar Predictive Analytics na UI de vagas | Frontend + Backend | **PENDENTE** |
 | P4.7 | SOX Audit Export (para auditoria externa) | Backend | **PENDENTE** |
 
