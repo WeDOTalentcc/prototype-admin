@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
+import { getAuthHeaders } from "@/lib/api/auth-headers"
 
 const BACKEND_URL = process.env.LIA_BACKEND_URL || "http://127.0.0.1:8000"
 
@@ -16,9 +17,7 @@ export async function POST(
       `${BACKEND_URL}/api/v1/notifications/${id}/read?user_id=${userId}`,
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getAuthHeaders(request),
       }
     )
     

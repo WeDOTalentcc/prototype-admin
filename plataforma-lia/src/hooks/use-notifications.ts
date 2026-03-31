@@ -109,12 +109,12 @@ export function useNotifications({
 
       if (response.status === 429) {
         backoffRef.current = Math.min((backoffRef.current || 1000) * 2, 120000)
-        setNotifications([])
+        setError("Limite de requisições atingido. Tentando novamente...")
         return
       }
 
       if (!response.ok) {
-        setNotifications([])
+        setError(`Erro ao carregar notificações (${response.status})`)
         return
       }
 
@@ -129,7 +129,8 @@ export function useNotifications({
       } else {
         setNotifications([])
       }
-    } catch {
+    } catch (err) {
+      setError("Falha ao conectar com o servidor de notificações")
       setNotifications([])
     } finally {
       setIsLoading(false)
