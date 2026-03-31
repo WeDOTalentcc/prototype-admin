@@ -7,7 +7,7 @@ interface Message {
   content: string
   timestamp: string
   type?: "text" | "action" | "structured" | "file" | "system" | "approval" | "thinking" | "progress" | "command" | "file-creation" | "completion"
-  actions?: Array<{ label: string; icon?: React.ReactNode; variant?: "default" | "outline" | "secondary" }>
+  actions?: Array<{ label: string; icon?: React.ElementType; variant?: "default" | "outline" | "secondary" }>
   data?: Record<string, unknown>
   step?: string
   contextData?: Record<string, unknown>
@@ -28,7 +28,7 @@ interface Message {
     label: string
     status: "pending" | "processing" | "completed" | "error"
     details?: string
-    icon?: React.ReactNode
+    icon?: React.ElementType
   }>
   currentStep?: string
   command?: {

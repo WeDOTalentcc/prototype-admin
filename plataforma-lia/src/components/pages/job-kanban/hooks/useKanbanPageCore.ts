@@ -52,7 +52,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   const { saveJobsState } = useNavigationPersistence()
   const { user } = useAuth()
   const talentFunnel = useTalentFunnel()
-  const _companyIdForSL = (user as Record<string, unknown>)?.company || 'demo'
+  const _companyIdForSL = ((user as Record<string, unknown>)?.company as string) || 'demo'
   const _jobIdForSL = job?.id?.toString()
   const { shortLists, createShortList: _createSL, addCandidate: _addToSL, removeCandidate: _removeFromSL } = useShortList(_companyIdForSL, _jobIdForSL)
   const { insights: proactiveInsights, dismiss: dismissInsight } = useProactiveInsights(_jobIdForSL, _companyIdForSL)
