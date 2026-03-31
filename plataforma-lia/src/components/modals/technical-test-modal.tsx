@@ -121,7 +121,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 py-4" className="bg-[var(--gray-50)]">
+        <div className="flex-1 overflow-y-auto px-4 py-4 bg-[var(--gray-50)]">
           <div 
             className="flex items-center justify-between p-3 rounded-md mb-4"
             style={{backgroundColor: statusConfig.bgColor, border: `1px solid ${statusConfig.borderColor}`}}

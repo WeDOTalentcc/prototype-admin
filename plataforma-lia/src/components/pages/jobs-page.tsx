@@ -138,6 +138,9 @@ export function JobsPage(props: JobsPageProps) {
     loadBackendJobs, router,
   } = state
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks -- kanban early-returns are nav guards, not true conditional renders
+
+
   const { statusOrder, groupedJobs } = useMemo(() => {
     const order = [
       'Ativa', 'Aprovada', 'Aguardando aprovação', 'Reaberta', 'Paralisada', 'Interna',

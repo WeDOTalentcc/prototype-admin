@@ -149,7 +149,7 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
 │  1. RateLimitMiddleware — sliding window por IP + email ●                     │
 │  2. PII Masking — logs de login mascarados (PIIMaskingFilter global) ●        │
 │  3. CircuitBreaker — circuit "workos" para SSO ●                              │
-│  4. Audit Trail — login events ◐ (código existe, precisa ativar em auth.py)  │
+│  4. Audit Trail — login events ● (ativado em auth.py — login success/failure)│
 │  5. LGPD — JWT stateless, sem cookies de sessão ●                            │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -263,7 +263,7 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
 │  2. PII Masking — 4 camadas pré-LLM ●                                       │
 │  3. AntiSycophancy FULL — verificação de premissas ●                         │
 │  4. CircuitBreaker — circuit "anthropic" ●                                   │
-│  5. AuditTrail — log de geração de JD ● (edições manuais ◐)                │
+│  5. AuditTrail — log de geração de JD ● (edições manuais ●)                │
 │  6. LearningLoop — captura silenciosa de edições ●                           │
 │  7. TemplateLearning — auto-template após 3 vagas similares ●               │
 │  8. PredictiveAnalytics — predict TTF + salary ●                             │
@@ -504,7 +504,7 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
     🧠 Calibration: feedback explícito/implícito sobre scores
 
  9  AuditTrail + Learning
-    🔒 Audit: log de buscas + scores ◐ (precisa ativar em candidates.py)
+    🔒 Audit: log de buscas + scores ● (ativado via sourcing_react_agent.py)
     🧠 LearningLoop: captura accept/modify/reject de candidatos
     🧠 ModelDrift: monitora score_drift + approval_drift (7-day window)
     🧠 PredictiveAnalytics: predict_skill_success integrado
@@ -524,7 +524,7 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
 │  4. BiasAuditSnapshot — Four-Fifths Rule ●                                   │
 │  5. ConfidenceNode — calibração de score ●                                   │
 │  6. ScoreNormalization — difficulty_coefficient ●                             │
-│  7. AuditTrail — buscas + scores ◐ (precisa ativar)                         │
+│  7. AuditTrail — buscas + scores ● (ativado)                                │
 │  8. LearningLoop — captura silenciosa ●                                      │
 │  9. Calibration — feedback dual (explícito + implícito) ●                    │
 │ 10. ModelDrift — 4 dimensões monitoradas ●                                   │
@@ -633,7 +633,7 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
     Notification: Bell + Teams
 
  8  AuditTrail + Learning
-    🔒 Audit: log de aprovações/rejeições + overrides ◐ (precisa ativar)
+    🔒 Audit: log de aprovações/rejeições + overrides ● (ativado em pipeline.py + approvals.py)
     🧠 LearningLoop: captura decisões aceitar/rejeitar/modificar suggestion
     🧠 Calibration: implicit feedback (avançar low-score = sinal)
     🧠 ModelDrift: trigger se approval_drift > 10 p.p.
@@ -652,7 +652,7 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
 │  3. LGPD — consent check antes de contato ●                                  │
 │  4. PII Masking — ativo globalmente ●                                        │
 │  5. Escalation — trigger quando AI confidence < threshold ●                  │
-│  6. AuditTrail — aprovações/rejeições ◐ (precisa ativar)                    │
+│  6. AuditTrail — aprovações/rejeições ● (ativado)                           │
 │  7. LearningLoop — captura decisões ●                                        │
 │  8. Calibration — implicit feedback ●                                        │
 │  9. ModelDrift — approval_drift monitoring ●                                 │
@@ -745,7 +745,7 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
     Celery Beat schedule para verificação periódica
 
  8  AuditTrail + Response
-    🔒 Audit: log de envios + opens + clicks ◐ (precisa ativar)
+    🔒 Audit: log de envios + opens + clicks ● (ativado em communication.py)
     🧠 ConversationMemory: tracking de candidatos contatados
     Resposta ao consultor: confirmação de envio + tracking status
 
@@ -757,7 +757,7 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
 │  4. CircuitBreaker — circuits "sendgrid" + "resend" ●                        │
 │  5. A/B Testing — variantes de template ●                                    │
 │  6. TemplateLearning — templates aprendidos ●                                │
-│  7. AuditTrail — envios/opens/clicks ◐ (precisa ativar)                     │
+│  7. AuditTrail — envios/opens/clicks ● (ativado)                            │
 │  8. Follow-up automático — 7 dias, Celery Beat ●                             │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -890,7 +890,7 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
 │  3. BiasAuditSnapshot — Four-Fifths Rule detecta discriminação estatística ● │
 │  4. ConfidenceNode — calibra scores para serem comparáveis e significativos ●│
 │  5. FactChecker pós-LLM — verifica claims factuais do candidato ●            │
-│  6. Audit Trail SOX — registro imutável, 7 anos, append-only ◐              │
+│  6. Audit Trail SOX — registro imutável, 7 anos, append-only ●              │
 │  7. WSI com Bloom+Dreyfus — progressão de dificuldade + cobertura ●          │
 │  8. LGPD consent — WelcomeCard com checkbox explícito obrigatório ●          │
 │  9. Anti-sycophancy — bloqueia concordância automática ●                     │
@@ -1124,7 +1124,7 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
     Se anomalia → alerta ao consultor
 
  7  AuditTrail + Learning
-    🔒 Audit: log de aprovação/rejeição Gate 2 ◐ (precisa ativar)
+    🔒 Audit: log de aprovação/rejeição Gate 2 ● (ativado em pipeline.py + approvals.py)
     🧠 LearningLoop: feedback sobre decisões Gate 2
     🧠 Calibration: implicit feedback (avançar low-WSI = sinal)
     🧠 ModelDrift: monitora approval_drift Gate 2
@@ -1142,7 +1142,7 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
 │  2. PolicyEngine — HITL thresholds por setor ●                               │
 │  3. LGPD — data minimization + score stripping ●                             │
 │  4. BiasAuditSnapshot — Four-Fifths Rule Gate 2 ●                            │
-│  5. AuditTrail — aprovações Gate 2 ◐ (precisa ativar)                       │
+│  5. AuditTrail — aprovações Gate 2 ● (ativado)                              │
 │  6. LearningLoop + Calibration + ModelDrift ●                                │
 │  7. Embedding — rediscovery de candidatos reprovados ●                       │
 │  8. LongTermMemory — episódios salvos ●                                      │
@@ -1217,7 +1217,7 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
     Template personalizado com dados da vaga e entrevistador
 
  6  AuditTrail + Learning
-    🔒 Audit: log de agendamento ◐ (precisa ativar)
+    🔒 Audit: log de agendamento ● (ativado em scheduling.py)
     🧠 LearningLoop: feedback sobre qualidade da sugestão
     🧠 LongTermMemory: episódio salvo (EnhancedAgentMixin._post_loop_learning)
 
@@ -1231,7 +1231,7 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
 │  1. LGPD — data minimization no ICS ●                                        │
 │  2. CircuitBreaker — circuit "google_calendar" ●                             │
 │  3. PII Masking — ativo globalmente ●                                        │
-│  4. AuditTrail — agendamento ◐ (precisa ativar)                             │
+│  4. AuditTrail — agendamento ● (ativado)                                    │
 │  5. LongTermMemory — episódios salvos ●                                      │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -1308,7 +1308,7 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
     Permite re-discovery em vagas futuras similares
 
  6  AuditTrail + Response
-    🔒 Audit: log de feedback enviado ◐ (precisa ativar)
+    🔒 Audit: log de feedback enviado ● (ativado em communication.py)
     🧠 LearningLoop: feedback sobre qualidade do feedback gerado
     Status final do candidato atualizado no Kanban
     🧠 LongTermMemory: episódio completo salvo
@@ -1321,7 +1321,7 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
 │  4. A/B Testing — variantes de feedback ●                                    │
 │  5. TemplateLearning — templates aprendidos ●                                │
 │  6. Embedding — rediscovery futuro ●                                         │
-│  7. AuditTrail — feedback ◐ (precisa ativar)                                │
+│  7. AuditTrail — feedback ● (ativado)                                       │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -1548,9 +1548,10 @@ O que é registrado:
   - Decisão final + motivo
 
 Status de ativação por etapa:
-  ● Ativo: jd_generation.py, wsi_questions.py
-  ◐ Precisa ativar: auth.py, candidates.py, pipeline tools,
-    rubric_evaluation.py, communication
+  ● Ativo em TODAS as etapas: auth.py, jd_generation.py,
+    wsi_questions.py, sourcing_react_agent.py, pipeline.py,
+    approvals.py, communication.py, rubric_evaluation.py,
+    scheduling.py
 ```
 
 ---
@@ -1812,13 +1813,13 @@ Princípios aplicados:
 │    LLM: Gemini | max_iterations: 5 | max_tool_calls: 3                      │
 │    Tools: 15 (search, analyze, compare, rank, outreach, generate_message)    │
 │    Etapas: E4 (busca de candidatos)                                          │
-│    FG: L1+L2+L3 | PII: ativo | Audit: ◐                                    │
+│    FG: L1+L2+L3 | PII: ativo | Audit: ●                                    │
 │                                                                               │
 │  Ag.3 TriagemCurricular (CV Screening)                                        │
 │    Domínio: cv_screening                                                      │
 │    LLM: Gemini                                                                │
 │    Etapas: E4 (triagem curricular na busca)                                  │
-│    FG: L1+L2+L3 | PII: ativo | Fact-Check: ativo | Audit: ◐                │
+│    FG: L1+L2+L3 | PII: ativo | Fact-Check: ativo | Audit: ●                │
 │                                                                               │
 │  Ag.4 WSIInterviewGraph                                                       │
 │    Classe: WSIInterviewGraph (LangGraph StateGraph)                          │
@@ -1827,7 +1828,7 @@ Princípios aplicados:
 │    HITL: interrupt_before=["lg_generate_feedback"]                           │
 │    Checkpoint: PostgresSaver (sessões 30-120 min)                            │
 │    Etapas: E7 (conduz entrevista WSI), E7B (feedback pós-triagem)            │
-│    FG: L1+L2+L3 | PII: ativo | Fact-Check: ativo | Audit: ◐                │
+│    FG: L1+L2+L3 | PII: ativo | Fact-Check: ativo | Audit: ●                │
 │                                                                               │
 │  Ag.5 WSIService (Scoring)                                                    │
 │    Classe: WSIService + WSIDeterministicScorer                                │
@@ -1943,34 +1944,36 @@ Princípios aplicados:
 
 ---
 
-## GAPS CONSOLIDADOS — AÇÕES PENDENTES
+## GAPS CONSOLIDADOS — STATUS ATUALIZADO
 
-### Audit Trail (Prioridade: MVP)
+### Audit Trail — ✅ COMPLETO (todos ativados)
 
-| Etapa | O que falta | Arquivo |
-|-------|------------|---------|
-| E1 Login | Ativar audit de login | auth.py |
-| E4 Busca | Ativar audit de buscas | candidates.py |
-| E5 Gate 1 | Ativar audit de aprovações/rejeições | pipeline tools |
-| E6 Contato | Ativar audit de envios | communication |
-| E7 Triagem | Ativar audit por pergunta/resposta/score | rubric_evaluation.py |
-| E8 Gate 2 | Ativar audit de aprovações Gate 2 | pipeline tools |
-| E9A Scheduling | Ativar audit de agendamentos | scheduling |
-| E9B Feedback | Ativar audit de feedback enviado | communication |
+| Etapa | Status | Arquivo | Observação |
+|-------|--------|---------|------------|
+| E1 Login | ✅ Ativado | auth.py | log_decision em login success + failure |
+| E2 Criar/Editar Vaga | ✅ Ativado | jd_generation.py | log_decision em geração de JD |
+| E3 Roteiro WSI | ✅ Ativado | wsi_questions.py | log_decision em geração de perguntas |
+| E4 Busca | ✅ Ativado | sourcing_react_agent.py | log_decision em buscas globais |
+| E5 Gate 1 | ✅ Ativado | pipeline.py + approvals.py | log_decision em aprovações/rejeições |
+| E6 Contato | ✅ Ativado | communication.py | log_decision em envios email + WhatsApp |
+| E7 Triagem | ✅ Ativado | rubric_evaluation.py | log_decision em avaliações + FG flags |
+| E8 Gate 2 | ✅ Ativado | pipeline.py + approvals.py | log_decision em aprovações Gate 2 |
+| E9A Scheduling | ✅ Ativado | scheduling.py | log_decision em agendamentos |
+| E9B Feedback | ✅ Ativado | communication.py | log_decision em feedback enviado |
 
-### Infraestrutura (Prioridade: PÓS MVP)
+### Infraestrutura — Status Atualizado
 
-| Item | Status |
-|------|--------|
-| API keys produção (Twilio, Resend, ATS) | Pendente |
-| Elasticsearch + PGVector produção | Pendente |
-| Bell notification (in-app) | Pendente |
-| Bias Audit Dashboard (Four-Fifths Rule) | Pendente |
-| EU AI Act Risk Classification | Pendente |
-| LGPD DSR completo (export/delete) | Parcial |
-| SOX Audit Export | Pendente |
-| Predictive Analytics UI | Pendente |
+| Item | Status | Observação |
+|------|--------|------------|
+| Bell notification (in-app) | ✅ Implementado | Task #82 — hook, componente, 8 proxy routes, badge server-authoritative |
+| Bias Audit Dashboard (Four-Fifths Rule) | ✅ Implementado | BiasAuditService + página admin/compliance/auditoria/bias |
+| LGPD DSR completo (export/delete) | ✅ Implementado | DataSubjectRequestsService — access, erasure, portability, rectification, restriction |
+| SOX Audit Export | ✅ Implementado | CSV export via /api/v1/audit-logs/export + página de exportação |
+| Predictive Analytics UI | ✅ Implementado | ML predict salary + time-to-fill integrados no Kanban |
+| EU AI Act Risk Classification | ◐ Parcial | Referências no Trust Center + LiaScoreCard (Art. 13/14); sem classificador dinâmico dedicado |
+| API keys produção (Twilio, Resend, ATS) | ⚠ PÓS-MVP | Dependem de credenciais de produção do cliente |
+| Elasticsearch + PGVector produção | ⚠ PÓS-MVP | Infra de produção — busca local (PostgreSQL) funciona sem eles |
 
 ---
 
-*Documento gerado a partir do código real do lia-agent-system (Replit) e documentação specs existente. Complementa o `ANALISE_ROADMAP_ALPHA1_vs_CODIGO.md` com nível de detalhe técnico passo-a-passo por etapa.*
+*Documento gerado a partir do código real do lia-agent-system (Replit) e documentação specs existente. Complementa o `ANALISE_ROADMAP_ALPHA1_vs_CODIGO.md` com nível de detalhe técnico passo-a-passo por etapa. Última atualização de status: 31/03/2026.*

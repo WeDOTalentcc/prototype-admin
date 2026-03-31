@@ -106,7 +106,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
             <div 
               className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 bg-blue-500/10"
             >
-              <Globe className="w-4 h-4" className="text-[var(--gray-600)]" />
+              <Globe className="w-4 h-4 text-[var(--gray-600)]" />
             </div>
             <div>
               <h2 

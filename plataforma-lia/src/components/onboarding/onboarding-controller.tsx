@@ -414,7 +414,7 @@ function ThankYouScreen({ onClose }: { onClose: () => void }) {
             <div
               style={{animation: "check-pulse 2s ease-in-out infinite"}}
             >
-              <CheckCircle className="w-16 h-16" className="text-[var(--wedo-green-pastel)]" />
+              <CheckCircle className="w-16 h-16 text-[var(--wedo-green-pastel)]" />
             </div>
           </div>
           
