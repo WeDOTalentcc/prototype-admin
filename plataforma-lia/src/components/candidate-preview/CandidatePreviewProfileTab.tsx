@@ -14,6 +14,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { ExperienceHighlightCard } from "@/components/experience-highlight-card"
 
 interface LanguageEntry {
+  name?: string
   language: string
   proficiency: string
 }

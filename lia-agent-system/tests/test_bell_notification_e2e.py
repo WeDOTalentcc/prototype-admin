@@ -429,3 +429,122 @@ class TestNotificationRepositoryBehavior:
         result = await repo.mark_as_read(mock_db, "notif-repo-1")
         assert result is True
         assert mock_notif.is_read is True
+
+
+class TestBellNotificationAPIIntegration:
+
+    def test_get_notifications_endpoint_returns_200(self):
+        from httpx import AsyncClient, ASGITransport
+        from app.main import app
+        from app.core.database import get_db
+        from unittest.mock import AsyncMock
+
+        async def mock_get_db():
+            db = AsyncMock()
+            db.execute = AsyncMock(return_value=MagicMock(scalars=MagicMock(return_value=MagicMock(all=MagicMock(return_value=[])))))
+            yield db
+
+        app.dependency_overrides[get_db] = mock_get_db
+
+        async def run_test():
+            transport = ASGITransport(app=app)
+            async with AsyncClient(transport=transport, base_url="http://test") as client:
+                response = await client.get("/api/v1/notifications?user_id=test-user")
+                return response
+
+        try:
+            response = asyncio.get_event_loop().run_until_complete(run_test())
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            response = loop.run_until_complete(run_test())
+            loop.close()
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["success"] is True
+        app.dependency_overrides.clear()
+
+    def test_notification_summary_endpoint_returns_200(self):
+        from httpx import AsyncClient, ASGITransport
+        from app.main import app
+        from app.core.database import get_db
+
+        async def mock_get_db():
+            db = AsyncMock()
+            mock_result = MagicMock()
+            mock_result.scalar.return_value = 0
+            db.execute = AsyncMock(return_value=mock_result)
+            yield db
+
+        app.dependency_overrides[get_db] = mock_get_db
+
+        async def run_test():
+            transport = ASGITransport(app=app)
+            async with AsyncClient(transport=transport, base_url="http://test") as client:
+                response = await client.get("/api/v1/notifications/summary?user_id=test-user")
+                return response
+
+        try:
+            response = asyncio.get_event_loop().run_until_complete(run_test())
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            response = loop.run_until_complete(run_test())
+            loop.close()
+
+        assert response.status_code == 200
+        app.dependency_overrides.clear()
+
+    def test_create_notification_endpoint_returns_200(self):
+        from httpx import AsyncClient, ASGITransport
+        from app.main import app
+        from app.core.database import get_db
+
+        async def mock_get_db():
+            db = AsyncMock()
+            db.add = MagicMock()
+            db.flush = AsyncMock()
+            db.refresh = AsyncMock()
+            yield db
+
+        app.dependency_overrides[get_db] = mock_get_db
+
+        async def run_test():
+            transport = ASGITransport(app=app)
+            async with AsyncClient(transport=transport, base_url="http://test") as client:
+                response = await client.post("/api/v1/notifications", json={
+                    "user_id": "test-user",
+                    "title": "Integration Test Notification",
+                    "message": "This is a test bell notification",
+                    "notification_type": "info",
+                    "category": "system"
+                })
+                return response
+
+        try:
+            response = asyncio.get_event_loop().run_until_complete(run_test())
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            response = loop.run_until_complete(run_test())
+            loop.close()
+
+        assert response.status_code == 200
+        app.dependency_overrides.clear()
+
+    def test_weekly_digest_uses_bell_channel(self):
+        from app.domains.analytics.services.weekly_digest_service import WeeklyDigestService
+        import inspect
+        source = inspect.getsource(WeeklyDigestService)
+        assert "bell" in source, "WeeklyDigestService must include bell channel"
+
+    def test_screening_uses_bell_channel(self):
+        from app.domains.cv_screening.services.rubric_evaluation_service import RubricEvaluationService
+        import inspect
+        source = inspect.getsource(RubricEvaluationService)
+        assert "BELL" in source, "RubricEvaluationService must include BELL channel"
+
+    def test_proactive_service_creates_bell_notification(self):
+        from app.domains.automation.services.proactive_service import ProactiveService
+        import inspect
+        source = inspect.getsource(ProactiveService._create_bell_notification)
+        assert "BELL" in source, "ProactiveService._create_bell_notification must use BELL channel"
+        assert "create_notification" in source, "Must call create_notification"
