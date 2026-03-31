@@ -35,8 +35,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "build/types/**/*.ts",
-    "next-env.d.ts",
-    "out/types/**/*.ts"
+    "next-env.d.ts"
   ],
   "exclude": [
     "exports",
@@ -47,6 +46,7 @@
     "src/**/*.test.ts",
     "src/**/*.test.tsx",
     "src/**/*.spec.ts",
-    "src/**/*.spec.tsx"
+    "src/**/*.spec.tsx",
+    "out"
   ]
 }
