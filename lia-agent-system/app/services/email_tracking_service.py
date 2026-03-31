@@ -312,6 +312,34 @@ class EmailTrackingService:
             pass
         return ("", "")
 
+    async def resolve_ab_data(
+        self,
+        db: AsyncSession,
+        sg_message_id: str,
+    ) -> Dict[str, str]:
+        """Resolve A/B test data from CommunicationLog.extra_data via provider_message_id."""
+        try:
+            from app.domains.communication.services.communication_service import CommunicationLog
+            stmt = select(
+                CommunicationLog.company_id,
+                CommunicationLog.extra_data,
+            ).where(
+                CommunicationLog.provider_message_id == sg_message_id,
+            ).limit(1)
+            result = await db.execute(stmt)
+            row = result.first()
+            if row:
+                extra = row.extra_data or {}
+                return {
+                    "company_id": str(row.company_id or ""),
+                    "ab_test": extra.get("ab_test", ""),
+                    "ab_variant": extra.get("ab_variant", ""),
+                    "template_id": extra.get("template_id", ""),
+                }
+        except Exception as exc:
+            logger.debug("[EmailTracking] resolve_ab_data error: %s", exc)
+        return {"company_id": "", "ab_test": "", "ab_variant": "", "template_id": ""}
+
     def inject_pixel_and_links(
         self,
         html_body: str,

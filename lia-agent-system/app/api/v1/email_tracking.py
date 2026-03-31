@@ -228,14 +228,32 @@ async def tracking_webhook(
             )
 
             if mapped_type in ("open", "click"):
+                company_id = ""
+                template_id = ""
+                ab_test = ""
+                ab_variant = ""
+
                 try:
-                    from app.shared.intelligence.template_learning import template_learning_service
-                    company_id = event.get("company_id", "")
-                    template_id = event.get("template_id", "")
-                    if not company_id or not template_id:
+                    ab_data = await email_tracking_service.resolve_ab_data(
+                        db=db, sg_message_id=sg_message_id
+                    )
+                    company_id = ab_data.get("company_id", "")
+                    template_id = ab_data.get("template_id", "")
+                    ab_test = ab_data.get("ab_test", "")
+                    ab_variant = ab_data.get("ab_variant", "")
+                except Exception:
+                    pass
+
+                if not company_id or not template_id:
+                    try:
                         company_id, template_id = await email_tracking_service.resolve_company_template(
                             db=db, sg_message_id=sg_message_id
                         )
+                    except Exception:
+                        pass
+
+                try:
+                    from app.shared.intelligence.template_learning import template_learning_service
                     if company_id and template_id:
                         if mapped_type == "open":
                             template_learning_service.record_open(company_id, template_id)
@@ -244,12 +262,10 @@ async def tracking_webhook(
                 except Exception as tl_exc:
                     logger.debug("[EmailTracking] template learning update skipped: %s", tl_exc)
 
-                try:
-                    from app.shared.learning.ab_testing_service import ABTestingService
-                    ab_service = ABTestingService()
-                    ab_variant = event.get("ab_variant", "")
-                    ab_test = event.get("ab_test", "")
-                    if ab_test and ab_variant and company_id:
+                if ab_test and ab_variant and company_id:
+                    try:
+                        from app.shared.learning.ab_testing_service import ABTestingService
+                        ab_service = ABTestingService()
                         await ab_service.record_metric(
                             test_name=ab_test,
                             variant_name=ab_variant,
@@ -259,8 +275,8 @@ async def tracking_webhook(
                             metric_value=1.0,
                             db=db,
                         )
-                except Exception as ab_exc:
-                    logger.debug("[EmailTracking] A/B testing update skipped: %s", ab_exc)
+                    except Exception as ab_exc:
+                        logger.debug("[EmailTracking] A/B testing update skipped: %s", ab_exc)
 
             accepted += 1
         except Exception as e:

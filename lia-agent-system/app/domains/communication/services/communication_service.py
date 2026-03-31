@@ -1928,6 +1928,15 @@ class CommunicationService:
                 rendered_body_text = ab_body_override
                 rendered_body_html = ab_body_override.replace("\n", "<br>")
             
+            _tracking_extra = {}
+            _template_id_str = str(template.id) if hasattr(template, 'id') else template.name
+            _tracking_extra["template_id"] = _template_id_str
+            if ab_variant_info:
+                _tracking_extra["ab_test"] = ab_test_name
+                _tracking_extra["ab_variant"] = ab_variant_info.get("variant_name", "")
+            if recommended_template_id:
+                _tracking_extra["template_source"] = "learning_recommended"
+
             send_result = await self.send_message(
                 company_id=company_id,
                 candidate_id=candidate_id,
@@ -1954,11 +1963,24 @@ class CommunicationService:
                     send_result["ab_variant"] = ab_variant_info.get("variant_name")
                     send_result["ab_test"] = ab_test_name
 
+                log_id = send_result.get("log_id")
+                if log_id and _tracking_extra:
+                    try:
+                        from sqlalchemy import update as sa_update
+                        await db.execute(
+                            sa_update(CommunicationLog)
+                            .where(CommunicationLog.id == log_id)
+                            .values(extra_data=_tracking_extra)
+                        )
+                        await db.commit()
+                    except Exception as _upd_exc:
+                        logger.debug("[ABTracking] CommunicationLog extra_data update skipped: %s", _upd_exc)
+
                 try:
                     from app.shared.intelligence.template_learning.template_learning_service import template_learning_service
                     template_learning_service.record_send(
                         company_id=company_id,
-                        template_id=str(template.id) if hasattr(template, 'id') else template.name,
+                        template_id=_template_id_str,
                         context={"message_type": message_type.value, "candidate_id": candidate_id},
                     )
                 except Exception:
