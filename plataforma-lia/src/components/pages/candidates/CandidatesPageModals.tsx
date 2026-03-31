@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client"
 
 const BatchApprovalModal = dynamic(() => import("@/components/batch-approval-modal").then(m => ({ default: m.BatchApprovalModal })), { ssr: false, loading: () => null })

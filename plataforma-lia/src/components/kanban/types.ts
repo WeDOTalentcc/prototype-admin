@@ -70,7 +70,6 @@ export interface KanbanCandidate {
   stageId?: string
   liaScore?: number
   skillsMatch?: number
-  fitScore?: number
   technicalTestScore?: number
   englishTestScore?: number
   bigFiveScores?: Record<string, number>
@@ -101,26 +100,6 @@ export interface KanbanCandidate {
     agreeableness: number
     neuroticism: number
   }
-  liaScore?: number | null
-  candidateCode?: string
-  position?: string
-  skillsMatch?: number | null
-  technicalTestScore?: number | null
-  englishTestScore?: number | null
-  bigFiveScores?: {
-    openness: number
-    conscientiousness: number
-    extraversion: number
-    agreeableness: number
-    neuroticism: number
-  }
-  level?: string
-  recruiterNotificationChannel?: string
-  company_info?: Record<string, unknown>
-  field_status?: string
-  last_checked_at?: string
-  crescimento?: number
-  crescimentoMedio?: number
   workHistory?: Array<{
     company: string
     title: string

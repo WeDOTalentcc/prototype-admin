@@ -5,65 +5,12 @@ import { createPortal } from "react-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { X, Bell, CheckCircle, AlertCircle, Info, Clock, Loader2 } from "lucide-react"
-
-interface Notification {
-  id: string
-  title: string
-  message: string
-  type: "success" | "warning" | "info" | "error"
-  timestamp: Date
-  read: boolean
-  actionUrl?: string
-  proactive_type?: string
-  priority?: string
-  related_job_id?: string
-  related_candidate_id?: string
-}
-
-interface BackendNotification {
-  id: string
-  title: string
-  message: string
-  notification_type: string
-  proactive_type?: string
-  priority?: string
-  is_read: boolean
-  created_at: string
-  action_url?: string
-  related_job_id?: string
-  related_candidate_id?: string
-}
-
-interface NotificationSystemProps {
-  onNotificationClick?: (notification: Notification) => void
-  userId?: string
-  pollingInterval?: number
-}
-
-const mapNotificationType = (type: string): "success" | "warning" | "info" | "error" => {
-  switch (type) {
-    case "success": return "success"
-    case "warning": return "warning"
-    case "urgent":
-    case "error": return "error"
-    case "action_required": return "warning"
-    default: return "info"
-  }
-}
-
-const mapBackendNotification = (n: BackendNotification): Notification => ({
-  id: n.id,
-  title: n.title,
-  message: n.message || "",
-  type: mapNotificationType(n.notification_type),
-  timestamp: new Date(n.created_at),
-  read: n.is_read,
-  actionUrl: n.action_url,
-  proactive_type: n.proactive_type,
-  priority: n.priority,
-  related_job_id: n.related_job_id,
-  related_candidate_id: n.related_candidate_id,
-})
+import {
+  useNotifications,
+  CATEGORY_LABELS,
+  type Notification,
+  type NotificationCategory,
+} from "@/hooks/use-notifications"
 
 const NotificationItem = React.memo(({
   notification,
@@ -165,14 +112,25 @@ const NotificationItem = React.memo(({
               <Clock className="w-2.5 h-2.5" />
               {timeAgo}
             </span>
-            {!notification.read && (
-              <button
-                onClick={handleMarkAsRead}
-                className="text-xs font-medium hover:underline lia-text-base"
-              >
-                Marcar lida
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {notification.actionUrl && notification.actionLabel && (
+                <a
+                  href={notification.actionUrl}
+                  className="text-xs font-medium text-wedo-cyan hover:underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {notification.actionLabel}
+                </a>
+              )}
+              {!notification.read && (
+                <button
+                  onClick={handleMarkAsRead}
+                  className="text-xs font-medium hover:underline lia-text-base"
+                >
+                  Marcar lida
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -182,103 +140,46 @@ const NotificationItem = React.memo(({
 
 NotificationItem.displayName = 'NotificationItem'
 
+interface NotificationSystemProps {
+  onNotificationClick?: (notification: Notification) => void
+  userId?: string
+  pollingInterval?: number
+}
+
+const CATEGORY_ORDER: NotificationCategory[] = [
+  "pipeline",
+  "productivity",
+  "communication",
+  "predictive",
+  "system",
+]
+
 export function NotificationSystem({ 
   onNotificationClick, 
   userId = "default_user",
   pollingInterval = 60000
 }: NotificationSystemProps) {
-  const [notifications, setNotifications] = useState<Notification[]>([])
+  const {
+    notifications,
+    isLoading,
+    error,
+    unreadCount,
+    hasNotifications,
+    activeCategory,
+    setActiveCategory,
+    fetchNotifications,
+    markAsRead,
+    markAllAsRead,
+    removeNotification,
+    refreshIfStale,
+  } = useNotifications({ userId, pollingInterval })
+
   const [isOpen, setIsOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
-  const lastFetchRef = useRef<number>(0)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
   const cleanupRef = useRef<(() => void) | null>(null)
   const [portalPosition, setPortalPosition] = useState({ top: 0, right: 0 })
-
-  const backoffRef = useRef(0)
-
-  const fetchNotifications = useCallback(async () => {
-    try {
-      if (backoffRef.current > 0) {
-        await new Promise(r => setTimeout(r, backoffRef.current))
-      }
-      setIsLoading(true)
-      setError(null)
-      
-      const response = await fetch(`/api/backend-proxy/notifications?user_id=${userId}&limit=50`)
-      
-      if (response.status === 429) {
-        backoffRef.current = Math.min((backoffRef.current || 1000) * 2, 120000)
-        setNotifications([])
-        return
-      }
-      
-      if (!response.ok) {
-        setNotifications([])
-        return
-      }
-
-      backoffRef.current = 0
-      
-      const data = await response.json()
-      
-      if (data.success && data.data?.notifications) {
-        const mappedNotifications = data.data.notifications.map(mapBackendNotification)
-        setNotifications(mappedNotifications)
-        lastFetchRef.current = Date.now()
-      } else {
-        setNotifications([])
-      }
-    } catch {
-      setNotifications([])
-    } finally {
-      setIsLoading(false)
-    }
-  }, [userId])
-
-  const markAsRead = useCallback(async (id: string) => {
-    try {
-      const response = await fetch(`/api/backend-proxy/notifications/${id}/read?user_id=${userId}`, {
-        method: "POST"
-      })
-      const data = await response.json()
-      if (data.success) {
-        setNotifications(prev =>
-          prev.map(n => n.id === id ? { ...n, read: true } : n)
-        )
-      }
-    } catch {
-    }
-  }, [userId])
-
-  const markAllAsRead = useCallback(async () => {
-    try {
-      const response = await fetch(`/api/backend-proxy/notifications/read-all?user_id=${userId}`, {
-        method: "POST"
-      })
-      const data = await response.json()
-      if (data.success) {
-        setNotifications(prev => prev.map(n => ({ ...n, read: true })))
-      }
-    } catch {
-    }
-  }, [userId])
-
-  const removeNotification = useCallback(async (id: string) => {
-    try {
-      const response = await fetch(`/api/backend-proxy/notifications/${id}/dismiss?user_id=${userId}`, {
-        method: "POST"
-      })
-      const data = await response.json()
-      if (data.success) {
-        setNotifications(prev => prev.filter(n => n.id !== id))
-      }
-    } catch {
-    }
-  }, [userId])
 
   const updatePosition = useCallback(() => {
     if (buttonRef.current) {
@@ -294,35 +195,14 @@ export function NotificationSystem({
     updatePosition()
     setIsOpen(prev => {
       const newState = !prev
-      if (newState && Date.now() - lastFetchRef.current > 5000) {
-        fetchNotifications()
-      }
+      if (newState) refreshIfStale()
       return newState
     })
-  }, [fetchNotifications, updatePosition])
-
-  const unreadCount = useMemo(() =>
-    notifications.filter(n => !n.read).length,
-    [notifications]
-  )
-
-  const hasNotifications = useMemo(() =>
-    notifications.length > 0,
-    [notifications.length]
-  )
+  }, [refreshIfStale, updatePosition])
 
   useEffect(() => {
     setMounted(true)
   }, [])
-
-  useEffect(() => {
-    fetchNotifications()
-  }, [fetchNotifications])
-
-  useEffect(() => {
-    const interval = setInterval(fetchNotifications, pollingInterval)
-    return () => clearInterval(interval)
-  }, [fetchNotifications, pollingInterval])
 
   useEffect(() => {
     if (!isOpen) return
@@ -351,7 +231,7 @@ export function NotificationSystem({
       className="fixed z-[9999]"
       style={{ top: portalPosition.top, right: portalPosition.right }}
     >
-      <Card className="w-[340px] max-h-[420px] overflow-hidden border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl shadow-lg">
+      <Card className="w-[340px] max-h-[480px] overflow-hidden border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl shadow-lg">
         <CardContent className="p-0">
           <div className="px-4 py-3 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary">
             <div className="flex items-center justify-between">
@@ -388,6 +268,36 @@ export function NotificationSystem({
                 </Button>
               </div>
             </div>
+
+            <div className="flex gap-1 mt-2 overflow-x-auto" role="tablist" aria-label="Filtrar notificações por categoria">
+              <button
+                role="tab"
+                aria-selected={activeCategory === null}
+                onClick={() => setActiveCategory(null)}
+                className={`px-2 py-1 text-xs rounded-lg whitespace-nowrap transition-colors ${
+                  activeCategory === null
+                    ? "bg-wedo-cyan/15 text-wedo-cyan font-medium"
+                    : "text-lia-text-secondary hover:bg-lia-bg-tertiary"
+                }`}
+              >
+                Todas
+              </button>
+              {CATEGORY_ORDER.map(cat => (
+                <button
+                  key={cat}
+                  role="tab"
+                  aria-selected={activeCategory === cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`px-2 py-1 text-xs rounded-lg whitespace-nowrap transition-colors ${
+                    activeCategory === cat
+                      ? "bg-wedo-cyan/15 text-wedo-cyan font-medium"
+                      : "text-lia-text-secondary hover:bg-lia-bg-tertiary"
+                  }`}
+                >
+                  {CATEGORY_LABELS[cat]}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="max-h-[340px] overflow-y-auto bg-lia-bg-secondary dark:bg-lia-bg-primary/50" aria-live="polite">
@@ -404,7 +314,7 @@ export function NotificationSystem({
                   Tentar novamente
                 </Button>
               </div>
-            ) : hasNotifications ? (
+            ) : hasNotifications && notifications.length > 0 ? (
               <div className="p-2 space-y-1.5">
                 {notifications.map((notification) => (
                   <NotificationItem
@@ -420,9 +330,9 @@ export function NotificationSystem({
               <div className="py-10 px-4 text-center">
                 <Bell className="w-8 h-8 mx-auto mb-2 text-lia-text-disabled" aria-hidden="true" />
                 <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">
-                  {isLoading ? "Carregando..." : "Nenhuma notificação"}
+                  {isLoading ? "Carregando..." : activeCategory ? `Nenhuma notificação em ${CATEGORY_LABELS[activeCategory]}` : "Nenhuma notificação"}
                 </p>
-                {!isLoading && (
+                {!isLoading && !activeCategory && (
                   <p className="text-xs text-lia-text-secondary mt-1">Você está em dia com tudo!</p>
                 )}
               </div>

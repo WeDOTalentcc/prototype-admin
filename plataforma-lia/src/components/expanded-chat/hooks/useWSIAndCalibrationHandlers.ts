@@ -258,8 +258,7 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
       
       // Sync selected questions to wsiQuestions
       const selected = updated.filter(q => q.selected)
-        // @ts-ignore
-      ctx.setWsiQuestions(selected.map(({ selected, batch, ...rest }) => rest))
+      ctx.setWsiQuestions(selected.map(({ selected: _s, batch: _b, ...rest }) => rest as typeof rest & Record<string, unknown>))
       
       // If reached 5 questions, add confirmation message
       const newCount = question.selected ? currentlySelected - 1 : currentlySelected + 1
@@ -284,8 +283,7 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
       )
       // Sync to wsiQuestions
       const selected = updated.filter(q => q.selected)
-        // @ts-ignore
-      ctx.setWsiQuestions(selected.map(({ selected, batch, ...rest }) => rest))
+      ctx.setWsiQuestions(selected.map(({ selected: _s, batch: _b, ...rest }) => rest as typeof rest & Record<string, unknown>))
       return updated
     })
   }
@@ -297,8 +295,7 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
       )
       // Sync to wsiQuestions
       const selected = updated.filter(q => q.selected)
-        // @ts-ignore
-      ctx.setWsiQuestions(selected.map(({ selected, batch, ...rest }) => rest))
+      ctx.setWsiQuestions(selected.map(({ selected: _s, batch: _b, ...rest }) => rest as typeof rest & Record<string, unknown>))
       return updated
     })
   }
@@ -307,8 +304,7 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
     ctx.setWsiCandidates(prev => {
       const updated = prev.filter(q => q.id !== questionId)
       const selected = updated.filter(q => q.selected)
-        // @ts-ignore
-      ctx.setWsiQuestions(selected.map(({ selected, batch, ...rest }) => rest))
+      ctx.setWsiQuestions(selected.map(({ selected: _s, batch: _b, ...rest }) => rest as typeof rest & Record<string, unknown>))
       return updated
     })
   }
