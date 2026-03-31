@@ -15,12 +15,12 @@ A plataforma LIA Alpha 1 apresenta **maturidade alta** na camada de backend (age
 
 | Dimensão | Score | Observação |
 |----------|:-----:|------------|
-| Feature Completeness (Fases 1-5) | **9/10** | Todas features implementadas; wiring pendente em alguns pontos |
+| Feature Completeness (Fases 1-5) | **7/10** | Features implementadas mas ARCH-04 (kwargs) torna LLM Classification + FG L3 sector inacessíveis no RAG; ARCH-05 afeta Template Learning |
 | Design System v4.2.1 | **7/10** | Tokens `lia-` corretos; `rounded-md` vs `rounded-xl` inconsistente |
 | WeDO Governance | **8/10** | 13 Crenças cobertas; 8 Inegociáveis com gaps menores |
 | LGPD Compliance | **8/10** | PII Masking global ativo; consent flow e DSR existem |
-| DEI / FairnessGuard | **9/10** | 3 camadas implementadas; 13+ categorias; sector-aware |
-| Code Architecture | **8/10** | Lazy imports corretos; domain separation clean |
+| DEI / FairnessGuard | **8/10** | 3 camadas implementadas; 13+ categorias; L3 sector-aware ativo em 4/5 services (RAG inacessível por ARCH-04) |
+| Code Architecture | **7/10** | Lazy imports corretos; domain separation clean; ARCH-04 (kwargs) é bug crítico de integração |
 
 ---
 
@@ -441,10 +441,10 @@ Includes proxy detection for: "boa aparência", "bairros nobres", "universidades
 
 | Gap ID | Original Status | New Status | Resolution |
 |--------|----------------|-----------|------------|
-| G4 | FairnessGuard L3 precisa ativação | **RESOLVIDO** | `check_with_sector()` integrado em 5 services |
+| C2 | FairnessGuard L3 precisa ativação | **PARCIAL** | `check_with_sector()` ativo em 4 services (pipeline_transition, rubric_evaluation, communication_tools, sourcing_agent); **inacessível no RAG pipeline** por bug ARCH-04 |
 | I1 | A/B Testing sem testes criados | **RESOLVIDO** | `seed_email_ab_tests` cria 3 experimentos no startup |
-| I3 | Template Learning sem trigger | **RESOLVIDO** | `TemplateLearningService` com tracking persistente |
-| I6 | Semantic Search parcialmente wired | **PARCIAL** | WRF Dynamic K integrado; expansão automática parcial |
+| I3 | Template Learning sem trigger | **PARCIAL** | `TemplateLearningService` implementado mas data source mismatch com send path (ARCH-05) |
+| I6 | Semantic Search parcialmente wired | **PARCIAL** | WRF Dynamic K integrado e ativo; expansão automática parcial |
 
 ### 9.2 Gaps Remaining
 
@@ -462,13 +462,13 @@ Includes proxy detection for: "boa aparência", "bairros nobres", "universidades
 
 ### 9.3 Intelligence Layers Status Update (Seção 4 do ANALISE_ROADMAP)
 
-| Layer | Previous Status | Current Status |
-|-------|----------------|---------------|
-| A/B Testing | DISPONÍVEL | **ATIVO** (3 experimentos seeded) |
-| Template Learning | DISPONÍVEL | **ATIVO** (tracking persistente) |
-| WRF Dynamic K | PARCIAL | **ATIVO** (integrado no RAG pipeline) |
-| LLM Job Classification | N/A | **ATIVO** (integrado no RAG pipeline) |
-| FairnessGuard L3 | PRECISA ATIVAR | **ATIVO** (sector-aware, 5 integration points) |
+| Layer | Previous Status | Current Status | Notes |
+|-------|----------------|---------------|-------|
+| A/B Testing | DISPONÍVEL | **ATIVO** (3 experimentos seeded) | OK |
+| Template Learning | DISPONÍVEL | **PARCIAL** | Implementado mas data source mismatch (ARCH-05) |
+| WRF Dynamic K | PARCIAL | **ATIVO** (integrado no RAG pipeline) | OK |
+| LLM Job Classification | N/A | **IMPLEMENTADO / INACESSÍVEL** | Código ok, inacessível via RAG (ARCH-04) |
+| FairnessGuard L3 | PRECISA ATIVAR | **PARCIAL** | Ativo em 4 services, inacessível no RAG (ARCH-04) |
 
 ---
 
@@ -495,5 +495,25 @@ Includes proxy detection for: "boa aparência", "bairros nobres", "universidades
 
 ---
 
-*Documento gerado automaticamente pela auditoria Fase 6 do Alpha 1.*  
-*Próximo passo: Atualizar ANALISE_ROADMAP_ALPHA1_vs_CODIGO.md com os status atualizados.*
+---
+
+## 11. E2E VALIDATION SCOPE
+
+**Note:** Per task scope definition, automated end-to-end test execution (E1→E9 flow) was explicitly **out of scope** for this audit task. The audit focused on static code analysis, architectural review, and documentation reconciliation across 14 dimensions. E2E validation should be performed as a separate task after fixing ARCH-04 (critical) and ARCH-05 (medium) findings.
+
+**Recommended E2E Test Plan (for future task):**
+
+| Test | Flow | Prerequisite |
+|------|------|-------------|
+| T-E2E-01 | Login → Dashboard | Auth service + JWT |
+| T-E2E-02 | Job creation → JD generation | JDGeneratorService + FG L1-L2 |
+| T-E2E-03 | WSI question generation | WSIQuestionGeneratorService |
+| T-E2E-04 | Candidate search → WRF reranking | RAG pipeline (fix ARCH-04 first) |
+| T-E2E-05 | Triagem chat flow | `/triagem/[token]` → API backend |
+| T-E2E-06 | Email send + A/B assignment | CommunicationService + ABTestingService |
+| T-E2E-07 | FairnessGuard block | Discriminatory query → educational message |
+
+---
+
+*Documento gerado pela auditoria Fase 6 do Alpha 1.*  
+*ANALISE_ROADMAP_ALPHA1_vs_CODIGO.md atualizado para v5.0 com status reconciliados.*

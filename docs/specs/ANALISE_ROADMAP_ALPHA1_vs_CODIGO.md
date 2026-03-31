@@ -658,11 +658,11 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | **Serviços** | SourcingPipelineService, CandidateEnrichmentService, CVScoringService | Implementados | `app/services/` |
 | **Tools** | `search_candidates`, `analyze_profile`, `score_candidate`, `enrich_profile` | Registradas | `sourcing_tool_registry.py` |
 | **Frontend** | Funil de Talentos (tabela + filtros + sidebar LIA) | Implementado | `src/app/(dashboard)/candidates/` |
-| **Busca** | Elasticsearch + PGVector + WRF | ATIVO | ES + PGVector + WRF Dynamic K integrado no RAG pipeline (Fase 5) |
+| **Busca** | Elasticsearch + PGVector + WRF | ATIVO (WRF) / PARCIAL (LLM+FG L3) | ES + PGVector + WRF Dynamic K ativo; LLM Classification + FG L3 sector implementados mas inacessíveis via RAG (ARCH-04) |
 | **COMPLIANCE** | | | |
 | ↳ FairnessGuard L1 | Bloquear buscas discriminatórias | ATIVO | `MainOrchestrator` L35-47 |
 | ↳ FairnessGuard L2 | Alertar proxy terms na busca | ATIVO | `MainOrchestrator` L48-62 |
-| ↳ FairnessGuard L3 | Análise semântica nas respostas do LLM | ATIVO | `check_with_sector()` integrado em RAG pipeline, pipeline_transition, rubric_evaluation, communication_tools, sourcing_agent (Fase 5) |
+| ↳ FairnessGuard L3 | Análise semântica nas respostas do LLM | PARCIAL | `check_with_sector()` implementado e ativo em pipeline_transition, rubric_evaluation, communication_tools, sourcing_agent; **inacessível no RAG pipeline** por bug ARCH-04 (kwargs) |
 | ↳ PII Masking | Strip PII de candidatos antes do LLM | ATIVO | `strip_pii_for_llm_prompt` |
 | ↳ Fact-Checker | Validar claims nas análises LIA | PRECISA ATIVAR | `fact_checker.py` |
 | ↳ Audit Trail | Log de buscas + scores | PRECISA ATIVAR | `audit_service.py` |
@@ -682,7 +682,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | ↳ Semantic Search | Expansão semântica de skills/títulos/indústrias | ATIVO | `semantic_search_service.py` (Gemini 768-dim) |
 | ↳ Voice Analysis | N/A (busca não é por voz) | — | — |
 
-**Gap ATUALIZADO (Fase 5):** WRF Dynamic K + LLM Job Classification **IMPLEMENTADOS E INTEGRADOS** no RAG pipeline. FairnessGuard L3 **ATIVO** com `check_with_sector()` (sector-dependent). Integração com Pearch/Apify ainda depende de API keys de produção.
+**Gap ATUALIZADO (Fase 5):** WRF Dynamic K **INTEGRADO E ATIVO** no RAG pipeline. LLM Job Classification e FairnessGuard L3 sector check estão **IMPLEMENTADOS MAS INACESSÍVEIS** no fluxo de busca — `RAGPipelineService.search()` referencia `kwargs` sem `**kwargs` na assinatura (ARCH-04, ver `AUDIT_ALPHA1_FASE6.md`). Ambos funcionam standalone mas precisam de fix na assinatura para integração end-to-end. Integração com Pearch/Apify ainda depende de API keys de produção.
 
 ---
 
@@ -743,7 +743,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | ↳ Learning Loop | N/A (email é ação, não sugestão) | — | — |
 | ↳ A/B Testing | Variantes de template de email | ATIVO | `seed_email_ab_tests` cria 3 experimentos no startup (Fase 5) |
 | ↳ Routing Adaptativo | N/A | — | — |
-| ↳ Template Learning | Templates de email aprendidos | ATIVO | `TemplateLearningService` com tracking persistente (Fase 5) |
+| ↳ Template Learning | Templates de email aprendidos | PARCIAL | `TemplateLearningService` implementado mas data source mismatch com send path (ARCH-05, ver `AUDIT_ALPHA1_FASE6.md`) |
 | ↳ Calibration | N/A | — | — |
 | ↳ Score Normalization | N/A | — | — |
 | ↳ Predictive Analytics | N/A | — | — |
@@ -769,7 +769,7 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | **Frontend Chat Web** | Chat page para candidato | **IMPLEMENTADO** | `src/app/triagem/[token]/page.tsx` (Fase 2) |
 | **COMPLIANCE** | | | |
 | ↳ FairnessGuard L1-L2 | Perguntas e análises sem viés | PRECISA ATIVAR | Em cada step da triagem |
-| ↳ FairnessGuard L3 | Análise semântica das respostas | ATIVO | `check_with_sector()` sector-dependent (Fase 5) |
+| ↳ FairnessGuard L3 | Análise semântica das respostas | PARCIAL | `check_with_sector()` implementado; ativo em 4 services, inacessível via RAG pipeline (ARCH-04) |
 | ↳ PII Masking | Strip PII nas respostas antes do LLM | ATIVO | `strip_pii_for_llm_prompt` |
 | ↳ Fact-Checker | Validar scores e claims do WSI | PRECISA ATIVAR | `fact_checker.py` |
 | ↳ Audit Trail | Log completo: cada pergunta/resposta/score | PRECISA ATIVAR | `audit_service.py` |
