@@ -32,24 +32,33 @@
              │  • Acessa página de vagas WeDo, seleciona vaga existente        │
              │  • NÃO cria vaga na WeDo — edita dados importados              │
              │  • Define requisitos, benefícios, faixa salarial, modelo        │
-             │  • 🤖 Ag.8 IntegradorATS (sync dados do ATS)                     │
+             │  • 🤖 Ag.8 IntegradorATS (sync dados do ATS) ⚠ PÓS-MVP         │
+             │                                                                  │
+             │                              2B. VAGA CRIADA WeDO (agora possível)
+             │  ──────────────────────────────────────────────────────────────► │
+             │  • Clicar em "Criar Vaga" no botão Criar Vaga                   │
+             │  • Seleciona "Criar Manualmente"                                │
+             │  • Preenche campos da vaga manualmente                          │
              │                                                                  │
              ├──────────────────────────────────────────────────────────────────┤
              │                                                                  │
              │  3. CONFIGURAR ROTEIRO WSI                                        │
              │  ──────────────────────────────────────────────────────────────► │
-             │  • A partir do JD da vaga (importado do ATS ou gerado no modal) │
-             │  • Via modal: Preview Vaga → Revisar/Ajustar JD                 │
-             │  • Modal: Roteiro de Triagem → Criar (completo/compacto)        │
-             │  •   ou Editar roteiro existente                                │
-             │  • Selecionar/ajustar perguntas de triagem com ajuda da LIA     │
-             │  • 🤖 JD Generator Service (LLM) gera/ajusta JD                 │
-             │  • 🤖 Ag.4 EntrevistadorWSI (gera perguntas WSI)                │
+             │  • A partir do JD da vaga (importado do ATS ou gerado na        │
+             │    TAB CONFIGURAÇÕES DA VAGA)                                   │
+             │  • Via TAB: CONFIGURAÇÕES Vaga → Revisar/Ajustar JD             │
+             │  • TAB CONFIGURAÇÕES, SEÇÃO: PERGUNTAS Triagem →                │
+             │    Criar (completo/compacto) ou Editar roteiro existente        │
+             │  • Selecionar/ajustar perguntas de triagem                      │
+             │  • 🤖 JDGeneratorService [job_management] (LLM) gera/ajusta JD  │
+             │  • 🤖 WSIQuestionGeneratorService [cv_screening] (Gemini LLM)   │
+             │    gera perguntas WSI — NÃO é Ag.4                              │
+             │  • Ag.4 EntrevistadorWSI só conduz a entrevista (E7)            │
              │                                                                  │
              │                              3B. GERAR PERGUNTAS WSI             │
              │  ◄────────────────────────────────────────────────────────────── │
              │  • LIA analisa JD/requisitos → gera perguntas WSI (Blocos 2-5)  │
-             │  • Consultor edita/ajusta via modal                              │
+             │  • Consultor edita/ajusta via TAB CONFIGURAÇÕES                 │
              │                                                                  │
              ├──────────────────────────────────────────────────────────────────┤
              │                                                                  │
@@ -134,11 +143,18 @@
              │                                                                  │
              │                              7. TRIAGEM WSI                       │
              │  ◄────────────────────────────────────────────────────────────── │
-             │  • Via chat web (link do email) OU WhatsApp (se forneceu nº)    │
+             │  • Canais disponíveis:                                           │
+             │    - Chat web (link do email) — canal principal                 │
+             │    - WhatsApp (se forneceu nº)                                  │
+             │    - Ligação telefone (Twilio/OpenMic.ai)                       │
+             │    - Ligação web (voice screening)                              │
              │  • LIA aplica perguntas WSI com agentes coordenados:            │
-             │    🤖 Ag.0 Orchestrator (coordenação geral)                      │
-             │    🤖 Ag.4 EntrevistadorWSI (conduz chat, aplica perguntas)      │
-             │    🤖 Ag.5 AvaliadorWSI (analisa respostas, calcula score)       │
+             │    🤖 Ag.0 Orchestrator [orchestrator] (coordenação geral)       │
+             │    🤖 Ag.4 WSIInterviewGraph [cv_screening] (conduz chat,        │
+             │       aplica perguntas)                                          │
+             │    🤖 Ag.5 WSIService [cv_screening] (analisa respostas,         │
+             │       calcula score)                                             │
+             │    🤖 WSIVoiceOrchestrator [cv_screening] (triagem por voz)      │
              │  • Score WSI calculado ao final | Parecer textual gerado        │
              │                                                                  │
              ├──────────────────────────────────────────────────────────────────┤

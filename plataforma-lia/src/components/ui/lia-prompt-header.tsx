@@ -12,7 +12,7 @@ export const LiaPromptHeader = React.memo(function LiaPromptHeader({ title, isAn
   return (
     <div className="mb-4 flex flex-col items-center justify-center">
       <h2
-        className={}
+        className={`text-xl font-semibold flex items-center gap-2 ${isAnimating ? 'animate-pulse' : ''}`}
       >
         <Brain className="w-7 h-7 text-wedo-cyan" strokeWidth={2} />
         {title}
