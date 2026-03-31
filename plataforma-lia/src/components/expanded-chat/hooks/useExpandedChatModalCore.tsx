@@ -80,6 +80,7 @@ import { useLearning } from './useLearning'
 import { useFastTrack, type FastTrackSuggestion, type FastTrackJobData } from '@/hooks/useFastTrack'
 import { FastTrackSuggestions } from '../../job-wizard/FastTrackSuggestions'
 import { extractCriteriaFromText as _extractCriteria } from "./expandedChatCriteriaExtractor"
+import { useProactiveHandlers, useGroupedPanelChangeHandler, useCheckForExistingDraftSync } from "./useExpandedChatCallbacks"
 import { useExpandedChatEffects } from "./useExpandedChatEffects"
 import { useExpandedChatSubHooks } from "./useExpandedChatSubHooks"
 import { FastTrackReviewPanel } from '../../job-wizard/FastTrackReviewPanel'
@@ -323,34 +324,7 @@ import { ClearDraftConfirmModal, EditCriteriaModal, AddTechnicalSkillModal, AddC
   
   // Helper function to check for existing draft synchronously (before showing initial message)
   // Returns both draft info and the parsed draft data for restoration
-  const checkForExistingDraftSync = useCallback((): { 
-    hasDraft: boolean
-    stageName: string | null
-    draftData: Partial<WizardDraftData> | null 
-  } => {
-    if (typeof window === 'undefined') return { hasDraft: false, stageName: null, draftData: null }
-    try {
-      const storedDraft = localStorage.getItem('wizard_draft')
-      if (!storedDraft) return { hasDraft: false, stageName: null, draftData: null }
-      
-      const parsedDraft = JSON.parse(storedDraft) as Partial<WizardDraftData>
-      const currentStage = parsedDraft?.currentStage
-      
-      // Only consider it a meaningful draft if it has progressed beyond initial stage
-      const hasMeaningfulDraft = currentStage && !INITIAL_STAGES.includes(currentStage)
-      
-      if (hasMeaningfulDraft) {
-        return { 
-          hasDraft: true, 
-          stageName: STAGE_DISPLAY_NAMES[currentStage] || currentStage,
-          draftData: parsedDraft
-        }
-      }
-      return { hasDraft: false, stageName: null, draftData: null }
-    } catch {
-      return { hasDraft: false, stageName: null, draftData: null }
-    }
-  }, [STAGE_DISPLAY_NAMES, INITIAL_STAGES])
+  const { checkForExistingDraftSync } = useCheckForExistingDraftSync({ STAGE_DISPLAY_NAMES, INITIAL_STAGES })
   
   // Basic info form fields (Stage 2)
   const [basicInfoFields, setBasicInfoFields] = useState<BasicInfoFields>({
@@ -523,62 +497,9 @@ import { ClearDraftConfirmModal, EditCriteriaModal, AddTechnicalSkillModal, AddC
   const [wizardGreetingLoaded, setWizardGreetingLoaded] = useState(false)
   
   // Chat sync for bidirectional panel-chat synchronization (Phase 7)
-  const handleProactiveAccept = useCallback(async (actionId: string, messageId: string) => {
-    const userId = (user as Record<string, unknown>)?.id as string || 'default_user'
-    try {
-      const res = await fetch(`/api/backend-proxy/proactive-actions?path=accept/${actionId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId }),
-      })
-      if (res.ok) {
-        setMessages(prev => prev.filter(m => m.id !== messageId))
-        const confirmMsg: Message = {
-          id: `proactive-confirm-${Date.now()}`,
-          role: 'assistant',
-          content: '✅ Ação aceita! Estou processando...',
-          timestamp: new Date(),
-        }
-        setMessages(prev => [...prev, confirmMsg])
-      }
-    } catch (err) {
-    }
-  }, [user])
-
-  const handleProactiveReject = useCallback(async (actionId: string, messageId: string) => {
-    const userId = (user as Record<string, unknown>)?.id as string || 'default_user'
-    try {
-      const res = await fetch(`/api/backend-proxy/proactive-actions?path=reject/${actionId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId }),
-      })
-      if (res.ok) {
-        setMessages(prev => prev.filter(m => m.id !== messageId))
-      }
-    } catch (err) {
-    }
-  }, [user])
-
-  const handleGroupedPanelChange = useCallback((group: GroupedChange) => {
-    // Only create system messages for panel changes that users would want to see
-    if (group.changes.length === 0) return
-    
-    // Filter to only panel-initiated changes
-    const panelChanges = group.changes.filter(c => c.source === 'panel')
-    if (panelChanges.length === 0) return
-    
-    // Create a subtle assistant message for panel field updates
-    const systemMessage: Message = {
-      id: `panel-sync-${Date.now()}`,
-      role: 'assistant',
-      content: `📝 ${group.summary}`,
-      timestamp: new Date(),
-      messageType: 'text',
-      isFieldUpdate: true
-    }
-    setMessages(prev => [...prev, systemMessage])
-  }, [])
+  // Proactive handlers and grouped panel change handler extracted to useExpandedChatCallbacks
+  const { handleProactiveAccept, handleProactiveReject } = useProactiveHandlers({ user, setMessages })
+  const { handleGroupedPanelChange } = useGroupedPanelChangeHandler({ setMessages })
   
   const {
     trackFieldChange,

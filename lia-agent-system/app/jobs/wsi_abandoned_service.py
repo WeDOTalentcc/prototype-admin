@@ -135,7 +135,7 @@ async def _send_candidate_reminder(
             source_trigger="wsi_abandoned_reminder",
             related_candidate_id=candidate_id,
             related_job_id=job_vacancy_id,
-            channels=["bell", "email"],
+            channels=["bell", "email", "whatsapp"],
             metadata={"session_id": session_id, "reminder_num": reminder_num},
             db=db,
         )

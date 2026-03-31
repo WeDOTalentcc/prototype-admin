@@ -3,7 +3,6 @@
 import React, { useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { liaApi } from "@/services/lia-api"
-import { JobKanbanPage } from "../../job-kanban-page"
 
 // Sub-hooks
 import { useJobsData } from "./useJobsData"
@@ -270,24 +269,6 @@ export function useJobsPageCore(props: JobsPageProps) {
   const handleBackToJobs = () => {
     setShowKanban(false)
     setSelectedJob(null)
-  }
-
-  // -----------------------------------------------------------------------
-  // Kanban early returns (preserve existing behaviour)
-  // -----------------------------------------------------------------------
-  if (showKanban && selectedJob) {
-    return <JobKanbanPage key={`kanban-${selectedJob.id}`} job={selectedJob} onBack={handleBackToJobs} />
-  }
-
-  if (showKanban && !selectedJob) {
-    return (
-      <div className="h-full flex items-center justify-center bg-gray-50 dark:bg-lia-bg-primary">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-lia-border-default border-t-gray-600 rounded-full animate-spin motion-reduce:animate-none mx-auto mb-3" />
-          <p className="text-base-ui text-lia-text-tertiary dark:text-lia-text-tertiary">Carregando vaga...</p>
-        </div>
-      </div>
-    )
   }
 
   // -----------------------------------------------------------------------

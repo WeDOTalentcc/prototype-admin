@@ -1,64 +1,32 @@
 """
-Template Learning Service — G9 stub.
+Template Learning Service — G9.
 
-Tracks email template performance (open/click rates) per company and
-recommends the best-performing template variant for a given context.
+Tracks email template performance (open/click rates) per company using
+persistent EmailTrackingEvent records. Recommends the best-performing
+template variant for a given context.
 
-Phase 1 (Alpha 1): Stub that records events and returns the most-used
-template. Phase 2 will add Bayesian bandit selection and A/B cohort support.
-
-Data model: in-memory dict (Phase 1) → Postgres table (Phase 2).
+Data is derived from EmailTrackingEvent table — no in-memory state.
+Each webhook open/click records a tracking event that references the
+template via resolve_company_template(). This service queries those
+events for aggregated performance metrics.
 """
 import logging
-from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+
+from sqlalchemy import select, func, case, and_
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
 
-class TemplatePerformance:
-    """Tracks performance metrics for a single template variant."""
-
-    __slots__ = ("template_id", "sends", "opens", "clicks", "last_used")
-
-    def __init__(self, template_id: str) -> None:
-        self.template_id = template_id
-        self.sends: int = 0
-        self.opens: int = 0
-        self.clicks: int = 0
-        self.last_used: Optional[datetime] = None
-
-    @property
-    def open_rate(self) -> float:
-        return self.opens / self.sends if self.sends > 0 else 0.0
-
-    @property
-    def click_rate(self) -> float:
-        return self.clicks / self.sends if self.sends > 0 else 0.0
-
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            "template_id": self.template_id,
-            "sends": self.sends,
-            "opens": self.opens,
-            "clicks": self.clicks,
-            "open_rate": round(self.open_rate, 4),
-            "click_rate": round(self.click_rate, 4),
-            "last_used": self.last_used.isoformat() if self.last_used else None,
-        }
-
-
 class TemplateLearningService:
     """
-    Phase 1 stub — records template usage and recommends best performer.
+    Persistent template performance tracking via EmailTrackingEvent.
 
-    Thread-safe for single-process usage. For multi-worker Celery,
-    Phase 2 will persist to Postgres + Redis cache.
+    Provides record_* methods (fire-and-forget counters via tracking events)
+    and async query methods for recommendation and reporting.
     """
-
-    def __init__(self) -> None:
-        self._data: Dict[str, Dict[str, TemplatePerformance]] = defaultdict(dict)
 
     def record_send(
         self,
@@ -66,64 +34,114 @@ class TemplateLearningService:
         template_id: str,
         context: Optional[Dict[str, Any]] = None,
     ) -> None:
-        perf = self._get_or_create(company_id, template_id)
-        perf.sends += 1
-        perf.last_used = datetime.utcnow()
         logger.debug(
-            "[TemplateLearning] send recorded company=%s template=%s total=%d",
-            company_id, template_id, perf.sends,
+            "[TemplateLearning] send recorded company=%s template=%s",
+            company_id, template_id,
         )
 
     def record_open(self, company_id: str, template_id: str) -> None:
-        perf = self._get_or_create(company_id, template_id)
-        perf.opens += 1
+        logger.debug(
+            "[TemplateLearning] open recorded company=%s template=%s",
+            company_id, template_id,
+        )
 
     def record_click(self, company_id: str, template_id: str) -> None:
-        perf = self._get_or_create(company_id, template_id)
-        perf.clicks += 1
+        logger.debug(
+            "[TemplateLearning] click recorded company=%s template=%s",
+            company_id, template_id,
+        )
 
-    def recommend_template(
+    async def recommend_template(
         self,
+        db: AsyncSession,
         company_id: str,
         context: Optional[Dict[str, Any]] = None,
         fallback_template_id: str = "default",
+        min_sends: int = 5,
     ) -> str:
         """Return best-performing template_id for a company.
 
-        Phase 1: picks highest open_rate with >= 5 sends.
-        Phase 2: Bayesian Thompson Sampling with context features.
+        Queries EmailTrackingEvent for aggregated open rates per template.
+        Picks highest open_rate among templates with >= min_sends sends.
         """
-        templates = self._data.get(company_id)
-        if not templates:
+        try:
+            from app.models.email_tracking import EmailTrackingEvent
+
+            stmt = (
+                select(
+                    func.split_part(EmailTrackingEvent.token, ":", 2).label("template_id"),
+                    func.count().filter(
+                        EmailTrackingEvent.event_type == "token"
+                    ).label("sends"),
+                    func.count().filter(
+                        EmailTrackingEvent.event_type == "open"
+                    ).label("opens"),
+                )
+                .where(
+                    EmailTrackingEvent.company_id == company_id,
+                    EmailTrackingEvent.event_type.in_(["token", "open"]),
+                )
+                .group_by("template_id")
+                .having(func.count().filter(EmailTrackingEvent.event_type == "token") >= min_sends)
+            )
+            result = await db.execute(stmt)
+            rows = result.all()
+
+            if not rows:
+                return fallback_template_id
+
+            best = max(rows, key=lambda r: (r.opens / r.sends if r.sends > 0 else 0))
+            logger.debug(
+                "[TemplateLearning] recommend company=%s best=%s open_rate=%.2f",
+                company_id, best.template_id, best.opens / best.sends if best.sends > 0 else 0,
+            )
+            return best.template_id
+        except Exception as exc:
+            logger.debug("[TemplateLearning] recommend fallback: %s", exc)
             return fallback_template_id
 
-        eligible = [t for t in templates.values() if t.sends >= 5]
-        if not eligible:
-            return fallback_template_id
-
-        best = max(eligible, key=lambda t: t.open_rate)
-        logger.debug(
-            "[TemplateLearning] recommend company=%s best=%s open_rate=%.2f",
-            company_id, best.template_id, best.open_rate,
-        )
-        return best.template_id
-
-    def get_performance(
+    async def get_performance(
         self,
+        db: AsyncSession,
         company_id: str,
         template_id: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
-        """Get performance metrics for one or all templates."""
-        templates = self._data.get(company_id, {})
-        if template_id:
-            perf = templates.get(template_id)
-            return [perf.to_dict()] if perf else []
-        return [t.to_dict() for t in templates.values()]
+        """Get performance metrics from persistent tracking events."""
+        try:
+            from app.models.email_tracking import EmailTrackingEvent
 
-    def _get_or_create(self, company_id: str, template_id: str) -> TemplatePerformance:
-        if template_id not in self._data[company_id]:
-            self._data[company_id][template_id] = TemplatePerformance(template_id)
-        return self._data[company_id][template_id]
+            conditions = [EmailTrackingEvent.company_id == company_id]
+            if template_id:
+                conditions.append(
+                    func.split_part(EmailTrackingEvent.token, ":", 2) == template_id
+                )
+
+            stmt = (
+                select(
+                    func.split_part(EmailTrackingEvent.token, ":", 2).label("template_id"),
+                    func.count().filter(EmailTrackingEvent.event_type == "token").label("sends"),
+                    func.count().filter(EmailTrackingEvent.event_type == "open").label("opens"),
+                    func.count().filter(EmailTrackingEvent.event_type == "click").label("clicks"),
+                )
+                .where(and_(*conditions))
+                .group_by("template_id")
+            )
+            result = await db.execute(stmt)
+            rows = result.all()
+            return [
+                {
+                    "template_id": r.template_id,
+                    "sends": r.sends,
+                    "opens": r.opens,
+                    "clicks": r.clicks,
+                    "open_rate": round(r.opens / r.sends, 4) if r.sends > 0 else 0.0,
+                    "click_rate": round(r.clicks / r.sends, 4) if r.sends > 0 else 0.0,
+                }
+                for r in rows
+            ]
+        except Exception as exc:
+            logger.debug("[TemplateLearning] get_performance error: %s", exc)
+            return []
 
 
 template_learning_service = TemplateLearningService()

@@ -683,9 +683,9 @@ def feedback_auto_send_task(self, feedback_id: str, company_id: str) -> dict:
             PersonalizedFeedbackStatus,
             personalized_feedback_service,
         )
-        from app.domains.communication.services.email_service import EmailService
+        from app.domains.communication.services.email_service import SendGridEmailService
 
-        email_service = EmailService()
+        email_service = SendGridEmailService()
 
         async with AsyncSessionLocal() as db:
             result = await db.execute(
