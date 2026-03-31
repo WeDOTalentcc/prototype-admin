@@ -15,12 +15,30 @@
     onSettingsChange: (changed: boolean) => void
   }
 
-  // Componente de Administração WeDOTalent
+  
+interface AdminClient {
+  id: number
+  name: string
+  cnpj: string
+  status: string
+  plan: string
+  users: number
+  setupDate: string
+  contact: {
+    name: string
+    email: string
+    phone: string
+  }
+  tenant: string
+  lastAccess: string
+}
+
+// Componente de Administração WeDOTalent
 export function SettingsBillingTab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => void }) {
   const [activeSection, setActiveSection] = useState("clients")
   const [showAddClientModal, setShowAddClientModal] = useState(false)
   const [showSendInviteModal, setShowSendInviteModal] = useState(false)
-  const [selectedClient, setSelectedClient] = useState<any>(null)
+  const [selectedClient, setSelectedClient] = useState<AdminClient | null>(null)
 
   const adminSections = [
     { id: "clients", name: "Clientes", icon: Building, desc: "Gerenciar empresas cliente" },
