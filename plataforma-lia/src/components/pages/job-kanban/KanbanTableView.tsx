@@ -1001,7 +1001,8 @@ export function KanbanTableView({
                         title="Reprovar candidato"
                         onClick={(e) => {
                           e.stopPropagation()
-                          if (stage === 'screening' || stage === 'triagem') {
+                          const rejectStage = stage as string
+                          if (rejectStage === 'screening' || rejectStage === 'triagem') {
                             onRejectFromScreening(candidate)
                           } else {
                             onRejectCandidate(candidate)

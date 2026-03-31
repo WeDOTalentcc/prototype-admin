@@ -52,7 +52,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     showWSITextModal, showWSIVoiceModal, sortedCandidates, tableColumns, tableContainerRef, tableFilters,
     talentFunnel, toast, toggleTableFilter, unifiedModalCandidate, unifiedModalOpen, unifiedModalType,
     unsavedPearchCandidates, user, visibleCandidates, visibleTableColumns, wsiCandidateForScreening, wsiInviteCandidate,
-    tabs,
+    tabs: tabsRaw,
     archetypeCreationStep, archetypeToDelete, buildFiltersFromTags, crossTabFilter, currentPage, currentSearchSource,
     cvUploadLoading, displayedResultsCount, editQueryValue, isCreatingArchetype, isDroppingCV, isExpandingToGlobal,
     isLoadingMore, isPreviewMaximized, itemsPerPage, lastSearchEntities, lastSearchQuery, lastSuccessfulQuery,
@@ -72,7 +72,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     <div className="h-full flex flex-col bg-gray-50 dark:bg-lia-bg-primary overflow-hidden">
       {/* Header Fixo - Título e Tabs */}
       <CandidatesPageHeader
-        tabs={tabs}
+        tabs={tabs as unknown as Parameters<typeof CandidatesPageHeader>[0]["tabs"]}
         activeTab={activeTab}
         showSearchResults={showSearchResults}
         searchTerm={searchTerm}
@@ -110,9 +110,9 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
               setLastSearchMode(mode || 'natural')
               await executeSearch(query, entities, mode, metadata, false)
             }}
-            onDrop={handleCVDrop}
-            onDragOver={handleCVDragOver}
-            onDragLeave={handleCVDragLeave}
+            onDrop={handleCVDrop as unknown as Parameters<typeof CandidateSearchBar>[0]["onDrop"]}
+            onDragOver={handleCVDragOver as unknown as Parameters<typeof CandidateSearchBar>[0]["onDragOver"]}
+            onDragLeave={handleCVDragLeave as unknown as Parameters<typeof CandidateSearchBar>[0]["onDragLeave"]}
             onOpenFilters={() => setShowAdvancedSearch(true)}
             onGoToResults={() => setShowSearchResults(true)}
             onSearchSourceChange={setSearchSource}
@@ -163,7 +163,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
               })
             }}
             onHideBatch={() => {
-              selectedCandidatesForBatch.forEach(id => talentFunnel.hideCandidate(id))
+              selectedCandidatesForBatch.forEach(id => (talentFunnel as unknown as Record<string, (id: string) => void>).hideCandidate?.(id))
               toast({
                 title: "Candidatos ocultos",
                 description: `${selectedCandidatesForBatch.size} candidato(s) oculto(s) da pesquisa`
@@ -181,7 +181,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
             setShowSearchResults={setShowSearchResults}
             setSearchTerm={setSearchTerm}
             setLastSearchQuery={setLastSearchQuery}
-            setActiveTab={setActiveTab}
+            setActiveTab={setActiveTab as unknown as Parameters<typeof CandidateSearchResultsView>[0]["setActiveTab"]}
             showExpandedLIA={showExpandedLIA}
             isLIAThinking={isLIAThinking}
             liaPromptValue={liaPromptValue}
@@ -207,8 +207,8 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
             setLiaWidth={setLiaWidth}
             isResizingLIA={isResizingLIA}
             setIsResizingLIA={setIsResizingLIA}
-            activeSearchTab={activeSearchTab}
-            setActiveSearchTab={setActiveSearchTab}
+            activeSearchTab={activeSearchTab as unknown as Parameters<typeof CandidateSearchResultsView>[0]["activeSearchTab"]}
+            setActiveSearchTab={setActiveSearchTab as unknown as Parameters<typeof CandidateSearchResultsView>[0]["setActiveSearchTab"]}
             chatMessages={chatMessages}
             setChatMessages={setChatMessages}
             searchResults={searchResults}
@@ -221,7 +221,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
             isCreatingArchetype={isCreatingArchetype}
             setIsCreatingArchetype={setIsCreatingArchetype}
             archetypeCreationStep={archetypeCreationStep}
-            setArchetypeCreationStep={setArchetypeCreationStep}
+            setArchetypeCreationStep={setArchetypeCreationStep as unknown as Parameters<typeof CandidatesPageModals>[0]["setArchetypeCreationStep"]}
             setNewArchetypeData={setNewArchetypeData}
             setShowSaveAsArchetypeModal={setShowSaveAsArchetypeModal}
             setShowGlobalExpansionConfirm={setShowGlobalExpansionConfirm}
@@ -232,9 +232,9 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
             setPearchResultsCount={setPearchResultsCount}
             setDisplayedResultsCount={setDisplayedResultsCount}
             onLIAChatMessage={handleLIAChatMessage}
-            onQuickAction={handleQuickAction}
-            onCalibrationLike={handleCalibrationLike}
-            onCalibrationDislike={handleCalibrationDislike}
+            onQuickAction={handleQuickAction as unknown as Parameters<typeof CandidateSearchResultsView>[0]["onQuickAction"]}
+            onCalibrationLike={handleCalibrationLike as unknown as Parameters<typeof CandidateSearchResultsView>[0]["onCalibrationLike"]}
+            onCalibrationDislike={handleCalibrationDislike as unknown as Parameters<typeof CandidateSearchResultsView>[0]["onCalibrationDislike"]}
             setUserCollapsedLIA={setUserCollapsedLIA}
             tableFilters={tableFilters}
             setTableFilters={setTableFilters}
@@ -249,7 +249,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
             visibleTableColumns={visibleTableColumns}
             columnWidths={columnWidths}
             setColumnWidths={setColumnWidths}
-            setTableColumns={setTableColumns}
+            setTableColumns={setTableColumns as unknown as Parameters<typeof CandidateSearchResultsView>[0]["setTableColumns"]}
             pinnedCandidates={pinnedCandidates}
             favorites={favorites}
             sortBy={sortBy}
@@ -261,10 +261,10 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
             onTogglePin={handleTogglePin}
             onToggleFavorite={handleToggleFavorite}
             renderCellValue={renderCellValue}
-            tableContainerRef={tableContainerRef}
+            tableContainerRef={tableContainerRef as unknown as Parameters<typeof CandidateSearchResultsView>[0]["tableContainerRef"]}
             showSearchResults={showSearchResults}
             currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
+            setCurrentPage={setCurrentPage as unknown as Parameters<typeof CandidateSearchResultsView>[0]["setCurrentPage"]}
             itemsPerPage={itemsPerPage}
             getPaginatedCandidates={getPaginatedCandidates}
             clearAllFilters={clearAllFilters}
@@ -294,8 +294,8 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
             setShareSearchCandidates={setShareSearchCandidates}
             setShareSearchTitle={setShareSearchTitle}
             setShowShareSearchModal={setShowShareSearchModal}
-            toast={toast}
-            talentFunnel={talentFunnel}
+            toast={toast as unknown as Parameters<typeof CandidateSearchResultsView>[0]["toast"]}
+            talentFunnel={talentFunnel as unknown as Parameters<typeof CandidateSearchResultsView>[0]["talentFunnel"]}
             setEditQueryValue={setEditQueryValue}
             setShowEditQueryModal={setShowEditQueryModal}
             setShowAddToVacancyModal={setShowAddToVacancyModal}
@@ -307,13 +307,13 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
           <div className="flex gap-6">
             <div className={`${showCandidatePreview && previewCandidate ? 'flex-1' : 'w-full'} transition-colors motion-reduce:transition-none duration-300`}>
               <FavoritesTab
-                candidates={candidates.filter(c => pinnedCandidates.has(c.id) || favorites.has(c.id))}
+                candidates={candidates.filter(c => pinnedCandidates.has(c.id) || favorites.has(c.id)) as unknown as Parameters<typeof FavoritesTab>[0]["candidates"]}
                 pinnedCandidates={pinnedCandidates}
                 favoriteCandidates={favorites}
                 favoriteNotes={favoriteNotes}
                 onTogglePin={handleTogglePin}
                 onToggleFavorite={handleToggleFavorite}
-                onCandidateClick={handleCandidateClick}
+                onCandidateClick={handleCandidateClick as unknown as Parameters<typeof FavoritesTab>[0]["onCandidateClick"]}
                 onLIAClick={handleLIAClick}
                 onUpdateFavoriteNote={handleUpdateFavoriteNote}
               />
@@ -347,21 +347,21 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                     }}
                     onOpenFullPage={handleCandidatePageOpen}
                     onScheduleInterview={(candidate) => {
-                      setSelectedCandidateForAction(candidate)
+                      setSelectedCandidateForAction(candidate as unknown as Parameters<typeof setSelectedCandidateForAction>[0])
                       setShowScheduleModal(true)
                     }}
                     onAddToVacancy={(candidate) => {
-                      setSelectedCandidatesForBatch(new Set([candidate.id]))
+                      setSelectedCandidatesForBatch(new Set([candidate.id]) as unknown as Parameters<typeof setSelectedCandidatesForBatch>[0])
                       setShowAddToVacancyModal(true)
                     }}
                     onToggleFavorite={(candidateId) => handleToggleFavorite(candidateId)}
-                    onWSIScreening={(candidate) => handleStartWSITextScreening(candidate)}
+                    onWSIScreening={(candidate) => handleStartWSITextScreening(candidate as unknown as Parameters<typeof handleStartWSITextScreening>[0])}
                     isFavorite={favorites.has(previewCandidate.id)}
-                    onSendEmail={(candidate) => handleSendEmail(candidate)}
-                    onSendWhatsApp={(candidate) => handleSendWhatsApp(candidate)}
-                    onSendTriagem={(candidate) => handleSendTriagem(candidate)}
-                    onSendAgendamento={(candidate) => handleSendAgendamento(candidate)}
-                    onSendFeedback={(candidate) => handleSendFeedback(candidate)}
+                    onSendEmail={(candidate) => handleSendEmail(candidate as unknown as Parameters<typeof handleSendEmail>[0])}
+                    onSendWhatsApp={(candidate) => handleSendWhatsApp(candidate as unknown as Parameters<typeof handleSendWhatsApp>[0])}
+                    onSendTriagem={(candidate) => handleSendTriagem(candidate as unknown as Parameters<typeof handleSendTriagem>[0])}
+                    onSendAgendamento={(candidate) => handleSendAgendamento(candidate as unknown as Parameters<typeof handleSendAgendamento>[0])}
+                    onSendFeedback={(candidate) => handleSendFeedback(candidate as unknown as Parameters<typeof handleSendFeedback>[0])}
                   />
                 </div>
               </div>
@@ -430,7 +430,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                     skills: c.technical_skills || [],
                     experience: c.years_of_experience || 0,
                     education: '',
-                    workHistory: [],
+                    workHistory: [] as never[],
                   }
                 })
                 
@@ -553,19 +553,19 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         showContactModal={showContactModal}
         contactModalAction={contactModalAction}
         setShowContactModal={setShowContactModal}
-        setSelectedCandidateForAction={setSelectedCandidateForAction}
-        setContactModalCandidate={setContactModalCandidate}
+        setSelectedCandidateForAction={setSelectedCandidateForAction as unknown as Parameters<typeof CandidatesPageModals>[0]["setSelectedCandidateForAction"]}
+        setContactModalCandidate={setContactModalCandidate as unknown as Parameters<typeof CandidatesPageModals>[0]["setContactModalCandidate"]}
         setContactModalAction={setContactModalAction}
-        handleSendMessage={handleSendMessage}
+        handleSendMessage={handleSendMessage as unknown as Parameters<typeof CandidatesPageModals>[0]["handleSendMessage"]}
         showScheduleModal={showScheduleModal}
         setShowScheduleModal={setShowScheduleModal}
-        handleScheduleComplete={handleScheduleComplete}
+        handleScheduleComplete={handleScheduleComplete as unknown as Parameters<typeof CandidatesPageModals>[0]["handleScheduleComplete"]}
         unifiedModalOpen={unifiedModalOpen}
         unifiedModalCandidate={unifiedModalCandidate}
         unifiedModalType={unifiedModalType}
         lastSearchQuery={lastSearchQuery}
         handleUnifiedModalClose={handleUnifiedModalClose}
-        handleUnifiedModalSend={handleUnifiedModalSend}
+        handleUnifiedModalSend={handleUnifiedModalSend as unknown as Parameters<typeof CandidatesPageModals>[0]["handleUnifiedModalSend"]}
         showComparisonModal={showComparisonModal}
         setShowComparisonModal={setShowComparisonModal}
         selectedCandidatesForBatch={selectedCandidatesForBatch}
@@ -581,8 +581,8 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         setShowAddCandidateModal={setShowAddCandidateModal}
         preSelectedListForModal={preSelectedListForModal}
         setPreSelectedListForModal={setPreSelectedListForModal}
-        handleAddCandidate={handleAddCandidate}
-        setCandidateListsForModal={setCandidateListsForModal}
+        handleAddCandidate={handleAddCandidate as unknown as Parameters<typeof CandidatesPageModals>[0]["handleAddCandidate"]}
+        setCandidateListsForModal={setCandidateListsForModal as unknown as Parameters<typeof CandidatesPageModals>[0]["setCandidateListsForModal"]}
         bulkJobVacancies={bulkJobVacancies}
         candidateListsForModal={candidateListsForModal}
         handleCandidatePageOpen={handleCandidatePageOpen}
@@ -596,7 +596,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         setShowWSITextModal={setShowWSITextModal}
         showWSIVoiceModal={showWSIVoiceModal}
         setShowWSIVoiceModal={setShowWSIVoiceModal}
-        handleWSIScreeningComplete={handleWSIScreeningComplete}
+        handleWSIScreeningComplete={handleWSIScreeningComplete as unknown as Parameters<typeof CandidatesPageModals>[0]["handleWSIScreeningComplete"]}
         showWSIInviteModal={showWSIInviteModal}
         setShowWSIInviteModal={setShowWSIInviteModal}
         wsiInviteCandidate={wsiInviteCandidate}
@@ -607,7 +607,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         setRubricCandidate={setRubricCandidate}
         rubricEvaluationData={rubricEvaluationData}
         setRubricEvaluationData={setRubricEvaluationData}
-        toast={toast}
+        toast={toast as unknown as Parameters<typeof CandidatesPageModals>[0]["toast"]}
         showSendEmailModal={showSendEmailModal}
         setShowSendEmailModal={setShowSendEmailModal}
         emailCandidateSelected={emailCandidateSelected}
@@ -616,19 +616,19 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         setShowRevealModal={setShowRevealModal}
         revealCandidate={revealCandidate}
         setRevealCandidate={setRevealCandidate}
-        handleRevealContact={handleRevealContact}
+        handleRevealContact={handleRevealContact as unknown as Parameters<typeof CandidatesPageModals>[0]["handleRevealContact"]}
         revealType={revealType}
         showCVPreviewModal={showCVPreviewModal}
         setShowCVPreviewModal={setShowCVPreviewModal}
         parsedCVData={parsedCVData}
         setParsedCVData={setParsedCVData}
-        handleCVConfirmed={handleCVConfirmed}
+        handleCVConfirmed={handleCVConfirmed as unknown as Parameters<typeof CandidatesPageModals>[0]["handleCVConfirmed"]}
         showCreditConfirmation={showCreditConfirmation}
         setShowCreditConfirmation={setShowCreditConfirmation}
-        creditEstimate={creditEstimate}
-        pearchSearchOptions={pearchSearchOptions}
-        setPearchSearchOptions={setPearchSearchOptions}
-        setPendingSearchRequest={setPendingSearchRequest}
+        creditEstimate={creditEstimate as unknown as Parameters<typeof CandidatesPageModals>[0]["creditEstimate"]}
+        pearchSearchOptions={pearchSearchOptions as unknown as Parameters<typeof CandidatesPageModals>[0]["pearchSearchOptions"]}
+        setPearchSearchOptions={setPearchSearchOptions as unknown as Parameters<typeof CandidatesPageModals>[0]["setPearchSearchOptions"]}
+        setPendingSearchRequest={setPendingSearchRequest as unknown as Parameters<typeof CandidatesPageModals>[0]["setPendingSearchRequest"]}
         handleConfirmPearchSearch={handleConfirmPearchSearch}
         showGlobalExpansionConfirm={showGlobalExpansionConfirm}
         setShowGlobalExpansionConfirm={setShowGlobalExpansionConfirm}
@@ -638,13 +638,13 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         handleExpandToGlobal={handleExpandToGlobal}
         showSourceChangeModal={showSourceChangeModal}
         setShowSourceChangeModal={setShowSourceChangeModal}
-        pendingSourceChange={pendingSourceChange}
-        setPendingSourceChange={setPendingSourceChange}
+        pendingSourceChange={pendingSourceChange as unknown as Parameters<typeof CandidatesPageModals>[0]["pendingSourceChange"]}
+        setPendingSourceChange={setPendingSourceChange as unknown as Parameters<typeof CandidatesPageModals>[0]["setPendingSourceChange"]}
         confirmSourceChange={confirmSourceChange}
         showContactFilterModal={showContactFilterModal}
         setShowContactFilterModal={setShowContactFilterModal}
-        pendingContactFilter={pendingContactFilter}
-        setPendingContactFilter={setPendingContactFilter}
+        pendingContactFilter={pendingContactFilter as unknown as Parameters<typeof CandidatesPageModals>[0]["pendingContactFilter"]}
+        setPendingContactFilter={setPendingContactFilter as unknown as Parameters<typeof CandidatesPageModals>[0]["setPendingContactFilter"]}
         confirmContactFilterChange={confirmContactFilterChange}
         showSaveAsArchetypeModal={showSaveAsArchetypeModal}
         setShowSaveAsArchetypeModal={setShowSaveAsArchetypeModal}
@@ -652,16 +652,16 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         isCreatingArchetype={isCreatingArchetype}
         setIsCreatingArchetype={setIsCreatingArchetype}
         archetypeCreationStep={archetypeCreationStep}
-        setArchetypeCreationStep={setArchetypeCreationStep}
+        setArchetypeCreationStep={setArchetypeCreationStep as unknown as Parameters<typeof CandidatesPageModals>[0]["setArchetypeCreationStep"]}
         newArchetypeData={newArchetypeData}
         setNewArchetypeData={setNewArchetypeData}
-        setUserArchetypes={setUserArchetypes}
-        setChatMessages={setChatMessages}
+        setUserArchetypes={setUserArchetypes as unknown as Parameters<typeof CandidatesPageModals>[0]["setUserArchetypes"]}
+        setChatMessages={setChatMessages as unknown as Parameters<typeof CandidatesPageModals>[0]["setChatMessages"]}
         showAdvancedSearch={showAdvancedSearch}
         setShowAdvancedSearch={setShowAdvancedSearch}
-        activeSearchFilters={activeSearchFilters}
-        setActiveSearchFilters={setActiveSearchFilters}
-        hideViewedCandidates={hideViewedCandidates}
+        activeSearchFilters={activeSearchFilters as unknown as Parameters<typeof CandidatesPageModals>[0]["activeSearchFilters"]}
+        setActiveSearchFilters={setActiveSearchFilters as unknown as Parameters<typeof CandidatesPageModals>[0]["setActiveSearchFilters"]}
+        hideViewedCandidates={hideViewedCandidates as unknown as Parameters<typeof CandidatesPageModals>[0]["hideViewedCandidates"]}
         showAddToListModal={showAddToListModal}
         setShowAddToListModal={setShowAddToListModal}
         addToListCandidateIds={addToListCandidateIds}
@@ -673,43 +673,43 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         shareSearchTitle={shareSearchTitle}
         setShareSearchTitle={setShareSearchTitle}
         shareSearchCandidates={shareSearchCandidates}
-        setShareSearchCandidates={setShareSearchCandidates}
+        setShareSearchCandidates={setShareSearchCandidates as unknown as Parameters<typeof CandidatesPageModals>[0]["setShareSearchCandidates"]}
         showAddListToVacanciesModal={showAddListToVacanciesModal}
         setShowAddListToVacanciesModal={setShowAddListToVacanciesModal}
         selectedListForVacancies={selectedListForVacancies}
-        setSelectedListForVacancies={setSelectedListForVacancies}
+        setSelectedListForVacancies={setSelectedListForVacancies as unknown as Parameters<typeof CandidatesPageModals>[0]["setSelectedListForVacancies"]}
         showAddToVacancyModal={showAddToVacancyModal}
         setShowAddToVacancyModal={setShowAddToVacancyModal}
         setSelectedCandidatesForBatch={setSelectedCandidatesForBatch}
         user={user}
         showUnsavedWarningModal={showUnsavedWarningModal}
         setShowUnsavedWarningModal={setShowUnsavedWarningModal}
-        setPendingTabChange={setPendingTabChange}
+        setPendingTabChange={setPendingTabChange as unknown as Parameters<typeof CandidatesPageModals>[0]["setPendingTabChange"]}
         handleSaveAllAndExit={handleSaveAllAndExit}
         handleExitWithoutSaving={handleExitWithoutSaving}
-        unsavedPearchCandidates={unsavedPearchCandidates}
+        unsavedPearchCandidates={unsavedPearchCandidates as unknown as Parameters<typeof CandidatesPageModals>[0]["unsavedPearchCandidates"]}
         isSavingToBase={isSavingToBase}
         showEditQueryModal={showEditQueryModal}
         setShowEditQueryModal={setShowEditQueryModal}
         editQueryValue={editQueryValue}
         getActiveSearchFiltersCount={getActiveSearchFiltersCount}
         searchSource={searchSource}
-        setSearchSource={setSearchSource}
+        setSearchSource={setSearchSource as unknown as Parameters<typeof CandidatesPageModals>[0]["setSearchSource"]}
         setSearchTerm={setSearchTerm}
         setLastSearchQuery={setLastSearchQuery}
         setLastSearchMode={setLastSearchMode}
         setLastSearchEntities={setLastSearchEntities}
-        setLastSearchMetadata={setLastSearchMetadata}
-        executeSearch={executeSearch}
+        setLastSearchMetadata={setLastSearchMetadata as unknown as Parameters<typeof CandidatesPageModals>[0]["setLastSearchMetadata"]}
+        executeSearch={executeSearch as unknown as Parameters<typeof CandidatesPageModals>[0]["executeSearch"]}
         previewSuggestion={previewSuggestion}
-        setPreviewSuggestion={setPreviewSuggestion}
+        setPreviewSuggestion={setPreviewSuggestion as unknown as Parameters<typeof CandidatesPageModals>[0]["setPreviewSuggestion"]}
         previewingUserArchetype={previewingUserArchetype}
-        setPreviewingUserArchetype={setPreviewingUserArchetype}
-        buildFiltersFromTags={buildFiltersFromTags}
+        setPreviewingUserArchetype={setPreviewingUserArchetype as unknown as Parameters<typeof CandidatesPageModals>[0]["setPreviewingUserArchetype"]}
+        buildFiltersFromTags={buildFiltersFromTags as unknown as Parameters<typeof CandidatesPageModals>[0]["buildFiltersFromTags"]}
         setLiaPromptValue={setLiaPromptValue}
-        setActiveSearchTab={setActiveSearchTab}
+        setActiveSearchTab={setActiveSearchTab as unknown as Parameters<typeof CandidatesPageModals>[0]["setActiveSearchTab"]}
         archetypeToDelete={archetypeToDelete}
-        setArchetypeToDelete={setArchetypeToDelete}
+        setArchetypeToDelete={setArchetypeToDelete as unknown as Parameters<typeof CandidatesPageModals>[0]["setArchetypeToDelete"]}
       />
     </div>
   )
