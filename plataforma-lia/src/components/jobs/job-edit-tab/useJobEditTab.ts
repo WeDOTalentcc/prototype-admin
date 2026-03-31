@@ -57,9 +57,9 @@ export function useJobEditTab({
       ) ||
       !!(
         job?.screeningConfig &&
-        (job.(screeningConfig as any).channels ||
-          job.(screeningConfig as any).settings ||
-          job.(screeningConfig as any).scheduling)
+        ((job.screeningConfig as any)?.channels ||
+          (job.screeningConfig as any)?.settings ||
+          (job.screeningConfig as any)?.scheduling)
       ),
     descricao: !!(job?.description && (job.description as string).trim().length > 0),
     perguntas: !!(
