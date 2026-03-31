@@ -929,15 +929,15 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 
 | # | Gap | Impacto | Prioridade |
 |---|-----|---------|-----------|
-| G7 | **Configuração de Infra Externa** — API keys: Twilio, Resend/SendGrid, ATS | Sem credenciais, tudo roda em "dev mode" (Apify já configurado) | BLOQUEANTE |
+| G7 | **Configuração de Infra Externa** — API keys: Twilio, Resend/SendGrid, ATS | Sem credenciais, tudo roda em "dev mode" (Apify já configurado) | PÓS MVP |
 
 ### 6.2 Gaps de Compliance
 
-| # | Gap | O que existe | O que falta |
-|---|-----|-------------|-------------|
-| C3 | **Audit Trail completo** | `AuditService` com 8 decision types; ativo em `jd_generation.py` e `wsi_questions.py` | Ativar em: `auth.py` (login), `candidates.py` (busca), pipeline tools (aprovação/rejeição), `rubric_evaluation.py` (triagem), communication (contato) |
-| C6 | **Bias Audit Report** | FairnessGuard coleta dados | Falta dashboard/relatório periódico de Four-Fifths Rule |
-| C7 | **EU AI Act Compliance** | Mencionado nos docs | Falta classificação de risco por agente e disclosure obrigatório |
+| # | Gap | O que existe | O que falta | Prioridade |
+|---|-----|-------------|-------------|-----------|
+| C3 | **Audit Trail completo** | `AuditService` com 8 decision types; ativo em `jd_generation.py` e `wsi_questions.py` | Ativar em: `auth.py` (login), `candidates.py` (busca), pipeline tools (aprovação/rejeição), `rubric_evaluation.py` (triagem), communication (contato) | MVP |
+| C6 | **Bias Audit Report** | FairnessGuard coleta dados | Falta dashboard/relatório periódico de Four-Fifths Rule | PÓS MVP |
+| C7 | **EU AI Act Compliance** | Mencionado nos docs | Falta classificação de risco por agente e disclosure obrigatório | PÓS MVP |
 
 ### 6.3 Gaps de Inteligência
 
@@ -953,11 +953,11 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 
 | # | Item | Tipo | Status |
 |---|------|------|--------|
-| P0.1 | Configurar credenciais de produção (Twilio, Resend, Apify, ATS) | Config | **PENDENTE** — depende de contas de produção |
-| P0.3 | Configurar Elasticsearch + PGVector em produção | Infra | **PENDENTE** — config de produção |
-| P0.4 | Ativar Audit Trail em todos os endpoints | Backend | **PENDENTE** — ativo em JD/WSI (GOV-01), falta ativar nos demais touchpoints |
+| P0.1 | Configurar credenciais de produção (Twilio, Resend, ATS) | Config | **PÓS MVP** — Apify já configurado; demais dependem de contas de produção |
+| P0.3 | Configurar Elasticsearch + PGVector em produção | Infra | **PÓS MVP** — config de produção |
+| P0.4 | Ativar Audit Trail em todos os endpoints | Backend | **PENDENTE** — ativo em JD/WSI, falta ativar nos demais touchpoints |
 
-> Fases 1 (Fluxo Core), 2 (Triagem + Automação) e 3 (Gates + Scheduling) — **100% completas** (Tasks #67-#76). Único item parcial: P3.4 Bell notification pendente.
+> Fases 1 (Fluxo Core), 2 (Triagem + Automação) e 3 (Gates + Scheduling) — **100% completas**. Único item parcial: P3.4 Bell notification pendente.
 
 ### Fase 4: COMPLIANCE + INTELIGÊNCIA PROFUNDA
 
