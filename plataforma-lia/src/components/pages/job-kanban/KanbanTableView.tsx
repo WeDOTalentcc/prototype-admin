@@ -325,7 +325,7 @@ export function KanbanTableView({
                 case 'id':
                   return (
                     <div className="text-xs font-mono text-lia-text-secondary dark:text-lia-text-tertiary">
-                      {candidate.candidateCode || candidate.id?.substring(0, 6).toUpperCase()}
+                      {(candidate.candidateCode as string | undefined) || (candidate.id as string | undefined)?.substring(0, 6).toUpperCase()}
                     </div>
                   )
 
@@ -542,7 +542,7 @@ export function KanbanTableView({
                         )}
                       </div>
                       <div className="flex items-center gap-1.5">
-                        {isDemo && (
+                        {!!(isDemo) && (
                           <span className="text-micro font-medium text-lia-text-disabled dark:text-lia-text-tertiary">[D]</span>
                         )}
                         <span className="font-medium text-sm text-lia-text-primary dark:text-lia-text-primary">
@@ -975,7 +975,7 @@ export function KanbanTableView({
               return stage === 'funil' || stage === 'triagem' || candidate.needsAction === true || (candidate.status as string | undefined) === 'triado_aprovado'
             }) as unknown as Parameters<typeof UnifiedCandidateTable>[0]["getNeedsAction"]}
             renderActions={((candidate: KanbanCandidate): React.ReactNode => {
-              const stage = ((candidate.stage as string | undefined) || (candidate.etapa as string | undefined) || 'funil').toLowerCase()
+              const stage: string = ((candidate.stage as string | undefined) || (candidate.etapa as string | undefined) || 'funil').toLowerCase()
               const showApproveReject = stage === 'funil' || stage === 'triagem'
               return (
                 <div className="flex items-center justify-center gap-1" onClick={(e) => e.stopPropagation()}>
@@ -1112,7 +1112,7 @@ export function KanbanTableView({
                         <span className="px-2 text-lia-text-secondary">...</span>
                       )}
                       <Button
-                        variant={currentPage === page ? 'default' : 'outline'}
+                        variant={currentPage === page ? 'secondary' : 'outline'}
                         size="sm"
                         onClick={() => onCurrentPageChange(page)}
                         className="h-8 w-8 p-0"
@@ -1173,13 +1173,13 @@ export function KanbanTableView({
               )
               return currentColumn ? candidatesData[currentColumn].findIndex((c) => c.id === previewCandidate?.id) : 0
             })()}
-            onNavigateCandidate={onNavigateCandidate}
-            onOpenFullPage={onCandidatePageOpen}
-            onScheduleInterview={onScheduleInterview as unknown as Parameters<typeof CandidatePreview>[0]["onScheduleInterview"]}
-            onAddToVacancy={onAddToVacancy as unknown as Parameters<typeof CandidatePreview>[0]["onAddToVacancy"]}
-            onToggleFavorite={onToggleFavorite as unknown as Parameters<typeof CandidatePreview>[0]["onToggleFavorite"]}
-            onWSIScreening={onSendWSIInvite as unknown as Parameters<typeof CandidatePreview>[0]["onWSIScreening"]}
-            onOpenTriagemDetails={onOpenTriagem as unknown as Parameters<typeof CandidatePreview>[0]["onOpenTriagemDetails"]}
+            onNavigateCandidate={onNavigateCandidate as unknown as never}
+            onOpenFullPage={onCandidatePageOpen as unknown as never}
+            onScheduleInterview={onScheduleInterview as unknown as never}
+            onAddToVacancy={onAddToVacancy as unknown as never}
+            onToggleFavorite={onToggleFavorite as unknown as never}
+            onWSIScreening={onSendWSIInvite as unknown as never}
+            onOpenTriagemDetails={onOpenTriagem as unknown as never}
             isFavorite={previewCandidate ? favoriteCandidates.has(previewCandidate.id as string) : false}
             onSendEmail={(candidate) => onSendEmail(candidate as unknown as Parameters<typeof onSendEmail>[0])}
             onSendWhatsApp={(candidate) => onSendWhatsApp(candidate as unknown as Parameters<typeof onSendWhatsApp>[0])}

@@ -215,7 +215,7 @@ export function useKanbanTableView({
         case 'testeIngles': aVal = (a.englishTestScore as number) || 0; bVal = (b.englishTestScore as number) || 0; break
         case 'location': aVal = ((a.location as string) || '').toLowerCase(); bVal = ((b.location as string) || '').toLowerCase(); break
         case 'stage': aVal = ((a.stage as string) || '').toLowerCase(); bVal = ((b.stage as string) || '').toLowerCase(); break
-        default: aVal = calculateNotaLiaGeral(a); bVal = calculateNotaLiaGeral(b)
+        default: aVal = calculateNotaLiaGeral(a as unknown as Parameters<typeof calculateNotaLiaGeral>[0]); bVal = calculateNotaLiaGeral(b as unknown as Parameters<typeof calculateNotaLiaGeral>[0])
       }
       if (aVal < bVal) return tableSortDirection === 'asc' ? -1 : 1
       if (aVal > bVal) return tableSortDirection === 'asc' ? 1 : -1
