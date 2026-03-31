@@ -1,0 +1,165 @@
+"use client"
+import React from "react"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Filter, X } from "lucide-react"
+import { textStyles } from "@/lib/design-tokens"
+
+interface DynamicStageItem {
+  id: string
+  name: string
+  displayName: string
+  color?: string
+}
+
+export interface KanbanTableFiltersPanelProps {
+  onShowTableFiltersPanelChange: (value: boolean) => void
+  dynamicStages: DynamicStageItem[]
+  tableStageFilter: string[]
+  onTableStageFilterChange: (value: string[]) => void
+}
+
+export const KanbanTableFiltersPanel = React.memo(function KanbanTableFiltersPanel({
+  onShowTableFiltersPanelChange,
+  dynamicStages,
+  tableStageFilter,
+  onTableStageFilterChange,
+}: KanbanTableFiltersPanelProps) {
+  return (
+    <div className="flex-shrink-0 w-72 transition-colors motion-reduce:transition-none duration-300">
+      <Card className="h-[calc(100vh-12rem)] flex flex-col overflow-hidden border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
+        {/* Header do Painel de Filtros */}
+        <div className="flex-shrink-0 p-4 border-b border-lia-border-subtle">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-lia-text-secondary" />
+              <h3 className={textStyles.title}>
+                Filtros Avançados
+              </h3>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onShowTableFiltersPanelChange(false)}
+              className="h-7 w-7 p-0 hover:bg-gray-100"
+            >
+              <X className="w-4 h-4 text-lia-text-secondary" />
+            </Button>
+          </div>
+          <p className={`${textStyles.description} mt-1`}>
+            Refine os candidatos exibidos
+          </p>
+        </div>
+
+        {/* Conteúdo dos Filtros - Scrollable */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {/* Filtro por Etapa */}
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
+              Etapa do Pipeline
+            </label>
+            <div className="space-y-1.5">
+              {dynamicStages.map((stage) => (
+                <label key={stage.id} className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={tableStageFilter.includes(stage.id)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        onTableStageFilterChange([...tableStageFilter, stage.id])
+                      } else {
+                        onTableStageFilterChange(tableStageFilter.filter(s => s !== stage.id))
+                      }
+                    }}
+                    className="w-3.5 h-3.5 rounded-md border-lia-border-default text-lia-text-primary focus:ring-gray-900/20"
+                  />
+                  <span className="text-xs text-lia-text-secondary">
+                    {stage.displayName}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Filtro por Score LIA */}
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
+              Score LIA Mínimo
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="range"
+                min="0"
+                max="100"
+                defaultValue="0"
+                className="flex-1 h-1.5 bg-gray-200 rounded-md appearance-none cursor-pointer accent-gray-900"
+              />
+              <span className="text-xs text-lia-text-secondary w-8 text-right">0%</span>
+            </div>
+          </div>
+
+          {/* Filtro por Status */}
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
+              Status
+            </label>
+            <div className="space-y-1.5">
+              {['Novo', 'Em análise', 'Aguardando aprovação', 'Triado aprovado', 'Negociação'].map((status) => (
+                <label key={status} className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="w-3.5 h-3.5 rounded-md border-lia-border-default text-lia-text-primary focus:ring-gray-900/20"
+                  />
+                  <span className="text-xs text-lia-text-secondary">
+                    {status}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Filtro por Modelo de Trabalho */}
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
+              Modelo de Trabalho
+            </label>
+            <div className="space-y-1.5">
+              {['Remoto', 'Híbrido', 'Presencial'].map((modelo) => (
+                <label key={modelo} className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="w-3.5 h-3.5 rounded-md border-lia-border-default text-lia-text-primary focus:ring-gray-900/20"
+                  />
+                  <span className="text-xs text-lia-text-secondary">
+                    {modelo}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer com Ações */}
+        <div className="flex-shrink-0 p-4 border-t border-lia-border-subtle bg-gray-50">
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                onTableStageFilterChange([])
+              }}
+              className="flex-1 px-3 py-2 text-xs font-medium text-lia-text-secondary bg-lia-bg-primary border border-lia-border-subtle rounded-md hover:bg-gray-50 transition-colors motion-reduce:transition-none"
+            >
+              Limpar
+            </button>
+            <button
+              onClick={() => onShowTableFiltersPanelChange(false)}
+              className="flex-1 px-3 py-2 text-xs font-medium text-white rounded-md transition-colors motion-reduce:transition-none bg-gray-800"
+            >
+              Aplicar
+            </button>
+          </div>
+        </div>
+      </Card>
+    </div>
+  )
+})
+KanbanTableFiltersPanel.displayName = "KanbanTableFiltersPanel"
