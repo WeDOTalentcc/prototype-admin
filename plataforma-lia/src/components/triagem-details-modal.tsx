@@ -973,7 +973,7 @@ export function TriagemDetailsModal({
                             feedback.next_steps || '',
                           ] : []),
                   
-                          ...(f11Feedback.length > 0 ? (feedback ? ['', '--- Avaliação detalhada ---'] : []).concat(f11Feedback) : []),
+                          ...(f11Feedback.length > 0 ? (feedback ? ['', '--- Avaliação detalhada ---'] : []).concat(f11Feedback.filter((x): x is string => Boolean(x))) : []),
                         ].filter(Boolean).join('\n')
                         navigator.clipboard.writeText(text)
                         setCopiedFeedback(true)
