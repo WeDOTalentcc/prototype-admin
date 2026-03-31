@@ -1,9 +1,9 @@
 "use client"
 
-import React from "react"
+import React, { useState } from "react"
 import { cn } from "@/lib/utils"
 import { LIAIcon } from "@/components/ui/lia-icon"
-import { Clock, Shield, Mic } from "lucide-react"
+import { Clock, Shield, Mic, CheckSquare, Square } from "lucide-react"
 import type { TriagemConfig } from "@/components/triagem/types"
 
 interface WelcomeCardProps {
@@ -14,6 +14,8 @@ interface WelcomeCardProps {
 }
 
 export function WelcomeCard({ config, onStart, isStarting = false, className }: WelcomeCardProps) {
+  const [consentChecked, setConsentChecked] = useState(false)
+
   return (
     <div
       className={cn(
@@ -60,11 +62,44 @@ export function WelcomeCard({ config, onStart, isStarting = false, className }: 
           </span>
         </div>
 
+        <label
+          className="flex items-start gap-3 cursor-pointer group"
+          htmlFor="lgpd-consent"
+        >
+          <button
+            type="button"
+            id="lgpd-consent"
+            role="checkbox"
+            aria-checked={consentChecked}
+            onClick={() => setConsentChecked(!consentChecked)}
+            className="mt-0.5 flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 rounded"
+          >
+            {consentChecked ? (
+              <CheckSquare className="w-5 h-5 text-lia-btn-primary-bg" />
+            ) : (
+              <Square className="w-5 h-5 text-lia-text-tertiary dark:text-lia-text-tertiary group-hover:text-lia-text-secondary transition-colors" />
+            )}
+          </button>
+          <span className="text-xs text-lia-text-secondary dark:text-lia-text-secondary font-['Open_Sans',sans-serif] leading-relaxed select-none">
+            Concordo com o tratamento dos meus dados pessoais para fins desta triagem, conforme a{" "}
+            <a
+              href={config.privacyPolicyUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline text-lia-text-primary dark:text-lia-text-primary hover:text-wedo-cyan transition-colors"
+              onClick={(e) => e.stopPropagation()}
+            >
+              Política de Privacidade
+            </a>{" "}
+            e a Lei Geral de Proteção de Dados (LGPD).
+          </span>
+        </label>
+
         <div className="space-y-3">
           <button
             type="button"
             onClick={() => onStart(false)}
-            disabled={isStarting}
+            disabled={isStarting || !consentChecked}
             aria-label="Iniciar conversa de triagem por texto"
             className="w-full h-11 flex items-center justify-center rounded-lg bg-lia-btn-primary-bg text-lia-btn-primary-text text-sm font-medium hover:bg-lia-btn-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none font-['Open_Sans',sans-serif]"
           >
@@ -75,7 +110,7 @@ export function WelcomeCard({ config, onStart, isStarting = false, className }: 
             <button
               type="button"
               onClick={() => onStart(true)}
-              disabled={isStarting}
+              disabled={isStarting || !consentChecked}
               aria-label="Iniciar conversa de triagem por voz"
               className="w-full h-11 flex items-center justify-center gap-2 rounded-lg border border-lia-border-default dark:border-lia-border-default bg-transparent text-lia-text-primary dark:text-lia-text-primary text-sm font-medium hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-elevated disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none font-['Open_Sans',sans-serif]"
             >

@@ -232,7 +232,7 @@ A plataforma LIA Alpha 1 apresenta **maturidade alta** na camada de backend (age
 | I7 | Explainability | Agent explainability endpoints | OK |
 | I8 | Rate limiting | RateLimitMiddleware + Policy Engine rate rules | OK |
 
-**Finding GOV-01 (MEDIUM):** Audit Trail (I3) exists as service but is not systematically activated at all pipeline touchpoints. Currently active at orchestrator level but not at JD generation, WSI question generation, or individual gate transitions.
+**Finding GOV-01 (MEDIUM) — FIXED (Task #76):** Audit Trail (I3) exists as service but was not systematically activated at all pipeline touchpoints. **Fix:** Added `audit_service.log_decision()` calls to JD generation (`/jd/generate`) and WSI question generation (`/wsi/generate-questions`) endpoints. Audit trail now covers orchestrator, JD generation, and WSI question generation touchpoints.
 
 ### 4.3 18 Production Readiness Checks
 
@@ -283,7 +283,7 @@ A plataforma LIA Alpha 1 apresenta **maturidade alta** na camada de backend (age
 
 ### 5.3 LGPD Findings
 
-**Finding LGPD-01 (LOW):** Consent flow exists as API endpoints but the frontend enforcement (blocking triagem without explicit consent) relies on the WelcomeCard's "Iniciar" button as implicit consent. A more explicit checkbox or consent modal would strengthen compliance.
+**Finding LGPD-01 (LOW) — FIXED (Task #76):** Consent flow existed as API endpoints but the frontend relied on implicit consent via "Iniciar" button. **Fix:** Added explicit LGPD consent checkbox to `WelcomeCard.tsx` — "Iniciar" buttons are now disabled until the candidate checks the consent box acknowledging data processing under LGPD.
 
 **Finding LGPD-02 (INFO):** `CandidateQuarantine` (3-month no-contact rule) is implemented in `CommunicationService` — good practice.
 
@@ -342,7 +342,7 @@ Includes proxy detection for: "boa aparência", "bairros nobres", "universidades
 
 **Finding DEI-01 (INFO):** FairnessGuard L3 `check_with_sector()` is correctly integrated in 5 services: RAG pipeline, pipeline transition agent, rubric evaluation, communication tools, and sourcing agent. Good coverage.
 
-**Finding DEI-02 (LOW):** `check_rejection_fairness` is registered as a tool (on-demand) but not automatically triggered on all rejections. The Kanban tool registry has it, but automatic invocation depends on the agent choosing to call it.
+**Finding DEI-02 (LOW) — FIXED (Task #76):** `check_rejection_fairness` was registered as a tool (on-demand) but not automatically triggered. **Fix:** `reject_candidate()` in `candidate_tools.py` now auto-invokes `FairnessGuard.check()` before any rejection. If explicit bias is detected, the rejection is blocked with an educational message. Implicit bias warnings are included in the response.
 
 ---
 
@@ -408,12 +408,12 @@ Includes proxy detection for: "boa aparência", "bairros nobres", "universidades
 | CRITICAL | ARCH-04 | Architecture | `RAGPipelineService.search()` missing `**kwargs` — LLM Classification + FG L3 sector check silently skipped | **FIXED** (Task #74) |
 | MEDIUM | ARCH-05 | Architecture | Template Learning data source mismatch (`MessageQueue` vs `CommunicationLog`) | **FIXED** (Task #74) |
 | MEDIUM | DS-01 | Design | Card `rounded-md` should be `rounded-xl` per DS v4.2.1 | **FIXED** (Task #75) |
-| MEDIUM | GOV-01 | Governance | Audit Trail not systematically activated at all touchpoints | PENDING (Task #76) |
+| MEDIUM | GOV-01 | Governance | Audit Trail not systematically activated at all touchpoints | **FIXED** (Task #76) |
 | LOW | ARCH-06 | Architecture | Middleware order: 429 responses may lack CORS headers | **FIXED** (Task #74) |
 | LOW | DS-02 | Design | `ChatContainer` missing `dark:bg-lia-bg-primary` | **FIXED** (Task #75) |
 | LOW | DS-03 | Design | Buttons use `bg-gray-900` instead of semantic token | **FIXED** (Task #75) |
-| LOW | LGPD-01 | LGPD | Consent flow could be more explicit (checkbox) | PENDING (Task #76) |
-| LOW | DEI-02 | DEI | `check_rejection_fairness` not auto-triggered | PENDING (Task #76) |
+| LOW | LGPD-01 | LGPD | Consent flow could be more explicit (checkbox) | **FIXED** (Task #76) |
+| LOW | DEI-02 | DEI | `check_rejection_fairness` not auto-triggered | **FIXED** (Task #76) |
 | LOW | ARCH-02 | Architecture | Legacy `EmailService` class should be deprecated | **FIXED** (Task #74) |
 | INFO | DS-04 | Design | Non-standard max-width in ChatContainer | **ACKNOWLEDGED** (Task #75) — intentional for focused triagem UX |
 | INFO | LGPD-02 | LGPD | CandidateQuarantine well-implemented | N/A |
@@ -482,15 +482,15 @@ Includes proxy detection for: "boa aparência", "bairros nobres", "universidades
 ### 10.2 Priority Fixes (for next sprint)
 
 3. **DS-01:** Update triagem card components from `rounded-md` to `rounded-xl`
-4. **GOV-01:** Activate AuditService at JD generation, WSI question generation, and gate transitions
+4. **GOV-01:** ~~Activate AuditService at JD generation, WSI question generation, and gate transitions~~ **FIXED** (Task #76)
 5. **F-PERF-01:** Add caching for LLM Job Classification results (per job_id, TTL 1h)
 
 ### 10.3 Future Improvements
 
 6. **ARCH-06:** Reorder middleware so CORS executes before rate limiting
 7. **DS-02/DS-03:** Align dark mode and button tokens with DS v4.2.1
-8. **LGPD-01:** Add explicit consent checkbox before triagem
-9. **DEI-02:** Make `check_rejection_fairness` automatic on all rejections
+8. **LGPD-01:** ~~Add explicit consent checkbox before triagem~~ **FIXED** (Task #76)
+9. **DEI-02:** ~~Make `check_rejection_fairness` automatic on all rejections~~ **FIXED** (Task #76)
 10. **ARCH-02:** Deprecate legacy `EmailService` class
 
 ---

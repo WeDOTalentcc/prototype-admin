@@ -18,6 +18,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field, validator
 
 from app.shared.compliance.fairness_guard_middleware import check_fairness
+from app.shared.compliance.audit_service import audit_service
 
 router = APIRouter(prefix="/wsi", tags=["WSI Questions"])
 logger = logging.getLogger(__name__)
@@ -496,6 +497,25 @@ async def generate_wsi_questions(request: GenerateQuestionsRequest):
         for q in filtered_questions:
             bid = q.block_id or (3 if q.skill_type == "technical" else 4)
             block_distribution[bid] = block_distribution.get(bid, 0) + 1
+
+        try:
+            await audit_service.log_decision(
+                company_id=request.company_id or "default",
+                agent_name="wsi_question_generator",
+                decision_type="generate_wsi_questions",
+                action="generate_questions",
+                decision="generated",
+                reasoning=[
+                    f"WSI questions geradas para '{request.job_title}'",
+                    f"Total: {len(filtered_questions)} aprovadas, {fg_removed} removidas por FairnessGuard",
+                ],
+                criteria_used=["technical_skills", "behavioral_competencies", "seniority", "department"],
+                job_vacancy_id=None,
+                confidence=1.0,
+                human_review_required=False,
+            )
+        except Exception as audit_err:
+            logger.warning("GOV-01: audit log failed for WSI generation: %s", audit_err)
 
         return QuestionsResponse(
             success=True,

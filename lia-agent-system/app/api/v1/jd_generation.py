@@ -5,6 +5,7 @@ from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.services.jd_generator_service import jd_generator_service
 from app.shared.compliance.fairness_guard_middleware import check_fairness
+from app.shared.compliance.audit_service import audit_service
 import logging
 
 logger = logging.getLogger(__name__)
@@ -135,6 +136,25 @@ async def generate_jd(
                 "blocked": False,
                 "warnings": fg_output.warnings,
             }
+
+        try:
+            await audit_service.log_decision(
+                company_id=request.company_id or "default",
+                agent_name="jd_generator",
+                decision_type="generate_jd",
+                action="generate_full_description",
+                decision="generated",
+                reasoning=[
+                    f"JD gerada para '{request.job_title}'",
+                    f"FairnessGuard: {'warnings' if (fg_output and fg_output.has_warnings) else 'passed'}",
+                ],
+                criteria_used=["job_title", "department", "seniority", "responsibilities", "technical_skills", "behavioral_competencies"],
+                job_vacancy_id=None,
+                confidence=1.0,
+                human_review_required=False,
+            )
+        except Exception as audit_err:
+            logger.warning("GOV-01: audit log failed for JD generation: %s", audit_err)
 
         return response
     except HTTPException:

@@ -16,12 +16,14 @@ import { CookieConsent } from "@/components/ui/cookie-consent"
 
 const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-inter"
+  variable: "--font-inter",
+  display: "swap"
 });
 
 const openSans = Open_Sans({
   subsets: ["latin"],
-  variable: "--font-open-sans"
+  variable: "--font-open-sans",
+  display: "swap"
 });
 
 const crimsonText = Crimson_Text({
@@ -83,7 +85,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <head suppressHydrationWarning />
+      <head suppressHydrationWarning>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+      </head>
       
       <body 
         className={`${inter.variable} ${openSans.variable} ${crimsonText.variable} antialiased`}

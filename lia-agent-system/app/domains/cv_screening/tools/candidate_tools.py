@@ -372,6 +372,27 @@ async def reject_candidate(
     """
     logger.info(f"❌ Rejecting candidate {candidate_id} from job {job_id}")
     
+    from app.shared.compliance.fairness_guard import FairnessGuard
+    _fg = FairnessGuard()
+    fg_explicit = _fg.check(reason)
+    if fg_explicit.is_blocked:
+        logger.warning(
+            "DEI-02: rejection blocked by FairnessGuard — explicit bias detected "
+            "candidate=%s category=%s terms=%s",
+            candidate_id, fg_explicit.category, fg_explicit.blocked_terms,
+        )
+        return {
+            "success": False,
+            "blocked_by_fairness": True,
+            "message": f"⚠️ Rejeição bloqueada: motivo contém viés discriminatório ({fg_explicit.category}). "
+                       f"Por favor, reformule o motivo da rejeição.",
+            "educational_message": fg_explicit.educational_message,
+            "category": fg_explicit.category,
+        }
+    fg_implicit = _fg.check_implicit_bias(reason)
+    if fg_implicit:
+        logger.info("DEI-02: implicit bias warnings for rejection of candidate=%s: %s", candidate_id, fg_implicit)
+
     try:
         from app.core.database import AsyncSessionLocal
         from sqlalchemy import select
@@ -414,11 +435,12 @@ async def reject_candidate(
                     except Exception as emb_exc:
                         logger.warning("Gate 2: failed to dispatch embedding: %s", emb_exc)
 
-                    return {
+                    rejection_result = {
                         "success": True,
                         "message": f"✅ {candidate_name} foi rejeitado. Motivo: {reason}",
                         "action_taken": "reject_candidate",
                         "affected_entities": [candidate_id],
+                        "fairness_checked": True,
                         "data": {
                             "candidate_id": candidate_id,
                             "candidate_name": candidate_name,
@@ -428,6 +450,9 @@ async def reject_candidate(
                             "new_stage": "Reprovado"
                         }
                     }
+                    if fg_implicit:
+                        rejection_result["fairness_warnings"] = fg_implicit
+                    return rejection_result
 
                 return {
                     "success": True,
