@@ -53,8 +53,7 @@
              │  • Selecionar/ajustar perguntas de triagem                      │
              │  • 🤖 JDGeneratorService [job_management] (LLM) gera/ajusta JD  │
              │  • 🤖 WSIQuestionGeneratorService [cv_screening] (Gemini LLM)   │
-             │    gera perguntas WSI — NÃO é Ag.4                              │
-             │  • Ag.4 EntrevistadorWSI só conduz a entrevista (E7)            │
+             │    gera perguntas WSI                                            │
              │                                                                  │
              │                              3B. GERAR PERGUNTAS WSI             │
              │  ◄────────────────────────────────────────────────────────────── │
@@ -100,7 +99,6 @@
              │    - 🤖 Ag.2 SourcingReActAgent [sourcing]                        │
              │      (busca/perfis similares)                                    │
              │    - 🤖 WSIScreeningPipeline [cv_screening] (triagem/screening) │
-             │      (NÃO é agente — é serviço; "Ag.3" do fluxo original)      │
              │    - 🤖 WSIService [cv_screening] (análise/comparação/ranking)  │
              │  • Pearch + Apify (captura emails + enriquecimento)             │
              │  • Email OBRIGATÓRIO | Telefone opcional                         │
