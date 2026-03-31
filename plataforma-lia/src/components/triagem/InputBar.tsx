@@ -17,6 +17,7 @@ interface InputBarProps {
   isMuted?: boolean
   onToggleMute?: () => void
   onEndConversation?: () => void
+  transcriptionUrl?: string
 }
 
 export function InputBar({
@@ -31,6 +32,7 @@ export function InputBar({
   isMuted = false,
   onToggleMute,
   onEndConversation,
+  transcriptionUrl,
 }: InputBarProps) {
   const [text, setText] = useState("")
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -137,6 +139,7 @@ export function InputBar({
           <AudioRecordButton
             onTranscription={handleTranscription}
             disabled={isDisabled}
+            transcriptionUrl={transcriptionUrl}
           />
         )}
 

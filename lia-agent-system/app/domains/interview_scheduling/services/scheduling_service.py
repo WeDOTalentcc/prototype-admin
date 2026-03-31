@@ -1027,7 +1027,18 @@ class SchedulingService:
                 logger.info(f"📧 Interview confirmation sent to {candidate_email}")
                 logger.info(f"   Date: {data_entrevista} at {horario_entrevista}")
                 logger.info(f"   Meeting Link: {interview_link}")
-                
+
+                try:
+                    from app.domains.communication.services.teams_bot import teams_bot
+                    await teams_bot.notify_scheduling_confirmed(
+                        candidate_name=candidate_name,
+                        job_title=job_title,
+                        interview_date=data_entrevista,
+                        interview_time=horario_entrevista,
+                    )
+                except Exception as teams_err:
+                    logger.warning(f"Teams scheduling notification failed: {teams_err}")
+
                 return {
                     "success": True,
                     "message": "Confirmação de entrevista enviada com sucesso",

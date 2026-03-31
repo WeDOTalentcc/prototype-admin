@@ -285,17 +285,23 @@ async def _generate_rediscovery_embedding(
     """
     Gate 2 re-discovery: generate an embedding for a rejected candidate
     so they can be matched to future vacancies via vector search.
+
+    Uses a deterministic candidate-specific UUID (uuid5 of candidate_id)
+    to avoid overwriting the original vacancy embedding.
     """
     try:
+        import uuid as _uuid
         from app.domains.job_management.services.job_embedding_service import JobEmbeddingService
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, text
+        from sqlalchemy import text
 
         embedding_svc = JobEmbeddingService()
 
         candidate_name = getattr(candidate, "name", "") if candidate else ""
         skills: List[str] = []
         description = ""
+        job_title = candidate_name
+        department = ""
 
         async with AsyncSessionLocal() as db:
             try:
@@ -314,14 +320,18 @@ async def _generate_rediscovery_embedding(
                     job_title = data.get("job_title") or candidate_name
                     department = data.get("department") or ""
             except Exception:
-                job_title = candidate_name
-                department = ""
+                pass
 
         company_id = str(getattr(candidate, "company_id", "default")) if candidate else "default"
 
+        candidate_embedding_id = str(_uuid.uuid5(
+            _uuid.NAMESPACE_DNS,
+            f"candidate-embedding-{candidate_id}-{job_id}",
+        ))
+
         await embedding_svc.create_or_update_job_embedding(
             company_id=company_id,
-            job_id=job_id,
+            job_id=candidate_embedding_id,
             job_title=f"[Candidato] {candidate_name or candidate_id}",
             department=department if department else None,
             skills=skills,
@@ -329,8 +339,9 @@ async def _generate_rediscovery_embedding(
             outcome_status="rejected_gate2",
         )
         logger.info(
-            "Gate 2 embedding created for rejected candidate %s (job %s)",
-            candidate_id, job_id,
+            "Gate 2 embedding created for rejected candidate %s "
+            "(embedding_id=%s, original_job=%s)",
+            candidate_id, candidate_embedding_id, job_id,
         )
     except Exception as exc:
         logger.warning("Gate 2 embedding generation failed for %s: %s", candidate_id, exc)

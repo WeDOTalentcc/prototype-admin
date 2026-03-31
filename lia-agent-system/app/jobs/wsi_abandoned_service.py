@@ -73,13 +73,13 @@ async def check_abandoned_sessions(db: AsyncSession) -> dict[str, int]:
                 continue
 
             if age_hours >= SECOND_REMINDER_HOURS and reminder_count < 2:
-                # 2º lembrete: candidato + recruiter
                 await _send_candidate_reminder(db, candidate_id, job_vacancy_id, session_id, reminder_num=2)
                 await _notify_recruiter_abandoned(db, candidate_id, job_vacancy_id, session_id)
+                await _send_teams_timeout_notification(candidate_id, job_vacancy_id, session_id, age_hours)
                 await _increment_reminder_count(db, session_id, 2)
                 second_reminders += 1
                 logger.info(
-                    "[wsi-abandoned] 2º lembrete session=%s candidate=%s", session_id, candidate_id
+                    "[wsi-abandoned] 2º lembrete + Teams timeout session=%s candidate=%s", session_id, candidate_id
                 )
 
             elif age_hours >= FIRST_REMINDER_HOURS and reminder_count < 1:
@@ -243,3 +243,22 @@ async def _increment_reminder_count(
         logger.warning(
             "[wsi-abandoned] erro ao atualizar reminder_count session=%s: %s", session_id, exc
         )
+
+
+async def _send_teams_timeout_notification(
+    candidate_id: str,
+    job_vacancy_id: str | None,
+    session_id: str,
+    age_hours: float,
+) -> None:
+    """Send a Teams notification when a candidate times out on WSI."""
+    try:
+        from app.domains.communication.services.teams_bot import teams_bot
+        await teams_bot.notify_candidate_timeout(
+            candidate_name=candidate_id,
+            job_title=job_vacancy_id or "N/A",
+            idle_hours=round(age_hours, 1),
+            session_id=session_id,
+        )
+    except Exception as exc:
+        logger.warning("[wsi-abandoned] Teams timeout notification failed session=%s: %s", session_id, exc)

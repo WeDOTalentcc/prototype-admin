@@ -51,27 +51,35 @@ export async function POST(
   try {
     const { path } = await params
     const pathStr = path.join("/")
-    let body: string | undefined
     const contentType = request.headers.get("content-type") || ""
+    const backendUrl = `${BACKEND_URL}/api/v1/triagem/${pathStr}`
 
-    if (contentType.includes("application/json")) {
-      try {
-        const jsonBody = await request.json()
-        body = JSON.stringify(jsonBody)
-      } catch {
-        body = undefined
+    let fetchOptions: RequestInit
+
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await request.formData()
+      fetchOptions = {
+        method: "POST",
+        body: formData,
+      }
+    } else {
+      let body: string | undefined
+      if (contentType.includes("application/json")) {
+        try {
+          const jsonBody = await request.json()
+          body = JSON.stringify(jsonBody)
+        } catch {
+          body = undefined
+        }
+      }
+      fetchOptions = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body,
       }
     }
 
-    const backendUrl = `${BACKEND_URL}/api/v1/triagem/${pathStr}`
-
-    const response = await fetch(backendUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body,
-    })
+    const response = await fetch(backendUrl, fetchOptions)
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))

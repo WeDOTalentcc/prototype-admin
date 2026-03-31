@@ -12,6 +12,7 @@ interface AudioRecordButtonProps {
   disabled?: boolean
   className?: string
   maxDuration?: number
+  transcriptionUrl?: string
 }
 
 export function AudioRecordButton({
@@ -21,6 +22,7 @@ export function AudioRecordButton({
   disabled = false,
   className,
   maxDuration = 60,
+  transcriptionUrl = "/api/backend-proxy/transcribe/audio",
 }: AudioRecordButtonProps) {
   const [isRecording, setIsRecording] = useState(false)
   const [isTranscribing, setIsTranscribing] = useState(false)
@@ -118,7 +120,7 @@ export function AudioRecordButton({
       const formData = new FormData()
       formData.append("audio", audioBlob, "recording.webm")
 
-      const response = await fetch("/api/backend-proxy/transcribe/audio", {
+      const response = await fetch(transcriptionUrl, {
         method: "POST",
         body: formData,
       })

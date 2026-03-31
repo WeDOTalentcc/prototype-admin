@@ -874,12 +874,21 @@ class TriagemSessionService:
             actions["email_confirmation"] = "failed"
 
         try:
+            from app.domains.communication.services.teams_bot import teams_bot
+            await teams_bot.notify_triagem_completed(
+                candidate_name=session.candidate_name or "Candidato",
+                job_title=session.job_title or "Vaga",
+                score=session.wsi_final_score,
+                recommendation=session.recommendation or "pendente",
+                session_id=session.token,
+            )
+            actions["recruiter_notification"] = "sent"
             logger.info(
-                f"[Triagem] Recruiter notification queued: "
+                f"[Triagem] Recruiter Teams notification sent: "
                 f"'Candidato {session.candidate_name} concluiu triagem (score: {session.wsi_final_score})'"
             )
         except Exception as e:
-            logger.warning(f"[Triagem] Failed to queue recruiter notification: {e}")
+            logger.warning(f"[Triagem] Failed to send Teams recruiter notification: {e}")
             actions["recruiter_notification"] = "failed"
 
         try:

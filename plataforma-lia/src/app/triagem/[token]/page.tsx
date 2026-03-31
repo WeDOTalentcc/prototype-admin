@@ -283,6 +283,7 @@ export default function TriagemPage() {
           isMuted={isMuted}
           onToggleMute={handleToggleMute}
           onEndConversation={handleEndConversation}
+          transcriptionUrl={`/api/backend-proxy/triagem/${token}/audio`}
         />
       )}
 
