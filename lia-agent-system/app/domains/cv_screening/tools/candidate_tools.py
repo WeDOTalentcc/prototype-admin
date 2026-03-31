@@ -316,7 +316,20 @@ async def reject_candidate(
                 candidate = result.scalar_one_or_none()
                 
                 candidate_name = getattr(candidate, 'name', 'Candidato') if candidate else 'Candidato'
-                
+
+                if send_feedback and candidate:
+                    try:
+                        from app.jobs.celery_tasks import feedback_generate_and_send_task
+                        feedback_generate_and_send_task.delay(
+                            candidate_id=candidate_id,
+                            job_id=job_id,
+                            reason=reason,
+                            company_id=str(getattr(candidate, 'company_id', 'default')),
+                        )
+                        logger.info("Dispatched rejection feedback for candidate %s", candidate_id)
+                    except Exception as fb_exc:
+                        logger.warning("Failed to dispatch rejection feedback: %s", fb_exc)
+
                 return {
                     "success": True,
                     "requires_confirmation": True,

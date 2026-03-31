@@ -660,6 +660,84 @@ def wsi_check_abandoned_task(self) -> dict:
 
 
 
+@celery_app.task(name="feedback.generate_and_send", bind=True, max_retries=2)
+def feedback_generate_and_send_task(
+    self, candidate_id: str, job_id: str, reason: str, company_id: str = "default"
+) -> dict:
+    """
+    Generate rejection feedback and auto-send (email + WhatsApp).
+
+    Called from reject_candidate tool. Generates personalized feedback
+    with auto_send=True and channel=BOTH, which triggers immediate
+    dispatch via feedback.auto_send after FairnessGuard passes.
+    """
+    async def _run() -> dict:
+        from app.core.database import AsyncSessionLocal
+        from sqlalchemy import select
+        from app.models.candidate import Candidate
+        from app.domains.cv_screening.services.personalized_feedback_service import (
+            PersonalizedFeedbackRequest,
+            CandidateContext,
+            JobContext,
+            WSIEvaluationContext,
+            FeedbackChannel,
+            personalized_feedback_service,
+        )
+
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(
+                select(Candidate).where(Candidate.id == candidate_id)
+            )
+            candidate = result.scalar_one_or_none()
+            if not candidate:
+                return {"success": False, "reason": "candidate_not_found"}
+
+            candidate_ctx = CandidateContext(
+                candidate_id=candidate_id,
+                name=getattr(candidate, "name", "Candidato"),
+                email=getattr(candidate, "email", None) or "",
+                phone=getattr(candidate, "phone", None),
+            )
+
+            job_ctx = JobContext(
+                job_id=job_id,
+                title=getattr(candidate, "applied_job_title", "Vaga"),
+                seniority_level=None,
+            )
+
+            eval_ctx = WSIEvaluationContext(
+                overall_wsi=getattr(candidate, "wsi_score", 0.0) or 0.0,
+                classification="REPROVADO",
+                strengths=[],
+                development_areas=[reason] if reason else [],
+            )
+
+            request = PersonalizedFeedbackRequest(
+                candidate=candidate_ctx,
+                job=job_ctx,
+                evaluation=eval_ctx,
+                channel=FeedbackChannel.BOTH,
+                auto_send=True,
+                company_id=company_id,
+                decision_type="REPROVADO",
+            )
+
+            fb_result = await personalized_feedback_service.generate_personalized_feedback(
+                request=request, db=db
+            )
+            return {
+                "success": True,
+                "feedback_id": fb_result.feedback_id,
+                "auto_sent": True,
+            }
+
+    try:
+        return asyncio.run(_run())
+    except Exception as exc:
+        logger.error("feedback.generate_and_send failed: %s", exc)
+        raise self.retry(exc=exc, countdown=60)
+
+
 @celery_app.task(name="feedback.auto_send", bind=True, max_retries=3)
 def feedback_auto_send_task(self, feedback_id: str, company_id: str) -> dict:
     """
