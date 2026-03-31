@@ -19,24 +19,16 @@ import {
   X,
   Briefcase,
   Users,
-  Calendar,
-  FileText,
-  DollarSign,
-  Layers,
   Settings,
   Plus,
   Trash2,
-  GripVertical,
-  Building,
   Save,
   Shield,
   Globe,
   Lock,
-  AlertTriangle,
   Heart,
   Linkedin,
   ExternalLink,
-  CheckCircle,
   Target,
   Languages,
   UserPlus,
@@ -46,22 +38,15 @@ import {
   Download,
   Check,
   Loader2,
-  ClipboardList,
 } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { liaApi, type JobVacancy } from "@/services/lia-api"
 import type { CompanyBenefit } from '@/types/benefits'
 import {
-  WORK_MODELS,
-  CONTRACT_TYPES,
-  SENIORITY_LEVELS,
   STATUS_OPTIONS,
   STAGE_OPTIONS,
   VISIBILITY_OPTIONS,
-  TECH_CATEGORIES,
-  SKILL_LEVELS,
-  COMPETENCY_WEIGHTS,
   inputStyle,
   selectTriggerStyle,
 } from './edit-job-modal.constants'
