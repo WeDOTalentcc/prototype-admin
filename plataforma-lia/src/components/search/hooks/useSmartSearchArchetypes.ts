@@ -10,7 +10,7 @@ export interface ArchetypeState {
   archetypeSearch: string
   archetypeTab: "list" | "create"
   archetypeCreateMode: "job" | "description"
-  closedJobSuggestions: any[]
+  closedJobSuggestions: ArchetypeVacancy[]
   isLoadingClosedJobs: boolean
   jobSearchQuery: string
   jobSearchResults: Array<{
@@ -26,7 +26,7 @@ export interface ArchetypeState {
   isSearchingJobs: boolean
   archetypeDescription: string
   isCreatingArchetype: boolean
-  editingArchetype: any | null
+  editingArchetype: ArchetypeVacancy | null
   editArchetypeName: string
   editArchetypeQuery: string
   editArchetypeDescription: string

@@ -8,7 +8,7 @@ import { liaApi } from "@/services/lia-api"
 export default function JobPage() {
   const params = useParams()
   const jobId = params?.id as string
-  const [jobData, setJobData] = useState<any>(null)
+  const [jobData, setJobData] = useState<Record<string, unknown> | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 

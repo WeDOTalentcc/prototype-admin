@@ -17,7 +17,7 @@ import {
   BarChart3, Layout, Target, Edit, Plus, LineChart,
   Calendar as CalendarIcon,
 } from "lucide-react"
-import type { RecruiterData, ViewMode, TeamMetrics } from "../indicators.types"
+import type { RecruiterData, ViewMode, TeamMetrics, ActiveTab } from "../indicators.types"
 
 interface RecruitersTabProps {
   recruiters: RecruiterData[]
@@ -39,7 +39,7 @@ interface RecruitersTabProps {
   sortOrder: "asc" | "desc"
   setSortOrder: (v: "asc" | "desc") => void
   getStatusColor: (status: string) => string
-  setActiveTab: (tab: any) => void
+  setActiveTab: (tab: ActiveTab) => void
 }
 
 function getRankingIcon(ranking: number) {
