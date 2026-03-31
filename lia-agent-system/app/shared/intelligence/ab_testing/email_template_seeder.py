@@ -97,7 +97,7 @@ EMAIL_AB_TESTS: List[Dict[str, Any]] = [
                     "{{candidate_name}},\n\n"
                     "Obrigado por dedicar seu tempo ao processo de {{job_title}}.\n\n"
                     "Embora tenhamos seguido com outros perfis para esta vaga, "
-                    "valorizamos suas competências{{#strengths}} — especialmente {{strengths}}{{/strengths}}.\n\n"
+                    "valorizamos suas competências{{strengths_note}}.\n\n"
                     "Manteremos seu perfil ativo e entraremos em contato quando surgir "
                     "uma oportunidade mais alinhada.\n\n"
                     "Sucesso!\n{{company_name}}"
