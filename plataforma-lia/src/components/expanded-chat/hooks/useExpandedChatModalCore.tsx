@@ -80,7 +80,7 @@ import { useLearning } from './useLearning'
 import { useFastTrack, type FastTrackSuggestion, type FastTrackJobData } from '@/hooks/useFastTrack'
 import { FastTrackSuggestions } from '../../job-wizard/FastTrackSuggestions'
 import { extractCriteriaFromText as _extractCriteria } from "./expandedChatCriteriaExtractor"
-import { useProactiveHandlers, useGroupedPanelChangeHandler, useCheckForExistingDraftSync } from "./useExpandedChatCallbacks"
+import { useProactiveHandlers, useGroupedPanelChangeHandler, useCheckForExistingDraftSync, useExtractCriteria } from "./useExpandedChatCallbacks"
 import { useExpandedChatEffects } from "./useExpandedChatEffects"
 import { useExpandedChatSubHooks } from "./useExpandedChatSubHooks"
 import { FastTrackReviewPanel } from '../../job-wizard/FastTrackReviewPanel'
@@ -801,11 +801,7 @@ import { ClearDraftConfirmModal, EditCriteriaModal, AddTechnicalSkillModal, AddC
     hasMinimumCompetencies,
   } = effectsResult
 
-  const extractCriteriaFromText = (text: string) => {
-    const result = _extractCriteria(text, detectedCriteria)
-    setDetectedCriteria(result)
-    return result
-  }
+  const { extractCriteriaFromText } = useExtractCriteria({ detectedCriteria, setDetectedCriteria })
 
 
   // Proceed to next stage (called after modal or directly if no suggestions)
