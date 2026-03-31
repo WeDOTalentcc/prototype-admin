@@ -1,9 +1,135 @@
 # Guia de Migração v5 → Compliance Compartilhada
 
 > **Plataforma LIA — WeDO Talent**
-> Versão: 1.1 | Data: 2026-03-31
+> Versão: 1.2 | Data: 2026-03-31
 > Fonte: `WeDO/analises/diagnostico_arquitetura_codigo_lia_vs_v5.md` (8070 linhas)
 > Caminho recomendado: **Caminho 2 — ComplianceDomainPrompt** (~23.5h, 3 sprints)
+
+---
+
+## Diagnóstico: O Que Está Errado Hoje no v5
+
+Antes de explicar a solução, é preciso entender o problema. Abaixo estão os **7 problemas estruturais** que este guia resolve, listados do mais grave ao menos grave.
+
+---
+
+### P1. Os 8 domínios têm 3 arquiteturas diferentes
+
+O v5 não tem uma arquitetura unificada. Cada grupo de domínios funciona de forma diferente:
+
+| Grupo | Arquitetura | Domínios | Como funciona |
+|-------|-------------|----------|---------------|
+| Flat | `DomainPrompt` direto | jobs, messaging, scheduling | Keyword matching → ação direta |
+| LangGraph | `StateGraph` com nós | evaluation, applies, insights, sourcing | Grafo de estados com edges |
+| Multi-Agent | `UniversalReActAgent` | autonomous | Loop ReAct autônomo com tools |
+
+Isso não foi planejado — cada desenvolvedor escolheu o que fazia sentido no momento. O resultado: 3 "esqueletos" diferentes, 3 formas de inicializar, 3 formas de tratar erros.
+
+---
+
+### P2. Serviços de compliance existem, mas são opcionais
+
+O v5 tem serviços em `src/services/` (pii_filter, circuit_breaker, audit_callback). Mas eles são **bibliotecas disponíveis** — nenhum domínio é obrigado a usá-los. Resultado: cada domínio decide por conta própria se aplica compliance ou não.
+
+Na prática, quem lembra de usar, usa. Quem não lembra (ou não sabe que existe), não usa.
+
+---
+
+### P3. Serviços de compliance estão incompletos ou ausentes
+
+| Serviço | Status no v5 hoje | Problema |
+|---------|-------------------|----------|
+| **FairnessGuard** | Não existe | Nenhum domínio verifica viés discriminatório em queries |
+| **PromptInjectionGuard** | Não existe | Nenhum domínio detecta prompt injection (OWASP LLM01) |
+| **PII Stripping (pré-LLM)** | Parcial | `pii_filter.py` existe mas não tem `strip_pii_for_llm_prompt()` — PII vai inteiro para o LLM |
+| **ConfidenceNode** | Não existe | Nenhum domínio calcula score de confiança das respostas |
+| **FactChecker** | Não existe centralizado | Só `sourcing` tem um local; os outros domínios narrativos não validam claims |
+| **AuditCallback** | Existe mas é mutável | `ON CONFLICT DO UPDATE` permite sobrescrever logs — viola SOX/BCB-498 |
+| **BiasAuditSnapshot** | Não existe | Nenhum monitoramento agregado de viés por dimensão (gênero, idade, PCD) |
+| **GuardrailRepository** | Não existe | Nenhuma política configurável por tenant para bloquear ações indesejadas |
+| **HiringPolicy** | Não existe | Nenhuma regra de negócio por empresa (limites de candidatos, dias, templates) |
+
+De 9 controles necessários, **6 não existem**, **2 estão incompletos**, **1 é parcial**.
+
+---
+
+### P4. Os poucos serviços existentes estão acoplados aos domínios errados
+
+Onde existe compliance, ela foi implementada **dentro do domínio** em vez de na infraestrutura compartilhada:
+
+| Arquivo | Domínio | Problema |
+|---------|---------|----------|
+| `src/domains/jobs/fairness.py` | jobs | FairnessGuard implementado localmente — só protege jobs, não os outros 7 |
+| `src/domains/evaluation/security.py` | evaluation | PromptInjectionGuard local — só protege evaluation |
+| `src/domains/sourced_profile_sourcing/fairness.py` | sourcing | Cópia manual de FairnessGuard — diverge do original com o tempo |
+| `src/domains/sourced_profile_sourcing/fact_checker.py` | sourcing | FactChecker local — os outros domínios narrativos não têm |
+
+O desenvolvedor que criou `sourcing` lembrou de adicionar fairness e fact_check. Os desenvolvedores dos outros 7 domínios não lembraram. O código funciona sem compliance — não dá erro, não avisa, simplesmente não protege.
+
+---
+
+### P5. Serviços não atuam no ponto correto do pipeline
+
+Mesmo quando um serviço existe, ele pode estar atuando no lugar errado:
+
+| Problema | Onde atua | Onde deveria atuar | Impacto |
+|----------|-----------|-------------------|---------|
+| PII vai para o LLM | Em nenhum ponto | PRE-LLM (antes de enviar ao modelo) | CPF, email, idade chegam ao LLM — violação LGPD |
+| Audit é mutável | POST-LLM (gravação) | Deveria ser imutável (`DO NOTHING`) | Logs podem ser sobrescritos — viola SOX/BCB-498 |
+| FairnessGuard só na query | INPUT (onde existe) | INPUT + LLM/TOOLS (nos argumentos de tool calls) | LLM pode gerar filtros discriminatórios mesmo com query limpa |
+| Confidence não existe | Em nenhum ponto | POST-LLM (após execução) | Respostas sem indicação de qualidade/confiança |
+| FactChecker só no sourcing | POST-LLM (apenas sourcing) | POST-LLM (todos os domínios narrativos) | evaluation e insights podem afirmar coisas incorretas sem validação |
+| BiasAudit não existe | Em nenhum ponto | POST-LLM (agregado, por ciclo) | Nenhum monitoramento de drift discriminatório ao longo do tempo |
+| Guardrails não existem | Em nenhum ponto | PRE-LLM (antes da execução) | autonomous executa qualquer ação sem verificar políticas do tenant |
+
+---
+
+### P6. Não existe camada intermediária entre a base e os domínios
+
+Todos os 8 domínios herdam diretamente de `DomainPrompt` (a classe base). Não existe nenhuma camada entre a base e os domínios que aplique compliance automaticamente.
+
+```
+HOJE:
+DomainPrompt (base)
+├── EvaluationDomain      ← sem compliance
+├── SchedulingDomain      ← sem compliance
+├── JobsDomain            ← fairness local (acoplado)
+├── SourcingDomain        ← fairness + fact_check locais (acoplados)
+└── ... (outros 4)       ← sem compliance
+```
+
+Se um novo domínio for criado amanhã, o desenvolvedor precisa **lembrar** de adicionar cada guard manualmente. Não existe nenhum mecanismo que garanta compliance por padrão.
+
+---
+
+### P7. Nenhum novo domínio herda compliance automaticamente
+
+Este é o problema mais insidioso. Hoje, se alguém criar um 9.o domínio:
+
+1. Cria `src/domains/novo/domain.py`
+2. Herda de `DomainPrompt`
+3. Implementa `process_intent()` e `execute_action()`
+4. Funciona perfeitamente — sem fairness, sem PII stripping, sem audit, sem confidence
+5. Ninguém percebe até uma auditoria ou incidente
+
+O Python não avisa. Os testes não falham. O domínio funciona — apenas sem nenhuma proteção.
+
+---
+
+### Resumo dos 7 Problemas
+
+| # | Problema | Gravidade | Regulação afetada |
+|---|----------|-----------|-------------------|
+| P1 | 3 arquiteturas diferentes | Estrutural | — |
+| P2 | Compliance é opcional (opt-in) | **Crítica** | Todas |
+| P3 | 6 de 9 serviços não existem | **Crítica** | EU AI Act, LGPD, SOX, BCB-498 |
+| P4 | Serviços acoplados aos domínios errados | Alta | EU AI Act Art. 6, 9 |
+| P5 | Serviços atuam no ponto errado do pipeline | Alta | LGPD Art. 12, SOX |
+| P6 | Sem camada intermediária (herança direta) | **Crítica** | Todas |
+| P7 | Novos domínios não herdam nada | **Crítica** | Todas |
+
+**O Caminho 2 resolve P2, P3, P4, P5, P6 e P7 em 3 sprints (~23.5h).**
+**O Caminho 3 resolve P1 (unificação arquitetural) em 2027.**
 
 ---
 

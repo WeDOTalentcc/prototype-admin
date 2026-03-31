@@ -165,7 +165,6 @@ interface KanbanTableViewProps {
 }
 
 
-)
 
 export function KanbanTableView({
   showTableFiltersPanel,
@@ -348,7 +347,6 @@ export function KanbanTableView({
               return null
             }}
             renderCustomCell={renderCustomCell as unknown as Parameters<typeof UnifiedCandidateTable>[0]["renderCustomCell"]}
-            }) as unknown as Parameters<typeof UnifiedCandidateTable>[0]["renderCustomCell"]}
             getNeedsAction={((candidate: KanbanCandidate): boolean => {
               const stage = ((candidate.stage as string | undefined) || (candidate.etapa as string | undefined) || 'funil').toLowerCase()
               return stage === 'funil' || stage === 'triagem' || candidate.needsAction === true || (candidate.status as string | undefined) === 'triado_aprovado'
@@ -456,7 +454,6 @@ export function KanbanTableView({
         getPaginatedCandidates={getPaginatedCandidates}
         onCurrentPageChange={onCurrentPageChange}
       />
-      )}
       </div>
     </div>
     {/* Fecha o Conteúdo da Tabela */}
