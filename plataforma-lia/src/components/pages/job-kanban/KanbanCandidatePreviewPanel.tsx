@@ -3,7 +3,7 @@
 import React from "react"
 
 const CandidatePreviewDynamic = React.lazy(() =>
-  import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview }))
+  import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview })))
 
 interface KanbanCandidatePreviewPanelProps {
   isPreviewOpen: boolean
