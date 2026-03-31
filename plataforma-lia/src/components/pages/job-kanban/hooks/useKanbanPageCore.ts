@@ -112,7 +112,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   const [jobEditForm, setJobEditForm] = useState<Record<string, unknown>>({})
 
   const handlePublishJob = useCallback(async () => {
-    const vacancyId = job?.backendId
+    const vacancyId = job?.backendId as string | undefined
     if (!vacancyId) return
 
     setIsPublishing(true)
@@ -189,7 +189,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
 
   // Estados para etapas dinâmicas do Kanban
   const [dynamicStages, setDynamicStages] = useState<DynamicStage[]>(() =>
-    mapInterviewStagesToKanban(job?.interviewStages)
+    mapInterviewStagesToKanban(job?.interviewStages as Parameters<typeof mapInterviewStagesToKanban>[0])
   )
 
   // Enriquece as etapas com sub-statuses ativos do pipeline da empresa (fonte: DB)
@@ -241,7 +241,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
 
   // Estados para candidatesData (hoisted before useKanbanTransitions)
   const [candidatesData, setCandidatesData] = useState<Record<string, Record<string, unknown>[]>>(() => 
-    createInitialCandidatesData(mapInterviewStagesToKanban(job?.interviewStages))
+    createInitialCandidatesData(mapInterviewStagesToKanban(job?.interviewStages as Parameters<typeof mapInterviewStagesToKanban>[0]))
   )
 
   // ── handleUniversalTransitionConfirm — extraído para useKanbanTransitions ──
@@ -252,7 +252,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     toast,
   })
 
-  const handleOpenSpecializedModal = useCallback((modalType: string, context: Record<string, unknown>) => {
+  const handleOpenSpecializedModal = useCallback((modalType: string, context: { candidates?: Record<string, unknown>[]; toStage?: string; [key: string]: unknown }) => {
     switch (modalType) {
       case 'wsi-triagem-invite':
         if (context.candidates?.length > 0) {

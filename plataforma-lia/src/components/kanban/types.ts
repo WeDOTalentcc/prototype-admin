@@ -65,6 +65,8 @@ export interface KanbanCandidate {
   actionBehavior?: string
   lastActionDate?: string
   slaHours?: number
+  agendada?: string
+  interviewDate?: string
   stageId?: string
   bigFive?: {
     openness: number
