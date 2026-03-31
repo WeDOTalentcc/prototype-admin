@@ -17,7 +17,8 @@ interface EmailTemplate {
   id: string
   name: string
   subject: string
-  type: 'summary' | 'detailed' | 'executive' | 'weekly' | 'custom'
+  type: summary | detailed | executive | weekly | custom
+  category?: string
   htmlContent: string
   textContent: string
   variables: string[]
@@ -316,17 +317,19 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
     return processed
   }
 
-  const getTemplateVariables = () => {
+  const getTemplateVariables = (): Record<string, string> => {
+    const funnelRaw = jobData.funnel as ({ total: number; hired: number; screening: number; interview: number; final: number } | null | undefined)
+    const funnel = funnelRaw || { total: 0, hired: 0, screening: 0, interview: 0, final: 0 }
     const baseVariables = {
-      jobTitle: jobData.title,
-      jobId: jobData.jobId,
-      totalCandidates: jobData.funnel.total.toString(),
-      hiredCandidates: jobData.funnel.hired.toString(),
+      jobTitle: String(jobData.title || ''),
+      jobId: String(jobData.jobId || ''),
+      totalCandidates: funnel.total.toString(),
+      hiredCandidates: funnel.hired.toString(),
       timeToHire: '28',
-      managerName: jobData.manager,
-      conversionRate: Math.round((jobData.funnel.hired / jobData.funnel.total) * 100).toString(),
-      npsScore: jobData.nps.toString(),
-      department: jobData.department,
+      managerName: String(jobData.manager || ''),
+      conversionRate: Math.round((funnel.hired / (funnel.total || 1)) * 100).toString(),
+      npsScore: String(jobData.nps || 0),
+      department: String(jobData.department || ''),
       generated_date: new Date().toLocaleDateString('pt-BR'),
       dashboard_link: 'https://app.wedotalent.com/jobs/' + jobData.jobId,
       // Adicionar mais variáveis baseadas no template selecionado
@@ -337,14 +340,14 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
     if (selectedTemplate.id === 'detailed-analysis') {
       return {
         ...baseVariables,
-        funnel_screening: jobData.funnel.screening.toString(),
-        funnel_interview: jobData.funnel.interview.toString(),
-        funnel_final: jobData.funnel.final.toString(),
-        funnel_hired: jobData.funnel.hired.toString(),
-        screening_rate: Math.round((jobData.funnel.screening / jobData.funnel.total) * 100).toString(),
-        interview_rate: Math.round((jobData.funnel.interview / jobData.funnel.total) * 100).toString(),
-        final_rate: Math.round((jobData.funnel.final / jobData.funnel.total) * 100).toString(),
-        hired_rate: Math.round((jobData.funnel.hired / jobData.funnel.total) * 100).toString(),
+        funnel_screening: funnel.screening.toString(),
+        funnel_interview: funnel.interview.toString(),
+        funnel_final: funnel.final.toString(),
+        funnel_hired: funnel.hired.toString(),
+        screening_rate: Math.round((funnel.screening / (funnel.total || 1)) * 100).toString(),
+        interview_rate: Math.round((funnel.interview / (funnel.total || 1)) * 100).toString(),
+        final_rate: Math.round((funnel.final / (funnel.total || 1)) * 100).toString(),
+        hired_rate: Math.round((funnel.hired / (funnel.total || 1)) * 100).toString(),
         source_linkedin: '45',
         source_referrals: '23',
         source_website: '18',
@@ -412,7 +415,7 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
               Templates de Email para Relatórios
             </h2>
             <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">
-              Vaga: {jobData.title} ({jobData.jobId})
+              Vaga: {String(jobData.title || '')} ({String(jobData.jobId || '')})
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -533,7 +536,7 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
                       </div>
                       <Button
                         size="sm"
-                        variant={recipients.includes(person.email) ? "default" : "outline"}
+                        variant={recipients.includes(person.email) ? "secondary" : "outline"}
                         onClick={() => {
                           if (recipients.includes(person.email)) {
                             removeRecipient(person.email)
@@ -674,14 +677,14 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
 
               <div className="flex gap-2">
                 <Button
-                  variant={showPreview ? "outline" : "default"}
+                  variant={showPreview ? "outline" : "secondary"}
                   size="sm"
                   onClick={() => setShowPreview(false)}
                 >
                   HTML
                 </Button>
                 <Button
-                  variant={showPreview ? "default" : "outline"}
+                  variant={showPreview ? "secondary" : "outline"}
                   size="sm"
                   onClick={() => setShowPreview(true)}
                 >
