@@ -335,6 +335,22 @@ class WeeklyDigestService:
     ) -> Dict[str, Any]:
         digest = await self.generate_digest(recruiter_id, recruiter_name, db)
         delivery = await self.deliver_digest(digest, recruiter_id, recruiter_name, db)
+
+        try:
+            from app.services.audit_service import AuditService
+            await AuditService.log_decision(
+                decision_type="weekly_digest_delivered",
+                agent="WeeklyDigestService",
+                input_data={"recruiter_id": recruiter_id, "period": digest.get("period", {})},
+                output_data={"channels_delivered": list(delivery.keys()) if isinstance(delivery, dict) else []},
+                rationale="Digest semanal consolidado entregue automaticamente",
+                confidence=1.0,
+                company_id=None,
+                db=db,
+            )
+        except Exception as exc:
+            logger.debug("[WeeklyDigest] Audit log failed (non-blocking): %s", exc)
+
         return {"digest": digest, "delivery": delivery}
 
     async def send_to_all_recruiters(self, db: AsyncSession) -> Dict[str, Any]:
