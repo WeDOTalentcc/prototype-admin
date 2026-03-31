@@ -217,7 +217,7 @@
 
 ## 0. MAPA IA — FLUXO ALPHA 1 (somente onde IA atua)
 
-**Regra:** Um componente só aparece se IA está envolvida. "IA" = LLM, embedding, modelo ML, heurística adaptativa, ou agente autônomo. Infraestrutura pura (auth, CRUD manual, PII masking, audit trail, LGPD) não aparece — são listados uma vez na seção de infraestrutura global.
+**Regra:** Um componente só aparece se IA está envolvida. "IA" = LLM, embedding, modelo ML, heurística adaptativa, ou agente autônomo.
 
 **Convenção de nomes:** Os rótulos Ag.0–Ag.8 vêm do Fluxo Alpha 1 v2 (source of truth do MVP). No código, os agentes estão registrados em `agents_registry.yaml` com nomes de domínio (pipeline, sourcing, wizard, talent, kanban, policy, jobs_management). Correspondência:
 
