@@ -453,17 +453,17 @@ class RAGPipelineService:
                         _sector_result = await _fg_post.check_with_sector(
                             text=_txt,
                             sector=_sector,
-                            action="ranking_output",
+                            action_type="ranking_output",
                         )
-                        if _sector_result.get("is_blocked"):
+                        if _sector_result.is_blocked:
                             logger.warning(
                                 "[RAGPipeline][FairnessGuard-L3] Sector bias detected: %s",
-                                _sector_result.get("category"),
+                                _sector_result.category,
                             )
                             fairness_ok = False
                             break
         except Exception as _fg_s_exc:
-            logger.debug("[RAGPipeline] FairnessGuard sector check skipped: %s", _fg_s_exc)
+            logger.warning("[RAGPipeline] FairnessGuard sector check error: %s", _fg_s_exc)
 
         # FAR-5: Auditoria de disparate impact em tempo real nos resultados
         ranking_audit: Dict[str, Any] = {}
