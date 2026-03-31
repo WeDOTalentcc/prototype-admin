@@ -10,7 +10,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:800
 // Creates a self-scheduling link and sends it to the candidate via WhatsApp or email.
 // Body: CreateSchedulingLinkRequest (see self_scheduling_public.py)
 // Returns: { success, link_id, token, scheduling_url, expires_at, slots_offered, send_result }
-const _bodySchema = z.record(z.unknown())
+const _bodySchema = z.record(z.string(), z.unknown())
 
 export async function POST(request: NextRequest) {
   try {

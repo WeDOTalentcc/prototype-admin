@@ -16,6 +16,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
 import { typography, textStyles } from "@/lib/design-tokens"
+import { EditableCell, GoalsStatsCards, getCategoryIcon, getCategoryColor, getStatusColor } from "./goals"
 
 // Camada 1 (hook): Todo o estado e ações extraídas
 import {
@@ -43,99 +44,6 @@ interface GoalsManagementProps {
   onGoalUpdate: (userId: string, goals: UserGoal[]) => void
 }
 
-// Componente puro (Camada 2): Célula editável
-function EditableCell({
-  value,
-  onChange,
-  disabled = false,
-  placeholder = "-"
-}: {
-  value: number | null
-  onChange: (value: number) => void
-  disabled?: boolean
-  placeholder?: string
-}) {
-  const [isEditing, setIsEditing] = useState(false)
-  const [inputValue, setInputValue] = useState(value?.toString() || "")
-
-  const handleClick = () => {
-    if (disabled) return
-    setIsEditing(true)
-    setInputValue(value?.toString() || "")
-  }
-
-  const handleSave = () => {
-    const numValue = parseFloat(inputValue) || 0
-    onChange(numValue)
-    setIsEditing(false)
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") handleSave()
-    else if (e.key === "Escape") {
-      setIsEditing(false)
-      setInputValue(value?.toString() || "")
-    }
-  }
-
-  if (isEditing) {
-    return (
-      <input
-        type="number"
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-        onBlur={handleSave}
-        onKeyDown={handleKeyDown}
-        autoFocus
-        min={0}
-        className="w-10 px-1 py-1 text-xs border border-gray-400 rounded-md text-center bg-lia-bg-primary focus:outline-none focus:ring-1 focus:ring-gray-900 font-[Open_Sans,sans-serif]"
-      />
-    )
-  }
-
-  const displayValue = value !== null && value !== undefined && value !== 0 ? value : placeholder
-  return (
-    <div
-      onClick={handleClick}
-      className="w-10 px-1 py-1 text-xs text-center cursor-pointer hover:bg-gray-100 rounded-md font-[Open_Sans,sans-serif]"
-    >
-      {displayValue}
-    </div>
-  )
-}
-
-// Helpers de ícones e cores (Camada 2)
-const getCategoryIcon = (category: string) => {
-  switch (category) {
-    case "recruitment": return <UserCheck className="w-3 h-3 lia-text-500" />
-    case "quality": return <Star className="w-3 h-3 lia-text-500" />
-    case "efficiency": return <Zap className="w-3 h-3 lia-text-500" />
-    case "satisfaction": return <Heart className="w-3 h-3 lia-text-500" />
-    default: return <Target className="w-3 h-3 lia-text-500" />
-  }
-}
-
-const getCategoryColor = (category: string) => {
-  switch (category) {
-    case "recruitment": return "bg-gray-100 lia-text-700 border-lia-border-default"
-    case "quality": return "bg-status-warning/10 text-status-warning border-status-warning/30"
-    case "efficiency": return "bg-status-success/10 text-status-success border-status-success/30"
-    case "satisfaction": return "bg-gray-100 lia-text-700 dark:bg-lia-bg-secondary dark:text-lia-text-secondary border-lia-border-subtle dark:border-lia-border-subtle"
-    default: return "bg-gray-100 lia-text-800 dark:text-lia-text-primary border-lia-border-subtle"
-  }
-}
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "achieved": return "bg-status-success/15 text-status-success border-status-success/30"
-    case "in_progress": return "bg-status-warning/10 text-status-warning border-status-warning/30"
-    case "overdue": return "bg-status-error/15 text-status-error border-status-error/30"
-    default: return "bg-gray-100 lia-text-800 dark:text-lia-text-primary border-lia-border-subtle"
-  }
-}
-
-
-// Camada 3 (componente com estado): Usa hook da Camada 1
 export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
   const { state, actions } = useGoalsManagement(users, onGoalUpdate)
   const {
@@ -227,38 +135,13 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-        <Card className="border border-lia-border-subtle dark:lia-border-800">
-          <CardContent className="p-3 text-center">
-            <div className={`${textStyles.metricLarge} !text-lg`}>{goalStats.totalTemplates}</div>
-            <div className={textStyles.caption}>Templates</div>
-          </CardContent>
-        </Card>
-        <Card className="border border-lia-border-subtle dark:lia-border-800">
-          <CardContent className="p-3 text-center">
-            <div className={`${textStyles.metricLarge} !text-lg`}>{goalStats.totalAssigned}</div>
-            <div className={textStyles.caption}>Atribuídas</div>
-          </CardContent>
-        </Card>
-        <Card className="border border-lia-border-subtle dark:lia-border-800">
-          <CardContent className="p-3 text-center">
-            <div className={`${textStyles.metricLarge} !text-lg !text-status-success`}>{goalStats.achieved}</div>
-            <div className={textStyles.caption}>Atingidas</div>
-          </CardContent>
-        </Card>
-        <Card className="border border-lia-border-subtle dark:lia-border-800">
-          <CardContent className="p-3 text-center">
-            <div className={`${textStyles.metricLarge} !text-lg !text-status-warning`}>{goalStats.inProgress}</div>
-            <div className={textStyles.caption}>Em Progresso</div>
-          </CardContent>
-        </Card>
-        <Card className="border border-lia-border-subtle dark:lia-border-800">
-          <CardContent className="p-3 text-center">
-            <div className={`${textStyles.metricLarge} !text-lg !text-status-error`}>{goalStats.overdue}</div>
-            <div className={textStyles.caption}>Atrasadas</div>
-          </CardContent>
-        </Card>
-      </div>
+      <GoalsStatsCards
+        totalTemplates={goalStats.totalTemplates}
+        totalAssigned={goalStats.totalAssigned}
+        achieved={goalStats.achieved}
+        inProgress={goalStats.inProgress}
+        overdue={goalStats.overdue}
+      />
 
       <Card className="border border-lia-border-subtle dark:lia-border-800">
         <CardHeader className="py-3 border-b border-lia-border-subtle dark:lia-border-800">

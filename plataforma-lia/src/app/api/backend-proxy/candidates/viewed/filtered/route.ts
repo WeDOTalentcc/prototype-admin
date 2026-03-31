@@ -44,7 +44,7 @@ function isShortlistScope(scope: HideViewedScope): boolean {
   return scope.startsWith('shortlisted_')
 }
 
-const _bodySchema = z.record(z.unknown())
+const _bodySchema = z.record(z.string(), z.unknown())
 
 export async function POST(request: NextRequest) {
   try {

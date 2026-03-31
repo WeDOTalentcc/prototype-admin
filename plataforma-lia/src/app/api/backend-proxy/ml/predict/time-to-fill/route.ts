@@ -10,7 +10,7 @@ const BACKEND_URL = process.env.LIA_BACKEND_URL || "http://127.0.0.1:8000"
  * Proxy para previsão de tempo de preenchimento de vaga.
  * Mapeia para: POST /api/v1/ml/predict/time-to-fill
  */
-const _bodySchema = z.record(z.unknown())
+const _bodySchema = z.record(z.string(), z.unknown())
 
 export async function POST(request: NextRequest) {
   try {

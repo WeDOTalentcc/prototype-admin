@@ -31,7 +31,7 @@ export async function GET(request: NextRequest, { params }: Params) {
   }
 }
 
-const _bodySchema = z.record(z.unknown())
+const _bodySchema = z.record(z.string(), z.unknown())
 
 export async function PUT(request: NextRequest, { params }: Params) {
   try {

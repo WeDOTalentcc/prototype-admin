@@ -18,6 +18,8 @@ export interface User {
   is_active: boolean
   created_at: string
   updated_at: string
+  company_id?: string
+  company?: string
 }
 
 export interface SSOUser {

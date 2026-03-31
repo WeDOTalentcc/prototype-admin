@@ -9,7 +9,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:800
 // PUBLIC — no auth required (candidate-facing action)
 // Body: { start: string, end: string }
 // Returns: { success, message, candidate_name, job_title, selected_slot }
-const _bodySchema = z.record(z.unknown())
+const _bodySchema = z.record(z.string(), z.unknown())
 
 export async function POST(
   request: NextRequest,

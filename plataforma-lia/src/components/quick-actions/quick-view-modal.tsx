@@ -27,7 +27,15 @@ interface QuickViewModalProps {
 
 export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }: QuickViewModalProps) {
   const [showLiaInsights, setShowLiaInsights] = useState(true)
-  const [liaInsights, setLiaInsights] = useState<Record<string, unknown> | null>(null)
+  interface LiaInsights {
+    executiveSummary?: string
+    candidateStatus?: { priority?: string; readiness?: string; timeline?: string }
+    nextSteps?: Array<{ action?: string; priority?: string; timeframe?: string }>
+    analysis?: { strengths?: string[]; concerns?: string[] }
+    approachStrategy?: { primary?: string; timing?: string; talking_points?: string[] }
+    dataInsights?: { matchStrength?: string; topSkillsMatch?: string[]; experienceLevel?: string; salaryAlignment?: string; locationFit?: string; availabilityScore?: string }
+  }
+  const [liaInsights, setLiaInsights] = useState<LiaInsights | null>(null)
   const [isLiaAnalyzing, setIsLiaAnalyzing] = useState(false)
 
   // Gerar insights da LIA quando o modal abrir
@@ -42,7 +50,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
     setIsLiaAnalyzing(false)
   }, [candidate])
 
-  const analyzeCandidateQuickInsights = (candidate: Record<string, unknown>) => {
+  const analyzeCandidateQuickInsights = (candidate: Candidate | null) => {
     const score = candidate.matchPercentage || candidate.score || 85
     const skills = candidate.skills || []
     const experience = candidate.experience || ''

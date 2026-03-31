@@ -303,7 +303,7 @@ const getProfileType = (scores: DISCScores): string => {
 export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData }: DISCModalProps) {
   if (!isOpen) return null
 
-  const data = assessmentData || candidate?.discAssessment
+  const data = assessmentData || (candidate?.discAssessment as DISCAssessmentData | undefined)
   if (!data?.discScores) return null
 
   const { discScores } = data
@@ -413,7 +413,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
                   <div key={key} className={`${dim.bgColor} ${dim.borderColor} border rounded-md p-4`}>
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-md flex items-center justify-center font-bold text-lg`} style={{backgroundColor: dim.color + '20', color: dim.color}}>
+                        <div className={`w-10 h-10 rounded-md flex items-center justify-center font-bold text-lg`} style={{backgroundColor: dim.bgColor + '20', color: dim.bgColor}}>
                           {dim.letter}
                         </div>
                         <div>
@@ -421,7 +421,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
                           <div className="text-xs lia-text-secondary">{levelData.label}</div>
                         </div>
                       </div>
-                      <div className="text-2xl font-bold" style={{color: dim.color}}>
+                      <div className="text-2xl font-bold" style={{color: dim.bgColor}}>
                         {score}%
                       </div>
                     </div>
@@ -429,7 +429,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
                     <div className="h-2 bg-gray-200 dark:bg-lia-bg-elevated rounded-full overflow-hidden mb-3">
                       <div 
                         className="h-full rounded-full transition-[width,height] duration-500"
-                        style={{width: `${score}%`, backgroundColor: dim.color}}
+                        style={{width: `${score}%`, backgroundColor: dim.bgColor}}
                       />
                     </div>
 

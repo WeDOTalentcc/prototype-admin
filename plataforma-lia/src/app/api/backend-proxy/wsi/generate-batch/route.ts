@@ -18,7 +18,7 @@ function normalizeSeniority(raw: string | null | undefined): string {
   return SENIORITY_MAP[normalized] || 'pleno'
 }
 
-const _bodySchema = z.record(z.unknown())
+const _bodySchema = z.record(z.string(), z.unknown())
 
 export async function POST(request: NextRequest) {
   try {

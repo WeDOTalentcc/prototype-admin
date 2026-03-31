@@ -70,7 +70,26 @@ import { getSuggestionForCandidate } from "@/hooks/useCandidateSuggestions"
 import { formatScorePercent } from "@/lib/design-tokens"
 import type { CandidateLocal } from "@/services/lia-api"
 
-type KanbanCandidate = CandidateLocal & Record<string, unknown>
+type KanbanCandidate = CandidateLocal & {
+  score?: number
+  role?: string
+  company?: string
+  location?: string
+  currentCompany?: string
+  workModel?: string
+  origin?: string
+  needsAction?: boolean
+  stageId?: string
+  pipelineStage?: string
+  avatar?: string
+  matchPercentage?: number
+  applicationId?: string
+  appliedAt?: string
+  pipelineOrder?: number
+  saturationLevel?: string
+  dataRequest?: Record<string, unknown>
+  [key: string]: unknown
+}
 
 type CurrentJob = {
   id?: string | number

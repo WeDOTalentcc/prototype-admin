@@ -65,7 +65,7 @@ export async function GET(
   return proxyRequest(request, "GET", pathParams.path)
 }
 
-const _bodySchema = z.record(z.unknown())
+const _bodySchema = z.record(z.string(), z.unknown())
 
 export async function POST(
   request: NextRequest,

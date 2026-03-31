@@ -154,6 +154,7 @@ export interface WSIResultDetails {
     overall_wsi: number
     classification: string
     percentile?: number
+    decision?: string
   }
   session: {
     screening_type: string
@@ -161,6 +162,8 @@ export interface WSIResultDetails {
     started_at?: string
     completed_at?: string
     duration_minutes?: number
+    session_id?: string
+    seniority_label?: string
   }
   responses: {
     competency: string
@@ -171,7 +174,13 @@ export interface WSIResultDetails {
       bloom_level?: number
       dreyfus_level?: number
       final_score: number
+      star?: Record<string, unknown>
+      bloom_expected?: number
     }
+    star?: Record<string, unknown>
+    gap_status?: string
+    is_critical?: boolean
+    bloom_expected?: number
     evidences: string[]
     red_flags: string[]
     consistency_penalty: number

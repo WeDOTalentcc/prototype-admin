@@ -39,7 +39,7 @@ export async function GET(
   }
 }
 
-const _bodySchema = z.record(z.unknown())
+const _bodySchema = z.record(z.string(), z.unknown())
 
 export async function PUT(
   request: NextRequest,

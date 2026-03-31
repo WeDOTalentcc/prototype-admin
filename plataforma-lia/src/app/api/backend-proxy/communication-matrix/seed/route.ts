@@ -24,7 +24,7 @@ async function getAuthHeaders(request: NextRequest): Promise<HeadersInit> {
   return headers
 }
 
-const _bodySchema = z.record(z.unknown())
+const _bodySchema = z.record(z.string(), z.unknown())
 
 export async function POST(request: NextRequest) {
   try {

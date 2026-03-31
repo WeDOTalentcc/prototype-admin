@@ -82,6 +82,15 @@ export interface ArchetypeCandidate {
 export interface ArchetypeVacancy {
   id: string
   title: string
+  name?: string
+  emoji?: string
+  is_default?: boolean
+  description?: string
+  query?: string
+  tags?: string[]
+  seniority?: string
+  industry?: string
+  filters?: Record<string, unknown>
   department?: string
   closed_at?: string
   hired_candidate?: ArchetypeCandidate
