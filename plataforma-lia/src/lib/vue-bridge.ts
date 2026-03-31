@@ -125,7 +125,7 @@ export const PINIA_READY_HOOKS = [
   'use-daily-briefing',
   'use-data-request-config',
   'use-data-request-modals',
-  'use-edit-lock', // AVISO: retorna React.FC no objeto — necessita refatoração (ver docs)
+  'use-edit-lock',
   'use-empty-field-notifications',
   'use-float-conversation',
   'use-float-streaming',
@@ -195,20 +195,4 @@ export const PINIA_READY_HOOKS = [
  * Hooks que requerem refatoração antes da migração Vue.
  * Razão documentada por hook.
  */
-export const HOOKS_NEEDING_REFACTOR = [
-  {
-    name: 'use-edit-lock',
-    file: 'src/hooks/use-edit-lock.tsx',
-    reason:
-      'Retorna React.FC (EditButton, SaveCancelButtons) como parte do objeto de retorno. ' +
-      'Para Vue: extrair EditButton e SaveCancelButtons como componentes standalone, ' +
-      'hook retorna apenas { isEditing, isSaving, startEditing, cancelEditing, saveAndExit }.',
-  },
-  {
-    name: 'use-keyboard-shortcuts',
-    file: 'src/hooks/use-keyboard-shortcuts.tsx',
-    reason:
-      'Cria DOM nodes imperativos via document.createElement (modal de ajuda). ' +
-      'Para Vue: usar teleport + v-if para o modal de atalhos, hook retorna apenas evento handlers.',
-  },
-] as const
+export const HOOKS_NEEDING_REFACTOR = [] as const // All hooks refactored — 100% Pinia-ready
