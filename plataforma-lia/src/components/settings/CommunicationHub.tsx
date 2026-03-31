@@ -105,6 +105,9 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
             saveAlertsConfig={hub.saveAlertsConfig}
             handleToggleAlert={hub.handleToggleAlert}
             handleChangeChannel={hub.handleChangeChannel}
+            weeklyDigestEnabled={hub.weeklyDigestEnabled}
+            savingWeeklyDigest={hub.savingWeeklyDigest}
+            handleToggleWeeklyDigest={hub.handleToggleWeeklyDigest}
           />
         )
       default:

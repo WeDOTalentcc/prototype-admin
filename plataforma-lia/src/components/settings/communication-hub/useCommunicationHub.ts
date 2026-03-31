@@ -46,6 +46,31 @@ export function useCommunicationHub(activeSubsection?: string) {
   const [isEditingSchedule, setIsEditingSchedule] = useState(false)
   const [isEditingAlerts, setIsEditingAlerts] = useState(false)
 
+  const [weeklyDigestEnabled, setWeeklyDigestEnabled] = useState(true)
+  const [savingWeeklyDigest, setSavingWeeklyDigest] = useState(false)
+
+  const handleToggleWeeklyDigest = async () => {
+    setSavingWeeklyDigest(true)
+    const newValue = !weeklyDigestEnabled
+    try {
+      const res = await fetch("/api/backend-proxy/digest/weekly/preferences", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: "default_user", enabled: newValue }),
+      })
+      if (res.ok) {
+        setWeeklyDigestEnabled(newValue)
+        setSuccessMessage(newValue ? "Resumo semanal ativado" : "Resumo semanal desativado")
+        setTimeout(() => { if (isMountedRef.current) setSuccessMessage(null) }, 3000)
+      }
+    } catch {
+      setError("Erro ao atualizar preferência do resumo semanal")
+      setTimeout(() => { if (isMountedRef.current) setError(null) }, 3000)
+    } finally {
+      setSavingWeeklyDigest(false)
+    }
+  }
+
   const handleChannelFilterChange = (channel: 'all' | 'email' | 'whatsapp') => {
     setChannelFilter(channel)
     setSelectedTemplate(null)
@@ -187,6 +212,18 @@ export function useCommunicationHub(activeSubsection?: string) {
         if (alertsResult?.briefing_frequency) {
           setBriefingFrequency(alertsResult.briefing_frequency)
         }
+      }
+
+      try {
+        const digestPrefRes = await fetch('/api/backend-proxy/digest/weekly/preferences?user_id=default_user')
+        if (digestPrefRes.ok) {
+          const prefData = await digestPrefRes.json()
+          if (prefData && prefData.weekly_report_enabled !== undefined) {
+            setWeeklyDigestEnabled(prefData.weekly_report_enabled)
+          }
+        }
+      } catch {
+        // silently ignore — defaults to true
       }
     } catch (_err) {
       setError('Erro ao carregar dados. Por favor, tente novamente.')
@@ -424,6 +461,9 @@ export function useCommunicationHub(activeSubsection?: string) {
     setIsEditingSchedule,
     isEditingAlerts,
     setIsEditingAlerts,
+    weeklyDigestEnabled,
+    savingWeeklyDigest,
+    handleToggleWeeklyDigest,
     // Derived
     filteredTemplates,
     groupedTemplates,

@@ -1,6 +1,6 @@
 import React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Edit, Save, Bell, Clock, Calendar, RefreshCw, Brain, Loader2, AlertCircle, CheckCircle, MessageSquare } from "lucide-react"
+import { Edit, Save, Bell, Clock, Calendar, RefreshCw, Brain, Loader2, AlertCircle, CheckCircle, MessageSquare, BarChart3 } from "lucide-react"
 import { textStyles, actionButtonStyles } from '@/lib/design-tokens'
 import type { AlertConfig } from './CommunicationHub.types'
 
@@ -16,6 +16,9 @@ interface AlertsTabProps {
   saveAlertsConfig: () => Promise<void>
   handleToggleAlert: (id: string) => void
   handleChangeChannel: (id: string, channel: 'email' | 'teams' | 'both') => void
+  weeklyDigestEnabled: boolean
+  savingWeeklyDigest: boolean
+  handleToggleWeeklyDigest: () => void
 }
 
 export function AlertsTab({
@@ -23,7 +26,8 @@ export function AlertsTab({
   alerts, briefingFrequency, setBriefingFrequency,
   isEditingAlerts, setIsEditingAlerts,
   savingAlerts, saveAlertsConfig,
-  handleToggleAlert, handleChangeChannel
+  handleToggleAlert, handleChangeChannel,
+  weeklyDigestEnabled, savingWeeklyDigest, handleToggleWeeklyDigest
 }: AlertsTabProps) {
   return (
     <div className="space-y-4">
@@ -169,6 +173,60 @@ export function AlertsTab({
                 </p>
               </div>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-white/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
+        <CardHeader className="pb-2">
+          <CardTitle className={`${textStyles.h4} flex items-center gap-2`}>
+            <BarChart3 className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+            Resumo Semanal
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div
+            className={`p-2.5 rounded-md border transition-colors motion-reduce:transition-none ${
+              weeklyDigestEnabled
+                ? 'bg-white dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle'
+                : 'bg-gray-50 dark:bg-lia-bg-secondary/50 border-lia-border-subtle dark:lia-border-800'
+            }`}
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex items-start gap-2">
+                <div
+                  className="w-7 h-7 rounded-md flex items-center justify-center"
+                  style={{backgroundColor: weeklyDigestEnabled ? 'var(--gray-600-bg-10)' : undefined, color: weeklyDigestEnabled ? 'var(--gray-600)' : undefined}}
+                >
+                  <BarChart3 className="w-3.5 h-3.5" style={{color: weeklyDigestEnabled ? 'var(--gray-600)' : undefined}} />
+                </div>
+                <div>
+                  <p className={`text-xs font-medium ${weeklyDigestEnabled ? 'lia-text-950 dark:lia-text-50' : 'lia-text-800'}`}>
+                    Insights Proativos Semanais
+                  </p>
+                  <p className="text-xs lia-text-600 mt-0.5">
+                    Toda segunda-feira às 08h, receba um resumo consolidado com pipeline, compliance, vagas em risco e otimizações via Teams, chat e notificação.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleToggleWeeklyDigest}
+                disabled={savingWeeklyDigest}
+                className="relative w-9 h-5 rounded-full transition-colors motion-reduce:transition-none disabled:opacity-60 flex-shrink-0 mt-0.5"
+                style={{backgroundColor: weeklyDigestEnabled ? 'var(--gray-600)' : 'var(--gray-200)'}}
+              >
+                {savingWeeklyDigest ? (
+                  <Loader2 className="w-3 h-3 absolute top-1 left-3 animate-spin" />
+                ) : (
+                  <span className={`absolute top-0.5 w-4 h-4 bg-lia-bg-secondary rounded-full transition-transform motion-reduce:transition-none ${weeklyDigestEnabled ? 'left-4' : 'left-0.5'}`} />
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 text-xs lia-text-600">
+            <Clock className="w-3 h-3" />
+            <span>Entrega: segunda-feira, 08h (Brasília) — Teams + Chat + Bell</span>
           </div>
         </CardContent>
       </Card>

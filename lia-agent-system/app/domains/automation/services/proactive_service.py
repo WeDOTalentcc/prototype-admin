@@ -42,6 +42,7 @@ class NotificationType(str, Enum):
     CANDIDATE_EXPIRED = "candidate_expired"
     VOLUME_ALERT = "volume_alert"
     CRITICAL_ALERT = "critical_alert"
+    WEEKLY_DIGEST = "weekly_digest"
 
 
 class ProactiveService:

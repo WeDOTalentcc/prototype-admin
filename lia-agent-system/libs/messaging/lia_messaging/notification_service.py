@@ -47,6 +47,7 @@ class ProactiveNotificationType(str, Enum):
     VACANCY_EXPIRING = "vacancy_expiring"
     NEW_APPLICATION = "new_application"
     TASK_ASSIGNED = "task_assigned"
+    WEEKLY_DIGEST = "weekly_digest"
 
 
 class NotificationChannel(str, Enum):

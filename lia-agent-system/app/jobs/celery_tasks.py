@@ -13,6 +13,7 @@ Tasks registradas:
   - feedback.auto_send           — envio automático de feedback aprovado (I6)
   - feedback.process_pending_sends — batch safety net para feedback aprovado não enviado (I6)
   - ragas.evaluate_batch         — avaliação RAGAS de qualidade LLM (ACH-027)
+  - digest.send_weekly           — envia weekly digest a todos os recrutadores ativos
 """
 import asyncio
 
@@ -1301,3 +1302,38 @@ def recompute_active_ml_jobs_task():
     except Exception as exc:
         logger.warning("[Celery] ml.feedback.recompute_active_jobs failed (fail-open): %s", exc)
         return {"dispatched": 0}
+
+
+@celery_app.task(name="digest.send_weekly", bind=True, max_retries=2)
+def send_weekly_digest_task(self) -> dict:
+    """
+    Envia weekly digest consolidado a todos os recrutadores ativos.
+
+    Agrega dados de PredictiveAnalytics, FairnessGuard, ABTesting e LearningLoop.
+    Entrega via Teams (Adaptive Card), Chat (proativo) e Bell (notificação).
+
+    Agendado: segundas-feiras 08h Brasília (11h UTC) via Celery Beat.
+    Pode ser disparado manualmente via POST /api/v1/digest/weekly/send-all.
+    """
+    import asyncio
+
+    async def _run() -> dict:
+        from lia_config.database import AsyncSessionLocal
+        from app.domains.analytics.services.weekly_digest_service import WeeklyDigestService
+
+        svc = WeeklyDigestService()
+        async with AsyncSessionLocal() as db:
+            return await svc.send_to_all_recruiters(db)
+
+    try:
+        result = asyncio.run(_run())
+        logger.info(
+            "[Celery] digest.send_weekly completed: sent=%s skipped=%s errors=%s",
+            result.get("sent", 0),
+            result.get("skipped", 0),
+            result.get("errors", 0),
+        )
+        return result
+    except Exception as exc:
+        logger.error("[Celery] digest.send_weekly failed: %s", exc)
+        raise self.retry(exc=exc, countdown=300)

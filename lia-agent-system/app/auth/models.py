@@ -6,7 +6,7 @@ from datetime import datetime
 from enum import Enum as PyEnum
 
 from sqlalchemy import Column, String, Boolean, DateTime, Enum
-from sqlalchemy.dialects.postgresql import UUID, ARRAY
+from sqlalchemy.dialects.postgresql import UUID, ARRAY, JSONB
 
 from app.core.database import Base
 
@@ -42,6 +42,8 @@ class User(Base):
     invitation_token = Column(String(255), nullable=True)
     invitation_sent_at = Column(DateTime, nullable=True)
     
+    notification_preferences = Column(JSONB, nullable=True, default=dict, server_default="{}")
+
     workos_id = Column(String(255), unique=True, nullable=True, index=True)
     workos_directory_id = Column(String(255), nullable=True, index=True)
     workos_organization_id = Column(String(255), nullable=True, index=True)

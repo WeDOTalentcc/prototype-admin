@@ -140,6 +140,7 @@ celery_app.conf.update(
         "wsi.*":                         {"queue": "evaluation_normal", "priority": 4},
         "feedback.*":                    {"queue": "onboarding_low",    "priority": 3},
         "drift.run_batch":               {"queue": "onboarding_low",    "priority": 2},
+        "digest.*":                      {"queue": "onboarding_low",    "priority": 3},
     },
 
     beat_schedule={
@@ -209,6 +210,12 @@ celery_app.conf.update(
             "task": "rag.rebuild_all_domains",
             "schedule": crontab(hour=4, minute=0),
             "options": {"expires": 7200},
+        },
+        # Weekly Digest: segundas-feiras 08h Brasília (UTC-3 → 11h UTC)
+        "digest-weekly": {
+            "task": "digest.send_weekly",
+            "schedule": crontab(hour=11, minute=0, day_of_week=1),  # segunda 08h Brasília / UTC-3
+            "options": {"expires": 3600},
         },
         # D6 — ML Feedback: recompute pesos adaptativos semanal (domingo 02h UTC / 23h Brasília)
         "ml-feedback-recompute-weekly": {
