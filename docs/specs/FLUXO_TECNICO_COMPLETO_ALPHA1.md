@@ -46,10 +46,10 @@ Cada macro-etapa do Alpha 1 (E1–E9B) é apresentada como um diagrama técnico 
 | Ag.6 | InterviewGraph | interview_scheduling | Gemini |
 | Ag.7 | CommunicationReActAgent / PersonalizedFeedbackService | communication / cv_screening | Gemini |
 | Ag.8 | ATSIntegrationReActAgent ⚠ PÓS-MVP | ats_integration | Gemini |
-| — | WSIQuestionGeneratorService | cv_screening | Gemini |
+| — | WSIQuestionGenerator / WSIScreeningQuestionGenerator | cv_screening | Gemini |
 | — | WSIScreeningPipeline | cv_screening | Gemini |
 | — | WSIVoiceOrchestrator | cv_screening | Gemini + Deepgram |
-| — | JDGeneratorService | job_management | Claude (Anthropic) |
+| — | JobDescriptionGeneratorService | job_management | Claude (Anthropic) |
 
 ---
 
@@ -138,7 +138,7 @@ Cada macro-etapa do Alpha 1 (E1–E9B) é apresentada como um diagrama técnico 
     Campos sensíveis strip via strip_pii_for_llm_prompt
     O LLM NUNCA vê dados pessoais reais
 
- 6  JDGeneratorService processa (Claude LLM)
+ 6  JobDescriptionGeneratorService processa (Claude LLM)
     LLM recebe dados mascarados da vaga
     Gera JD estruturada em markdown:
     → Seções: Sobre, Responsabilidades, Requisitos, Benefícios, Diversidade
@@ -203,7 +203,7 @@ Cada macro-etapa do Alpha 1 (E1–E9B) é apresentada como um diagrama técnico 
     AntiSycophancy | WorkingMemory | CircuitBreaker
     LearningLoop | ConversationMemory | SemanticSearch
 
- 4  JDGeneratorService (se JD ausente)
+ 4  JobDescriptionGeneratorService (se JD ausente)
     Se o JD não existe ou precisa ajuste, gera/melhora antes
     Mesmo fluxo da E2 (Claude LLM, FG L1/L2, PII Masking)
     Resultado: JD completa como base para perguntas WSI
@@ -218,7 +218,7 @@ Cada macro-etapa do Alpha 1 (E1–E9B) é apresentada como um diagrama técnico 
     strip_pii_for_llm_prompt aplica 4 camadas
     JD enviado ao LLM sem dados identificáveis
 
- 7  WSIQuestionGeneratorService processa (Gemini LLM)
+ 7  WSIQuestionGenerator processa (Gemini LLM)
     Recebe JD mascarada + requisitos da vaga
     Gera perguntas WSI em blocos estruturados:
     → Bloco 2: Técnico (Bloom 1-6, Dreyfus 1-5)
@@ -1431,7 +1431,7 @@ Princípios aplicados:
 │                                                                               │
 │  SERVIÇOS AUXILIARES (sem rótulo Ag.):                                        │
 │                                                                               │
-│  WSIQuestionGeneratorService                                                  │
+│  WSIQuestionGenerator / WSIScreeningQuestionGenerator                         │
 │    Domínio: cv_screening | LLM: Gemini                                       │
 │    Etapas: E3 (gera perguntas WSI)                                           │
 │                                                                               │
@@ -1443,7 +1443,7 @@ Princípios aplicados:
 │    Domínio: cv_screening | LLM: Gemini + Deepgram + OpenAI TTS              │
 │    Etapas: E7 (triagem por voz)                                              │
 │                                                                               │
-│  JDGeneratorService                                                           │
+│  JobDescriptionGeneratorService                                              │
 │    Domínio: job_management | LLM: Claude (Anthropic)                         │
 │    Etapas: E2 (gera JD), E3 (JD como base para WSI)                         │
 │                                                                               │
