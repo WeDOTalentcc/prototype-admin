@@ -10,9 +10,10 @@ required by its target channel:
 from typing import Dict, Any, List
 from abc import ABC, abstractmethod
 from datetime import datetime
-import logging
 
-logger = logging.getLogger(__name__)
+from app.shared.pii_masking import get_masked_logger
+
+logger = get_masked_logger(__name__)
 
 
 class DigestFormatter(ABC):

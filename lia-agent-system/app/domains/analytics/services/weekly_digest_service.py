@@ -30,7 +30,7 @@ class WeeklyDigestService:
     ) -> Dict[str, Any]:
         pipeline = await self._gather_pipeline_health(recruiter_id, db)
         at_risk = await self._gather_vagas_em_risco(recruiter_id, db)
-        compliance = await self._gather_compliance_summary(db)
+        compliance = await self._gather_compliance_summary(recruiter_id, db)
         optimization = await self._gather_optimization_insights(db)
         patterns = await self._gather_patterns_learned(db)
 
@@ -68,13 +68,14 @@ class WeeklyDigestService:
 
             svc = PredictiveAnalyticsService()
             dashboard = await svc.get_analytics_dashboard(recruiter_id, db)
+            summary = dashboard.get("summary", {})
             return {
-                "total_active_jobs": dashboard.get("total_active_jobs", 0),
-                "jobs_on_track": dashboard.get("jobs_on_track", 0),
-                "candidates_screened_week": dashboard.get("total_candidates_analyzed", 0),
-                "interviews_scheduled": dashboard.get("interviews_scheduled", 0),
-                "conversion_rate": dashboard.get("conversion_rate"),
-                "conversion_change": dashboard.get("conversion_change"),
+                "total_active_jobs": summary.get("total_active_jobs", 0),
+                "jobs_on_track": summary.get("jobs_on_track", 0),
+                "candidates_screened_week": summary.get("total_candidates_analyzed", 0),
+                "interviews_scheduled": summary.get("interviews_scheduled", 0),
+                "conversion_rate": summary.get("conversion_rate"),
+                "conversion_change": summary.get("conversion_change"),
             }
         except Exception as exc:
             logger.warning("[WeeklyDigest] Pipeline health fallback: %s", exc)
@@ -133,7 +134,7 @@ class WeeklyDigestService:
             logger.warning("[WeeklyDigest] At-risk vacancies fallback: %s", exc)
             return {"count": 0, "jobs": []}
 
-    async def _gather_compliance_summary(self, db: AsyncSession) -> Dict[str, Any]:
+    async def _gather_compliance_summary(self, recruiter_id: str, db: AsyncSession) -> Dict[str, Any]:
         try:
             from app.shared.compliance.fairness_guard import FairnessGuard
 
@@ -148,6 +149,7 @@ class WeeklyDigestService:
                         and_(
                             Notification.source_agent == "fairness_guard",
                             Notification.created_at >= week_ago,
+                            Notification.user_id == recruiter_id,
                         )
                     )
                 )
