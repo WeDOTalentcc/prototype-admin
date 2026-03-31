@@ -705,9 +705,10 @@ def feedback_generate_and_send_task(
                 seniority_level=None,
             )
 
+            wsi_score = getattr(candidate, "wsi_score", 0.0) or 0.0
             eval_ctx = WSIEvaluationContext(
-                overall_wsi=getattr(candidate, "wsi_score", 0.0) or 0.0,
-                classification="REPROVADO",
+                overall_wsi=wsi_score,
+                classification="abaixo_da_media" if wsi_score < 2.5 else "regular",
                 strengths=[],
                 development_areas=[reason] if reason else [],
             )
