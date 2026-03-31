@@ -38,6 +38,7 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 -   **WSI Saturation Intelligence**: Backend API and frontend components to manage and display candidate pipeline saturation for organic and sourcing pools.
 -   **PUB-001 Public Triagem Chat Page**: Public candidate-facing chat web page for WSI screening with text and bidirectional audio support (TTS/STT).
 -   **Multi-Channel Communication Dispatcher**: `dispatch_message()` sends to ALL available channels (email + WhatsApp) by default.
+-   **Celery Scheduler & Automations (Task #70)**: Background automations via Celery Beat — `followup.process_pending` (7-day email follow-up for WSI invites), `wsi.check_abandoned` (48h/96h timeout reminders), `feedback.auto_send` (auto-send approved rejection feedback via email/WhatsApp), `feedback.process_pending_sends` (safety net batch), SendGrid Event Webhook (`POST /email-tracking/webhook`), and Template Learning stub service (`template_learning_service`) with open-rate recommendation.
 -   **Production Readiness**: Includes a unified health endpoint, `RequestIdMiddleware` for distributed tracing, structured JSON logging, global exception handlers, auth protection, and rate limiting middleware.
 -   **FairnessGuard in Agent Outputs**: Integrated `FairnessGuard.check()` and `check_implicit_bias()` across various agent outputs to prevent bias and ensure fairness.
 -   **LGPD Log Retention (L6)**: Implemented scheduled deletion for `ai_consumption` logs after 365 days.
