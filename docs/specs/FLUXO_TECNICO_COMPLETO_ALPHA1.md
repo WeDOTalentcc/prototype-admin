@@ -53,11 +53,73 @@ Cada macro-etapa do Alpha 1 (E1–E9B) é apresentada como um diagrama técnico 
 
 ---
 
+## GLOSSÁRIO DE COMPONENTES
+
+Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arquitetura — esta seção explica **o que é cada componente** mencionado ao longo do documento.
+
+### Tipos de Componente
+
+| Tipo | O que é | Exemplo |
+|------|---------|---------|
+| **Domínio** | Uma área funcional da plataforma. Cada domínio agrupa um conjunto coeso de funcionalidades de negócio. É como um "departamento" da IA. | `sourcing` (busca de candidatos), `cv_screening` (triagem), `communication` (emails/mensagens), `job_management` (vagas), `interview_scheduling` (agendamento) |
+| **Agente (Ag.)** | Um "trabalhador IA" autônomo que executa tarefas complexas usando raciocínio passo-a-passo (loop ReAct). Cada agente pertence a um domínio e usa ferramentas (tools) para agir. Pense nele como um especialista que analisa, decide e age. | Ag.2 SourcingReActAgent (busca candidatos), Ag.4 WSIInterviewGraph (conduz entrevista de triagem) |
+| **Serviço** | Um componente que executa uma função específica, geralmente sem raciocínio autônomo. Recebe um input, processa e devolve um resultado. | `JobDescriptionGeneratorService` (gera descrição de vaga), `WSIService` (calcula scores de triagem) |
+| **Tool (Ferramenta)** | Uma ação atômica que um agente pode executar. É como uma "mão" do agente — ele decide quando e como usar cada tool. | `search_candidates` (buscar), `send_email` (enviar email), `schedule_interview` (agendar) |
+| **Capability (Capacidade)** | Um módulo transversal que é injetado automaticamente em agentes e serviços para adicionar comportamentos de proteção ou inteligência. Não age sozinho — é uma camada que enriquece quem o usa. | FairnessGuard (anti-viés), PII Masking (proteção de dados), AuditTrail (registro auditável) |
+| **Orquestrador** | O componente central que recebe todas as requisições e decide qual domínio/agente deve processá-las. É o "recepcionista" que direciona cada pedido ao especialista certo. | `DomainOrchestrator` + `CascadedRouter` (6 camadas de roteamento) |
+| **Graph (Grafo)** | Um fluxo de trabalho estruturado em etapas (nós) conectadas. Diferente do agente ReAct que raciocina livremente, o graph segue uma sequência definida de passos. | `WSIInterviewGraph` (8 estágios da entrevista WSI), `InterviewGraph` (6 nós do agendamento) |
+| **Pipeline** | Uma sequência de processamento onde o output de uma etapa alimenta a próxima. Usado para processar dados em cadeia. | `WSIScreeningPipeline` (triagem curricular em cadeia) |
+| **Registry** | O catálogo centralizado de agentes. Quando o orquestrador precisa de um especialista, consulta o registry para encontrá-lo pelo nome. | `"sourcing"` → SourcingReActAgent, `"wizard"` → WizardReActAgent |
+
+### Componentes Transversais (aparecem em várias etapas)
+
+| Componente | Tipo | O que faz | Em linguagem simples |
+|------------|------|-----------|----------------------|
+| **DomainOrchestrator** | Orquestrador | Recebe toda requisição e roteia para o domínio correto usando 6 camadas de cache/análise | "Recepcionista inteligente" — entende o que você pediu e direciona ao especialista certo |
+| **CascadedRouter** | Serviço (dentro do Orquestrador) | 6 camadas de roteamento: memória → cache local → cache Redis → busca vetorial → regex → LLM | "GPS de requisições" — tenta o caminho mais rápido primeiro, escala para análise mais profunda se necessário |
+| **FairnessGuard** | Capability (3 camadas) | L1: bloqueia viés explícito (350+ padrões). L2: alerta viés implícito. L3: análise semântica por LLM | "Guardião de equidade" — impede que a IA discrimine por gênero, idade, etnia ou qualquer categoria protegida |
+| **PII Masking** | Capability (4 camadas) | Remove dados pessoais antes de enviar ao LLM: CPF, nome, endereço, campos sensíveis | "Protetor de privacidade" — a IA nunca vê dados pessoais reais do candidato |
+| **AuditTrail** | Capability | Registra toda decisão de forma imutável (append-only), com retenção de 2-5 anos (SOX) | "Cartório digital" — tudo que a IA decide fica registrado e não pode ser alterado |
+| **FactChecker** | Capability | Verifica claims do LLM: experiência, certificações, períodos, habilidades | "Verificador de fatos" — confere se o que a IA diz é coerente com os dados reais |
+| **BiasAuditSnapshot** | Capability | Aplica Four-Fifths Rule: detecta se um grupo demográfico é aprovado <80% em relação a outro | "Auditor estatístico" — detecta discriminação numérica mesmo que ninguém a tenha intencionado |
+| **ConfidenceNode** | Capability | Calibra scores para serem comparáveis entre candidatos e vagas diferentes | "Calibrador de notas" — garante que um 8 em uma vaga signifique o mesmo que um 8 em outra |
+| **LearningLoop** | Capability | Observa silenciosamente quando o recrutador aceita, modifica ou rejeita sugestões da IA e aprende com isso | "Aprendiz silencioso" — a IA melhora sem pedir feedback explícito |
+| **SemanticSearch** | Serviço | Expande termos de busca usando vetores semânticos (embeddings 768-dim via Gemini) | "Tradutor de intenções" — quando você busca "Java", ele entende que "Spring Boot" e "JVM" também são relevantes |
+| **CircuitBreaker** | Capability | Protege contra falhas em cascata: se um serviço externo cai, para de chamá-lo temporariamente | "Disjuntor" — evita que a falha de um serviço derrube todo o sistema |
+| **PolicyEngine** | Serviço | Define regras por setor: nível de autonomia da IA, quando escalar para humano, limites de uso | "Regulador setorial" — em saúde a IA é mais cautelosa, em RPO tem mais autonomia |
+| **AntiSycophancy** | Capability | Impede que a IA concorde com tudo que o recrutador diz — força verificação de premissas | "Advogado do diabo" — a IA discorda quando os dados contradizem o que foi pedido |
+| **WorkingMemory** | Capability | Memória de curto prazo do agente durante uma conversa/tarefa | "Bloco de notas" — o agente lembra o que já fez durante a tarefa atual |
+| **LongTermMemory** | Capability | Memória de longo prazo com compressão automática após 30 dias | "Memória institucional" — a IA lembra padrões de vagas e candidatos passados |
+| **ConversationMemory** | Capability | Tracking de entidades na sessão de chat (última vaga, último candidato, pronomes) | "Contexto de conversa" — quando você diz "ele", a IA sabe de quem está falando |
+| **ModelDrift** | Capability | Monitora se os scores e decisões da IA estão mudando ao longo do tempo (janela de 7 dias) | "Detector de desvios" — alerta se a IA começa a aprovar muito mais (ou muito menos) que o normal |
+
+---
+
 ## E1 — LOGIN — 4 STEPS
+
+### O que acontece nesta etapa (visão do processo)
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  PASSO A PASSO — E1 LOGIN                                                     │
+│                                                                               │
+│  • O consultor/recrutador acessa a plataforma LIA pelo navegador             │
+│  • Insere seu email e senha na tela de login                                 │
+│  • A plataforma autentica as credenciais e gera um token de acesso           │
+│  • O recrutador é redirecionado para o dashboard de vagas                    │
+│  • Alternativa: login via SSO corporativo (WorkOS) se configurado            │
+│  • Proteções ativas: limite de tentativas por IP, logs sem dados pessoais    │
+│                                                                               │
+│  Resultado: Recrutador autenticado, com acesso à plataforma                  │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Detalhamento técnico
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │  LIA — Fluxo de Login (auth) — 4 STEPS                                       │
+│  AuthService [Serviço, domínio auth] — autentica o recrutador                │
 └──────────────────────────────────────────────────────────────────────────────┘
 
  1  HTTP Request chega ao FastAPI
@@ -95,6 +157,40 @@ Cada macro-etapa do Alpha 1 (E1–E9B) é apresentada como um diagrama técnico 
 ---
 
 ## E2 — EDITAR/CRIAR VAGA — 8 STEPS
+
+### O que acontece nesta etapa (visão do processo)
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  PASSO A PASSO — E2 EDITAR/CRIAR VAGA                                        │
+│                                                                               │
+│  • O recrutador acessa a página de vagas WeDo no dashboard                   │
+│  • Opção A — EDITAR VAGA (importada do ATS):                                 │
+│    - Seleciona uma vaga já existente (importada do sistema ATS do cliente)   │
+│    - NÃO cria a vaga na WeDo — apenas edita os dados que vieram do ATS      │
+│    - Define/ajusta requisitos, benefícios, faixa salarial, modelo de         │
+│      trabalho (presencial/remoto/híbrido)                                    │
+│    - 🤖 Ag.8 ATSIntegrationReActAgent sincroniza dados do ATS ⚠ PÓS-MVP     │
+│  • Opção B — CRIAR VAGA MANUALMENTE na WeDo:                                │
+│    - Clica em "Criar Vaga" → seleciona "Criar Manualmente"                  │
+│    - Preenche todos os campos da vaga manualmente                           │
+│  • Opção C — GERAR JD (Descrição de Vaga) com IA:                           │
+│    - Clica em "Gerar JD" no formulário da vaga                              │
+│    - 🤖 JobDescriptionGeneratorService [Serviço, domínio job_management]      │
+│      gera/melhora a descrição automaticamente usando LLM (Claude)           │
+│    - A IA expande skills sugeridas usando busca semântica                    │
+│    - A IA prevê tempo de preenchimento e faixa salarial ótima               │
+│  • O FairnessGuard [Capability anti-viés] analisa a vaga e bloqueia          │
+│    requisitos discriminatórios (ex: "somente homens", "até 30 anos")         │
+│  • Dados pessoais são mascarados antes de enviar ao LLM                      │
+│  • Tudo é registrado no AuditTrail [Capability de auditoria]                 │
+│                                                                               │
+│  Resultado: Vaga criada/editada com JD de qualidade, sem viés,               │
+│  pronta para configurar o roteiro de triagem (E3)                            │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Detalhamento técnico
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -179,6 +275,42 @@ Cada macro-etapa do Alpha 1 (E1–E9B) é apresentada como um diagrama técnico 
 
 ## E3 — CONFIGURAR ROTEIRO WSI — 9 STEPS
 
+### O que acontece nesta etapa (visão do processo)
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  PASSO A PASSO — E3 CONFIGURAR ROTEIRO WSI                                   │
+│                                                                               │
+│  • A partir da vaga criada/editada na etapa anterior (E2), o recrutador      │
+│    precisa configurar as perguntas que serão usadas na triagem dos            │
+│    candidatos (WSI = Work Sample Interview — entrevista por amostra           │
+│    de trabalho)                                                               │
+│  • O recrutador acessa a TAB CONFIGURAÇÕES da vaga                           │
+│    → SEÇÃO PERGUNTAS de Triagem                                              │
+│  • Primeiro, se necessário, revisa/ajusta o JD (Descrição de Vaga)           │
+│    na aba de configurações da vaga                                           │
+│  • Depois, clica em "Criar Roteiro" (modo completo ou compacto)              │
+│    ou edita um roteiro existente                                             │
+│  • 🤖 WSIQuestionGeneratorService [Serviço, domínio cv_screening]             │
+│    gera perguntas WSI automaticamente usando o JD como base:                 │
+│    - Bloco Técnico (avalia conhecimento em 6 níveis de profundidade)        │
+│    - Bloco Comportamental (avalia 5 traços de personalidade - Big Five)     │
+│    - Bloco Situacional (cenários práticos do dia-a-dia da vaga)             │
+│    - Bloco Cultural Fit (alinhamento com valores da empresa)                │
+│  • O recrutador revisa as perguntas geradas, pode editar, remover           │
+│    ou adicionar perguntas manualmente                                        │
+│  • O FairnessGuard [Capability anti-viés] valida cada pergunta              │
+│    individualmente contra 13 categorias protegidas                           │
+│  • O FactChecker [Capability verificador de fatos] valida a                  │
+│    coerência das perguntas com o JD e requisitos                             │
+│                                                                               │
+│  Resultado: Roteiro de triagem WSI pronto, com perguntas validadas           │
+│  e sem viés, para ser aplicado aos candidatos (E7)                           │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Detalhamento técnico
+
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │  LIA — Fluxo de Configuração de Roteiro WSI (cv_screening) — 9 STEPS         │
@@ -261,6 +393,43 @@ Cada macro-etapa do Alpha 1 (E1–E9B) é apresentada como um diagrama técnico 
 ---
 
 ## E4 — BUSCAR CANDIDATOS (Funil de Talentos) — 10 STEPS
+
+### O que acontece nesta etapa (visão do processo)
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  PASSO A PASSO — E4 BUSCAR CANDIDATOS (Funil de Talentos)                    │
+│                                                                               │
+│  • O recrutador acessa o Funil de Talentos na plataforma                     │
+│  • Pode buscar candidatos de 5 formas diferentes:                            │
+│    - IA Natural: descreve o que precisa em linguagem livre                  │
+│      (ex: "desenvolvedor Python com 5 anos, remoto, São Paulo")             │
+│    - Boolean: busca avançada com operadores AND/OR/NOT                      │
+│    - Perfil Similar: encontra candidatos parecidos com um existente         │
+│    - Job Description: busca baseada no JD da vaga                           │
+│    - Archetypes: busca por perfis-tipo pré-definidos                        │
+│  • 🤖 Ag.2 SourcingReActAgent [Agente, domínio sourcing]                     │
+│    executa a busca em 2 camadas:                                             │
+│    - Local: banco de dados próprio (PostgreSQL, gratuito)                   │
+│    - Global: base Pearch AI com 190M+ perfis (pago)                         │
+│  • SemanticSearch [Serviço de busca semântica] expande os termos             │
+│    da busca: "Java" → encontra também "Spring Boot", "JVM", "Maven"          │
+│  • O FairnessGuard [Capability anti-viés] bloqueia buscas                    │
+│    discriminatórias (ex: "somente candidatos homens") e detecta              │
+│    termos com viés implícito (ex: "dinâmico" como proxy para idade)          │
+│  • Dados pessoais dos candidatos são mascarados antes de                     │
+│    qualquer análise pela IA                                                  │
+│  • Resultados aparecem em tabela com 10 candidatos por vez,                  │
+│    com preview inline (Perfil, Atividades, Arquivos, Pareceres)             │
+│  • O recrutador pode dar Like/Dislike em cada candidato,                     │
+│    e a IA aprende silenciosamente com essas preferências                     │
+│                                                                               │
+│  Resultado: Lista de candidatos ranqueados por aderência à vaga,             │
+│  prontos para avaliação e aprovação (E5)                                     │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Detalhamento técnico
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -369,6 +538,42 @@ Cada macro-etapa do Alpha 1 (E1–E9B) é apresentada como um diagrama técnico 
 
 ## E5 — APROVAR MAPEADOS (Gate 1) — 9 STEPS
 
+### O que acontece nesta etapa (visão do processo)
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  PASSO A PASSO — E5 APROVAR MAPEADOS (Gate 1)                                │
+│                                                                               │
+│  • O recrutador visualiza os candidatos mapeados no Kanban board             │
+│    (painel visual com colunas representando cada etapa do processo)           │
+│  • Para cada candidato, decide: APROVAR ou REPROVAR                          │
+│    - Aprovação individual: arrasta o card do candidato para a                │
+│      próxima coluna                                                          │
+│    - Aprovação em massa: seleciona vários candidatos e aprova               │
+│      todos de uma vez (máx. 100)                                             │
+│    - Drag-and-drop: pode mover manualmente para qualquer coluna             │
+│  • Se REPROVAR: precisa informar o motivo da rejeição                       │
+│    - 🤖 FairnessGuard [Capability anti-viés] analisa o motivo               │
+│      da rejeição contra 13 categorias protegidas                             │
+│    - Se o motivo for discriminatório → BLOQUEADO automaticamente             │
+│  • 🤖 PolicyEngine [Serviço de políticas por setor] define:                  │
+│    - Se a IA pode aprovar sozinha ou precisa de confirmação humana           │
+│    - Exemplo: no setor financeiro, quase tudo precisa HITL (Human           │
+│      In The Loop); em RPO, a IA tem mais autonomia                           │
+│  • Antes de contatar candidato aprovado, verifica consentimento LGPD        │
+│    - Sem consentimento registrado → contato bloqueado                        │
+│  • Aprovados seguem para contato via email (E6)                              │
+│  • Reprovados recebem feedback personalizado (E9B)                           │
+│  • ⚡ Candidatos que se inscreveram pelo site PULAM esta etapa               │
+│    e vão direto para triagem automática                                      │
+│                                                                               │
+│  Resultado: Candidatos aprovados prontos para contato,                       │
+│  reprovados com feedback respeitoso                                          │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Detalhamento técnico
+
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │  LIA — Fluxo de Aprovação Gate 1 (pipeline + kanban) — 9 STEPS               │
@@ -458,6 +663,37 @@ Cada macro-etapa do Alpha 1 (E1–E9B) é apresentada como um diagrama técnico 
 
 ## E6 — CONTATO VIA EMAIL + FOLLOW-UP — 8 STEPS
 
+### O que acontece nesta etapa (visão do processo)
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  PASSO A PASSO — E6 CONTATO VIA EMAIL + FOLLOW-UP                           │
+│                                                                               │
+│  • Após aprovação no Gate 1 (E5), a LIA envia automaticamente               │
+│    um email para o candidato aprovado                                        │
+│  • O email contém:                                                            │
+│    - Apresentação da vaga e da empresa                                      │
+│    - Link para a triagem via CHAT WEB (canal principal)                     │
+│    - Opção de informar número de celular para triagem via WhatsApp          │
+│    - Link obrigatório de opt-out (LGPD) para cancelar comunicações          │
+│  • 🤖 Ag.7 CommunicationReActAgent [Agente, domínio communication]          │
+│    personaliza e envia o email                                               │
+│  • A IA testa variantes do template de email automaticamente                 │
+│    (A/B Testing) para descobrir qual versão gera mais respostas              │
+│  • Se o candidato NÃO abre/clica o email:                                    │
+│    - Re-envio automático a cada 24h durante 7 dias consecutivos             │
+│    - Após 7 dias sem resposta → status "sem_resposta"                       │
+│    - O recrutador é notificado via Teams                                     │
+│  • Se o candidato clicou no opt-out → canal de email bloqueado              │
+│    para futuras comunicações                                                 │
+│                                                                               │
+│  Resultado: Candidato contatado por email com link para triagem,             │
+│  com follow-up automático de 7 dias                                          │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Detalhamento técnico
+
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │  LIA — Fluxo de Contato Email + Follow-up (communication) — 8 STEPS          │
@@ -529,6 +765,46 @@ Cada macro-etapa do Alpha 1 (E1–E9B) é apresentada como um diagrama técnico 
 ---
 
 ## E7 — TRIAGEM WSI (cv_screening + WSI) — 11 STEPS
+
+### O que acontece nesta etapa (visão do processo)
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  PASSO A PASSO — E7 TRIAGEM WSI                                              │
+│                                                                               │
+│  • O candidato recebeu o email (E6) e clica no link de triagem               │
+│  • Acessa a página de triagem pelo navegador (chat web)                      │
+│    ou pelo WhatsApp (se informou o número)                                   │
+│    ou por voz (Twilio/OpenMic.ai — canal terciário)                          │
+│  • Antes de começar, o candidato DEVE aceitar o termo LGPD                   │
+│    (checkbox obrigatório no WelcomeCard — sem aceitar, não avança)           │
+│  • 🤖 Ag.4 WSIInterviewGraph [Agente tipo Graph, domínio cv_screening]       │
+│    conduz a entrevista de triagem automaticamente:                            │
+│    - Faz perguntas técnicas (nível de profundidade progressivo,              │
+│      de básico a avançado — Bloom 1 a 6)                                     │
+│    - Faz perguntas comportamentais (avalia 5 traços de                       │
+│      personalidade — Big Five: OCEAN)                                        │
+│    - Faz perguntas situacionais (cenários práticos da vaga)                 │
+│    - Faz perguntas de fit cultural (alinhamento com a empresa)              │
+│  • A sessão pode durar de 30 minutos (modo quick) a 120 minutos             │
+│    (modo full), com salvamento automático do progresso                       │
+│  • O candidato pode pausar e retomar a qualquer momento                     │
+│  • 🤖 Ag.5 WSIService [Serviço determinístico, domínio cv_screening]         │
+│    calcula o score final SEM usar LLM (zero custo, zero latência)            │
+│    com normalização por dificuldade do roteiro                               │
+│  • O FactChecker [Capability verificador de fatos] valida as                 │
+│    respostas: experiência declarada, certificações, períodos                 │
+│  • O BiasAuditSnapshot [Capability auditor estatístico] aplica               │
+│    Four-Fifths Rule para detectar discriminação numérica                     │
+│  • Ao final, a LIA gera um parecer com recomendação:                         │
+│    "aprovado" | "aguardando" | "reprovado"                                    │
+│                                                                               │
+│  Resultado: Candidato triado com score WSI, parecer da IA e                  │
+│  recomendação, aguardando decisão do recrutador (Gate 2 — E8)                │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Detalhamento técnico
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -627,6 +903,34 @@ Cada macro-etapa do Alpha 1 (E1–E9B) é apresentada como um diagrama técnico 
 
 ## E7A — TRIAGEM ABANDONADA — 5 STEPS
 
+### O que acontece nesta etapa (visão do processo)
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  PASSO A PASSO — E7A TRIAGEM ABANDONADA                                      │
+│                                                                               │
+│  • O candidato iniciou a triagem WSI (E7) mas parou de responder             │
+│  • A plataforma detecta automaticamente a inatividade:                       │
+│    - Verificação automática a cada 4 horas (Celery Beat)                    │
+│  • Após 48h sem atividade → 1º lembrete automático                           │
+│    - Mensagem personalizada pelo mesmo canal da triagem                     │
+│    - Informa o progresso parcial ("você completou 60% da triagem")          │
+│  • Após mais 48h (96h total) → 2º lembrete automático                        │
+│    - Tom mais urgente, informa prazo limite                                  │
+│  • Se ainda não retorna → alerta ao recrutador via Teams                     │
+│    - Candidato marcado como "triagem_abandonada"                            │
+│    - O recrutador decide: tentar re-engajar ou descartar                    │
+│  • O progresso parcial NUNCA é perdido — fica salvo                          │
+│    - Se o recrutador re-enviar o link, o candidato retoma de onde parou     │
+│    - Scores parciais ficam visíveis para o recrutador                       │
+│                                                                               │
+│  Resultado: Candidato lembrado 2x; se não retorna, recrutador               │
+│  é notificado para decisão manual                                            │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Detalhamento técnico
+
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │  LIA — Fluxo de Triagem Abandonada (cv_screening) — 5 STEPS                  │
@@ -674,6 +978,35 @@ Cada macro-etapa do Alpha 1 (E1–E9B) é apresentada como um diagrama técnico 
 
 ## E7B — FEEDBACK PÓS-TRIAGEM — 4 STEPS
 
+### O que acontece nesta etapa (visão do processo)
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  PASSO A PASSO — E7B FEEDBACK PÓS-TRIAGEM                                   │
+│                                                                               │
+│  • O candidato completou toda a triagem WSI (E7)                             │
+│  • 🤖 Ag.4 WSIInterviewGraph [Agente tipo Graph] gera o feedback:            │
+│    - Agradece a participação do candidato                                   │
+│    - Dá feedback construtivo sobre o desempenho                             │
+│    - Informa os próximos passos do processo seletivo                        │
+│  • O feedback é enviado pelo mesmo canal da triagem (chat, WhatsApp          │
+│    ou voz)                                                                   │
+│  • IMPORTANTE: o feedback NUNCA mostra scores numéricos ao candidato         │
+│    (scores são removidos automaticamente antes do envio)                      │
+│  • O FairnessGuard [Capability anti-viés] valida o texto do                  │
+│    feedback para garantir que não contém viés ou discriminação               │
+│  • O recrutador recebe alerta via Teams:                                     │
+│    "Triagem WSI concluída para [candidato]"                                  │
+│  • Score WSI + parecer da IA ficam disponíveis na plataforma                 │
+│    para o recrutador revisar antes da decisão Gate 2 (E8)                    │
+│                                                                               │
+│  Resultado: Candidato recebe feedback respeitoso; recrutador                 │
+│  é notificado e tem dados para decidir no Gate 2                             │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Detalhamento técnico
+
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │  LIA — Fluxo de Feedback Pós-Triagem (cv_screening) — 4 STEPS                │
@@ -713,6 +1046,42 @@ Cada macro-etapa do Alpha 1 (E1–E9B) é apresentada como um diagrama técnico 
 ---
 
 ## E8 — APROVAR/REPROVAR TRIADOS (Gate 2) — 8 STEPS
+
+### O que acontece nesta etapa (visão do processo)
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  PASSO A PASSO — E8 APROVAR/REPROVAR TRIADOS (Gate 2)                        │
+│                                                                               │
+│  • O recrutador recebeu o alerta de triagem concluída (E7B)                  │
+│  • Acessa o Kanban board e revisa os resultados:                             │
+│    - Score WSI do candidato (técnico + comportamental + final)               │
+│    - Parecer/recomendação da IA ("aprovado"/"aguardando"/"reprovado")        │
+│  • Para cada candidato triado, decide: APROVAR ou REPROVAR                   │
+│  • Se REPROVAR:                                                               │
+│    - Informa o motivo da rejeição                                           │
+│    - FairnessGuard [Capability anti-viés] valida o motivo contra             │
+│      13 categorias protegidas — se discriminatório → BLOQUEADO              │
+│    - 🤖 Ag.7 PersonalizedFeedbackService [Serviço, domínio cv_screening]     │
+│      gera feedback personalizado e construtivo para o candidato              │
+│    - Um embedding do perfil é gerado para permitir                           │
+│      "re-discovery" — se uma vaga futura for compatível,                     │
+│      este candidato pode ser encontrado novamente                            │
+│  • Se APROVAR:                                                                │
+│    - Candidato vai para SHORT LIST (lista finalista)                        │
+│    - Segue para agendamento de entrevista (E9A)                              │
+│  • PolicyEngine [Serviço de políticas por setor] define se a IA              │
+│    pode decidir sozinha ou precisa de aprovação humana                        │
+│  • BiasAuditSnapshot [Capability auditor estatístico] verifica               │
+│    equidade estatística nas decisões do Gate 2                               │
+│                                                                               │
+│  Resultado: Candidatos finalistas na Short List para entrevista;             │
+│  reprovados com feedback personalizado e perfil salvo                        │
+│  para re-discovery futuro                                                    │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Detalhamento técnico
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -784,6 +1153,34 @@ Cada macro-etapa do Alpha 1 (E1–E9B) é apresentada como um diagrama técnico 
 
 ## E9A — AGENDAR ENTREVISTA — 7 STEPS
 
+### O que acontece nesta etapa (visão do processo)
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  PASSO A PASSO — E9A AGENDAR ENTREVISTA                                      │
+│                                                                               │
+│  • O candidato foi APROVADO no Gate 2 (E8) e está na Short List              │
+│  • A LIA dispara automaticamente o agendamento de entrevista                 │
+│  • 🤖 Ag.6 InterviewGraph [Agente tipo Graph, domínio                        │
+│    interview_scheduling] busca horários disponíveis:                          │
+│    - Consulta o Google Calendar do entrevistador                            │
+│    - Encontra os melhores horários disponíveis                              │
+│    - Se não encontra horário → alerta ao recrutador via Teams               │
+│  • O candidato recebe comunicação com data/hora + link da reunião            │
+│    por email E WhatsApp (duplo canal)                                        │
+│  • O convite de calendário (ICS) enviado contém SOMENTE                      │
+│    dados mínimos: data, hora, local e participantes                         │
+│    (LGPD: nenhum dado sensível do candidato no arquivo)                      │
+│  • Calendar invite é enviado a todos os participantes                        │
+│  • Status atualizado no Kanban board                                         │
+│                                                                               │
+│  Resultado: Entrevista agendada, todos os participantes notificados,         │
+│  Kanban atualizado                                                           │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Detalhamento técnico
+
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │  LIA — Fluxo de Agendamento de Entrevista (interview_scheduling) — 7 STEPS    │
@@ -842,6 +1239,41 @@ Cada macro-etapa do Alpha 1 (E1–E9B) é apresentada como um diagrama técnico 
 ---
 
 ## E9B — ENVIAR FEEDBACK (Reprovado) — 6 STEPS
+
+### O que acontece nesta etapa (visão do processo)
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  PASSO A PASSO — E9B ENVIAR FEEDBACK (Reprovado)                             │
+│                                                                               │
+│  • O candidato foi REPROVADO no Gate 2 (E8)                                  │
+│  • 🤖 Ag.7 PersonalizedFeedbackService [Serviço, domínio cv_screening]       │
+│    gera feedback personalizado e construtivo:                                 │
+│    - Analisa o perfil completo + scores WSI + motivo da rejeição            │
+│    - Gera texto respeitoso e útil para o candidato                          │
+│    - NUNCA inclui scores numéricos (removidos automaticamente)              │
+│  • O FairnessGuard [Capability anti-viés] valida o feedback:                 │
+│    - Verifica que não contém viés ou discriminação                          │
+│    - Sanitiza o texto antes do envio                                         │
+│  • O feedback é enviado ao candidato por:                                     │
+│    - Email (canal primário, sempre)                                          │
+│    - WhatsApp (se o número está disponível)                                  │
+│  • A IA testa variantes do template de feedback (A/B Testing)                │
+│    para descobrir qual formato gera melhor experiência                       │
+│  • Um embedding do perfil do candidato é gerado e salvo:                     │
+│    - Permite "re-discovery" futuro: se uma vaga compatível                  │
+│      aparecer no futuro, este candidato pode ser encontrado                 │
+│      automaticamente pela busca semântica                                    │
+│  • Status final do candidato atualizado no Kanban board                      │
+│  • Episódio completo salvo na memória de longo prazo da IA                   │
+│                                                                               │
+│  Resultado: Candidato recebe feedback respeitoso e construtivo;              │
+│  perfil salvo para oportunidades futuras; processo encerrado                 │
+│  com dignidade                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Detalhamento técnico
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
