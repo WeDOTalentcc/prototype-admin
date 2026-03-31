@@ -12,15 +12,15 @@ import os
 
 
 INSTRUMENTED_FILES = [
-    "lia-agent-system/app/api/v1/auth.py",
-    "lia-agent-system/app/api/v1/candidates.py",
-    "lia-agent-system/app/api/v1/approvals.py",
-    "lia-agent-system/app/api/v1/communication.py",
-    "lia-agent-system/app/api/v1/rubric_evaluation.py",
-    "lia-agent-system/app/api/v1/scheduling.py",
-    "lia-agent-system/app/api/v1/interviews.py",
-    "lia-agent-system/app/api/v1/pipeline.py",
-    "lia-agent-system/app/domains/cv_screening/services/personalized_feedback_service.py",
+    "app/api/v1/auth.py",
+    "app/api/v1/candidates.py",
+    "app/api/v1/approvals.py",
+    "app/api/v1/communication.py",
+    "app/api/v1/rubric_evaluation.py",
+    "app/api/v1/scheduling.py",
+    "app/api/v1/interviews.py",
+    "app/api/v1/pipeline.py",
+    "app/domains/cv_screening/services/personalized_feedback_service.py",
 ]
 
 
@@ -50,6 +50,9 @@ class TestE1AuthLogin:
     async def test_success_calls_log_decision_with_correct_payload(self):
         user = _make_user(company_id="acme-42", role="admin")
         db = _make_db(scalar_return=user)
+        mock_request = MagicMock()
+        mock_request.client = MagicMock()
+        mock_request.client.host = "192.168.1.100"
 
         with patch("app.api.v1.auth.verify_password", return_value=True), \
              patch("app.api.v1.auth.create_access_token", return_value="t"), \
@@ -58,7 +61,7 @@ class TestE1AuthLogin:
             audit.log_decision = AsyncMock()
             from app.api.v1.auth import login
             from app.auth.schemas import UserLogin
-            await login(UserLogin(email="u@co.com", password="p"), db)
+            await login(UserLogin(email="u@co.com", password="p"), mock_request, db)
 
             audit.log_decision.assert_called_once()
             kw = audit.log_decision.call_args.kwargs
@@ -69,6 +72,7 @@ class TestE1AuthLogin:
             assert kw["decision"] == "approved"
             assert any("Method: password" in r for r in kw["reasoning"])
             assert any("Role: admin" in r for r in kw["reasoning"])
+            assert any("Source IP: *.*.*.100" in r for r in kw["reasoning"])
             assert "email_match" in kw["criteria_used"]
             assert "password_hash_verify" in kw["criteria_used"]
             assert "is_active_check" in kw["criteria_used"]
@@ -78,6 +82,9 @@ class TestE1AuthLogin:
     @pytest.mark.asyncio
     async def test_failure_calls_log_decision_with_auth_failed(self):
         db = _make_db(scalar_return=None)
+        mock_request = MagicMock()
+        mock_request.client = MagicMock()
+        mock_request.client.host = "10.0.0.5"
 
         with patch("app.api.v1.auth.audit_service") as audit:
             audit.log_decision = AsyncMock()
@@ -85,7 +92,7 @@ class TestE1AuthLogin:
             from app.auth.schemas import UserLogin
             from fastapi import HTTPException
             with pytest.raises(HTTPException) as exc:
-                await login(UserLogin(email="x@y.z", password="w"), db)
+                await login(UserLogin(email="x@y.z", password="w"), mock_request, db)
             assert exc.value.status_code == 401
 
             audit.log_decision.assert_called_once()
@@ -95,6 +102,7 @@ class TestE1AuthLogin:
             assert kw["action"] == "auth_failed"
             assert kw["decision"] == "rejected"
             assert any("Method: password" in r for r in kw["reasoning"])
+            assert any("Source IP: *.*.*.5" in r for r in kw["reasoning"])
             assert "email_match" in kw["criteria_used"]
             assert "password_hash_verify" in kw["criteria_used"]
 
@@ -126,7 +134,7 @@ class TestE4CandidateSearch:
             audit.log_decision.assert_called_once()
             kw = audit.log_decision.call_args.kwargs
             assert kw["agent_name"] == "candidate_search"
-            assert kw["decision_type"] == "score_candidate"
+            assert kw["decision_type"] == "search_candidates"
             assert kw["action"] == "global_search"
             assert kw["decision"] == "executed"
             assert kw["score"] == 3.0
@@ -391,6 +399,7 @@ class TestDecisionTypeValidity:
             "move_stage", "reject_candidate", "score_candidate",
             "approved", "rejected", "send_message",
             "schedule_interview", "generate_feedback", "approve_candidate",
+            "search_candidates",
         ]
         for dt in used:
             mapped = DECISION_TYPE_MAPPING.get(dt)

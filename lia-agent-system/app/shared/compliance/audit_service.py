@@ -24,6 +24,7 @@ DECISION_TYPE_MAPPING = {
     "quick_screening": DecisionType.SCORE_CANDIDATE,
     "complete_interview": DecisionType.SCORE_CANDIDATE,
     "screening_evaluation": DecisionType.SCORE_CANDIDATE,
+    "search_candidates": DecisionType.SCORE_CANDIDATE,
     "proceed_to_next_stage": DecisionType.MOVE_STAGE,
     "proceed_to_wsi": DecisionType.MOVE_STAGE,
     "reject": DecisionType.REJECT_CANDIDATE,

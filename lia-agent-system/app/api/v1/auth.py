@@ -5,7 +5,7 @@ import os
 from datetime import datetime, timedelta
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -84,6 +84,7 @@ async def register(
 @router.post("/login", response_model=TokenResponse)
 async def login(
     login_data: UserLogin,
+    request: Request,
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -96,6 +97,9 @@ async def login(
     )
     user = result.scalar_one_or_none()
     
+    _client_ip = getattr(request, "client", None)
+    _masked_ip = "*.*.*.{}".format(_client_ip.host.split(".")[-1]) if _client_ip and _client_ip.host else "unknown"
+
     if not user or not verify_password(login_data.password, user.password_hash):
         try:
             await audit_service.log_decision(
@@ -104,7 +108,7 @@ async def login(
                 decision_type="reject_candidate",
                 action="auth_failed",
                 decision="rejected",
-                reasoning=["Authentication failed: invalid credentials", "Method: password"],
+                reasoning=["Authentication failed: invalid credentials", "Method: password", f"Source IP: {_masked_ip}"],
                 criteria_used=["email_match", "password_hash_verify"],
                 human_review_required=False,
             )
@@ -138,7 +142,7 @@ async def login(
             decision_type="move_stage",
             action="authenticated",
             decision="approved",
-            reasoning=["User authenticated successfully", "Method: password", f"Role: {user.role.value}"],
+            reasoning=["User authenticated successfully", "Method: password", f"Role: {user.role.value}", f"Source IP: {_masked_ip}"],
             criteria_used=["email_match", "password_hash_verify", "is_active_check"],
             score=None,
             confidence=1.0,

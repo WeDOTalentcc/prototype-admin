@@ -1172,7 +1172,7 @@ async def search_candidates_local(
             await audit_service.log_decision(
                 company_id=str(_company) if _company else "default",
                 agent_name="candidate_search",
-                decision_type="score_candidate",
+                decision_type="search_candidates",
                 action="local_search",
                 decision="executed",
                 reasoning=[
@@ -1231,7 +1231,7 @@ async def search_candidates(request: PearchSearchRequest):
             await audit_service.log_decision(
                 company_id="default",
                 agent_name="candidate_search",
-                decision_type="score_candidate",
+                decision_type="search_candidates",
                 action="global_search",
                 decision="executed",
                 reasoning=[
