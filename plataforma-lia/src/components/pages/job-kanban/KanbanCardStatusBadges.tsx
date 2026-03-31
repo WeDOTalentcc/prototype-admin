@@ -91,6 +91,7 @@ export function KanbanCardStatusBadges({
   rejectSuggestion,
 }: KanbanCardStatusBadgesProps) {
   return (
+    <>
 {/* Tags de Status Compactas */}
 <div className="mt-2 flex flex-wrap gap-1">
   {/* AI Suggestion Badge */}
@@ -390,6 +391,6 @@ export function KanbanCardStatusBadges({
   )}
 </div>
             </div>
-
+    </>
   )
 }

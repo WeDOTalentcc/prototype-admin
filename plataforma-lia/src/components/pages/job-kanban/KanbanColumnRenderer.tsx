@@ -618,7 +618,6 @@ export function KanbanColumnRenderer({
               onRejectFromScreening={onRejectFromScreening}
               openTransition={openTransition}
             />
-            )}
           </div>
         ))}
       </div>
