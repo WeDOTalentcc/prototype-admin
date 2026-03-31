@@ -119,19 +119,22 @@ async def generate_jd(
         result["summary"] = ""
 
         fg_output = _fg_check_output(result.get("full_description", ""), request.company_id)
-        response = {"success": True, **result}
-        if fg_output:
-            if fg_output.is_blocked:
-                response["fairness_warning"] = {
-                    "blocked": True,
+        if fg_output and fg_output.is_blocked:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error": "fairness_blocked",
+                    "field": "full_description",
                     "message": fg_output.blocked_result.educational_message if fg_output.blocked_result else "Viés detectado na descrição gerada.",
                     "category": fg_output.blocked_result.category if fg_output.blocked_result else None,
-                }
-            elif fg_output.has_warnings:
-                response["fairness_warning"] = {
-                    "blocked": False,
-                    "warnings": fg_output.warnings,
-                }
+                },
+            )
+        response = {"success": True, **result}
+        if fg_output and fg_output.has_warnings:
+            response["fairness_warning"] = {
+                "blocked": False,
+                "warnings": fg_output.warnings,
+            }
 
         return response
     except HTTPException:
@@ -155,6 +158,16 @@ async def generate_jd(
             desc = jd_generator_service.generate_description(job_data_sync)
             
             fg_output = _fg_check_output(desc, request.company_id)
+            if fg_output and fg_output.is_blocked:
+                raise HTTPException(
+                    status_code=422,
+                    detail={
+                        "error": "fairness_blocked",
+                        "field": "full_description",
+                        "message": fg_output.blocked_result.educational_message if fg_output.blocked_result else "Viés detectado na descrição gerada.",
+                        "category": fg_output.blocked_result.category if fg_output.blocked_result else None,
+                    },
+                )
             response = {
                 "success": True,
                 "full_description": desc,

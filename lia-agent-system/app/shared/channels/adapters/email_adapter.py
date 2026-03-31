@@ -1,5 +1,6 @@
 import base64
 import logging
+import os
 import re
 import uuid
 from datetime import datetime
@@ -38,19 +39,24 @@ def _add_ai_footer(body_text: str | None, body_html: str | None) -> tuple[str | 
     return body_text, body_html
 
 
-async def _is_opted_out(email: str) -> bool:
+async def _is_opted_out(email: str, company_id: str | None = None) -> bool:
     """Check if candidate has opted out of email communications (LGPD)."""
     try:
         from app.domains.analytics.models.observability import ConsentEvent
         async with AsyncSessionLocal() as db:
+            conditions = [
+                ConsentEvent.subject_email == email,
+                ConsentEvent.event_type == "revoked",
+                ConsentEvent.channel == "communication_email",
+            ]
+            if company_id:
+                try:
+                    from uuid import UUID
+                    conditions.append(ConsentEvent.company_id == UUID(company_id))
+                except (ValueError, TypeError):
+                    pass
             result = await db.execute(
-                select(ConsentEvent.id).where(
-                    and_(
-                        ConsentEvent.subject_email == email,
-                        ConsentEvent.event_type == "revoked",
-                        ConsentEvent.consent_given == False,
-                    )
-                ).limit(1)
+                select(ConsentEvent.id).where(and_(*conditions)).limit(1)
             )
             return result.scalar_one_or_none() is not None
     except Exception as e:
@@ -59,9 +65,19 @@ async def _is_opted_out(email: str) -> bool:
 
 
 def _generate_unsubscribe_url(email: str, company_id: str) -> str:
-    """Generate unsubscribe URL token for email opt-out link."""
-    token = base64.urlsafe_b64encode(f"{email}:{company_id}".encode()).decode()
-    return f"/api/v1/communication/unsubscribe/{token}"
+    """Generate absolute unsubscribe URL with HMAC-signed token."""
+    try:
+        from app.api.v1.communication_optout import generate_signed_token
+        token = generate_signed_token(email, company_id)
+    except Exception:
+        token = base64.urlsafe_b64encode(f"{email}:{company_id}".encode()).decode()
+    base_url = os.environ.get("BASE_URL", "").rstrip("/")
+    if not base_url:
+        replit_domain = os.environ.get("REPLIT_DEV_DOMAIN", "")
+        if replit_domain:
+            base_url = f"https://{replit_domain}"
+    path = f"/api/v1/communication/unsubscribe/{token}"
+    return f"{base_url}{path}" if base_url else path
 
 
 class EmailChannelAdapter(ChannelAdapter):
@@ -78,8 +94,8 @@ class EmailChannelAdapter(ChannelAdapter):
     async def send(self, message: ChannelMessage) -> DeliveryResult:
         message_id = str(uuid.uuid4())
 
-        # I5: LGPD opt-out check before sending
-        if await _is_opted_out(message.recipient_contact):
+        # I5: LGPD opt-out check before sending (company-scoped)
+        if await _is_opted_out(message.recipient_contact, getattr(message, "company_id", None)):
             logger.info(f"[EMAIL_ADAPTER] Skipping email to {message.recipient_contact} — opted out (LGPD)")
             return DeliveryResult(
                 success=False,

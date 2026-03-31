@@ -530,9 +530,15 @@ class WSIInterviewNodes:
             # A3/G1: FairnessGuard — mask protected info from candidate responses before scoring
             masked_response = response_clean
             try:
+                from app.shared.pii_masking import strip_pii_for_llm_prompt
+                masked_response = strip_pii_for_llm_prompt(response_clean)
+            except Exception as _pii_exc:
+                logger.debug("[WSIInterviewGraph][A3] PII masking skipped: %s", _pii_exc)
+
+            try:
                 from app.shared.compliance.fairness_guard_middleware import check_fairness
                 _fg_resp = check_fairness(
-                    {"candidate_response": response_clean},
+                    {"candidate_response": masked_response},
                     context="wsi_candidate_response",
                     company_id=str(state.candidate_profile.get("company_id", "")),
                 )

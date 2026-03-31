@@ -4,7 +4,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 from app.core.database import get_db
 import base64
+import hashlib
+import hmac
+import html
 import logging
+import os
 import uuid
 from datetime import datetime
 
@@ -13,9 +17,37 @@ def _get_consent_event_model():
     from app.domains.analytics.models.observability import ConsentEvent
     return ConsentEvent
 
+
+_HMAC_SECRET = os.environ.get("UNSUBSCRIBE_HMAC_SECRET", "lia-lgpd-unsubscribe-default-key")
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix='/communication', tags=['communication-optout'])
+
+
+def generate_signed_token(email: str, company_id: str) -> str:
+    payload = f"{email}:{company_id}"
+    sig = hmac.new(_HMAC_SECRET.encode(), payload.encode(), hashlib.sha256).hexdigest()[:16]
+    raw = f"{payload}:{sig}"
+    return base64.urlsafe_b64encode(raw.encode()).decode()
+
+
+def verify_signed_token(token: str):
+    try:
+        decoded = base64.urlsafe_b64decode(token).decode("utf-8")
+        parts = decoded.rsplit(":", 1)
+        if len(parts) != 2:
+            return None, None
+        payload, sig = parts
+        expected = hmac.new(_HMAC_SECRET.encode(), payload.encode(), hashlib.sha256).hexdigest()[:16]
+        if not hmac.compare_digest(sig, expected):
+            return None, None
+        email_company = payload.split(":", 1)
+        if len(email_company) != 2 or not email_company[0] or not email_company[1]:
+            return None, None
+        return email_company[0], email_company[1]
+    except Exception:
+        return None, None
 
 UNSUBSCRIBE_PAGE_HTML = """<!DOCTYPE html>
 <html lang="pt-BR">
@@ -132,32 +164,20 @@ ERROR_HTML = """<!DOCTYPE html>
 </html>"""
 
 
-def decode_unsubscribe_token(token: str):
-    try:
-        decoded = base64.urlsafe_b64decode(token).decode('utf-8')
-        parts = decoded.split(':', 1)
-        if len(parts) != 2:
-            return None, None
-        email, company_id = parts
-        if not email or not company_id:
-            return None, None
-        return email, company_id
-    except Exception:
-        return None, None
-
-
 @router.get("/unsubscribe/{token}", response_class=HTMLResponse)
 async def unsubscribe_page(token: str, request: Request, db: AsyncSession = Depends(get_db)):
     ConsentEvent = _get_consent_event_model()
-    email, company_id = decode_unsubscribe_token(token)
+    email, company_id = verify_signed_token(token)
     if not email or not company_id:
-        logger.warning(f"Invalid unsubscribe token attempted")
+        logger.warning("Invalid or forged unsubscribe token attempted")
         return HTMLResponse(content=ERROR_HTML, status_code=400)
+
+    safe_email = html.escape(email)
 
     try:
         company_uuid = uuid.UUID(company_id)
     except ValueError:
-        logger.warning(f"Invalid company_id in unsubscribe token")
+        logger.warning("Invalid company_id in unsubscribe token")
         return HTMLResponse(content=ERROR_HTML, status_code=400)
 
     existing_query = select(ConsentEvent).where(
@@ -172,23 +192,25 @@ async def unsubscribe_page(token: str, request: Request, db: AsyncSession = Depe
     existing = result.scalar_one_or_none()
 
     if existing:
-        return HTMLResponse(content=ALREADY_OPTED_OUT_HTML.format(email=email))
+        return HTMLResponse(content=ALREADY_OPTED_OUT_HTML.format(email=safe_email))
 
-    return HTMLResponse(content=UNSUBSCRIBE_PAGE_HTML.format(email=email))
+    return HTMLResponse(content=UNSUBSCRIBE_PAGE_HTML.format(email=safe_email))
 
 
 @router.post("/unsubscribe/{token}", response_class=HTMLResponse)
 async def process_unsubscribe(token: str, request: Request, db: AsyncSession = Depends(get_db)):
     ConsentEvent = _get_consent_event_model()
-    email, company_id = decode_unsubscribe_token(token)
+    email, company_id = verify_signed_token(token)
     if not email or not company_id:
-        logger.warning(f"Invalid unsubscribe token on POST")
+        logger.warning("Invalid or forged unsubscribe token on POST")
         return HTMLResponse(content=ERROR_HTML, status_code=400)
+
+    safe_email = html.escape(email)
 
     try:
         company_uuid = uuid.UUID(company_id)
     except ValueError:
-        logger.warning(f"Invalid company_id in unsubscribe token on POST")
+        logger.warning("Invalid company_id in unsubscribe token on POST")
         return HTMLResponse(content=ERROR_HTML, status_code=400)
 
     existing_query = select(ConsentEvent).where(
@@ -203,10 +225,9 @@ async def process_unsubscribe(token: str, request: Request, db: AsyncSession = D
     existing = result.scalar_one_or_none()
 
     if existing:
-        return HTMLResponse(content=ALREADY_OPTED_OUT_HTML.format(email=email))
+        return HTMLResponse(content=ALREADY_OPTED_OUT_HTML.format(email=safe_email))
 
     try:
-        import hashlib
         now = datetime.utcnow()
         proof_data = f"{email}|{company_id}|revoked|communication_email|{now.isoformat()}"
         proof_hash = hashlib.sha256(proof_data.encode()).hexdigest()
@@ -233,8 +254,8 @@ async def process_unsubscribe(token: str, request: Request, db: AsyncSession = D
         await db.commit()
 
         logger.info(f"LGPD opt-out processed for email={email}, company_id={company_id}")
-        return HTMLResponse(content=CONFIRM_HTML.format(email=email))
+        return HTMLResponse(content=CONFIRM_HTML.format(email=safe_email))
     except Exception as e:
         await db.rollback()
-        logger.error(f"Error processing unsubscribe for {email}: {e}", exc_info=True)
+        logger.error(f"Error processing unsubscribe: {e}", exc_info=True)
         return HTMLResponse(content=ERROR_HTML, status_code=500)
