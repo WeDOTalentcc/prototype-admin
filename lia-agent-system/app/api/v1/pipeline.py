@@ -66,16 +66,21 @@ async def execute_pipeline_action(
             raise HTTPException(status_code=400, detail=result.get("error", "Action failed"))
 
         try:
+            _is_gate_action = request.action_id in ("advance_stage", "reject_candidate", "send_offer", "confirm_hire")
             await audit_service.log_decision(
                 company_id="default",
                 agent_name="pipeline_module",
                 decision_type="move_stage",
                 action=request.action_id,
                 decision="executed",
-                reasoning=[f"Pipeline action '{request.action_id}' executed", f"Result: {result.get('status', 'ok')}"],
-                criteria_used=["action_id", "candidate_status", "pipeline_rules"],
+                reasoning=[
+                    f"Pipeline action '{request.action_id}' executed",
+                    f"Result: {result.get('status', 'ok')}",
+                    f"Gate decision: {_is_gate_action}",
+                ],
+                criteria_used=["action_id", "candidate_status", "pipeline_rules", "gate_policy"],
                 candidate_id=request.candidate_id,
-                human_review_required=False,
+                human_review_required=_is_gate_action,
             )
         except Exception as audit_err:
             logger.warning(f"Audit log failed for pipeline_action: {audit_err}")

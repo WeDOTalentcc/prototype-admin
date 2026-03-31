@@ -166,8 +166,8 @@ async def create_interview(
                 reasoning=[
                     "Interview created via scheduling API",
                     f"Type: {request.interview_type}",
-                    f"Scheduled: {getattr(request, 'scheduled_date', 'N/A')}",
-                    f"Duration: {getattr(request, 'duration_minutes', 60)}min",
+                    f"Scheduled: {request.start_time.isoformat() if request.start_time else 'N/A'}",
+                    f"Duration: {request.duration_minutes}min",
                     f"Calendar sync: pending",
                 ],
                 criteria_used=["candidate_availability", "interviewer_availability", "calendar_slot", "interview_type"],

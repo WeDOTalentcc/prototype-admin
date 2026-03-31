@@ -171,7 +171,7 @@ async def schedule_interview(
                     "Interview scheduled via calendar integration",
                     f"Type: {request.interview_type}",
                     f"Mode: {request.interview_mode}",
-                    f"Scheduled: {getattr(request, 'scheduled_date', 'N/A')}",
+                    f"Scheduled: {request.start_time.isoformat() if request.start_time else 'N/A'}",
                     f"Calendar sync status: confirmed",
                 ],
                 criteria_used=["candidate_contact_info", "interviewer_availability", "calendar_sync", "interview_mode"],
