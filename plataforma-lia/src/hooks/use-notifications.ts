@@ -94,6 +94,7 @@ export function useNotifications({
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [activeCategory, setActiveCategory] = useState<NotificationCategory | null>(null)
+  const [serverUnreadCount, setServerUnreadCount] = useState<number | null>(null)
   const lastFetchRef = useRef<number>(0)
   const backoffRef = useRef(0)
 
@@ -129,6 +130,14 @@ export function useNotifications({
       } else {
         setNotifications([])
       }
+
+      fetch(`/api/backend-proxy/notifications/unread-count?user_id=${userId}`)
+        .then(r => r.json())
+        .then(d => {
+          if (typeof d.unread_count === "number") setServerUnreadCount(d.unread_count)
+          else if (d.data && typeof d.data.unread_count === "number") setServerUnreadCount(d.data.unread_count)
+        })
+        .catch(() => {})
     } catch (err) {
       setError("Falha ao conectar com o servidor de notificações")
       setNotifications([])
@@ -147,6 +156,7 @@ export function useNotifications({
         setNotifications(prev =>
           prev.map(n => n.id === id ? { ...n, read: true } : n)
         )
+        setServerUnreadCount(prev => prev !== null && prev > 0 ? prev - 1 : prev)
       }
     } catch {
     }
@@ -160,6 +170,7 @@ export function useNotifications({
       const data = await response.json()
       if (data.success) {
         setNotifications(prev => prev.map(n => ({ ...n, read: true })))
+        setServerUnreadCount(0)
       }
     } catch {
     }
@@ -184,8 +195,8 @@ export function useNotifications({
   }, [notifications, activeCategory])
 
   const unreadCount = useMemo(() =>
-    notifications.filter(n => !n.read).length,
-    [notifications]
+    serverUnreadCount !== null ? serverUnreadCount : notifications.filter(n => !n.read).length,
+    [notifications, serverUnreadCount]
   )
 
   const hasNotifications = useMemo(() =>
