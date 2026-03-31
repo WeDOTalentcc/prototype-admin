@@ -1,0 +1,187 @@
+"""
+LLM Job Classification Service (Fase 5 / G3).
+
+Post-vector-search filter that validates candidate-job compatibility using LLM.
+Removes candidates whose profiles are fundamentally incompatible with the vacancy
+(e.g., a Java developer matched against a neurosurgeon vacancy via keyword overlap).
+
+Uses Gemini Flash for low-latency classification. Falls back to heuristic matching
+when LLM is unavailable.
+"""
+import json
+import logging
+import os
+from typing import Any, Dict, List, Optional, Tuple
+
+logger = logging.getLogger(__name__)
+
+COMPATIBILITY_PROMPT = """Você é um especialista em recrutamento. Analise se o candidato é COMPATÍVEL com a vaga.
+
+## Vaga:
+Título: {job_title}
+Área: {job_area}
+Requisitos: {job_requirements}
+
+## Candidato:
+Nome: {candidate_name}
+Cargo Atual: {candidate_title}
+Experiência: {candidate_experience}
+Habilidades: {candidate_skills}
+
+## Regras:
+- COMPATÍVEL: o candidato tem formação/experiência relevante para a vaga, mesmo que não atenda 100% dos requisitos
+- INCOMPATÍVEL: o candidato é de área completamente diferente (ex: médico vs programador, motorista vs designer)
+- Na dúvida, classifique como COMPATÍVEL (evitar falsos negativos)
+
+Responda APENAS em JSON:
+{{"compatible": true/false, "confidence": 0.0-1.0, "reason": "explicação breve"}}"""
+
+INCOMPATIBLE_AREAS = {
+    ("saude", "tecnologia"), ("saude", "logistica"), ("saude", "marketing"),
+    ("tecnologia", "saude"), ("tecnologia", "agropecuaria"),
+    ("juridico", "tecnologia"), ("juridico", "logistica"),
+    ("engenharia_civil", "tecnologia"), ("engenharia_civil", "saude"),
+    ("educacao", "tecnologia"), ("educacao", "financeiro"),
+    ("agropecuaria", "tecnologia"), ("agropecuaria", "financeiro"),
+}
+
+
+def _detect_area(text: str) -> Optional[str]:
+    text_lower = (text or "").lower()
+    area_keywords = {
+        "saude": ["médico", "medico", "enfermeiro", "hospital", "clínica", "clinica", "saúde", "saude", "cirurgião", "cirurgiao", "farmacêutico", "farmaceutico", "fisioterapeuta", "nutricionista", "psicólogo", "psicologo", "dentista", "odontolog"],
+        "tecnologia": ["developer", "desenvolvedor", "programador", "software", "frontend", "backend", "devops", "data engineer", "cloud", "sre", "fullstack", "react", "python", "java", "typescript", "machine learning", "dados", "data science"],
+        "juridico": ["advogado", "jurídico", "juridico", "direito", "compliance", "regulatório", "regulatorio"],
+        "logistica": ["motorista", "logística", "logistica", "transporte", "armazém", "armazem", "estoque", "supply chain", "cadeia de suprimentos"],
+        "marketing": ["marketing", "publicidade", "propaganda", "mídia", "midia", "social media", "branding", "comunicação", "comunicacao"],
+        "financeiro": ["contabilidade", "financeiro", "auditoria", "controller", "tesouraria", "fiscal", "tributário", "tributario", "banking"],
+        "engenharia_civil": ["engenheiro civil", "construção", "construcao", "obra", "arquiteto", "urbanismo", "estrutural"],
+        "educacao": ["professor", "pedagogo", "educação", "educacao", "docente", "ensino", "escola"],
+        "agropecuaria": ["agrônomo", "agronomo", "agropecuário", "agropecuario", "veterinário", "veterinario", "zootecnia", "agricultura"],
+    }
+    for area, keywords in area_keywords.items():
+        if any(kw in text_lower for kw in keywords):
+            return area
+    return None
+
+
+class LLMJobClassificationService:
+    def __init__(self):
+        self._model = None
+
+    def _get_model(self):
+        if self._model is None:
+            try:
+                import google.generativeai as genai
+                api_key = os.environ.get("GEMINI_API_KEY")
+                if not api_key:
+                    return None
+                genai.configure(api_key=api_key)
+                self._model = genai.GenerativeModel("gemini-2.0-flash")
+            except Exception as e:
+                logger.error("[LLMJobClassification] Gemini init error: %s", e)
+                return None
+        return self._model
+
+    def _heuristic_check(
+        self,
+        job_info: Dict[str, Any],
+        candidate: Dict[str, Any],
+    ) -> Tuple[bool, float, str]:
+        job_text = f"{job_info.get('title', '')} {job_info.get('area', '')} {job_info.get('requirements', '')}"
+        candidate_text = f"{candidate.get('title', '')} {candidate.get('experience', '')} {candidate.get('skills', '')}"
+
+        job_area = _detect_area(job_text)
+        cand_area = _detect_area(candidate_text)
+
+        if job_area and cand_area and (job_area, cand_area) in INCOMPATIBLE_AREAS:
+            return False, 0.75, f"Áreas incompatíveis: vaga={job_area}, candidato={cand_area}"
+
+        return True, 0.5, "Heurística: sem incompatibilidade detectada"
+
+    async def classify_candidate(
+        self,
+        job_info: Dict[str, Any],
+        candidate: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        model = self._get_model()
+        if not model:
+            compatible, confidence, reason = self._heuristic_check(job_info, candidate)
+            return {
+                "compatible": compatible,
+                "confidence": confidence,
+                "reason": reason,
+                "method": "heuristic",
+            }
+
+        try:
+            prompt = COMPATIBILITY_PROMPT.format(
+                job_title=job_info.get("title", "N/A"),
+                job_area=job_info.get("area", "N/A"),
+                job_requirements=str(job_info.get("requirements", "N/A"))[:500],
+                candidate_name=candidate.get("name", "N/A"),
+                candidate_title=candidate.get("title", "N/A"),
+                candidate_experience=str(candidate.get("experience", "N/A"))[:400],
+                candidate_skills=str(candidate.get("skills", "N/A"))[:300],
+            )
+
+            response = model.generate_content(prompt)
+            text = response.text.strip()
+            if text.startswith("```"):
+                text = text.split("```")[1]
+                if text.startswith("json"):
+                    text = text[4:]
+            parsed = json.loads(text)
+
+            return {
+                "compatible": parsed.get("compatible", True),
+                "confidence": parsed.get("confidence", 0.5),
+                "reason": parsed.get("reason", ""),
+                "method": "llm",
+            }
+        except Exception as exc:
+            logger.debug("[LLMJobClassification] LLM fallback to heuristic: %s", exc)
+            compatible, confidence, reason = self._heuristic_check(job_info, candidate)
+            return {
+                "compatible": compatible,
+                "confidence": confidence,
+                "reason": reason,
+                "method": "heuristic_fallback",
+            }
+
+    async def filter_candidates(
+        self,
+        job_info: Dict[str, Any],
+        candidates: List[Dict[str, Any]],
+        min_confidence: float = 0.6,
+    ) -> Dict[str, Any]:
+        compatible = []
+        filtered_out = []
+
+        for candidate in candidates:
+            result = await self.classify_candidate(job_info, candidate)
+            candidate_with_classification = {
+                **candidate,
+                "job_compatibility": result,
+            }
+
+            if result["compatible"] or result["confidence"] < min_confidence:
+                compatible.append(candidate_with_classification)
+            else:
+                filtered_out.append(candidate_with_classification)
+
+        logger.info(
+            "[LLMJobClassification] Filtered %d/%d candidates for '%s' (min_conf=%.2f)",
+            len(filtered_out), len(candidates), job_info.get("title", "?"), min_confidence,
+        )
+
+        return {
+            "compatible_candidates": compatible,
+            "filtered_out": filtered_out,
+            "total_input": len(candidates),
+            "total_compatible": len(compatible),
+            "total_filtered": len(filtered_out),
+        }
+
+
+llm_job_classification_service = LLMJobClassificationService()

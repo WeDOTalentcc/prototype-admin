@@ -1832,17 +1832,62 @@ class CommunicationService:
                     "error": "no_situation_mapping",
                     "message": f"No template situation mapping for message type: {message_type.value}"
                 }
-            
-            result = await db.execute(
-                select(EmailTemplate).where(
-                    and_(
-                        EmailTemplate.situation == situation,
-                        EmailTemplate.is_active == True,
-                        EmailTemplate.channel == channel.value
+
+            recommended_template_id = None
+            try:
+                from app.shared.intelligence.template_learning.template_learning_service import template_learning_service
+                recommended_template_id = await template_learning_service.recommend_template(
+                    db=db,
+                    company_id=company_id,
+                    context={"message_type": message_type.value, "situation": situation},
+                    fallback_template_id=None,
+                )
+            except Exception as _tl_exc:
+                logger.debug("[TemplateLearning] recommend skipped: %s", _tl_exc)
+
+            ab_variant_info = None
+            ab_test_map = {
+                MessageType.SCREENING_INVITATION: "email_screening_invite",
+                MessageType.SCREENING_REMINDER: "email_follow_up_reminder",
+                MessageType.REJECTION_FEEDBACK: "email_feedback_rejection",
+            }
+            ab_test_name = ab_test_map.get(message_type)
+            if ab_test_name:
+                try:
+                    from app.shared.learning.ab_testing_service import ABTestingService
+                    _ab_svc = ABTestingService()
+                    ab_variant_info = await _ab_svc.get_variant(
+                        test_name=ab_test_name,
+                        session_id=candidate_id,
+                        db=db,
                     )
-                ).limit(1)
-            )
-            template = result.scalar_one_or_none()
+                except Exception as _ab_exc:
+                    logger.debug("[ABTesting] variant lookup skipped: %s", _ab_exc)
+
+            if recommended_template_id:
+                result = await db.execute(
+                    select(EmailTemplate).where(
+                        and_(
+                            EmailTemplate.id == recommended_template_id,
+                            EmailTemplate.is_active == True,
+                        )
+                    ).limit(1)
+                )
+                template = result.scalar_one_or_none()
+                if not template:
+                    recommended_template_id = None
+
+            if not recommended_template_id:
+                result = await db.execute(
+                    select(EmailTemplate).where(
+                        and_(
+                            EmailTemplate.situation == situation,
+                            EmailTemplate.is_active == True,
+                            EmailTemplate.channel == channel.value
+                        )
+                    ).limit(1)
+                )
+                template = result.scalar_one_or_none()
             
             if not template:
                 logger.warning(f"Template with situation='{situation}' not found for channel={channel.value}")
@@ -1884,6 +1929,22 @@ class CommunicationService:
                 logger.info(f"📧 Templated message sent: {message_type.value} to {candidate_email}")
                 send_result["template_used"] = template.name
                 send_result["template_situation"] = situation
+
+                if recommended_template_id:
+                    send_result["template_source"] = "learning_recommended"
+                if ab_variant_info:
+                    send_result["ab_variant"] = ab_variant_info.get("variant_name")
+                    send_result["ab_test"] = ab_test_name
+
+                try:
+                    from app.shared.intelligence.template_learning.template_learning_service import template_learning_service
+                    template_learning_service.record_send(
+                        company_id=company_id,
+                        template_id=str(template.id) if hasattr(template, 'id') else template.name,
+                        context={"message_type": message_type.value, "candidate_id": candidate_id},
+                    )
+                except Exception:
+                    pass
             
             return send_result
             

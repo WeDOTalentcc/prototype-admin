@@ -238,6 +238,19 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"⚠️  Platform Event Handlers não registrados: {e}")
 
+    # Seed A/B Testing email template variants (Fase 5 / A5 — idempotent)
+    try:
+        from app.shared.intelligence.ab_testing import seed_email_ab_tests
+        async with AsyncSessionLocal() as _ab_db:
+            _ab_result = await seed_email_ab_tests(_ab_db)
+            logger.info(
+                "✅ A/B Testing seeded: created=%d, skipped=%d",
+                len(_ab_result.get("created", [])),
+                len(_ab_result.get("skipped", [])),
+            )
+    except Exception as e:
+        logger.warning(f"⚠️  A/B Testing seed failed (non-blocking): {e}")
+
     logger.info("🎯 LIA Agent System ready!")
 
     yield

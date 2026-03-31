@@ -591,6 +591,70 @@ class FairnessGuard:
                 soft_warnings=implicit_warnings,
             )
 
+    async def check_with_sector(
+        self,
+        text: str,
+        sector: str,
+        action_type: str = "general",
+        context: Optional[str] = None,
+    ) -> FairnessCheckResult:
+        """
+        Sector-dependent FairnessGuard check (Fase 5 / G4).
+
+        Uses ALPHA1_SECTOR_RULES to determine whether Layer 3 (LLM semantic)
+        analysis is enabled for a given sector. Sectors like tech, financeiro,
+        saude, and rpo have L3 enabled; varejo and logistica do not.
+
+        When L3 is enabled for the sector, uses sector-specific prompt context
+        to improve bias detection accuracy for that industry.
+        """
+        try:
+            from app.services.policy_engine_service import ALPHA1_SECTOR_RULES
+        except ImportError:
+            ALPHA1_SECTOR_RULES = {}
+
+        sector_key = (sector or "").lower().strip()
+        sector_config = ALPHA1_SECTOR_RULES.get(sector_key, {})
+        sector_l3_enabled = sector_config.get("fairness_layer3_enabled", False)
+
+        base_result = self.check(text)
+        if base_result.is_blocked:
+            base_result.soft_warnings.insert(
+                0, f"[Setor: {sector_key}] Viés explícito detectado"
+            )
+            return base_result
+
+        implicit_warnings = self.check_implicit_bias(text)
+
+        sector_context_map = {
+            "tech": "Setor de tecnologia: atenção a vieses de gênero em cargos técnicos, etarismo (age bias) e elitismo acadêmico.",
+            "financeiro": "Setor financeiro: atenção a vieses socioeconômicos, elitismo institucional e discriminação indireta por origem.",
+            "saude": "Setor de saúde: atenção a vieses de gênero em especialidades, discriminação por PCD e exigências físicas não-funcionais.",
+            "rpo": "RPO (terceirização de recrutamento): atenção a vieses transferidos do cliente, discriminação indireta em requisitos vagos.",
+            "varejo": "Setor de varejo: atenção a vieses de aparência e discriminação geográfica/socioeconômica.",
+            "logistica": "Setor de logística: atenção a vieses de gênero em cargos operacionais e discriminação por PCD.",
+        }
+
+        if not sector_l3_enabled:
+            return FairnessCheckResult(
+                is_blocked=False,
+                blocked_terms=base_result.blocked_terms,
+                category=base_result.category,
+                educational_message=base_result.educational_message,
+                original_query=text,
+                confidence=base_result.confidence,
+                soft_warnings=implicit_warnings,
+            )
+
+        sector_context = sector_context_map.get(sector_key, f"Setor: {sector_key}")
+        full_context = f"{sector_context}\n{context or ''}"
+
+        return await self.check_with_layer3(
+            text=text,
+            action_type=action_type,
+            context=full_context,
+        )
+
     def validate_learning_batch(
         self,
         patterns_to_update: Dict[str, Any],

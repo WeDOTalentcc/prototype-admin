@@ -407,6 +407,31 @@ class RAGPipelineService:
         except Exception as _wrf_exc:
             logger.debug("[RAGPipeline] WRF re-ranking skipped: %s", _wrf_exc)
 
+        # --- LLM Job Classification filter (Fase 5 / G3) ---
+        llm_classification_applied = False
+        try:
+            from app.domains.sourcing.services.llm_job_classification_service import llm_job_classification_service
+            if len(merged) > 3:
+                job_info = {
+                    "title": kwargs.get("job_title", ""),
+                    "area": kwargs.get("job_area", ""),
+                    "requirements": kwargs.get("job_requirements", query),
+                }
+                if job_info["title"]:
+                    classification_result = await llm_job_classification_service.filter_candidates(
+                        job_info=job_info,
+                        candidates=merged,
+                    )
+                    merged = classification_result["compatible_candidates"]
+                    llm_classification_applied = True
+                    logger.debug(
+                        "[RAGPipeline] LLM classification: %d/%d compatible",
+                        classification_result["total_compatible"],
+                        classification_result["total_input"],
+                    )
+        except Exception as _cls_exc:
+            logger.debug("[RAGPipeline] LLM classification skipped: %s", _cls_exc)
+
         # --- FairnessGuard (diversidade de gênero no top-10) ---
         fairness_ok = _check_fairness(merged, top_n=10)
 
@@ -442,6 +467,7 @@ class RAGPipelineService:
                 "semantic_threshold": self.semantic_threshold,
                 "domain": normalized_domain,
                 "ranking_audit": ranking_audit,
+                "llm_classification_applied": llm_classification_applied,
             },
         )
 
