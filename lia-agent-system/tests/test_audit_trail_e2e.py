@@ -180,10 +180,8 @@ class TestE5ScreeningDecision:
             audit.log_decision = AsyncMock()
             from app.api.v1.candidates import ScreeningDecisionRequest
             req = ScreeningDecisionRequest(
-                candidate_id=str(uuid4()),
-                vacancy_id=str(uuid4()),
                 decision="approved",
-                notes="Good candidate"
+                reason="Strong technical skills"
             )
             try:
                 await screening_decision(request=req, db=db)

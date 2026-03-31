@@ -2073,7 +2073,7 @@ async def screening_decision(
                     f"Stage transition: {new_stage}",
                     f"WSI score: {_vc_score}" if _vc_score else "WSI score: N/A",
                     f"Ranking: {_vc_ranking}" if _vc_ranking else "Ranking: N/A",
-                    f"Recruiter notes: provided" if getattr(request, "notes", None) else "Recruiter notes: none",
+                    f"Recruiter rationale: provided" if getattr(request, "reason", None) else "Recruiter rationale: none",
                 ],
                 criteria_used=["screening_evaluation", "recruiter_review", "wsi_score", "ranking_position"],
                 candidate_id=str(candidate_id),
