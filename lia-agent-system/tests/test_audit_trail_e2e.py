@@ -363,12 +363,10 @@ class TestE7RubricEvaluation:
             mock_result.overall_score = 4.2
             mock_eval_1 = MagicMock()
             mock_eval_1.requirement = "Python"
-            mock_eval_1.points = 75
-            mock_eval_1.weighted_points = 150.0
+            mock_eval_1.score = 4.5
             mock_eval_2 = MagicMock()
             mock_eval_2.requirement = "SQL"
-            mock_eval_2.points = 40
-            mock_eval_2.weighted_points = 80.0
+            mock_eval_2.score = 3.0
             mock_result.evaluations = [mock_eval_1, mock_eval_2]
             mock_result.model_dump = MagicMock(return_value={"overall_score": 4.2})
             svc.evaluate_candidate = AsyncMock(return_value=mock_result)

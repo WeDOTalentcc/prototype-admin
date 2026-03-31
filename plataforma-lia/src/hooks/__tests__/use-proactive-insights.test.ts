@@ -136,7 +136,7 @@ describe('useProactiveInsights', () => {
       json: async () => [],
     })
 
-    const jobId = 'job-first'
+    let jobId = 'job-first'
     const { rerender } = renderHook(
       ({ jid }: { jid: string }) => useProactiveInsights(jid, 'comp-1'),
       { wrapper: swrWrapper, initialProps: { jid: 'job-first' } }

@@ -281,7 +281,7 @@ export function KanbanColumnRenderer({
     sortedCandidates = candidates.sort((a, b) => {
       if (a.needsAction && !b.needsAction) return -1
       if (!a.needsAction && b.needsAction) return 1
-      return (b.score ?? 0) - (a.score ?? 0)
+      return b.score - a.score
     })
   }
 
@@ -345,7 +345,7 @@ export function KanbanColumnRenderer({
               {filteredCandidates.length}
             </span>
             {stageId === "screening" && (currentJob.backendId || currentJob.id) && (
-              <SaturationBadge jobId={String(currentJob.backendId || currentJob.id || '')} />
+              <SaturationBadge jobId={(currentJob.backendId || currentJob.id).toString()} />
             )}
             {dynamicStage && (
               <ColumnContextMenu
@@ -668,7 +668,7 @@ export function KanbanColumnRenderer({
 
               {/* Scores - Todos os 6 indicadores (Geral, Triagem, CV, Técnico, Inglês, B5) */}
               {(() => {
-                const geralScore = calculateNotaLiaGeral(candidate) as number | null | undefined
+                const geralScore = calculateNotaLiaGeral(candidate)
                 const triagemScore = candidate.liaScore ?? candidate.score
                 const cvScore = candidate.skillsMatch || candidate.fitScore
                 const tecnicoScore = candidate.technicalTestScore
@@ -700,7 +700,7 @@ export function KanbanColumnRenderer({
                         id={id}
                         icon={Icon}
                         value={value}
-                        formattedValue={value != null ? formatScorePercent(value as number, 0) : undefined}
+                        formattedValue={value ? formatScorePercent(value, 0) : undefined}
                         label={label}
                         alwaysClickable={alwaysClickable}
                         onClick={() =>
@@ -744,7 +744,7 @@ export function KanbanColumnRenderer({
               <div className="mt-2 flex flex-wrap gap-1">
                 {/* AI Suggestion Badge */}
                 {(() => {
-                  const suggestion = getSuggestionForCandidate(aiSuggestions as import('@/hooks/useCandidateSuggestions').AISuggestion[], candidate.id)
+                  const suggestion = getSuggestionForCandidate(aiSuggestions, candidate.id)
                   if (suggestion) {
                     return (
                       <div onClick={(e) => e.stopPropagation()}>
@@ -1008,7 +1008,7 @@ export function KanbanColumnRenderer({
                       <OverrideApproveButton
                         candidateId={candidate.id}
                         candidateName={candidate.name}
-                        vacancyId={String(currentJob.backendId || currentJob.id || '')}
+                        vacancyId={(currentJob.backendId || currentJob.id).toString()}
                         onApproved={(cId: string) => {
                           setCandidatesData((prev) => {
                             const updated = { ...prev }
@@ -1115,13 +1115,13 @@ export function KanbanColumnRenderer({
                           }}
                           title={`Entrar na reunião - ${
                             candidate.interviewDate ||
-                            new Date(String(candidate.agendada)).toLocaleDateString("pt-BR")
+                            new Date(candidate.agendada).toLocaleDateString("pt-BR")
                           }`}
                         >
                           <Video className="w-3 h-3 text-lia-text-secondary" />
                           <span>
                             {candidate.interviewDate ||
-                              new Date(String(candidate.agendada)).toLocaleDateString("pt-BR", {
+                              new Date(candidate.agendada).toLocaleDateString("pt-BR", {
                                 day: "numeric",
                                 month: "short",
                                 hour: "2-digit",
@@ -1135,7 +1135,7 @@ export function KanbanColumnRenderer({
                             e.stopPropagation()
                             const dateStr =
                               candidate.interviewDate ||
-                              new Date(String(candidate.agendada)).toLocaleDateString("pt-BR", {
+                              new Date(candidate.agendada).toLocaleDateString("pt-BR", {
                                 day: "numeric",
                                 month: "long",
                                 hour: "2-digit",
@@ -1158,7 +1158,7 @@ export function KanbanColumnRenderer({
                             e.stopPropagation()
                             const dateStr =
                               candidate.interviewDate ||
-                              new Date(String(candidate.agendada)).toLocaleDateString("pt-BR", {
+                              new Date(candidate.agendada).toLocaleDateString("pt-BR", {
                                 day: "numeric",
                                 month: "long",
                                 hour: "2-digit",

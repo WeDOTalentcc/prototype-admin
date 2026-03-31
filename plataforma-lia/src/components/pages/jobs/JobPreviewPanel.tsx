@@ -52,7 +52,7 @@ export function JobPreviewPanel({
   }
 
   if (!showJobPreview || !previewJob) return null
-   
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const _previewJob = previewJob!
   const textStyles = {
     title: 'text-xs font-semibold text-lia-text-primary',

@@ -24,7 +24,7 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - **AI Stage Automation**: Employs a state machine for managing recruitment stages with smart transition automation.
 - **UI/UX Design**: Adheres to an "ElevenLabs pattern" with a monochromatic palette, cyan accents, a 3-font system, interactive pipeline flows, sortable columns, advanced pagination, and a command palette, all aligned with Design System v4.2.1.
 - **WSI Screening**: A 6-block (0-5) AI-powered methodology for comprehensive candidate evaluation.
-- **Compliance (3-Pillar Architecture)**: Designed to comply with LGPD, SOX, and EU AI Act, incorporating FairnessGuard and FactChecker for bias detection and factual accuracy, including logging, data retention, and PII masking.
+- **Compliance (3-Pillar Architecture)**: Designed to comply with LGPD, SOX, and EU AI Act, incorporating FairnessGuard and FactChecker for bias detection and factual accuracy.
 - **Job Creation Flow**: Supports both conversational ("Criar com a LIA") and manual entry ("Criar manualmente").
 - **Kanban Candidate Movement System**: Features AI-powered sub-status prediction and WSI score integration.
 - **5-Chat + 2-Channel Architecture**: Comprises dedicated chats for Job Creation, Talent, Jobs Management, Pipeline/Kanban, and Policy, integrated with WhatsApp and MS Teams.
@@ -35,31 +35,31 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - **Talent Funnel Search Optimization**: Leverages Elasticsearch, PG Vector, and WRF for advanced search with LLM job classification and candidate scoring.
 - **ReAct Agent System**: Implements autonomous agents using ReAct loops across 7 distinct domains.
 - **Progressive Automation & CompanyHiringPolicy**: Implements `CompanyHiringPolicy` to control automation levels with a confidence-based decision engine and conversational onboarding.
-- **WSI Saturation Intelligence**: Backend API and frontend components to manage and display candidate pipeline saturation.
+- **WSI Saturation Intelligence**: Backend API and frontend components to manage and display candidate pipeline saturation for organic and sourcing pools.
 - **PUB-001 Public Triagem Chat Page**: Public candidate-facing chat web page for WSI screening with text and bidirectional audio support (TTS/STT).
 - **Multi-Channel Communication Dispatcher**: `dispatch_message()` sends to ALL available channels (email + WhatsApp) by default.
-- **Celery Scheduler & Automations**: Background automations via Celery Beat for follow-ups, abandoned WSI checks, and feedback automation.
+- **Celery Scheduler & Automations**: Background automations for follow-ups, abandoned WSI checks, and feedback sending.
 - **Voice Analysis Integration**: Deepgram STT + OpenAI TTS for triagem voice mode.
-- **Microsoft Teams Notifications**: TeamsBot for event notifications using Adaptive Cards.
-- **Apify Candidate Enrichment**: `ApifyService.enrich_candidate_profile()` for enriching candidates via LinkedIn and email discovery.
+- **Microsoft Teams Notifications**: TeamsBot with adaptive cards for various notifications.
+- **Apify Candidate Enrichment**: Enriches candidate profiles via LinkedIn and email discovery.
 - **Gate 2 Re-Discovery Embedding**: Automatically generates Gemini embeddings for rejected candidates for future vector-similarity matching.
-- **A/B Testing Email Templates**: Implements A/B testing for email templates (screening invite, follow-up, rejection feedback) with `ABTestingService`.
-- **Template Learning Integration**: `TemplateLearningService.recommend_template()` wired into email sending to recommend best-performing templates.
-- **WRF Dynamic K Quality-Adaptive**: `WRFDynamicKService` enhanced with `compute_adaptive_k()` for adaptive k-value in WRF algorithm.
-- **LLM Job Classification Filter**: `LLMJobClassificationService` as a post-vector-search filter for candidate-job compatibility using Gemini Flash LLM.
-- **FairnessGuard L3 Sector-Dependent**: `FairnessGuard.check_with_sector()` uses sector-specific rules for Layer 3 (LLM semantic) bias analysis.
-- **Weekly Digest — Proactive Insights**: `WeeklyDigestService` aggregates data into a consolidated weekly report delivered via Teams, Chat, and Bell notifications.
-- **Production Readiness**: Includes health endpoint, RequestIdMiddleware, structured JSON logging, global exception handlers, auth protection, and rate limiting.
-- **FairnessGuard in Agent Outputs**: Integrated `FairnessGuard.check()` and `check_implicit_bias()` across various agent outputs.
-- **LGPD Log Retention**: Scheduled deletion for `ai_consumption` logs after 365 days.
-- **BiasAuditService + API**: Calculates adverse impact using the Four-Fifths Rule.
-- **Proactive Predictive Briefing**: LIA proactively presents pipeline stats, candidate alerts, and ML predictions in chat.
-- **Polling Optimization**: Frontend polling intervals reduced to prevent cascading 429 errors.
-- **Super Prompt Flutuante (LiaSuperPrompt)**: Expanding the mini chat opens a ~95% viewport overlay with tabs and dynamic contextual suggestions.
+- **A/B Testing Email Templates**: Manages A/B testing for email templates with variant assignment, metric recording, and analysis.
+- **Template Learning Integration**: Recommends best-performing templates based on open rates.
+- **WRF Dynamic K Quality-Adaptive**: Enhances WRF with adaptive K computation based on match score distribution.
+- **LLM Job Classification Filter**: Post-vector-search filter using Gemini Flash LLM to validate candidate-job compatibility.
+- **FairnessGuard L3 Sector-Dependent**: Uses sector-specific rules for Layer 3 (LLM semantic) bias analysis.
+- **Weekly Digest — Proactive Insights**: Aggregates data into a consolidated weekly report delivered via Teams, Chat, and Bell notifications.
+- **Production Readiness**: Includes a unified health endpoint, `RequestIdMiddleware` for distributed tracing, structured JSON logging, global exception handlers, auth protection, and rate limiting middleware.
+- **FairnessGuard in Agent Outputs**: Integrated `FairnessGuard.check()` and `check_implicit_bias()` across various agent outputs to prevent bias.
+- **LGPD Log Retention**: Implemented scheduled deletion for `ai_consumption` logs after 365 days.
+- **BiasAuditService + API**: Calculates adverse impact using the Four-Fifths Rule across demographic dimensions.
+- **Proactive Predictive Briefing**: LIA proactively presents a briefing with pipeline stats, candidate alerts, and ML predictions instead of a separate widget.
+- **Polling Optimization**: Frontend polling intervals reduced to prevent 429 cascading.
+- **Super Prompt Flutuante (LiaSuperPrompt)**: Expanding the mini chat opens a ~95% viewport overlay with tabs, dynamic contextual suggestions, and controls.
 - **HTTP Chat Fallback**: When WebSocket is unavailable, floating LIA chat falls back to HTTP.
-- **ReAct JSON Strip (`_strip_react_json`)**: Defense-in-depth against raw ReAct JSON leaking to users, applied at API and agent layers.
-- **WSI Pipeline Unification (Fonte Única de Verdade)**: `wsi_interview_graph.py` `load_context()` reads screening questions exclusively from `job_screening_questions` DB table.
-- **WSI Competency Minimums**: Minimum technical skills raised to 9 (from 3) and behavioral competencies to 5 (from 3), with adaptive pipeline handling and frontend warnings.
+- **ReAct JSON Strip (`_strip_react_json`)**: Defense-in-depth against raw ReAct JSON leaking to users, extracting only the `response` field.
+- **WSI Pipeline Unification (Fonte Única de Verdade)**: Reads screening questions exclusively from `job_screening_questions` DB table, with fallbacks and standardized nomenclature.
+- **WSI Competency Minimums**: Minimum technical skills raised to 9 and behavioral competencies to 5, with pipeline adjustments and frontend warnings.
 
 # External Dependencies
 - Anthropic (Claude API)

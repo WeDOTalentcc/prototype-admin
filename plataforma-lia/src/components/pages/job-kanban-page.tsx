@@ -1353,7 +1353,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                         isAddingColumn={isAddingColumn}
                         onSetIsAddingColumn={setIsAddingColumn}
                         onAddStage={(stage) => {
-                           
+                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
                           setDynamicStages(prev => {
                             const finalStages = prev.filter(s => s.isFinal || s.isHired || s.isRejection)
                             const activeStages = prev.filter(s => !s.isFinal && !s.isHired && !s.isRejection)

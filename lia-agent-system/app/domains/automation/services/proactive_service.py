@@ -443,86 +443,17 @@ class ProactiveService:
     async def _send_notification(self, notification: Dict[str, Any]) -> bool:
         """
         Send notification via configured channel.
-        Supports Teams, internal chat, and BELL (in-app) channel.
-        Always creates a BELL notification in the database for the in-app bell icon.
+        Currently supports Teams and internal chat.
         """
         channel = notification.get("channel", "teams")
         
         self.notification_history.append(notification)
-        
-        await self._create_bell_notification(notification)
         
         if channel == "teams":
             return await self._send_via_teams(notification)
         else:
             return await self._send_via_chat(notification)
     
-    async def _create_bell_notification(self, notification: Dict[str, Any]) -> bool:
-        """
-        Create a BELL (in-app) notification in the database.
-        This ensures every proactive notification also appears in the bell icon.
-        """
-        try:
-            from lia_messaging.notification_service import (
-                notification_service,
-                NotificationType as MsgNotificationType,
-                NotificationChannel,
-            )
-
-            priority = notification.get("priority", "medium")
-            if isinstance(priority, Enum):
-                priority = priority.value
-
-            notif_type = notification.get("type", "info")
-            if isinstance(notif_type, Enum):
-                notif_type = notif_type.value
-
-            type_mapping = {
-                "daily_briefing": MsgNotificationType.INFO,
-                "end_of_day": MsgNotificationType.INFO,
-                "interview_reminder": MsgNotificationType.ACTION_REQUIRED,
-                "approval_needed": MsgNotificationType.ACTION_REQUIRED,
-                "screening_completed": MsgNotificationType.SUCCESS,
-                "candidate_expired": MsgNotificationType.WARNING,
-                "volume_alert": MsgNotificationType.WARNING,
-                "critical_alert": MsgNotificationType.URGENT,
-                "weekly_digest": MsgNotificationType.INFO,
-            }
-            msg_type = type_mapping.get(notif_type, MsgNotificationType.INFO)
-
-            category_mapping = {
-                "daily_briefing": "productivity",
-                "end_of_day": "productivity",
-                "interview_reminder": "pipeline",
-                "approval_needed": "pipeline",
-                "screening_completed": "pipeline",
-                "candidate_expired": "pipeline",
-                "volume_alert": "system",
-                "critical_alert": "system",
-                "weekly_digest": "productivity",
-            }
-            category = category_mapping.get(notif_type, "system")
-
-            recruiter_id = notification.get("recruiter_id", "default_user")
-            data = notification.get("data", {})
-
-            await notification_service.create_notification(
-                user_id=recruiter_id,
-                title=notification.get("title", "Notificação"),
-                message=notification.get("message", ""),
-                notification_type=msg_type,
-                category=category,
-                source_agent="proactive_service",
-                related_job_id=data.get("vacancy_id") or data.get("job_id"),
-                related_candidate_id=data.get("candidate_id"),
-                channels=[NotificationChannel.BELL.value],
-            )
-            logger.info(f"🔔 BELL notification created for {recruiter_id}: {notification.get('title')}")
-            return True
-        except Exception as e:
-            logger.warning(f"⚠️ Failed to create BELL notification: {e}")
-            return False
-
     async def _send_via_teams(self, notification: Dict[str, Any]) -> bool:
         """Send notification via Microsoft Teams."""
         logger.info(f"📤 Sending notification via Teams: {notification.get('title')}")

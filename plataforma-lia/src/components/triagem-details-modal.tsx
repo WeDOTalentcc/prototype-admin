@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useEffect } from "react"
@@ -510,6 +509,7 @@ export function TriagemDetailsModal({
                 {expandedSections.has('responses') && (() => {
                   const f11Analyses = f11Report?.response_analyses || []
                   const f11Map: Record<string, { competency: string; score?: number; analysis?: string }> = {}
+                  // @ts-ignore
                   f11Analyses.forEach((a: { competency?: string; score?: number; analysis?: string }) => { if (a.competency) f11Map[a.competency] = a as { competency: string; score?: number; analysis?: string } })
 
                   return (
@@ -520,6 +520,7 @@ export function TriagemDetailsModal({
                       const gapStatus = (f11.gap_status || 'ok') as keyof typeof gapConfig
                       const gap = gapConfig[gapStatus] || gapConfig.ok
                       const GapIcon = gap.icon
+                  // @ts-ignore
                       const isCritical = f11.is_critical || resp.question?.is_critical || false
                       const bloomExpected = f11.bloom_expected || resp.scores.bloom_level || 3
                       const bloomExpLabel = f11.bloom_expected_label || bloomLabel(bloomExpected)
@@ -971,6 +972,7 @@ export function TriagemDetailsModal({
                             feedback.personalized_tip || '',
                             feedback.next_steps || '',
                           ] : []),
+                  // @ts-ignore
                           ...(f11Feedback.length > 0 ? (feedback ? ['', '--- Avaliação detalhada ---'] : []).concat(f11Feedback) : []),
                         ].filter(Boolean).join('\n')
                         navigator.clipboard.writeText(text)

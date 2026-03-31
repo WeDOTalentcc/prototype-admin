@@ -20,7 +20,7 @@ interface Props {
  * work-arrangement, final-job-description, job-publishing
  */
 export function ChatContextPanelPart1({ contextData }: Props) {
-   
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const data = contextData.data as any
   return (
     <>
