@@ -280,6 +280,7 @@ export function KanbanTableView({
             } : undefined}
             showCheckboxes={true}
             emptyMessage="Nenhum candidato nesta etapa"
+            enableVirtualScroll={getPaginatedCandidates().candidates.length > 50}
             enableColumnResize={true}
             isInteractive={true}
             jobVacancyId={jobVacancyId}

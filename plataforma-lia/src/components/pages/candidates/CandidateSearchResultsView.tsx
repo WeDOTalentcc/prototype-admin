@@ -899,6 +899,7 @@ export function CandidateSearchResultsView({
                 showPagination={false}
                 enableColumnResize={true}
                 enableColumnReorder={true}
+                enableVirtualScroll={visibleCandidates.length > 50}
                 onColumnResize={(columnId, newWidth) => {
                   setColumnWidths(prev => ({
                     ...prev,

@@ -353,6 +353,7 @@ export function FavoritesTab({
         <>
           <UnifiedCandidateTable
             candidates={filteredCandidates}
+            enableVirtualScroll={filteredCandidates.length > 50}
             columns={columns}
             pinnedIds={pinnedCandidates}
             favoriteIds={favoriteCandidates}
