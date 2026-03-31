@@ -1,9 +1,9 @@
-use client
-import React from react
-import { Label } from @/components/ui/label
-import { SkillsFilterInput } from ../SkillsFilterInput
-import { ExpertiseAreasInput } from ../ExpertiseAreasInput
-import { type SearchFilters } from ../advancedFiltersTypes
+"use client"
+import React from "react"
+import { Label } from "@/components/ui/label"
+import { SkillsFilterInput } from "../SkillsFilterInput"
+import { ExpertiseAreasInput } from "../ExpertiseAreasInput"
+import { type SearchFilters } from "../advancedFiltersTypes"
 
 interface FilterSectionHabilidadesProps {
   filters: SearchFilters
@@ -55,4 +55,4 @@ export const FilterSectionHabilidades = React.memo(function FilterSectionHabilid
     </div>
   )
 })
-FilterSectionHabilidades.displayName = FilterSectionHabilidades
+FilterSectionHabilidades.displayName = "FilterSectionHabilidades"

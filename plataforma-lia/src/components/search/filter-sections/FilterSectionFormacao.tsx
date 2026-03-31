@@ -1,13 +1,13 @@
-use client
-import React from react
-import { Label } from @/components/ui/label
-import { UniversitiesFilterInput } from ../UniversitiesFilterInput
-import { ExcludedUniversitiesInput } from ../ExcludedUniversitiesInput
-import { UniversityLocationsInput } from ../UniversityLocationsInput
-import { DegreeRequirementsInput } from ../DegreeRequirementsInput
-import { FieldsOfStudyInput } from ../FieldsOfStudyInput
-import { GraduationYearInput } from ../GraduationYearInput
-import { type SearchFilters } from ../advancedFiltersTypes
+"use client"
+import React from "react"
+import { Label } from "@/components/ui/label"
+import { UniversitiesFilterInput } from "../UniversitiesFilterInput"
+import { ExcludedUniversitiesInput } from "../ExcludedUniversitiesInput"
+import { UniversityLocationsInput } from "../UniversityLocationsInput"
+import { DegreeRequirementsInput } from "../DegreeRequirementsInput"
+import { FieldsOfStudyInput } from "../FieldsOfStudyInput"
+import { GraduationYearInput } from "../GraduationYearInput"
+import { type SearchFilters } from "../advancedFiltersTypes"
 
 interface FilterSectionFormacaoProps {
   filters: SearchFilters
@@ -72,7 +72,7 @@ export const FilterSectionFormacao = React.memo(function FilterSectionFormacao({
         <div>
           <Label className="text-xs mb-1.5 block font-medium">Grau Acadêmico</Label>
           <DegreeRequirementsInput
-            mode={filters.education?.degreeRequirementMode || regular}
+            mode={filters.education?.degreeRequirementMode || "regular"}
             onModeChange={(degreeRequirementMode) =>
               setFilters((prev) => ({
                 ...prev,
@@ -92,7 +92,7 @@ export const FilterSectionFormacao = React.memo(function FilterSectionFormacao({
         <div>
           <Label className="text-xs mb-1.5 block font-medium">Áreas de Estudo</Label>
           <FieldsOfStudyInput
-            mode={filters.education?.fieldsOfStudyMode || regular}
+            mode={filters.education?.fieldsOfStudyMode || "regular"}
             onModeChange={(fieldsOfStudyMode) =>
               setFilters((prev) => ({
                 ...prev,
@@ -133,4 +133,4 @@ export const FilterSectionFormacao = React.memo(function FilterSectionFormacao({
     </div>
   )
 })
-FilterSectionFormacao.displayName = FilterSectionFormacao
+FilterSectionFormacao.displayName = "FilterSectionFormacao"

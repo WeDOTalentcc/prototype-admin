@@ -1,75 +1,62 @@
 "use client"
 
-import { useState, useCallback, useEffect, useMemo, useRef } from "react"
-import { 
-  X, Settings, MapPin, Briefcase, Building2, Code, GraduationCap, 
-  Globe, ChevronRight, Search, RotateCcw, Zap, Mail, Phone, Clock,
-  RefreshCw, Filter, AlertCircle, TrendingUp, Save, FolderOpen, History,
-  Bookmark, ChevronDown, Check, Home, Crown, Rocket, UserCheck, Eye, HelpCircle,
-  Brain, Loader2, Info, List, ArrowUpDown
+import { useState } from "react"
+import {
+  X, Settings, Briefcase, Building2, Code, GraduationCap,
+  Globe, Search, RotateCcw, Zap,
+  Save, Bookmark, ChevronDown, Check,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
+import { textStyles } from "@/lib/design-tokens"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Switch } from "@/components/ui/switch"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+
+import {
+  type SaveDestination, type SearchSource, type HideViewedScope, type HideViewedPeriod,
+  type SearchFilters, saveDestinations,
+  SectionHeader, companySizes,
+} from "./advancedFiltersTypes"
+export type { SaveDestination, SearchSource, HideViewedScope, HideViewedPeriod, SearchFilters }
+export { saveDestinations }
+
+import { convertToPearchFilters, normalizeFiltersFromServer } from "./advancedFiltersUtils"
+export { convertToPearchFilters, normalizeFiltersFromServer }
+
 import { CreditConfirmationDialog } from "./credit-confirmation-dialog"
-import { calculateCreditsLocally, CreditEstimate } from "@/lib/api/candidate-search"
-import { SkillsFilterInput, SkillItem } from "./SkillsFilterInput"
-import { ExpertiseAreasInput } from "./ExpertiseAreasInput"
-import { CompanyFilterInput, CompanyItem, CompanyTimeFilter } from "./CompanyFilterInput"
-import { ExcludedCompaniesInput, ExcludedCompanyItem, ExcludedTimeFilter } from "./ExcludedCompaniesInput"
-import { IndustryFilterInput, IndustryTimeFilter } from "./IndustryFilterInput"
-import { CompanyTagsInput, CompanyTagItem, CompanyTagsTimeFilter } from "./CompanyTagsInput"
-import { CompanyHQLocationsInput, CompanyHQTimeFilter } from "./CompanyHQLocationsInput"
+import { JobFiltersSection } from "./JobFiltersSection"
+
+import {
+  FilterSectionOrigem,
+  FilterSectionOpcoes,
+  FilterSectionGeral,
+  FilterSectionPerfil,
+  FilterSectionHabilidades,
+  FilterSectionFormacao,
+  FilterSectionIdiomas,
+} from "./filter-sections"
+
+import { useAdvancedFiltersCore } from "./hooks/useAdvancedFiltersCore"
+
+// Company section imports
+import { CompanyFilterInput } from "./CompanyFilterInput"
+import { ExcludedCompaniesInput } from "./ExcludedCompaniesInput"
+import { IndustryFilterInput } from "./IndustryFilterInput"
+import { CompanyTagsInput } from "./CompanyTagsInput"
+import { CompanyHQLocationsInput } from "./CompanyHQLocationsInput"
 import { FundingStagesInput } from "./FundingStagesInput"
-import { UniversitiesFilterInput } from "./UniversitiesFilterInput"
-import { ExcludedUniversitiesInput } from "./ExcludedUniversitiesInput"
-import { UniversityLocationsInput } from "./UniversityLocationsInput"
-import { DegreeRequirementsInput } from "./DegreeRequirementsInput"
-import { FieldsOfStudyInput } from "./FieldsOfStudyInput"
-import { GraduationYearInput } from "./GraduationYearInput"
-import { LanguageFilterInput } from "./LanguageFilterInput"
-import { useSemanticSearch } from "@/hooks/useSemanticSearch"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-
-
-import {
-  type SaveDestination, type SearchSource, type HideViewedScope, type HideViewedPeriod,
-  type SearchFilters, type FilterCategory, saveDestinations,
-  categories, experienceLevels, jobRoles, titleScopeOptions, timeInRoleOptions,
-  tenureOptions, globalJobPresets, companySizes, degreeTypes, proficiencyLevels,
-  hideViewedScopeOptions, hideViewedPeriodOptions, SectionHeader
-} from "./advancedFiltersTypes"
-export type { SaveDestination, SearchSource, HideViewedScope, HideViewedPeriod, SearchFilters }
-export { saveDestinations }
-
-
-
-import { convertToPearchFilters, normalizeFiltersFromServer } from "./advancedFiltersUtils"
-export { convertToPearchFilters, normalizeFiltersFromServer }
-
 
 interface AdvancedFiltersModalProps {
   isOpen: boolean
@@ -84,9 +71,6 @@ interface AdvancedFiltersModalProps {
   onSortByChange?: (value: string) => void
 }
 
-import { useAdvancedFiltersCore } from './hooks/useAdvancedFiltersCore'
-import { JobFiltersSection } from './JobFiltersSection'
-
 export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
   const { isOpen } = props
   const {
@@ -100,23 +84,19 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div 
+      <div
         className="absolute inset-0 bg-black/50 backdrop-blur-[1px]"
         onClick={onClose}
       />
-      
-      <div 
+
+      <div
         className="relative w-full max-w-4xl max-h-[85vh] rounded-md overflow-hidden border border-lia-border-subtle flex flex-col bg-white dark:bg-lia-bg-secondary dark:border-lia-border-subtle"
-       
       >
         <div className="flex flex-col overflow-hidden flex-1">
-          <div 
-            className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle dark:border-lia-border-subtle"
-          >
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
             <div>
-              <h2 className={textStyles.title}>
-                Filtros Avançados
-              </h2>
+              <h2 className={textStyles.title}>Filtros Avançados</h2>
               <p className={`${textStyles.description} mt-0.5`}>
                 Refine sua busca com filtros compatíveis com a Base Global
               </p>
@@ -138,9 +118,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                     </PopoverTrigger>
                     <PopoverContent align="end" className="w-72 p-2 bg-lia-bg-elevated border border-lia-border-subtle dark:border-lia-border-subtle">
                       <div className="space-y-1">
-                        <p className="text-xs font-medium px-2 py-1.5 lia-text-600">
-                          Salvar busca em:
-                        </p>
+                        <p className="text-xs font-medium px-2 py-1.5 lia-text-600">Salvar busca em:</p>
                         {saveDestinations.map((dest) => (
                           <button
                             key={dest.key}
@@ -151,29 +129,20 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                             }}
                             className={cn(
                               "w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-left transition-colors",
-                              saveDestination === dest.key 
-                                ? "bg-gray-100" 
-                                : "hover:bg-gray-50"
+                              saveDestination === dest.key ? "bg-gray-100" : "hover:bg-gray-50"
                             )}
                           >
-                            <dest.icon 
+                            <dest.icon
                               className={cn(
                                 "w-4 h-4 flex-shrink-0",
                                 saveDestination === dest.key ? "lia-text-800 dark:text-lia-text-primary" : "lia-text-500"
                               )}
                             />
                             <div className="flex-1 min-w-0">
-                              <div 
-                                className={cn(
-                                  "text-xs font-medium",
-                                  saveDestination === dest.key ? "lia-text-800" : "lia-text-800"
-                                )}
-                              >
+                              <div className={cn("text-xs font-medium", saveDestination === dest.key ? "lia-text-800" : "lia-text-800")}>
                                 {dest.label}
                               </div>
-                              <div className="text-xs lia-text-600">
-                                {dest.description}
-                              </div>
+                              <div className="text-xs lia-text-600">{dest.description}</div>
                             </div>
                             {saveDestination === dest.key && (
                               <Check className="w-4 h-4 flex-shrink-0 lia-text-700 dark:text-lia-text-secondary" />
@@ -209,7 +178,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                       className={cn(
                         "w-full flex items-center gap-2.5 px-4 py-2.5 text-left text-xs transition-colors",
                         isActive
- ? "bg-gray-100 dark:bg-lia-bg-elevated lia-text-900 dark:text-lia-text-primary border-r-2 border-gray-900 dark:border-lia-border-subtle font-medium"
+                          ? "bg-gray-100 dark:bg-lia-bg-elevated lia-text-900 dark:text-lia-text-primary border-r-2 border-gray-900 dark:border-lia-border-subtle font-medium"
                           : "lia-text-600 hover:bg-gray-100 hover:lia-text-800"
                       )}
                     >
@@ -223,1039 +192,320 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
 
             {/* Scrollable Filter Sections */}
             <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-6 space-y-8">
+
               {/* Section: Origem da Busca */}
               <div ref={(el) => { sectionRefs.current.searchSource = el }}>
                 <SectionHeader icon={Search} title="Origem da Busca" description="Selecione de onde buscar candidatos" />
-                
-                <RadioGroup 
-                  value={searchSource} 
-                  onValueChange={(value) => setSearchSource(value as SearchSource)}
-                  className="grid grid-cols-3 gap-3"
-                >
-                  <label 
-                    className={cn(
-                      "relative flex flex-col p-4 rounded-md border-2 cursor-pointer transition-colors bg-lia-bg-primary",
-                      searchSource === "local" 
-                        ? "border-lia-border-default bg-gray-50" 
-                        : "border-lia-border-subtle hover:border-lia-border-default"
-                    )}
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <RadioGroupItem value="local" id="local" className="sr-only" />
-                      <Home className={cn("w-4 h-4", searchSource === "local" ? "lia-text-800 dark:text-lia-text-primary" : "lia-text-500")} />
-                      <span 
-                        className={cn("font-medium text-xs", searchSource === "local" ? "lia-text-800" : "lia-text-800")}
-                      >
-                        Base Local
-                      </span>
-                    </div>
-                    <p className="text-xs lia-text-600" aria-live="polite" aria-atomic="true">
-                      Candidatos já cadastrados na sua base
-                    </p>
-                    {searchSource === "local" && (
-                      <div 
-                        className="absolute -top-px -right-px w-5 h-5 rounded-tr-lg rounded-bl-lg flex items-center justify-center bg-gray-900 dark:lia-bg-100"
-                      >
-                        <Check className="w-3 h-3 text-white dark:lia-text-900" />
-                      </div>
-                    )}
-                  </label>
-
-                  <label 
-                    className={cn(
-                      "relative flex flex-col p-4 pt-8 rounded-md border-2 cursor-pointer transition-colors bg-lia-bg-primary",
-                      searchSource === "hybrid" 
-                        ? "border-lia-border-default bg-gray-50" 
-                        : "border-lia-border-subtle hover:border-lia-border-default"
-                    )}
-                  >
-                    <Badge
-                      className="absolute top-2 right-2 text-micro px-1.5 py-0.5 font-medium text-status-warning"
-                      style={{backgroundColor: "var(--gray-100)", border: "none"}}
-                    >
-                      1 CRÉDITO/CAND.
-                    </Badge>
-                    <div className="flex items-center gap-2 mb-2">
-                      <RadioGroupItem value="hybrid" id="hybrid" className="sr-only" />
-                      <RefreshCw className={cn("w-4 h-4", searchSource === "hybrid" ? "lia-text-800 dark:text-lia-text-primary" : "lia-text-500")} />
-                      <span 
-                        className={cn("font-medium text-xs", searchSource === "hybrid" ? "lia-text-800" : "lia-text-800")}
-                      >
-                        Busca Híbrida
-                      </span>
-                    </div>
-                    <p className="text-xs lia-text-600">
-                      Primeiro local, depois expande para global
-                    </p>
-                    {searchSource === "hybrid" && (
-                      <div 
-                        className="absolute -top-px -right-px w-5 h-5 rounded-tr-lg rounded-bl-lg flex items-center justify-center bg-gray-900 dark:lia-bg-100"
-                      >
-                        <Check className="w-3 h-3 text-white dark:lia-text-900" />
-                      </div>
-                    )}
-                  </label>
-
-                  <label 
-                    className={cn(
-                      "relative flex flex-col p-4 pt-8 rounded-md border-2 cursor-pointer transition-colors bg-lia-bg-primary",
-                      searchSource === "global" 
-                        ? "border-lia-border-default bg-gray-50" 
-                        : "border-lia-border-subtle hover:border-lia-border-default"
-                    )}
-                  >
-                    <Badge
-                      className="absolute top-2 right-2 text-micro px-1.5 py-0.5 font-medium text-status-warning"
-                      style={{backgroundColor: "var(--gray-100)", border: "none"}}
-                    >
-                      1 CRÉDITO/CAND.
-                    </Badge>
-                    <div className="flex items-center gap-2 mb-2">
-                      <RadioGroupItem value="global" id="global" className="sr-only" />
-                      <Globe className={cn("w-4 h-4", searchSource === "global" ? "lia-text-800 dark:text-lia-text-primary" : "lia-text-500")} />
-                      <span 
-                        className={cn("font-medium text-xs", searchSource === "global" ? "lia-text-800" : "lia-text-800")}
-                      >
-                        Busca Global
-                      </span>
-                    </div>
-                    <p className="text-xs lia-text-600">
-                      Acesso a +800M de perfis profissionais
-                    </p>
-                    {searchSource === "global" && (
-                      <div 
-                        className="absolute -top-px -right-px w-5 h-5 rounded-tr-lg rounded-bl-lg flex items-center justify-center bg-gray-900 dark:lia-bg-100"
-                      >
-                        <Check className="w-3 h-3 text-white dark:lia-text-900" />
-                      </div>
-                    )}
-                  </label>
-                </RadioGroup>
-
-                {(searchSource === "local" || searchSource === "hybrid") && (
-                  <div className="mt-4 flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary">
-                    <div className="flex items-center gap-2">
-                      <Eye className="w-4 h-4 text-status-warning" />
-                      <div>
-                        <span className={textStyles.subtitle} aria-live="polite" aria-atomic="true">
-                          Incluir candidatos descobertos
-                        </span>
-                        <p className={textStyles.description} aria-live="polite" aria-atomic="true">
-                          Mostrar candidatos encontrados em buscas anteriores ainda não salvos na base
-                        </p>
-                      </div>
-                    </div>
-                    <Switch
-                      checked={filters.searchOptions?.includeDiscovered ?? true}
-                      onCheckedChange={(checked: boolean) => updateFilter("searchOptions", "includeDiscovered", checked)}
-                      className="data-[state=checked]:bg-gray-900 dark:data-[state=checked]:bg-gray-100"
-                    />
-                  </div>
-                )}
+                <FilterSectionOrigem
+                  searchSource={searchSource}
+                  setSearchSource={setSearchSource}
+                  filters={filters}
+                  updateFilter={updateFilter}
+                />
               </div>
+
               {/* Section: Opções de Busca */}
               <div ref={(el) => { sectionRefs.current.ppiOptions = el }} className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-6">
                 <SectionHeader icon={Zap} title="Opções de Busca" description="Controle de qualidade e custo" />
-              <div className="space-y-6">
-                {(searchSource === "global" || searchSource === "hybrid") && (
-                <div 
-                  className="p-4 rounded-md border bg-gray-50 border-lia-border-subtle"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <Zap className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
-                      <span className="font-medium text-xs">Custo Estimado</span>
-                    </div>
-                    <Badge variant="outline" className="text-xs px-1.5 py-0.5 border-gray-500 lia-text-700 dark:text-lia-text-secondary">
-                      Tempo Real
-                    </Badge>
-                  </div>
-                  
-                  <div className="flex items-end justify-between">
-                    <div>
-                      <div className="text-base font-bold lia-text-900 dark:text-lia-text-primary">
-                        {creditEstimate.cost_per_candidate}
-                      </div>
-                      <div className="text-xs lia-text-600">
-                        créditos por candidato
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className={textStyles.title}>
-                        {creditEstimate.total_estimated}
-                      </div>
-                      <div className="text-xs lia-text-600">
-                        total ({creditEstimate.limit} candidatos)
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-3 pt-3 border-t border-wedo-cyan/20 space-y-1.5">
-                    <div className="flex justify-between text-xs">
-                      <span className="lia-text-600">
-                        Base ({creditEstimate.pearch_type === "fast" ? "Rápida" : "Profissional"})
-                      </span>
-                      <span className="font-medium">{creditEstimate.base_cost}</span>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="lia-text-600">Insights + Scoring</span>
-                      <span className="font-medium">+{creditEstimate.insights_cost}</span>
-                    </div>
-                    {creditEstimate.freshness_cost > 0 && (
-                      <div className="flex justify-between text-xs">
-                        <span className="lia-text-600">Dados Atualizados</span>
-                        <span className="font-medium">+{creditEstimate.freshness_cost}</span>
-                      </div>
-                    )}
-                    {creditEstimate.email_cost > 0 && (
-                      <div className="flex justify-between text-xs">
-                        <span className="lia-text-600">Opções de Email</span>
-                        <span className="font-medium">+{creditEstimate.email_cost}</span>
-                      </div>
-                    )}
-                    {creditEstimate.phone_cost > 0 && (
-                      <div className="flex justify-between text-xs text-status-warning">
-                        <span className="flex items-center gap-1">
-                          <AlertCircle className="w-3 h-3" />
-                          Opções de Telefone
-                        </span>
-                        <span className="font-medium">+{creditEstimate.phone_cost}</span>
-                      </div>
-                    )}
-                    
-                    <div className="flex justify-between text-xs pt-1.5 border-t border-wedo-cyan/15">
-                      <span className="flex items-center gap-1 font-medium lia-text-800">
-                        <TrendingUp className="w-3 h-3" />
-                        Total por Candidato
-                      </span>
-                      <span className="font-bold lia-text-900 dark:text-lia-text-primary">
-                        {creditEstimate.cost_per_candidate}
-                      </span>
-                    </div>
-                  </div>
-
-                  {creditEstimate.warnings.length > 0 && (
-                    <div className="mt-3 p-2 bg-status-warning/10 rounded-md border border-status-warning/30">
-                      {creditEstimate.warnings.map((warning, idx) => (
-                        <div key={idx} className="flex items-start gap-2 text-xs text-status-warning">
-                          <AlertCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                          <span>{warning}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                )}
-
-                <div className="space-y-3">
-                  <Label className="text-xs font-medium block">Informações de Contato</Label>
-
-                  <div className="flex items-center justify-between p-2.5 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
-                    <div className="flex items-center gap-2">
-                      <Mail className="w-3.5 h-3.5 lia-text-500" />
-                      <div>
-                        <div className="text-xs font-medium">Apenas com Email</div>
-                        <div className="text-xs lia-text-600">
-                          Filtrar candidatos com email
-                        </div>
-                      </div>
-                    </div>
-                    <Switch
-                      checked={filters.ppiOptions?.requireEmails || false}
-                      onCheckedChange={(checked: boolean) => updateFilter("ppiOptions", "requireEmails", checked)}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between p-2.5 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
-                    <div className="flex items-center gap-2">
-                      <Mail className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
-                      <div>
-                        <div className="text-xs font-medium">Mostrar Emails</div>
-                        <div className="text-xs lia-text-600">
-                          Exibir emails nos resultados
-                        </div>
-                      </div>
-                    </div>
-                    <Switch
-                      checked={filters.ppiOptions?.showEmails || false}
-                      onCheckedChange={(checked: boolean) => updateFilter("ppiOptions", "showEmails", checked)}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
-                    <div className="flex items-center gap-3">
-                      <Phone className="w-4 h-4 lia-text-500" />
-                      <div>
-                        <div className="text-xs font-medium">Apenas com Telefone</div>
-                        <div className="text-xs lia-text-600">
-                          Filtrar candidatos com telefone
-                        </div>
-                      </div>
-                    </div>
-                    <Switch
-                      checked={filters.ppiOptions?.requirePhoneNumbers || false}
-                      onCheckedChange={(checked: boolean) => updateFilter("ppiOptions", "requirePhoneNumbers", checked)}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
-                    <div className="flex items-center gap-3">
-                      <Phone className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
-                      <div>
-                        <div className="text-xs font-medium">Mostrar Telefones</div>
-                        <div className="text-xs lia-text-600">
-                          Exibir telefones nos resultados
-                        </div>
-                      </div>
-                    </div>
-                    <Switch
-                      checked={filters.ppiOptions?.showPhoneNumbers || false}
-                      onCheckedChange={(checked: boolean) => updateFilter("ppiOptions", "showPhoneNumbers", checked)}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
-                    <div className="flex items-center gap-3">
-                      <Mail className="w-4 h-4 lia-text-500" />
-                      <Phone className="w-4 h-4 -ml-2 lia-text-500" />
-                      <div>
-                        <div className="text-xs font-medium">Email OU Telefone</div>
-                        <div className="text-xs lia-text-500">
-                          Pelo menos um contato
-                        </div>
-                      </div>
-                    </div>
-                    <Switch
-                      checked={filters.ppiOptions?.requirePhonesOrEmails || false}
-                      onCheckedChange={(checked: boolean) => updateFilter("ppiOptions", "requirePhonesOrEmails", checked)}
-                    />
-                  </div>
-                </div>
+                <FilterSectionOpcoes
+                  filters={filters}
+                  updateFilter={updateFilter}
+                  searchSource={searchSource}
+                  creditEstimate={creditEstimate}
+                />
               </div>
-            </div>
 
               {/* Section: Geral */}
               <div ref={(el) => { sectionRefs.current.general = el }} className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-6">
                 <SectionHeader icon={Settings} title="Geral" description="Experiência e perfis" />
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-xs mb-1.5 block">Experiência Mínima (Anos)</Label>
-                    <Input
-                      type="number"
-                      min={0}
-                      value={filters.general?.minExperience || ""}
-                      onChange={(e) => updateFilter("general", "minExperience", e.target.value ? parseInt(e.target.value) : undefined)}
-                      placeholder="Ex: 3 anos"
-                      className="border border-lia-border-subtle focus:ring-1 focus:ring-gray-400"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs mb-1.5 block">Experiência Máxima (Anos)</Label>
-                    <Input
-                      type="number"
-                      min={0}
-                      value={filters.general?.maxExperience || ""}
-                      onChange={(e) => updateFilter("general", "maxExperience", e.target.value ? parseInt(e.target.value) : undefined)}
-                      placeholder="Ex: 10 anos"
-                      className="border border-lia-border-subtle focus:ring-1 focus:ring-gray-400"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-4 p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50/50">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Eye className="w-4 h-4 lia-text-600" />
-                    <span className={textStyles.subtitle}>
-                      Ocultar Perfis Visualizados ou Shortlistados
-                    </span>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <button 
-                          type="button"
-                          className="lia-text-400 hover:lia-text-600 transition-colors motion-reduce:transition-none"
-                        >
-                          <HelpCircle className="w-4 h-4" />
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-80 p-3 bg-lia-bg-elevated border border-lia-border-subtle" side="top">
-                        <div className="space-y-2">
-                          <h4 className="font-semibold text-sm lia-text-800">O que significa "Shortlistado"?</h4>
-                          <p className="text-xs lia-text-600 leading-relaxed">
-                            Candidatos <strong>shortlistados</strong> são aqueles que já foram incluídos em vagas e passaram por algum processo de entrevista, seja por você, outros recrutadores ou gestores da organização.
-                          </p>
-                          <p className="text-xs lia-text-500 leading-relaxed">
-                            Isso inclui entrevistas técnicas, comportamentais, com gestores, ou qualquer outra etapa de seleção registrada no sistema.
-                          </p>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-xs mb-1.5 block lia-text-600">Escopo</Label>
-                      <Select
-                        value={filters.general?.hideViewedScope || "dont_hide"}
-                        onValueChange={(value) => {
-                          updateFilter("general", "hideViewedScope", value as HideViewedScope)
-                          updateFilter("general", "hideViewedProfiles", value !== "dont_hide")
-                        }}
-                      >
-                        <SelectTrigger className="border border-lia-border-subtle focus:ring-1 focus:ring-gray-400 bg-lia-bg-secondary text-xs">
-                          <SelectValue placeholder="Selecione o escopo" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-lia-bg-secondary">
-                          {hideViewedScopeOptions.map(option => (
-                            <SelectItem 
-                              key={option.value} 
-                              value={option.value}
-                              className="py-2"
-                            >
-                              <div>
-                                <div className="font-medium">{option.label}</div>
-                                {option.description && (
-                                  <div className="text-xs lia-text-500">{option.description}</div>
-                                )}
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label className="text-xs mb-1.5 block lia-text-600">Período</Label>
-                      <Select
-                        value={filters.general?.hideViewedPeriod || "all_time"}
-                        onValueChange={(value) => updateFilter("general", "hideViewedPeriod", value as HideViewedPeriod)}
-                        disabled={filters.general?.hideViewedScope === "dont_hide"}
-                      >
-                        <SelectTrigger 
-                          className={cn(
-                            "border border-lia-border-subtle focus:ring-1 focus:ring-gray-400 bg-lia-bg-primary text-xs",
-                            filters.general?.hideViewedScope === "dont_hide" && "opacity-50 cursor-not-allowed"
-                          )}
-                        >
-                          <SelectValue placeholder="Selecione o período" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-lia-bg-secondary">
-                          {hideViewedPeriodOptions.map(option => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <p className="text-xs lia-text-500 flex items-center gap-1.5">
-                    <AlertCircle className="w-3 h-3" />
-                    Remove dos resultados candidatos visualizados ou entrevistados no período selecionado
-                  </p>
-                </div>
+                <FilterSectionGeral
+                  filters={filters}
+                  updateFilter={updateFilter}
+                />
               </div>
-            </div>
 
               {/* Section: Perfil Profissional */}
               <div ref={(el) => { sectionRefs.current.profile = el }} className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-6">
-                <SectionHeader icon={UserCheck} title="Perfil Profissional" description="Indicadores de perfil" />
-              <div className="space-y-3">
-                {isLocalSearch && (
-                  <div className="flex items-center gap-2 p-2.5 rounded-md bg-status-warning/10 border border-status-warning/30 mb-3">
-                    <Info className="w-4 h-4 text-status-warning flex-shrink-0" />
-                    <p className="text-xs text-status-warning">
-                      Estes filtros estão disponíveis apenas em busca Híbrida ou Global
-                    </p>
-                  </div>
-                )}
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className={cn(
-                        "flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle",
-                        isLocalSearch && "opacity-50 cursor-not-allowed bg-gray-50"
-                      )}>
-                        <div className="flex items-center gap-3">
-                          <Briefcase className={cn("w-4 h-4", isLocalSearch ? "lia-text-400" : "text-status-success")} />
-                          <div>
-                            <div className={cn("text-xs font-medium", isLocalSearch && "lia-text-400")}>Aberto a Oportunidades</div>
-                            <div className="text-xs lia-text-500">
-                              Candidatos sinalizando interesse em novas propostas
-                            </div>
-                          </div>
-                        </div>
-                        <Switch
-                          checked={filters.ppiOptions?.openToWorkOnly || false}
-                          onCheckedChange={(checked: boolean) => updateFilter("ppiOptions", "openToWorkOnly", checked)}
-                          disabled={isLocalSearch}
-                        />
-                      </div>
-                    </TooltipTrigger>
-                    {isLocalSearch && (
-                      <TooltipContent side="top">
-                        <p className="text-xs">Disponível apenas em busca Híbrida ou Global</p>
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
-                </TooltipProvider>
-                
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className={cn(
-                        "flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle",
-                        isLocalSearch && "opacity-50 cursor-not-allowed bg-gray-50"
-                      )}>
-                        <div className="flex items-center gap-3">
-                          <Crown className={cn("w-4 h-4", isLocalSearch ? "lia-text-400" : "text-status-warning")} />
-                          <div>
-                            <div className={cn("text-xs font-medium", isLocalSearch && "lia-text-400")}>Decisor / Líder</div>
-                            <div className="text-xs lia-text-500">
-                              Profissionais em posições de liderança
-                            </div>
-                          </div>
-                        </div>
-                        <Switch
-                          checked={filters.profile?.isDecisionMaker || false}
-                          onCheckedChange={(checked: boolean) => updateFilter("profile", "isDecisionMaker", checked)}
-                          disabled={isLocalSearch}
-                        />
-                      </div>
-                    </TooltipTrigger>
-                    {isLocalSearch && (
-                      <TooltipContent side="top">
-                        <p className="text-xs">Disponível apenas em busca Híbrida ou Global</p>
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
-                </TooltipProvider>
-                
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className={cn(
-                        "flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle",
-                        isLocalSearch && "opacity-50 cursor-not-allowed bg-gray-50"
-                      )}>
-                        <div className="flex items-center gap-3">
-                          <GraduationCap className={cn("w-4 h-4", isLocalSearch ? "lia-text-400" : "lia-text-600 dark:text-lia-text-tertiary")} />
-                          <div>
-                            <div className={cn("text-xs font-medium", isLocalSearch && "lia-text-400")}>Top Universidades</div>
-                            <div className="text-xs lia-text-500">
-                              Formados em universidades de elite
-                            </div>
-                          </div>
-                        </div>
-                        <Switch
-                          checked={filters.profile?.isTopUniversities || false}
-                          onCheckedChange={(checked: boolean) => updateFilter("profile", "isTopUniversities", checked)}
-                          disabled={isLocalSearch}
-                        />
-                      </div>
-                    </TooltipTrigger>
-                    {isLocalSearch && (
-                      <TooltipContent side="top">
-                        <p className="text-xs">Disponível apenas em busca Híbrida ou Global</p>
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
-                </TooltipProvider>
-                
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className={cn(
-                        "flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle",
-                        isLocalSearch && "opacity-50 cursor-not-allowed bg-gray-50"
-                      )}>
-                        <div className="flex items-center gap-3">
-                          <Rocket className={cn("w-4 h-4", isLocalSearch ? "lia-text-400" : "text-wedo-purple")} />
-                          <div>
-                            <div className={cn("text-xs font-medium", isLocalSearch && "lia-text-400")}>Experiência em Startup</div>
-                            <div className="text-xs lia-text-500">
-                              Trabalhou em startups (cultura ágil)
-                            </div>
-                          </div>
-                        </div>
-                        <Switch
-                          checked={filters.profile?.isStartup || false}
-                          onCheckedChange={(checked: boolean) => updateFilter("profile", "isStartup", checked)}
-                          disabled={isLocalSearch}
-                        />
-                      </div>
-                    </TooltipTrigger>
-                    {isLocalSearch && (
-                      <TooltipContent side="top">
-                        <p className="text-xs">Disponível apenas em busca Híbrida ou Global</p>
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
-                </TooltipProvider>
+                <SectionHeader icon={Search} title="Perfil Profissional" description="Indicadores de perfil" />
+                <FilterSectionPerfil
+                  filters={filters}
+                  updateFilter={updateFilter}
+                  isLocalSearch={isLocalSearch}
+                />
               </div>
-            </div>
 
               {/* Section: Cargo */}
               <div ref={(el) => { sectionRefs.current.job = el }} className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-6">
                 <SectionHeader icon={Briefcase} title="Cargo" description="Títulos e níveis" />
-              <JobFiltersSection 
-                filters={filters}
-                updateFilter={updateFilter}
-                addToArray={addToArray}
-                removeFromArray={removeFromArray}
-              />
-            </div>
+                <JobFiltersSection
+                  filters={filters}
+                  updateFilter={updateFilter}
+                  addToArray={addToArray}
+                  removeFromArray={removeFromArray}
+                />
+              </div>
 
               {/* Section: Empresa */}
               <div ref={(el) => { sectionRefs.current.company = el }} className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-6">
                 <SectionHeader icon={Building2} title="Empresa" description="Empresas e setores" />
-              <div className="space-y-6">
-                <div>
-                  <Label className="text-xs mb-2 block">Empresas</Label>
-                  <CompanyFilterInput
-                    value={filters.company?.companyItems || []}
-                    onChange={(companyItems) => setFilters(prev => ({
-                      ...prev,
-                      company: {
-                        ...(prev.company ?? {}),
-                        companyItems
-                      }
-                    }))}
-                    timeFilter={filters.company?.companyTimeFilter || 'current_past'}
-                    onTimeFilterChange={(companyTimeFilter) => updateFilter("company", "companyTimeFilter", companyTimeFilter)}
-                    specificYears={filters.company?.specificYears}
-                    onSpecificYearsChange={(specificYears) => updateFilter("company", "specificYears", specificYears)}
-                    fundingStages={filters.company?.fundingStages}
-                    onFundingStagesChange={(fundingStages) => updateFilter("company", "fundingStages", fundingStages)}
-                    placeholder="Digite empresa e pressione Enter (ex: Google, Microsoft, Nubank)"
-                  />
-                  <p className="text-xs mt-2 lia-text-500">
-                    Dica: Use "Ask AI" para buscar empresas similares ou por descrição (ex: "fintechs em São Paulo")
-                  </p>
-                </div>
-
-                <div>
-                  <Label className="text-xs mb-2 block">Empresas Excluídas</Label>
-                  <ExcludedCompaniesInput
-                    value={filters.company?.excludedCompanyItems || []}
-                    onChange={(excludedCompanyItems) => setFilters(prev => ({
-                      ...prev,
-                      company: {
-                        ...(prev.company ?? {}),
-                        excludedCompanyItems
-                      }
-                    }))}
-                    timeFilter={filters.company?.excludedTimeFilter || 'current_only'}
-                    onTimeFilterChange={(excludedTimeFilter) => updateFilter("company", "excludedTimeFilter", excludedTimeFilter)}
-                    placeholder="Empresas para NÃO incluir nos resultados"
-                  />
-                  <p className="text-xs mt-1 text-status-warning">
-                    Filtro aplicado localmente após Busca Global
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-6">
                   <div>
-                    <Label className="text-xs mb-1.5 block font-medium">Setores da Empresa</Label>
-                    <IndustryFilterInput
-                      value={filters.company?.industries || []}
-                      onChange={(industries) => setFilters(prev => ({
+                    <Label className="text-xs mb-2 block">Empresas</Label>
+                    <CompanyFilterInput
+                      value={filters.company?.companyItems || []}
+                      onChange={(companyItems) => setFilters(prev => ({
                         ...prev,
-                        company: {
-                          ...(prev.company ?? {}),
-                          industries
-                        }
+                        company: { ...(prev.company ?? {}), companyItems }
                       }))}
-                      timeFilter={filters.company?.industryTimeFilter || 'current_past'}
-                      onTimeFilterChange={(industryTimeFilter) => updateFilter("company", "industryTimeFilter", industryTimeFilter)}
-                      placeholder="Digite setor e pressione Enter"
+                      timeFilter={filters.company?.companyTimeFilter || "current_past"}
+                      onTimeFilterChange={(companyTimeFilter) => updateFilter("company", "companyTimeFilter", companyTimeFilter)}
+                      specificYears={filters.company?.specificYears}
+                      onSpecificYearsChange={(specificYears) => setFilters(prev => ({ ...prev, company: { ...(prev.company ?? {}), specificYears } }))}
+                      fundingStages={filters.company?.fundingStages}
+                      onFundingStagesChange={(fundingStages) => updateFilter("company", "fundingStages", fundingStages)}
+                      placeholder="Digite empresa e pressione Enter (ex: Google, Microsoft, Nubank)"
                     />
+                    <p className="text-xs mt-2 lia-text-500">
+                      Dica: Use &quot;Ask AI&quot; para buscar empresas similares ou por descrição (ex: &quot;fintechs em São Paulo&quot;)
+                    </p>
                   </div>
 
                   <div>
-                    <Label className="text-xs mb-1.5 block font-medium">Tags da Empresa</Label>
-                    <CompanyTagsInput
-                      value={filters.company?.companyTags || []}
-                      onChange={(companyTags) => setFilters(prev => ({
+                    <Label className="text-xs mb-2 block">Empresas Excluídas</Label>
+                    <ExcludedCompaniesInput
+                      value={filters.company?.excludedCompanyItems || []}
+                      onChange={(excludedCompanyItems) => setFilters(prev => ({
                         ...prev,
-                        company: {
-                          ...(prev.company ?? {}),
-                          companyTags
-                        }
+                        company: { ...(prev.company ?? {}), excludedCompanyItems }
                       }))}
-                      timeFilter={filters.company?.companyTagsTimeFilter || 'current_past'}
-                      onTimeFilterChange={(companyTagsTimeFilter) => updateFilter("company", "companyTagsTimeFilter", companyTagsTimeFilter)}
-                      placeholder="Digite tag e pressione Enter"
+                      timeFilter={filters.company?.excludedTimeFilter || "current_only"}
+                      onTimeFilterChange={(excludedTimeFilter) => updateFilter("company", "excludedTimeFilter", excludedTimeFilter)}
+                      placeholder="Empresas para NÃO incluir nos resultados"
                     />
+                    <p className="text-xs mt-1 text-status-warning">
+                      Filtro aplicado localmente após Busca Global
+                    </p>
                   </div>
-                </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className={cn(isLocalSearch && "opacity-50 cursor-not-allowed")}>
-                          <Label className={cn("text-xs mb-1.5 block font-medium", isLocalSearch && "lia-text-400")}>
-                            Sede da Empresa
-                            {isLocalSearch && <span className="ml-1 text-status-warning">(apenas busca global)</span>}
-                          </Label>
-                          <CompanyHQLocationsInput
-                            value={filters.company?.companyHQLocations || []}
-                            disabled={isLocalSearch}
-                            onChange={(companyHQLocations) => {
-                              if (isLocalSearch) return
-                              setFilters(prev => ({
-                                ...prev,
-                                company: {
-                                  ...(prev.company ?? {}),
-                                  companyHQLocations
-                                }
-                              }))
-                            }}
-                            timeFilter={filters.company?.companyHQTimeFilter || 'current_past'}
-                            onTimeFilterChange={(companyHQTimeFilter) => updateFilter("company", "companyHQTimeFilter", companyHQTimeFilter)}
-                            placeholder="Ex: São Paulo / Brasil / RJ / ..."
-                          />
-                        </div>
-                      </TooltipTrigger>
-                      {isLocalSearch && (
-                        <TooltipContent side="top">
-                          <p className="text-xs">Disponível apenas em busca Híbrida ou Global</p>
-                        </TooltipContent>
-                      )}
-                    </Tooltip>
-                  </TooltipProvider>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs mb-1.5 block font-medium">Setores da Empresa</Label>
+                      <IndustryFilterInput
+                        value={filters.company?.industries || []}
+                        onChange={(industries) => setFilters(prev => ({
+                          ...prev,
+                          company: { ...(prev.company ?? {}), industries }
+                        }))}
+                        timeFilter={filters.company?.industryTimeFilter || "current_past"}
+                        onTimeFilterChange={(industryTimeFilter) => updateFilter("company", "industryTimeFilter", industryTimeFilter)}
+                        placeholder="Digite setor e pressione Enter"
+                      />
+                    </div>
 
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className={cn(isLocalSearch && "opacity-50 cursor-not-allowed")}>
-                          <Label className={cn("text-xs mb-1.5 block font-medium", isLocalSearch && "lia-text-400")}>
-                            Porte da Empresa
-                            {isLocalSearch && <span className="ml-1 text-status-warning">(apenas busca global)</span>}
-                          </Label>
-                          <div className={cn("flex flex-wrap gap-2", isLocalSearch && "pointer-events-none")}>
-                            {companySizes.map(size => {
-                              const isSelected = filters.company?.companySizes?.includes(size.value)
-                              return (
-                                <button
-                                  key={size.value}
-                                  disabled={isLocalSearch}
-                                  onClick={() => {
-                                    if (isLocalSearch) return
-                                    if (isSelected) {
-                                      removeFromArray("company", "companySizes", size.value)
-                                    } else {
-                                      addToArray("company", "companySizes", size.value)
-                                    }
-                                  }}
-                                  className={cn(
-                                    "px-3 py-1.5 rounded-full text-xs border transition-[width,height]",
-                                    isLocalSearch
-                                      ? "border-lia-border-subtle bg-gray-100 lia-text-400 cursor-not-allowed"
-                                      : isSelected 
-                                        ? "border-gray-500 bg-gray-100 dark:bg-lia-bg-elevated lia-text-900 dark:text-lia-text-primary" 
-                                        : "border-lia-border-subtle bg-lia-bg-primary lia-text-600 hover:border-lia-border-default"
-                                  )}
-                                >
-                                  {size.label}
-                                </button>
-                              )
-                            })}
-                          </div>
-                        </div>
-                      </TooltipTrigger>
-                      {isLocalSearch && (
-                        <TooltipContent side="top">
-                          <p className="text-xs">Disponível apenas em busca Híbrida ou Global</p>
-                        </TooltipContent>
-                      )}
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
+                    <div>
+                      <Label className="text-xs mb-1.5 block font-medium">Tags da Empresa</Label>
+                      <CompanyTagsInput
+                        value={filters.company?.companyTags || []}
+                        onChange={(companyTags) => setFilters(prev => ({
+                          ...prev,
+                          company: { ...(prev.company ?? {}), companyTags }
+                        }))}
+                        timeFilter={filters.company?.companyTagsTimeFilter || "current_past"}
+                        onTimeFilterChange={(companyTagsTimeFilter) => updateFilter("company", "companyTagsTimeFilter", companyTagsTimeFilter)}
+                        placeholder="Digite tag e pressione Enter"
+                      />
+                    </div>
+                  </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className={cn(isLocalSearch && "opacity-50 cursor-not-allowed")}>
-                          <Label className={cn("text-xs mb-1.5 block font-medium", isLocalSearch && "lia-text-400")}>
-                            Empresa Fundada Após
-                            {isLocalSearch && <span className="ml-1 text-status-warning">(apenas busca global)</span>}
-                          </Label>
-                          <div className="relative">
-                            <Input
-                              type="number"
-                              min={1800}
-                              max={new Date().getFullYear()}
-                              value={filters.company?.companyFoundedAfter || ""}
+                  <div className="grid grid-cols-2 gap-4">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className={cn(isLocalSearch && "opacity-50 cursor-not-allowed")}>
+                            <Label className={cn("text-xs mb-1.5 block font-medium", isLocalSearch && "lia-text-400")}>
+                              Sede da Empresa
+                              {isLocalSearch && <span className="ml-1 text-status-warning">(apenas busca global)</span>}
+                            </Label>
+                            <CompanyHQLocationsInput
+                              value={filters.company?.companyHQLocations || []}
                               disabled={isLocalSearch}
-                              onChange={(e) => {
+                              onChange={(companyHQLocations) => {
                                 if (isLocalSearch) return
-                                const year = e.target.value ? parseInt(e.target.value) : undefined
-                                updateFilter("company", "companyFoundedAfter", year)
+                                setFilters(prev => ({
+                                  ...prev,
+                                  company: { ...(prev.company ?? {}), companyHQLocations }
+                                }))
                               }}
-                              placeholder="Ano de Fundação"
-                              className={cn(
-                                "border-lia-border-subtle focus:ring-1 focus:ring-gray-400 focus:border-gray-500 pr-10",
-                                isLocalSearch && "bg-gray-100 cursor-not-allowed"
-                              )}
+                              timeFilter={filters.company?.companyHQTimeFilter || "current_past"}
+                              onTimeFilterChange={(companyHQTimeFilter) => updateFilter("company", "companyHQTimeFilter", companyHQTimeFilter)}
+                              placeholder="Ex: São Paulo / Brasil / RJ / ..."
                             />
-                            <div className={cn("absolute right-3 top-1/2 transform -translate-y-1/2", isLocalSearch ? "lia-text-300" : "lia-text-400")}>
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                              </svg>
+                          </div>
+                        </TooltipTrigger>
+                        {isLocalSearch && (
+                          <TooltipContent side="top">
+                            <p className="text-xs">Disponível apenas em busca Híbrida ou Global</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
+
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className={cn(isLocalSearch && "opacity-50 cursor-not-allowed")}>
+                            <Label className={cn("text-xs mb-1.5 block font-medium", isLocalSearch && "lia-text-400")}>
+                              Porte da Empresa
+                              {isLocalSearch && <span className="ml-1 text-status-warning">(apenas busca global)</span>}
+                            </Label>
+                            <div className={cn("flex flex-wrap gap-2", isLocalSearch && "pointer-events-none")}>
+                              {companySizes.map(size => {
+                                const isSelected = filters.company?.companySizes?.includes(size.value)
+                                return (
+                                  <button
+                                    key={size.value}
+                                    disabled={isLocalSearch}
+                                    onClick={() => {
+                                      if (isLocalSearch) return
+                                      if (isSelected) {
+                                        removeFromArray("company", "companySizes", size.value)
+                                      } else {
+                                        addToArray("company", "companySizes", size.value)
+                                      }
+                                    }}
+                                    className={cn(
+                                      "px-3 py-1.5 rounded-full text-xs border transition-[width,height]",
+                                      isLocalSearch
+                                        ? "border-lia-border-subtle bg-gray-100 lia-text-400 cursor-not-allowed"
+                                        : isSelected
+                                          ? "border-gray-500 bg-gray-100 dark:bg-lia-bg-elevated lia-text-900 dark:text-lia-text-primary"
+                                          : "border-lia-border-subtle bg-lia-bg-primary lia-text-600 hover:border-lia-border-default"
+                                    )}
+                                  >
+                                    {size.label}
+                                  </button>
+                                )
+                              })}
                             </div>
                           </div>
-                          <p className={cn("text-xs mt-1", isLocalSearch ? "lia-text-400" : "lia-text-500")}>
-                            Filtrar empresas fundadas após este ano
-                          </p>
-                        </div>
-                      </TooltipTrigger>
-                      {isLocalSearch && (
-                        <TooltipContent side="top">
-                          <p className="text-xs">Disponível apenas em busca Híbrida ou Global</p>
-                        </TooltipContent>
-                      )}
-                    </Tooltip>
-                  </TooltipProvider>
+                        </TooltipTrigger>
+                        {isLocalSearch && (
+                          <TooltipContent side="top">
+                            <p className="text-xs">Disponível apenas em busca Híbrida ou Global</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
 
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className={cn(isLocalSearch && "opacity-50 cursor-not-allowed")}>
-                          <Label className={cn("text-xs mb-1.5 block font-medium", isLocalSearch && "lia-text-400")}>
-                            Estágio de Funding
-                            {isLocalSearch && <span className="ml-1 text-status-warning">(apenas busca global)</span>}
-                          </Label>
-                          <FundingStagesInput
-                            value={filters.company?.fundingStages || []}
-                            disabled={isLocalSearch}
-                            onChange={(fundingStages) => {
-                              if (isLocalSearch) return
-                              setFilters(prev => ({
-                                ...prev,
-                                company: {
-                                  ...(prev.company ?? {}),
-                                  fundingStages
-                                }
-                              }))
-                            }}
-                          />
-                        </div>
-                      </TooltipTrigger>
-                      {isLocalSearch && (
-                        <TooltipContent side="top">
-                          <p className="text-xs">Disponível apenas em busca Híbrida ou Global</p>
-                        </TooltipContent>
-                      )}
-                    </Tooltip>
-                  </TooltipProvider>
+                  <div className="grid grid-cols-2 gap-4">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className={cn(isLocalSearch && "opacity-50 cursor-not-allowed")}>
+                            <Label className={cn("text-xs mb-1.5 block font-medium", isLocalSearch && "lia-text-400")}>
+                              Empresa Fundada Após
+                              {isLocalSearch && <span className="ml-1 text-status-warning">(apenas busca global)</span>}
+                            </Label>
+                            <div className="relative">
+                              <Input
+                                type="number"
+                                min={1800}
+                                max={new Date().getFullYear()}
+                                value={filters.company?.companyFoundedAfter || ""}
+                                disabled={isLocalSearch}
+                                onChange={(e) => {
+                                  if (isLocalSearch) return
+                                  const year = e.target.value ? parseInt(e.target.value) : null
+                                  updateFilter("company", "companyFoundedAfter", year)
+                                }}
+                                placeholder="Ano de Fundação"
+                                className={cn(
+                                  "border-lia-border-subtle focus:ring-1 focus:ring-gray-400 focus:border-gray-500 pr-10",
+                                  isLocalSearch && "bg-gray-100 cursor-not-allowed"
+                                )}
+                              />
+                              <div className={cn("absolute right-3 top-1/2 transform -translate-y-1/2", isLocalSearch ? "lia-text-300" : "lia-text-400")}>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                              </div>
+                            </div>
+                            <p className={cn("text-xs mt-1", isLocalSearch ? "lia-text-400" : "lia-text-500")}>
+                              Filtrar empresas fundadas após este ano
+                            </p>
+                          </div>
+                        </TooltipTrigger>
+                        {isLocalSearch && (
+                          <TooltipContent side="top">
+                            <p className="text-xs">Disponível apenas em busca Híbrida ou Global</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
+
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className={cn(isLocalSearch && "opacity-50 cursor-not-allowed")}>
+                            <Label className={cn("text-xs mb-1.5 block font-medium", isLocalSearch && "lia-text-400")}>
+                              Estágio de Funding
+                              {isLocalSearch && <span className="ml-1 text-status-warning">(apenas busca global)</span>}
+                            </Label>
+                            <FundingStagesInput
+                              value={filters.company?.fundingStages || []}
+                              disabled={isLocalSearch}
+                              onChange={(fundingStages) => {
+                                if (isLocalSearch) return
+                                setFilters(prev => ({
+                                  ...prev,
+                                  company: { ...(prev.company ?? {}), fundingStages }
+                                }))
+                              }}
+                            />
+                          </div>
+                        </TooltipTrigger>
+                        {isLocalSearch && (
+                          <TooltipContent side="top">
+                            <p className="text-xs">Disponível apenas em busca Híbrida ou Global</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                 </div>
               </div>
-            </div>
 
               {/* Section: Habilidades */}
               <div ref={(el) => { sectionRefs.current.skills = el }} className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-6">
                 <SectionHeader icon={Code} title="Habilidades" description="Skills técnicas" />
-              <div className="space-y-6">
-                <div>
-                  <Label className="text-xs mb-1.5 block">Habilidades Técnicas</Label>
-                  <SkillsFilterInput
-                    value={filters.skills?.skillItems || []}
-                    onChange={(skillItems) => setFilters(prev => ({
-                      ...prev,
-                      skills: {
-                        ...(prev.skills ?? {}),
-                        skillItems
-                      }
-                    }))}
-                    placeholder="Digite skill e pressione Enter (ex: Python, React, AWS, SQL)"
-                  />
-                  <p className="text-xs mt-2 lia-text-500">
-                    Dica: Use o ícone de pin para marcar skills obrigatórias. O botão "Find Similar" sugere skills relacionadas via IA.
-                  </p>
-                </div>
-
-                <div className="mt-4">
-                  <Label className="text-xs mb-1.5 block">Áreas de Expertise</Label>
-                  <ExpertiseAreasInput
-                    value={filters.skills?.expertise || []}
-                    onChange={(expertise) => setFilters(prev => ({
-                      ...prev,
-                      skills: {
-                        ...(prev.skills ?? {}),
-                        expertise
-                      }
-                    }))}
-                    placeholder="Digite expertise e pressione Enter (ex: Machine Learning, DevOps, Data Science)"
-                  />
-                </div>
+                <FilterSectionHabilidades
+                  filters={filters}
+                  setFilters={setFilters}
+                />
               </div>
-            </div>
 
               {/* Section: Formação */}
               <div ref={(el) => { sectionRefs.current.education = el }} className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-6">
                 <SectionHeader icon={GraduationCap} title="Formação" description="Universidades e cursos" />
-              <div className="space-y-6">
-                <div>
-                  <Label className="text-xs mb-2 block font-medium">Universidades</Label>
-                  <UniversitiesFilterInput
-                    value={filters.education?.universities || []}
-                    onChange={(universities) => setFilters(prev => ({
-                      ...prev,
-                      education: {
-                        ...(prev.education ?? {}),
-                        universities
-                      }
-                    }))}
-                    placeholder="Digite universidade e pressione Enter"
-                    showPresets={true}
-                  />
-                  <p className="text-xs mt-2 lia-text-500">
-                    Dica: Use "Ask AI" para buscar universidades similares ou por descrição
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-xs mb-1.5 block font-medium">Universidades Excluídas</Label>
-                    <ExcludedUniversitiesInput
-                      value={filters.education?.excludedUniversities || []}
-                      onChange={(excludedUniversities) => setFilters(prev => ({
-                        ...prev,
-                        education: {
-                          ...(prev.education ?? {}),
-                          excludedUniversities
-                        }
-                      }))}
-                      placeholder="USP, UNICAMP, PUC, FGV, etc."
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-xs mb-1.5 block font-medium">Localização da Universidade</Label>
-                    <UniversityLocationsInput
-                      value={filters.education?.universityLocations || []}
-                      onChange={(universityLocations) => setFilters(prev => ({
-                        ...prev,
-                        education: {
-                          ...(prev.education ?? {}),
-                          universityLocations
-                        }
-                      }))}
-                      placeholder="São Paulo / Brasil / RJ / ..."
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-xs mb-1.5 block font-medium">Grau Acadêmico</Label>
-                    <DegreeRequirementsInput
-                      mode={filters.education?.degreeRequirementMode || 'regular'}
-                      onModeChange={(degreeRequirementMode) => setFilters(prev => ({
-                        ...prev,
-                        education: {
-                          ...(prev.education ?? {}),
-                          degreeRequirementMode
-                        }
-                      }))}
-                      value={filters.education?.degree || null}
-                      onChange={(degree) => setFilters(prev => ({
-                        ...prev,
-                        education: {
-                          ...(prev.education ?? {}),
-                          degree
-                        }
-                      }))}
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-xs mb-1.5 block font-medium">Áreas de Estudo</Label>
-                    <FieldsOfStudyInput
-                      mode={filters.education?.fieldsOfStudyMode || 'regular'}
-                      onModeChange={(fieldsOfStudyMode) => setFilters(prev => ({
-                        ...prev,
-                        education: {
-                          ...(prev.education ?? {}),
-                          fieldsOfStudyMode
-                        }
-                      }))}
-                      value={filters.education?.fieldsOfStudy || []}
-                      onChange={(fieldsOfStudy) => setFilters(prev => ({
-                        ...prev,
-                        education: {
-                          ...(prev.education ?? {}),
-                          fieldsOfStudy
-                        }
-                      }))}
-                      placeholder="Engenharias, Ciências, Computação, etc."
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label className="text-xs mb-1.5 block font-medium">Ano de Formatura</Label>
-                  <GraduationYearInput
-                    minYear={filters.education?.graduationYearMin ?? null}
-                    maxYear={filters.education?.graduationYearMax ?? null}
-                    onMinYearChange={(graduationYearMin) => setFilters(prev => ({
-                      ...prev,
-                      education: {
-                        ...(prev.education ?? {}),
-                        graduationYearMin
-                      }
-                    }))}
-                    onMaxYearChange={(graduationYearMax) => setFilters(prev => ({
-                      ...prev,
-                      education: {
-                        ...(prev.education ?? {}),
-                        graduationYearMax
-                      }
-                    }))}
-                  />
-                </div>
+                <FilterSectionFormacao
+                  filters={filters}
+                  setFilters={setFilters}
+                />
               </div>
-            </div>
 
               {/* Section: Idiomas */}
               <div ref={(el) => { sectionRefs.current.languages = el }} className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-6">
                 <SectionHeader icon={Globe} title="Idiomas" description="Línguas e proficiência" />
-              <div className="space-y-4">
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <Label className="text-xs">Idiomas</Label>
-                    <Select
-                      value={filters.languages?.proficiencyLevel || "any"}
-                      onValueChange={(value) => updateFilter("languages", "proficiencyLevel", value)}
-                    >
-                      <SelectTrigger className="w-auto h-7 px-2 py-1 text-xs border border-lia-border-subtle focus:ring-1 focus:ring-gray-400 gap-1">
-                        <SelectValue placeholder="Qualquer Nível" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {proficiencyLevels.map(level => (
-                          <SelectItem key={level.value} value={level.value} className="text-xs">
-                            {level.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <LanguageFilterInput
-                    value={filters.languages?.languages || []}
-                    onAdd={(val) => addToArray("languages", "languages", val)}
-                    onRemove={(val) => removeFromArray("languages", "languages", val)}
-                    placeholder="Ex: English, Spanish, Mandarin, etc."
-                    showPresets={false}
-                  />
-                </div>
+                <FilterSectionIdiomas
+                  filters={filters}
+                  updateFilter={updateFilter}
+                  addToArray={addToArray}
+                  removeFromArray={removeFromArray}
+                />
               </div>
-            </div>
 
-          </div>
+            </div>
           </div>
 
           {/* Active Filters Chips */}
@@ -1266,13 +516,13 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                 {filters.general?.minExperience && (
                   <Badge variant="outline" className="text-micro py-0 h-5 gap-1">
                     Exp. mín: {filters.general.minExperience}a
-                    <button onClick={() => updateFilter("general", "minExperience", undefined)} className="ml-0.5 hover:text-status-error"><X className="h-2.5 w-2.5" /></button>
+                    <button onClick={() => updateFilter("general", "minExperience", null)} className="ml-0.5 hover:text-status-error"><X className="h-2.5 w-2.5" /></button>
                   </Badge>
                 )}
                 {filters.general?.maxExperience && (
                   <Badge variant="outline" className="text-micro py-0 h-5 gap-1">
                     Exp. máx: {filters.general.maxExperience}a
-                    <button onClick={() => updateFilter("general", "maxExperience", undefined)} className="ml-0.5 hover:text-status-error"><X className="h-2.5 w-2.5" /></button>
+                    <button onClick={() => updateFilter("general", "maxExperience", null)} className="ml-0.5 hover:text-status-error"><X className="h-2.5 w-2.5" /></button>
                   </Badge>
                 )}
                 {filters.job?.titles?.map(t => (
@@ -1309,9 +559,8 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
             </div>
           )}
 
-          <div 
-            className="flex items-center justify-between px-6 py-3 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle"
-          >
+          {/* Footer */}
+          <div className="flex items-center justify-between px-6 py-3 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle">
             <div className="flex items-center gap-3">
               <Button
                 variant="ghost"
@@ -1323,9 +572,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                 Limpar filtros
               </Button>
               {onSave && (
-                <div 
-                  className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs bg-gray-100 dark:bg-lia-bg-elevated lia-text-700 dark:text-lia-text-secondary"
-                >
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs bg-gray-100 dark:bg-lia-bg-elevated lia-text-700 dark:text-lia-text-secondary">
                   {(() => {
                     const dest = saveDestinations.find(d => d.key === saveDestination)
                     const Icon = dest?.icon || Bookmark
@@ -1343,11 +590,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
               <span className={textStyles.description}>
                 {getActiveFiltersCount()} filtros ativos
               </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onClose}
-              >
+              <Button variant="outline" size="sm" onClick={onClose}>
                 Cancelar
               </Button>
               <Button
@@ -1361,7 +604,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
           </div>
         </div>
       </div>
-      
+
       <CreditConfirmationDialog
         open={showCreditConfirm}
         onOpenChange={setShowCreditConfirm}
@@ -1376,4 +619,3 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
 }
 
 export default AdvancedFiltersModal
-

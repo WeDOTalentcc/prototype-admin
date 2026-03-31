@@ -1,19 +1,19 @@
-use client
-import React from react
-import { Briefcase, Crown, GraduationCap, Rocket, Info } from lucide-react
-import { cn } from @/lib/utils
-import { Switch } from @/components/ui/switch
+"use client"
+import React from "react"
+import { Briefcase, Crown, GraduationCap, Rocket, Info } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { Switch } from "@/components/ui/switch"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from @/components/ui/tooltip
-import { type SearchFilters } from ../advancedFiltersTypes
+} from "@/components/ui/tooltip"
+import { type SearchFilters } from "../advancedFiltersTypes"
 
 interface FilterSectionPerfilProps {
   filters: SearchFilters
-  updateFilter: (section: string, field: string, value: unknown) => void
+  updateFilter: <T extends keyof SearchFilters>(category: T, key: keyof NonNullable<SearchFilters[T]>, value: string | string[] | number | boolean | null) => void
   isLocalSearch: boolean
 }
 
@@ -24,39 +24,39 @@ export const FilterSectionPerfil = React.memo(function FilterSectionPerfil({
 }: FilterSectionPerfilProps) {
   const profileItems = [
     {
-      field: ppiOptions as const,
-      key: openToWorkOnly,
+      field: "ppiOptions" as const,
+      key: "openToWorkOnly",
       icon: Briefcase,
-      iconColor: text-status-success,
-      label: Aberto a Oportunidades,
-      description: Candidatos sinalizando interesse em novas propostas,
+      iconColor: "text-status-success",
+      label: "Aberto a Oportunidades",
+      description: "Candidatos sinalizando interesse em novas propostas",
       value: filters.ppiOptions?.openToWorkOnly || false,
     },
     {
-      field: profile as const,
-      key: isDecisionMaker,
+      field: "profile" as const,
+      key: "isDecisionMaker",
       icon: Crown,
-      iconColor: text-status-warning,
-      label: Decisor / Líder,
-      description: Profissionais em posições de liderança,
+      iconColor: "text-status-warning",
+      label: "Decisor / Líder",
+      description: "Profissionais em posições de liderança",
       value: filters.profile?.isDecisionMaker || false,
     },
     {
-      field: profile as const,
-      key: isTopUniversities,
+      field: "profile" as const,
+      key: "isTopUniversities",
       icon: GraduationCap,
-      iconColor: lia-text-600 dark:text-lia-text-tertiary,
-      label: Top Universidades,
-      description: Formados em universidades de elite,
+      iconColor: "lia-text-600 dark:text-lia-text-tertiary",
+      label: "Top Universidades",
+      description: "Formados em universidades de elite",
       value: filters.profile?.isTopUniversities || false,
     },
     {
-      field: profile as const,
-      key: isStartup,
+      field: "profile" as const,
+      key: "isStartup",
       icon: Rocket,
-      iconColor: text-wedo-purple,
-      label: Experiência em Startup,
-      description: Trabalhou em startups (cultura ágil),
+      iconColor: "text-wedo-purple",
+      label: "Experiência em Startup",
+      description: "Trabalhou em startups (cultura ágil)",
       value: filters.profile?.isStartup || false,
     },
   ]
@@ -78,20 +78,20 @@ export const FilterSectionPerfil = React.memo(function FilterSectionPerfil({
             <TooltipTrigger asChild>
               <div
                 className={cn(
-                  flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle,
-                  isLocalSearch && opacity-50 cursor-not-allowed bg-gray-50
+                  "flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle",
+                  isLocalSearch && "opacity-50 cursor-not-allowed bg-gray-50"
                 )}
               >
                 <div className="flex items-center gap-3">
-                  <item.icon className={cn(w-4 h-4, isLocalSearch ? lia-text-400 : item.iconColor)} />
+                  <item.icon className={cn("w-4 h-4", isLocalSearch ? "lia-text-400" : item.iconColor)} />
                   <div>
-                    <div className={cn(text-xs font-medium, isLocalSearch && lia-text-400)}>{item.label}</div>
+                    <div className={cn("text-xs font-medium", isLocalSearch && "lia-text-400")}>{item.label}</div>
                     <div className="text-xs lia-text-500">{item.description}</div>
                   </div>
                 </div>
                 <Switch
                   checked={item.value}
-                  onCheckedChange={(checked: boolean) => updateFilter(item.field, item.key, checked)}
+                  onCheckedChange={(checked: boolean) => updateFilter(item.field as keyof SearchFilters, item.key as never, checked)}
                   disabled={isLocalSearch}
                 />
               </div>
@@ -107,4 +107,4 @@ export const FilterSectionPerfil = React.memo(function FilterSectionPerfil({
     </div>
   )
 })
-FilterSectionPerfil.displayName = FilterSectionPerfil
+FilterSectionPerfil.displayName = "FilterSectionPerfil"

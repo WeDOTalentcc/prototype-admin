@@ -1,33 +1,33 @@
-use client
-import React from react
-import { Eye, AlertCircle, HelpCircle } from lucide-react
-import { cn } from @/lib/utils
-import { textStyles } from @/lib/design-tokens
-import { Input } from @/components/ui/input
-import { Label } from @/components/ui/label
+"use client"
+import React from "react"
+import { Eye, AlertCircle, HelpCircle } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { textStyles } from "@/lib/design-tokens"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from @/components/ui/select
+} from "@/components/ui/select"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from @/components/ui/popover
+} from "@/components/ui/popover"
 import {
   type SearchFilters,
   type HideViewedScope,
   type HideViewedPeriod,
   hideViewedScopeOptions,
   hideViewedPeriodOptions,
-} from ../advancedFiltersTypes
+} from "../advancedFiltersTypes"
 
 interface FilterSectionGeralProps {
   filters: SearchFilters
-  updateFilter: (section: string, field: string, value: unknown) => void
+  updateFilter: <T extends keyof SearchFilters>(category: T, key: keyof NonNullable<SearchFilters[T]>, value: string | string[] | number | boolean | null) => void
 }
 
 export const FilterSectionGeral = React.memo(function FilterSectionGeral({
@@ -42,9 +42,9 @@ export const FilterSectionGeral = React.memo(function FilterSectionGeral({
           <Input
             type="number"
             min={0}
-            value={filters.general?.minExperience || }
+            value={filters.general?.minExperience || ""}
             onChange={(e) =>
-              updateFilter(general, minExperience, e.target.value ? parseInt(e.target.value) : undefined)
+              updateFilter("general", "minExperience", e.target.value ? parseInt(e.target.value) : null)
             }
             placeholder="Ex: 3 anos"
             className="border border-lia-border-subtle focus:ring-1 focus:ring-gray-400"
@@ -55,9 +55,9 @@ export const FilterSectionGeral = React.memo(function FilterSectionGeral({
           <Input
             type="number"
             min={0}
-            value={filters.general?.maxExperience || }
+            value={filters.general?.maxExperience || ""}
             onChange={(e) =>
-              updateFilter(general, maxExperience, e.target.value ? parseInt(e.target.value) : undefined)
+              updateFilter("general", "maxExperience", e.target.value ? parseInt(e.target.value) : null)
             }
             placeholder="Ex: 10 anos"
             className="border border-lia-border-subtle focus:ring-1 focus:ring-gray-400"
@@ -98,10 +98,10 @@ export const FilterSectionGeral = React.memo(function FilterSectionGeral({
           <div>
             <Label className="text-xs mb-1.5 block lia-text-600">Escopo</Label>
             <Select
-              value={filters.general?.hideViewedScope || dont_hide}
+              value={filters.general?.hideViewedScope || "dont_hide"}
               onValueChange={(value) => {
-                updateFilter(general, hideViewedScope, value as HideViewedScope)
-                updateFilter(general, hideViewedProfiles, value !== dont_hide)
+                updateFilter("general", "hideViewedScope", value as HideViewedScope)
+                updateFilter("general", "hideViewedProfiles", value !== "dont_hide")
               }}
             >
               <SelectTrigger className="border border-lia-border-subtle focus:ring-1 focus:ring-gray-400 bg-lia-bg-secondary text-xs">
@@ -125,14 +125,14 @@ export const FilterSectionGeral = React.memo(function FilterSectionGeral({
           <div>
             <Label className="text-xs mb-1.5 block lia-text-600">Período</Label>
             <Select
-              value={filters.general?.hideViewedPeriod || all_time}
-              onValueChange={(value) => updateFilter(general, hideViewedPeriod, value as HideViewedPeriod)}
-              disabled={filters.general?.hideViewedScope === dont_hide}
+              value={filters.general?.hideViewedPeriod || "all_time"}
+              onValueChange={(value) => updateFilter("general", "hideViewedPeriod", value as HideViewedPeriod)}
+              disabled={filters.general?.hideViewedScope === "dont_hide"}
             >
               <SelectTrigger
                 className={cn(
-                  border border-lia-border-subtle focus:ring-1 focus:ring-gray-400 bg-lia-bg-primary text-xs,
-                  filters.general?.hideViewedScope === dont_hide && opacity-50 cursor-not-allowed
+                  "border border-lia-border-subtle focus:ring-1 focus:ring-gray-400 bg-lia-bg-primary text-xs",
+                  filters.general?.hideViewedScope === "dont_hide" && "opacity-50 cursor-not-allowed"
                 )}
               >
                 <SelectValue placeholder="Selecione o período" />
@@ -156,4 +156,4 @@ export const FilterSectionGeral = React.memo(function FilterSectionGeral({
     </div>
   )
 })
-FilterSectionGeral.displayName = FilterSectionGeral
+FilterSectionGeral.displayName = "FilterSectionGeral"
