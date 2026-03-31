@@ -170,19 +170,21 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
 │    - NÃO cria a vaga na WeDo — apenas edita os dados que vieram do ATS      │
 │    - Define/ajusta requisitos, benefícios, faixa salarial, modelo de         │
 │      trabalho (presencial/remoto/híbrido)                                    │
-│    - 🤖 Ag.8 ATSIntegrationReActAgent sincroniza dados do ATS ⚠ PÓS-MVP     │
+│    - 🤖 Ag.8 ATSIntegrationReActAgent sincroniza dados do ATS ⚠ PÓS-MVP(IMPORTANTE)    │
 │  • Opção B — CRIAR VAGA MANUALMENTE na WeDo:                                │
 │    - Clica em "Criar Vaga" → seleciona "Criar Manualmente"                  │
 │    - Preenche todos os campos da vaga manualmente                           │
-│  • Opção C — GERAR JD (Descrição de Vaga) com IA:                           │
-│    - Clica em "Gerar JD" no formulário da vaga                              │
+│  • GERAR JD (Descrição de Vaga) com IA:                           │
+│    - Utiliza o job description da vaga para gerar JD enriquecido 
+       Na sessão de Configuracao de triagem clica em "Gerar JD" no formulário da vaga  aproveitando JD já existente                            │
 │    - 🤖 JobDescriptionGeneratorService [Serviço, domínio job_management]      │
-│      gera/melhora a descrição automaticamente usando LLM (Claude)           │
-│    - A IA expande skills sugeridas usando busca semântica                    │
-│    - A IA prevê tempo de preenchimento e faixa salarial ótima               │
+│      gera/melhora a descrição automaticamente usando LLM (Claude)e seguindo 
+orientacoes do prompt desenvolvido (atende diversos pre requisitos, 
+inclusive fairness, lgpd etc(camada extra de seguranca para cliente nao publicar
+JD com problemas e a LIA não consumir JD com problemas))           │
+│    - A IA expande skills sugeridas usando busca semântica                    │         │
 │  • O FairnessGuard [Capability anti-viés] analisa a vaga e bloqueia          │
-│    requisitos discriminatórios (ex: "somente homens", "até 30 anos")         │
-│  • Dados pessoais são mascarados antes de enviar ao LLM                      │
+│    requisitos discriminatórios (ex: "somente homens", "até 30 anos")                     │
 │  • Tudo é registrado no AuditTrail [Capability de auditoria]                 │
 │                                                                               │
 │  Resultado: Vaga criada/editada com JD de qualidade, sem viés,               │
@@ -205,6 +207,7 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
     Authorization: Bearer <jwt_token>
     Se "Gerar JD" acionado: POST /api/v1/briefing/generate-jd
 
+ IMPORTANTE: ITENS 2, 3, 4 5 NÃO IMPLEMENTADOS. SOMENTE PÓS MVP
  2  DomainOrchestrator roteia + GuardrailCheck
     Identifica domínio = job_management
     GuardrailRepository (3 níveis): global → tenant → domain
@@ -234,6 +237,7 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
     Campos sensíveis strip via strip_pii_for_llm_prompt
     O LLM NUNCA vê dados pessoais reais
 
+CONTINUA DAQUI - ENRIQUECIMENTO DO JD COM LLM QUE SEGUE PROMPT DEFINIDO POR NOS
  6  JobDescriptionGeneratorService processa (Claude LLM)
     LLM recebe dados mascarados da vaga
     Gera JD estruturada em markdown:
@@ -241,20 +245,17 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
     → SEO title + tags
     Anti-sycophancy block (FULL variant) no system prompt
     CircuitBreaker: circuit "anthropic" (failure_threshold=5, recovery=30s)
-    🧠 SemanticSearch expande skills sugeridas (Gemini 768-dim)
-    🧠 PredictiveAnalytics: predict_time_to_fill, predict_optimal_salary
+    LLM expande skills sugeridas (Gemini 768-dim)
 
  7  AuditTrail registra decisão
     🔒 audit_service.log_decision ativo em jd_generation.py
     Registro: LLM input mascarado, output gerado, FairnessGuard results
     Append-only, retenção 730-1825 dias (SOX)
-    🧠 LearningLoop captura edições do wizard (salary, skills, benefits)
-    🧠 TemplateLearning: após 3 vagas similares, gera template automático
-
+  
  8  Resposta ao recrutador (PII demasked)
-    JD gerada com dados restaurados (nomes, endereços reais)
+    JD gerada com dados enriquecidos
     FairnessGuard warnings incluídos (se houver L2 alerts)
-    Frontend renderiza JD no modal de edição
+    Frontend renderiza JD no modal de edição de JD em configuracoes de triagem
     Dados persistidos via save_job_draft
 
 ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -264,8 +265,8 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
 │  3. AntiSycophancy FULL — verificação de premissas ●                         │
 │  4. CircuitBreaker — circuit "anthropic" ●                                   │
 │  5. AuditTrail — log de geração de JD ● (edições manuais ●)                │
-│  6. LearningLoop — captura silenciosa de edições ●                           │
-│  7. TemplateLearning — auto-template após 3 vagas similares ●               │
+│  6. LearningLoop — captura silenciosa de edições ● NÃO APLICAVEL AINDA                          │
+│  7. TemplateLearning — auto-template após 3 vagas similares ●  (NAO APLICAVEL AINDA)             │
 │  8. PredictiveAnalytics — predict TTF + salary ●                             │
 │  9. SemanticSearch — expansão de skills ●                                    │
 └──────────────────────────────────────────────────────────────────────────────┘
@@ -287,16 +288,16 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
 │    de trabalho)                                                               │
 │  • O recrutador acessa a TAB CONFIGURAÇÕES da vaga                           │
 │    → SEÇÃO PERGUNTAS de Triagem                                              │
-│  • Primeiro, se necessário, revisa/ajusta o JD (Descrição de Vaga)           │
+│  • Primeiro, se necessário, revisa/ajusta o JD (Descrição de Vaga) QUE JÁ FOI ENRIQUECIDO NA ETAPA ANTERIOR DE EDITAR JD          │
 │    na aba de configurações da vaga                                           │
-│  • Depois, clica em "Criar Roteiro" (modo completo ou compacto)              │
+│  • Depois, clica em "Criar Roteiro" (modo completo ou compacto 7 OU 12 PERGUNTAS)              │
 │    ou edita um roteiro existente                                             │
 │  • 🤖 WSIQuestionGeneratorService [Serviço, domínio cv_screening]             │
 │    gera perguntas WSI automaticamente usando o JD como base:                 │
-│    - Bloco Técnico (avalia conhecimento em 6 níveis de profundidade)        │
+│    - Bloco Técnico (avalia conhecimento em 6 níveis de profundidade - BLOOM E DREYFUS)        │
 │    - Bloco Comportamental (avalia 5 traços de personalidade - Big Five)     │
 │    - Bloco Situacional (cenários práticos do dia-a-dia da vaga)             │
-│    - Bloco Cultural Fit (alinhamento com valores da empresa)                │
+│    -                │
 │  • O recrutador revisa as perguntas geradas, pode editar, remover           │
 │    ou adicionar perguntas manualmente                                        │
 │  • O FairnessGuard [Capability anti-viés] valida cada pergunta              │
@@ -305,7 +306,11 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
 │    coerência das perguntas com o JD e requisitos                             │
 │                                                                               │
 │  Resultado: Roteiro de triagem WSI pronto, com perguntas validadas           │
-│  e sem viés, para ser aplicado aos candidatos (E7)                           │
+│  e sem viés, para ser aplicado aos candidatos (E7)         
+
+A TRIAGEM PODE SER ATIVADA NA VAGA ECANDIDATOS QUE SE INSCREVEM AUTOMATICAMENTE RECEBEM CONVITE PARA TRIAGEM
+CANDIDATOS ADICIONADOS PELO RECRUTADOR - BUSCA NO FUNIL - OU IMPORTADOS DO ATS DO CLIENTE SAO CONVIDADOS MANUALMENTE.
+
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -425,7 +430,8 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
 │    e a IA aprende silenciosamente com essas preferências                     │
 │                                                                               │
 │  Resultado: Lista de candidatos ranqueados por aderência à vaga,             │
-│  prontos para avaliação e aprovação (E5)                                     │
+│  prontos para avaliação E PARA SEREM ADICIONADOS NA VAGA
+NA VAGA RECRUTADOR PODE DISPARAR TRIAGEM APÓS aprovação DO PERFIL NA COLUNA FUNI DE TALENTOS                                     │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -555,20 +561,20 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
 │  • Se REPROVAR: precisa informar o motivo da rejeição                       │
 │    - 🤖 FairnessGuard [Capability anti-viés] analisa o motivo               │
 │      da rejeição contra 13 categorias protegidas                             │
-│    - Se o motivo for discriminatório → BLOQUEADO automaticamente             │
+│    - Se o motivo for discriminatório → BLOQUEADO OU AVISO automaticamente             │
 │  • 🤖 PolicyEngine [Serviço de políticas por setor] define:                  │
 │    - Se a IA pode aprovar sozinha ou precisa de confirmação humana           │
 │    - Exemplo: no setor financeiro, quase tudo precisa HITL (Human           │
 │      In The Loop); em RPO, a IA tem mais autonomia                           │
 │  • Antes de contatar candidato aprovado, verifica consentimento LGPD        │
-│    - Sem consentimento registrado → contato bloqueado                        │
-│  • Aprovados seguem para contato via email (E6)                              │
-│  • Reprovados recebem feedback personalizado (E9B)                           │
+│    - Sem consentimento registrado → triagem não iniciada ou candidato bloqueado                        │
+│  • Aprovados seguem para contato via email ou whatsapp(E6)                              │
+│  • Reprovados recebem feedback personalizado elaborado pelos agentes de IA (LIA) (E9B)                           │
 │  • ⚡ Candidatos que se inscreveram pelo site PULAM esta etapa               │
 │    e vão direto para triagem automática                                      │
 │                                                                               │
 │  Resultado: Candidatos aprovados prontos para contato,                       │
-│  reprovados com feedback respeitoso                                          │
+│  reprovados com feedback respeitoso com base em perfil e performance (template construido para utilizacao da LLM)                                       │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -679,9 +685,9 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
 │  • 🤖 Ag.7 CommunicationReActAgent [Agente, domínio communication]          │
 │    personaliza e envia o email                                               │
 │  • A IA testa variantes do template de email automaticamente                 │
-│    (A/B Testing) para descobrir qual versão gera mais respostas              │
+│    (A/B Testing) para descobrir qual versão gera mais respostas  (NAO PRIORITARIO - POS MVP)            │
 │  • Se o candidato NÃO abre/clica o email:                                    │
-│    - Re-envio automático a cada 24h durante 7 dias consecutivos             │
+│    - Re-envio automático a cada 24h durante A CADA 2 dias              │
 │    - Após 7 dias sem resposta → status "sem_resposta"                       │
 │    - O recrutador é notificado via Teams                                     │
 │  • Se o candidato clicou no opt-out → canal de email bloqueado              │
@@ -785,10 +791,9 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
 │    - Faz perguntas comportamentais (avalia 5 traços de                       │
 │      personalidade — Big Five: OCEAN)                                        │
 │    - Faz perguntas situacionais (cenários práticos da vaga)                 │
-│    - Faz perguntas de fit cultural (alinhamento com a empresa)              │
-│  • A sessão pode durar de 30 minutos (modo quick) a 120 minutos             │
+│  • A sessão pode durar de 5-10 minutos (modo quick) a 10-15M minutos             │
 │    (modo full), com salvamento automático do progresso                       │
-│  • O candidato pode pausar e retomar a qualquer momento                     │
+│  • O candidato pode pausar e retomar a qualquer momento se não for modo ligacao - se for whatsapp                    │
 │  • 🤖 Ag.5 WSIService [Serviço determinístico, domínio cv_screening]         │
 │    calcula o score final SEM usar LLM (zero custo, zero latência)            │
 │    com normalização por dificuldade do roteiro                               │
@@ -987,7 +992,7 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
 │  • O candidato completou toda a triagem WSI (E7)                             │
 │  • 🤖 Ag.4 WSIInterviewGraph [Agente tipo Graph] gera o feedback:            │
 │    - Agradece a participação do candidato                                   │
-│    - Dá feedback construtivo sobre o desempenho                             │
+│    - Dá feedback construtivo sobre o desempenho CONFORME TEMPLATE - PROMPT PARA LLM                             │
 │    - Informa os próximos passos do processo seletivo                        │
 │  • O feedback é enviado pelo mesmo canal da triagem (chat, WhatsApp          │
 │    ou voz)                                                                   │
@@ -998,10 +1003,11 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
 │  • O recrutador recebe alerta via Teams:                                     │
 │    "Triagem WSI concluída para [candidato]"                                  │
 │  • Score WSI + parecer da IA ficam disponíveis na plataforma                 │
-│    para o recrutador revisar antes da decisão Gate 2 (E8)                    │
+│    para o recrutador revisar antes da decisão Gate 2 (E8)       
+PARECER DA LIA - WSI TEM TEMPLATE DETERMINISTICO ONDE VARIAVEIS SAO SUBSTITUIDAS PARA EVITAR RISCOS│
 │                                                                               │
-│  Resultado: Candidato recebe feedback respeitoso; recrutador                 │
-│  é notificado e tem dados para decidir no Gate 2                             │
+│  Resultado: Candidato recebe feedback respeitoso PERSONALIZADO CONFORME TEMPLATE/PROMPT DEFINIDO
+; recrutador é notificado e tem dados para decidir no Gate 2                             │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -1063,7 +1069,7 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
 │    - FairnessGuard [Capability anti-viés] valida o motivo contra             │
 │      13 categorias protegidas — se discriminatório → BLOQUEADO              │
 │    - 🤖 Ag.7 PersonalizedFeedbackService [Serviço, domínio cv_screening]     │
-│      gera feedback personalizado e construtivo para o candidato              │
+│      gera feedback personalizado e construtivo para o candidato CONFORME PROMPT DEFINIDO PARA LLM CONSUMIR E EVITAR RISCOS              │
 │    - Um embedding do perfil é gerado para permitir                           │
 │      "re-discovery" — se uma vaga futura for compatível,                     │
 │      este candidato pode ser encontrado novamente                            │
@@ -1248,7 +1254,7 @@ Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arqui
 │                                                                               │
 │  • O candidato foi REPROVADO no Gate 2 (E8)                                  │
 │  • 🤖 Ag.7 PersonalizedFeedbackService [Serviço, domínio cv_screening]       │
-│    gera feedback personalizado e construtivo:                                 │
+│    gera feedback personalizado e construtivo COM BASE EM PROMPT DEFINIDO PARA EVITAR PROBLEMAS:                                 │
 │    - Analisa o perfil completo + scores WSI + motivo da rejeição            │
 │    - Gera texto respeitoso e útil para o candidato                          │
 │    - NUNCA inclui scores numéricos (removidos automaticamente)              │
