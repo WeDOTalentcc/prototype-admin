@@ -116,13 +116,15 @@ const NotificationItem = React.memo(({
 
   return (
     <div
-      className={`relative p-2.5 rounded-md cursor-pointer transition-colors motion-reduce:transition-none duration-200 hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-tertiary ${
+      role="button"
+      tabIndex={0}
+      className={`group relative p-2.5 rounded-md cursor-pointer transition-colors motion-reduce:transition-none duration-200 hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-tertiary ${
  !notification.read 
           ? "bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle" 
           : "bg-transparent border border-transparent"
       }`}
       onClick={handleClick}
-     
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(); } }}
     >
       <div className="flex items-start gap-2.5">
         <div className="flex-shrink-0 mt-0.5">
