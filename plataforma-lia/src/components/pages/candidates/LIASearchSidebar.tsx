@@ -13,9 +13,10 @@ import {
   TabBoolean,
   TabFiltros,
   type ChatMessage,
-  type SearchTab,
   type SearchResults,
 } from './lia-sidebar'
+
+type SearchTab = 'ia-natural' | 'similar' | 'job-description' | 'boolean' | 'arquetipos' | 'filtros'
 
 interface LIASearchSidebarProps {
   isLiaSuperChat: boolean

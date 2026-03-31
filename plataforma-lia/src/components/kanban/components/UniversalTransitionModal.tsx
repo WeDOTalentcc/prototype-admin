@@ -1,4 +1,5 @@
 "use client"
+import NextImage from "next/image"
 
 import { useState, useEffect, useRef } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
@@ -440,7 +441,7 @@ export function UniversalTransitionModal({
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-full flex items-center justify-center flex-shrink-0">
                     {candidate.avatar ? (
-                      <img src={candidate.avatar} alt="" className="w-8 h-8 rounded-full object-cover" />
+                      <NextImage src={candidate.avatar} alt="" width={32} height={32} className="w-8 h-8 rounded-full object-cover" />
                     ) : (
                       <User className="w-3.5 h-3.5 lia-text-500 dark:text-lia-text-tertiary" />
                     )}
@@ -561,7 +562,7 @@ export function UniversalTransitionModal({
                               <div className="flex items-center gap-2.5">
                                 <div className="w-7 h-7 rounded-full bg-gray-200 dark:bg-lia-bg-elevated flex items-center justify-center flex-shrink-0">
                                   {c.avatar ? (
-                                    <img src={c.avatar} alt="" className="w-7 h-7 rounded-full object-cover" />
+                                    <NextImage src={c.avatar} alt="" width={28} height={28} className="w-7 h-7 rounded-full object-cover" />
                                   ) : (
                                     <span className="text-micro font-semibold lia-text-600 dark:text-lia-text-secondary">{initials}</span>
                                   )}

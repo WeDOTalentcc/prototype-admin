@@ -1,4 +1,5 @@
 "use client"
+import NextImage from "next/image"
 
 import React, { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -861,7 +862,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                   <div className="flex items-center gap-3">
                     {config.branding.logoUrl ? (
                       <div className="relative w-12 h-12 bg-gray-100 dark:bg-lia-bg-secondary rounded-md overflow-hidden">
-                        <img src={config.branding.logoUrl} alt="Logo" className="w-full h-full object-contain" />
+                        <NextImage src={config.branding.logoUrl} alt="Logo" fill className="object-contain" />
                       </div>
                     ) : (
                       <div className="w-12 h-12 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">

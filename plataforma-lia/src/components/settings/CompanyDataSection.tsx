@@ -1,5 +1,6 @@
 'use client'
 
+import NextImage from "next/image"
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -273,7 +274,7 @@ export function CompanyDataSection({
           <div className="inline-flex items-center gap-3 bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md px-4 py-3 w-fit">
             <div className="w-14 h-14 rounded-md bg-gray-100 dark:bg-lia-bg-secondary border-2 border-dashed border-lia-border-default flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors motion-reduce:transition-none hover:border-gray-900 dark:hover:border-gray-50 flex-shrink-0">
               {companyData.logo ? (
-                <img src={companyData.logo} alt="Logo" className="w-full h-full object-cover rounded-md" />
+                <NextImage src={companyData.logo} alt="Logo" fill className="object-cover rounded-md" />
               ) : (
                 <div className="text-center">
                   <Image className="w-5 h-5 mx-auto lia-text-400 dark:lia-text-500 mb-0.5" />

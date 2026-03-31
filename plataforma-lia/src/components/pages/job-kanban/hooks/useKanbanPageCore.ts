@@ -240,7 +240,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   }, [openTransition])
 
   // Estados para candidatesData (hoisted before useKanbanTransitions)
-  const [candidatesData, setCandidatesData] = useState<Record<string, Record<string, unknown>[]>>(() => 
+  const [candidatesData, setCandidatesData] = useState<Record<string, KanbanCandidate[]>>(() => 
     createInitialCandidatesData(mapInterviewStagesToKanban(job?.interviewStages as Parameters<typeof mapInterviewStagesToKanban>[0]))
   )
 
@@ -326,7 +326,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   }, [dynamicStages, candidatesData])
 
   const allCandidateIds = useMemo(() => {
-    return Object.values(candidatesData).flat().map((c: Record<string, unknown>) => c.id).filter(Boolean)
+    return Object.values(candidatesData).flat().map((c: Record<string, unknown>) => c.id as string).filter(Boolean) as string[]
   }, [candidatesData])
 
   const { 
@@ -548,17 +548,17 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
         }
 
         const kanbanCandidate: KanbanCandidate = {
-          id: matched.id,
-          name: matched.name,
-          email: (matched as Record<string, unknown>).email,
-          phone: (matched as Record<string, unknown>).phone,
-          avatar: (matched as Record<string, unknown>).avatar,
-          role: (matched as Record<string, unknown>).role || (matched as Record<string, unknown>).currentTitle,
-          currentTitle: (matched as Record<string, unknown>).currentTitle,
-          currentCompany: (matched as Record<string, unknown>).currentCompany || (matched as Record<string, unknown>).company,
-          location: (matched as Record<string, unknown>).location,
+          id: matched.id as string,
+          name: matched.name as string,
+          email: (matched as Record<string, unknown>).email as string | undefined,
+          phone: (matched as Record<string, unknown>).phone as string | undefined,
+          avatar: (matched as Record<string, unknown>).avatar as string | undefined,
+          role: ((matched as Record<string, unknown>).role || (matched as Record<string, unknown>).currentTitle) as string | undefined,
+          currentTitle: (matched as Record<string, unknown>).currentTitle as string | undefined,
+          currentCompany: ((matched as Record<string, unknown>).currentCompany || (matched as Record<string, unknown>).company) as string | undefined,
+          location: (matched as Record<string, unknown>).location as string | undefined,
           stage: fromStage,
-          sub_status: (matched as Record<string, unknown>).sub_status,
+          sub_status: (matched as Record<string, unknown>).sub_status as string | undefined,
           stageId: fromStage,
         }
 
@@ -646,7 +646,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   const getPaginatedCandidates = () => _getPaginatedCandidates(searchQuery)
 
   const [jobLocalOverrides, setJobLocalOverrides] = useState<Record<string, unknown>>({})
-  const currentJob = job ? { ...job, ...jobLocalOverrides } : jobData
+  const currentJob = (job ? { ...job, ...jobLocalOverrides } : jobData) as Record<string, unknown>
 
   const [showJobEditor, setShowJobEditor] = useState(false)
   const [editingSection, setEditingSection] = useState<string | null>(null)
@@ -673,9 +673,9 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
         deadlineScreening: currentJob.deadlineScreening || '',
         deadlineShortlist: currentJob.deadlineShortlist || '',
         deadlineClosing: currentJob.deadlineClosing || '',
-        salaryMin: currentJob.salaryRange?.min || currentJob.salaryMin || '',
+        salaryMin: (currentJob.salaryRange as Record<string,unknown>|undefined)?.min || currentJob.salaryMin || '',
         salaryMax: currentJob.salaryRange?.max || currentJob.salaryMax || '',
-        bonusMin: currentJob.bonusRange?.min || currentJob.bonus_range?.min || '',
+        bonusMin: (currentJob.bonusRange as Record<string,unknown>|undefined)?.min || (currentJob.bonus_range as Record<string,unknown>|undefined)?.min || '',
         bonusMax: currentJob.bonusRange?.max || currentJob.bonus_range?.max || '',
         benefits: currentJob.benefits || [],
         targetAudience: currentJob.targetAudience || '',
@@ -693,7 +693,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
         affirmativeDocumentTypes: currentJob.affirmativeDocumentTypes || [],
         priority: currentJob.priority || 'média',
         description: currentJob.description || '',
-        interviewStages: (currentJob.interviewStages && currentJob.interviewStages.length > 0 && currentJob.interviewStages[0]?.stageCategory)
+        interviewStages: ((currentJob.interviewStages as unknown[]) && (currentJob.interviewStages as unknown[]).length > 0 && (currentJob.interviewStages as Record<string, unknown>[])[0]?.stageCategory)
           ? currentJob.interviewStages
           : (() => {
               const pipeline = getCompanyPipelineStages()
@@ -869,13 +869,20 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     if (!searchQuery) return candidates
 
     const query = searchQuery.toLowerCase()
-    return candidates.filter(candidate =>
-      candidate.name.toLowerCase().includes(query) ||
-      candidate.role?.toLowerCase().includes(query) ||
-      candidate.company?.toLowerCase().includes(query) ||
-      candidate.location?.toLowerCase().includes(query) ||
-      candidate.currentCompany?.toLowerCase().includes(query)
-    )
+    return candidates.filter(candidate => {
+      const name = candidate.name as string | undefined
+      const role = candidate.role as string | undefined
+      const company = candidate.company as string | undefined
+      const location = candidate.location as string | undefined
+      const currentCompany = candidate.currentCompany as string | undefined
+      return (
+        (name?.toLowerCase() ?? '').includes(query) ||
+        (role?.toLowerCase() ?? '').includes(query) ||
+        (company?.toLowerCase() ?? '').includes(query) ||
+        (location?.toLowerCase() ?? '').includes(query) ||
+        (currentCompany?.toLowerCase() ?? '').includes(query)
+      )
+    })
   }
 
   // Function to mark candidate as viewed
@@ -896,7 +903,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     setPreviewCandidate(candidate)
     setIsPreviewOpen(true)
     if (candidate?.id) {
-      markCandidateAsViewed(candidate.id)
+      markCandidateAsViewed(candidate.id as string)
     }
   }
 

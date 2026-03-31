@@ -18,7 +18,7 @@ from typing import Any, Dict, List, Optional, Tuple
 logger = logging.getLogger(__name__)
 
 _CLASSIFICATION_CACHE: Dict[str, Tuple[Dict[str, Any], float]] = {}
-_CACHE_TTL_SECONDS = 3600
+_CACHE_TTL_SECONDS = 300
 _CACHE_MAX_SIZE = 500
 
 COMPATIBILITY_PROMPT = """Você é um especialista em recrutamento. Analise se o candidato é COMPATÍVEL com a vaga.

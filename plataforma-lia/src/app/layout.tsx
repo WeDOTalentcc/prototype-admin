@@ -32,19 +32,48 @@ const crimsonText = Crimson_Text({
 });
 
 export const metadata: Metadata = {
-  title: "WeDo Talent - Plataforma de Recrutamento com IA",
-  description: "Plataforma de recrutamento inteligente com LIA - sua assistente de IA para gestão de talentos",
-  openGraph: {
-    type: "website",
-    siteName: "WeDo Talent — Plataforma LIA",
-    title: "WeDo Talent — Recrutamento Inteligente com IA",
-    description: "Plataforma de recrutamento com inteligência artificial para o mercado brasileiro de RH.",
-    locale: "pt_BR",
+  metadataBase: new URL('https://app.wedotalent.com'),
+  title: {
+    default: 'Plataforma LIA — WeDoTalent',
+    template: '%s | LIA WeDoTalent',
   },
+  description: 'Plataforma de recrutamento inteligente com IA — Triagem, Kanban e Análise de Candidatos',
+  keywords: ['recrutamento', 'seleção', 'RH', 'IA', 'candidatos', 'vagas', 'WeDoTalent', 'LIA'],
+  authors: [{ name: 'WeDoTalent' }],
+  creator: 'WeDoTalent',
+  publisher: 'WeDoTalent',
   robots: {
     index: false,
     follow: false,
+    noarchive: true,
   },
+  openGraph: {
+    type: 'website',
+    locale: 'pt_BR',
+    url: 'https://app.wedotalent.com',
+    siteName: 'Plataforma LIA',
+    title: 'Plataforma LIA — WeDoTalent',
+    description: 'Recrutamento inteligente com IA',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Plataforma LIA WeDoTalent',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Plataforma LIA — WeDoTalent',
+    description: 'Recrutamento inteligente com IA',
+    images: ['/og-image.png'],
+  },
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({

@@ -1,4 +1,5 @@
 "use client"
+import NextImage from "next/image"
 
 import React, { useState, lazy, Suspense } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -617,7 +618,7 @@ export function InteractiveStageCell({
             {candidateName && (
               <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md border border-lia-border-subtle">
                 {candidateAvatar && (
-                  <img src={candidateAvatar} alt={candidateName} className="w-10 h-10 rounded-full" />
+                  <NextImage src={candidateAvatar} alt={candidateName} width={40} height={40} className="w-10 h-10 rounded-full" />
                 )}
                 <div>
                   <span className="text-base-ui font-medium text-lia-text-primary block">{candidateName}</span>

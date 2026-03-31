@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Compliance e Segurança',
-  description: 'Dashboard de compliance, LGPD e segurança da informação',
+  title: 'Setup da Empresa',
+  description: 'Configuração inicial da empresa na Plataforma LIA',
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {
