@@ -60,6 +60,7 @@ export function KanbanCandidatePreviewPanel({
     ? candidatesData[currentColumn].findIndex((c) => c.id === previewCandidate?.id)
     : 0
 
+  return (
 {isPreviewOpen && previewCandidate && (
   <div className={`flex-shrink-0 transition-colors motion-reduce:transition-none duration-300 ${isPreviewMaximized ? 'w-[600px]' : 'w-panel-lg'}`}>
     <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
@@ -102,4 +103,5 @@ export function KanbanCandidatePreviewPanel({
   </div>
 )}
 
+  )
 }

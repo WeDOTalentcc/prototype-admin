@@ -9,6 +9,7 @@
 
 ## Índice
 
+0. [Entendendo a Migração — Perguntas Frequentes](#0-entendendo-a-migração--perguntas-frequentes)
 1. [Contexto Rápido](#1-contexto-rápido)
 2. [Pré-Requisitos: 6 Controles de Compliance](#2-pré-requisitos-6-controles-de-compliance)
 3. [ComplianceDomainPrompt — Classe Completa](#3-compliancedomainprompt--classe-completa)
@@ -19,6 +20,347 @@
 8. [Roadmap Caminho 3 — Refatoração com Mixins](#8-roadmap-caminho-3--refatoração-com-mixins)
 9. [Matriz de Decisão: Caminho 1 vs 2 vs 3](#9-matriz-de-decisão-caminho-1-vs-2-vs-3)
 10. [Apêndice: 23 Concerns — Mapeamento Completo](#10-apêndice-23-concerns--mapeamento-completo)
+
+---
+
+## 0. Entendendo a Migração — Perguntas Frequentes
+
+> **Leia esta seção antes de mergulhar nos passos técnicos.** Ela responde as dúvidas
+> mais comuns sobre o que vai mudar, o que não muda, e por quê.
+
+---
+
+### 0.1 Por Que Existem 3 Arquiteturas Diferentes no v5?
+
+Quando lemos o código dos 8 domínios, descobrimos que eles não seguem uma arquitetura única. Existem **3 grupos** que funcionam de formas diferentes:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        O v5 Hoje — 3 Motores                          │
+│                                                                       │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────────┐   │
+│  │ GRUPO 1: FLAT   │  │ GRUPO 2:        │  │ GRUPO 3:            │   │
+│  │                 │  │ LANGGRAPH       │  │ MULTI-AGENT         │   │
+│  │ jobs            │  │                 │  │                     │   │
+│  │ messaging       │  │ evaluation      │  │ sourced_profile     │   │
+│  │ scheduling      │  │ applies (*)     │  │ autonomous          │   │
+│  │                 │  │ insights        │  │                     │   │
+│  │ query → keyword │  │ query → graph   │  │ query → subagentes  │   │
+│  │ matching → LLM  │  │ → nós → edges   │  │ → loop ReAct        │   │
+│  │ → ação          │  │ → resultado     │  │ → tools → resultado │   │
+│  └─────────────────┘  └─────────────────┘  └─────────────────────┘   │
+│                                                                       │
+│  (*) applies é híbrido: estrutura Flat mas tem react_agent.py com     │
+│      LangGraph interno — evidência de convergência não coordenada     │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+**Isso não foi planejado.** Cada desenvolvedor, em momentos diferentes, escolheu a abordagem que fazia sentido para o problema que estava resolvendo. O resultado é que hoje temos 3 "motores" diferentes: um faz keyword matching, outro usa grafos LangGraph, outro usa subagentes autônomos.
+
+A diferença de complexidade é real — `jobs` é mais simples que `evaluation`, que é mais simples que `autonomous`. Mas a **infraestrutura** de cada um (como se conectam ao LLM, como fazem audit, como aplicam compliance) deveria ser a mesma.
+
+---
+
+### 0.2 O Que É o ComplianceDomainPrompt?
+
+É a peça que sempre deveria ter existido entre a classe base (`DomainPrompt`) e os domínios.
+
+**Antes da migração** — cada domínio se conecta diretamente à base:
+
+```
+DomainPrompt (base com 5 métodos abstratos)
+├── EvaluationDomain      ← sem compliance automático
+├── SchedulingDomain      ← sem compliance automático
+├── MessagingDomain       ← sem compliance automático
+├── JobsDomain            ← sem compliance automático
+├── AppliesDomain         ← sem compliance automático
+├── InsightsDomain        ← sem compliance automático
+├── SourcingDomain        ← fairness/fact_check manuais (o dev lembrou)
+└── AutonomousDomain      ← sem compliance automático
+```
+
+**Depois da migração** — uma camada intermediária intercepta e aplica compliance:
+
+```
+DomainPrompt (base, inalterada)
+└── ComplianceDomainPrompt (NOVO — intercepta, aplica guards, delega)
+    ├── EvaluationDomain      ← compliance automático ✅
+    ├── SchedulingDomain      ← compliance automático ✅
+    ├── MessagingDomain       ← compliance automático ✅
+    ├── JobsDomain            ← compliance automático ✅
+    ├── AppliesDomain         ← compliance automático ✅
+    ├── InsightsDomain        ← compliance automático ✅
+    ├── SourcingDomain        ← compliance automático ✅ (manuais removidos)
+    └── AutonomousDomain      ← compliance automático ✅
+```
+
+Quando um novo domínio for criado no futuro, basta herdar de `ComplianceDomainPrompt` — e automaticamente terá fairness, injection guard, PII stripping e confidence scoring. O Python garante isso pela herança, não a memória do desenvolvedor.
+
+---
+
+### 0.3 O Contrato de 5 Métodos — O Que Muda e O Que Não Muda
+
+O `DomainPrompt` do v5 define 5 métodos abstratos que todo domínio implementa:
+
+```
+DomainPrompt
+├── get_allowed_actions()     → lista de ações disponíveis
+├── get_system_prompt()       → prompt de sistema para o LLM
+├── get_capabilities()        → extensão do v5 (não existe na LIA)
+├── process_intent(query)     → interpreta a intenção do usuário
+└── execute_action(action)    → executa a ação identificada
+```
+
+O `ComplianceDomainPrompt` **intercepta apenas 2** desses 5 métodos:
+
+| Método | O que acontece | Muda? |
+|--------|---------------|-------|
+| `get_allowed_actions()` | Passa direto para o domínio | Não |
+| `get_system_prompt()` | Passa direto para o domínio | Não |
+| `get_capabilities()` | Passa direto para o domínio | Não |
+| **`process_intent()`** | **Intercepta:** injection → fairness → PII → delega | **Sim** |
+| **`execute_action()`** | **Intercepta:** sanitize → delega → confidence → hooks | **Sim** |
+
+Na prática, o domínio renomeia dois métodos:
+- `process_intent()` → `_domain_process_intent()` (mesma lógica, nome diferente)
+- `execute_action()` → `_domain_execute_action()` (mesma lógica, nome diferente)
+
+A lógica de negócio de cada domínio **não muda**. Apenas os nomes dos métodos mudam para que o `ComplianceDomainPrompt` possa interceptar.
+
+---
+
+### 0.4 O Que Acontece com os Arquivos Duplicados Dentro dos Domínios?
+
+Alguns domínios já implementaram compliance manualmente — criando arquivos como `fairness.py` e `fact_checker.py` dentro da própria pasta do domínio. Após a migração, esses arquivos **devem ser deletados** porque a compliance agora vem automaticamente pela herança.
+
+**Arquivos a deletar (no mesmo commit da migração do domínio):**
+
+| Arquivo | Domínio | Por que deletar |
+|---------|---------|-----------------|
+| `src/domains/jobs/fairness.py` | jobs | Coberto por `ComplianceDomainPrompt` via `FairnessGuard` centralizado |
+| `src/domains/evaluation/security.py` | evaluation | Coberto por `PromptInjectionGuard` centralizado |
+| `src/domains/sourced_profile_sourcing/fairness.py` | sourcing | Coberto por `ComplianceDomainPrompt` via `FairnessGuard` centralizado |
+| `src/domains/sourced_profile_sourcing/fact_checker.py` | sourcing | Coberto por `FactChecker` centralizado em `src/services/compliance/` |
+
+**Além dos arquivos, remover também:**
+- Imports diretos de `FairnessGuard` / `PromptInjectionGuard` em qualquer `domain.py`
+- Chamadas manuais a guards dentro de `process_intent()` ou `execute_action()`
+- Referência a `self._fact_checker` no `agents/base.py` do sourcing (refatorar para usar o centralizado)
+
+**Como verificar que não ficou duplicação:**
+
+```bash
+grep -rn "FairnessGuard" src/domains/*/domain.py
+grep -rn "PromptInjectionGuard" src/domains/*/domain.py
+grep -rn "strip_pii_for_llm_prompt" src/domains/*/domain.py
+```
+
+Se encontrar hits (exceto em `compliance_base.py`), são duplicações a remover.
+
+---
+
+### 0.5 Fluxo "Antes → Depois" por Grupo Arquitetural
+
+#### Grupo 1 — Flat (jobs, messaging, scheduling)
+
+```
+ANTES:
+  query → process_intent()
+         → keyword matching / LLM classifica
+         → retorna action_id
+  action_id → execute_action()
+         → dispatch map → handler → HTTP Rails
+         → retorna resultado
+
+DEPOIS:
+  query → ComplianceDomainPrompt.process_intent()
+         → [1] Injection Guard → bloqueio se "high risk"
+         → [2] Fairness Guard  → bloqueio se discriminatório
+         → [3] PII Strip       → remove CPF, email, idade, etc.
+         → _domain_process_intent()      ← MESMA lógica de antes
+            → keyword matching / LLM classifica
+            → retorna action_id
+  action_id → ComplianceDomainPrompt.execute_action()
+         → [1] Sanitizar params (injection + PII)
+         → _domain_execute_action()      ← MESMA lógica de antes
+            → dispatch map → handler → HTTP Rails
+         → [2] Confidence scoring
+         → retorna resultado com "confidence": 0.xx
+
+ARQUIVOS REMOVIDOS:
+  jobs/fairness.py → DELETAR (coberto pelo ComplianceDomainPrompt)
+```
+
+#### Grupo 2 — LangGraph (evaluation, applies, insights, sourcing)
+
+```
+ANTES:
+  query → process_intent()
+         → LLM classifica intent
+         → retorna action_id
+  action_id → execute_action()
+         → graph.py → StateGraph com nós → resultado
+
+DEPOIS:
+  query → ComplianceDomainPrompt.process_intent()
+         → [1] Injection Guard
+         → [2] Fairness Guard
+         → [3] PII Strip
+         → _domain_process_intent()      ← MESMA lógica de antes
+            → LLM classifica intent
+            → retorna action_id
+  action_id → ComplianceDomainPrompt.execute_action()
+         → [1] Sanitizar params
+         → _domain_execute_action()      ← MESMA lógica de antes
+            → graph.py → StateGraph com nós → resultado
+         → [2] Confidence scoring
+         → [3] _post_execute_hook()      ← NOVO (override por domínio)
+            → evaluation: BiasAuditSnapshot + FactCheck
+            → insights: FactCheck
+            → sourcing: (guards manuais removidos)
+         → retorna resultado com "confidence" + "fact_check"
+
+ARQUIVOS REMOVIDOS:
+  evaluation/security.py                     → DELETAR
+  sourced_profile_sourcing/fairness.py       → DELETAR
+  sourced_profile_sourcing/fact_checker.py   → DELETAR
+```
+
+**Caso especial — `applies/react_agent.py`:**
+
+O `applies` tem compliance em **dois níveis**:
+1. **Nível domínio** — `ComplianceDomainPrompt` protege `process_intent` e `execute_action` (igual aos outros)
+2. **Nível tool call** — `call_tools()` no `react_agent.py` recebe fairness check adicional em tools que filtram candidatos (`filter_applications`, `rank_candidates`)
+
+Esse segundo nível é necessário porque o LLM pode gerar tool calls com critérios discriminatórios mesmo quando a query original era limpa.
+
+#### Grupo 3 — Multi-Agent (autonomous, sourced_profile_sourcing)
+
+```
+ANTES (autonomous):
+  query → domain.py.process_intent()
+         → delega para agent.py.execute()
+         → UniversalReActAgent → loop ReAct → tools
+         → resultado
+
+DEPOIS (autonomous):
+  query → ComplianceDomainPrompt.process_intent()
+         → [1] Injection Guard
+         → [2] Fairness Guard
+         → [3] PII Strip
+         → _domain_process_intent()
+            → delega para agent.py.execute()
+               → [G] Guardrails check (NOVO — no agent.py direto)
+               → loop ReAct → tools
+            → resultado
+         → [4] Confidence scoring
+
+NOTA: agent.py (UniversalReActAgent, 895 linhas) NÃO muda de herança.
+      Ele NÃO herda de DomainPrompt. Apenas domain.py migra.
+      Guardrails são injetados direto no agent.py.execute().
+```
+
+---
+
+### 0.6 Os 8 Domínios Continuam Separados
+
+Uma dúvida comum: "se vamos unificar tudo, os domínios vão virar um só?"
+
+**Não.** Os 8 domínios continuam existindo separados, cada um cuidando de um assunto diferente:
+
+| Domínio | O que faz |
+|---------|-----------|
+| `evaluation` | Avalia candidatos em entrevistas |
+| `autonomous` | Resolve queries complexas e cross-domain |
+| `applies` | Gerencia candidaturas e pipeline |
+| `scheduling` | Agenda entrevistas |
+| `messaging` | Envia emails e comunicações |
+| `jobs` | Gerencia vagas |
+| `sourced_profile_sourcing` | Busca e analisa perfis de candidatos |
+| `insights` | Gera relatórios e análises |
+
+Pense numa analogia: imagine 8 carros diferentes (sedan, SUV, pickup, etc.). Cada um serve para um propósito diferente — e isso não muda. O que estamos fazendo é colocar o **mesmo motor** em todos eles.
+
+```
+ANTES: 8 carros com 3 motores diferentes
+  sedan (jobs)        → motor a gasolina (Flat)
+  SUV (evaluation)    → motor diesel (LangGraph)
+  pickup (autonomous) → motor elétrico (Multi-Agent)
+
+DEPOIS: 8 carros com infraestrutura de compliance igual
+  sedan (jobs)        → mesmo motor de compliance, lógica de vagas
+  SUV (evaluation)    → mesmo motor de compliance, lógica de avaliação
+  pickup (autonomous) → mesmo motor de compliance, lógica autônoma
+```
+
+A **lógica de negócio** (tools disponíveis, prompt de sistema, regras específicas) sempre será diferente entre domínios. O que fica igual é a **infraestrutura de compliance** (fairness, injection, PII, audit, confidence).
+
+---
+
+### 0.7 Estrutura dos Agentes: LIA vs v5
+
+**Na LIA**, todos os agentes herdam da mesma base e a diferença entre eles é de **configuração**:
+
+```
+LangGraphReActBase + EnhancedAgentMixin (base única)
+├── ScreeningAgent      → 12 tools, prompt de screening
+├── PipelineAgent       → 20 tools, prompt de pipeline
+├── SourcingAgent       → 15 tools, prompt de sourcing
+└── AutonomousAgent     → todas as tools, timeout 180s
+```
+
+Criar um agente novo na LIA = herdar da base + definir tools + definir prompt. Compliance vem automaticamente.
+
+**No v5 hoje**, cada grupo tem uma base diferente:
+
+```
+Grupo 1: DomainPrompt → lógica direta (sem agente real)
+Grupo 2: DomainPrompt → StateGraph manual (grafo customizado)
+Grupo 3: DomainPrompt → BaseAgent ABC (sourcing) / UniversalReActAgent (autonomous)
+```
+
+São 3 "esqueletos" diferentes. O `BaseAgent` do sourcing nem é o mesmo que o `UniversalReActAgent` do autonomous.
+
+**No v5 após Caminho 2:** a compliance fica unificada via `ComplianceDomainPrompt`, mas os 3 esqueletos continuam existindo. Isso é aceitável para o momento atual.
+
+**No v5 após Caminho 3 (2027+):** os 3 esqueletos convergem para uma base única parametrizada — igual ao padrão LIA. Mesmo um domínio simples como `jobs` seria um agente com StateGraph de 3 nós (input → LLM → output), e um complexo como `autonomous` teria 10 nós. Mesma estrutura, complexidade configurável.
+
+| Aspecto | v5 Hoje | v5 pós-Caminho 2 | v5 pós-Caminho 3 | LIA |
+|---------|---------|-------------------|-------------------|-----|
+| Bases de agentes | 3 diferentes | 3 diferentes | 1 parametrizada | 1 parametrizada |
+| Compliance | Manual (opt-in) | Automático (herança) | Automático (mixins) | Automático (herança) |
+| Diferença entre domínios | Código estrutural | Código estrutural | Configuração | Configuração |
+
+---
+
+### 0.8 Compliance vs Arquitetura — São Problemas Diferentes
+
+Esta migração resolve **compliance** — não unifica a arquitetura dos agentes. São problemas diferentes com prazos diferentes:
+
+| O que | Quando | Como |
+|-------|--------|------|
+| **Compliance** (fairness, PII, injection, audit, confidence) | **Agora** — Caminho 2, 3 sprints, ~23.5h | `ComplianceDomainPrompt` como classe intermediária |
+| **Arquitetura** (unificar os 3 esqueletos em 1 base) | **2027** — Caminho 3, 16 semanas, ~125h | Mixins + base única parametrizada |
+
+O Caminho 2 não exige reescrever como os domínios funcionam internamente. Um domínio Flat continua sendo Flat, um LangGraph continua usando StateGraph. A única mudança é que todos passam pela mesma camada de compliance antes e depois de executar sua lógica.
+
+Isso é intencional: resolver o problema mais urgente (compliance) com o menor risco possível, sem mexer no que já funciona.
+
+---
+
+### 0.9 Resumo Visual — O Que Muda e O Que Não Muda
+
+| Aspecto | Muda? | Detalhes |
+|---------|-------|---------|
+| Número de domínios | Não | Continuam 8 (ou mais no futuro) |
+| Lógica de negócio de cada domínio | Não | Tools, prompts, regras — tudo inalterado |
+| Arquitetura interna (Flat/LangGraph/Multi-Agent) | Não | Cada grupo continua funcionando como antes |
+| Classe base de herança | **Sim** | `DomainPrompt` → `ComplianceDomainPrompt` |
+| Nome de 2 métodos | **Sim** | `process_intent` → `_domain_process_intent` |
+| Arquivos duplicados em domínios | **Sim** | `fairness.py`, `security.py`, `fact_checker.py` locais → deletados |
+| Infraestrutura de compliance | **Sim** | Centralizada em `src/services/compliance/` |
+| `agent.py` do autonomous | **Parcial** | Guardrails adicionados, mas herança não muda |
+| `react_agent.py` do applies | **Parcial** | Fairness em `call_tools()` adicionado |
 
 ---
 
