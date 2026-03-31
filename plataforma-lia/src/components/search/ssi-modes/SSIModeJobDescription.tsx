@@ -1,0 +1,435 @@
+'use client'
+
+import React from 'react'
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import {
+  Briefcase, ChevronRight, FileText, Globe,
+  Home, Lightbulb, Loader2, Mail, Phone, Search, Upload, X, Zap
+} from "lucide-react"
+import type { useSmartSearchCore } from "../hooks/useSmartSearchCore"
+
+type CoreProps = ReturnType<typeof useSmartSearchCore>
+
+interface SSIModeJobDescriptionProps {
+  jdContent: CoreProps['jdContent']
+  setJdContent: CoreProps['setJdContent']
+  jdVacancySearch: CoreProps['jdVacancySearch']
+  setJdVacancySearch: CoreProps['setJdVacancySearch']
+  jdVacancyResults: CoreProps['jdVacancyResults']
+  showVacancyResults: CoreProps['showVacancyResults']
+  isSearchingVacancies: CoreProps['isSearchingVacancies']
+  selectedVacancy: CoreProps['selectedVacancy']
+  setSelectedVacancy: CoreProps['setSelectedVacancy']
+  clearSelectedVacancy: CoreProps['clearSelectedVacancy']
+  handleSelectVacancy: CoreProps['handleSelectVacancy']
+  formatDate: CoreProps['formatDate']
+  jdSearchPrompt: CoreProps['jdSearchPrompt']
+  setJdSearchPrompt: CoreProps['setJdSearchPrompt']
+  fileInputRef: CoreProps['fileInputRef']
+  handleFileUpload: CoreProps['handleFileUpload']
+  handleSubmit: CoreProps['handleSubmit']
+  canSubmit: CoreProps['canSubmit']
+  isLoading: CoreProps['isLoading']
+  getPlaceholder: CoreProps['getPlaceholder']
+  searchSource: CoreProps['searchSource']
+  onSearchSourceChange: CoreProps['onSearchSourceChange']
+  handleSourceChange: CoreProps['handleSourceChange']
+  showGlobalSearchOptions: CoreProps['showGlobalSearchOptions']
+  requireEmails: CoreProps['requireEmails']
+  onRequireEmailsChange: CoreProps['onRequireEmailsChange']
+  requirePhoneNumbers: CoreProps['requirePhoneNumbers']
+  onRequirePhoneNumbersChange: CoreProps['onRequirePhoneNumbersChange']
+}
+
+export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(props: SSIModeJobDescriptionProps) {
+  const {
+    jdContent, setJdContent, jdVacancySearch, setJdVacancySearch,
+    jdVacancyResults, showVacancyResults, isSearchingVacancies,
+    selectedVacancy, setSelectedVacancy, clearSelectedVacancy, handleSelectVacancy, formatDate,
+    jdSearchPrompt, setJdSearchPrompt, fileInputRef, handleFileUpload,
+    handleSubmit, canSubmit, isLoading, getPlaceholder,
+    searchSource, onSearchSourceChange, handleSourceChange, showGlobalSearchOptions,
+    requireEmails, onRequireEmailsChange, requirePhoneNumbers, onRequirePhoneNumbersChange,
+  } = props
+
+  return (
+    <div className="space-y-3">
+      {/* Buscar vaga existente */}
+      <div className="relative">
+        <div className="flex items-center justify-between mb-1.5">
+          <span
+            className="text-xs font-medium"
+            aria-live="polite" aria-atomic="true">
+            Buscar vaga existente
+          </span>
+          <span className="text-micro lia-text-400">opcional</span>
+        </div>
+
+        {selectedVacancy ? (
+          <div
+            className="flex items-center justify-between p-2.5 rounded-md border bg-wedo-cyan/[0.08]"
+          >
+            <div className="flex items-center gap-2">
+              <div
+                className="w-6 h-6 rounded-full flex items-center justify-center bg-gray-200"
+              >
+                <Briefcase className="w-3 h-3 lia-text-600" />
+              </div>
+              <div>
+                <p className="text-base-ui font-medium lia-text-800">{selectedVacancy.title}</p>
+                {selectedVacancy.job_id && (
+                  <p className="text-micro lia-text-500">ID: {selectedVacancy.job_id}</p>
+                )}
+              </div>
+            </div>
+            <button
+              onClick={clearSelectedVacancy}
+              className="p-1 rounded-md hover:bg-gray-100 transition-colors motion-reduce:transition-none"
+            >
+              <X className="w-3.5 h-3.5 lia-text-400" />
+            </button>
+          </div>
+        ) : (
+          <div className="relative" role="status" aria-live="polite" aria-label="Carregando...">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2" role="status" aria-live="polite" aria-label="Carregando...">
+              {isSearchingVacancies ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none lia-text-400" />
+              ) : (
+                <Search className="w-3.5 h-3.5 lia-text-400" />
+              )}
+            </div>
+            <input
+              type="text"
+              value={jdVacancySearch}
+              onChange={(e) => setJdVacancySearch(e.target.value)}
+              placeholder="Digite o nome ou ID da vaga..."
+              className="w-full pl-9 pr-4 py-2.5 text-base-ui rounded-md border focus:outline-none transition-colors motion-reduce:transition-none bg-gray-50 lia-text-950"
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "var(--gray-300)"
+                e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)"
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "var(--gray-200)"
+                e.currentTarget.style.boxShadow = "none"
+              }}
+            />
+
+            {/* Resultados da busca */}
+            {showVacancyResults && jdVacancyResults.length > 0 && (
+              <div
+                className="absolute z-50 top-full left-0 right-0 mt-1 rounded-md border overflow-hidden"
+                style={{backgroundColor: 'var(--gray-50)'}}
+              >
+                {jdVacancyResults.map((vacancy) => (
+                  <button
+                    key={vacancy.id}
+                    onClick={() => handleSelectVacancy(vacancy)}
+                    className="w-full p-2.5 text-left hover:bg-gray-50 transition-colors motion-reduce:transition-none border-b last:border-b-0 border border-lia-border-subtle"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="text-base-ui font-medium lia-text-800 truncate">{vacancy.title}</p>
+                          <Badge
+                            variant="outline"
+                            className="text-micro px-1.5 py-0 h-4 flex-shrink-0"
+                            style={{borderColor: vacancy.status === 'Ativa' ? 'var(--status-success)' : 'var(--gray-400)',
+                              color: vacancy.status === 'Ativa' ? 'var(--status-success)' : 'var(--gray-500)'}}
+                          >
+                            {vacancy.status}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          {vacancy.job_id && (
+                            <span className="text-micro lia-text-500">ID: {vacancy.job_id}</span>
+                          )}
+                          <span className="text-micro lia-text-400">{formatDate(vacancy.created_at)}</span>
+                        </div>
+                        {vacancy.description_preview && (
+                          <p className="text-xs lia-text-500 mt-1 line-clamp-2">
+                            {vacancy.description_preview}
+                          </p>
+                        )}
+                      </div>
+                      <ChevronRight className="w-3.5 h-3.5 lia-text-300 flex-shrink-0 mt-0.5" />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {showVacancyResults && jdVacancySearch.length >= 2 && jdVacancyResults.length === 0 && !isSearchingVacancies && (
+              <div
+                className="absolute z-50 top-full left-0 right-0 mt-1 p-2.5 rounded-md border text-center"
+                style={{backgroundColor: 'var(--gray-50)'}}
+              >
+                <p className="text-base-ui lia-text-500" aria-live="polite" aria-atomic="true">Nenhuma vaga encontrada</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Divisor */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1 h-px bg-gray-200" />
+        <span className="text-micro lia-text-400 uppercase tracking-wider">ou</span>
+        <div className="flex-1 h-px bg-gray-200" />
+      </div>
+
+      {/* Cole a descrição da vaga */}
+      <div className="flex items-center justify-between mb-1.5">
+        <span
+          className="text-xs font-medium"
+          aria-live="polite" aria-atomic="true">
+          Cole a descrição da vaga
+        </span>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".txt,.doc,.docx,.pdf"
+          onChange={handleFileUpload}
+          className="hidden"
+        />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => fileInputRef.current?.click()}
+          className="text-xs h-6 px-2"
+        >
+          <Upload className="w-3 h-3 mr-1" />
+          Upload
+        </Button>
+      </div>
+
+      {/* Textarea com ícones de escopo posicionados absolutamente (como Natural e Boolean) */}
+      <div className="relative">
+        <textarea
+          value={jdContent}
+          onChange={(e) => {
+            setJdContent(e.target.value)
+            if (e.target.value !== jdContent) {
+              setSelectedVacancy(null)
+            }
+          }}
+          placeholder={getPlaceholder()}
+          className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[100px] transition-colors motion-reduce:transition-none border bg-lia-bg-primary"
+          style={{color: "var(--gray-950)"}}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = "var(--gray-300)"
+            e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)"
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = "var(--gray-200)"
+            e.currentTarget.style.boxShadow = "none"
+          }}
+          disabled={isLoading}
+        />
+        {/* Ícones de escopo + botão de busca posicionados absolutamente dentro do textarea */}
+        {onSearchSourceChange && (
+          <div className="absolute right-3 bottom-2.5 flex flex-col items-end gap-1 z-10">
+            <div className="flex items-center gap-1">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSearchSourceChange('local'); }}
+                      className={cn(
+                        "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
+                        searchSource === 'local'
+                          ? "bg-wedo-green/15 ring-1 ring-wedo-green"
+                          : "hover:bg-gray-100"
+                      , searchSource === 'local' ? "text-wedo-green" : "lia-text-400"
+                      )}
+                    >
+                      <Home className="w-4 h-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="!animate-none !duration-0">
+                    <p className="text-xs font-medium">Seu banco de talentos</p>
+                    <p className="text-xs lia-text-300">Gratuito • Local</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              {showGlobalSearchOptions && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSourceChange('hybrid'); }}
+                        className={cn(
+                          "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
+                          searchSource === 'hybrid'
+                            ? "bg-wedo-orange/15 ring-1 ring-wedo-orange"
+                            : "hover:bg-gray-100"
+                        , searchSource === 'hybrid' ? "text-wedo-orange" : "lia-text-400"
+                        )}
+                      >
+                        <Zap className="w-4 h-4" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="!animate-none !duration-0">
+                      <p className="text-xs font-medium">Expanda sua busca</p>
+                      <p className="text-xs lia-text-300" aria-live="polite" aria-atomic="true">Local + Global • 1 crédito/candidato</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+
+              {showGlobalSearchOptions && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSourceChange('global'); }}
+                        className={cn(
+                          "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
+                          searchSource === 'global'
+                            ? "bg-wedo-cyan/15 ring-1 ring-gray-900/20"
+                            : "hover:bg-gray-100"
+                        , searchSource === 'global' ? "lia-text-950" : "lia-text-400"
+                        )}
+                      >
+                        <Globe className="w-4 h-4" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="!animate-none !duration-0">
+                      <p className="text-xs font-medium">Alcance global</p>
+                      <p className="text-xs lia-text-300" aria-live="polite" aria-atomic="true">800M+ candidatos • 1 crédito/candidato</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+
+              {/* Contact Filters: Email, Phone - Only show for global/hybrid searches */}
+              {(searchSource === 'global' || searchSource === 'hybrid') && onRequireEmailsChange && onRequirePhoneNumbersChange && (
+                <>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRequireEmailsChange(!requireEmails); }}
+                          className={cn(
+                            "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
+                            requireEmails
+                              ? "bg-wedo-green/15 ring-1 ring-wedo-green"
+                              : "hover:bg-gray-100"
+                          , requireEmails ? "text-wedo-green" : "lia-text-400"
+                          )}
+                        >
+                          <Mail className="w-3.5 h-3.5" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="!animate-none !duration-0">
+                        <p className="text-xs font-medium">Apenas com Email</p>
+                        <p className="text-xs lia-text-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRequirePhoneNumbersChange(!requirePhoneNumbers); }}
+                          className={cn(
+                            "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
+                            requirePhoneNumbers
+                              ? "bg-wedo-green/15 ring-1 ring-wedo-green"
+                              : "hover:bg-gray-100"
+                          , requirePhoneNumbers ? "text-wedo-green" : "lia-text-400"
+                          )}
+                        >
+                          <Phone className="w-3.5 h-3.5" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="!animate-none !duration-0">
+                        <p className="text-xs font-medium">Apenas com Telefone</p>
+                        <p className="text-xs lia-text-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </>
+              )}
+
+              {/* Botão de busca com hint */}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={handleSubmit}
+                      disabled={!canSubmit() || isLoading}
+                      className={cn(
+                        "flex items-center justify-center p-1.5 rounded-md transition-colors",
+                        canSubmit() ? "hover:bg-gray-100" : "opacity-50 cursor-not-allowed"
+                      , canSubmit() ? "lia-text-400" : "lia-text-200"
+                      )}
+                    >
+                      {isLoading ? (
+                        <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
+                      ) : (
+                        <Search className="w-4 h-4" />
+                      )}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="!animate-none !duration-0">
+                    <p className="text-xs font-medium">Extrair e Buscar</p>
+                    <p className="text-xs lia-text-300" aria-live="polite" aria-atomic="true">Extrai requisitos e busca candidatos</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            {/* Hint abaixo dos ícones */}
+            <span className="text-micro lia-text-400 italic">extrair e buscar</span>
+          </div>
+        )}
+      </div>
+
+      {/* Preview/Edit do Prompt - JD Mode */}
+      {jdContent.trim().length > 0 && (
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <FileText className="w-3.5 h-3.5 lia-text-700" />
+              <span className="text-xs font-medium lia-text-800 dark:text-lia-text-primary">
+                Preview do prompt de busca
+              </span>
+            </div>
+            <span className="text-micro lia-text-400">editável</span>
+          </div>
+          <textarea
+            value={jdSearchPrompt}
+            onChange={(e) => setJdSearchPrompt(e.target.value)}
+            placeholder="O prompt será gerado a partir da descrição da vaga..."
+            className="w-full resize-none rounded-md px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 min-h-[60px]"
+            style={{border: "1px solid var(--gray-300)",
+              backgroundColor: "var(--gray-50)",
+              color: 'var(--gray-800)'}}
+            rows={2}
+          />
+        </div>
+      )}
+
+      {/* Dica contextual padronizada */}
+      <div className="p-2.5 rounded-md bg-gray-50 border border-lia-border-subtle">
+        <div className="flex items-start gap-2">
+          <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 lia-text-700" />
+          <p className="text-xs lia-text-800 dark:text-lia-text-primary">
+            <strong>Dica:</strong> Selecione uma vaga existente ou cole a JD completa para extrair automaticamente requisitos técnicos e comportamentais.
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+})
+SSIModeJobDescription.displayName = 'SSIModeJobDescription'
