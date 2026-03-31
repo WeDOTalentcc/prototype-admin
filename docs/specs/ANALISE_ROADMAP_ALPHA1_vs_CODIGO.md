@@ -237,20 +237,6 @@
 
 ---
 
-### INFRAESTRUTURA GLOBAL (sem IA — presente em todas as etapas)
-
-Estes componentes são infraestrutura de plataforma. Não envolvem IA e se aplicam globalmente:
-
-| Componente | Descrição | Status |
-|-----------|-----------|--------|
-| **PII Masking** | Strip de dados pessoais antes de enviar qualquer texto ao LLM | ● |
-| **Audit Trail** | Log de ações (login, edições, aprovações, envios) — storage puro | ◐ |
-| **LGPD** | Consentimento, opt-out, minimização de dados — compliance jurídico | ◐ |
-| **Rate Limiting** | Limites de tentativas/envios por janela de tempo — regra fixa, sem ML | ◐ |
-
-> Estes não são componentes de IA. Aparecem aqui para evitar repetição nas tabelas por etapa.
-
----
 
 ### ETAPA 1 — LOGIN
 
