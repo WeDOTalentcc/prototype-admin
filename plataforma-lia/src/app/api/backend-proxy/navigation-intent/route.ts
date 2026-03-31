@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic"
 /**
  * Proxy: POST /api/backend-proxy/navigation-intent
  *

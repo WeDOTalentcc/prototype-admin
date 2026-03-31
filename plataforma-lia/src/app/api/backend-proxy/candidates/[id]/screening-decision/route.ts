@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { validateBody, validateParams } from '@/lib/api/validate'
 import { candidateDecisionSchema } from '@/lib/schemas'

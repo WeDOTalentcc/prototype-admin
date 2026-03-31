@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic"
 import Anthropic from "@anthropic-ai/sdk"
 import { NextRequest, NextResponse } from "next/server"
 import { z } from 'zod'

@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { getWorkOSSession } from '@/lib/workos-session'
 import { z } from 'zod'
