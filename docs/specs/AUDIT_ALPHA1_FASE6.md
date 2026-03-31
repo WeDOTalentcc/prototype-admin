@@ -87,7 +87,7 @@ A plataforma LIA Alpha 1 apresenta **maturidade alta** na camada de backend (age
 | LLM Job Classification | Medium (LLM call) | No | Yes | WATCH |
 | FairnessGuard L3 | High (LLM call, Claude Haiku) | No | Yes | WATCH |
 
-**Finding F-PERF-01:** LLM Job Classification and FairnessGuard L3 each add an LLM call to the search pipeline. When both are active, candidate search latency may increase by 2-4s. Consider caching classification results per job.
+**Finding F-PERF-01:** LLM Job Classification and FairnessGuard L3 each add an LLM call to the search pipeline. When both are active, candidate search latency may increase by 2-4s. Consider caching classification results per job. **MITIGATED (Task #74):** Added in-memory TTL cache (1h, max 500 entries) to `LLMJobClassificationService.classify_candidate()` keyed by `(job_title, candidate_title)`. Repeated searches for the same job avoid redundant LLM calls.
 
 ### 2.7 Security
 
@@ -382,20 +382,20 @@ Includes proxy detection for: "boa aparência", "bairros nobres", "universidades
 |:---:|-----------|---------|
 | 1 (outer) | `StructuredLoggingMiddleware` | Captures final status code |
 | 2 | `RequestIdMiddleware` | Adds X-Request-ID |
-| 3 | `RateLimitMiddleware` | Per-IP + per-company limiting |
-| 4 (inner) | `CORSMiddleware` | Cross-origin access |
+| 3 | `CORSMiddleware` | Cross-origin access (FIXED: now before RateLimit) |
+| 4 (inner) | `RateLimitMiddleware` | Per-IP + per-company limiting |
 
 ### 7.4 Findings
 
-**Finding ARCH-02 (LOW):** Two `EmailService` classes exist — `EmailService` (legacy, line ~400 in communication_service.py) and `SendGridEmailService` (line ~596). Only `SendGridEmailService` should be used. The legacy class should be deprecated/removed in a future cleanup.
+**Finding ARCH-02 (LOW):** Two `EmailService` classes exist — `EmailService` (legacy, line ~400 in communication_service.py) and `SendGridEmailService` (line ~596). Only `SendGridEmailService` should be used. The legacy class should be deprecated/removed in a future cleanup. **FIXED (Task #74):** Added `DeprecationWarning` to `EmailService.__init__()`. Existing callers still work but emit a deprecation warning guiding migration to `SendGridEmailService`.
 
 **Finding ARCH-03 (INFO):** `main.py` has a single massive import line (line 32) with 100+ router modules. While functional, this could benefit from a dynamic router discovery pattern in the future.
 
-**Finding ARCH-04 (CRITICAL):** `RAGPipelineService.search()` method references `kwargs.get("job_title")`, `kwargs.get("job_area")`, `kwargs.get("job_requirements")`, and `kwargs.get("sector")` on lines 421-445, but the method signature (line 273) has NO `**kwargs` parameter. This causes a `NameError` caught by `except Exception`, silently skipping LLM Job Classification filtering AND sector-based FairnessGuard L3 checks. The features are implemented but unreachable in the current call path.
+**Finding ARCH-04 (CRITICAL):** `RAGPipelineService.search()` method references `kwargs.get("job_title")`, `kwargs.get("job_area")`, `kwargs.get("job_requirements")`, and `kwargs.get("sector")` on lines 421-445, but the method signature (line 273) has NO `**kwargs` parameter. This causes a `NameError` caught by `except Exception`, silently skipping LLM Job Classification filtering AND sector-based FairnessGuard L3 checks. The features are implemented but unreachable in the current call path. **FIXED (Task #74):** Added `**kwargs` to `search()` signature. Updated callers (`rag_search.py`, `pearch_service.py`) to pass `job_title`, `job_area`, `job_requirements`, `sector` as kwargs. Added 4 new query parameters to the `/rag-search` endpoint for frontend/API consumers.
 
-**Finding ARCH-05 (MEDIUM):** Template Learning `recommend_template()` queries `message_queue.extra_data.template_id` but the primary communication send path writes to `CommunicationLog.extra_data`, not `MessageQueue`. The learning signal may be absent in the main send flow, making recommendations fallback-only.
+**Finding ARCH-05 (MEDIUM):** Template Learning `recommend_template()` queries `message_queue.extra_data.template_id` but the primary communication send path writes to `CommunicationLog.extra_data`, not `MessageQueue`. The learning signal may be absent in the main send flow, making recommendations fallback-only. **FIXED (Task #74):** Updated `template_learning_service.py` SQL queries to UNION both `message_queue` and `communication_logs` tables, with deduplication. Both `recommend_template()` and `get_performance()` now read from both data sources.
 
-**Finding ARCH-06 (LOW):** Middleware stacking order: `RateLimitMiddleware` executes before `CORSMiddleware`, so early 429 responses may lack CORS headers, causing opaque errors in browser clients.
+**Finding ARCH-06 (LOW):** Middleware stacking order: `RateLimitMiddleware` executes before `CORSMiddleware`, so early 429 responses may lack CORS headers, causing opaque errors in browser clients. **FIXED (Task #74):** Reordered `add_middleware` calls in `main.py` so `CORSMiddleware` is added after `RateLimitMiddleware` (FastAPI reverses execution order), ensuring 429 responses include CORS headers.
 
 ---
 
@@ -403,34 +403,34 @@ Includes proxy detection for: "boa aparência", "bairros nobres", "universidades
 
 ### 8.1 By Severity
 
-| Severity | ID | Category | Description |
-|----------|-----|----------|-------------|
-| CRITICAL | ARCH-04 | Architecture | `RAGPipelineService.search()` missing `**kwargs` — LLM Classification + FG L3 sector check silently skipped |
-| MEDIUM | ARCH-05 | Architecture | Template Learning data source mismatch (`MessageQueue` vs `CommunicationLog`) |
-| MEDIUM | DS-01 | Design | Card `rounded-md` should be `rounded-xl` per DS v4.2.1 |
-| MEDIUM | GOV-01 | Governance | Audit Trail not systematically activated at all touchpoints |
-| LOW | ARCH-06 | Architecture | Middleware order: 429 responses may lack CORS headers |
-| LOW | DS-02 | Design | `ChatContainer` missing `dark:bg-lia-bg-primary` |
-| LOW | DS-03 | Design | Buttons use `bg-gray-900` instead of semantic token |
-| LOW | LGPD-01 | LGPD | Consent flow could be more explicit (checkbox) |
-| LOW | DEI-02 | DEI | `check_rejection_fairness` not auto-triggered |
-| LOW | ARCH-02 | Architecture | Legacy `EmailService` class should be deprecated |
-| INFO | DS-04 | Design | Non-standard max-width in ChatContainer |
-| INFO | LGPD-02 | LGPD | CandidateQuarantine well-implemented |
-| INFO | DEI-01 | DEI | FairnessGuard L3 integrated in 5 services |
-| INFO | ARCH-01 | Architecture | Startup graceful degradation well-done |
-| INFO | ARCH-03 | Architecture | Massive import line in main.py |
-| WATCH | F-PERF-01 | Performance | Double LLM call (Classification + FG L3) in search |
-| PARTIAL | F-DOC-01 | Documentation | ANALISE_ROADMAP needs Fase 5 status updates |
+| Severity | ID | Category | Description | Fix Status |
+|----------|-----|----------|-------------|:---:|
+| CRITICAL | ARCH-04 | Architecture | `RAGPipelineService.search()` missing `**kwargs` — LLM Classification + FG L3 sector check silently skipped | **FIXED** (Task #74) |
+| MEDIUM | ARCH-05 | Architecture | Template Learning data source mismatch (`MessageQueue` vs `CommunicationLog`) | **FIXED** (Task #74) |
+| MEDIUM | DS-01 | Design | Card `rounded-md` should be `rounded-xl` per DS v4.2.1 | PENDING (Task #75) |
+| MEDIUM | GOV-01 | Governance | Audit Trail not systematically activated at all touchpoints | PENDING (Task #76) |
+| LOW | ARCH-06 | Architecture | Middleware order: 429 responses may lack CORS headers | **FIXED** (Task #74) |
+| LOW | DS-02 | Design | `ChatContainer` missing `dark:bg-lia-bg-primary` | PENDING (Task #75) |
+| LOW | DS-03 | Design | Buttons use `bg-gray-900` instead of semantic token | PENDING (Task #75) |
+| LOW | LGPD-01 | LGPD | Consent flow could be more explicit (checkbox) | PENDING (Task #76) |
+| LOW | DEI-02 | DEI | `check_rejection_fairness` not auto-triggered | PENDING (Task #76) |
+| LOW | ARCH-02 | Architecture | Legacy `EmailService` class should be deprecated | **FIXED** (Task #74) |
+| INFO | DS-04 | Design | Non-standard max-width in ChatContainer | PENDING (Task #75) |
+| INFO | LGPD-02 | LGPD | CandidateQuarantine well-implemented | N/A |
+| INFO | DEI-01 | DEI | FairnessGuard L3 integrated in 5 services | N/A |
+| INFO | ARCH-01 | Architecture | Startup graceful degradation well-done | N/A |
+| INFO | ARCH-03 | Architecture | Massive import line in main.py | N/A |
+| WATCH | F-PERF-01 | Performance | Double LLM call (Classification + FG L3) in search | **MITIGATED** (Task #74) |
+| PARTIAL | F-DOC-01 | Documentation | ANALISE_ROADMAP needs Fase 5 status updates | PENDING |
 
 ### 8.2 Summary Stats
 
 - **Total Findings:** 17
-- **CRITICAL:** 1 (RAG pipeline kwargs — LLM Classification + FG L3 unreachable)
-- **MEDIUM:** 3
-- **LOW:** 6
+- **CRITICAL:** 1 → **0** (ARCH-04 FIXED)
+- **MEDIUM:** 3 → **1** (ARCH-05 FIXED, DS-01 pending)
+- **LOW:** 6 → **4** (ARCH-06 FIXED, ARCH-02 FIXED)
 - **INFO:** 4
-- **WATCH:** 1
+- **WATCH:** 1 → **0** (F-PERF-01 MITIGATED with TTL cache)
 - **PARTIAL:** 2
 
 ---

@@ -74,6 +74,10 @@ async def rag_search_candidates(
         le=1.0,
         description="Blend weight: 0=BM25, 1=semântico, 0.5=híbrido",
     ),
+    job_title: str = Query(default="", description="Título da vaga para LLM classification"),
+    job_area: str = Query(default="", description="Área da vaga para LLM classification"),
+    job_requirements: str = Query(default="", description="Requisitos da vaga para LLM classification"),
+    sector: str = Query(default="", description="Setor para FairnessGuard L3 sector-aware check"),
     db: AsyncSession = Depends(get_db),
 ) -> RAGSearchResponse:
     """
@@ -94,6 +98,10 @@ async def rag_search_candidates(
             db=db,
             limit=limit,
             alpha=alpha,
+            job_title=job_title,
+            job_area=job_area,
+            job_requirements=job_requirements,
+            sector=sector,
         )
         return RAGSearchResponse(
             results=result.results,

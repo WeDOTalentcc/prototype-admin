@@ -2,10 +2,11 @@
 Template Learning Service — G9.
 
 Tracks email template performance (open/click rates) per company.
-Uses MessageQueue + EmailTrackingEvent for persistent data:
+Uses MessageQueue + CommunicationLog + EmailTrackingEvent for persistent data:
 - MessageQueue stores send events with template_id in extra_data
+- CommunicationLog also stores template_id in extra_data (main send path)
 - EmailTrackingEvent stores open/click events linked by notification_id
-- Queries join the two to compute per-template open/click rates
+- Queries UNION both sources and join with tracking events for rates
 """
 import logging
 from typing import Any, Dict, List, Optional
@@ -70,16 +71,26 @@ class TemplateLearningService:
                     FROM message_queue mq
                     WHERE mq.company_id = :company_id
                       AND mq.extra_data->>'template_id' IS NOT NULL
+                    UNION ALL
+                    SELECT
+                        cl.extra_data->>'template_id' AS template_id,
+                        cl.id::text AS notification_id
+                    FROM communication_logs cl
+                    WHERE cl.company_id = :company_id
+                      AND cl.extra_data->>'template_id' IS NOT NULL
+                ),
+                deduped AS (
+                    SELECT DISTINCT template_id, notification_id FROM sends
                 ),
                 stats AS (
                     SELECT
-                        s.template_id,
-                        COUNT(DISTINCT s.notification_id) AS send_count,
+                        d.template_id,
+                        COUNT(DISTINCT d.notification_id) AS send_count,
                         COUNT(DISTINCT CASE WHEN e.event_type = 'open' THEN e.notification_id END) AS open_count
-                    FROM sends s
-                    LEFT JOIN email_tracking_events e ON e.notification_id = s.notification_id
-                    GROUP BY s.template_id
-                    HAVING COUNT(DISTINCT s.notification_id) >= :min_sends
+                    FROM deduped d
+                    LEFT JOIN email_tracking_events e ON e.notification_id = d.notification_id
+                    GROUP BY d.template_id
+                    HAVING COUNT(DISTINCT d.notification_id) >= :min_sends
                 )
                 SELECT template_id, send_count, open_count,
                        ROUND(open_count::numeric / NULLIF(send_count, 0), 4) AS open_rate
@@ -123,15 +134,26 @@ class TemplateLearningService:
                     WHERE mq.company_id = :company_id
                       AND mq.extra_data->>'template_id' IS NOT NULL
                       {template_filter}
+                    UNION ALL
+                    SELECT
+                        cl.extra_data->>'template_id' AS template_id,
+                        cl.id::text AS notification_id
+                    FROM communication_logs cl
+                    WHERE cl.company_id = :company_id
+                      AND cl.extra_data->>'template_id' IS NOT NULL
+                      {template_filter.replace('mq.', 'cl.')}
+                ),
+                deduped AS (
+                    SELECT DISTINCT template_id, notification_id FROM sends
                 )
                 SELECT
-                    s.template_id,
-                    COUNT(DISTINCT s.notification_id) AS sends,
+                    d.template_id,
+                    COUNT(DISTINCT d.notification_id) AS sends,
                     COUNT(DISTINCT CASE WHEN e.event_type = 'open' THEN e.notification_id END) AS opens,
                     COUNT(DISTINCT CASE WHEN e.event_type = 'click' THEN e.notification_id END) AS clicks
-                FROM sends s
-                LEFT JOIN email_tracking_events e ON e.notification_id = s.notification_id
-                GROUP BY s.template_id
+                FROM deduped d
+                LEFT JOIN email_tracking_events e ON e.notification_id = d.notification_id
+                GROUP BY d.template_id
                 ORDER BY sends DESC
             """), params)
             rows = result.fetchall()

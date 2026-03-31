@@ -348,7 +348,12 @@ Authorization: Bearer <token>
     redoc_url="/docs/redoc",
 )
 
-# CORS middleware
+# Rate limiting middleware
+app.add_middleware(RateLimitMiddleware)
+
+# CORS must be added AFTER RateLimitMiddleware so it executes BEFORE it
+# (FastAPI processes add_middleware in reverse order).
+# This ensures 429 responses include CORS headers for browser clients.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
@@ -357,10 +362,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Rate limiting middleware
-app.add_middleware(RateLimitMiddleware)
-
-# Request ID middleware (added after rate limiter so it executes before it)
+# Request ID middleware
 app.add_middleware(RequestIdMiddleware)
 
 # Structured logging — outermost so it captures final status code

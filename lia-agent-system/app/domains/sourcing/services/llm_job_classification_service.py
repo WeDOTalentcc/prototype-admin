@@ -8,12 +8,18 @@ Removes candidates whose profiles are fundamentally incompatible with the vacanc
 Uses Gemini Flash for low-latency classification. Falls back to heuristic matching
 when LLM is unavailable.
 """
+import hashlib
 import json
 import logging
 import os
+import time
 from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
+
+_CLASSIFICATION_CACHE: Dict[str, Tuple[Dict[str, Any], float]] = {}
+_CACHE_TTL_SECONDS = 3600
+_CACHE_MAX_SIZE = 500
 
 COMPATIBILITY_PROMPT = """Você é um especialista em recrutamento. Analise se o candidato é COMPATÍVEL com a vaga.
 
@@ -65,6 +71,29 @@ def _detect_area(text: str) -> Optional[str]:
     return None
 
 
+def _cache_key(job_title: str, candidate_title: str) -> str:
+    raw = f"{job_title.strip().lower()}||{candidate_title.strip().lower()}"
+    return hashlib.md5(raw.encode()).hexdigest()
+
+
+def _cache_get(key: str) -> Optional[Dict[str, Any]]:
+    entry = _CLASSIFICATION_CACHE.get(key)
+    if entry is None:
+        return None
+    result, ts = entry
+    if time.monotonic() - ts > _CACHE_TTL_SECONDS:
+        _CLASSIFICATION_CACHE.pop(key, None)
+        return None
+    return result
+
+
+def _cache_put(key: str, result: Dict[str, Any]) -> None:
+    if len(_CLASSIFICATION_CACHE) >= _CACHE_MAX_SIZE:
+        oldest_key = min(_CLASSIFICATION_CACHE, key=lambda k: _CLASSIFICATION_CACHE[k][1])
+        _CLASSIFICATION_CACHE.pop(oldest_key, None)
+    _CLASSIFICATION_CACHE[key] = (result, time.monotonic())
+
+
 class LLMJobClassificationService:
     def __init__(self):
         self._model = None
@@ -104,6 +133,15 @@ class LLMJobClassificationService:
         job_info: Dict[str, Any],
         candidate: Dict[str, Any],
     ) -> Dict[str, Any]:
+        ck = _cache_key(
+            job_info.get("title", ""),
+            candidate.get("title", ""),
+        )
+        cached = _cache_get(ck)
+        if cached is not None:
+            logger.debug("[LLMJobClassification] Cache hit: %s", ck[:8])
+            return {**cached, "method": cached.get("method", "cached") + "_cached"}
+
         model = self._get_model()
         if not model:
             compatible, confidence, reason = self._heuristic_check(job_info, candidate)
@@ -133,12 +171,14 @@ class LLMJobClassificationService:
                     text = text[4:]
             parsed = json.loads(text)
 
-            return {
+            result = {
                 "compatible": parsed.get("compatible", True),
                 "confidence": parsed.get("confidence", 0.5),
                 "reason": parsed.get("reason", ""),
                 "method": "llm",
             }
+            _cache_put(ck, result)
+            return result
         except Exception as exc:
             logger.debug("[LLMJobClassification] LLM fallback to heuristic: %s", exc)
             compatible, confidence, reason = self._heuristic_check(job_info, candidate)

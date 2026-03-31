@@ -33,9 +33,21 @@ from .email_templates_data import DEFAULT_TEMPLATES
 class EmailService:
     """
     Service for managing email templates and sending emails.
+
+    .. deprecated::
+        Legacy class — use ``SendGridEmailService`` for new code.
+        This class is kept for backward compatibility with existing callers
+        (clients.py, automation.py, report_service.py, etc.) and will be
+        removed in a future release.
     """
     
     def __init__(self):
+        import warnings
+        warnings.warn(
+            "EmailService is deprecated. Use SendGridEmailService instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         self.variable_pattern = re.compile(r'\{\{(\w+)\}\}')
     
     def extract_variables(self, text: str) -> List[str]:

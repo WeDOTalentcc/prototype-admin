@@ -278,6 +278,7 @@ class RAGPipelineService:
         limit: int = 20,
         alpha: float = 0.5,
         domain: Optional[str] = None,
+        **kwargs,
     ) -> RAGSearchResult:
         """
         Executa busca híbrida de candidatos.

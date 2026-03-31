@@ -65,6 +65,10 @@ async def _pearch_search_fallback(self, request, timeout=120):
                     db=db,
                     limit=getattr(request, "limit", 20) or 20,
                     alpha=0.5,
+                    job_title=getattr(request, "job_title", ""),
+                    job_area=getattr(request, "job_area", ""),
+                    job_requirements=getattr(request, "job_requirements", query),
+                    sector=getattr(request, "sector", ""),
                 )
 
             count = rag_result.total if rag_result else 0
