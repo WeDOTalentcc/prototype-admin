@@ -33,7 +33,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     isLIAThinking, isLiaSuperChat, isLoading, isResizingLIA, isSavingToBase, isSearchActive,
     liaWidth, newCertificationFilter, newSoftSkillFilter, parsedCVData, pearchSearchOptions, pendingContactFilter,
     pendingSourceChange, pinnedCandidates, preSelectedListForModal, previewWidth, renderCellValue, revealCandidate,
-    revealType, rubricCandidate, rubricEvaluationData, saveCurrentSearch, savedSearches, searchResults,
+    revealType, rubricCandidate, rubricEvaluationData, saveCurrentSearch, searchResults,
     selectAllCandidates, selectedCandidateForAction, selectedCandidatesForBatch, selectedListForVacancies, selectedPearchCount, setActiveSearchFilters,
     setActiveSearchTab, setActiveTab, setAddToListCandidateIds, setAddToListCandidateNames, setCandidateListsForModal, setCandidates,
     setChatMessages, setColumnSearchTerm, setColumnWidths, setContactModalAction, setContactModalCandidate, setEmailCandidateSelected,
@@ -66,6 +66,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     setUserArchetypes, setUserCollapsedLIA, setViewingList, showCrossTabBanner, showEditQueryModal, showExpandedLIA,
     showGlobalExpansionConfirm, showSaveAsArchetypeModal, showSearchResults, sortBy, sortOrder, viewingList,
     showCandidatePage, showCandidatePreview,
+    tabs,
   } = useCandidatesPageCore({ onAddRecentItem, pendingCandidateOpen, onCandidateOpened })
 
   return (
@@ -173,7 +174,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
             onSaveToLocalBase={handleSaveToLocalBase}
             isSavingToBase={isSavingToBase}
             showCrossTabBanner={showCrossTabBanner}
-            crossTabFilter={crossTabFilter}
+            crossTabFilter={crossTabFilter as unknown as Parameters<typeof CandidateSearchResultsView>[0]["crossTabFilter"]}
             clearCrossTabFilter={clearCrossTabFilter}
             viewingList={viewingList}
             setViewingList={setViewingList}
@@ -314,7 +315,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                 onTogglePin={handleTogglePin}
                 onToggleFavorite={handleToggleFavorite}
                 onCandidateClick={handleCandidateClick as unknown as Parameters<typeof FavoritesTab>[0]["onCandidateClick"]}
-                onLIAClick={handleLIAClick}
+                onLIAClick={handleLIAClick as unknown as Parameters<typeof FavoritesTab>[0]["onLIAClick"]}
                 onUpdateFavoriteNote={handleUpdateFavoriteNote}
               />
             </div>
@@ -332,7 +333,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                 </div>
                 <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
                   <CandidatePreview
-                    candidate={previewCandidate}
+                    candidate={previewCandidate as unknown as never}
                     isOpen={showCandidatePreview}
                     onClose={handleCloseCandidatePreview}
                     isMaximized={isPreviewMaximized}
@@ -430,15 +431,15 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                     skills: c.technical_skills || [],
                     experience: c.years_of_experience || 0,
                     education: '',
-                    workHistory: [] as never[],
+                    workHistory: [] as unknown[],
                   }
                 })
                 
-                setCandidates(mappedCandidates)
+                setCandidates(mappedCandidates as unknown as Parameters<typeof setCandidates>[0])
                 setViewingList({ 
-                  id: listDetails.id, 
-                  name: listDetails.name, 
-                  color: listDetails.color 
+                  id: listDetails.id,
+                  name: listDetails.name,
+                  color: listDetails.color || undefined
                 })
                 setActiveTab('search')
                 setShowSearchResults(true)
@@ -549,7 +550,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
       {/* Modals - extracted to CandidatesPageModals */}
       <CandidatesPageModals
         selectedCandidateForAction={selectedCandidateForAction}
-        contactModalCandidate={contactModalCandidate}
+        contactModalCandidate={contactModalCandidate as unknown as Parameters<typeof CandidatesPageModals>[0]["contactModalCandidate"]}
         showContactModal={showContactModal}
         contactModalAction={contactModalAction}
         setShowContactModal={setShowContactModal}
@@ -589,7 +590,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         showBatchApproval={showBatchApproval}
         setShowBatchApproval={setShowBatchApproval}
         convertCandidatesForBatch={convertCandidatesForBatch}
-        handleBatchApprovalComplete={handleBatchApprovalComplete}
+        handleBatchApprovalComplete={handleBatchApprovalComplete as unknown as Parameters<typeof CandidatesPageModals>[0]["handleBatchApprovalComplete"]}
         wsiCandidateForScreening={wsiCandidateForScreening}
         setWsiCandidateForScreening={setWsiCandidateForScreening}
         showWSITextModal={showWSITextModal}

@@ -34,6 +34,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { InsufficientDataModal } from "@/components/modals/insufficient-data-modal"
+import { useToast } from "@/hooks/use-toast"
 import { ExperienceHighlightCard } from "@/components/experience-highlight-card"
 import dynamic from "next/dynamic"
 import type { ScreeningQuestion, TranscriptionSegment } from "@/components/modals/screening-media-modal"
@@ -101,6 +102,7 @@ export function CandidatePreview({
   jobId,
 }: CandidatePreviewProps) {
   const core = useCandidatePreviewCore(candidate)
+  const { toast } = useToast()
   const {
     activeTab, setActiveTab,
     showLiaModal, setShowLiaModal,
@@ -166,13 +168,37 @@ export function CandidatePreview({
     awards: Array.isArray(candidate.awards) ? candidate.awards : (candidate.awards ? [candidate.awards] : []),
   }
 
+  type CandidateData = {
+    name: string
+    id?: string
+    candidateId?: string
+    pearch_id?: string
+    avatar_url?: string
+    avatar?: string
+    photo_url?: string
+    photoUrl?: string
+    email?: string
+    phone?: string
+    position?: string
+    location?: string
+    seniority_level?: string
+    seniorityLevel?: string
+    years_of_experience?: number | null
+    yearsOfExperience?: number | null
+    linkedin_url?: string
+    github_url?: string
+    liaAnalysis?: { score?: number; fitScore?: number }
+    lia_analysis?: { score?: number; fit_score?: number }
+    [key: string]: unknown
+  }
+  const c = candidate as unknown as CandidateData
   const languagesData = getLanguagesData()
 
   const tabs = [
     { id: 'profile', label: 'Perfil Completo', icon: UserCheck },
     { id: 'activities', label: 'Atividades', icon: Activity },
     { id: 'files', label: 'Arquivos', icon: FileText },
-    { id: 'opinions', label: 'Pareceres e Análises', icon: Brain, badge: (opinionsData?.total_opinions || 0) + (savedAnalyses?.total_analyses || 0) }
+    { id: 'opinions', label: 'Pareceres e Análises', icon: Brain, badge: ((opinionsData as unknown as {total_opinions?: number} | undefined)?.total_opinions || 0) + ((savedAnalyses as unknown as {total_analyses?: number} | undefined)?.total_analyses || 0) }
   ]
 
   const liaActions = [
@@ -184,8 +210,8 @@ export function CandidatePreview({
     { id: 'salary-analysis', title: 'Análise Salarial', icon: '💰', buttonText: 'Gerar relatório salarial' }
   ]
 
-  const liaScore = candidate.liaAnalysis?.score || candidate.lia_analysis?.score
-  const fitScore = candidate.liaAnalysis?.fitScore || candidate.lia_analysis?.fit_score
+  const liaScore = c.liaAnalysis?.score || c.lia_analysis?.score
+  const fitScore = c.liaAnalysis?.fitScore || c.lia_analysis?.fit_score
 
   return (
     <div className="h-full bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle flex flex-col transition-[width,height] duration-300 w-full">
@@ -196,9 +222,9 @@ export function CandidatePreview({
           <div className="flex items-start gap-3 mb-1.5">
             {/* Avatar */}
             <Avatar className="w-12 h-12 flex-shrink-0 ring-2 ring-white">
-              <AvatarImage src={candidate.avatar_url || candidate.avatar || candidate.photo_url || candidate.photoUrl} alt={candidate.name} />
+              <AvatarImage src={(c.avatar_url as string | undefined) || (c.avatar as string | undefined) || (c.photo_url as string | undefined) || (c.photoUrl as string | undefined)} alt={c.name as string} />
               <AvatarFallback className="font-semibold text-sm bg-gray-200 lia-text-base">
-                {candidate.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
+                {(c.name as string).split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
 
@@ -207,27 +233,27 @@ export function CandidatePreview({
               {/* Row 1: Name + Short ID + Seniority + Experience + LGPD */}
               <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
                 <h3 className={`${textStyles.title} truncate`}>
-                  {candidate.name}
+                  {c.name as string}
                 </h3>
                 <Badge className="text-micro px-1.5 py-0 h-4 flex-shrink-0 font-mono font-medium bg-gray-100 lia-text-base border border-lia-border-default">
-                  {generateShortId(candidate.name, candidate.id || candidate.candidateId || candidate.pearch_id)}
+                  {generateShortId(c.name as string, (c.id as string | undefined) || (c.candidateId as string | undefined) || (c.pearch_id as string | undefined))}
                 </Badge>
-                {(candidate.seniority_level || candidate.seniorityLevel) && (
+                {(c.seniority_level || c.seniorityLevel) && (
                   <Badge className={badgeStyles.warning}>
-                    {candidate.seniority_level || candidate.seniorityLevel}
+                    {(c.seniority_level as string | undefined) || (c.seniorityLevel as string | undefined)}
                   </Badge>
                 )}
-                {(candidate.years_of_experience !== undefined && candidate.years_of_experience !== null) || 
-                 (candidate.yearsOfExperience !== undefined && candidate.yearsOfExperience !== null) ? (
+                {(c.years_of_experience !== undefined && c.years_of_experience !== null) || 
+                 (c.yearsOfExperience !== undefined && c.yearsOfExperience !== null) ? (
                   <Badge className={badgeStyles.default}>
-                    {typeof (candidate.years_of_experience || candidate.yearsOfExperience) === 'number' 
-                      ? `${(candidate.years_of_experience || candidate.yearsOfExperience).toFixed(1)} anos` 
-                      : `${candidate.years_of_experience || candidate.yearsOfExperience} anos`}
+                    {typeof (c.years_of_experience || c.yearsOfExperience) === 'number' 
+                      ? `${((c.years_of_experience as number | undefined) || (c.yearsOfExperience as number | undefined) || 0).toFixed(1)} anos` 
+                      : `${c.years_of_experience || c.yearsOfExperience} anos`}
                   </Badge>
                 ) : null}
-                {(candidate.communication_consent !== undefined || candidate.communicationConsent !== undefined) && (
-                  <Badge className={`text-micro px-1.5 py-0 h-4 flex items-center gap-0.5 ${(candidate.communication_consent ?? candidate.communicationConsent) ? 'bg-status-success/10 text-status-success' : 'bg-status-error/10 text-status-error'}`}>
-                    {(candidate.communication_consent ?? candidate.communicationConsent) ? <CheckCircle className="w-2.5 h-2.5" /> : <AlertCircle className="w-2.5 h-2.5" />}
+                {(c.communication_consent !== undefined || c.communicationConsent !== undefined) && (
+                  <Badge className={`text-micro px-1.5 py-0 h-4 flex items-center gap-0.5 ${(c.communication_consent ?? c.communicationConsent) ? 'bg-status-success/10 text-status-success' : 'bg-status-error/10 text-status-error'}`}>
+                    {(c.communication_consent ?? c.communicationConsent) ? <CheckCircle className="w-2.5 h-2.5" /> : <AlertCircle className="w-2.5 h-2.5" />}
                     LGPD
                   </Badge>
                 )}
@@ -236,17 +262,17 @@ export function CandidatePreview({
               {/* Row 2: Title • Company • Segment */}
               <div className="flex items-center gap-1.5 flex-wrap">
                 <p className={`${textStyles.bodySmall} truncate`}>
-                  {candidate.position || candidate.title || 'Cargo não informado'}
+                  {c.position || c.title || 'Cargo não informado'}
                 </p>
                 <span className={`${textStyles.bodySmall} lia-text-secondary`}>•</span>
                 <p className={`${textStyles.bodySmall} truncate`}>
-                  {candidate.workHistory?.[0]?.company || candidate.current_company || candidate.company || 'Empresa'}
+                  {c.workHistory?.[0]?.company || c.current_company || c.company || 'Empresa'}
                 </p>
-                {(candidate.workHistory?.[0]?.industry || candidate.workHistory?.[0]?.segment || candidate.company_segment || candidate.industry) && (
+                {(c.workHistory?.[0]?.industry || c.workHistory?.[0]?.segment || c.company_segment || c.industry) && (
                   <>
                     <span className={`${textStyles.description} lia-text-secondary`}>•</span>
                     <p className={`${textStyles.description} truncate`}>
-                      {candidate.workHistory?.[0]?.industry || candidate.workHistory?.[0]?.segment || candidate.company_segment || candidate.industry}
+                      {c.workHistory?.[0]?.industry || c.workHistory?.[0]?.segment || c.company_segment || c.industry}
                     </p>
                   </>
                 )}
@@ -260,7 +286,7 @@ export function CandidatePreview({
                 isOpen={showLiaAnalysisModal}
                 onOpen={() => setShowLiaAnalysisModal(true)}
                 onClose={() => setShowLiaAnalysisModal(false)}
-                candidate={candidate}
+                candidate={c}
                 onTransportToOpinions={handleAnalysisTransport}
               >
                 <Button
@@ -302,9 +328,9 @@ export function CandidatePreview({
 
           {/* Row 3: Dates Only - ALIGNED TO LEFT EDGE */}
           {(() => {
-            const lastContactedAt = candidate.last_contacted_at || candidate.lastContactedAt
-            const updatedAt = candidate.updated_at || candidate.updatedAt
-            const createdAt = candidate.created_at || candidate.createdAt
+            const lastContactedAt = c.last_contacted_at || c.lastContactedAt
+            const updatedAt = c.updated_at || c.updatedAt
+            const createdAt = c.created_at || c.createdAt
             
             const formatDate = (dateStr: string | Date | null | undefined): string => {
               if (!dateStr) return ''
@@ -368,8 +394,8 @@ export function CandidatePreview({
                     variant="ghost"
                     size="sm"
                     className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    onClick={() => onSendEmail ? onSendEmail(candidate) : (candidate.email && window.open(`mailto:${candidate.email}`, '_self'))}
-                    disabled={!candidate.email && !onSendEmail}
+                    onClick={() => onSendEmail ? onSendEmail(candidate) : (c.email && window.open(`mailto:${c.email}`, '_self'))}
+                    disabled={!c.email && !onSendEmail}
                   >
                     <Mail className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                   </Button>
@@ -386,11 +412,11 @@ export function CandidatePreview({
                     onClick={() => {
                       if (onSendWhatsApp) {
                         onSendWhatsApp(candidate)
-                      } else if (candidate.phone) {
-                        window.open(`https://wa.me/${candidate.phone.replace(/\D/g, '')}`, '_blank')
+                      } else if (c.phone) {
+                        window.open(`https://wa.me/${(c.phone as string).replace(/\D/g, '')}`, '_blank')
                       }
                     }}
-                    disabled={!candidate.phone && !onSendWhatsApp}
+                    disabled={!c.phone && !onSendWhatsApp}
                   >
                     <Phone className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                   </Button>
@@ -447,7 +473,7 @@ export function CandidatePreview({
                     size="sm"
                     className={`h-6 w-6 p-0 ${isFavorite ? 'bg-status-warning/15' : 'hover:bg-status-warning/10'}`}
                     onClick={() => {
-                      onToggleFavorite?.(candidate.id)
+                      onToggleFavorite?.(c.id as string)
                       toast({ 
                         title: isFavorite ? "Removido dos favoritos" : "Adicionado aos favoritos",
                         description: isFavorite ? "Candidato removido da lista de favoritos" : "Candidato adicionado à lista de favoritos"
@@ -481,13 +507,13 @@ export function CandidatePreview({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <a 
-                    href={candidate.linkedin || candidate.linkedin_url || '#'} 
+                    href={((c.linkedin as string | undefined) || (c.linkedin_url as string | undefined) || '#')} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${(candidate.linkedin || candidate.linkedin_url) ? 'hover:bg-wedo-cyan/10' : 'opacity-30 cursor-default'}`}
-                    onClick={(e) => !(candidate.linkedin || candidate.linkedin_url) && e.preventDefault()}
+                    className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${(c.linkedin || c.linkedin_url) ? 'hover:bg-wedo-cyan/10' : 'opacity-30 cursor-default'}`}
+                    onClick={(e) => !(c.linkedin || c.linkedin_url) && e.preventDefault()}
                   >
-                    <Linkedin className="w-3.5 h-3.5" style={{color: (candidate.linkedin || candidate.linkedin_url) ? 'var(--gray-600)' : 'var(--gray-400)'}} />
+                    <Linkedin className="w-3.5 h-3.5" style={{color: (c.linkedin || c.linkedin_url) ? 'var(--gray-600)' : 'var(--gray-400)'}} />
                   </a>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">LinkedIn</TooltipContent>
@@ -496,13 +522,13 @@ export function CandidatePreview({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <a 
-                    href={candidate.github || candidate.github_url || '#'} 
+                    href={((c.github as string | undefined) || (c.github_url as string | undefined) || '#')} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${(candidate.github || candidate.github_url) ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : 'opacity-30 cursor-default'}`}
-                    onClick={(e) => !(candidate.github || candidate.github_url) && e.preventDefault()}
+                    className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${(c.github || c.github_url) ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : 'opacity-30 cursor-default'}`}
+                    onClick={(e) => !(c.github || c.github_url) && e.preventDefault()}
                   >
-                    <svg className="w-3.5 h-3.5" fill={(candidate.github || candidate.github_url) ? 'var(--gray-950)' : 'var(--gray-400)'} viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5" fill={(c.github || c.github_url) ? 'var(--gray-950)' : 'var(--gray-400)'} viewBox="0 0 24 24">
                       <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
                     </svg>
                   </a>
@@ -513,13 +539,13 @@ export function CandidatePreview({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <a 
-                    href={candidate.stackoverflow || candidate.stackoverflow_url || '#'} 
+                    href={((c.stackoverflow as string | undefined) || (c.stackoverflow_url as string | undefined) || '#')} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${(candidate.stackoverflow || candidate.stackoverflow_url) ? 'hover:bg-wedo-orange/10' : 'opacity-30 cursor-default'}`}
-                    onClick={(e) => !(candidate.stackoverflow || candidate.stackoverflow_url) && e.preventDefault()}
+                    className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${(c.stackoverflow || c.stackoverflow_url) ? 'hover:bg-wedo-orange/10' : 'opacity-30 cursor-default'}`}
+                    onClick={(e) => !(c.stackoverflow || c.stackoverflow_url) && e.preventDefault()}
                   >
-                    <svg className="w-3.5 h-3.5" fill={(candidate.stackoverflow || candidate.stackoverflow_url) ? 'var(--gray-600)' : 'var(--gray-400)'} viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5" fill={(c.stackoverflow || c.stackoverflow_url) ? 'var(--gray-600)' : 'var(--gray-400)'} viewBox="0 0 24 24">
                       <path d="M15 21h-10v-2h10v2zm6-11.665l-1.621-9.335-1.993.346 1.62 9.335 1.994-.346zm-5.964 6.937l-9.746-.975-.186 2.016 9.755.879.177-1.92zm.538-2.587l-9.276-2.608-.526 1.954 9.306 2.5.496-1.846zm1.204-2.413l-8.297-4.864-1.029 1.743 8.298 4.865 1.028-1.744zm1.866-1.467l-5.339-7.829-1.672 1.14 5.339 7.829 1.672-1.14zm-2.644 4.195v8h-12v-8h-2v10h16v-10h-2z"/>
                     </svg>
                   </a>
@@ -530,13 +556,13 @@ export function CandidatePreview({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <a 
-                    href={candidate.twitter || candidate.twitter_url || candidate.x_url || '#'} 
+                    href={((c.twitter as string | undefined) || (c.twitter_url as string | undefined) || (c.x_url as string | undefined) || '#')} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${(candidate.twitter || candidate.twitter_url || candidate.x_url) ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : 'opacity-30 cursor-default'}`}
-                    onClick={(e) => !(candidate.twitter || candidate.twitter_url || candidate.x_url) && e.preventDefault()}
+                    className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${(c.twitter || c.twitter_url || c.x_url) ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : 'opacity-30 cursor-default'}`}
+                    onClick={(e) => !(c.twitter || c.twitter_url || c.x_url) && e.preventDefault()}
                   >
-                    <svg className="w-3.5 h-3.5" fill={(candidate.twitter || candidate.twitter_url || candidate.x_url) ? 'var(--gray-950)' : 'var(--gray-400)'} viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5" fill={(c.twitter || c.twitter_url || c.x_url) ? 'var(--gray-950)' : 'var(--gray-400)'} viewBox="0 0 24 24">
                       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                     </svg>
                   </a>
@@ -547,13 +573,13 @@ export function CandidatePreview({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <a 
-                    href={candidate.behance || candidate.behance_url || '#'} 
+                    href={((c.behance as string | undefined) || (c.behance_url as string | undefined) || '#')}
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${(candidate.behance || candidate.behance_url) ? 'hover:bg-wedo-cyan/10' : 'opacity-30 cursor-default'}`}
-                    onClick={(e) => !(candidate.behance || candidate.behance_url) && e.preventDefault()}
+                    className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${(c.behance || c.behance_url) ? 'hover:bg-wedo-cyan/10' : 'opacity-30 cursor-default'}`}
+                    onClick={(e) => !(c.behance || c.behance_url) && e.preventDefault()}
                   >
-                    <svg className="w-3.5 h-3.5" fill={(candidate.behance || candidate.behance_url) ? 'var(--gray-600)' : 'var(--gray-400)'} viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5" fill={(c.behance || c.behance_url) ? 'var(--gray-600)' : 'var(--gray-400)'} viewBox="0 0 24 24">
                       <path d="M22 7h-7v-2h7v2zm1.726 10c-.442 1.297-2.029 3-5.101 3-3.074 0-5.564-1.729-5.564-5.675 0-3.91 2.325-5.92 5.466-5.92 3.082 0 4.964 1.782 5.375 4.426.078.506.109 1.188.095 2.14h-8.027c.13 3.211 3.483 3.312 4.588 2.029h3.168zm-7.686-4h4.965c-.105-1.547-1.136-2.219-2.477-2.219-1.466 0-2.277.768-2.488 2.219zm-9.574 6.988h-6.466v-14.967h6.953c5.476.081 5.58 5.444 2.72 6.906 3.461 1.26 3.577 8.061-3.207 8.061zm-3.466-8.988h3.584c2.508 0 2.906-3-.312-3h-3.272v3zm3.391 3h-3.391v3.016h3.341c3.055 0 2.868-3.016.05-3.016z"/>
                     </svg>
                   </a>
@@ -564,13 +590,13 @@ export function CandidatePreview({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <a 
-                    href={candidate.portfolio || candidate.portfolio_url || '#'} 
+                    href={((c.portfolio as string | undefined) || (c.portfolio_url as string | undefined) || '#')} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${(candidate.portfolio || candidate.portfolio_url) ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : 'opacity-30 cursor-default'}`}
-                    onClick={(e) => !(candidate.portfolio || candidate.portfolio_url) && e.preventDefault()}
+                    className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${(c.portfolio || c.portfolio_url) ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : 'opacity-30 cursor-default'}`}
+                    onClick={(e) => !(c.portfolio || c.portfolio_url) && e.preventDefault()}
                   >
-                    <ExternalLink className={`w-3.5 h-3.5 ${(candidate.portfolio || candidate.portfolio_url) ? 'text-lia-text-secondary dark:text-lia-text-tertiary' : 'text-lia-text-disabled'}`} />
+                    <ExternalLink className={`w-3.5 h-3.5 ${(c.portfolio || c.portfolio_url) ? 'text-lia-text-secondary dark:text-lia-text-tertiary' : 'text-lia-text-disabled'}`} />
                   </a>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">Portfolio</TooltipContent>
@@ -587,7 +613,7 @@ export function CandidatePreview({
           {tabs.map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as string)}
+              onClick={() => setActiveTab(tab.id as 'activities' | 'profile' | 'files' | 'opinions')}
               className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium whitespace-nowrap transition-colors motion-reduce:transition-none ${
  activeTab === tab.id
                   ? 'border-b-2 border-gray-800 text-lia-text-primary dark:text-lia-text-primary font-semibold'
@@ -611,7 +637,7 @@ export function CandidatePreview({
       <div className="flex-1 overflow-y-auto">
         {activeTab === 'profile' && (
           <CandidatePreviewProfileTab
-            candidate={candidate}
+            candidate={c}
             jobId={jobId}
             opinionsData={opinionsData}
             isLoadingOpinions={isLoadingOpinions}
@@ -629,7 +655,7 @@ export function CandidatePreview({
 
         {activeTab === 'activities' && (
           <CandidateActivitiesTab
-            candidate={candidate}
+            candidate={c}
             jobId={jobId}
             onShowLiaModal={() => setShowLiaModal(true)}
             onOpenTriagemDetails={onOpenTriagemDetails}
@@ -648,7 +674,7 @@ export function CandidatePreview({
 
         {activeTab === 'files' && (
           <CandidateFilesTab
-            candidate={candidate}
+            candidate={c}
           />
         )}
 
@@ -683,9 +709,9 @@ export function CandidatePreview({
               >
                 <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                 Análises
-                {savedAnalyses && savedAnalyses.total_analyses > 0 && (
+                {savedAnalyses && (savedAnalyses as unknown as {total_analyses: number}).total_analyses > 0 && (
                   <Badge className="text-micro px-1.5 py-0 h-4 ml-1" style={{backgroundColor: 'var(--gray-100)', color: 'var(--wedo-purple)'}}>
-                    {savedAnalyses.total_analyses}
+                    {(savedAnalyses as unknown as {total_analyses: number}).total_analyses}
                   </Badge>
                 )}
               </button>
@@ -732,7 +758,7 @@ export function CandidatePreview({
                 {!isLoadingHistory && opinionsHistory.length > 0 && (
                   <div className="space-y-3">
                     {opinionsHistory.map((opinion: Record<string, unknown>) => (
-                      <div key={opinion.id} className="relative">
+                      <div key={opinion.id as string} className="relative">
                         {!opinion.is_current && (
                           <Badge className="absolute top-2 right-2 text-micro px-1.5 py-0 h-4 bg-gray-100 text-lia-text-tertiary dark:text-lia-text-tertiary z-10">
                             v{opinion.version} - Histórico
@@ -780,7 +806,7 @@ export function CandidatePreview({
                 )}
                 
                 {/* Empty State */}
-                {!isLoadingAnalyses && (!savedAnalyses || savedAnalyses.total_analyses === 0) && (
+                {!isLoadingAnalyses && (!savedAnalyses || (savedAnalyses as unknown as {total_analyses: number}).total_analyses === 0) && (
                   <div className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-6 text-center">
                     <div className="w-12 h-12 rounded-full bg-wedo-purple/10 flex items-center justify-center mx-auto mb-3">
                       <Brain className="w-6 h-6 text-wedo-purple" />
@@ -793,9 +819,9 @@ export function CandidatePreview({
                 )}
                 
                 {/* Analyses List with Expandable Cards */}
-                {!isLoadingAnalyses && savedAnalyses && savedAnalyses.total_analyses > 0 && (
+                {!isLoadingAnalyses && savedAnalyses && (savedAnalyses as unknown as {total_analyses: number}).total_analyses > 0 && (
                   <div className="space-y-3">
-                    {savedAnalyses.analyses.map((analysis: Record<string, unknown>) => {
+                    {(savedAnalyses as unknown as {analyses: Record<string, unknown>[]}).analyses.map((analysis: Record<string, unknown>) => {
                       const analysisLabels: Record<string, string> = {
                         'bullet_points': 'Pontos-chave',
                         'short_paragraph': 'Resumo',
@@ -805,13 +831,13 @@ export function CandidatePreview({
                       
                       return (
                         <div 
-                          key={analysis.id} 
+                          key={analysis.id as string} 
                           className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md overflow-hidden hover:transition-shadow"
                         >
                           {/* Card Header - Always Visible */}
                           <div 
                             className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50/50 transition-colors motion-reduce:transition-none"
-                            onClick={() => setExpandedAnalysisId(isExpanded ? null : analysis.id)}
+                            onClick={() => setExpandedAnalysisId(isExpanded ? null : analysis.id as string | null)}
                           >
                             <div className="flex items-center gap-2.5">
                               <div className="w-8 h-8 rounded-full bg-wedo-purple/15 flex items-center justify-center flex-shrink-0">
@@ -824,11 +850,11 @@ export function CandidatePreview({
                                     className="text-micro px-1.5 py-0 h-4"
                                     style={{backgroundColor: 'var(--gray-100)', color: 'var(--wedo-purple)'}}
                                   >
-                                    {analysisLabels[analysis.analysis_type] || analysis.analysis_type}
+                                    {analysisLabels[analysis.analysis_type as string] || analysis.analysis_type}
                                   </Badge>
                                 </div>
                                 <span className={`${textStyles.caption} lia-text-secondary`}>
-                                  {analysis.created_at ? new Date(analysis.created_at).toLocaleDateString('pt-BR', { 
+                                  {analysis.created_at ? new Date(analysis.created_at as string).toLocaleDateString('pt-BR', { 
                                     day: '2-digit', 
                                     month: '2-digit', 
                                     year: 'numeric',
@@ -848,7 +874,7 @@ export function CandidatePreview({
                                     }}
                                     className="p-1 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
                                   >
-                                    {copiedItemId === `analysis-${analysis.id}` ? (
+                                    {copiedItemId === `analysis-${analysis.id as string}` ? (
                                       <Check className="w-3.5 h-3.5 text-status-success" />
                                     ) : (
                                       <Copy className="w-3.5 h-3.5 text-lia-text-disabled hover:text-lia-text-secondary dark:text-lia-text-tertiary" />
@@ -865,7 +891,7 @@ export function CandidatePreview({
                           {isExpanded && (
                             <div className="px-3 pb-3 border-t border-gray-50">
                               <div className={`${textStyles.description} text-lia-text-primary dark:text-lia-text-primary leading-relaxed whitespace-pre-wrap bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-3 mt-2`}>
-                                {cleanTextForCopy(analysis.content)}
+                                {cleanTextForCopy(analysis.content as string)}
                               </div>
                               {/* Delete button */}
                               <div className="flex justify-end mt-2">
@@ -902,20 +928,20 @@ export function CandidatePreview({
       <LiaChatModal
         isOpen={showLiaModal}
         onClose={() => setShowLiaModal(false)}
-        candidate={candidate}
+        candidate={c}
         liaActions={liaActions}
         chatMessages={liaChatMessages}
         isLiaChatLoading={isLiaChatLoading}
         liaConversation={liaConversation}
         onConversationChange={setLiaConversation}
         onSendMessage={sendLiaMessage}
-        onContact={onContact}
-        onSendEmail={onSendEmail}
-        onSchedule={onSchedule}
-        onScheduleInterview={onScheduleInterview}
-        onSendAgendamento={onSendAgendamento}
-        onAddToList={onAddToList}
-        onAddToVacancy={onAddToVacancy}
+        onContact={onContact as unknown as never}
+        onSendEmail={onSendEmail as unknown as never}
+        onSchedule={onSchedule as unknown as never}
+        onScheduleInterview={onScheduleInterview as unknown as never}
+        onSendAgendamento={onSendAgendamento as unknown as never}
+        onAddToList={onAddToList as unknown as never}
+        onAddToVacancy={onAddToVacancy as unknown as never}
       />
 
       
@@ -975,9 +1001,9 @@ export function CandidatePreview({
         onClose={() => setShowInsufficientDataModal(false)}
         onProceedAnyway={dataRequirements.filter(r => r.required && !r.hasData).length === 0 ? handleProceedWithLimitedData : undefined}
         requirements={dataRequirements}
-        candidateName={candidate?.name}
+        candidateName={c?.name as string | undefined}
       />
-      
+
       {/* Modal para triagem de áudio/vídeo */}
       {screeningModalData && (
         <ScreeningMediaModal
@@ -990,8 +1016,8 @@ export function CandidatePreview({
           title={screeningModalData.title}
           duration={screeningModalData.duration}
           mediaUrl={screeningModalData.mediaUrl}
-          jobTitle={candidate?.job_title || candidate?.jobTitle}
-          candidateName={candidate?.name}
+          jobTitle={(c?.job_title as string | undefined) || (c?.jobTitle as string | undefined)}
+          candidateName={c?.name as string | undefined}
           questions={screeningModalData.questions}
           transcription={screeningModalData.transcription}
           highlights={screeningModalData.highlights}
@@ -1011,7 +1037,7 @@ export function CandidatePreview({
             setDiscModalOpen(false)
             setDiscModalData(null)
           }}
-          candidate={candidate}
+          candidate={c}
           assessmentData={{
             discScores: discModalData.discScores || {
               dominance: discModalData.dominance || 75,

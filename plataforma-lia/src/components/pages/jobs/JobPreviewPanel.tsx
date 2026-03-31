@@ -214,9 +214,9 @@ export function JobPreviewPanel({
                               {(() => {
                                 const min = _previewJob.salaryRange?.min || (_previewJob as unknown as Record<string, number | undefined>).salaryMin
                                 const max = _previewJob.salaryRange?.max || (_previewJob as unknown as Record<string, number | undefined>).salaryMax
-                                if (min && max) return `R$ ${(min/1000).toFixed(0)}k - ${(max/1000).toFixed(0)}k`
-                                if (min) return `A partir de R$ ${(min/1000).toFixed(0)}k`
-                                if (max) return `Até R$ ${(max/1000).toFixed(0)}k`
+                                if (min && max) return `R$ ${((min as number)/1000).toFixed(0)}k - ${((max as number)/1000).toFixed(0)}k`
+                                if (min) return `A partir de R$ ${((min as number)/1000).toFixed(0)}k`
+                                if (max) return `Até R$ ${((max as number)/1000).toFixed(0)}k`
                                 return ''
                               })()}
                             </Badge>

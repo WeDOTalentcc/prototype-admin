@@ -203,12 +203,12 @@ export function CandidatePage({
                     <TooltipContent side="bottom" className="text-xs">LinkedIn</TooltipContent>
                   </Tooltip>
                 )}
-                {(_candidate.github_url || _candidate.githubUrl) && (
+                {((_candidate.github_url as string | undefined) || (_candidate.githubUrl as string | undefined)) && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <a 
-                        href={_candidate.github_url || _candidate.githubUrl} 
-                        target="_blank" 
+                      <a
+                        href={(_candidate.github_url as string | undefined) || (_candidate.githubUrl as string | undefined)}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="p-1.5 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
                       >
@@ -218,12 +218,12 @@ export function CandidatePage({
                     <TooltipContent side="bottom" className="text-xs">GitHub</TooltipContent>
                   </Tooltip>
                 )}
-                {(_candidate.portfolio_url || _candidate.portfolioUrl || _candidate.website) && (
+                {((_candidate.portfolio_url as string | undefined) || (_candidate.portfolioUrl as string | undefined) || (_candidate.website as string | undefined)) && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <a 
-                        href={_candidate.portfolio_url || _candidate.portfolioUrl || _candidate.website} 
-                        target="_blank" 
+                      <a
+                        href={(_candidate.portfolio_url as string | undefined) || (_candidate.portfolioUrl as string | undefined) || (_candidate.website as string | undefined)}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="p-1.5 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
                       >
@@ -798,7 +798,7 @@ export function CandidatePage({
                         {opinionsHistory.map((opinion: Record<string, unknown>) => {
                           const isExpanded = expandedOpinionId === opinion.id
                           const isWsiOpinion = opinion.opinion_type === 'wsi'
-                          const displayScore = isWsiOpinion ? opinion.wsi_score : opinion.score
+                          const displayScore = isWsiOpinion ? (opinion.wsi_score as number | null | undefined) : (opinion.score as number | null | undefined)
                           
                           const getOpinionScoreColor = (score: number, isWsi: boolean) => {
                             if (isWsi) {
@@ -865,7 +865,7 @@ export function CandidatePage({
                                       {opinion.job_vacancy_id && opinion.job_vacancy_title ? (
                                         <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default flex items-center gap-1">
                                           <Briefcase className="w-2.5 h-2.5" />
-                                          #{String(opinion.job_vacancy_id).slice(0, 6)} - {opinion.job_vacancy_title}
+                                          #{String(opinion.job_vacancy_id).slice(0, 6)} - {opinion.job_vacancy_title as string}
                                         </Badge>
                                       ) : !opinion.job_vacancy_id ? (
                                         <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle">
@@ -882,17 +882,17 @@ export function CandidatePage({
                                       {opinion.archetype && (
                                         <>
                                           <span className="lia-text-muted">•</span>
-                                          <span className={textStyles.caption}>{opinion.archetype}</span>
+                                          <span className={textStyles.caption}>{opinion.archetype as string}</span>
                                         </>
                                       )}
-                                      {getRecommendationBadge(opinion.recommendation)}
+                                      {getRecommendationBadge(opinion.recommendation as string | null)}
                                     </div>
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  {opinion.created_at && (
+                                  {!!(opinion.created_at) && (
                                     <span className="text-micro lia-text-secondary">
-                                      {new Date(opinion.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                      {new Date(opinion.created_at as string).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}
                                     </span>
                                   )}
                                   <Tooltip>
@@ -900,11 +900,11 @@ export function CandidatePage({
                                       <button
                                         onClick={(e) => {
                                           e.stopPropagation()
-                                          handleCopyOpinion(opinion, opinion.opinion_type || 'general')
+                                          handleCopyOpinion(opinion, (opinion.opinion_type as string | undefined) || 'general')
                                         }}
                                         className="p-1 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
                                       >
-                                        {copiedItemId === `opinion-${opinion.id}` ? (
+                                        {copiedItemId === `opinion-${opinion.id as string}` ? (
                                           <Check className="w-3.5 h-3.5 text-status-success" />
                                         ) : (
                                           <Copy className="w-3.5 h-3.5 lia-text-secondary hover:lia-text-base" />
@@ -923,22 +923,22 @@ export function CandidatePage({
                               
                               {isExpanded && (
                                 <div className="px-3 pb-3 pt-0 border-t border-lia-border-subtle space-y-3">
-                                  {opinion.summary && (
+                                  {!!(opinion.summary) && (
                                     <div className="pt-3">
                                       <p className="text-xs text-lia-text-primary dark:text-lia-text-primary leading-relaxed">
-                                        {opinion.summary}
+                                        {opinion.summary as string}
                                       </p>
                                     </div>
                                   )}
                                   
-                                  {opinion.score_breakdown && Object.keys(opinion.score_breakdown).length > 0 && (
+                                  {!!(opinion.score_breakdown) && Object.keys(opinion.score_breakdown as Record<string, unknown>).length > 0 && (
                                     <div>
                                       <h5 className={`${textStyles.label} mb-1.5 flex items-center gap-1`}>
                                         <BarChart3 className="w-3 h-3" />
                                         Score Breakdown
                                       </h5>
                                       <div className="grid grid-cols-2 gap-1.5">
-                                        {Object.entries(opinion.score_breakdown).map(([key, value]: [string, any]) => (
+                                        {Object.entries(opinion.score_breakdown as Record<string, unknown>).map(([key, value]: [string, unknown]) => (
                                           value !== null && value !== undefined && (
                                             <div key={key} className="flex items-center justify-between text-micro bg-gray-50 dark:bg-lia-bg-elevated rounded-full px-2 py-1">
                                               <span className="lia-text-base capitalize">{key.replace(/_/g, ' ')}</span>
@@ -950,14 +950,14 @@ export function CandidatePage({
                                     </div>
                                   )}
                                   
-                                  {opinion.strengths && opinion.strengths.length > 0 && (
+                                  {opinion.strengths && (opinion.strengths as string[]).length > 0 && (
                                     <div>
                                       <h5 className={`${textStyles.label} text-status-success mb-1 flex items-center gap-1`}>
                                         <CheckCircle className="w-3 h-3" />
                                         Pontos Fortes
                                       </h5>
                                       <ul className="space-y-0.5">
-                                        {opinion.strengths.map((s: string, i: number) => (
+                                        {(opinion.strengths as string[]).map((s: string, i: number) => (
                                           <li key={i} className={`${textStyles.caption} lia-text-base flex items-start gap-1`}>
                                             <span className="text-status-success mt-0.5">•</span>
                                             {s}
@@ -967,14 +967,14 @@ export function CandidatePage({
                                     </div>
                                   )}
                                   
-                                  {opinion.concerns && opinion.concerns.length > 0 && (
+                                  {opinion.concerns && (opinion.concerns as string[]).length > 0 && (
                                     <div>
                                       <h5 className={`${textStyles.label} text-status-warning mb-1 flex items-center gap-1`}>
                                         <AlertCircle className="w-3 h-3" />
                                         Pontos de Atenção
                                       </h5>
                                       <ul className="space-y-0.5">
-                                        {opinion.concerns.map((c: string, i: number) => (
+                                        {(opinion.concerns as string[]).map((c: string, i: number) => (
                                           <li key={i} className={`${textStyles.caption} lia-text-base flex items-start gap-1`}>
                                             <span className="text-status-warning mt-0.5">•</span>
                                             {c}
@@ -984,13 +984,13 @@ export function CandidatePage({
                                     </div>
                                   )}
                                   
-                                  {opinion.next_steps && (
+                                  {!!(opinion.next_steps) && (
                                     <div>
                                       <h5 className={`${textStyles.label} mb-1 flex items-center gap-1`}>
                                         <TrendingUp className="w-3 h-3" />
                                         Próximos Passos
                                       </h5>
-                                      <p className={`${textStyles.caption} lia-text-base`}>{opinion.next_steps}</p>
+                                      <p className={`${textStyles.caption} lia-text-base`}>{opinion.next_steps as string}</p>
                                     </div>
                                   )}
                                 </div>
@@ -1076,7 +1076,7 @@ export function CandidatePage({
                                       </Badge>
                                     </div>
                                     <span className={`${textStyles.caption} lia-text-secondary`}>
-                                      {analysis.created_at ? new Date(analysis.created_at).toLocaleDateString('pt-BR', { 
+                                      {analysis.created_at ? new Date(analysis.created_at as string).toLocaleDateString('pt-BR', { 
                                         day: '2-digit', 
                                         month: '2-digit', 
                                         year: 'numeric',
@@ -1113,7 +1113,7 @@ export function CandidatePage({
                               {isExpanded && (
                                 <div className="px-3 pb-3 border-t border-gray-50">
                                   <div className={`${textStyles.description} text-lia-text-primary dark:text-lia-text-primary leading-relaxed whitespace-pre-wrap bg-gray-50 rounded-md p-3 mt-2`}>
-                                    {cleanTextForCopy(analysis.content)}
+                                    {cleanTextForCopy(analysis.content as string)}
                                   </div>
                                   {/* Delete button */}
                                   <div className="flex justify-end mt-2">
@@ -1173,7 +1173,7 @@ export function CandidatePage({
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-lia-bg-secondary rounded-md max-w-4xl w-full max-h-[90vh] overflow-hidden">
             <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle flex items-center justify-between">
-              <h3 className="text-sm font-semibold">{showVideoModal.title}</h3>
+              <h3 className="text-sm font-semibold">{showVideoModal.title as string}</h3>
               <Button variant="ghost" size="sm" onClick={() => setShowVideoModal(null)} className="h-7 w-7 p-0">
                 <X className="w-3.5 h-3.5" />
               </Button>
