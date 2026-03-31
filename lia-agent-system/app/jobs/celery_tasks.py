@@ -828,12 +828,19 @@ def feedback_process_pending_sends_task(self) -> dict:
         dispatched = 0
 
         async with AsyncSessionLocal() as db:
+            from sqlalchemy import and_, text as sa_text
             result = await db.execute(
                 select(PersonalizedFeedbackRecord.id, PersonalizedFeedbackRecord.company_id).where(
                     or_(
                         PersonalizedFeedbackRecord.status == PersonalizedFeedbackStatus.APPROVED.value,
                         PersonalizedFeedbackRecord.status == PersonalizedFeedbackStatus.EDITED.value,
-                        PersonalizedFeedbackRecord.status == PersonalizedFeedbackStatus.FAILED.value,
+                        and_(
+                            PersonalizedFeedbackRecord.status == PersonalizedFeedbackStatus.FAILED.value,
+                            sa_text(
+                                "COALESCE(extra_data->>'last_failure_reason', '') "
+                                "NOT LIKE '%FairnessGuard blocked%'"
+                            ),
+                        ),
                     ),
                     PersonalizedFeedbackRecord.sent_at.is_(None),
                 ).limit(50)
