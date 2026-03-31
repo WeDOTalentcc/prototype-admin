@@ -23,7 +23,6 @@ Key Principles:
 - Maintain professional but warm tone
 - Respect the candidate's time and effort
 """
-import logging
 import uuid
 from typing import Dict, Any, List, Optional, Literal
 from datetime import datetime
@@ -37,10 +36,12 @@ from app.core.database import Base, AsyncSessionLocal
 from app.services.llm import llm_service
 from app.templates.communication_templates import EmailTemplates, WhatsAppTemplates
 from app.shared.compliance.fairness_guard import FairnessGuard
+from app.shared.pii_masking import get_masked_logger
+from app.shared.compliance.audit_service import audit_service
 
 _fairness_guard = FairnessGuard()
 
-logger = logging.getLogger(__name__)
+logger = get_masked_logger(__name__)
 
 
 class FeedbackChannel(str, Enum):
@@ -453,6 +454,24 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
                     logger.info("feedback.auto_send dispatched post-generation id=%s", feedback_id)
                 except Exception as send_exc:
                     logger.warning("feedback.auto_send dispatch failed id=%s: %s", feedback_id, send_exc)
+
+            try:
+                await audit_service.log_decision(
+                    company_id=request.company_id,
+                    agent_name="personalized_feedback",
+                    decision_type="generate_feedback",
+                    action="generate_rejection_feedback",
+                    decision=request.decision_type,
+                    reasoning=["Personalized feedback generated", f"WSI classification: {request.evaluation.classification}", f"Decision: {request.decision_type}"],
+                    criteria_used=["wsi_score", "strengths", "development_areas", "skill_gaps"],
+                    candidate_id=request.candidate.candidate_id,
+                    job_vacancy_id=request.job.job_id,
+                    score=request.evaluation.overall_wsi,
+                    confidence=0.9,
+                    human_review_required=not getattr(request, "auto_send", False),
+                )
+            except Exception as audit_err:
+                logger.warning(f"Audit log failed for personalized_feedback: {audit_err}")
 
             return PersonalizedFeedbackResult(
                 feedback_id=feedback_id,

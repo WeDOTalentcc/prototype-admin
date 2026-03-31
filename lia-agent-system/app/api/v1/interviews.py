@@ -7,7 +7,6 @@ from sqlalchemy import select, and_
 from typing import List, Optional
 from datetime import datetime, timedelta
 from pydantic import BaseModel, EmailStr
-import logging
 import uuid
 
 from app.core.database import get_db
@@ -18,10 +17,12 @@ from app.models.job_vacancy import JobVacancy
 from app.services.calendar_service import calendar_service
 from app.services.llm import llm_service
 from app.services.activity_service import activity_service
+from app.shared.pii_masking import get_masked_logger
+from app.shared.compliance.audit_service import audit_service
 from anthropic import AsyncAnthropic
 import json
 
-logger = logging.getLogger(__name__)
+logger = get_masked_logger(__name__)
 
 router = APIRouter()
 
@@ -158,7 +159,23 @@ async def schedule_interview(
         await db.refresh(interview)
         
         logger.info(f"✅ Interview scheduled: {interview.id}")
-        
+
+        try:
+            await audit_service.log_decision(
+                company_id="default",
+                agent_name="interviews_module",
+                decision_type="schedule_interview",
+                action="schedule_interview",
+                decision="scheduled",
+                reasoning=["Interview scheduled via calendar integration", f"Type: {request.interview_type}, Mode: {request.interview_mode}"],
+                criteria_used=["candidate_contact_info", "interviewer_availability", "calendar_sync"],
+                candidate_id=request.candidate_id,
+                job_vacancy_id=request.job_vacancy_id,
+                human_review_required=False,
+            )
+        except Exception as audit_err:
+            logger.warning(f"Audit log failed for schedule_interview: {audit_err}")
+
         return {
             "success": True,
             "interview_id": str(interview.id),

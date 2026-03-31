@@ -9,7 +9,6 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 from datetime import datetime
-import logging
 
 from app.core.database import get_db
 from app.models.rubric import JobRequirement, RubricEvaluation
@@ -29,9 +28,11 @@ from app.schemas.rubric import (
 from app.services.rubric_evaluation_service import rubric_evaluation_service
 from app.services.consent_checker_service import ConsentCheckerService
 from app.shared.compliance.fairness_guard import FairnessGuard
+from app.shared.pii_masking import get_masked_logger
+from app.shared.compliance.audit_service import audit_service
 from enum import Enum as PyEnum
 
-logger = logging.getLogger(__name__)
+logger = get_masked_logger(__name__)
 fairness_guard = FairnessGuard()
 
 
@@ -192,6 +193,24 @@ async def evaluate_candidate(
         await db.commit()
         await db.refresh(db_evaluation)
     
+    try:
+        await audit_service.log_decision(
+            company_id=x_company_id or "default",
+            agent_name="rubric_evaluation",
+            decision_type="score_candidate",
+            action="evaluate_candidate",
+            decision="scored",
+            reasoning=[evaluation_result.reasoning[:500] if evaluation_result.reasoning else "Rubric evaluation completed"],
+            criteria_used=[r.requirement for r in (requirements or [])[:10]],
+            candidate_id=str(request.candidate_id) if request.candidate_id else None,
+            job_vacancy_id=str(request.job_vacancy_id) if request.job_vacancy_id else None,
+            score=evaluation_result.score,
+            confidence=0.85,
+            human_review_required=guard_result.is_blocked if guard_result else False,
+        )
+    except Exception as audit_err:
+        logger.warning(f"Audit log failed for rubric_evaluation: {audit_err}")
+
     return RubricEvaluationResponse(
         id=db_evaluation.id if db_evaluation else None,
         candidate_id=request.candidate_id,

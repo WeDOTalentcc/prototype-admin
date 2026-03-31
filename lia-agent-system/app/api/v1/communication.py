@@ -7,7 +7,6 @@ Logs all communications to the CommunicationHistory for tracking.
 from fastapi import APIRouter, HTTPException, status, Header, Depends
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any
-import logging
 from datetime import datetime
 import uuid as uuid_mod
 
@@ -20,8 +19,10 @@ from app.core.database import get_db
 from app.models.job_vacancy import JobVacancy
 from app.models.candidate import VacancyCandidate
 from app.models.company import CompanyProfile
+from app.shared.pii_masking import get_masked_logger
+from app.shared.compliance.audit_service import audit_service
 
-logger = logging.getLogger(__name__)
+logger = get_masked_logger(__name__)
 
 router = APIRouter(prefix="/communication", tags=["communication"])
 
@@ -228,6 +229,23 @@ async def send_email(
             except Exception as log_error:
                 logger.warning(f"⚠️ Failed to log communication: {log_error}")
         
+        if result.get("success"):
+            try:
+                await audit_service.log_decision(
+                    company_id=company_id,
+                    agent_name="communication_module",
+                    decision_type="send_message",
+                    action="send_email",
+                    decision="sent",
+                    reasoning=["Email communication dispatched", f"Type: {request.communication_type or 'email'}"],
+                    criteria_used=["recipient_validation", "template"],
+                    candidate_id=request.candidate_id,
+                    job_vacancy_id=request.vacancy_id,
+                    human_review_required=False,
+                )
+            except Exception as audit_err:
+                logger.warning(f"Audit log failed for send_email: {audit_err}")
+
         return SendResponse(
             success=result.get("success", False),
             message_id=result.get("message_id"),
@@ -297,6 +315,23 @@ async def send_whatsapp(
             except Exception as log_error:
                 logger.warning(f"⚠️ Failed to log communication: {log_error}")
         
+        if result.get("success"):
+            try:
+                await audit_service.log_decision(
+                    company_id=company_id,
+                    agent_name="communication_module",
+                    decision_type="send_message",
+                    action="send_whatsapp",
+                    decision="sent",
+                    reasoning=["WhatsApp communication dispatched", f"Type: {request.communication_type or 'whatsapp'}"],
+                    criteria_used=["recipient_validation", "message_content"],
+                    candidate_id=request.candidate_id,
+                    job_vacancy_id=request.vacancy_id,
+                    human_review_required=False,
+                )
+            except Exception as audit_err:
+                logger.warning(f"Audit log failed for send_whatsapp: {audit_err}")
+
         return SendResponse(
             success=result.get("success", False),
             message_id=result.get("message_id"),

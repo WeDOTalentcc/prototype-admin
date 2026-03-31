@@ -7,11 +7,12 @@ from fastapi import APIRouter, HTTPException, Query, Depends, BackgroundTasks, H
 from typing import Optional, List
 from sqlalchemy import select, or_, and_, func
 from sqlalchemy.ext.asyncio import AsyncSession
-import logging
 from datetime import datetime
 import uuid
 import asyncio
 
+from app.shared.pii_masking import get_masked_logger
+from app.shared.compliance.audit_service import audit_service
 from app.shared.compliance.fairness_guard_middleware import check_rejection_reason
 from app.services.pearch_service import pearch_service
 from app.models.pearch import PearchSearchRequest, PearchSearchResponse
@@ -29,7 +30,7 @@ from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+logger = get_masked_logger(__name__)
 
 activity_service = ActivityService()
 
@@ -1164,7 +1165,24 @@ async def search_candidates_local(
         await db.refresh(search_record)
         
         logger.info(f"Local search completed: {len(candidates)} results in {search_duration_ms}ms")
-        
+
+        try:
+            _company = getattr(current_user, "company_id", None)
+            await audit_service.log_decision(
+                company_id=str(_company) if _company else "default",
+                agent_name="candidate_search",
+                decision_type="score_candidate",
+                action="local_search",
+                decision="executed",
+                reasoning=[f"Local search returned {len(candidates)} results in {search_duration_ms}ms"],
+                criteria_used=[k for k, v in (filters.model_dump() or {}).items() if v],
+                score=float(len(candidates)),
+                confidence=1.0,
+                human_review_required=False,
+            )
+        except Exception as audit_err:
+            logger.warning(f"Audit log failed for local_search: {audit_err}")
+
         return CandidateSearchResponse(
             candidates=candidates,
             total_count=total_count or 0,
@@ -2004,7 +2022,24 @@ async def screening_decision(
             logger.warning(f"Failed to create activity: {activity_error}")
         
         logger.info(f"✅ Screening decision recorded: {candidate.name} -> {request.decision}")
-        
+
+        try:
+            _vc_company = getattr(vacancy_candidate, "company_id", None) if vacancy_candidate else None
+            await audit_service.log_decision(
+                company_id=str(_vc_company) if _vc_company else "default",
+                agent_name="screening_module",
+                decision_type="approved" if request.decision == "approved" else "rejected",
+                action="screening_decision",
+                decision=request.decision,
+                reasoning=[f"Screening decision: {request.decision}", f"Stage transition: {new_stage}"],
+                criteria_used=["screening_evaluation", "recruiter_review"],
+                candidate_id=str(candidate_id),
+                job_vacancy_id=request.job_id,
+                human_review_required=request.decision == "rejected",
+            )
+        except Exception as audit_err:
+            logger.warning(f"Audit log failed for screening_decision: {audit_err}")
+
         if request.decision == "rejected" and vacancy_candidate and request.job_id:
             try:
                 from app.domains.automation.services.stage_automation_engine import StageAutomationEngine, AutomationEvent, TriggerType

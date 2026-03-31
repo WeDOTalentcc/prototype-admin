@@ -16,12 +16,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
-import logging
 
 from app.core.database import get_db
 from app.services.scheduling_service import scheduling_service
+from app.shared.pii_masking import get_masked_logger
+from app.shared.compliance.audit_service import audit_service
 
-logger = logging.getLogger(__name__)
+logger = get_masked_logger(__name__)
 
 router = APIRouter(prefix="/scheduling", tags=["scheduling"])
 
@@ -155,6 +156,22 @@ async def create_interview(
             created_by="api"
         )
         
+        try:
+            await audit_service.log_decision(
+                company_id="default",
+                agent_name="scheduling_module",
+                decision_type="schedule_interview",
+                action="create_interview",
+                decision="scheduled",
+                reasoning=["Interview created via scheduling API", f"Type: {request.interview_type}"],
+                criteria_used=["candidate_availability", "interviewer_availability"],
+                candidate_id=request.candidate_id,
+                job_vacancy_id=request.job_vacancy_id,
+                human_review_required=False,
+            )
+        except Exception as audit_err:
+            logger.warning(f"Audit log failed for create_interview: {audit_err}")
+
         return interview_to_response(interview)
         
     except Exception as e:

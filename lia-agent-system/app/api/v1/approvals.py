@@ -6,7 +6,6 @@ from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
 import uuid
-import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, EmailStr
@@ -16,8 +15,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.models.approval import ApprovalRequest, ApprovalStatus, ApprovalType
 from app.services.email_service import email_service
+from app.shared.pii_masking import get_masked_logger
+from app.shared.compliance.audit_service import audit_service
 
-logger = logging.getLogger(__name__)
+logger = get_masked_logger(__name__)
 
 router = APIRouter(prefix="/approvals", tags=["approvals"])
 
@@ -311,6 +312,22 @@ async def approve_request(
             await db.commit()
         
         logger.info(f"Approval request {approval_id} approved by {approved_by}")
+
+        try:
+            await audit_service.log_decision(
+                company_id=company_id,
+                agent_name="approvals_module",
+                decision_type="approve_candidate",
+                action="approval_request_approved",
+                decision="approved",
+                reasoning=[f"Approval request approved by {approved_by}", update.approval_notes or ""],
+                criteria_used=["approver_authorization", "request_type"],
+                job_vacancy_id=approval.target_id,
+                human_review_required=False,
+            )
+        except Exception as audit_err:
+            logger.warning(f"Audit log failed for approval: {audit_err}")
+
         return to_response(approval)
         
     except HTTPException:
@@ -371,6 +388,22 @@ async def reject_request(
             await db.commit()
         
         logger.info(f"Approval request {approval_id} rejected by {rejected_by}")
+
+        try:
+            await audit_service.log_decision(
+                company_id=company_id,
+                agent_name="approvals_module",
+                decision_type="reject_candidate",
+                action="approval_request_rejected",
+                decision="rejected",
+                reasoning=[f"Approval request rejected by {rejected_by}", update.rejection_reason or ""],
+                criteria_used=["approver_authorization", "request_type"],
+                job_vacancy_id=approval.target_id,
+                human_review_required=True,
+            )
+        except Exception as audit_err:
+            logger.warning(f"Audit log failed for rejection: {audit_err}")
+
         return to_response(approval)
         
     except HTTPException:

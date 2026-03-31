@@ -1,7 +1,6 @@
 """
 Authentication API endpoints.
 """
-import logging
 import os
 from datetime import datetime, timedelta
 from uuid import UUID
@@ -26,8 +25,10 @@ from app.auth.security import (
 )
 from app.auth.dependencies import get_current_active_user
 from app.services.email_service import email_service
+from app.shared.pii_masking import get_masked_logger
+from app.shared.compliance.audit_service import audit_service
 
-logger = logging.getLogger(__name__)
+logger = get_masked_logger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
@@ -115,7 +116,24 @@ async def login(
     refresh_token = create_refresh_token(subject=str(user.id))
     
     logger.info(f"User logged in: {user.email}")
-    
+
+    try:
+        _company = getattr(user, "company_id", None)
+        await audit_service.log_decision(
+            company_id=str(_company) if _company else "default",
+            agent_name="auth_module",
+            decision_type="approve_candidate",
+            action="user_login",
+            decision="approved",
+            reasoning=["User authenticated successfully via credentials"],
+            criteria_used=["email", "password_hash", "is_active"],
+            score=None,
+            confidence=1.0,
+            human_review_required=False,
+        )
+    except Exception as audit_err:
+        logger.warning(f"Audit log failed for login: {audit_err}")
+
     return TokenResponse(
         access_token=access_token,
         refresh_token=refresh_token,

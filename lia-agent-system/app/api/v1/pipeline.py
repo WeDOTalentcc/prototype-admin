@@ -5,12 +5,13 @@ from fastapi import APIRouter, HTTPException, Query, Depends
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
-import logging
 
 from app.services.pipeline_service import pipeline_service
 from app.core.database import get_db
+from app.shared.pii_masking import get_masked_logger
+from app.shared.compliance.audit_service import audit_service
 
-logger = logging.getLogger(__name__)
+logger = get_masked_logger(__name__)
 
 router = APIRouter()
 
@@ -63,7 +64,22 @@ async def execute_pipeline_action(
         
         if not result.get("success"):
             raise HTTPException(status_code=400, detail=result.get("error", "Action failed"))
-        
+
+        try:
+            await audit_service.log_decision(
+                company_id="default",
+                agent_name="pipeline_module",
+                decision_type="move_stage",
+                action=request.action_id,
+                decision="executed",
+                reasoning=[f"Pipeline action '{request.action_id}' executed for candidate {request.candidate_id}"],
+                criteria_used=["action_id", "candidate_status"],
+                candidate_id=request.candidate_id,
+                human_review_required=False,
+            )
+        except Exception as audit_err:
+            logger.warning(f"Audit log failed for pipeline_action: {audit_err}")
+
         return result
     except HTTPException:
         raise
