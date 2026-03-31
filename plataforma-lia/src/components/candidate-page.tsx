@@ -120,12 +120,37 @@ export function CandidatePage({
 
   if (!isOpen || !candidate) return null
 
-  const liaScore = candidate.liaAnalysis?.score || 92
-  const fitScore = candidate.liaAnalysis?.fitScore || 95
+  type CandidateRecord = {
+    name: string
+    id?: string
+    candidateId?: string
+    avatar_url?: string
+    avatar?: string
+    phone?: string
+    position?: string
+    location?: string
+    linkedin_url?: string
+    linkedinUrl?: string
+    github_url?: string
+    portfolio_url?: string
+    website?: string
+    email?: string
+    liaAnalysis?: { score?: number; fitScore?: number }
+    workHistory?: Record<string, unknown>[]
+    work_history?: Record<string, unknown>[]
+    experiences?: Record<string, unknown>[]
+    education?: Record<string, unknown>[]
+    additional_data?: Record<string, unknown>
+    [key: string]: unknown
+  }
+  const _candidate = candidate as unknown as CandidateRecord
 
-  const additionalData = candidate.additional_data as Record<string, unknown> | undefined
-  const experiences = candidate.workHistory || candidate.work_history || candidate.experiences || additionalData?.work_history || additionalData?.experiences || []
-  const education = candidate.education || additionalData?.education || []
+  const liaScore = _candidate.liaAnalysis?.score || 92
+  const fitScore = _candidate.liaAnalysis?.fitScore || 95
+
+  const additionalData = _candidate.additional_data as Record<string, unknown> | undefined
+  const experiences = _candidate.workHistory || _candidate.work_history || _candidate.experiences || additionalData?.work_history || additionalData?.experiences || []
+  const education = _candidate.education || additionalData?.education || []
 
   return (
     <div className="fixed inset-0 bg-white dark:bg-lia-bg-primary z-30 overflow-hidden flex flex-col">
@@ -135,26 +160,26 @@ export function CandidatePage({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Avatar className="w-10 h-10">
-                <AvatarImage src={candidate.avatar_url || candidate.avatar} alt={candidate.name} />
+                <AvatarImage src={(_candidate.avatar_url as string | undefined) || (_candidate.avatar as string | undefined)} alt={_candidate.name as string} />
                 <AvatarFallback className="text-sm font-medium bg-gray-200 lia-text-base">
-                  {candidate.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
+                  {(_candidate.name as string).split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="text-base font-semibold text-lia-text-primary">{candidate.name}</h1>
+                  <h1 className="text-base font-semibold text-lia-text-primary">{_candidate.name as string}</h1>
                   <Badge variant="outline" className="text-xs px-1.5 py-0">
-                    {candidate.candidateId || candidate.id}
+                    {_candidate.candidateId || _candidate.id}
                   </Badge>
                   <Badge className={`text-xs px-1.5 py-0 ${getScoreColor(liaScore)}`}>
                     {liaScore}% Match
                   </Badge>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
-                  <span>{candidate.position}</span>
+                  <span>{_candidate.position as string | undefined}</span>
                   <span className="lia-text-secondary">•</span>
                   <MapPin className="w-3 h-3" />
-                  <span>{candidate.location}</span>
+                  <span>{_candidate.location as string | undefined}</span>
                 </div>
               </div>
             </div>
@@ -163,11 +188,11 @@ export function CandidatePage({
             <div className="flex items-center gap-2">
               {/* Social Icons */}
               <div className="flex items-center gap-1 mr-2">
-                {(candidate.linkedin_url || candidate.linkedinUrl) && (
+                {(_candidate.linkedin_url || _candidate.linkedinUrl) && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <a 
-                        href={candidate.linkedin_url || candidate.linkedinUrl} 
+                        href={_candidate.linkedin_url || _candidate.linkedinUrl} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="p-1.5 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
@@ -178,11 +203,11 @@ export function CandidatePage({
                     <TooltipContent side="bottom" className="text-xs">LinkedIn</TooltipContent>
                   </Tooltip>
                 )}
-                {(candidate.github_url || candidate.githubUrl) && (
+                {(_candidate.github_url || _candidate.githubUrl) && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <a 
-                        href={candidate.github_url || candidate.githubUrl} 
+                        href={_candidate.github_url || _candidate.githubUrl} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="p-1.5 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
@@ -193,11 +218,11 @@ export function CandidatePage({
                     <TooltipContent side="bottom" className="text-xs">GitHub</TooltipContent>
                   </Tooltip>
                 )}
-                {(candidate.portfolio_url || candidate.portfolioUrl || candidate.website) && (
+                {(_candidate.portfolio_url || _candidate.portfolioUrl || _candidate.website) && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <a 
-                        href={candidate.portfolio_url || candidate.portfolioUrl || candidate.website} 
+                        href={_candidate.portfolio_url || _candidate.portfolioUrl || _candidate.website} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="p-1.5 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
@@ -218,8 +243,8 @@ export function CandidatePage({
                       variant="ghost"
                       size="sm"
                       className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      onClick={() => onSendEmail ? onSendEmail(candidate) : (candidate.email && window.open(`mailto:${candidate.email}`, '_self'))}
-                      disabled={!candidate.email && !onSendEmail}
+                      onClick={() => onSendEmail ? onSendEmail(candidate) : (_candidate.email && window.open(`mailto:${_candidate.email}`, '_self'))}
+                      disabled={!_candidate.email && !onSendEmail}
                     >
                       <Mail className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                     </Button>
@@ -236,11 +261,11 @@ export function CandidatePage({
                       onClick={() => {
                         if (onSendWhatsApp) {
                           onSendWhatsApp(candidate)
-                        } else if (candidate.phone) {
-                          window.open(`https://wa.me/${candidate.phone.replace(/\D/g, '')}`, '_blank')
+                        } else if (_candidate.phone) {
+                          window.open(`https://wa.me/${_candidate.phone.replace(/\D/g, '')}`, '_blank')
                         }
                       }}
-                      disabled={!candidate.phone && !onSendWhatsApp}
+                      disabled={!_candidate.phone && !onSendWhatsApp}
                     >
                       <Phone className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                     </Button>
@@ -324,7 +349,7 @@ export function CandidatePage({
                 isOpen={showLiaAnalysisModal}
                 onOpen={() => setShowLiaAnalysisModal(true)}
                 onClose={() => setShowLiaAnalysisModal(false)}
-                candidate={candidate}
+                candidate={_candidate}
                 onTransportToOpinions={handleAnalysisTransport}
               >
                 <Tooltip>
@@ -361,7 +386,7 @@ export function CandidatePage({
           {tabs.map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as string)}
+              onClick={() => setActiveTab(tab.id as 'activities' | 'profile' | 'files' | 'opinions')}
               className={`flex items-center gap-2 px-3 py-2.5 text-xs font-medium whitespace-nowrap transition-colors motion-reduce:transition-none ${
  activeTab === tab.id
                   ? 'border-b-2 lia-text-secondary border-gray-400'
@@ -385,9 +410,9 @@ export function CandidatePage({
         <div className="max-w-7xl mx-auto p-6">
           {activeTab === 'profile' && (
             <CandidatePageProfileTab
-              candidate={candidate}
-              experiences={experiences}
-              education={education}
+              candidate={_candidate as unknown as Parameters<typeof CandidatePageProfileTab>[0]['candidate']}
+              experiences={experiences as unknown as Parameters<typeof CandidatePageProfileTab>[0]['experiences']}
+              education={education as unknown as Parameters<typeof CandidatePageProfileTab>[0]['education']}
               liaScore={liaScore}
               opinionsHistory={opinionsHistory}
               formatDateShort={formatDateShort}
@@ -468,7 +493,7 @@ export function CandidatePage({
                     <div className="flex items-start gap-3">
                       <FileText className="w-5 h-5 text-status-error" />
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-sm truncate">CV_{candidate.name.replace(' ', '_')}_2025.pdf</h4>
+                        <h4 className="font-medium text-sm truncate">CV_{(_candidate.name as string).replace(' ', '_')}_2025.pdf</h4>
                         <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">2.1 MB • há 3 dias</p>
                         <div className="flex gap-1 mt-2">
                           <Badge className="bg-status-success/15 text-status-success text-xs">✓ Verificado</Badge>
@@ -482,7 +507,7 @@ export function CandidatePage({
                         size="sm"
                         className="h-7 w-7 p-0"
                         onClick={() => {
-                          setSelectedFile({ name: 'CV_' + candidate.name + '.pdf', type: 'pdf' })
+                          setSelectedFile({ name: 'CV_' + (_candidate.name as string) + '.pdf', type: 'pdf' })
                           setPreviewType('pdf')
                           setShowPreview(true)
                         }}
@@ -589,7 +614,7 @@ export function CandidatePage({
                     <div className="flex items-start gap-3">
                       <Mic className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-sm truncate">Triagem_Voz_{candidate.name.split(' ')[0]}.mp3</h4>
+                        <h4 className="font-medium text-sm truncate">Triagem_Voz_{_candidate.name.split(' ')[0]}.mp3</h4>
                         <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">1.8 MB • 4:32 min • há 1 dia</p>
                         <div className="flex gap-1 mt-2">
                           <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary text-xs">Triagem WSI</Badge>
@@ -604,7 +629,7 @@ export function CandidatePage({
                         className="h-7 text-xs gap-1"
                         onClick={() => {
                           setSelectedFile({
-                            name: `Triagem_Voz_${candidate.name.split(' ')[0]}.mp3`,
+                            name: `Triagem_Voz_${_candidate.name.split(' ')[0]}.mp3`,
                             type: 'audio',
                             transcription: 'Olá, meu nome é Maria Oliveira e sou UX Designer há 8 anos. Trabalho atualmente na empresa XYZ como Design Lead...',
                             aiAnalysis: {
@@ -641,17 +666,17 @@ export function CandidatePage({
                         </div>
                       </div>
                     </div>
-                    {(candidate.avatar_url || candidate.avatar) && (
+                    {(_candidate.avatar_url || _candidate.avatar) && (
                       <div className="mt-3">
                         <img
-                          src={candidate.avatar_url || candidate.avatar}
+                          src={_candidate.avatar_url || _candidate.avatar}
                           alt="Preview"
                           className="w-full h-24 rounded-md object-cover cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none"
                           onClick={() => {
                             setSelectedFile({
                               name: 'foto_perfil.jpg',
                               type: 'image',
-                              url: candidate.avatar_url || candidate.avatar
+                              url: _candidate.avatar_url || _candidate.avatar
                             })
                             setPreviewType('image')
                             setShowPreview(true)
@@ -718,9 +743,9 @@ export function CandidatePage({
                   >
                     <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                     Análises
-                    {savedAnalyses && savedAnalyses.total_analyses > 0 && (
+                    {savedAnalyses && (savedAnalyses as unknown as {total_analyses: number}).total_analyses > 0 && (
                       <Badge className="text-micro px-1.5 py-0 h-4 ml-1 bg-wedo-purple/15 text-wedo-purple">
-                        {savedAnalyses.total_analyses}
+                        {(savedAnalyses as unknown as {total_analyses: number}).total_analyses}
                       </Badge>
                     )}
                   </button>
@@ -817,9 +842,9 @@ export function CandidatePage({
                           }
                           
                           return (
-                            <Card key={opinion.id} className="overflow-hidden">
+                            <Card key={opinion.id as string} className="overflow-hidden">
                               <div
-                                onClick={() => setExpandedOpinionId(isExpanded ? null : opinion.id)}
+                                onClick={() => setExpandedOpinionId(isExpanded ? null : opinion.id as string | null)}
                                 className="p-3 flex items-center justify-between hover:bg-gray-50 transition-colors motion-reduce:transition-none cursor-pointer"
                               >
                                 <div className="flex items-center gap-2">
@@ -851,7 +876,7 @@ export function CandidatePage({
                                     <div className="flex items-center gap-2 mt-0.5">
                                       {displayScore !== null && displayScore !== undefined && (
                                         <span className={`text-micro font-semibold ${getOpinionScoreColor(displayScore, isWsiOpinion)}`}>
-                                          {isWsiOpinion ? `WSI: ${displayScore.toFixed(1)}/5` : `Score: ${Math.round(displayScore)}/100`}
+                                          {isWsiOpinion ? `WSI: ${(displayScore as number).toFixed(1)}/5` : `Score: ${Math.round(displayScore as number)}/100`}
                                         </span>
                                       )}
                                       {opinion.archetype && (
@@ -1020,9 +1045,9 @@ export function CandidatePage({
                     )}
                     
                     {/* Analyses List */}
-                    {!isLoadingAnalyses && savedAnalyses && savedAnalyses.total_analyses > 0 && (
+                    {!isLoadingAnalyses && savedAnalyses && (savedAnalyses as unknown as {total_analyses: number}).total_analyses > 0 && (
                       <div className="space-y-3">
-                        {savedAnalyses.analyses.map((analysis: Record<string, unknown>) => {
+                        {(savedAnalyses as unknown as {analyses: Record<string, unknown>[]}).analyses.map((analysis: Record<string, unknown>) => {
                           const analysisLabels: Record<string, string> = {
                             'bullet_points': 'Pontos-chave',
                             'short_paragraph': 'Resumo',
@@ -1031,11 +1056,11 @@ export function CandidatePage({
                           const isExpanded = expandedAnalysisId === analysis.id
                           
                           return (
-                            <Card key={analysis.id} className="overflow-hidden hover:transition-shadow">
+                            <Card key={analysis.id as string} className="overflow-hidden hover:transition-shadow">
                               {/* Card Header */}
                               <div 
                                 className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50/50 transition-colors motion-reduce:transition-none"
-                                onClick={() => setExpandedAnalysisId(isExpanded ? null : analysis.id)}
+                                onClick={() => setExpandedAnalysisId(isExpanded ? null : analysis.id as string | null)}
                               >
                                 <div className="flex items-center gap-2.5">
                                   <div className="w-8 h-8 rounded-full bg-wedo-purple/15 flex items-center justify-center flex-shrink-0">
@@ -1047,7 +1072,7 @@ export function CandidatePage({
                                       <Badge 
                                         className="text-micro px-1.5 py-0 h-4 bg-wedo-purple/15 text-wedo-purple"
                                       >
-                                        {analysisLabels[analysis.analysis_type] || analysis.analysis_type}
+                                        {analysisLabels[analysis.analysis_type as string] || analysis.analysis_type as string}
                                       </Badge>
                                     </div>
                                     <span className={`${textStyles.caption} lia-text-secondary`}>

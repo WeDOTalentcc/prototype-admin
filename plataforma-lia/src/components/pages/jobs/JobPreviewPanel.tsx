@@ -52,6 +52,13 @@ export function JobPreviewPanel({
   }
 
   if (!showJobPreview || !previewJob) return null
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const _previewJob = previewJob!
+  const textStyles = {
+    title: 'text-xs font-semibold text-lia-text-primary',
+    bodySmall: 'text-micro text-lia-text-tertiary',
+    label: 'text-xs text-lia-text-secondary',
+  }
 
   return (
               <div 
@@ -94,12 +101,12 @@ export function JobPreviewPanel({
                         {/* Row 1: Título + Código (lado direito) */}
                         <div className="flex items-center gap-2 mb-1">
                           <h3 className="text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary truncate">
-                            {previewJob.title}
+                            {_previewJob.title}
                           </h3>
                           <Badge className="text-micro px-1.5 py-0 h-4 flex-shrink-0 font-mono font-medium" style={{backgroundColor: 'var(--gray-bg-15)', border: '1px solid var(--gray-border)'}}>
-                            {previewJob.jobId}
+                            {_previewJob.jobId}
                           </Badge>
-                          {previewJob.isAffirmative && (
+                          {_previewJob.isAffirmative && (
                             <span title="Vaga Afirmativa">
                               <Heart className="w-3 h-3 text-wedo-magenta" />
                             </span>
@@ -110,15 +117,15 @@ export function JobPreviewPanel({
                         <div className="flex items-center gap-3 mb-1 text-micro text-lia-text-tertiary">
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3 h-3 text-lia-text-disabled" />
-                            {previewJob.openDate ? new Date(previewJob.openDate).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                            {_previewJob.openDate ? new Date(_previewJob.openDate).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
                           </span>
-                          {previewJob.deadline && (
+                          {_previewJob.deadline && (
                             <span className={`flex items-center gap-1 ${
-                              new Date(previewJob.deadline) < new Date() ? 'text-status-error' : 'text-lia-text-tertiary'
+                              new Date(_previewJob.deadline) < new Date() ? 'text-status-error' : 'text-lia-text-tertiary'
                             }`}>
                               <Clock className="w-3 h-3" />
                               {(() => {
-                                const days = Math.ceil((new Date(previewJob.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+                                const days = Math.ceil((new Date(_previewJob.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
                                 return days > 0 ? `${days}d restantes` : `${Math.abs(days)}d atraso`
                               })()}
                             </span>
@@ -127,70 +134,70 @@ export function JobPreviewPanel({
 
                         {/* Row 2b: Histórico inline */}
                         <div className="flex items-center gap-3 mb-1.5 text-micro text-lia-text-disabled">
-                          <span>Criado: {previewJob.createdAt 
-                            ? new Date(previewJob.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: '2-digit' })
-                            : previewJob.openDate 
-                              ? new Date(previewJob.openDate).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: '2-digit' })
+                          <span>Criado: {_previewJob.createdAt 
+                            ? new Date(_previewJob.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: '2-digit' })
+                            : _previewJob.openDate 
+                              ? new Date(_previewJob.openDate).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: '2-digit' })
                               : '—'}</span>
-                          <span>Atualizado: {previewJob.updatedAt 
-                            ? new Date(previewJob.updatedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
+                          <span>Atualizado: {_previewJob.updatedAt 
+                            ? new Date(_previewJob.updatedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
                             : '—'}</span>
-                          {previewJob.publishedAt && (
-                            <span>Publicado: {new Date(previewJob.publishedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}</span>
+                          {_previewJob.publishedAt && (
+                            <span>Publicado: {new Date(_previewJob.publishedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}</span>
                           )}
-                          {previewJob.closedAt && (
-                            <span>Fechado: {new Date(previewJob.closedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}</span>
+                          {_previewJob.closedAt && (
+                            <span>Fechado: {new Date(_previewJob.closedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}</span>
                           )}
                         </div>
 
                         {/* Row 3: Badges de informação */}
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          {previewJob.department && (
+                          {_previewJob.department && (
                             <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-lia-text-secondary border border-lia-border-subtle">
-                              {previewJob.department}
+                              {_previewJob.department}
                             </Badge>
                           )}
-                          {previewJob.level && (
+                          {_previewJob.level && (
                             <Badge className="text-micro px-1.5 py-0 h-4 bg-status-warning/10 text-status-warning border border-status-warning/30">
-                              {previewJob.level}
+                              {_previewJob.level}
                             </Badge>
                           )}
-                          {previewJob.location && (
+                          {_previewJob.location && (
                             <Badge className="text-micro px-1.5 py-0 h-4 bg-wedo-cyan/10 text-wedo-cyan-dark border border-wedo-cyan/30 flex items-center gap-0.5">
                               <MapPin className="w-2.5 h-2.5" />
-                              {previewJob.location}
+                              {_previewJob.location}
                             </Badge>
                           )}
-                          {previewJob.workModel && (
+                          {_previewJob.workModel && (
                             <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-lia-text-secondary border border-lia-border-subtle">
-                              {previewJob.workModel === 'remoto' ? 'Remoto' : previewJob.workModel === 'híbrido' ? 'Híbrido' : 'Presencial'}
+                              {_previewJob.workModel === 'remoto' ? 'Remoto' : _previewJob.workModel === 'híbrido' ? 'Híbrido' : 'Presencial'}
                             </Badge>
                           )}
-                          {previewJob.type && (
+                          {_previewJob.type && (
                             <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-lia-text-secondary border border-lia-border-subtle">
-                              {previewJob.type}
+                              {_previewJob.type}
                             </Badge>
                           )}
-                          {(previewJob.visibility === 'confidential' || previewJob.isConfidential) && (
+                          {(_previewJob.visibility === 'confidential' || _previewJob.isConfidential) && (
                             <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-wedo-orange/10 text-wedo-orange border-wedo-orange/30">
                               <Shield className="w-2.5 h-2.5 mr-0.5" />
                               Confidencial
                             </Badge>
                           )}
-                          {previewJob.visibility === 'internal' && (
+                          {_previewJob.visibility === 'internal' && (
                             <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30">
                               <Building className="w-2.5 h-2.5 mr-0.5" />
                               Interna
                             </Badge>
                           )}
-                          {previewJob.visibility === 'hidden' && (
+                          {_previewJob.visibility === 'hidden' && (
                             <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-gray-50 text-lia-text-primary border-lia-border-subtle">
                               <Lock className="w-2.5 h-2.5 mr-0.5" />
                               Oculta
                             </Badge>
                           )}
                           {/* Badge de publicação */}
-                          {(previewJob.publishedLinkedIn || previewJob.publishedWebsite) ? (
+                          {(_previewJob.publishedLinkedIn || _previewJob.publishedWebsite) ? (
                             <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-status-success/10 text-status-success border-status-success/30 flex items-center gap-0.5">
                               <Globe className="w-2.5 h-2.5" />
                               Publicada
@@ -201,12 +208,12 @@ export function JobPreviewPanel({
                               Não publicada
                             </Badge>
                           )}
-                          {(previewJob.salaryRange?.min || previewJob.salaryRange?.max || previewJob.salaryMin || previewJob.salaryMax) && (
+                          {(_previewJob.salaryRange?.min || _previewJob.salaryRange?.max || (_previewJob as unknown as Record<string, number | undefined>).salaryMin || (_previewJob as unknown as Record<string, number | undefined>).salaryMax) && (
                             <Badge className="text-micro px-1.5 py-0 h-4 bg-status-success/10 text-status-success border border-status-success/30 flex items-center gap-0.5">
                               <DollarSign className="w-2.5 h-2.5" />
                               {(() => {
-                                const min = previewJob.salaryRange?.min || previewJob.salaryMin
-                                const max = previewJob.salaryRange?.max || previewJob.salaryMax
+                                const min = _previewJob.salaryRange?.min || (_previewJob as unknown as Record<string, number | undefined>).salaryMin
+                                const max = _previewJob.salaryRange?.max || (_previewJob as unknown as Record<string, number | undefined>).salaryMax
                                 if (min && max) return `R$ ${(min/1000).toFixed(0)}k - ${(max/1000).toFixed(0)}k`
                                 if (min) return `A partir de R$ ${(min/1000).toFixed(0)}k`
                                 if (max) return `Até R$ ${(max/1000).toFixed(0)}k`
@@ -217,12 +224,12 @@ export function JobPreviewPanel({
                           {/* Badge de status */}
                           <Badge 
                             className="text-micro px-1.5 py-0 h-4 font-medium"
-                            style={{backgroundColor: getStatusColor(previewJob.status as Job['status']), color: 'var(--white)'}}
+                            style={{backgroundColor: getStatusColor(_previewJob.status as Job['status']), color: 'var(--white)'}}
                           >
-                            {previewJob.status}
+                            {_previewJob.status}
                           </Badge>
                           {(() => {
-                            const scrStatus = previewJob.screeningStatus || 'not_configured'
+                            const scrStatus = _previewJob.screeningStatus || 'not_configured'
                             const scrLabels = Object.fromEntries(
                               Object.entries(SCREENING_STATUS_LABELS).map(([k, v]) => [k, `Triagem: ${v}`])
                             ) as Record<string, string>
@@ -248,7 +255,7 @@ export function JobPreviewPanel({
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => onJobClick(previewJob)}
+                          onClick={() => onJobClick(_previewJob)}
                           className="h-6 w-6 p-0"
                           title="Abrir vaga completa"
                         >
@@ -269,19 +276,19 @@ export function JobPreviewPanel({
                   </div>
 
                   {/* Linha 3: Processo Seletivo Inline */}
-                  {previewJob.hiringProcess && previewJob.hiringProcess.length > 0 && (
+                  {_previewJob.hiringProcess && _previewJob.hiringProcess.length > 0 && (
                     <div className="px-3 pb-2 border-t border-lia-border-subtle dark:border-lia-border-subtle/50 pt-2">
                       <div className="flex items-center gap-0.5 overflow-x-auto">
-                        {previewJob.hiringProcess.map((step, idx) => (
+                        {_previewJob.hiringProcess.map((step, idx) => (
                           <React.Fragment key={idx}>
                             <div className={`px-1.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${
                               idx === 0 ? 'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-elevated dark:text-lia-text-primary font-semibold' :
-                              idx === (previewJob.hiringProcess?.length || 0) - 1 ? 'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-elevated dark:text-lia-text-primary font-semibold' :
+                              idx === (_previewJob.hiringProcess?.length || 0) - 1 ? 'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-elevated dark:text-lia-text-primary font-semibold' :
                               'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-elevated dark:text-lia-text-primary'
                             }`}>
                               {step}
                             </div>
-                            {idx < (previewJob.hiringProcess?.length || 0) - 1 && (
+                            {idx < (_previewJob.hiringProcess?.length || 0) - 1 && (
                               <ChevronRight className="w-2 h-2 text-lia-text-primary flex-shrink-0" />
                             )}
                           </React.Fragment>
@@ -329,12 +336,12 @@ export function JobPreviewPanel({
                           <div className="text-xl font-bold text-lia-text-primary dark:text-lia-text-primary font-semibold">
                             {isLoadingJobMetrics ? '...' : jobMetrics?.performance?.conversion_rate != null 
                               ? `${Math.round(jobMetrics.performance.conversion_rate)}%` 
-                              : previewJob.funnel.hired > 0 
-                                ? `${Math.round((previewJob.funnel.hired / Math.max(previewJob.funnel.total, 1)) * 100)}%`
+                              : _previewJob.funnel.hired > 0 
+                                ? `${Math.round((_previewJob.funnel.hired / Math.max(_previewJob.funnel.total, 1)) * 100)}%`
                                 : '—'}
                           </div>
                           <div className="mt-1 text-xs text-lia-text-primary dark:text-lia-text-primary">
-                            Pipeline: {jobMetrics?.funnel.total ?? previewJob.funnel.total} candidatos
+                            Pipeline: {jobMetrics?.funnel.total ?? _previewJob.funnel.total} candidatos
                           </div>
                         </div>
 
@@ -359,7 +366,7 @@ export function JobPreviewPanel({
                             <Clock className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary" />
                           </div>
                           <div className="text-xl font-bold text-lia-text-primary dark:text-lia-text-primary font-semibold">
-                            {isLoadingJobMetrics ? '...' : jobMetrics?.performance.time_to_fill_days != null ? `${jobMetrics.performance.time_to_fill_days}d` : (previewJob.urgencyLevel > 3 ? '15d' : previewJob.urgencyLevel > 2 ? '25d' : '35d')}
+                            {isLoadingJobMetrics ? '...' : jobMetrics?.performance.time_to_fill_days != null ? `${jobMetrics.performance.time_to_fill_days}d` : (_previewJob.urgencyLevel > 3 ? '15d' : _previewJob.urgencyLevel > 2 ? '25d' : '35d')}
                           </div>
                           <div className="mt-1 text-xs text-lia-text-primary dark:text-lia-text-primary">
                             {isLoadingJobMetrics ? '...' : jobMetrics?.activity.interviews_scheduled ? `${jobMetrics.activity.interviews_scheduled} entrevistas agendadas` : 'Sem entrevistas'}
@@ -390,16 +397,16 @@ export function JobPreviewPanel({
                               Insights da LIA
                             </p>
                             <ul className="space-y-1 text-xs text-lia-text-primary dark:text-lia-text-primary">
-                              {previewJob.funnel.total < 10 && (
+                              {_previewJob.funnel.total < 10 && (
                                 <li>• Pipeline baixo: Ampliar divulgação ou revisar requisitos</li>
                               )}
-                              {previewJob.level === 'Sênior' && (
+                              {_previewJob.level === 'Sênior' && (
                                 <li>• Alto risco de recusa: Prepare margem de negociação de 15-20%</li>
                               )}
-                              {previewJob.funnel.screening > previewJob.funnel.interview * 3 && (
+                              {_previewJob.funnel.screening > _previewJob.funnel.interview * 3 && (
                                 <li>• Gargalo em entrevistas: Agilize agendamentos</li>
                               )}
-                              {previewJob.urgencyLevel > 3 && previewJob.funnel.total < 20 && (
+                              {_previewJob.urgencyLevel > 3 && _previewJob.funnel.total < 20 && (
                                 <li>• Urgência vs Pipeline: Ative sourcing ativo e headhunting</li>
                               )}
                             </ul>
@@ -417,14 +424,14 @@ export function JobPreviewPanel({
                           <div className="text-center p-2 bg-gray-50 dark:bg-lia-bg-elevated/50 rounded-md">
                             <p className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>Salário</p>
                             <p className="text-sm font-bold text-lia-text-primary dark:text-lia-text-primary">
-                              {previewJob.salary > 'R$ 10.000' ? '+15%' : '-5%'}
+                              {_previewJob.salary > 'R$ 10.000' ? '+15%' : '-5%'}
                             </p>
                             <p className={textStyles.bodySmall}>vs. mercado</p>
                           </div>
                           <div className="text-center p-2 bg-gray-50 dark:bg-lia-bg-elevated/50 rounded-md">
                             <p className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>Candidatos</p>
                             <p className="text-sm font-bold text-lia-text-primary dark:text-lia-text-primary">
-                              {previewJob.funnel.total > 30 ? '+45%' : '-20%'}
+                              {_previewJob.funnel.total > 30 ? '+45%' : '-20%'}
                             </p>
                             <p className={textStyles.bodySmall}>vs. média</p>
                           </div>
@@ -452,7 +459,7 @@ export function JobPreviewPanel({
                                 <div
                                   key={i}
                                   className={`w-1.5 h-2.5 rounded-full ${
-                                    i < (previewJob.level === 'Sênior' ? 4 : 2) ? 'bg-status-error' : 'bg-gray-300'
+                                    i < (_previewJob.level === 'Sênior' ? 4 : 2) ? 'bg-status-error' : 'bg-gray-300'
                                   }`}
                                 />
                               ))}
@@ -465,7 +472,7 @@ export function JobPreviewPanel({
                                 <div
                                   key={i}
                                   className={`w-1.5 h-2.5 rounded-full ${
-                                    i < (previewJob.level === 'Sênior' ? 3 : 1) ? 'bg-wedo-orange' : 'bg-gray-300'
+                                    i < (_previewJob.level === 'Sênior' ? 3 : 1) ? 'bg-wedo-orange' : 'bg-gray-300'
                                   }`}
                                 />
                               ))}
@@ -478,7 +485,7 @@ export function JobPreviewPanel({
                                 <div
                                   key={i}
                                   className={`w-1.5 h-2.5 rounded-full ${
-                                    i < (previewJob.urgencyLevel > 3 ? 4 : 2) ? 'bg-gray-500 dark:bg-lia-bg-elevated' : 'bg-gray-300'
+                                    i < (_previewJob.urgencyLevel > 3 ? 4 : 2) ? 'bg-gray-500 dark:bg-lia-bg-elevated' : 'bg-gray-300'
                                   }`}
                                 />
                               ))}
@@ -516,10 +523,10 @@ export function JobPreviewPanel({
                             <Clock className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary" />
                           </div>
                           <div className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">
-                            {previewJob.liaMetrics?.triagens_realizadas ?? 0}
+                            {_previewJob.liaMetrics?.triagens_realizadas ?? 0}
                           </div>
                           <div className="mt-1 text-xs text-lia-text-primary dark:text-lia-text-primary">
-                            de {previewJob.liaMetrics?.triagens_agendadas ?? 0} agendadas
+                            de {_previewJob.liaMetrics?.triagens_agendadas ?? 0} agendadas
                           </div>
                         </div>
 
@@ -530,7 +537,7 @@ export function JobPreviewPanel({
                             <TrendingUp className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary" />
                           </div>
                           <div className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">
-                            {previewJob.liaMetrics?.pipeline_lia ?? 0}
+                            {_previewJob.liaMetrics?.pipeline_lia ?? 0}
                           </div>
                           <div className="mt-1 text-xs text-lia-text-primary dark:text-lia-text-primary">
                             candidatos em triagem
@@ -544,7 +551,7 @@ export function JobPreviewPanel({
                             <Zap className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary" />
                           </div>
                           <div className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">
-                            {previewJob.liaMetrics?.sem_resposta ?? 0}
+                            {_previewJob.liaMetrics?.sem_resposta ?? 0}
                           </div>
                           <div className="mt-1 text-xs text-lia-text-primary dark:text-lia-text-primary">
                             candidatos
@@ -559,13 +566,13 @@ export function JobPreviewPanel({
                           </div>
                           <div className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">
                             {(() => {
-                              const realizadas = previewJob.liaMetrics?.triagens_realizadas ?? 0
-                              const agendadas = previewJob.liaMetrics?.triagens_agendadas ?? 0
+                              const realizadas = _previewJob.liaMetrics?.triagens_realizadas ?? 0
+                              const agendadas = _previewJob.liaMetrics?.triagens_agendadas ?? 0
                               return agendadas > 0 ? Math.round((realizadas / agendadas) * 100) : 0
                             })()}%
                           </div>
                           <div className="mt-1 text-xs text-lia-text-primary dark:text-lia-text-primary">
-                            {previewJob.liaMetrics?.triagens_realizadas ?? 0} de {previewJob.liaMetrics?.triagens_agendadas ?? 0} agendadas
+                            {_previewJob.liaMetrics?.triagens_realizadas ?? 0} de {_previewJob.liaMetrics?.triagens_agendadas ?? 0} agendadas
                           </div>
                         </div>
                       </div>
@@ -584,7 +591,7 @@ export function JobPreviewPanel({
                             <div className="flex-1 mx-2">
                               <div className="bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-3">
                                 <div className="bg-gray-400 dark:bg-lia-bg-elevated h-3 rounded-full flex items-center justify-end pr-1 w-full">
-                                  <span className="text-xs text-white font-medium">{previewJob.liaMetrics?.pipeline_lia ?? 0}</span>
+                                  <span className="text-xs text-white font-medium">{_previewJob.liaMetrics?.pipeline_lia ?? 0}</span>
                                 </div>
                               </div>
                             </div>
@@ -597,8 +604,8 @@ export function JobPreviewPanel({
                             <div className="flex-1 mx-2">
                               <div className="bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-3">
                                 {(() => {
-                                  const pipelineLia = previewJob.liaMetrics?.pipeline_lia ?? 0
-                                  const triagensAgendadas = previewJob.liaMetrics?.triagens_agendadas ?? 0
+                                  const pipelineLia = _previewJob.liaMetrics?.pipeline_lia ?? 0
+                                  const triagensAgendadas = _previewJob.liaMetrics?.triagens_agendadas ?? 0
                                   const widthPercent = pipelineLia > 0 ? (triagensAgendadas / pipelineLia) * 100 : 0
                                   return (
                                     <div className="bg-gray-500 dark:bg-lia-text-secondary h-3 rounded-full flex items-center justify-end pr-1"
@@ -611,8 +618,8 @@ export function JobPreviewPanel({
                             </div>
                             <span className="text-xs text-lia-text-primary w-10 text-right">
                               {(() => {
-                                const pipelineLia = previewJob.liaMetrics?.pipeline_lia ?? 0
-                                const triagensAgendadas = previewJob.liaMetrics?.triagens_agendadas ?? 0
+                                const pipelineLia = _previewJob.liaMetrics?.pipeline_lia ?? 0
+                                const triagensAgendadas = _previewJob.liaMetrics?.triagens_agendadas ?? 0
                                 return pipelineLia > 0 ? Math.round((triagensAgendadas / pipelineLia) * 100) : 0
                               })()}%
                             </span>
@@ -624,8 +631,8 @@ export function JobPreviewPanel({
                             <div className="flex-1 mx-2">
                               <div className="bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-3">
                                 {(() => {
-                                  const pipelineLia = previewJob.liaMetrics?.pipeline_lia ?? 0
-                                  const triagensRealizadas = previewJob.liaMetrics?.triagens_realizadas ?? 0
+                                  const pipelineLia = _previewJob.liaMetrics?.pipeline_lia ?? 0
+                                  const triagensRealizadas = _previewJob.liaMetrics?.triagens_realizadas ?? 0
                                   const widthPercent = pipelineLia > 0 ? (triagensRealizadas / pipelineLia) * 100 : 0
                                   return (
                                     <div className="bg-gray-600 dark:bg-lia-text-tertiary h-3 rounded-full flex items-center justify-end pr-1"
@@ -638,8 +645,8 @@ export function JobPreviewPanel({
                             </div>
                             <span className="text-xs text-lia-text-primary w-10 text-right">
                               {(() => {
-                                const pipelineLia = previewJob.liaMetrics?.pipeline_lia ?? 0
-                                const triagensRealizadas = previewJob.liaMetrics?.triagens_realizadas ?? 0
+                                const pipelineLia = _previewJob.liaMetrics?.pipeline_lia ?? 0
+                                const triagensRealizadas = _previewJob.liaMetrics?.triagens_realizadas ?? 0
                                 return pipelineLia > 0 ? Math.round((triagensRealizadas / pipelineLia) * 100) : 0
                               })()}%
                             </span>
@@ -651,8 +658,8 @@ export function JobPreviewPanel({
                             <div className="flex-1 mx-2">
                               <div className="bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-3">
                                 {(() => {
-                                  const pipelineLia = previewJob.liaMetrics?.pipeline_lia ?? 0
-                                  const entrevistasAgendadas = previewJob.liaMetrics?.entrevistas_agendadas ?? 0
+                                  const pipelineLia = _previewJob.liaMetrics?.pipeline_lia ?? 0
+                                  const entrevistasAgendadas = _previewJob.liaMetrics?.entrevistas_agendadas ?? 0
                                   const widthPercent = pipelineLia > 0 ? (entrevistasAgendadas / pipelineLia) * 100 : 0
                                   return (
                                     <div className="bg-gray-900 dark:bg-lia-btn-primary-bg h-3 rounded-full flex items-center justify-end pr-1"
@@ -665,8 +672,8 @@ export function JobPreviewPanel({
                             </div>
                             <span className="text-xs text-lia-text-primary w-10 text-right">
                               {(() => {
-                                const pipelineLia = previewJob.liaMetrics?.pipeline_lia ?? 0
-                                const entrevistasAgendadas = previewJob.liaMetrics?.entrevistas_agendadas ?? 0
+                                const pipelineLia = _previewJob.liaMetrics?.pipeline_lia ?? 0
+                                const entrevistasAgendadas = _previewJob.liaMetrics?.entrevistas_agendadas ?? 0
                                 return pipelineLia > 0 ? Math.round((entrevistasAgendadas / pipelineLia) * 100) : 0
                               })()}%
                             </span>
@@ -702,7 +709,7 @@ export function JobPreviewPanel({
                           <div className="text-center p-2 bg-white dark:bg-lia-bg-secondary rounded-md">
                             <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mb-1">Total no Funil</p>
                             <p className="text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary">
-                              {previewJob.funnel.total}
+                              {_previewJob.funnel.total}
                             </p>
                             <p className="text-micro text-lia-text-tertiary mt-1">candidatos</p>
                           </div>
@@ -710,7 +717,7 @@ export function JobPreviewPanel({
                           <div className="text-center p-2 bg-white dark:bg-lia-bg-secondary rounded-md">
                             <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mb-1">Em Triagem</p>
                             <p className="text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary">
-                              {previewJob.funnel.screening}
+                              {_previewJob.funnel.screening}
                             </p>
                             <p className="text-micro text-lia-text-tertiary mt-1">candidatos</p>
                           </div>
@@ -718,7 +725,7 @@ export function JobPreviewPanel({
                           <div className="text-center p-2 bg-white dark:bg-lia-bg-secondary rounded-md">
                             <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mb-1">Em Entrevista</p>
                             <p className="text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary">
-                              {previewJob.funnel.interview}
+                              {_previewJob.funnel.interview}
                             </p>
                             <p className="text-micro text-lia-text-tertiary mt-1">candidatos</p>
                           </div>
@@ -737,21 +744,21 @@ export function JobPreviewPanel({
                             <div className="flex items-center justify-between mb-1">
                               <span className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>Sem Resposta</span>
                               <span className="text-xs font-bold text-status-warning dark:text-status-warning">
-                                {previewJob.liaMetrics?.sem_resposta ?? 0}
+                                {_previewJob.liaMetrics?.sem_resposta ?? 0}
                               </span>
                             </div>
                             <div className="bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-1.5">
                               {(() => {
-                                const pipelineLia = previewJob.liaMetrics?.pipeline_lia ?? 0
-                                const semResposta = previewJob.liaMetrics?.sem_resposta ?? 0
+                                const pipelineLia = _previewJob.liaMetrics?.pipeline_lia ?? 0
+                                const semResposta = _previewJob.liaMetrics?.sem_resposta ?? 0
                                 const percent = pipelineLia > 0 ? (semResposta / pipelineLia) * 100 : 0
                                 return <div className="bg-status-warning h-1.5 rounded-full" style={{width: `${percent}%`}}></div>
                               })()}
                             </div>
                             <p className="text-xs text-lia-text-primary mt-1">
                               {(() => {
-                                const pipelineLia = previewJob.liaMetrics?.pipeline_lia ?? 0
-                                const semResposta = previewJob.liaMetrics?.sem_resposta ?? 0
+                                const pipelineLia = _previewJob.liaMetrics?.pipeline_lia ?? 0
+                                const semResposta = _previewJob.liaMetrics?.sem_resposta ?? 0
                                 return pipelineLia > 0 ? `${Math.round((semResposta / pipelineLia) * 100)}% do pipeline` : 'N/A'
                               })()}
                             </p>
@@ -762,16 +769,16 @@ export function JobPreviewPanel({
                               <span className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>Aguardando</span>
                               <span className="text-xs font-bold text-wedo-cyan-dark dark:text-wedo-cyan-dark">
                                 {(() => {
-                                  const agendadas = previewJob.liaMetrics?.triagens_agendadas ?? 0
-                                  const realizadas = previewJob.liaMetrics?.triagens_realizadas ?? 0
+                                  const agendadas = _previewJob.liaMetrics?.triagens_agendadas ?? 0
+                                  const realizadas = _previewJob.liaMetrics?.triagens_realizadas ?? 0
                                   return Math.max(0, agendadas - realizadas)
                                 })()}
                               </span>
                             </div>
                             <div className="bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-1.5">
                               {(() => {
-                                const agendadas = previewJob.liaMetrics?.triagens_agendadas ?? 0
-                                const realizadas = previewJob.liaMetrics?.triagens_realizadas ?? 0
+                                const agendadas = _previewJob.liaMetrics?.triagens_agendadas ?? 0
+                                const realizadas = _previewJob.liaMetrics?.triagens_realizadas ?? 0
                                 const percent = agendadas > 0 ? ((agendadas - realizadas) / agendadas) * 100 : 0
                                 return <div className="bg-gray-900 dark:bg-lia-btn-primary-bg h-1.5 rounded-full" style={{width: `${Math.max(0, percent)}%`}}></div>
                               })()}
@@ -790,10 +797,10 @@ export function JobPreviewPanel({
                               Resumo da Triagem LIA
                             </p>
                             <ul className="space-y-1 text-xs text-lia-text-primary dark:text-lia-text-primary">
-                              <li>• {previewJob.liaMetrics?.triagens_realizadas ?? 0} triagens realizadas de {previewJob.liaMetrics?.triagens_agendadas ?? 0} agendadas</li>
-                              <li>• {previewJob.liaMetrics?.entrevistas_agendadas ?? 0} entrevistas agendadas</li>
-                              <li>• {previewJob.liaMetrics?.sem_resposta ?? 0} candidatos sem resposta</li>
-                              <li>• {previewJob.liaMetrics?.pipeline_lia ?? 0} candidatos no pipeline LIA</li>
+                              <li>• {_previewJob.liaMetrics?.triagens_realizadas ?? 0} triagens realizadas de {_previewJob.liaMetrics?.triagens_agendadas ?? 0} agendadas</li>
+                              <li>• {_previewJob.liaMetrics?.entrevistas_agendadas ?? 0} entrevistas agendadas</li>
+                              <li>• {_previewJob.liaMetrics?.sem_resposta ?? 0} candidatos sem resposta</li>
+                              <li>• {_previewJob.liaMetrics?.pipeline_lia ?? 0} candidatos no pipeline LIA</li>
                             </ul>
                           </div>
                         </div>
@@ -804,7 +811,7 @@ export function JobPreviewPanel({
 
                   {activePreviewTab === 'screening' && (
                     <JobScreeningSection
-                      previewJob={previewJob}
+                      previewJob={_previewJob}
                       screeningConfig={screeningConfig}
                       isLoadingScreeningConfig={isLoadingScreeningConfig}
                       collapsedPreviewSections={collapsedPreviewSections}
@@ -816,7 +823,7 @@ export function JobPreviewPanel({
 
                   {activePreviewTab === 'pipeline' && (
                     <JobPipelineSection
-                      previewJob={previewJob}
+                      previewJob={_previewJob}
                       jobMetrics={jobMetrics}
                       isLoadingJobMetrics={isLoadingJobMetrics}
                     />
@@ -826,7 +833,7 @@ export function JobPreviewPanel({
                   <div className="mt-4 pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle space-y-2">
                     <Button
                       className="w-full text-xs h-8 gap-2"
-                      onClick={() => onJobClick(previewJob)}
+                      onClick={() => onJobClick(_previewJob)}
                     >
                       <ChevronRight className="w-4 h-4" />
                       Abrir Kanban de Candidatos
