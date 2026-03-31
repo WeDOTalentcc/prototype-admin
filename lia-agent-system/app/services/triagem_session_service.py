@@ -889,9 +889,9 @@ class TriagemSessionService:
             elif session.wsi_final_score and session.wsi_final_score >= 7.5:
                 actions["pipeline_update"] = "auto_moved_to_interview"
             elif session.wsi_final_score and session.wsi_final_score < 5.5:
-                actions["pipeline_update"] = "marked_screened_low"
+                actions["pipeline_update"] = "marked_rejected"
             else:
-                actions["pipeline_update"] = "marked_screened"
+                actions["pipeline_update"] = "marked_screened_pending"
         except Exception as e:
             logger.warning(f"[Triagem] Failed to update pipeline: {e}")
             actions["pipeline_update"] = "failed"
@@ -916,10 +916,10 @@ class TriagemSessionService:
             target_status = "approved"
         elif score < 5.5:
             target_stage = "screened"
-            target_status = "screened_low"
+            target_status = "rejected"
         else:
             target_stage = "screened"
-            target_status = "screened"
+            target_status = "pending"
 
         result = await db.execute(
             sql_text(
