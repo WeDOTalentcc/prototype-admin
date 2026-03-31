@@ -22,7 +22,7 @@ export function InputEvaluationStage() {
   } = useWizardContext()
   
   const [showCompensationPanel, setShowCompensationPanel] = React.useState(false)
-  const [compensationAnalysis, setCompensationAnalysis] = React.useState<any>(null)
+  const [compensationAnalysis, setCompensationAnalysis] = React.useState<CompensationAnalysisResult | null>(null)
   const [isEvaluating, setIsEvaluating] = React.useState(false)
   
   const configLoaded = companyConfig !== null
