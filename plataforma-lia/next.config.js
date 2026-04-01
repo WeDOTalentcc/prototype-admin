@@ -20,12 +20,6 @@ const nextConfig = {
     '*.repl.co'
   ],
   reactStrictMode: true,
-  eslint: {
-    ignoreDuringBuilds: true  // Sprint 8: pre-existing lint errors - to be fixed in Sprint 9
-  },
-  typescript: {
-    ignoreBuildErrors: true  // Sprint 8: pre-existing TS errors - to be fixed in Sprint 9
-  },
   images: {
     unoptimized: false,
     formats: ["image/avif", "image/webp"],
