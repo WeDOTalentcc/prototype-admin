@@ -87,6 +87,18 @@ export function JobsPage(props: JobsPageProps) {
   // @ts-ignore TODO: fix type
   const state = useJobsPageCore(props)
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { statusOrder, groupedJobs } = useMemo(() => {
+    const order = [
+      'Ativa', 'Aprovada', 'Aguardando aprovação', 'Reaberta', 'Paralisada', 'Interna',
+      'Rascunho', 'Fechada (preenchida)', 'Fechada (expirada)', 'Cancelada', 'Concluída', 'Arquivada'
+    ] as const
+    const grouped: Record<string, Job[]> = {}
+    order.forEach(s => { grouped[s] = [] })
+    ;(state.filteredJobs || []).forEach((job: Job) => { if (grouped[job.status]) grouped[job.status].push(job) })
+    return { statusOrder: order, groupedJobs: grouped }
+  }, [state.filteredJobs])
+
   // Kanban navigation (moved from hook — hooks must not return JSX)
   if (state.showKanban && state.selectedJob) {
     // @ts-ignore TODO: fix type
@@ -140,17 +152,6 @@ export function JobsPage(props: JobsPageProps) {
   } = state
 
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks -- kanban early-returns are nav guards, not true conditional renders
-  const { statusOrder, groupedJobs } = useMemo(() => {
-    const order = [
-      'Ativa', 'Aprovada', 'Aguardando aprovação', 'Reaberta', 'Paralisada', 'Interna',
-      'Rascunho', 'Fechada (preenchida)', 'Fechada (expirada)', 'Cancelada', 'Concluída', 'Arquivada'
-    ] as const
-    const grouped: Record<string, Job[]> = {}
-    order.forEach(s => { grouped[s] = [] })
-    filteredJobs.forEach(job => { if (grouped[job.status]) grouped[job.status].push(job) })
-    return { statusOrder: order, groupedJobs: grouped }
-  }, [filteredJobs])
 
   if (!hasMounted) {
     return (
