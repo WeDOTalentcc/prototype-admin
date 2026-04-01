@@ -483,10 +483,10 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
           </div>
         </div>
       ) : (
-        <div className="flex-1 overflow-hidden bg-gray-100 dark:bg-lia-bg-primary flex flex-col min-w-0">
+        <div className="flex-1 overflow-hidden bg-white dark:bg-lia-bg-primary flex flex-col min-w-0">
           {/* Pipeline Flow - Cards do Funil (apenas no modo Tabela) */}
           {viewMode === "table" && (
-            <div className="flex-shrink-0 bg-white dark:bg-lia-bg-primary px-4 py-2 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="flex-shrink-0 bg-white dark:bg-lia-bg-primary px-4 py-2">
               <div className="w-full">
                 <div className="flex items-center gap-2">
                   {tableStageFilter.length > 0 && (

@@ -123,7 +123,7 @@ export function KanbanToolbar({
   const allSelected = selectedCandidates.size === visibleCandidates.length && visibleCandidates.length > 0
 
   return (
-    <div className="flex-shrink-0 bg-white dark:bg-lia-bg-secondary border-b border-lia-border-subtle dark:border-lia-border-subtle px-4 py-2">
+    <div className="flex-shrink-0 bg-white dark:bg-lia-bg-secondary px-4 py-2">
       <div className="w-full px-4 flex items-center justify-between gap-2">
         {/* Lado Esquerdo: Prompt LIA - Oculto quando prompt expandido está aberto */}
         {!showExpandedLIA && (

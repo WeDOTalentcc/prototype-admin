@@ -48,7 +48,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
   } = props
 
   return (
-      <div className="bg-gray-50 dark:bg-lia-bg-primary border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <div className="bg-white dark:bg-lia-bg-primary">
         <div className="w-full px-4">
           <div className="flex flex-col lg:flex-row items-start justify-between gap-4 mb-4">
             {/* Left: Título e Informações Principais */}
@@ -328,24 +328,28 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
           <div className="flex items-center gap-1 px-4 mt-2">
             <button
               onClick={() => { setActiveTab('management'); setShowJobEditor(false); }}
-              className={`flex items-center gap-2 px-3 py-2 text-xs font-medium border-b-2 transition-colors motion-reduce:transition-none ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] ${
                 activeTab === 'management'
-                  ? 'border-gray-900 text-lia-text-primary dark:border-lia-border-subtle dark:text-lia-text-primary'
-                  : 'border-transparent text-lia-text-tertiary hover:text-lia-text-secondary dark:text-lia-text-tertiary dark:hover:text-lia-text-disabled'
+                  ? 'bg-gray-900 text-white dark:bg-gray-50 dark:text-lia-text-disabled'
+                  : 'text-lia-text-secondary hover:bg-gray-100 dark:text-lia-text-secondary dark:hover:bg-gray-800'
               }`}
             >
               <Layers3 className="w-3.5 h-3.5" />
               Gestão da Vaga
-              <Badge className="bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-secondary text-micro px-1.5 py-0 ml-1">
+              <Badge className={`text-micro px-1.5 py-0 ml-1 ${
+                activeTab === 'management'
+                  ? 'bg-white/20 text-white dark:bg-gray-900/20 dark:text-lia-text-disabled'
+                  : 'bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-secondary'
+              }`}>
                 {allTableCandidates?.length || 0}
               </Badge>
             </button>
             <button
               onClick={() => { setActiveTab('edit'); setShowJobEditor(true); }}
-              className={`flex items-center gap-2 px-3 py-2 text-xs font-medium border-b-2 transition-colors motion-reduce:transition-none ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] ${
                 activeTab === 'edit'
-                  ? 'border-gray-900 text-lia-text-primary dark:border-lia-border-subtle dark:text-lia-text-primary'
-                  : 'border-transparent text-lia-text-tertiary hover:text-lia-text-secondary dark:text-lia-text-tertiary dark:hover:text-lia-text-disabled'
+                  ? 'bg-gray-900 text-white dark:bg-gray-50 dark:text-lia-text-disabled'
+                  : 'text-lia-text-secondary hover:bg-gray-100 dark:text-lia-text-secondary dark:hover:bg-gray-800'
               }`}
             >
               <Settings className="w-3.5 h-3.5" />
