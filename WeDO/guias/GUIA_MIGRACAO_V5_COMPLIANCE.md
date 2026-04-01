@@ -34,26 +34,52 @@ O diagnóstico identificou **13 problemas estruturais** com **24 sub-problemas**
 
 ### Problemas de Compliance (P1-P7)
 
-| # | Problema | Gravidade | Sub-problemas | Caminho |
-|---|----------|-----------|---------------|---------|
-| P1 | 3 arquiteturas diferentes (Flat, LangGraph, Multi-Agent) | Estrutural | — | Caminho 3 |
-| P2 | Compliance é opcional (opt-in) — quem não sabe, não usa | **Crítica** | — | Caminho 2 |
-| P3 | 6 de 9 serviços não existem | **Crítica** | P3a. AuditCallback é mutável (ON CONFLICT DO UPDATE → viola SOX)<br>P3b. PII Stripping parcial (falta `strip_pii_for_llm_prompt`)<br>P3c. FactChecker só local em sourcing | Caminho 2 |
-| P4 | Serviços acoplados aos domínios errados | **Crítica** | P4a. Implementações locais divergem do original com o tempo | Caminho 2 |
-| P5 | Serviços atuam no ponto errado do pipeline | **Crítica** | P5a. PII vai para o LLM sem stripping<br>P5b. FairnessGuard só na query, não nas tool calls<br>P5c. FactChecker só no sourcing — evaluation e insights não validam claims | Caminho 2 |
-| P6 | Sem camada intermediária entre base e domínios | **Crítica** | — | Caminho 2 |
-| P7 | Novos domínios não herdam compliance | **Crítica** | — | Caminho 2 |
+| # | Problema | Gravidade | Caminho |
+|---|----------|-----------|---------|
+| P1 | 3 arquiteturas diferentes (Flat, LangGraph, Multi-Agent) | Estrutural | Caminho 3 |
+| P2 | Compliance é opcional (opt-in) — quem não sabe, não usa | **Crítica** | Caminho 2 |
+| P3 | 6 de 9 serviços não existem | **Crítica** | Caminho 2 |
+| P3.a | AuditCallback é mutável (ON CONFLICT DO UPDATE → viola SOX) | **Crítica** | Caminho 2 |
+| P3.b | PII Stripping parcial (falta `strip_pii_for_llm_prompt`) | **Crítica** | Caminho 2 |
+| P3.c | FactChecker só local em sourcing | **Crítica** | Caminho 2 |
+| P4 | Serviços acoplados aos domínios errados | **Crítica** | Caminho 2 |
+| P4.a | Implementações locais divergem do original com o tempo | **Crítica** | Caminho 2 |
+| P5 | Serviços atuam no ponto errado do pipeline | **Crítica** | Caminho 2 |
+| P5.a | PII vai para o LLM sem stripping | **Crítica** | Caminho 2 |
+| P5.b | FairnessGuard só na query, não nas tool calls | **Crítica** | Caminho 2 |
+| P5.c | FactChecker só no sourcing — evaluation e insights não validam claims | **Crítica** | Caminho 2 |
+| P6 | Sem camada intermediária entre base e domínios | **Crítica** | Caminho 2 |
+| P7 | Novos domínios não herdam compliance | **Crítica** | Caminho 2 |
 
 ### Problemas de Qualidade de Resposta (P8-P13)
 
-| # | Problema | Gravidade | Sub-problemas | Caminho |
-|---|----------|-----------|---------------|---------|
-| P8 | Domínios Flat incapazes de encadear ações | **Crítica** | P8a. Sem cross-domain (applies → scheduling → evaluation impossível) | Caminho 3 |
-| P9 | Keyword/regex matching frágil | **Crítica** | P9a. Colisão de keywords entre domínios (3 competem por "comparar")<br>P9b. Não entende negação ("NÃO mude o salário" → `edit_job`)<br>P9c. Linguagem natural não bate ("deixar pra outro dia" ≠ "cancelar")<br>P9d. Referências temporais ignoradas ("ontem", "semana passada") | Caminho 3 |
-| P10 | Contexto pobre — sem memória de sessão | **Crítica** | P10a. Chat flutuante/Teams sem job_id (StageContext)<br>P10b. Referências anafóricas não resolvidas ("aquela vaga", "o candidato")<br>P10c. Sem histórico cross-session (cada conversa começa do zero) | Caminho 3 |
-| P11 | Prompts estáticos — sem composição dinâmica | **Crítica** | P11a. Sem BARS → avaliações incomparáveis (ad-hoc por domínio)<br>P11b. Sem few-shot examples → LLM sem exemplos de bom vs ruim<br>P11c. Sem blocos composíveis (ANTI_SYCOPHANCY, CHAIN_OF_THOUGHT, DEFENSIVE)<br>P11d. Sem A/B testing → impossível medir se prompt melhorou<br>P11e. YAMLs da LIA existem mas v5 não carrega<br>P11f. Sem persona definida nos prompts v5 | Caminho 3 |
-| P12 | Gap de Tools — ações declaradas mas não executáveis | **Crítica** | P12a. 44-67% das ações declaradas são stubs sem implementação<br>P12b. 6/8 domínios sem agent-level tool registry<br>P12c. Tools cross-domain inacessíveis via Flat | Caminho 3 |
-| P13 | Sem batch processing — 1 item por vez | Alta | P13a. Nenhum domínio processa múltiplos itens em paralelo<br>P13b. "Avalie os 50 candidatos" = 50 chamadas manuais | Caminho 3 |
+| # | Problema | Gravidade | Caminho |
+|---|----------|-----------|---------|
+| P8 | Domínios Flat incapazes de encadear ações | **Crítica** | Caminho 3 |
+| P8.a | Sem cross-domain (applies → scheduling → evaluation impossível) | **Crítica** | Caminho 3 |
+| P9 | Keyword/regex matching frágil | **Crítica** | Caminho 3 |
+| P9.a | Colisão de keywords entre domínios (3 competem por "comparar") | **Crítica** | Caminho 3 |
+| P9.b | Não entende negação ("NÃO mude o salário" → `edit_job`) | **Crítica** | Caminho 3 |
+| P9.c | Linguagem natural não bate ("deixar pra outro dia" ≠ "cancelar") | **Crítica** | Caminho 3 |
+| P9.d | Referências temporais ignoradas ("ontem", "semana passada") | **Crítica** | Caminho 3 |
+| P10 | Contexto pobre — sem memória de sessão | **Crítica** | Caminho 3 |
+| P10.a | Chat flutuante/Teams sem job_id (StageContext) | **Crítica** | Caminho 3 |
+| P10.b | Referências anafóricas não resolvidas ("aquela vaga", "o candidato") | **Crítica** | Caminho 3 |
+| P10.c | Sem histórico cross-session (cada conversa começa do zero) | **Crítica** | Caminho 3 |
+| P11 | Prompts estáticos — sem composição dinâmica | **Crítica** | Caminho 3 |
+| P11.a | Sem BARS → avaliações incomparáveis (ad-hoc por domínio) | **Crítica** | Caminho 3 |
+| P11.b | Sem few-shot examples → LLM sem exemplos de bom vs ruim | **Crítica** | Caminho 3 |
+| P11.c | Sem blocos composíveis (ANTI_SYCOPHANCY, CHAIN_OF_THOUGHT, DEFENSIVE) | **Crítica** | Caminho 3 |
+| P11.d | Sem A/B testing → impossível medir se prompt melhorou | **Crítica** | Caminho 3 |
+| P11.e | YAMLs da LIA existem mas v5 não carrega | **Crítica** | Caminho 3 |
+| P11.f | Sem persona definida nos prompts v5 | **Crítica** | Caminho 3 |
+| P12 | Gap de Tools — ações declaradas mas não executáveis | **Crítica** | Caminho 3 |
+| P12.a | 44-67% das ações declaradas são stubs sem implementação | **Crítica** | Caminho 3 |
+| P12.b | 6/8 domínios sem agent-level tool registry | **Crítica** | Caminho 3 |
+| P12.c | Tools cross-domain inacessíveis via Flat | **Crítica** | Caminho 3 |
+| P13 | Sem batch processing — 1 item por vez | Alta | Caminho 3 |
+| P13.a | Nenhum domínio processa múltiplos itens em paralelo | Alta | Caminho 3 |
+| P13.b | "Avalie os 50 candidatos" = 50 chamadas manuais | Alta | Caminho 3 |
 
 ### Totais
 
@@ -948,14 +974,33 @@ E montar uma comparação multi-dimensional. A diferença não é de prompt — 
 
 ### 3.7 Relação entre Camadas e Problemas
 
-| Camada | Problema | Sub-problemas | Resolve com | Quando |
-|--------|----------|---------------|-------------|--------|
-| 6. Arquitetura | P8 (Flat→ReAct) | P8a. Sem cross-domain | Migrar domínios Flat para ReAct | Caminho 3, Fase 1 |
-| 5. Interpretação | P9 (regex→LLM) | P9a. Colisão de keywords<br>P9b. Não entende negação<br>P9c. Linguagem natural<br>P9d. Referências temporais | Eliminar keyword matching, LLM classifica intent | Caminho 3, junto com ReAct |
-| 4. Contexto | P10 (sem memória) | P10a. Sem StageContext<br>P10b. Sem resolução anafórica<br>P10c. Sem cross-session | MemoryResolver + ContextAggregator + StageContext | Caminho 3, Fase 2 |
-| 3. Prompt | P11 (estático) | P11a. Sem BARS<br>P11b. Sem few-shot<br>P11c. Sem blocos composíveis<br>P11d. Sem A/B testing<br>P11e. YAMLs desconectados<br>P11f. Sem persona | PromptRegistry + blocos + few-shot + BARS | Caminho 3, Fase 2-3 |
-| 2. Tools | P12 (gap de tools) | P12a. Stubs sem implementação<br>P12b. Sem agent-level registry<br>P12c. Sem cross-domain access | Criar agent-level tool registries | Caminho 3, Fase 1-2 |
-| 1. Escala | P13 (sem batch) | P13a. Sem processamento paralelo<br>P13b. N chamadas manuais | BatchService com asyncio.Semaphore | Caminho 3, Fase 3 |
+| # | Camada | Problema | Resolve com | Quando |
+|---|--------|----------|-------------|--------|
+| P8 | 6. Arquitetura | Flat → ReAct | Migrar domínios Flat para ReAct | Caminho 3, Fase 1 |
+| P8.a | | Sem cross-domain | | |
+| P9 | 5. Interpretação | Regex → LLM | Eliminar keyword matching, LLM classifica intent | Caminho 3, junto com ReAct |
+| P9.a | | Colisão de keywords entre domínios | | |
+| P9.b | | Não entende negação | | |
+| P9.c | | Linguagem natural não bate | | |
+| P9.d | | Referências temporais ignoradas | | |
+| P10 | 4. Contexto | Sem memória de sessão | MemoryResolver + ContextAggregator + StageContext | Caminho 3, Fase 2 |
+| P10.a | | Sem StageContext | | |
+| P10.b | | Sem resolução anafórica | | |
+| P10.c | | Sem cross-session | | |
+| P11 | 3. Prompt | Estático, sem composição | PromptRegistry + blocos + few-shot + BARS | Caminho 3, Fase 2-3 |
+| P11.a | | Sem BARS | | |
+| P11.b | | Sem few-shot | | |
+| P11.c | | Sem blocos composíveis | | |
+| P11.d | | Sem A/B testing | | |
+| P11.e | | YAMLs desconectados | | |
+| P11.f | | Sem persona | | |
+| P12 | 2. Tools | Gap de tools | Criar agent-level tool registries | Caminho 3, Fase 1-2 |
+| P12.a | | Stubs sem implementação | | |
+| P12.b | | Sem agent-level registry | | |
+| P12.c | | Sem cross-domain access | | |
+| P13 | 1. Escala | Sem batch processing | BatchService com asyncio.Semaphore | Caminho 3, Fase 3 |
+| P13.a | | Sem processamento paralelo | | |
+| P13.b | | N chamadas manuais | | |
 
 ---
 
