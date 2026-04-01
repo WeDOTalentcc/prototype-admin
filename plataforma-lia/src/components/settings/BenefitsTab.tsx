@@ -7,25 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
-  Dialog,
-  DialogContent,
-  DraggableDialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-} from "@/components/ui/dialog"
 import {
   Gift,
   Plus,
@@ -33,13 +14,9 @@ import {
   Trash2,
   ChevronDown,
   ChevronRight,
-  DollarSign,
-  Percent,
-  Info,
   CheckCircle,
   Loader2,
   X,
-  Star,
   Clock,
   Users,
   AlertCircle,
@@ -53,12 +30,13 @@ import {
   Shield,
   Search,
   Library,
-  Check,
 } from "lucide-react"
 import { SmartImportZone } from "./SmartImportZone"
 import { LiaFieldToggle, defaultLiaFieldExamples } from "./LiaFieldToggle"
 import { useCompanyLiaInstructions } from "@/hooks/use-company-lia-instructions"
 import { BenefitItemCard } from "./benefits/BenefitItemCard"
+import { BenefitFormModal } from "./benefits/BenefitFormModal"
+import { BenefitTemplateModal } from "./benefits/BenefitTemplateModal"
 
 const BENEFIT_CATEGORIES = [
   { id: "health", name: "Saúde & Bem-estar", icon: Stethoscope, color: "text-status-error", bgColor: "bg-status-error/10 dark:bg-status-error/20" },
@@ -696,431 +674,33 @@ export function BenefitsTab() {
         })}
       </div>
 
-      <Dialog open={showBenefitModal} onOpenChange={setShowBenefitModal}>
-        <DraggableDialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className={textStyles.h3}>
-              {editingBenefit?.id ? 'Editar Benefício' : 'Novo Benefício'}
-            </DialogTitle>
-            <DialogDescription className={textStyles.description}>
-              Preencha os dados do benefício abaixo
-            </DialogDescription>
-          </DialogHeader>
+      <BenefitFormModal
+        open={showBenefitModal}
+        onOpenChange={setShowBenefitModal}
+        editingBenefit={editingBenefit}
+        setEditingBenefit={setEditingBenefit}
+        isSaving={isSaving}
+        onSave={handleSaveBenefit}
+      />
 
-          {editingBenefit && (
-            <div className="space-y-3 py-1.5">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="col-span-2">
-                  <Label htmlFor="name" className={textStyles.label}>Nome do Benefício *</Label>
-                  <Input
-                    id="name"
-                    value={editingBenefit.name}
-                    onChange={(e) => setEditingBenefit({ ...editingBenefit, name: e.target.value })}
-                    placeholder="Ex: Plano de Saúde Bradesco"
-                    className="mt-1 rounded-full text-xs py-1.5 px-2"
-                  />
-                </div>
-
-                <div className="col-span-2">
-                  <Label htmlFor="description" className={textStyles.label}>Descrição</Label>
-                  <Textarea
-                    id="description"
-                    value={editingBenefit.description}
-                    onChange={(e) => setEditingBenefit({ ...editingBenefit, description: e.target.value })}
-                    placeholder="Descreva os detalhes do benefício..."
-                    className="mt-1 rounded-full text-xs py-1.5 px-2"
-                    rows={2}
-                  />
-                </div>
-
-                <div>
-                  <Label className={textStyles.label}>Categoria *</Label>
-                  <Select
-                    value={editingBenefit.category}
-                    onValueChange={(value) => setEditingBenefit({ ...editingBenefit, category: value })}
-                  >
-                    <SelectTrigger className="mt-1 rounded-md text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {BENEFIT_CATEGORIES.map((cat) => {
-                        const Icon = cat.icon
-                        return (
-                          <SelectItem key={cat.id} value={cat.id} className="text-xs">
-                            <div className="flex items-center gap-2">
-                              <Icon className={`w-3.5 h-3.5 ${cat.color}`} />
-                              <span>{cat.name}</span>
-                            </div>
-                          </SelectItem>
-                        )
-                      })}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label className={textStyles.label}>Fornecedor/Operadora</Label>
-                  <Input
-                    value={editingBenefit.provider || ''}
-                    onChange={(e) => setEditingBenefit({ ...editingBenefit, provider: e.target.value })}
-                    placeholder="Ex: Bradesco Saúde"
-                    className="mt-1 rounded-full text-xs py-1.5 px-2"
-                  />
-                </div>
-
-                <div>
-                  <Label className={textStyles.label}>Tipo de Valor</Label>
-                  <Select
-                    value={editingBenefit.value_type}
-                    onValueChange={(value) => setEditingBenefit({ ...editingBenefit, value_type: value })}
-                  >
-                    <SelectTrigger className="mt-1 rounded-md text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {VALUE_TYPES.map((type) => {
-                        const Icon = type.icon
-                        return (
-                          <SelectItem key={type.id} value={type.id} className="text-xs">
-                            <div className="flex items-center gap-2">
-                              <Icon className="w-3.5 h-3.5" />
-                              <span>{type.name}</span>
-                            </div>
-                          </SelectItem>
-                        )
-                      })}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {editingBenefit.value_type === 'monetary' && (
-                  <div>
-                    <Label className={textStyles.label}>Valor (R$)</Label>
-                    <Input
-                      type="number"
-                      value={editingBenefit.value || ''}
-                      onChange={(e) => setEditingBenefit({ ...editingBenefit, value: parseFloat(e.target.value) || undefined })}
-                      placeholder="0,00"
-                      className="mt-1 rounded-full text-xs py-1.5 px-2"
-                    />
-                  </div>
-                )}
-
-                {editingBenefit.value_type === 'percentage' && (
-                  <div>
-                    <Label className={textStyles.label}>Percentual (%)</Label>
-                    <Input
-                      type="number"
-                      value={editingBenefit.percentage_value || ''}
-                      onChange={(e) => setEditingBenefit({ ...editingBenefit, percentage_value: parseFloat(e.target.value) || undefined })}
-                      placeholder="0"
-                      className="mt-1 rounded-full text-xs py-1.5 px-2"
-                    />
-                  </div>
-                )}
-
-                {editingBenefit.value_type === 'informative' && (
-                  <div className="col-span-2">
-                    <Label className={textStyles.label}>Detalhes do Valor</Label>
-                    <Input
-                      value={editingBenefit.value_details || ''}
-                      onChange={(e) => setEditingBenefit({ ...editingBenefit, value_details: e.target.value })}
-                      placeholder="Ex: Conforme política interna"
-                      className="mt-1 rounded-full text-xs py-1.5 px-2"
-                    />
-                  </div>
-                )}
-
-                <div>
-                  <Label className={textStyles.label}>Elegibilidade</Label>
-                  <Select
-                    value={editingBenefit.seniority_levels[0] || 'all'}
-                    onValueChange={(value) => setEditingBenefit({ ...editingBenefit, seniority_levels: [value] })}
-                  >
-                    <SelectTrigger className="mt-1 rounded-md text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {SENIORITY_LEVELS.map((level) => (
-                        <SelectItem key={level.id} value={level.id} className="text-xs">
-                          {level.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label className={textStyles.label}>Período de Carência</Label>
-                  <Select
-                    value={String(editingBenefit.waiting_period_days)}
-                    onValueChange={(value) => setEditingBenefit({ ...editingBenefit, waiting_period_days: parseInt(value) })}
-                  >
-                    <SelectTrigger className="mt-1 rounded-md text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {WAITING_PERIODS.map((period) => (
-                        <SelectItem key={period.id} value={String(period.id)} className="text-xs">
-                          {period.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="border-t border-lia-border-subtle dark:lia-border-800 pt-3 space-y-2">
-                <h4 className={`${textStyles.labelSmall} uppercase tracking-wider`}>
-                  Configurações
-                </h4>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="flex items-center justify-between p-2.5 rounded-md bg-gray-50 dark:bg-lia-bg-secondary">
-                    <div>
-                      <Label className={textStyles.label}>Ativo</Label>
-                      <p className={textStyles.caption}>Disponível para colaboradores</p>
-                    </div>
-                    <Switch
-                      checked={editingBenefit.is_active}
-                      onCheckedChange={(checked: boolean) => setEditingBenefit({ ...editingBenefit, is_active: checked })}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between p-2.5 rounded-md bg-gray-50 dark:bg-lia-bg-secondary">
-                    <div>
-                      <Label className={textStyles.label}>Destaque</Label>
-                      <p className={textStyles.caption}>Exibir com destaque</p>
-                    </div>
-                    <Switch
-                      checked={editingBenefit.is_highlighted}
-                      onCheckedChange={(checked: boolean) => setEditingBenefit({ ...editingBenefit, is_highlighted: checked })}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between p-2.5 rounded-md bg-gray-50 dark:bg-lia-bg-secondary">
-                    <div>
-                      <Label className={textStyles.label}>Obrigatório</Label>
-                      <p className={textStyles.caption}>Adesão obrigatória</p>
-                    </div>
-                    <Switch
-                      checked={editingBenefit.is_mandatory}
-                      onCheckedChange={(checked: boolean) => setEditingBenefit({ ...editingBenefit, is_mandatory: checked })}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between p-2.5 rounded-md bg-gray-50 dark:bg-lia-bg-secondary">
-                    <div>
-                      <Label className={textStyles.label}>Desconto em Folha</Label>
-                      <p className={textStyles.caption}>Valor descontado do salário</p>
-                    </div>
-                    <Switch
-                      checked={editingBenefit.is_discount}
-                      onCheckedChange={(checked: boolean) => setEditingBenefit({ ...editingBenefit, is_discount: checked })}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowBenefitModal(false)
-                setEditingBenefit(null)
-              }}
-              className="rounded-md text-xs"
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={() => editingBenefit && handleSaveBenefit(editingBenefit)}
-              disabled={isSaving || !editingBenefit?.name}
-              className="rounded-md text-xs bg-gray-900 text-white hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
-            >
-              {isSaving ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-1.5" />
-                  Salvando...
-                </>
-              ) : (
-                editingBenefit?.id ? 'Salvar Alterações' : 'Criar Benefício'
-              )}
-            </Button>
-          </DialogFooter>
-        </DraggableDialogContent>
-      </Dialog>
-
-      <Dialog open={showTemplateModal} onOpenChange={setShowTemplateModal}>
-        <DraggableDialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-hidden flex flex-col p-3">
-          <DialogHeader className="flex-shrink-0 pb-2">
-            <DialogTitle className={`flex items-center gap-2 ${textStyles.h3}`}>
-              <Library className="w-4 h-4 lia-text-700 dark:text-lia-text-secondary" />
-              Biblioteca de Benefícios
-            </DialogTitle>
-            <DialogDescription className={`${textStyles.description}`}>
-              Selecione um benefício da lista para adicionar à sua empresa.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="flex-shrink-0 space-y-2 py-1.5">
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 lia-text-500 dark:text-lia-text-tertiary" />
-                <Input
-                  placeholder="Buscar benefício..."
-                  value={templateSearch}
-                  onChange={(e) => setTemplateSearch(e.target.value)}
-                  className="pl-8 h-8 text-xs rounded-full py-1.5 px-2"
-                />
-              </div>
-              <Select value={templateCategoryFilter} onValueChange={setTemplateCategoryFilter}>
-                <SelectTrigger className="w-[180px] h-8 text-xs rounded-md">
-                  <SelectValue placeholder="Todas categorias" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all" className="text-xs">Todas as categorias</SelectItem>
-                  {BENEFIT_CATEGORIES.map((cat) => {
-                    const Icon = cat.icon
-                    return (
-                      <SelectItem key={cat.id} value={cat.id} className="text-xs">
-                        <div className="flex items-center gap-1.5">
-                          <Icon className={`w-3.5 h-3.5 ${cat.color}`} />
-                          <span>{cat.name}</span>
-                        </div>
-                      </SelectItem>
-                    )
-                  })}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className={`flex items-center gap-2 ${textStyles.caption}`}>
-              <span aria-live="polite" aria-atomic="true">{filteredTemplates.length} benefícios encontrados</span>
-              {templateSearch && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-5 text-micro px-1.5"
-                  onClick={() => { setTemplateSearch(""); setTemplateCategoryFilter("all"); }}
-                >
-                  Limpar
-                </Button>
-              )}
-            </div>
-          </div>
-
-          <div className="flex-1 overflow-y-auto space-y-2 py-1 pr-1 -mr-1" role="status" aria-live="polite" aria-label="Carregando...">
-            {isLoadingTemplates ? (
-              <div className="flex items-center justify-center py-6" role="status" aria-live="polite" aria-label="Carregando...">
-                <div className="text-center" role="status" aria-live="polite" aria-label="Carregando...">
-                  <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mx-auto mb-2 lia-text-600 dark:text-lia-text-tertiary" />
-                  <p className={`${textStyles.description}`}>Carregando...</p>
-                </div>
-              </div>
-            ) : filteredTemplates.length === 0 ? (
-              <div className="text-center py-6">
-                <Gift className="w-4 h-4 mx-auto lia-text-300 dark:lia-text-600 mb-2" />
-                <p className={`${textStyles.description}`} aria-live="polite" aria-atomic="true">
-                  Nenhum benefício encontrado
-                </p>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="mt-1 h-6 text-xs lia-text-700 hover:lia-text-900 dark:text-lia-text-secondary dark:hover:lia-text-50"
-                  onClick={() => { setTemplateSearch(""); setTemplateCategoryFilter("all"); }}
-                >
-                  Limpar filtros
-                </Button>
-              </div>
-            ) : (
-              BENEFIT_CATEGORIES.map((category) => {
-                const catTemplates = templatesByCategory[category.id] || []
-                if (catTemplates.length === 0) return null
-                
-                const CategoryIcon = category.icon
-                
-                return (
-                  <div key={category.id} className="space-y-1.5">
-                    <div className={`flex items-center gap-1.5 px-2 py-1 rounded-md ${category.bgColor}`}>
-                      <CategoryIcon className={`w-3.5 h-3.5 ${category.color}`} />
-                      <span className={`${textStyles.label}`}>
-                        {category.name}
-                      </span>
-                      <Badge variant="secondary" className="text-micro h-4 px-1">
-                        {catTemplates.length}
-                      </Badge>
-                    </div>
-                    <div className="grid grid-cols-1 gap-1">
-                      {catTemplates.map((template) => {
-                        const alreadyAdded = isTemplateAlreadyAdded(template.name)
-                        return (
-                          <div
-                            key={template.id}
-                            className={`p-2 border rounded-md cursor-pointer transition-colors motion-reduce:transition-none ${
-                              alreadyAdded 
-                                ? 'bg-status-success/10 dark:bg-status-success/20 border-status-success/30 dark:border-status-success/30' 
-                                : 'bg-white dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-600 hover:'
-                            }`}
-                            onClick={() => !alreadyAdded && handleSelectTemplate(template)}
-                          >
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-1.5">
-                                  <h4 className={`${textStyles.label} truncate`}>
-                                    {template.name}
-                                  </h4>
-                                  {template.is_popular && (
-                                    <Star className="w-3 h-3 text-status-warning fill-yellow-500 flex-shrink-0" />
-                                  )}
-                                </div>
-                                <p className={`${textStyles.caption} truncate`}>
-                                  {template.description}
-                                </p>
-                              </div>
-                              {alreadyAdded ? (
-                                <div className="flex items-center gap-0.5 text-status-success text-micro flex-shrink-0">
-                                  <Check className="w-3.5 h-3.5" />
-                                </div>
-                              ) : (
-                                <Plus className="w-3.5 h-3.5 lia-text-400 dark:lia-text-500 flex-shrink-0" />
-                              )}
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )
-              })
-            )}
-          </div>
-
-          <DialogFooter className="flex-shrink-0 border-t pt-3 mt-3">
-            <div className="flex items-center justify-between w-full">
-              <p className={`${textStyles.description}`}>
-                Não encontrou? <Button variant="link" className={`h-auto p-0 ${textStyles.link}`} onClick={() => {
-                  setShowTemplateModal(false)
-                  setEditingBenefit({ ...defaultBenefit })
-                  setShowBenefitModal(true)
-                }}>Crie um benefício personalizado</Button>
-              </p>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowTemplateModal(false)
-                  setTemplateSearch("")
-                  setTemplateCategoryFilter("all")
-                }}
-                className="rounded-md text-xs"
-              >
-                Fechar
-              </Button>
-            </div>
-          </DialogFooter>
-        </DraggableDialogContent>
-      </Dialog>
+      <BenefitTemplateModal
+        open={showTemplateModal}
+        onOpenChange={setShowTemplateModal}
+        templates={templates}
+        isLoadingTemplates={isLoadingTemplates}
+        templateSearch={templateSearch}
+        setTemplateSearch={setTemplateSearch}
+        templateCategoryFilter={templateCategoryFilter}
+        setTemplateCategoryFilter={setTemplateCategoryFilter}
+        filteredTemplates={filteredTemplates}
+        templatesByCategory={templatesByCategory}
+        isTemplateAlreadyAdded={isTemplateAlreadyAdded}
+        onSelectTemplate={handleSelectTemplate}
+        onOpenBenefitModal={() => {
+          setEditingBenefit({ ...defaultBenefit })
+          setShowBenefitModal(true)
+        }}
+      />
     </div>
   )
 }
