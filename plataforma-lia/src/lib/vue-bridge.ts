@@ -196,3 +196,55 @@ export const PINIA_READY_HOOKS = [
  * Razão documentada por hook.
  */
 export const HOOKS_NEEDING_REFACTOR = [] as const // All hooks refactored — 100% Pinia-ready
+
+/**
+ * Mapeamento React Context -> Pinia Store
+ * Para uso durante a migracao Vue 3 + Nuxt 3
+ */
+export const CONTEXT_TO_STORE_MAP = {
+  // AuthContext -> useAuthStore
+  // src/contexts/auth-context.tsx -> stores/auth.ts
+  // Estado: user, isAuthenticated, isLoading
+  // Actions: login, logout, refreshToken
+  AuthContext: "useAuthStore",
+
+  // WizardContext -> useWizardStore
+  // src/components/job-wizard/WizardContext.tsx -> stores/wizard.ts
+  // Estado: currentStage, basicInfoFields, salaryInfo, detectedCriteria
+  // Actions: updateField, nextStage, prevStage, publishJob
+  WizardContext: "useWizardStore",
+
+  // ExpandedChatContext -> useExpandedChatStore
+  // src/components/expanded-chat/ExpandedChatContext.tsx -> stores/expandedChat.ts
+  // Estado: isOpen, messages, currentMode, isLoading
+  // Actions: sendMessage, toggleChat, setMode
+  ExpandedChatContext: "useExpandedChatStore",
+
+  // LiaFloatContext -> useLiaFloatStore
+  // src/contexts/lia-float-context.tsx -> stores/liaFloat.ts
+  // Estado: isVisible, position, isMinimized
+  // Actions: show, hide, minimize, setPosition
+  LiaFloatContext: "useLiaFloatStore",
+
+  // ClientContext -> useClientStore
+  // src/contexts/ClientContext.tsx -> stores/client.ts
+  // Estado: currentClient, clients, isLoading
+  // Actions: selectClient, fetchClients
+  ClientContext: "useClientStore",
+} as const
+
+/**
+ * Mapeamento de 404 rotas proxy -> nitro.devProxy (nuxt.config.ts)
+ * As rotas /api/backend-proxy/** e /api/v1/** sao proxies puros
+ * que podem ser substituidas por uma unica linha em nuxt.config.ts:
+ *
+ * devProxy: {
+ *   "/api/v1": { target: "http://127.0.0.1:8000", changeOrigin: true },
+ *   "/api/backend-proxy": { target: "http://127.0.0.1:8000/api/v1", changeOrigin: true }
+ * }
+ *
+ * Excecoes que requerem logica Vue/Nuxt equivalente:
+ * - /api/auth/workos/** -> Nuxt auth module (WorkOS)
+ * - /api/lia/chat/stream -> Nuxt server route (SSE streaming)
+ */
+export const PROXY_MIGRATION_NOTE = "See nitro.devProxy in nuxt.config.ts" as const
