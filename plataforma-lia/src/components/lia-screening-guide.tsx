@@ -800,7 +800,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                 copiedSection={copiedSection}
                 onCopy={copyToClipboard}
               />
-            )}}}
+            )}
 
             {/* Timeline Section */}
             {activeSection === 'timeline' && (

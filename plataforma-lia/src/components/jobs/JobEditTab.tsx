@@ -32,7 +32,6 @@ import {
 import { useJobEditTab } from "./job-edit-tab/useJobEditTab"
 import { ScreeningBadge } from "./job-edit-tab/ScreeningBadge"
 import { StatusChangeConfirmModal } from "./job-edit-tab/StatusChangeConfirmModal"
-import { StatusChangeConfirmModal } from "./job-edit-tab/StatusChangeConfirmModal"
 
 export function JobEditTab({
   jobEditForm,
