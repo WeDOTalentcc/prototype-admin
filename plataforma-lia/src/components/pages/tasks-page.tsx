@@ -220,7 +220,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           return (
                             <div>
                               <div className="flex items-center gap-1.5 mb-1.5">
-                                <div className="w-1.5 h-1.5 rounded-full" style={{backgroundColor: 'var(--wedo-amber-light, #fefce8)'}}></div>
+                                <div className="w-1.5 h-1.5 rounded-full" className="bg-wedo-amber-light"></div>
                                 <h3 className="text-xs font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary">Sessão Manhã</h3>
                                 <span className="text-xs font-open-sans text-lia-text-primary dark:text-lia-text-tertiary">{morningTasks.length} atividades</span>
                               </div>
@@ -245,7 +245,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           return (
                             <div>
                               <div className="flex items-center gap-1.5 mb-1.5">
-                                <div className="w-1.5 h-1.5 rounded-full" style={{backgroundColor: 'var(--lia-info-light, #eff6ff)'}}></div>
+                                <div className="w-1.5 h-1.5 rounded-full" className="bg-lia-info-light"></div>
                                 <h3 className="text-xs font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary">Sessão Tarde</h3>
                                 <span className="text-xs font-open-sans text-lia-text-primary dark:text-lia-text-tertiary">{afternoonTasks.length} atividades</span>
                               </div>

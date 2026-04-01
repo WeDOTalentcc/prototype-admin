@@ -216,7 +216,7 @@ export function AlertsTab({
                 aria-checked={weeklyDigestEnabled}
                 aria-label="Ativar ou desativar resumo semanal de insights"
                 className="relative w-9 h-5 rounded-full transition-colors motion-reduce:transition-none disabled:opacity-60 flex-shrink-0 mt-0.5"
-                style={{backgroundColor: weeklyDigestEnabled ? 'var(--gray-900, #111827)' : 'var(--gray-200, #E5E7EB)'}}
+                style={{backgroundColor: weeklyDigestEnabled ? 'var(--gray-900)' : 'var(--gray-200)'}}
               >
                 {savingWeeklyDigest ? (
                   <Loader2 className="w-3 h-3 absolute top-1 left-3 animate-spin" />
