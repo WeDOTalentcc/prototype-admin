@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState, useEffect } from "react"
 
 export interface TableColumnConfig {
@@ -204,12 +203,14 @@ export function useCandidatesTableConfig() {
       id: Date.now().toString(),
       createdAt: new Date().toISOString()
     }
-    const updatedViews = [...savedColumnViews, newView]
+    const updatedViews = [...savedColumnViews, newView]    // @ts-ignore // TODO: fix type
     setSavedColumnViews(updatedViews)
     localStorage.setItem('candidate-column-views', JSON.stringify(updatedViews))
   }
 
+  // @ts-ignore // TODO: fix type
   const handleLoadColumnView = (view: Record<string, unknown>) => {
+    // @ts-ignore // TODO: fix type
     setTableColumns(view.columns)
   }
 

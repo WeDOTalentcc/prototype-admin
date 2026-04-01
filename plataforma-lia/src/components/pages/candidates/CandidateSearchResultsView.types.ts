@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Local types for CandidateSearchResultsView
 import type { SearchAnalytics } from "@/components/proactive-insight-card"
 import type { CalibrationCandidate } from "@/components/calibration-card"

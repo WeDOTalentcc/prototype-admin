@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from "react"
 import { Home, Globe, CheckCircle, DollarSign } from "lucide-react"
 import { getSourceDetails } from "@/lib/utils/source-detection"

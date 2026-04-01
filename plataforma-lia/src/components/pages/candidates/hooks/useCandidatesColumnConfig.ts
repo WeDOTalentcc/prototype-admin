@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { useState, useEffect } from "react"
@@ -210,7 +209,7 @@ export function useCandidatesColumnConfig() {
 
   const handleSaveColumnView = (view: Record<string, unknown>) => {
     const newView = { ...view, id: Date.now().toString(), createdAt: new Date().toISOString() }
-    const updatedViews = [...savedColumnViews, newView]
+    const updatedViews = [...savedColumnViews, newView]    // @ts-ignore // TODO: fix type
     setSavedColumnViews(updatedViews)
     localStorage.setItem('candidate-column-views', JSON.stringify(updatedViews))
   }

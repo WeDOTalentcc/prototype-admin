@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { Card, CardContent } from "@/components/ui/card"
@@ -16,6 +15,7 @@ export function CrossTabFilterBanner({
   crossTabFilter,
   clearCrossTabFilter,
 }: CrossTabFilterBannerProps) {
+  const cf = crossTabFilter as any // TODO: fix type
   if (!showCrossTabBanner || !crossTabFilter) return null
 
   return (
@@ -23,7 +23,7 @@ export function CrossTabFilterBanner({
       <CardContent className="p-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gray-900 dark:bg-gray-100 rounded-md flex items-center justify-center">
-            {crossTabFilter.type === 'company' ? (
+            {cf.type === 'company' ? (
               <Building className="w-5 h-5 text-white dark:text-lia-text-disabled" />
             ) : (
               <Target className="w-5 h-5 text-white dark:text-lia-text-disabled" />
@@ -31,16 +31,16 @@ export function CrossTabFilterBanner({
           </div>
           <div className="flex-1">
             <h3 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-1">
-              Filtro Aplicado: {crossTabFilter.type === 'company' ? 'Empresa' : 'Inteligência Competitiva'}
+              Filtro Aplicado: {cf.type === 'company' ? 'Empresa' : 'Inteligência Competitiva'}
             </h3>
             <p className="text-sm text-lia-text-primary dark:text-lia-text-tertiary mb-3" aria-live="polite" aria-atomic="true">
-              {crossTabFilter.type === 'company' && crossTabFilter.company && (
-                <span>Mostrando candidatos da empresa &ldquo;{crossTabFilter.company as string}&rdquo; mapeada</span>
+              {cf.type === 'company' && cf.company && (
+                <span>Mostrando candidatos da empresa &ldquo;{cf.company as string}&rdquo; mapeada</span>
               )}
-              {crossTabFilter.type === 'company' && crossTabFilter.companies && (
-                <span>Mostrando candidatos das empresas: {(crossTabFilter.companies as string[]).join(', ')}</span>
+              {cf.type === 'company' && cf.companies && (
+                <span>Mostrando candidatos das empresas: {(cf.companies as string[]).join(', ')}</span>
               )}
-              {crossTabFilter.filter === 'discontented_talents' && (
+              {cf.filter === 'discontented_talents' && (
                 <span>Talentos com indicações de descontentamento detectadas pela LIA</span>
               )}
             </p>

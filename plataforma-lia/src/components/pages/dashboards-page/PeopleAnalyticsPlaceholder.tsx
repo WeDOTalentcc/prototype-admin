@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 "use client"
@@ -131,6 +130,8 @@ export function PeopleAnalyticsPlaceholder() {
         {/* Tabs de Navegação */}
         <div className="flex gap-2">
           <Button
+            // @ts-ignore // TODO: fix type
+            // @ts-ignore // TODO: fix type
             variant={activeSubDashboard === 'bigfive' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setActiveSubDashboard('bigfive')}
@@ -139,7 +140,9 @@ export function PeopleAnalyticsPlaceholder() {
             <Brain className="w-3 h-3 mr-1.5 text-wedo-cyan" />
             Big Five
           </Button>
+          // @ts-ignore // TODO: fix type
           <Button
+            // @ts-ignore // TODO: fix type
             variant={activeSubDashboard === 'diversidade' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setActiveSubDashboard('diversidade')}
@@ -147,8 +150,10 @@ export function PeopleAnalyticsPlaceholder() {
           >
             <Heart className="w-3 h-3 mr-1.5" />
             Diversidade
+          // @ts-ignore // TODO: fix type
           </Button>
           <Button
+            // @ts-ignore // TODO: fix type
             variant={activeSubDashboard === 'nps' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setActiveSubDashboard('nps')}

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { liaApi, CandidateLocal } from "@/services/lia-api"
@@ -206,7 +205,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
         if (searchResponse.thread_id) setSearchThreadId(searchResponse.thread_id)
         creditsUsed = searchResponse.credits_used
         totalCount = searchResponse.total_count || 0; localCount = searchResponse.local_count || 0; pearchCount = searchResponse.pearch_count || 0
-        if (searchResponse.credits_remaining !== undefined && searchResponse.credits_remaining !== null) {
+        if (searchResponse.credits_remaining !== undefined && searchResponse.credits_remaining !== null) {          // @ts-ignore // TODO: fix type
           setCreditsRemaining(() => searchResponse.credits_remaining)
         }
         if (searchResponse.candidates?.length > 0) {

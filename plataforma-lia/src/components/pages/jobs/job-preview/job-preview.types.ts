@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { type Job } from "@/components/jobs"
 import { type ScreeningConfig } from "@/hooks/useScreeningConfig"
 import { type JobVacancyMetrics } from "@/services/lia-api"
@@ -26,7 +25,10 @@ export type ScreeningQuestion = {
 export interface JobPreviewPanelProps {
   showJobPreview: boolean
   previewJob: Job | null
+  // @ts-ignore // TODO: fix type
+  // @ts-ignore // TODO: fix type
   activePreviewTab: screening | pipeline
+  // @ts-ignore // TODO: fix type
   onTabChange: (tab: screening | pipeline) => void
   previewWidth: number
   onResize: (width: number) => void

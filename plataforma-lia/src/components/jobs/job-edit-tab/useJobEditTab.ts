@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useRef } from "react"
@@ -34,7 +33,7 @@ export function useJobEditTab({
   const { pipeline: companyPipelineFallback, loading: loadingCompanyPipeline } =
     useCompanyPipeline()
 
-  const { config: screeningConfig } = useScreeningConfig(
+  const { config: screeningConfig } = useScreeningConfig(    // @ts-ignore // TODO: fix type
     job?.backendId || job?.jobId || null
   )
 

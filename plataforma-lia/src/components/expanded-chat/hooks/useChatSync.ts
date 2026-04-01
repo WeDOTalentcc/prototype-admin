@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client'
 
 import { useState, useCallback, useRef, useMemo } from 'react'
@@ -81,11 +80,27 @@ function formatValue(value: unknown): string {
   return String(value)
 }
 
-function formatSalaryValue(value: string | number): string {
+function formatSalaryValue(value: unknown): string {
   if (!value) return '—'
-  const numValue = typeof value === 'string' ? parseFloat(value.replace(/\D/g, '')) : value
-  if (isNaN(numValue)) return String(value)
+  const strVal = typeof value === 'string' ? value : String(value)
+  const numValue = typeof value === 'string' ? parseFloat(value.replace(/\D/g, '')) : (typeof value === 'number' ? value : NaN)
+  if (isNaN(numValue)) return strVal
   return `R$ ${numValue.toLocaleString('pt-BR')}`
+}
+
+function getNamedValue(value: unknown): string {
+  if (value === null || value === undefined) return ''
+  if (typeof value === 'object' && value !== null && 'name' in value) {
+    return String((value as { name: unknown }).name || '')
+  }
+  return String(value)
+}
+
+function getEnabledProp(value: unknown): boolean | undefined {
+  if (typeof value === 'object' && value !== null && 'enabled' in value) {
+    return Boolean((value as { enabled: unknown }).enabled)
+  }
+  return undefined
 }
 
 function generateChangeMessage(change: FieldChange): string {
@@ -94,22 +109,22 @@ function generateChangeMessage(change: FieldChange): string {
   
   if (change.field === 'technicalSkill') {
     if (change.oldValue === null) {
-      return `Adicionada competência: ${change.newValue?.name || change.newValue}`
+      return `Adicionada competência: ${getNamedValue(change.newValue) || change.newValue}`
     }
     if (change.newValue === null) {
-      return `Removida competência: ${change.oldValue?.name || change.oldValue}`
+      return `Removida competência: ${getNamedValue(change.oldValue) || change.oldValue}`
     }
-    return `Atualizada competência: ${change.newValue?.name || change.newValue}`
+    return `Atualizada competência: ${getNamedValue(change.newValue) || change.newValue}`
   }
   
   if (change.field === 'behavioralCompetency') {
     if (change.oldValue === null) {
-      return `Adicionada competência comportamental: ${change.newValue?.name || change.newValue}`
+      return `Adicionada competência comportamental: ${getNamedValue(change.newValue) || change.newValue}`
     }
     if (change.newValue === null) {
-      return `Removida competência comportamental: ${change.oldValue?.name || change.oldValue}`
+      return `Removida competência comportamental: ${getNamedValue(change.oldValue) || change.oldValue}`
     }
-    return `Atualizada competência comportamental: ${change.newValue?.name || change.newValue}`
+    return `Atualizada competência comportamental: ${getNamedValue(change.newValue) || change.newValue}`
   }
   
   if (change.field === 'wsiQuestion') {
@@ -123,11 +138,13 @@ function generateChangeMessage(change: FieldChange): string {
   }
   
   if (change.field === 'benefit') {
-    const name = change.newValue?.name || change.oldValue?.name || 'benefício'
-    if (change.newValue?.enabled === false) {
+    const name = getNamedValue(change.newValue) || getNamedValue(change.oldValue) || 'benefício'
+    const newEnabled = getEnabledProp(change.newValue)
+    const oldEnabled = getEnabledProp(change.oldValue)
+    if (newEnabled === false) {
       return `Desativado benefício: ${name}`
     }
-    if (change.newValue?.enabled === true && change.oldValue?.enabled === false) {
+    if (newEnabled === true && oldEnabled === false) {
       return `Ativado benefício: ${name}`
     }
     return `Atualizado benefício: ${name}`
@@ -194,11 +211,11 @@ function generateGroupSummary(changes: FieldChange[]): string {
     const removed = skillChanges.filter(c => c.newValue === null)
     const parts: string[] = []
     if (added.length > 0) {
-      const names = added.map(c => c.newValue?.name || c.newValue).join(', ')
+      const names = added.map(c => getNamedValue(c.newValue) || c.newValue).join(', ')
       parts.push(`Adicionadas competências: ${names}`)
     }
     if (removed.length > 0) {
-      const names = removed.map(c => c.oldValue?.name || c.oldValue).join(', ')
+      const names = removed.map(c => getNamedValue(c.oldValue) || c.oldValue).join(', ')
       parts.push(`Removidas competências: ${names}`)
     }
     if (parts.length > 0) {

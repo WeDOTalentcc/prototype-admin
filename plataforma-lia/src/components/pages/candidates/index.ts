@@ -1,4 +1,3 @@
-// @ts-nocheck
 export { CandidatesHeader } from "./CandidatesHeader"
 export { CandidateSearchResultsView } from "./CandidateSearchResultsView"
 export type { CandidateSearchResultsViewProps } from "./CandidateSearchResultsView"
@@ -8,6 +7,8 @@ export { CandidateTabs } from "./CandidateTabs"
 export { CandidateSearchBar } from "./CandidateSearchBar"
 export { SearchResultsHeader } from "./SearchResultsHeader"
 export type { SearchResultsHeaderProps } from "./SearchResultsHeader"
+// @ts-ignore // TODO: fix type
+// @ts-ignore // TODO: fix type
 export { CandidateTableCellRenderer } from "./CandidateTableCellRenderer"
 export { CreditConfirmationModal } from "./CreditConfirmationModal"
 export { EditQueryModal } from "./EditQueryModal"

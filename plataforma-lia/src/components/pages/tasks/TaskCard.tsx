@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React from "react"
@@ -34,7 +33,7 @@ export const TaskCard = React.memo(function TaskCard({ task, onConfirm, onReject
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-start gap-2 flex-1">
           <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 bg-gray-100 dark:bg-lia-bg-secondary">
-            {getTaskTypeIcon(task.type)}
+            {getTaskTypeIcon(task.type as any) /* TODO: fix type */}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
@@ -45,10 +44,9 @@ export const TaskCard = React.memo(function TaskCard({ task, onConfirm, onReject
                 {task.title}
               </h4>
               <Badge
-                className="border-0 text-xs py-0 px-1.5 font-medium"
-                style={getTaskPriorityStyle(task.priority)}
+                className={`border-0 text-xs py-0 px-1.5 font-medium ${getTaskPriorityStyle(task.priority as any) ?? ""}`} /* TODO: fix type */
               >
-                {getPriorityLabel(task.priority)}
+                {getPriorityLabel(task.priority as any) /* TODO: fix type */}
               </Badge>
             </div>
             <p className="text-xs font-open-sans text-lia-text-primary dark:text-lia-text-tertiary mb-1 line-clamp-1">

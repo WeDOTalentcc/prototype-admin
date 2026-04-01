@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
@@ -52,7 +51,7 @@ export const useTemplateSuggestions = () => {
     if (savedHistory) {
       try {
         const parsed = JSON.parse(savedHistory).map((item: Record<string, unknown>) => ({
-          ...item,
+          ...item,          // @ts-ignore // TODO: fix type
           timestamp: new Date(item.timestamp)
         }))
         setCommandHistory(parsed)

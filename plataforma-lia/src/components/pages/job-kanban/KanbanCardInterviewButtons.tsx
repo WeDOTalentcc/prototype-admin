@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React from "react"
@@ -124,12 +123,16 @@ export function KanbanCardInterviewButtons({
                 }}
                 title={`Entrar na reunião - ${
                   candidate.interviewDate ||
+                  // @ts-ignore // TODO: fix type
+                  // @ts-ignore // TODO: fix type
                   new Date(candidate.agendada).toLocaleDateString("pt-BR")
                 }`}
               >
                 <Video className="w-3 h-3 text-lia-text-secondary" />
                 <span>
+                  // @ts-ignore // TODO: fix type
                   {candidate.interviewDate ||
+                    // @ts-ignore // TODO: fix type
                     new Date(candidate.agendada).toLocaleDateString("pt-BR", {
                       day: "numeric",
                       month: "short",
@@ -142,8 +145,10 @@ export function KanbanCardInterviewButtons({
                 className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-status-warning hover:bg-status-warning text-white rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
                 onClick={(e) => {
                   e.stopPropagation()
+                  // @ts-ignore // TODO: fix type
                   const dateStr =
                     candidate.interviewDate ||
+                    // @ts-ignore // TODO: fix type
                     new Date(candidate.agendada).toLocaleDateString("pt-BR", {
                       day: "numeric",
                       month: "long",
@@ -164,9 +169,11 @@ export function KanbanCardInterviewButtons({
               <button
                 className="flex-shrink-0 flex items-center justify-center gap-1 px-2 py-1.5 bg-status-error/10 hover:bg-status-error/15 text-status-error border border-status-error/30 rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
                 onClick={(e) => {
+                  // @ts-ignore // TODO: fix type
                   e.stopPropagation()
                   const dateStr =
                     candidate.interviewDate ||
+                    // @ts-ignore // TODO: fix type
                     new Date(candidate.agendada).toLocaleDateString("pt-BR", {
                       day: "numeric",
                       month: "long",

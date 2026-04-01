@@ -1,4 +1,3 @@
-// @ts-nocheck
 import type { Candidate } from "@/components/pages/candidates/types"
 import type { CommunicationType } from "@/components/modals/unified-communication-modal"
 import type { ParsedCVResponse } from "@/components/cv"

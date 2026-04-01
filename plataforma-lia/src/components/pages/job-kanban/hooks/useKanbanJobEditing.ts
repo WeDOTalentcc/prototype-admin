@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useCallback } from "react"
@@ -94,9 +93,11 @@ export function useKanbanJobEditing(ctx: KanbanJobEditingContext) {
         }
         updates[fieldMapping[f] || f] = jobEditForm[f]
       })
-      const jobId = currentJob.backendId || currentJob.jobId || currentJob.id
+      const jobId = currentJob.backendId || currentJob.jobId || currentJob.id      // @ts-ignore // TODO: fix type
       await liaApi.updateJobVacancy(jobId, updates)
+      // @ts-ignore // TODO: fix type
       if (fields.includes('interviewStages') && jobEditForm.interviewStages) {
+        // @ts-ignore // TODO: fix type
         const newStages = mapInterviewStagesToKanban(jobEditForm.interviewStages)
         setDynamicStages(newStages)
         setCandidatesData(prev => {

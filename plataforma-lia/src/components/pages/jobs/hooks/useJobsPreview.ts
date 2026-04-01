@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useEffect } from "react"
@@ -244,23 +243,30 @@ export function useJobsPreview({ setBackendJobs }: UseJobsPreviewOptions): UseJo
         deadline: previewJob.deadline || '',
         deadlineScreening: previewJob.deadlineScreening || '',
         deadlineShortlist: previewJob.deadlineShortlist || '',
-        deadlineClosing: previewJob.deadlineClosing || '',
-        salaryMin: (previewJob as Record<string, unknown>).salaryMin || previewJob.salaryRange?.min || '',
+        deadlineClosing: previewJob.deadlineClosing || '',        // @ts-ignore // TODO: fix type
+        salaryMin: (previewJob as Record<string, unknown>).salaryMin || previewJob.salaryRange?.min || '',        // @ts-ignore // TODO: fix type
         salaryMax: (previewJob as Record<string, unknown>).salaryMax || previewJob.salaryRange?.max || '',
+        // @ts-ignore // TODO: fix type
         bonusMin: (previewJob as Record<string, unknown>).bonusMin || '',
+        // @ts-ignore // TODO: fix type
         bonusMax: (previewJob as Record<string, unknown>).bonusMax || '',
         benefits: previewJob.benefits || [],
+        // @ts-ignore // TODO: fix type
         targetAudience: (previewJob as Record<string, unknown>).targetAudience || '',
+        // @ts-ignore // TODO: fix type
         targetSector: previewJob.targetSector || '',
         targetSegment: previewJob.targetSegment || '',
         languages: previewJob.languages || [],
+        // @ts-ignore // TODO: fix type
         publishedLinkedIn: previewJob.publishedLinkedIn || false,
-        publishedWebsite: previewJob.publishedWebsite || false,
+        publishedWebsite: previewJob.publishedWebsite || false,        // @ts-ignore // TODO: fix type
         publishedIndeed: (previewJob as Record<string, unknown>).publishedIndeed || false,
         visibility: previewJob.visibility || 'public',
         isConfidential: previewJob.isConfidential || false,
+        // @ts-ignore // TODO: fix type
         maskedCompanyName: (previewJob as Record<string, unknown>).maskedCompanyName || '',
         isAffirmative: previewJob.isAffirmative || false,
+        // @ts-ignore // TODO: fix type
         affirmativeType: (previewJob as Record<string, unknown>).affirmativeType || '',
         confidentialityConfig: previewJob.confidentialityConfig || {
           can_reveal_company_name: true,
@@ -354,6 +360,7 @@ export function useJobsPreview({ setBackendJobs }: UseJobsPreviewOptions): UseJo
       setPreviewJob(updatedJob)
     } catch {
       toast.error('Erro ao salvar. Tente novamente.')
+    // @ts-ignore // TODO: fix type
     } finally {
       setSavingSection(null)
     }
@@ -362,6 +369,7 @@ export function useJobsPreview({ setBackendJobs }: UseJobsPreviewOptions): UseJo
   const handleScreeningStatusChange = async (jobId: string, newStatus: string, extraData?: { pause_reason?: string; scheduled_end_date?: string }) => {
     try {
       await liaApi.updateScreeningStatus(jobId, newStatus, extraData)
+      // @ts-ignore // TODO: fix type
       setBackendJobs(prev => prev.map(j => j.backendId === jobId ? { ...j, screeningStatus: newStatus } : j))
       return true
     } catch {

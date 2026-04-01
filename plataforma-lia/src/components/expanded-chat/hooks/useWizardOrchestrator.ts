@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client'
 
 import { useState, useCallback } from 'react'
@@ -221,8 +220,9 @@ export function useWizardOrchestrator(
 
         const response: WizardOrchestratorResponse = await orchestrateWizardMessage(request)
 
-        const result: OrchestratorResult = {
+        const result: OrchestratorResult = {          // @ts-ignore // TODO: fix type
           action: response.action,
+          // @ts-ignore // TODO: fix type
           response: response.response,
           confidence: response.confidence,
           reasoning: response.reasoning,

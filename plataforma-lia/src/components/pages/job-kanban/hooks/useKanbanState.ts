@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useCallback, useEffect } from "react"
@@ -67,7 +66,7 @@ export function useKanbanState(options: UseKanbanStateOptions): UseKanbanStateRe
         location: response.location,
         status: response.status as KanbanJob['status'],
         stages: defaultStages,
-        totalCandidates: 0,
+        totalCandidates: 0,        // @ts-ignore // TODO: fix type
         createdAt: response.created_at,
       }
       

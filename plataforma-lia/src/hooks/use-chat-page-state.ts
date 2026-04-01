@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useCallback, useEffect } from "react"
@@ -172,7 +171,7 @@ export function useChatPageState({
         .reverse()
         .find((msg) => msg.contextData)
 
-      if (messageWithContext?.contextData) {
+      if (messageWithContext?.contextData) {        // @ts-ignore // TODO: fix type
         setContextData(messageWithContext.contextData)
         setIsPanelOpen(true)
       }

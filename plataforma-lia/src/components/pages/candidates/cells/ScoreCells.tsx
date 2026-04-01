@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from "react"
 import { Brain } from "lucide-react"
 import { ScoreBreakdownBadgeLazy } from "@/components/score/ScoreBreakdownBadge"

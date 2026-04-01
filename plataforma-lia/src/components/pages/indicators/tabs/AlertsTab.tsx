@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { KPIAlertSystem } from "@/components/alerts/kpi-alert-system"
 import type { RecruiterData } from "../indicators.types"
 
@@ -11,6 +10,8 @@ export function AlertsTab({ recruiters, onAlertAction }: AlertsTabProps) {
   return (
     <div className="space-y-6">
       <KPIAlertSystem
+        // @ts-ignore // TODO: fix type
+        // @ts-ignore // TODO: fix type
         recruiterData={recruiters}
         onAlertAction={onAlertAction}
       />

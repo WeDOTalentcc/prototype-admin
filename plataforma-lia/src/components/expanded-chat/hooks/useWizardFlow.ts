@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useCallback } from "react"
@@ -161,8 +160,7 @@ export function useWizardFlow(options: UseWizardFlowOptions): UseWizardFlowRetur
             transitionContent += `• ${tip}\n`
           })
         }
-      }
-
+      }      // @ts-ignore // TODO: fix type
       const missingFields = getMissingCriticalFields(currentStageConfig.id, detectedCriteria)
       if (missingFields.recommended.length > 0) {
         transitionContent += `\n\n📝 *Campos opcionais não preenchidos: ${missingFields.recommended.join(', ')}*`

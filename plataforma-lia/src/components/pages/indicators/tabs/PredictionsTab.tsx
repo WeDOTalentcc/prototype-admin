@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { RecruitmentMLDashboard } from "@/components/ml/recruitment-ml-engine"
@@ -15,7 +14,7 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
   return (
     <div className="space-y-6">
       {/* Sistema de Machine Learning */}
-      <RecruitmentMLDashboard candidates={recruiters} />
+      <RecruitmentMLDashboard candidates={recruiters as any} /> {/* TODO: fix type */}
 
       {/* KPIs Preditivos */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

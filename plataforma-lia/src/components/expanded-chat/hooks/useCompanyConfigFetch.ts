@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
@@ -167,7 +166,7 @@ export function useCompanyConfigFetch(options: UseCompanyConfigFetchOptions): Us
             }
 
             if (prefillData.benefits && Array.isArray(prefillData.benefits) && prefillData.benefits.length > 0) {
-              if (!config.benefits || config.benefits.length === 0) {
+              if (!config.benefits || config.benefits.length === 0) {                // @ts-ignore // TODO: fix type
                 config.benefits = (prefillData.benefits as { id?: string; name: string; value?: number; is_active?: boolean }[]).map((b) => ({
                   id: b.id,
                   name: b.name,

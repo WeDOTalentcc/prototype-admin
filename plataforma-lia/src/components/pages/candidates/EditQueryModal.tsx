@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useEffect } from "react"
@@ -101,6 +100,8 @@ export function EditQueryModal({
             }}
             placeholder="Ex: desenvolvedor python com 5 anos de experiência em machine learning"
             activeFiltersCount={activeFiltersCount}
+            // @ts-ignore // TODO: fix type
+            // @ts-ignore // TODO: fix type
             searchSource={searchSource}
             onSearchSourceChange={onSearchSourceChange}
             requireEmails={pearchSearchOptions.requireEmails}

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React from "react"
@@ -21,6 +20,8 @@ interface Props {
  * onboarding-plan, performance-management, journey-summary
  */
 export function ChatContextPanelPart2({ contextData }: Props) {
+  // TODO: fix type - cast contextData.data for dynamic data access
+  const data = contextData.data as any // eslint-disable-line @typescript-eslint/no-explicit-any
   return (
     <>
       {contextData.type === "sourcing-progress" && (
@@ -35,15 +36,17 @@ export function ChatContextPanelPart2({ contextData }: Props) {
             <CardContent className="p-6">
               <div className="space-y-6">
                 <div className="grid grid-cols-4 gap-3">
-                  <div className="text-center p-4 rounded-md bg-stone-50 dark:bg-stone-900/20"><p className="text-lg font-bold lia-text-800 dark:text-lia-text-primary">{contextData.data.realtime_metrics.applications_received}</p><p className="text-xs mt-1 lia-text-500 dark:text-lia-text-tertiary">Aplicações</p></div>
-                  <div className="text-center p-4 rounded-md bg-status-success/10 dark:bg-status-success/20"><p className="text-lg font-bold lia-text-800 dark:text-lia-text-primary">{contextData.data.realtime_metrics.active_sourcing_reached}</p><p className="text-xs mt-1 lia-text-500 dark:text-lia-text-tertiary">Sourcing Ativo</p></div>
-                  <div className="text-center p-4 rounded-md bg-status-error/10 dark:bg-status-error/20"><p className="text-lg font-bold lia-text-800 dark:text-lia-text-primary">{contextData.data.realtime_metrics.response_rate}</p><p className="text-xs mt-1 lia-text-500 dark:text-lia-text-tertiary">Taxa Resposta</p></div>
-                  <div className="text-center p-4 rounded-md bg-wedo-cyan/15 dark:bg-wedo-cyan/20"><p className="text-lg font-bold lia-text-800 dark:text-lia-text-primary">{contextData.data.realtime_metrics.avg_candidate_score}</p><p className="text-xs mt-1 lia-text-500 dark:text-lia-text-tertiary">Score Médio</p></div>
+                  // @ts-ignore // TODO: fix type
+                  <div className="text-center p-4 rounded-md bg-stone-50 dark:bg-stone-900/20"><p className="text-lg font-bold lia-text-800 dark:text-lia-text-primary">{data.realtime_metrics.applications_received}</p><p className="text-xs mt-1 lia-text-500 dark:text-lia-text-tertiary">Aplicações</p></div>
+                  // @ts-ignore // TODO: fix type
+                  <div className="text-center p-4 rounded-md bg-status-success/10 dark:bg-status-success/20"><p className="text-lg font-bold lia-text-800 dark:text-lia-text-primary">{data.realtime_metrics.active_sourcing_reached}</p><p className="text-xs mt-1 lia-text-500 dark:text-lia-text-tertiary">Sourcing Ativo</p></div>
+                  <div className="text-center p-4 rounded-md bg-status-error/10 dark:bg-status-error/20"><p className="text-lg font-bold lia-text-800 dark:text-lia-text-primary">{data.realtime_metrics.response_rate}</p><p className="text-xs mt-1 lia-text-500 dark:text-lia-text-tertiary">Taxa Resposta</p></div>
+                  <div className="text-center p-4 rounded-md bg-wedo-cyan/15 dark:bg-wedo-cyan/20"><p className="text-lg font-bold lia-text-800 dark:text-lia-text-primary">{data.realtime_metrics.avg_candidate_score}</p><p className="text-xs mt-1 lia-text-500 dark:text-lia-text-tertiary">Score Médio</p></div>
                 </div>
                 <div>
                   <h4 className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary mb-3">Candidatos Top Performance</h4>
                   <div className="space-y-2">
-                    {(contextData.data.top_candidates as { name: string; current_role: string; score: number; highlights: string[]; status: string }[]).map((candidate) => (
+                    {(data.top_candidates as { name: string; current_role: string; score: number; highlights: string[]; status: string }[]).map((candidate) => (
                       <div key={candidate.name} className="p-4 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
                         <div className="flex items-center justify-between mb-3">
                           <div><h5 className="font-medium lia-text-800 dark:text-lia-text-primary">{candidate.name}</h5><p className="text-sm lia-text-500 dark:text-lia-text-tertiary">{candidate.current_role}</p></div>
@@ -81,7 +84,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
                 <div>
                   <h4 className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary mb-3">Cronograma de Screening</h4>
                   <div className="space-y-3 font-open-sans">
-                    {(contextData.data.screening_schedule as { candidate: string; date: string; time: string; interviewer: string; status: string }[]).map((interview) => (
+                    {(data.screening_schedule as { candidate: string; date: string; time: string; interviewer: string; status: string }[]).map((interview) => (
                       <div key={`${interview.candidate}-${interview.date}`} className="flex items-center justify-between p-3 rounded-md">
                         <div>
                           <h5 className="font-medium lia-text-950 dark:lia-text-50">{interview.candidate}</h5>
@@ -96,7 +99,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
                 <div>
                   <h4 className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary mb-3">Estrutura do Processo</h4>
                   <div className="grid grid-cols-2 gap-4">
-                    {Object.entries(contextData.data.interview_structure).map(([key, stage]: [string, any]) => (
+                    {Object.entries(data.interview_structure).map(([key, stage]: [string, any]) => (
                       <div key={key} className="p-3 bg-gray-50 dark:bg-lia-bg-elevated rounded-md">
                         <h5 className="font-medium capitalize mb-2">{key.replace('stage_', 'Etapa ').replace('_', ' ')}</h5>
                         <div className="text-sm space-y-1">
@@ -258,16 +261,19 @@ export function ChatContextPanelPart2({ contextData }: Props) {
                 <div className="p-4 rounded-md bg-wedo-cyan/15 dark:bg-wedo-cyan/20">
                   <h3 className="text-base font-semibold mb-3 lia-text-800 dark:text-lia-text-primary">Sumário Executivo</h3>
                   <div className="grid grid-cols-2 gap-4">
-                    <div><p className="text-xs lia-text-600 mb-1">Posição:</p><p className="font-medium">{contextData.data.executive_summary.position}</p></div>
-                    <div><p className="text-xs lia-text-600 mb-1">ROI Projetado:</p><p className="font-semibold lia-text-800 dark:text-lia-text-primary">{contextData.data.executive_summary.roi_projection}</p></div>
-                    <div><p className="text-xs lia-text-600 mb-1">Investimento Total:</p><p className="font-medium">{contextData.data.executive_summary.total_investment}</p></div>
-                    <div><p className="text-xs lia-text-600 mb-1">Probabilidade Sucesso:</p><p className="font-semibold lia-text-800 dark:text-lia-text-primary">{contextData.data.executive_summary.success_probability}</p></div>
+                    // @ts-ignore // TODO: fix type
+                    <div><p className="text-xs lia-text-600 mb-1">Posição:</p><p className="font-medium">{data.executive_summary.position}</p></div>
+                    <div><p className="text-xs lia-text-600 mb-1">ROI Projetado:</p><p className="font-semibold lia-text-800 dark:text-lia-text-primary">{data.executive_summary.roi_projection}</p></div>
+                    // @ts-ignore // TODO: fix type
+                    <div><p className="text-xs lia-text-600 mb-1">Investimento Total:</p><p className="font-medium">{data.executive_summary.total_investment}</p></div>
+                    // @ts-ignore // TODO: fix type
+                    <div><p className="text-xs lia-text-600 mb-1">Probabilidade Sucesso:</p><p className="font-semibold lia-text-800 dark:text-lia-text-primary">{data.executive_summary.success_probability}</p></div>
                   </div>
                 </div>
                 <div>
                   <h4 className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary mb-3">Fases da Jornada</h4>
                   <div className="grid grid-cols-2 gap-4">
-                    {Object.entries(contextData.data.journey_phases).map(([key, phase]: [string, any]) => (
+                    {Object.entries(data.journey_phases).map(([key, phase]: [string, any]) => (
                       <div key={key} className="p-3 rounded-md">
                         <h5 className="font-medium capitalize mb-2">{key.replace('phase_', 'Fase ').replace('_', ' ')}</h5>
                         <p className="text-sm lia-text-600 dark:text-lia-text-tertiary mb-2">Duração: {phase.duration}</p>
@@ -284,7 +290,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
                   <div>
                     <h4 className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary mb-3">Resultados Mensuráveis</h4>
                     <div className="space-y-2">
-                      {Object.entries(contextData.data.measurable_results).slice(0, 4).map(([key, value]: [string, any]) => (
+                      {Object.entries(data.measurable_results).slice(0, 4).map(([key, value]: [string, any]) => (
                         <div key={key} className="flex justify-between">
                           <span className="text-sm lia-text-600 dark:text-lia-text-tertiary capitalize">{key.replace('_', ' ')}:</span>
                           <span className="text-sm font-medium">{String(value)}</span>
@@ -295,7 +301,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
                   <div>
                     <h4 className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary mb-3">Inovações Principais</h4>
                     <div className="space-y-2">
-                      {Object.entries(contextData.data.key_innovations).map(([key, innovations]: [string, any]) => (
+                      {Object.entries(data.key_innovations).map(([key, innovations]: [string, any]) => (
                         <div key={key}>
                           <h5 className="text-xs font-medium lia-text-600 uppercase tracking-wide mb-1">{key.replace('_', ' ')}</h5>
                           {innovations.slice(0, 2).map((innovation: string, i: number) => (

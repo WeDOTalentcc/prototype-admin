@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from "react"
 import { Mail, Phone, Linkedin, Github, Globe } from "lucide-react"
 import { isGlobalSource } from "@/lib/utils/source-detection"

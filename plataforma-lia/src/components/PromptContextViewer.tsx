@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React from "react"
@@ -29,6 +28,8 @@ export function PromptContextViewer({
   contextPill,
   quickActions = []
 }: PromptContextViewerProps) {
+  // TODO: fix type - cast to any for dynamic data access
+  const ctx = candidateContext as any
   return (
     <>
       {candidateContext && (
@@ -42,15 +43,15 @@ export function PromptContextViewer({
           <div className="flex items-center gap-3 bg-lia-bg-primary rounded-md px-3 py-2 border border-lia-border-subtle">
             <Avatar className="w-8 h-8">
               <AvatarFallback className="bg-wedo-green-light/10 text-wedo-green-light text-sm">
-                {candidateContext.name?.split(' ').map((n: string) => n[0]).join('') || 'C'}
+                {ctx.name?.split(' ').map((n: string) => n[0]).join('') || 'C'}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
               <div className="font-medium lia-text-strong text-base-ui">
-                {candidateContext.name}
+                {ctx.name}
               </div>
               <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
-                {candidateContext.position} • Score: {candidateContext.liaAnalysis?.score || candidateContext.score}%
+                {ctx.position} • Score: {ctx.liaAnalysis?.score || ctx.score}%
               </div>
             </div>
             <Badge className="bg-wedo-green-light/10 text-wedo-green-light border-0 text-micro">
@@ -69,18 +70,21 @@ export function PromptContextViewer({
             </span>
           </div>
           <div className="flex flex-wrap gap-2">
-            {selectedCandidates.slice(0, 3).map((candidate, index) => (
-              <div key={candidate.name || index} className="flex items-center gap-1 bg-lia-bg-primary rounded-md px-2 py-1 border border-lia-border-subtle">
-                <Avatar className="w-4 h-4">
-                  <AvatarFallback className="bg-gray-200 lia-text-base text-xs">
-                    {candidate.name?.charAt(0) || 'C'}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">
-                  {candidate.name || `Candidato ${index + 1}`}
-                </span>
-              </div>
-            ))}
+            {selectedCandidates.slice(0, 3).map((candidate, index) => {
+              const c = candidate as any // TODO: fix type
+              return (
+                <div key={c.name || index} className="flex items-center gap-1 bg-lia-bg-primary rounded-md px-2 py-1 border border-lia-border-subtle">
+                  <Avatar className="w-4 h-4">
+                    <AvatarFallback className="bg-gray-200 lia-text-base text-xs">
+                      {c.name?.charAt(0) || 'C'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+                    {c.name || `Candidato ${index + 1}`}
+                  </span>
+                </div>
+              )
+            })}
             {selectedCandidates.length > 3 && (
               <div className="px-2 py-1 bg-gray-100 rounded-full text-xs text-lia-text-primary dark:text-lia-text-primary">
                 +{selectedCandidates.length - 3} mais
