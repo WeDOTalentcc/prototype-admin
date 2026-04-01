@@ -109,7 +109,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     publicLink, setPublicLink,
     showPublishSuccess, setShowPublishSuccess,
     handlePublishJob,
-  } = useKanbanPublishing({ job, jobEditForm, setJobEditForm, setActiveTab, toast })
+  } = useKanbanPublishing({ job, jobEditForm, setJobEditForm, setActiveTab, toast: toast as unknown as Parameters<typeof useKanbanPublishing>[0]["toast"] })
 
   // Persistência de navegação - salva estado quando muda
   useEffect(() => {
@@ -338,9 +338,9 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     setShowExpandedLIA,
     setPreviewCandidate,
     setIsPreviewOpen,
-    toast,
-    setUnifiedModalCandidate,
-    setUnifiedModalType,
+    toast: toast as unknown as Parameters<typeof useKanbanNavigation>[0]["toast"],
+    setUnifiedModalCandidate: setUnifiedModalCandidate as unknown as Parameters<typeof useKanbanNavigation>[0]["setUnifiedModalCandidate"],
+    setUnifiedModalType: setUnifiedModalType as unknown as Parameters<typeof useKanbanNavigation>[0]["setUnifiedModalType"],
     setUnifiedModalOpen,
   })
 
@@ -619,20 +619,20 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     setViewedCandidateIds,
     openUnifiedModal,
     setUnifiedModalOpen,
-    setUnifiedModalCandidate,
+    setUnifiedModalCandidate: setUnifiedModalCandidate as unknown as Parameters<typeof useKanbanCandidateHandlers>[0]["setUnifiedModalCandidate"],
     setUnifiedModalSituation,
-    setUnifiedModalType,
-    setWsiCandidate,
+    setUnifiedModalType: setUnifiedModalType as unknown as Parameters<typeof useKanbanCandidateHandlers>[0]["setUnifiedModalType"],
+    setWsiCandidate: setWsiCandidate as unknown as Parameters<typeof useKanbanCandidateHandlers>[0]["setWsiCandidate"],
     setShowWSIModal,
-    setCandidateForVacancy,
+    setCandidateForVacancy: setCandidateForVacancy as unknown as Parameters<typeof useKanbanCandidateHandlers>[0]["setCandidateForVacancy"],
     setShowAddToVacancyModal,
-    setWsiInviteCandidate,
+    setWsiInviteCandidate: setWsiInviteCandidate as unknown as Parameters<typeof useKanbanCandidateHandlers>[0]["setWsiInviteCandidate"],
     setShowWSIInviteModal,
     setIsTriagemOpen,
-    setTriagemCandidate,
+    setTriagemCandidate: setTriagemCandidate as unknown as Parameters<typeof useKanbanCandidateHandlers>[0]["setTriagemCandidate"],
     setShowRubricModal,
-    setRubricCandidate,
-    setRubricEvaluationData,
+    setRubricCandidate: setRubricCandidate as unknown as Parameters<typeof useKanbanCandidateHandlers>[0]["setRubricCandidate"],
+    setRubricEvaluationData: setRubricEvaluationData as unknown as Parameters<typeof useKanbanCandidateHandlers>[0]["setRubricEvaluationData"],
     setShowReport,
     setCandidatesData,
     candidatesData,
