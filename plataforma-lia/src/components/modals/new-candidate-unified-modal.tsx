@@ -26,6 +26,7 @@ import {
 import { duplicateDetectionService, type DuplicateCheckResult, type CandidateBasicInfo } from '@/services/duplicate-detection-service'
 import { textStyles, buttonStyles, cardStyles, badgeStyles } from "@/lib/design-tokens"
 import { useToast } from "@/hooks/use-toast"
+import { InputStep } from "@/components/modals/new-candidate/InputStep"
 
 const ACCEPTED_FILE_TYPES = {
   'application/pdf': ['.pdf'],
@@ -136,7 +137,6 @@ export function NewCandidateUnifiedModal({
   const [isEnriching, setIsEnriching] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [error, setError] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [parsedCV, setParsedCV] = useState<ParsedCV | null>(null)
   
@@ -685,319 +685,33 @@ export function NewCandidateUnifiedModal({
 
 
   const renderInputStep = () => (
-    <div className="space-y-4">
-      <div className="flex border-b border-lia-border-subtle dark:border-lia-border-subtle">
-        <button
-          onClick={() => { setActiveTab('cv'); setError(null) }}
-          className={cn(
-            "flex-1 py-2.5 text-xs font-medium transition-colors relative",
-            activeTab === 'cv'
-              ? "text-lia-text-primary dark:text-lia-text-primary"
-              : "text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-disabled"
-          )}
-        >
-          <div className="flex items-center justify-center gap-1.5">
-            <FileText className="w-3.5 h-3.5" />
-            CV
-          </div>
-          {activeTab === 'cv' && (
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900 dark:bg-lia-btn-primary-bg" />
-          )}
-        </button>
-        <button
-          onClick={() => { setActiveTab('linkedin'); setError(null) }}
-          className={cn(
-            "flex-1 py-2.5 text-xs font-medium transition-colors relative",
-            activeTab === 'linkedin'
-              ? "text-lia-text-primary dark:text-lia-text-primary"
-              : "text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-disabled"
-          )}
-        >
-          <div className="flex items-center justify-center gap-1.5">
-            <Linkedin className="w-3.5 h-3.5" />
-            LinkedIn
-          </div>
-          {activeTab === 'linkedin' && (
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900 dark:bg-lia-btn-primary-bg" />
-          )}
-        </button>
-        <button
-          onClick={() => { setActiveTab('manual'); setError(null) }}
-          className={cn(
-            "flex-1 py-2.5 text-xs font-medium transition-colors relative",
-            activeTab === 'manual'
-              ? "text-lia-text-primary dark:text-lia-text-primary"
-              : "text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-disabled"
-          )}
-        >
-          <div className="flex items-center justify-center gap-1.5">
-            <User className="w-3.5 h-3.5" />
-            Manual
-          </div>
-          {activeTab === 'manual' && (
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900 dark:bg-lia-btn-primary-bg" />
-          )}
-        </button>
-      </div>
-
-      {activeTab === 'cv' && (
-        <div className="space-y-3">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".pdf,.docx,.doc,.txt"
-            onChange={handleFileSelect}
-            className="hidden"
-            id="cv-file-input"
-          />
-
-          {!selectedFile ? (
-            <div
-              onDragEnter={handleDragEnter}
-              onDragLeave={handleDragLeave}
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-              className={cn(
-                "border-2 border-dashed rounded-md p-6 text-center cursor-pointer transition-colors",
-                isDragging
-                  ? "border-gray-900 bg-gray-100 dark:border-lia-border-subtle dark:bg-lia-bg-secondary"
-                  : "border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800"
-              )}
-            >
-              <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center mx-auto mb-3">
-                <Upload className={cn("w-5 h-5", isDragging ? "text-lia-text-primary dark:text-lia-text-primary" : "text-lia-text-tertiary")} />
-              </div>
-              <p className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
-                {isDragging ? "Solte o arquivo aqui" : "Arraste ou clique para selecionar"}
-              </p>
-              <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary mt-1">
-                PDF, DOCX, DOC ou TXT (máx. 5MB)
-              </p>
-            </div>
-          ) : (
-            <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3">
-              <div className="flex items-center gap-2">
-                {getFileIcon(selectedFile.name)}
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary truncate">
-                    {selectedFile.name}
-                  </p>
-                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
-                    {formatFileSize(selectedFile.size)}
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => {
-                    setSelectedFile(null)
-                    if (fileInputRef.current) fileInputRef.current.value = ""
-                  }}
-                >
-                  <X className="w-3 h-3" />
-                </Button>
-              </div>
-            </div>
-          )}
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-lia-border-subtle dark:border-lia-border-subtle" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white dark:bg-lia-bg-primary px-2 text-lia-text-tertiary dark:text-lia-text-tertiary">ou cole o texto</span>
-            </div>
-          </div>
-
-          <Textarea
-            placeholder="Cole aqui o conteúdo do currículo..."
-            value={cvText}
-            onChange={(e) => setCvText(e.target.value)}
-            rows={4}
-            className="resize-none text-xs"
-          />
-          <div className="flex justify-between items-center">
-            <span className={cn(
-              "text-xs",
-              cvText.length < 50 ? "text-lia-text-tertiary" : "text-status-success"
-            )}>
-              {cvText.length} caracteres (mín. 50)
-            </span>
-          </div>
-
-
-          <Button
-            onClick={handleSubmitCV}
-            disabled={!canSubmitCV || isProcessing}
-            className="w-full h-9 px-4 text-xs font-medium bg-gray-800 hover:bg-gray-900 text-white"
-          >
-            {isProcessing ? (
-              <>
-                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin motion-reduce:animate-none" />
-                Processando...
-              </>
-            ) : (
-              <>
-                <Brain className="w-3.5 h-3.5 mr-1.5 text-wedo-cyan" />
-                Cadastrar com CV
-              </>
-            )}
-          </Button>
-        </div>
-      )}
-
-      {activeTab === 'linkedin' && (
-        <div className="space-y-4">
-          <div className="text-center py-2">
-            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
-              <Linkedin className="w-6 h-6 text-lia-text-secondary" />
-            </div>
-            <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
-              Cole a URL do perfil do LinkedIn do candidato
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="linkedin-url" className="text-xs font-sans">URL do LinkedIn</Label>
-            <Input
-              id="linkedin-url"
-              placeholder="https://linkedin.com/in/nome-do-usuario"
-              value={linkedinUrl}
-              onChange={(e) => setLinkedinUrl(e.target.value)}
-              className="h-9 text-xs font-sans"
-            />
-            <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary font-sans">
-              Ex: linkedin.com/in/joao-silva
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2 p-2.5 bg-gray-50 dark:bg-lia-bg-secondary/50 border border-lia-border-default dark:border-lia-border-default rounded-md">
-            <Brain className="w-4 h-4 text-wedo-cyan" />
-            <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary font-sans" aria-live="polite" aria-atomic="true">
-              A LIA irá buscar os dados do candidato
-            </p>
-          </div>
-
-          <Button
-            onClick={handleSubmitLinkedin}
-            disabled={!canSubmitLinkedin || isProcessing}
-            className="w-full h-9 text-xs bg-gray-900 hover:bg-gray-950 text-white"
-          >
-            {isProcessing ? (
-              <>
-                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin motion-reduce:animate-none" />
-                Cadastrando...
-              </>
-            ) : (
-              <>
-                <Linkedin className="w-3.5 h-3.5 mr-1.5" />
-                Cadastrar via LinkedIn
-              </>
-            )}
-          </Button>
-        </div>
-      )}
-
-      {activeTab === 'manual' && (
-        <div className="space-y-4">
-          <div className="space-y-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="manual-name" className="text-xs">Nome Completo *</Label>
-              <div className="relative">
-                <User className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-disabled" />
-                <Input
-                  id="manual-name"
-                  placeholder="João Silva"
-                  value={manualData.name}
-                  onChange={(e) => setManualData(prev => ({ ...prev, name: e.target.value }))}
-                  className="pl-8 h-9 text-xs"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="manual-email" className="text-xs">E-mail</Label>
-              <div className="relative">
-                <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-disabled" />
-                <Input
-                  id="manual-email"
-                  type="email"
-                  placeholder="joao.silva@email.com"
-                  value={manualData.email}
-                  onChange={(e) => setManualData(prev => ({ ...prev, email: e.target.value }))}
-                  className="pl-8 h-9 text-xs"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="manual-phone" className="text-xs">Telefone</Label>
-              <div className="relative">
-                <Phone className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-disabled" />
-                <Input
-                  id="manual-phone"
-                  placeholder="(11) 99999-9999"
-                  value={manualData.phone}
-                  onChange={(e) => setManualData(prev => ({ ...prev, phone: e.target.value }))}
-                  className="pl-8 h-9 text-xs"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="manual-linkedin" className="text-xs font-sans">LinkedIn (opcional)</Label>
-              <div className="relative">
-                <Linkedin className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-disabled" />
-                <Input
-                  id="manual-linkedin"
-                  placeholder="linkedin.com/in/joao-silva"
-                  value={manualData.linkedinUrl}
-                  onChange={(e) => setManualData(prev => ({ ...prev, linkedinUrl: e.target.value }))}
-                  className="pl-8 h-9 text-xs font-sans"
-                />
-              </div>
-              {manualData.linkedinUrl.includes('linkedin.com/in/') && (
-                <p className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary flex items-center gap-1 font-sans">
-                  <Brain className="w-3 h-3 text-wedo-cyan" />
-                  A LIA irá buscar os dados do candidato
-                </p>
-              )}
-            </div>
-
-            <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
-              * Informe pelo menos um contato (email ou telefone)
-            </p>
-          </div>
-
-          <Button
-            onClick={handleSubmitManual}
-            disabled={!canSubmitManual || isProcessing}
-            className="w-full h-9 px-4 text-xs font-medium bg-gray-800 hover:bg-gray-900 text-white"
-          >
-            {isProcessing ? (
-              <>
-                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin motion-reduce:animate-none" />
-                Cadastrando...
-              </>
-            ) : (
-              <>
-                <User className="w-3.5 h-3.5 mr-1.5" />
-                Cadastrar Candidato
-              </>
-            )}
-          </Button>
-        </div>
-      )}
-
-      {error && (
-        <div className="flex items-center gap-2 p-2.5 bg-status-error/10 border border-status-error/30 rounded-md">
-          <AlertCircle className="w-4 h-4 text-status-error flex-shrink-0" />
-          <p className="text-xs text-status-error">{error}</p>
-        </div>
-      )}
-    </div>
+    <InputStep
+      activeTab={activeTab}
+      setActiveTab={setActiveTab}
+      setError={setError}
+      selectedFile={selectedFile}
+      setSelectedFile={setSelectedFile}
+      cvText={cvText}
+      setCvText={setCvText}
+      isDragging={isDragging}
+      handleDragEnter={handleDragEnter}
+      handleDragLeave={handleDragLeave}
+      handleDragOver={handleDragOver}
+      handleDrop={handleDrop}
+      handleFileSelect={handleFileSelect}
+      isProcessing={isProcessing}
+      canSubmitCV={!!canSubmitCV}
+      handleSubmitCV={handleSubmitCV}
+      linkedinUrl={linkedinUrl}
+      setLinkedinUrl={setLinkedinUrl}
+      canSubmitLinkedin={canSubmitLinkedin}
+      handleSubmitLinkedin={handleSubmitLinkedin}
+      manualData={manualData}
+      setManualData={setManualData}
+      canSubmitManual={!!canSubmitManual}
+      handleSubmitManual={handleSubmitManual}
+      error={error}
+    />
   )
 
   const renderDuplicateFound = () => (

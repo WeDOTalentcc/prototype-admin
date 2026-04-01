@@ -27,3 +27,4 @@ export type {
   DragResult,
   SubStatus,
 } from "./types"
+export { KanbanToolbar } from ./KanbanToolbar
