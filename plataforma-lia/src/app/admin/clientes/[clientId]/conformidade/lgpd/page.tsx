@@ -288,7 +288,7 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
                 </div>
                 {(dpo as any).registrationDate && (
                   <p className="text-xs mt-2 lia-text-400 dark:lia-text-500">
-                    // @ts-ignore TODO: fix type
+                    {/* @ts-ignore TODO: fix type */}
                     Registrado em {formatDate((dpo as any).registrationDate)}
                   </p>
                 )}
@@ -301,7 +301,7 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
         </Card>
       )}
 
-// @ts-ignore TODO: fix type
+{/* @ts-ignore TODO: fix type */}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
@@ -329,7 +329,7 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
                         </div>
                       </div>
                       <Badge className={dsrStatusColors[(decision as any).status] || dsrStatusColors.pending}>
-                        // @ts-ignore TODO: fix type
+                        {/* @ts-ignore TODO: fix type */}
                         {dsrStatusLabels[(decision as any).status] || (decision as any).status}
                       </Badge>
                     </div>
@@ -345,7 +345,7 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
           </CardContent>
         </Card>
 
-        // @ts-ignore TODO: fix type
+        {/* @ts-ignore TODO: fix type */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">

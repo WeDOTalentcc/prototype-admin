@@ -296,7 +296,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
                         <span className="text-sm">{field}</span>
                       </div>
                     ))}
-                    // @ts-ignore // TODO: fix type
+                    {/* @ts-ignore // TODO: fix type */}
                     {data.pending_fields?.map((field: string) => (
                       <div key={`pending-${field}`} className="flex items-center gap-2 p-2 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
                         <Clock className="w-4 h-4 lia-text-600" />

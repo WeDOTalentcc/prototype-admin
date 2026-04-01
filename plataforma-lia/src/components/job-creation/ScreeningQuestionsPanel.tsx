@@ -714,9 +714,9 @@ export function ScreeningQuestionsPanel({
               {question.text}
             </p>
             <div className="flex flex-wrap gap-1">
-              // @ts-ignore TODO: fix type
+              {/* @ts-ignore TODO: fix type */}
               {badges.map((badge, idx) => (
-                // @ts-ignore TODO: fix type
+                {/* @ts-ignore TODO: fix type */}
                 <Badge key={idx} variant="outline" className={cn("text-micro px-1.5 py-0 h-4 border", badge.color)}>
                   {((badge as any).label as React.ReactNode)}
                 </Badge>

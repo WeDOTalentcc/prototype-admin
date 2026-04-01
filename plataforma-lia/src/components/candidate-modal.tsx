@@ -206,7 +206,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-elevated">
           <div className="flex items-center gap-4">
-            // @ts-ignore TODO: fix type
+            {/* @ts-ignore TODO: fix type */}
             <Avatar className="w-16 h-16">
               <AvatarImage src={candidate.avatar as string | undefined} alt={candidateData.fullName} />
               <AvatarFallback className="text-lg">
@@ -489,13 +489,13 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                         </span>
                       </div>
 
-                      // @ts-ignore TODO: fix type
+                      {/* @ts-ignore TODO: fix type */}
                       <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mb-1">
                         {formatDate(movement.date!)} • por {movement.user}
                       </div>
 
                       {movement.notes && (
-                        // @ts-ignore TODO: fix type
+                        {/* @ts-ignore TODO: fix type */}
                         <div className="text-sm text-lia-text-primary dark:text-lia-text-primary">
                           {movement.notes}
                         </div>
@@ -573,9 +573,9 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                   Notas e Comentários ({candidateData.notes.length})
                 </h3>
 
-                // @ts-ignore TODO: fix type
+                {/* @ts-ignore TODO: fix type */}
                 {candidateData.notes.map((note: { id: number; author: string; date?: string; content?: string; type?: string }) => (
-                  // @ts-ignore TODO: fix type
+                  {/* @ts-ignore TODO: fix type */}
                   <div key={note.id} className={`p-4 rounded-md border-l-4 ${getNoteColor(note.type)}`}>
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
@@ -588,7 +588,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                           {note.author}
                         </span>
                       </div>
-                      // @ts-ignore TODO: fix type
+                      {/* @ts-ignore TODO: fix type */}
                       <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">
                         {formatDate(note.date!)}
                       </span>
@@ -612,7 +612,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
               <div className="space-y-3">
                 {candidateData.interactions.map((interaction: { id: number; type?: string; title?: string; date?: string; description?: string }) => (
                   <div key={interaction.id} className="flex gap-4 p-4 bg-gray-50 dark:bg-lia-bg-elevated rounded-md">
-                    // @ts-ignore TODO: fix type
+                    {/* @ts-ignore TODO: fix type */}
                     <div className="mt-1">
                       {getInteractionIcon(interaction.type || "")}
                     </div>
@@ -624,7 +624,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                       <div className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary mb-1">
                         {interaction.description}
                       </div>
-                      // @ts-ignore TODO: fix type
+                      {/* @ts-ignore TODO: fix type */}
                       <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
                         {formatDate(interaction.date!)}
                       </div>

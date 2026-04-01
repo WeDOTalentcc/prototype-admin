@@ -200,7 +200,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
         <DialogContent className="max-w-lg bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
           <DialogHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
             <div className="flex items-center gap-3">
-              // @ts-ignore TODO: fix type
+              {/* @ts-ignore TODO: fix type */}
               <Avatar className="w-10 h-10 ring-2 ring-white">
                 <AvatarImage src={candidate?.avatar as string | undefined} />
                 <AvatarFallback className="text-xs bg-gray-100 lia-text-base">
@@ -211,7 +211,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                 <DialogTitle className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
                   Relatório Big Five
                 </DialogTitle>
-                // @ts-ignore TODO: fix type
+                {/* @ts-ignore TODO: fix type */}
                 <DialogDescription className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-0.5">
                   {String(candidate?.name || 'Candidato')} • Assessment de Personalidade
                 </DialogDescription>
@@ -249,7 +249,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
       <DialogContent className="max-w-4xl bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle max-h-[90vh] overflow-hidden flex flex-col p-0 rounded-md">
         <DialogHeader className="px-6 py-4 border-b border-lia-border-subtle dark:border-lia-border-subtle flex-shrink-0">
           <div className="flex items-center gap-3">
-            // @ts-ignore TODO: fix type
+            {/* @ts-ignore TODO: fix type */}
             <Avatar className="w-10 h-10 ring-2 ring-white">
               <AvatarImage src={(candidate as any).avatar} />
               <AvatarFallback className="text-xs bg-gray-100 lia-text-base">
@@ -260,7 +260,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
               <DialogTitle className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
                 Relatório Big Five
               </DialogTitle>
-              // @ts-ignore TODO: fix type
+              {/* @ts-ignore TODO: fix type */}
               <DialogDescription className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-0.5">
                 {(candidate.name as React.ReactNode)} • Assessment de Personalidade
               </DialogDescription>

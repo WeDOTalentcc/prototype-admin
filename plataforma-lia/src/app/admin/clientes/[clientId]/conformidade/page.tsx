@@ -351,11 +351,11 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
                   <Progress value={(lgpdStats as any).dataRetentionCompliance || 0} className="h-2" />
                 </div>
 
-                // @ts-ignore TODO: fix type
+                {/* @ts-ignore TODO: fix type */}
                 {(lgpdStats as any).lastAuditDate && (
                   <div className="flex items-center gap-2 text-xs lia-text-400 dark:lia-text-500">
                     <Calendar className="w-3 h-3" />
-                    // @ts-ignore TODO: fix type
+                    {/* @ts-ignore TODO: fix type */}
                     Última auditoria: {formatDate((lgpdStats as any).lastAuditDate)}
                   </div>
                 )}

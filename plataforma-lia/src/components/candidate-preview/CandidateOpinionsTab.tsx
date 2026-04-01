@@ -74,7 +74,7 @@ opinionsSubTab === 'analises'
         >
           <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           Análises
-          // @ts-ignore TODO: fix type
+          {/* @ts-ignore TODO: fix type */}
           {(savedAnalyses as any) && (savedAnalyses as any).total_analyses > 0 && (
             <Badge className="text-micro px-1.5 py-0 h-4 ml-1" style={{backgroundColor: 'var(--gray-100)', color: 'var(--wedo-purple)'}}>
               {(savedAnalyses as unknown as {total_analyses: number}).total_analyses}

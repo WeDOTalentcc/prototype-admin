@@ -128,7 +128,7 @@ export function CandidatePageOpinionsTab({
           >
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
             Análises
-            // @ts-ignore TODO: fix type
+            {/* @ts-ignore TODO: fix type */}
             {(savedAnalyses as any) && (savedAnalyses as unknown as { total_analyses: number }).total_analyses > 0 && (
               <Badge className="text-micro px-1.5 py-0 h-4 ml-1 bg-wedo-purple/15 text-wedo-purple">
                 {(savedAnalyses as unknown as { total_analyses: number }).total_analyses}
@@ -284,7 +284,7 @@ export function CandidatePageOpinionsTab({
                                 {Object.entries(opinion.score_breakdown as Record<string, unknown>).map(([key, value]: [string, unknown]) => (
                                   value !== null && value !== undefined && (
                                     <div key={key} className="flex items-center justify-between text-micro bg-gray-50 dark:bg-lia-bg-elevated rounded-full px-2 py-1">
-                                      // @ts-ignore TODO: fix type
+                                      {/* @ts-ignore TODO: fix type */}
                                       <span className="lia-text-base capitalize">{key.replace(/_/g, ' ')}</span>
                                       <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">{(typeof value === "number" ? `${Math.round(value)}%` : value as React.ReactNode)}</span>
                                     </div>

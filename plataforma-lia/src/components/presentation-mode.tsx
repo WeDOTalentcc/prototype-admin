@@ -127,7 +127,7 @@ const DepartmentCard = React.memo(({ dept, index }: { dept: { name: string; effi
           </div>
         </div>
         <div>
-          // @ts-ignore TODO: fix type
+          {/* @ts-ignore TODO: fix type */}
           <div className="text-2xl font-bold text-lia-text-primary">
             {((dept as any).hires as React.ReactNode)}
           </div>

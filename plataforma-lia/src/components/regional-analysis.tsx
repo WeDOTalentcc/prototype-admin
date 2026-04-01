@@ -380,7 +380,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
                               <ArrowUp className="w-4 h-4" /> :
                               <ArrowDown className="w-4 h-4" />
                             }
-                            // @ts-ignore TODO: fix type
+                            {/* @ts-ignore TODO: fix type */}
                             {Math.abs((item as any).crescimentoMedio || (item as any).crescimento).toFixed(1)}%
                           </div>
                           <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">Crescimento</div>

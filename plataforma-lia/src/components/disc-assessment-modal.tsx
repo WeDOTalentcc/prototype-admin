@@ -323,7 +323,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
         <div className="p-6 bg-gray-50 dark:bg-lia-bg-secondary/50 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
-              // @ts-ignore TODO: fix type
+              {/* @ts-ignore TODO: fix type */}
               <Avatar className="w-14 h-14 ring-4 ring-white dark:ring-gray-800">
                 <AvatarImage src={candidate?.avatar as string} />
                 <AvatarFallback className="text-lg bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary">

@@ -126,7 +126,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
             </div>
           </div>
         </div>
-        // @ts-ignore TODO: fix type
+        {/* @ts-ignore TODO: fix type */}
         <div className="flex items-center gap-2">
           {(opinion.created_at as any) && (
             <span className="text-micro text-lia-text-disabled">{formatOpinionDate(String(opinion.created_at))}</span>

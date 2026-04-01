@@ -159,11 +159,11 @@ export function ProactiveActions({
                 <p className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary truncate">
                   {action.title}
                 </p>
-                // @ts-ignore TODO: fix type
+                {/* @ts-ignore TODO: fix type */}
                 <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary truncate">
                   {typeof action.suggested_action === 'string' 
                     ? action.suggested_action 
-                    // @ts-ignore TODO: fix type
+                    {/* @ts-ignore TODO: fix type */}
                     : (action.suggested_action as any)?.label || (action.suggested_action as any)?.action || 'Ver detalhes'}
                 </p>
               </div>
@@ -256,7 +256,7 @@ export function ProactiveActions({
 
                     <div className="flex items-center gap-2 p-2 rounded-md bg-gray-50 dark:bg-lia-bg-secondary/50 border border-lia-border-default dark:border-lia-border-default">
                       <ArrowRight className="h-4 w-4 text-lia-text-secondary dark:text-lia-text-tertiary shrink-0" />
-                      // @ts-ignore TODO: fix type
+                      {/* @ts-ignore TODO: fix type */}
                       <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary font-medium">
                         {typeof action.suggested_action === 'string' 
                           ? action.suggested_action 

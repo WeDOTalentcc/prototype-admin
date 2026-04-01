@@ -352,7 +352,7 @@ export function CandidatePreview({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <span className="text-micro lia-text-secondary flex items-center gap-0.5 cursor-help">
-                        // @ts-ignore TODO: fix type
+                        {/* @ts-ignore TODO: fix type */}
                         <Calendar className="w-2.5 h-2.5" />
                         {formatDate(createdAt as string | Date | null | undefined)}
                       </span>
@@ -364,7 +364,7 @@ export function CandidatePreview({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <span className="text-micro lia-text-secondary flex items-center gap-0.5 cursor-help">
-                        // @ts-ignore TODO: fix type
+                        {/* @ts-ignore TODO: fix type */}
                         <Clock className="w-2.5 h-2.5" />
                         {(formatDate(updatedAt as string | Date | null | undefined) as React.ReactNode)}
                       </span>
@@ -376,7 +376,7 @@ export function CandidatePreview({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary flex items-center gap-0.5 cursor-help">
-                        // @ts-ignore TODO: fix type
+                        {/* @ts-ignore TODO: fix type */}
                         <MessageSquare className="w-2.5 h-2.5" />
                         {(formatDate(lastContactedAt as string | Date | null | undefined) as React.ReactNode)}
                       </span>

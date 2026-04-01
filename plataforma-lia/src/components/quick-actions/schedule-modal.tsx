@@ -399,7 +399,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                   <div className="space-y-4">
                     {/* Quick Recommendations */}
                     <div className="grid grid-cols-3 gap-3">
-                      // @ts-ignore TODO: fix type
+                      {/* @ts-ignore TODO: fix type */}
                       <div className="text-center p-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
                         <div className="text-lg font-semibold text-lia-text-primary">{(liaRecommendations.recommendedDuration as React.ReactNode)}min</div>
                         <div className="text-micro lia-text-base">Duração sugerida</div>
@@ -410,7 +410,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                           Aplicar
                         </button>
                       </div>
-                      // @ts-ignore TODO: fix type
+                      {/* @ts-ignore TODO: fix type */}
                       <div className="text-center p-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
                         <div className="text-lg font-semibold text-lia-text-primary capitalize">{(liaRecommendations.recommendedType as React.ReactNode)}</div>
                         <div className="text-micro lia-text-base">Tipo recomendado</div>
@@ -421,7 +421,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                           Aplicar
                         </button>
                       </div>
-                      // @ts-ignore TODO: fix type
+                      {/* @ts-ignore TODO: fix type */}
                       <div className="text-center p-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
                         <div className="text-lg font-semibold text-lia-text-primary capitalize">{(liaRecommendations.recommendedPlatform as React.ReactNode)}</div>
                         <div className="text-micro lia-text-base">Plataforma sugerida</div>
@@ -458,7 +458,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                     {/* Interview Focus */}
                     <div>
                       <h5 className="text-xs font-medium lia-text-strong mb-2">Foco da Entrevista:</h5>
-                      // @ts-ignore TODO: fix type
+                      {/* @ts-ignore TODO: fix type */}
                       <div className="grid grid-cols-2 gap-2">
                         {Object.entries(liaRecommendations.interviewFocus as Record<string, unknown>)
                           .sort(([,a], [,b]) => ((b as { weight?: number }).weight ?? 0) - ((a as { weight?: number }).weight ?? 0))

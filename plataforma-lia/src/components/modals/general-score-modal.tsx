@@ -166,10 +166,10 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
                 className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full"
                 // @ts-ignore TODO: fix type
                 style={{backgroundColor: getScoreBgColor(finalScore),
-                  // @ts-ignore TODO: fix type
+                  {/* @ts-ignore TODO: fix type */}
                   color: getScoreColor(finalScore)}}
               >
-                // @ts-ignore TODO: fix type
+                {/* @ts-ignore TODO: fix type */}
                 <TrendingUp className="w-3 h-3" />
                 {getScoreLabel(finalScore)}
               </span>

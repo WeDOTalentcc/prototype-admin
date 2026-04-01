@@ -229,7 +229,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
               )}
               {activeSection === 'perguntas' && (
                 <>
-                  // @ts-ignore TODO: fix type
+                  {/* @ts-ignore TODO: fix type */}
                   <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary font-['Open_Sans',sans-serif]">
                     {(job.screeningQuestions as any[])?.length || 0} WSI
                     {((companyQuestions.length - disabledCompanyQIds.size) + selectedBankQuestions.length + customQuestions.length) > 0 && (

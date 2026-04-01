@@ -155,14 +155,14 @@ export function SCMSectionConfiguracoes({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Data Limite</label>
-                  // @ts-ignore TODO: fix type
+                  {/* @ts-ignore TODO: fix type */}
                   <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary opacity-60">
                     {job.deadlineScreening ? new Date(job.deadlineScreening as string).toLocaleDateString('pt-BR') : 'Não definido'}
                   </div>
                 </div>
                 <div>
                   <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif] block mb-2">Dias Restantes</label>
-                  // @ts-ignore TODO: fix type
+                  {/* @ts-ignore TODO: fix type */}
                   <div className="w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary opacity-60">
                     {job.deadlineScreening ? (() => { const days = Math.ceil((new Date(job.deadlineScreening as string).getTime() - Date.now()) / (1000*60*60*24)); return days > 0 ? `${days} dias` : days === 0 ? 'Hoje' : 'Expirado' })() : '—'}
                   </div>

@@ -182,14 +182,14 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
             <div className="flex items-center gap-2">
               <FileText className="w-4 h-4 print:w-4 print:h-4" />
               <div>
-                // @ts-ignore TODO: fix type
+                {/* @ts-ignore TODO: fix type */}
                 <h2 className="text-xs font-semibold print:text-xs">Relatório Executivo da Vaga</h2>
                 <p className="text-micro text-white/80">{reportLoading ? "Carregando..." : String((job as any).title || "")} • {String((job as any).jobId || "")}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 print:hidden">
               <Button
-                // @ts-ignore TODO: fix type
+                {/* @ts-ignore TODO: fix type */}
                 variant="secondary"
                 size="sm"
                 onClick={shareReport}
@@ -258,7 +258,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                     {(job.location as React.ReactNode)}
                   </span>
                   <span className="flex items-center gap-0.5">
-                    // @ts-ignore TODO: fix type
+                    {/* @ts-ignore TODO: fix type */}
                     <Calendar className="w-3 h-3" />
                     Aberta há {Math.floor((new Date().getTime() - new Date((job as any).openDate).getTime()) / (1000 * 60 * 60 * 24))} dias
                   </span>
@@ -301,7 +301,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                 </div>
                 <div className="p-2 bg-status-warning/10 rounded-md border border-status-warning/30 flex items-start gap-2">
                   <AlertCircle className="w-3 h-3 text-status-warning mt-0.5 flex-shrink-0" />
-                  // @ts-ignore TODO: fix type
+                  {/* @ts-ignore TODO: fix type */}
                   <p className="text-micro text-lia-text-primary dark:text-lia-text-primary">
                     <span className="font-medium">Status:</span> Processo em fase de {(job as any).stage?.toLowerCase() || 'entrevista'} com {reportData.funnelMetrics.interview} candidatos
                     em entrevista e {reportData.funnelMetrics.final} finalistas. Taxa de conversão: {reportData.funnelMetrics.conversionRate}% (mercado: 2.3%).
@@ -550,7 +550,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                 <p>© 2025 Sodexo - Todos os direitos reservados</p>
               </div>
               <div className="text-right">
-                // @ts-ignore TODO: fix type
+                {/* @ts-ignore TODO: fix type */}
                 <p>Versão do relatório: 2.0</p>
                 <p>ID do documento: RPT-{(job.jobId as React.ReactNode)}-{new Date().getTime()}</p>
               </div>

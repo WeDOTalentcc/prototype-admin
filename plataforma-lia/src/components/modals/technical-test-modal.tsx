@@ -237,13 +237,13 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                   Breakdown por Categoria
                 </p>
 
-                // @ts-ignore TODO: fix type
+                {/* @ts-ignore TODO: fix type */}
                 <div className="space-y-2.5">
                   {((testData as any).categories as any[])?.map((category: Record<string, unknown>, index: number) => (
                     <div 
                       key={index}
                       className="p-3 rounded-md border border-lia-border-subtle"
-                    // @ts-ignore TODO: fix type
+                    {/* @ts-ignore TODO: fix type */}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span 
@@ -252,11 +252,11 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                         >
                           {(category.name as React.ReactNode)}
                         </span>
-                        // @ts-ignore TODO: fix type
+                        {/* @ts-ignore TODO: fix type */}
                         <div className="flex items-center gap-2">
                           {(getComparisonIcon((category as any).score, (category as any).avgScore) as React.ReactNode)}
                           <span 
-                            // @ts-ignore TODO: fix type
+                            {/* @ts-ignore TODO: fix type */}
                             className="text-xs font-bold"
                             // @ts-ignore TODO: fix type
                             style={{color: getScoreColor((category as any).score)}}

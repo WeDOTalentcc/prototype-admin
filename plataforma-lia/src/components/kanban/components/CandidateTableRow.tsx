@@ -134,7 +134,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
         </div>
       </td>
 
-      // @ts-ignore TODO: fix type
+      {/* @ts-ignore TODO: fix type */}
       <td className="px-2 py-2">
         <div className="flex items-center gap-1 justify-center">
           <Target className="w-3 h-3 lia-text-950 dark:lia-text-50" />
@@ -166,7 +166,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
             >
               {formatScorePercent((candidate as any).technicalTestScore, 0)}
             </Badge>
-            // @ts-ignore TODO: fix type
+            {/* @ts-ignore TODO: fix type */}
             <Eye className="w-3 h-3 lia-text-600 dark:lia-text-500 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none" />
           </div>
         ) : (

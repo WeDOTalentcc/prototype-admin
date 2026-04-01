@@ -165,8 +165,8 @@ export default function FunilDeTalentosPage() {
             </h1>
             {/* @ts-ignore // TODO: fix type */}
             <p className={cn(textStyles.secondary, "text-xs mt-0.5")} aria-live="polite">
-              // @ts-ignore TODO: fix type
-              // @ts-ignore TODO: fix type
+              {/* @ts-ignore TODO: fix type */}
+              {/* @ts-ignore TODO: fix type */}
               {total > 0 ? `${total.toLocaleString("pt-BR")} candidatos` : "Busque candidatos na base"}
             </p>
           </div>
@@ -333,16 +333,16 @@ export default function FunilDeTalentosPage() {
               </div>
             )}
           </TabsContent>
- // @ts-ignore // TODO: fix type
+ {/* @ts-ignore // TODO: fix type */}
 
           {/* Tab: Favoritos */}
           <TabsContent value="favoritos" className="mt-4">
             <FavoritesTab
-              // @ts-ignore TODO: fix type
+              {/* @ts-ignore TODO: fix type */}
               candidates={favoriteCandidates}
-              // @ts-ignore // TODO: fix type
+              {/* @ts-ignore // TODO: fix type */}
               pinnedCandidates={pinnedIds}
-              // @ts-ignore // TODO: fix type
+              {/* @ts-ignore // TODO: fix type */}
               favoriteCandidates={favoriteIds}
               favoriteNotes={favoriteNotes}
               onTogglePin={togglePinnedCandidate}

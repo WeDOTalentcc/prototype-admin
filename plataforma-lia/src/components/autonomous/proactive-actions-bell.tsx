@@ -211,11 +211,11 @@ export function ProactiveActionsBell({
             </p>
             <div className="flex items-center gap-1 mt-2">
               <ArrowRight className="h-3 w-3 text-lia-text-secondary dark:text-lia-text-tertiary shrink-0" />
-              // @ts-ignore TODO: fix type
+              {/* @ts-ignore TODO: fix type */}
               <span className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary font-medium line-clamp-1">
                 {typeof action.suggested_action === 'string' 
                   ? action.suggested_action 
-                  // @ts-ignore TODO: fix type
+                  {/* @ts-ignore TODO: fix type */}
                   : (action.suggested_action as any)?.label || (action.suggested_action as any)?.action || 'Ver detalhes'}
               </span>
             </div>

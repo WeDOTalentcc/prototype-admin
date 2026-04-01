@@ -331,11 +331,11 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
                       </Badge>
                     </div>
                   )}
- // @ts-ignore TODO: fix type
+ {/* @ts-ignore TODO: fix type */}
 
                   {/* Scores */}
                   {(activity.extra_data.overall_score || activity.extra_data.tech_score || activity.extra_data.comm_score) && (
-                    // @ts-ignore TODO: fix type
+                    {/* @ts-ignore TODO: fix type */}
                     <div className="flex items-center gap-2 flex-wrap">
                       {activity.extra_data.overall_score !== undefined && (
                         <div className="flex items-center gap-1">

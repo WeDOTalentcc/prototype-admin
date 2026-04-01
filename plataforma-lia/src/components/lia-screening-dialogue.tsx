@@ -612,7 +612,7 @@ Boa sorte com as triagens! 🚀`,
                   </div>
                   <div>
                     <label className="text-xs font-medium lia-text-base">Benefícios:</label>
-                    // @ts-ignore TODO: fix type
+                    {/* @ts-ignore TODO: fix type */}
                     <div className="flex flex-wrap gap-1">
                       {((jobData?.benefits as any[]) || ['Benefícios competitivos']).map((benefit: string) => (
                         <Badge key={benefit} variant="secondary" className="text-xs">{benefit}</Badge>
@@ -688,10 +688,10 @@ Boa sorte com as triagens! 🚀`,
                     { step: "Triagem", time: "25-30 min", desc: "Conversa estruturada com candidato" },
                     { step: "Avaliação", time: "10 min após", desc: "Análise e decisão" },
                     { step: "Feedback", time: "24-48h após", desc: "Retorno personalizado" }
-                  // @ts-ignore TODO: fix type
+                  {/* @ts-ignore TODO: fix type */}
                   ].map((item, index) => (
                     <div key={item.step} className="flex items-start gap-3 p-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
-                      // @ts-ignore TODO: fix type
+                      {/* @ts-ignore TODO: fix type */}
                       <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center text-lia-text-secondary dark:text-lia-text-tertiary text-xs font-bold">
                         {(index + 1 as React.ReactNode)}
                       </div>
