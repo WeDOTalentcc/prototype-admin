@@ -50,6 +50,7 @@ const nextConfig = {
       "images.unsplash.com",
       "ext.same-assets.com",
       "ugc.same-assets.com",
+      "ui-avatars.com",
     ],
     remotePatterns: [
       {
@@ -91,6 +92,11 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "media.licdn.com",
+      },
+      {
+        protocol: "https",
+        hostname: "ui-avatars.com",
+        pathname: "/**",
       },
     ],
   },
