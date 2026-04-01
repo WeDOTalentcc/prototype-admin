@@ -29,6 +29,7 @@
   --lia-text-tertiary: #9CA3AF;        /* Cinza claro - labels, hints */
   --lia-text-disabled: #D1D5DB;        /* Cinza muito claro - desabilitado */
   --lia-text-inverse: #FFFFFF;         /* Branco - texto em fundo escuro */
+  --lia-text-inverted: var(--lia-text-inverse); /* Alias para compatibilidade retroativa */
   
   /* Interactive States - Monocromático */
   --lia-interactive-hover: #F3F4F6;    /* Hover sutil */
