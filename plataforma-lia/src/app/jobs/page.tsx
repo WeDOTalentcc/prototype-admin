@@ -1,7 +1,11 @@
-"use client"
-
-import React, { useState, useEffect } from "react"
+import type { Metadata } from "next"
+import { Suspense } from "react"
 import { JobsPage } from "@/components/pages/jobs-page"
+
+export const metadata: Metadata = {
+  title: "Vagas | LIA — WeDo Talent",
+  description: "Gerencie todas as vagas de emprego da sua empresa. Crie, edite e acompanhe processos seletivos com triagem inteligente por IA.",
+}
 
 function LoadingSkeleton() {
   return (
@@ -20,15 +24,9 @@ function LoadingSkeleton() {
 }
 
 export default function JobsListPage() {
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  if (!mounted) {
-    return <LoadingSkeleton />
-  }
-
-  return <JobsPage />
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <JobsPage />
+    </Suspense>
+  )
 }
