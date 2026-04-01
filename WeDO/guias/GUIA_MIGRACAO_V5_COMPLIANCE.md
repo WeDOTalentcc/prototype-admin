@@ -1,17 +1,149 @@
 # Guia de Migração v5 → Compliance Compartilhada
 
 > **Plataforma LIA — WeDO Talent**
-> Versão: 1.4 | Data: 2026-04-01
+> Versão: 2.0 | Data: 2026-04-01
 > Fonte: `WeDO/analises/diagnostico_arquitetura_codigo_lia_vs_v5.md` (8070 linhas)
 > Caminho recomendado: **Caminho 2 — ComplianceDomainPrompt** (~23.5h, 3 sprints)
 
----
-
-## Diagnóstico: O Que Está Errado Hoje no v5
-
-Antes de explicar a solução, é preciso entender o problema. Abaixo estão os **11 problemas estruturais** identificados — 7 de compliance (P1-P7) e 4 de qualidade de resposta (P8-P11).
 
 ---
+
+## Introdução
+
+Este guia documenta a migração do v5 para a arquitetura de **Compliance Compartilhada**, cobrindo desde o diagnóstico dos problemas até o plano de execução sprint a sprint.
+
+**Para quem é este guia:** desenvolvedores, tech leads e arquitetos que vão implementar a migração.
+
+**Como ler:**
+
+1. **Resumo Executivo** — visão geral dos 11 problemas e qual caminho resolve cada um
+2. **Contexto** (seção 1) — por que o v5 tem 3 arquiteturas diferentes
+3. **Diagnóstico** (seção 2) — os 11 problemas, ponto a ponto
+4. **Análise Aprofundada** (seção 3) — roteamento, inventário por domínio, cenários reais, prompts, gap de tools
+5. **Conceitos** (seção 4) — glossário: o que é ComplianceDomainPrompt, Tools, ReAct, etc.
+6. **Migração Caminho 2** (seções 5-9) — os 9 controles, classe base, migração dos domínios, sprint plan, testes
+7. **Roadmap Caminho 3** (seção 10) — capacidades LIA a implementar, refatoração com mixins
+8. **Decisão e Apêndices** (seção 11) — matriz de decisão, 23 concerns
+
+
+---
+
+## Resumo Executivo
+
+
+**Problemas de Compliance (P1-P7):**
+
+| # | Problema | Gravidade | Regulação afetada |
+|---|----------|-----------|-------------------|
+| P1 | 3 arquiteturas diferentes | Estrutural | — |
+| P2 | Compliance é opcional (opt-in) | **Crítica** | Todas |
+| P3 | 6 de 9 serviços não existem | **Crítica** | EU AI Act, LGPD, SOX, BCB-498 |
+| P4 | Serviços acoplados aos domínios errados | Alta | EU AI Act Art. 6, 9 |
+| P5 | Serviços atuam no ponto errado do pipeline | Alta | LGPD Art. 12, SOX |
+| P6 | Sem camada intermediária (herança direta) | **Crítica** | Todas |
+| P7 | Novos domínios não herdam nada | **Crítica** | Todas |
+
+**Problemas de Qualidade de Resposta (P8-P11):**
+
+| # | Problema | Gravidade | Impacto no produto |
+|---|----------|-----------|-------------------|
+| P8 | Domínios Flat incapazes de encadear ações | **Crítica** | Respostas limitadas — "preciso pedir uma coisa de cada vez" |
+| P9 | Keyword/regex matching frágil | Alta | Respostas equivocadas — entende errado e faz a coisa errada |
+| P10 | Contexto pobre (sem memória de sessão) | **Crítica** | Sistema "amnésico" — cada mensagem tratada como primeira |
+| P11 | Prompts estáticos sem composição dinâmica | Alta | Tom robótico — respostas genéricas sem personalidade |
+
+**O Caminho 2 resolve P2, P3, P4, P5, P6 e P7 em 3 sprints (~23.5h).**
+**O Caminho 3 resolve P1 (unificação arquitetural), P8 (Flat→ReAct), P9 (elimina regex), P10 (MemoryResolver+ContextAggregator) e P11 (PromptRegistry+blocos composíveis).**
+
+---
+
+## Índice
+
+1. [Contexto](#1-contexto)
+2. [Diagnóstico: Todos os Problemas](#2-diagnóstico-todos-os-problemas)
+   - P1-P7: Problemas de Compliance
+   - P8-P11: Problemas de Qualidade de Resposta
+3. [Análise Aprofundada](#3-análise-aprofundada)
+   - 3.1: [Roteamento v5 vs LIA](#31-como-funciona-o-roteamento-v5-vs-lia)
+   - 3.2: [Inventário Real por Domínio](#32-inventário-real-por-domínio)
+   - 3.3: [Mapa Cenário → Domínio → Problemas](#33-mapa-cenário--domínio--problemas-aplicáveis)
+   - 3.4: [Diagnóstico por Cenário de Uso](#34-diagnóstico-granular-por-cenário-de-uso)
+   - 3.5: [Diagnóstico dos Prompts](#35-diagnóstico-dos-prompts-v5-vs-lia)
+   - 3.6: [Gap de Tools](#36-gap-de-tools-ações-declaradas-vs-tools-executáveis)
+   - 3.7: [Relação Camadas e Problemas](#37-relação-entre-camadas-e-problemas)
+4. [Conceitos Fundamentais](#4-conceitos-fundamentais)
+   - 4.1: Compliance vs Arquitetura
+   - 4.2: O Que É o ComplianceDomainPrompt
+   - 4.3: O Contrato de 5 Métodos
+   - 4.4: O Que Acontece com Duplicados
+   - 4.5: Fluxo Antes → Depois por Grupo
+   - 4.6: Os 8 Domínios Continuam Separados
+   - 4.7: Estrutura dos Agentes
+   - 4.8: Resumo Visual
+   - 4.9: O Que São Tools
+   - 4.10: Onde Controles Atuam no Pipeline
+   - 4.11: ReAct, LangGraph e Flat
+5. [Os 9 Controles de Compliance](#5-os-9-controles-de-compliance)
+6. [ComplianceDomainPrompt — Classe Completa](#6-compliancedomainprompt--classe-completa)
+7. [Migração dos 8 Domínios](#7-migração-dos-8-domínios)
+8. [Limpeza e Sprint Plan](#8-limpeza-e-sprint-plan)
+9. [Testes de Validação](#9-testes-de-validação-por-domínio)
+10. [Roadmap — Caminho 3](#10-roadmap--caminho-3)
+11. [Decisão e Apêndices](#11-decisão-e-apêndices)
+
+
+---
+
+## 1. Contexto
+
+O v5 possui 8 domínios organizados em 3 grupos arquiteturais distintos, com cobertura de compliance fragmentada. Esta seção explica como chegamos a esse estado.
+
+### 1.1 Três Arquiteturas no v5
+
+O v5 possui 8 domínios organizados em 3 grupos arquiteturais distintos:
+
+| Grupo | Padrão | Domínios | Arquivo principal |
+|-------|--------|----------|-------------------|
+| **Flat** | `DomainPrompt` direto (`process_intent` → `execute_action`) | `scheduling`, `messaging`, `jobs` | `domain.py` |
+| **LangGraph** | `StateGraph` com nós (`graph.py` + `nodes.py` + `state.py`) | `evaluation`, `applies`, `insights`, `sourced_profile_sourcing` | `domain.py` → `graph.py` |
+| **Multi-Agent** | `UniversalReActAgent` com loop ReAct autônomo | `autonomous` | `agent.py` (895L) |
+
+### 1.2 Cobertura de Compliance Atual
+
+```
+Domínio               Fairness  PII-LLM  Injection  Audit  Confidence  FactCheck
+─────────────────────────────────────────────────────────────────────────────────
+evaluation            ❌        ❌       ❌         ✅(*)  ❌          ❌
+autonomous            ❌        ❌       ❌         ✅(*)  ❌          ❌
+applies               ❌        ❌       ❌         ✅(*)  ❌          ❌
+scheduling            ❌        ❌       ❌         ❌     ❌          ─
+messaging             ❌        ❌       ❌         ❌     ❌          ─
+jobs                  ❌        ❌       ❌         ❌     ❌          ─
+sourced_profile       ✅        ❌       ❌         ✅(*)  ❌          ✅
+insights              ❌        ❌       ❌         ❌     ❌          ❌
+─────────────────────────────────────────────────────────────────────────────────
+(*) = audit_callback existe em src/services/audit/ mas é mutável (ON CONFLICT DO UPDATE)
+✅ = implementado    ❌ = ausente    ─ = não aplicável ao domínio
+```
+
+### 1.3 Por Que "Disciplina" Falhou
+
+O v5 disponibiliza serviços em `src/services/` (pii_filter, circuit_breaker, audit) como **opções** — não são injetados automaticamente. Cada domínio decide se os usa. Resultado:
+
+- `sourced_profile_sourcing` → desenvolvedor incluiu `fairness.py` + `fact_checker.py` manualmente
+- `evaluation`, `applies`, `insights`, `messaging` → nenhum guard
+- Novos domínios criados sem contexto histórico não herdam nada
+
+**Solução:** Herança automática via `ComplianceDomainPrompt`. O Python garante compliance — não a memória do desenvolvedor.
+
+---
+
+
+---
+
+## 2. Diagnóstico: Todos os Problemas
+
+Abaixo estão os **11 problemas estruturais** identificados — 7 de compliance (P1-P7) e 4 de qualidade de resposta (P8-P11). Cada problema é descrito em detalhe com exemplos concretos do código.
 
 ### P1. Os 8 domínios têm 3 arquiteturas diferentes
 
@@ -231,682 +363,41 @@ Impacto concreto:
 
 ---
 
-### Resumo dos 11 Problemas
-
-**Problemas de Compliance (P1-P7):**
-
-| # | Problema | Gravidade | Regulação afetada |
-|---|----------|-----------|-------------------|
-| P1 | 3 arquiteturas diferentes | Estrutural | — |
-| P2 | Compliance é opcional (opt-in) | **Crítica** | Todas |
-| P3 | 6 de 9 serviços não existem | **Crítica** | EU AI Act, LGPD, SOX, BCB-498 |
-| P4 | Serviços acoplados aos domínios errados | Alta | EU AI Act Art. 6, 9 |
-| P5 | Serviços atuam no ponto errado do pipeline | Alta | LGPD Art. 12, SOX |
-| P6 | Sem camada intermediária (herança direta) | **Crítica** | Todas |
-| P7 | Novos domínios não herdam nada | **Crítica** | Todas |
-
-**Problemas de Qualidade de Resposta (P8-P11):**
-
-| # | Problema | Gravidade | Impacto no produto |
-|---|----------|-----------|-------------------|
-| P8 | Domínios Flat incapazes de encadear ações | **Crítica** | Respostas limitadas — "preciso pedir uma coisa de cada vez" |
-| P9 | Keyword/regex matching frágil | Alta | Respostas equivocadas — entende errado e faz a coisa errada |
-| P10 | Contexto pobre (sem memória de sessão) | **Crítica** | Sistema "amnésico" — cada mensagem tratada como primeira |
-| P11 | Prompts estáticos sem composição dinâmica | Alta | Tom robótico — respostas genéricas sem personalidade |
-
-**O Caminho 2 resolve P2, P3, P4, P5, P6 e P7 em 3 sprints (~23.5h).**
-**O Caminho 3 resolve P1 (unificação arquitetural), P8 (Flat→ReAct), P9 (elimina regex), P10 (MemoryResolver+ContextAggregator) e P11 (PromptRegistry+blocos composíveis).**
 
 ---
 
-## Índice
+## 3. Análise Aprofundada
 
-0. [Entendendo a Migração — Perguntas Frequentes](#0-entendendo-a-migração--perguntas-frequentes)
-   - 0.1–0.9: Arquiteturas, ComplianceDomainPrompt, contrato, duplicados, fluxos, domínios, agentes
-   - 0.10: [O Que São "Tools" no Contexto de Agentes IA](#010-o-que-são-tools-no-contexto-de-agentes-ia)
-   - 0.11: [Onde Cada Controle Atua no Pipeline](#011-onde-cada-controle-atua-no-pipeline)
-   - 0.12: [Avaliação Arquitetural: v5 vs LIA](#012-avaliação-arquitetural-v5-vs-lia)
-     - 0.12.1: [Como Funciona o Roteamento: v5 vs LIA](#0121-como-funciona-o-roteamento-v5-vs-lia)
-     - 0.12.2: [Inventário Real por Domínio](#0122-inventário-real-por-domínio-o-que-cada-domínio-v5-tem-e-não-tem)
-     - 0.12.3: [Mapa Cenário → Domínio → Problemas Aplicáveis](#0123-mapa-cenário--domínio--problemas-aplicáveis)
-   - 0.13: [Por Que as Respostas São Limitadas, Equivocadas ou Robóticas](#013-por-que-as-respostas-são-limitadas-equivocadas-ou-robóticas)
-     - 0.13.1: [Diagnóstico Granular por Cenário de Uso](#0131-diagnóstico-granular-por-cenário-de-uso)
-     - 0.13.2: [Diagnóstico dos Prompts: v5 vs LIA](#0132-diagnóstico-dos-prompts-v5-vs-lia)
-     - 0.13.3: [Gap de Tools: Ações Declaradas vs Tools Executáveis](#0133-gap-de-tools-ações-declaradas-vs-tools-executáveis)
-     - 0.13.4: [Relação entre Camadas e Problemas](#0134-relação-entre-camadas-e-problemas)
-   - 0.14: [Capacidades da LIA que o v5 Precisa Implementar](#014-capacidades-da-lia-que-o-v5-precisa-implementar)
-1. [Contexto Rápido](#1-contexto-rápido)
-2. [Pré-Requisitos: 9 Controles de Compliance](#2-pré-requisitos-9-controles-de-compliance)
-3. [ComplianceDomainPrompt — Classe Completa](#3-compliancedomainprompt--classe-completa)
-4. [Migração dos 8 Domínios](#4-migração-dos-8-domínios)
-5. [Anti-Duplicação (Limpeza pós-Caminho 1)](#5-anti-duplicação-limpeza-pós-caminho-1)
-6. [Sprint Plan (3 Sprints, ~23.5h)](#6-sprint-plan-3-sprints-235h)
-7. [Testes de Validação por Domínio](#7-testes-de-validação-por-domínio)
-8. [Roadmap Caminho 3 — Refatoração com Mixins](#8-roadmap-caminho-3--refatoração-com-mixins)
-9. [Matriz de Decisão: Caminho 1 vs 2 vs 3](#9-matriz-de-decisão-caminho-1-vs-2-vs-3)
-10. [Apêndice: 23 Concerns — Mapeamento Completo](#10-apêndice-23-concerns--mapeamento-completo)
+Esta seção aprofunda o diagnóstico com dados do código: como o roteamento funciona, o que cada domínio tem e não tem, cenários reais de falha, e o gap de tools.
 
----
 
-## 0. Entendendo a Migração — Perguntas Frequentes
-
-> **Leia esta seção antes de mergulhar nos passos técnicos.** Ela responde as dúvidas
-> mais comuns sobre o que vai mudar, o que não muda, e por quê.
-
----
-
-### 0.1 Por Que Existem 3 Arquiteturas Diferentes no v5?
-
-Quando lemos o código dos 8 domínios, descobrimos que eles não seguem uma arquitetura única. Existem **3 grupos** que funcionam de formas diferentes:
+As respostas do v5 sofrem de 4 camadas de problemas, cada uma contribuindo para um tipo de falha diferente:
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        O v5 Hoje — 3 Motores                          │
-│                                                                       │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────────┐   │
-│  │ GRUPO 1: FLAT   │  │ GRUPO 2:        │  │ GRUPO 3:            │   │
-│  │                 │  │ LANGGRAPH       │  │ MULTI-AGENT         │   │
-│  │ jobs            │  │                 │  │                     │   │
-│  │ messaging       │  │ evaluation      │  │ autonomous          │   │
-│  │ scheduling      │  │ applies (*)     │  │                     │   │
-│  │                 │  │ insights        │  │ query → subagentes  │   │
-│  │ query → keyword │  │ sourcing (**)   │  │ → loop ReAct        │   │
-│  │ matching → LLM  │  │ query → graph   │  │ → tools → resultado │   │
-│  │ → ação          │  │ → nós → edges   │  │                     │   │
-│  │                 │  │ → resultado     │  │                     │   │
-│  └─────────────────┘  └─────────────────┘  └─────────────────────┘   │
-│                                                                       │
-│  (*)  applies é híbrido: estrutura Flat mas tem react_agent.py com    │
-│       LangGraph interno — evidência de convergência não coordenada    │
-│  (**) sourcing (sourced_profile_sourcing) usa StateGraph (LangGraph)  │
-│       mas também tem BaseAgent ABC — outro híbrido. domain.py segue  │
-│       padrão LangGraph para fins de migração                         │
-└─────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│          4 CAMADAS DE PROBLEMAS NAS RESPOSTAS DO v5                │
+│                                                                     │
+│  CAMADA 4: ARQUITETURA (P8)                                        │
+│  └─ Flat não encadeia ações → respostas parciais                   │
+│                                                                     │
+│  CAMADA 3: INTERPRETAÇÃO (P9)                                      │
+│  └─ Regex/keyword não entende linguagem natural → ação errada      │
+│                                                                     │
+│  CAMADA 2: CONTEXTO (P10)                                          │
+│  └─ Sem memória/state → não sabe do que se trata → genérico        │
+│                                                                     │
+│  CAMADA 1: PROMPT (P11)                                            │
+│  └─ Prompt estático sem blocos/few-shot → tom robótico             │
+│                                                                     │
+│  ───────────────────────────────────────────────────────────────    │
+│  Resolver SÓ a camada 1 (prompt) não adianta se as camadas         │
+│  2, 3 e 4 continuam falhando. A correção é de baixo para cima.     │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
-**Isso não foi planejado.** Cada desenvolvedor, em momentos diferentes, escolheu a abordagem que fazia sentido para o problema que estava resolvendo. O resultado é que hoje temos 3 "motores" diferentes: um faz keyword matching, outro usa grafos LangGraph, outro usa subagentes autônomos.
+> **Nota importante:** Nem todos os problemas se aplicam a todos os cenários. A seção 0.12.3 mostra que **P8 (Flat) não se aplica** a cenários de `evaluation`, `scheduling` e `autonomous` — eles já usam LangGraph/ReAct. Generalizar "tudo é Flat" é impreciso e leva a esforço de migração desnecessário.
 
-A diferença de complexidade é real — `jobs` é mais simples que `evaluation`, que é mais simples que `autonomous`. Mas a **infraestrutura** de cada um (como se conectam ao LLM, como fazem audit, como aplicam compliance) deveria ser a mesma.
-
----
-
-### 0.2 O Que É o ComplianceDomainPrompt?
-
-É a peça que sempre deveria ter existido entre a classe base (`DomainPrompt`) e os domínios.
-
-**Antes da migração** — cada domínio se conecta diretamente à base:
-
-```
-DomainPrompt (base com 5 métodos abstratos)
-├── EvaluationDomain      ← sem compliance automático
-├── SchedulingDomain      ← sem compliance automático
-├── MessagingDomain       ← sem compliance automático
-├── JobsDomain            ← sem compliance automático
-├── AppliesDomain         ← sem compliance automático
-├── InsightsDomain        ← sem compliance automático
-├── SourcingDomain        ← fairness/fact_check manuais (o dev lembrou)
-└── AutonomousDomain      ← sem compliance automático
-```
-
-**Depois da migração** — uma camada intermediária intercepta e aplica compliance:
-
-```
-DomainPrompt (base, inalterada)
-└── ComplianceDomainPrompt (NOVO — intercepta, aplica guards, delega)
-    ├── EvaluationDomain      ← compliance automático ✅
-    ├── SchedulingDomain      ← compliance automático ✅
-    ├── MessagingDomain       ← compliance automático ✅
-    ├── JobsDomain            ← compliance automático ✅
-    ├── AppliesDomain         ← compliance automático ✅
-    ├── InsightsDomain        ← compliance automático ✅
-    ├── SourcingDomain        ← compliance automático ✅ (manuais removidos)
-    └── AutonomousDomain      ← compliance automático ✅
-```
-
-Quando um novo domínio for criado no futuro, basta herdar de `ComplianceDomainPrompt` — e automaticamente terá fairness, injection guard, PII stripping e confidence scoring. O Python garante isso pela herança, não a memória do desenvolvedor.
-
----
-
-### 0.3 O Contrato de 5 Métodos — O Que Muda e O Que Não Muda
-
-O `DomainPrompt` do v5 define 5 métodos abstratos que todo domínio implementa:
-
-```
-DomainPrompt
-├── get_allowed_actions()     → lista de ações disponíveis
-├── get_system_prompt()       → prompt de sistema para o LLM
-├── get_capabilities()        → extensão do v5 (não existe na LIA)
-├── process_intent(query)     → interpreta a intenção do usuário
-└── execute_action(action)    → executa a ação identificada
-```
-
-O `ComplianceDomainPrompt` **intercepta apenas 2** desses 5 métodos:
-
-| Método | O que acontece | Muda? |
-|--------|---------------|-------|
-| `get_allowed_actions()` | Passa direto para o domínio | Não |
-| `get_system_prompt()` | Passa direto para o domínio | Não |
-| `get_capabilities()` | Passa direto para o domínio | Não |
-| **`process_intent()`** | **Intercepta:** injection → fairness → PII → delega | **Sim** |
-| **`execute_action()`** | **Intercepta:** sanitize → delega → confidence → hooks | **Sim** |
-
-Na prática, o domínio renomeia dois métodos:
-- `process_intent()` → `_domain_process_intent()` (mesma lógica, nome diferente)
-- `execute_action()` → `_domain_execute_action()` (mesma lógica, nome diferente)
-
-A lógica de negócio de cada domínio **não muda**. Apenas os nomes dos métodos mudam para que o `ComplianceDomainPrompt` possa interceptar.
-
----
-
-### 0.4 O Que Acontece com os Arquivos Duplicados Dentro dos Domínios?
-
-Alguns domínios já implementaram compliance manualmente — criando arquivos como `fairness.py` e `fact_checker.py` dentro da própria pasta do domínio. Após a migração, esses arquivos **devem ser deletados** porque a compliance agora vem automaticamente pela herança.
-
-**Arquivos a deletar (no mesmo commit da migração do domínio):**
-
-| Arquivo | Domínio | Por que deletar |
-|---------|---------|-----------------|
-| `src/domains/jobs/fairness.py` | jobs | Coberto por `ComplianceDomainPrompt` via `FairnessGuard` centralizado |
-| `src/domains/evaluation/security.py` | evaluation | Coberto por `PromptInjectionGuard` centralizado |
-| `src/domains/sourced_profile_sourcing/fairness.py` | sourcing | Coberto por `ComplianceDomainPrompt` via `FairnessGuard` centralizado |
-| `src/domains/sourced_profile_sourcing/fact_checker.py` | sourcing | Coberto por `FactChecker` centralizado em `src/services/compliance/` |
-
-**Além dos arquivos, remover também:**
-- Imports diretos de `FairnessGuard` / `PromptInjectionGuard` em qualquer `domain.py`
-- Chamadas manuais a guards dentro de `process_intent()` ou `execute_action()`
-- Referência a `self._fact_checker` no `agents/base.py` do sourcing (refatorar para usar o centralizado)
-
-**Como verificar que não ficou duplicação:**
-
-```bash
-grep -rn "FairnessGuard" src/domains/*/domain.py
-grep -rn "PromptInjectionGuard" src/domains/*/domain.py
-grep -rn "strip_pii_for_llm_prompt" src/domains/*/domain.py
-```
-
-Se encontrar hits (exceto em `compliance_base.py`), são duplicações a remover.
-
----
-
-### 0.5 Fluxo "Antes → Depois" por Grupo Arquitetural
-
-#### Grupo 1 — Flat (jobs, messaging, scheduling)
-
-```
-ANTES:
-  query → process_intent()
-         → keyword matching / LLM classifica
-         → retorna action_id
-  action_id → execute_action()
-         → dispatch map → handler → HTTP Rails
-         → retorna resultado
-
-DEPOIS:
-  query → ComplianceDomainPrompt.process_intent()
-         → [1] Injection Guard → bloqueio se "high risk"
-         → [2] Fairness Guard  → bloqueio se discriminatório
-         → [3] PII Strip       → remove CPF, email, idade, etc.
-         → _domain_process_intent()      ← MESMA lógica de antes
-            → keyword matching / LLM classifica
-            → retorna action_id
-  action_id → ComplianceDomainPrompt.execute_action()
-         → [1] Sanitizar params (injection + PII)
-         → _domain_execute_action()      ← MESMA lógica de antes
-            → dispatch map → handler → HTTP Rails
-         → [2] Confidence scoring
-         → retorna resultado com "confidence": 0.xx
-
-ARQUIVOS REMOVIDOS:
-  jobs/fairness.py → DELETAR (coberto pelo ComplianceDomainPrompt)
-```
-
-#### Grupo 2 — LangGraph (evaluation, applies, insights, sourcing)
-
-```
-ANTES:
-  query → process_intent()
-         → LLM classifica intent
-         → retorna action_id
-  action_id → execute_action()
-         → graph.py → StateGraph com nós → resultado
-
-DEPOIS:
-  query → ComplianceDomainPrompt.process_intent()
-         → [1] Injection Guard
-         → [2] Fairness Guard
-         → [3] PII Strip
-         → _domain_process_intent()      ← MESMA lógica de antes
-            → LLM classifica intent
-            → retorna action_id
-  action_id → ComplianceDomainPrompt.execute_action()
-         → [1] Sanitizar params
-         → _domain_execute_action()      ← MESMA lógica de antes
-            → graph.py → StateGraph com nós → resultado
-         → [2] Confidence scoring
-         → [3] _post_execute_hook()      ← NOVO (override por domínio)
-            → evaluation: BiasAuditSnapshot + FactCheck
-            → insights: FactCheck
-            → sourcing: (guards manuais removidos)
-         → retorna resultado com "confidence" + "fact_check"
-
-ARQUIVOS REMOVIDOS:
-  evaluation/security.py                     → DELETAR
-  sourced_profile_sourcing/fairness.py       → DELETAR
-  sourced_profile_sourcing/fact_checker.py   → DELETAR
-```
-
-**Caso especial — `applies/react_agent.py`:**
-
-O `applies` tem compliance em **dois níveis**:
-1. **Nível domínio** — `ComplianceDomainPrompt` protege `process_intent` e `execute_action` (igual aos outros)
-2. **Nível tool call** — `call_tools()` no `react_agent.py` recebe fairness check adicional em tools que filtram candidatos (`filter_applications`, `rank_candidates`)
-
-Esse segundo nível é necessário porque o LLM pode gerar tool calls com critérios discriminatórios mesmo quando a query original era limpa.
-
-#### Grupo 3 — Multi-Agent (autonomous)
-
-> **Nota:** `sourced_profile_sourcing` é híbrido — seu `domain.py` segue o padrão LangGraph (Grupo 2),
-> mas internamente usa `BaseAgent` ABC com características de multi-agent. Para fins de migração,
-> ele é tratado no Grupo 2 (seção 4.3). Aqui mostramos apenas o `autonomous`, que é puramente multi-agent.
-
-```
-ANTES (autonomous):
-  query → domain.py.process_intent()
-         → delega para agent.py.execute()
-         → UniversalReActAgent → loop ReAct → tools
-         → resultado
-
-DEPOIS (autonomous):
-  query → ComplianceDomainPrompt.process_intent()
-         → [1] Injection Guard
-         → [2] Fairness Guard
-         → [3] PII Strip
-         → _domain_process_intent()
-            → delega para agent.py.execute()
-               → [G] Guardrails check (NOVO — no agent.py direto)
-               → loop ReAct → tools
-            → resultado
-         → [4] Confidence scoring
-
-NOTA: agent.py (UniversalReActAgent, 895 linhas) NÃO muda de herança.
-      Ele NÃO herda de DomainPrompt. Apenas domain.py migra.
-      Guardrails são injetados direto no agent.py.execute().
-```
-
----
-
-### 0.6 Os 8 Domínios Continuam Separados
-
-Uma dúvida comum: "se vamos unificar tudo, os domínios vão virar um só?"
-
-**Não.** Os 8 domínios continuam existindo separados, cada um cuidando de um assunto diferente:
-
-| Domínio | O que faz |
-|---------|-----------|
-| `evaluation` | Avalia candidatos em entrevistas |
-| `autonomous` | Resolve queries complexas e cross-domain |
-| `applies` | Gerencia candidaturas e pipeline |
-| `scheduling` | Agenda entrevistas |
-| `messaging` | Envia emails e comunicações |
-| `jobs` | Gerencia vagas |
-| `sourced_profile_sourcing` | Busca e analisa perfis de candidatos |
-| `insights` | Gera relatórios e análises |
-
-Pense numa analogia: imagine 8 carros diferentes (sedan, SUV, pickup, etc.). Cada um serve para um propósito diferente — e isso não muda. O que estamos fazendo é colocar o **mesmo motor** em todos eles.
-
-```
-ANTES: 8 carros com 3 motores diferentes
-  sedan (jobs)        → motor a gasolina (Flat)
-  SUV (evaluation)    → motor diesel (LangGraph)
-  pickup (autonomous) → motor elétrico (Multi-Agent)
-
-DEPOIS: 8 carros com infraestrutura de compliance igual
-  sedan (jobs)        → mesmo motor de compliance, lógica de vagas
-  SUV (evaluation)    → mesmo motor de compliance, lógica de avaliação
-  pickup (autonomous) → mesmo motor de compliance, lógica autônoma
-```
-
-A **lógica de negócio** (tools disponíveis, prompt de sistema, regras específicas) sempre será diferente entre domínios. O que fica igual é a **infraestrutura de compliance** (fairness, injection, PII, audit, confidence).
-
----
-
-### 0.7 Estrutura dos Agentes: LIA vs v5
-
-**Na LIA**, todos os agentes herdam da mesma base e a diferença entre eles é de **configuração**:
-
-```
-LangGraphReActBase + EnhancedAgentMixin (base única)
-├── ScreeningAgent      → 12 tools, prompt de screening
-├── PipelineAgent       → 20 tools, prompt de pipeline
-├── SourcingAgent       → 15 tools, prompt de sourcing
-└── AutonomousAgent     → todas as tools, timeout 180s
-```
-
-Criar um agente novo na LIA = herdar da base + definir tools + definir prompt. Compliance vem automaticamente.
-
-**No v5 hoje**, cada grupo tem uma base diferente:
-
-```
-Grupo 1: DomainPrompt → lógica direta (sem agente real)
-Grupo 2: DomainPrompt → StateGraph manual (grafo customizado)
-Grupo 3: DomainPrompt → BaseAgent ABC (sourcing) / UniversalReActAgent (autonomous)
-```
-
-São 3 "esqueletos" diferentes. O `BaseAgent` do sourcing nem é o mesmo que o `UniversalReActAgent` do autonomous.
-
-**No v5 após Caminho 2:** a compliance fica unificada via `ComplianceDomainPrompt`, mas os 3 esqueletos continuam existindo. Isso é aceitável para o momento atual.
-
-**No v5 após Caminho 3 (2027+):** os 3 esqueletos convergem para uma base única parametrizada — igual ao padrão LIA. Mesmo um domínio simples como `jobs` seria um agente com StateGraph de 3 nós (input → LLM → output), e um complexo como `autonomous` teria 10 nós. Mesma estrutura, complexidade configurável.
-
-| Aspecto | v5 Hoje | v5 pós-Caminho 2 | v5 pós-Caminho 3 | LIA |
-|---------|---------|-------------------|-------------------|-----|
-| Bases de agentes | 3 diferentes | 3 diferentes | 1 parametrizada | 1 parametrizada |
-| Compliance | Manual (opt-in) | Automático (herança) | Automático (mixins) | Automático (herança) |
-| Diferença entre domínios | Código estrutural | Código estrutural | Configuração | Configuração |
-
----
-
-### 0.8 Compliance vs Arquitetura — São Problemas Diferentes
-
-Esta migração resolve **compliance** — não unifica a arquitetura dos agentes. São problemas diferentes com prazos diferentes:
-
-| O que | Quando | Como |
-|-------|--------|------|
-| **Compliance** (fairness, PII, injection, audit, confidence) | **Agora** — Caminho 2, 3 sprints, ~23.5h | `ComplianceDomainPrompt` como classe intermediária |
-| **Arquitetura** (unificar os 3 esqueletos em 1 base) | **2027** — Caminho 3, 16 semanas, ~125h | Mixins + base única parametrizada |
-
-O Caminho 2 não exige reescrever como os domínios funcionam internamente. Um domínio Flat continua sendo Flat, um LangGraph continua usando StateGraph. A única mudança é que todos passam pela mesma camada de compliance antes e depois de executar sua lógica.
-
-Isso é intencional: resolver o problema mais urgente (compliance) com o menor risco possível, sem mexer no que já funciona.
-
----
-
-### 0.9 Resumo Visual — O Que Muda e O Que Não Muda
-
-| Aspecto | Muda? | Detalhes |
-|---------|-------|---------|
-| Número de domínios | Não | Continuam 8 (ou mais no futuro) |
-| Lógica de negócio de cada domínio | Não | Tools, prompts, regras — tudo inalterado |
-| Arquitetura interna (Flat/LangGraph/Multi-Agent) | Não | Cada grupo continua funcionando como antes |
-| Classe base de herança | **Sim** | `DomainPrompt` → `ComplianceDomainPrompt` |
-| Nome de 2 métodos | **Sim** | `process_intent` → `_domain_process_intent` |
-| Arquivos duplicados em domínios | **Sim** | `fairness.py`, `security.py`, `fact_checker.py` locais → deletados |
-| Infraestrutura de compliance | **Sim** | Centralizada em `src/services/compliance/` |
-| `agent.py` do autonomous | **Parcial** | Guardrails adicionados, mas herança não muda |
-| `react_agent.py` do applies | **Parcial** | Fairness em `call_tools()` adicionado |
-
----
-
-### 0.10 O Que São "Tools" no Contexto de Agentes IA
-
-Ao longo deste guia (e do código), a palavra **"tool"** aparece frequentemente. Se você vem de desenvolvimento web tradicional, pode não ser óbvio o que isso significa.
-
-**Um "tool" é uma função que o LLM pode decidir chamar.** O LLM não acessa APIs, bancos de dados ou serviços diretamente. Em vez disso, ele recebe uma lista de ferramentas disponíveis (tools) e, quando precisa fazer algo no mundo real, gera uma "tool call" — uma instrução estruturada dizendo qual tool quer usar e com quais argumentos.
-
-```
-EXEMPLO CONCRETO — domínio applies:
-
-O recrutador pergunta: "Quais candidatos aplicaram para a vaga de DevOps?"
-
-1. LLM recebe a query + lista de tools disponíveis:
-   - filter_applications(job_id, filters)
-   - rank_candidates(job_id, criteria)
-   - get_application_details(application_id)
-   - send_notification(candidate_id, template)
-
-2. LLM decide chamar: filter_applications(job_id="devops-01", filters={})
-
-3. O código Python EXECUTA filter_applications() → consulta banco → retorna lista
-
-4. LLM recebe o resultado e formula a resposta para o recrutador
-```
-
-**Por que isso importa para compliance:**
-
-O LLM pode gerar tool calls com critérios problemáticos. Por exemplo:
-
-```
-Recrutador: "Mostre candidatos qualificados para a vaga"
-LLM gera:   filter_applications(job_id="abc", filters={"age": "<35"})
-                                                        ^^^^^^^^^^
-                                            Critério discriminatório gerado pelo LLM,
-                                            NÃO pelo recrutador!
-```
-
-É por isso que o `applies` tem compliance em **dois níveis**:
-1. Na query do recrutador (ComplianceDomainPrompt intercepta)
-2. Nos argumentos das tool calls (fairness check no `call_tools()`)
-
-**Cada domínio tem tools diferentes, adequadas ao seu propósito:**
-
-| Domínio | Exemplos de tools | Quantidade típica |
-|---------|-------------------|-------------------|
-| `evaluation` | `evaluate_candidate`, `generate_report`, `compare_candidates` | 8-12 |
-| `applies` | `filter_applications`, `rank_candidates`, `update_status` | 10-15 |
-| `autonomous` | Todas as tools de todos os domínios (cross-domain) | 30+ |
-| `scheduling` | `check_availability`, `book_interview`, `send_invite` | 5-8 |
-| `messaging` | `send_email`, `get_templates`, `personalize_message` | 4-6 |
-| `jobs` | `create_job`, `update_job`, `search_jobs` | 5-8 |
-| `sourcing` | `search_profiles`, `enrich_profile`, `score_match` | 8-12 |
-| `insights` | `query_metrics`, `generate_chart`, `aggregate_data` | 6-10 |
-
-**Na LIA**, as tools são o principal diferenciador entre agentes — todos usam a mesma base, mas cada um tem seu conjunto de tools. No v5, as tools são definidas por domínio e passadas ao LLM via `get_capabilities()` e `get_allowed_actions()`.
-
----
-
-### 0.11 Onde Cada Controle Atua no Pipeline
-
-O pipeline completo de processamento tem **6 fases**. Cada controle de compliance atua em um ponto específico. Todo o pipeline roda no **backend Python** (`src/domains/` e `src/services/`) — o frontend (React) apenas envia a query do recrutador e exibe a resposta final:
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                     PIPELINE COMPLETO DE UM REQUEST                        │
-│                                                                            │
-│  ┌──────────┐   ┌──────────┐   ┌───────┐   ┌──────────┐   ┌───────────┐  │
-│  │  INPUT   │──►│ PRE-LLM  │──►│  LLM  │──►│ POST-LLM │──►│  OUTPUT   │  │
-│  │          │   │          │   │       │   │          │   │           │  │
-│  │ Query do │   │ Limpar   │   │ Gera  │   │ Validar  │   │ Resposta  │  │
-│  │ recruta- │   │ texto    │   │ ação  │   │ qualidade│   │ final ao  │  │
-│  │ dor      │   │ antes de │   │ ou    │   │ e fatos  │   │ recruta-  │  │
-│  │          │   │ enviar   │   │ tool  │   │          │   │ dor       │  │
-│  │          │   │          │   │ call  │   │          │   │           │  │
-│  └──────────┘   └──────────┘   └───────┘   └──────────┘   └───────────┘  │
-│       │              │             │             │              │          │
-│       ▼              ▼             ▼             ▼              ▼          │
-│  ┌──────────────────────────────────────────────────────────────────────┐  │
-│  │                    AUDIT (paralelo a tudo)                           │  │
-│  │              Grava cada etapa — imutável — evidência legal           │  │
-│  └──────────────────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-**Mapa de onde cada controle atua (após migração Caminho 2):**
-
-> Todos os controles rodam no **backend Python** (`src/`). O frontend (React) apenas envia a query e recebe a resposta — não executa nenhum guard.
-
-| # | Controle | Fase | Onde roda (arquivo + método) | O que faz | Quando bloqueia |
-|---|----------|------|------------------------------|-----------|-----------------|
-| 1 | **PromptInjectionGuard** | INPUT | `src/services/compliance/prompt_injection_guard.py` — chamado por `ComplianceDomainPrompt.process_intent()` como primeiro passo, antes de qualquer outro processamento | Detecta tentativas de manipulação do LLM (OWASP LLM01). Analisa padrões como "ignore instruções anteriores", "revele o system prompt" | `risk_level == "high"` → bloqueia, retorna erro sem executar nada |
-| 2 | **FairnessGuard (query)** | INPUT | `src/services/compliance/fairness_guard.py` — chamado por `ComplianceDomainPrompt.process_intent()` como segundo passo, após InjectionGuard passar | Verifica se a query do recrutador contém viés discriminatório (gênero, idade, etnia, PCD, estado civil, religião) | `is_blocked == True` → retorna mensagem educativa, não executa |
-| 3 | **PII Stripping** | PRE-LLM | `src/services/compliance/pii_stripper.py` — chamado por `ComplianceDomainPrompt.process_intent()` como terceiro passo, modificando o texto da query antes de passá-la para `_domain_process_intent()` | Remove CPF, email, telefone, RG, CNPJ, idade explícita, ano de formatura e endereço do texto ANTES de enviar ao LLM | Nunca bloqueia — substitui por placeholders `[CPF REMOVIDO]`, `[EMAIL REMOVIDO]`, etc. |
-| 4 | **Guardrails** | PRE-LLM | `src/services/compliance/guardrail_repository.py` — chamado dentro de `autonomous/agent.py` no método `execute()`, antes de iniciar o loop ReAct | Verifica se a ação planejada é permitida pelas políticas do tenant. Regras configuráveis por empresa | Regra regex match → bloqueia com mensagem do guardrail. Só atua no `autonomous` (Caminho 2); no Caminho 3, atua em todos |
-| 5 | **FairnessGuard (tool args)** | LLM/TOOLS | `src/services/compliance/fairness_guard.py` (mesmo serviço do item 2) — chamado dentro de `applies/react_agent.py` no método `call_tools()`, verificando cada tool call antes de executá-la | Verifica se os argumentos das tool calls geradas pelo LLM contêm critérios discriminatórios (ex: `{"age": "<35"}`) | `is_blocked == True` → tool call não é executada; retorna erro ao LLM para que reformule |
-| 6 | **ConfidenceNode** | POST-LLM | `src/services/compliance/confidence_node.py` — chamado por `ComplianceDomainPrompt.execute_action()` após `_domain_execute_action()` retornar o resultado | Calcula score de confiança (0.0–1.0) baseado em: número de tool calls, observações verificadas, tamanho da resposta, presença de erros | Nunca bloqueia — adiciona `"confidence": 0.xx` ao dicionário de resposta |
-| 7 | **FactChecker** | POST-LLM | `src/services/compliance/fact_checker.py` — chamado por `_post_execute_hook()` nos domínios que geram afirmações narrativas (`evaluation/domain.py`, `insights/domain.py`, `sourcing/domain.py`) | Valida afirmações do LLM contra dados reais do banco. Ex: LLM diz "15 anos de experiência" mas currículo diz 3 anos | Nunca bloqueia — adiciona `"fact_check": {has_discrepancies, claims}` ao resultado |
-| 8 | **BiasAuditSnapshot** | POST-LLM | `src/services/compliance/bias_audit.py` — chamado por `_post_execute_hook()` em `evaluation/domain.py` (e futuramente `applies` e `sourcing`). Grava snapshot em tabela de auditoria no banco PostgreSQL | Agrega métricas por dimensão (gênero, idade, PCD, região) após ciclos de avaliação. Detecta drift discriminatório ao longo do tempo | Nunca bloqueia execuções individuais — monitora padrões estatísticos para auditoria |
-| 9 | **AuditCallback** | PARALELO | `src/services/audit/audit_writer.py` — chamado via callback assíncrono por `ComplianceDomainPrompt` ao final de cada etapa. Grava em tabela PostgreSQL com `ON CONFLICT DO NOTHING` | Grava tudo que aconteceu em cada etapa: query, intent, ação, resultado, scores. Logs imutáveis — evidência legal inalterável (SOX/BCB-498) | Nunca bloqueia — opera em paralelo. Falha do audit nunca impede execução (fail-safe) |
-
-**Diagrama detalhado do fluxo com todos os controles:**
-
-```
-QUERY DO RECRUTADOR
-        │
-        ▼
-┌─ process_intent() ──────────────────────────────────────────────────────┐
-│                                                                         │
-│   [1] PromptInjectionGuard ──── risk=="high"? ──► BLOQUEIO             │
-│         │ ok                                                            │
-│         ▼                                                               │
-│   [2] FairnessGuard (query) ── is_blocked? ──► BLOQUEIO + msg educativa│
-│         │ ok                                                            │
-│         ▼                                                               │
-│   [3] PII Strip ── remove CPF, email, idade, etc. ──► query limpa      │
-│         │                                                               │
-│         ▼                                                               │
-│   [4] _domain_process_intent() ── lógica de negócio do domínio         │
-│         │                         (keyword match / LLM classifica)      │
-│         ▼                                                               │
-│   Retorna: action_id + params                                          │
-└─────────────────────────────────────────────────────────────────────────┘
-        │
-        ▼
-┌─ execute_action() ──────────────────────────────────────────────────────┐
-│                                                                         │
-│   [5] Sanitizar params ── injection + PII nos argumentos de texto       │
-│         │                                                               │
-│         ▼                                                               │
-│   [6] _domain_execute_action() ── lógica de negócio do domínio         │
-│         │                                                               │
-│         │   ┌─ Caso applies: call_tools() ──────────────────────┐      │
-│         │   │  [7] FairnessGuard (tool args) ── verifica args   │      │
-│         │   │       de filter/rank/search antes de executar tool │      │
-│         │   └───────────────────────────────────────────────────┘      │
-│         │                                                               │
-│         │   ┌─ Caso autonomous: agent.py.execute() ─────────────┐      │
-│         │   │  [8] Guardrails ── verifica política do tenant     │      │
-│         │   │       antes do loop ReAct                          │      │
-│         │   └───────────────────────────────────────────────────┘      │
-│         │                                                               │
-│         ▼                                                               │
-│   [9] ConfidenceNode ── calcula score de confiança                     │
-│         │                                                               │
-│         ▼                                                               │
-│   [10] _post_execute_hook() ── extensões por domínio                   │
-│         │                                                               │
-│         ├── evaluation: BiasAuditSnapshot + FactChecker                │
-│         ├── insights: FactChecker                                      │
-│         └── outros: nenhum hook adicional                              │
-│                                                                         │
-│   Retorna: resultado + confidence + fact_check (se aplicável)          │
-└─────────────────────────────────────────────────────────────────────────┘
-        │
-        ▼
-   RESPOSTA AO RECRUTADOR
-        │
-        ▼
-   [PARALELO] AuditCallback grava tudo ── imutável ── evidência legal
-```
-
-**Limitações conhecidas (Caminho 2):**
-
-| Limitação | Detalhe | Quando resolve |
-|-----------|---------|----------------|
-| PII na saída | O LLM pode "reinventar" dados que foram removidos do input. Ex: se removemos a idade, o LLM pode inferir "candidato jovem" pelo ano de formatura | Caminho 3 — PII check na saída (output filter) |
-| Fairness na saída | O relatório/parecer gerado pode conter viés mesmo com query limpa | Caminho 3 — FairnessGuard na saída |
-| Feature flags | Não é possível desabilitar um controle específico por domínio sem editar código | Caminho 3 — feature flags por concern × domínio |
-| Monitoramento | BiasAuditSnapshot só existe em `evaluation`. Outros domínios que filtram candidatos (`applies`, `sourcing`) não têm audit agregado | Sprint 2+ — estender BiasAudit para applies e sourcing |
-
-**Comparação: Pontos de interceptação Caminho 2 vs Caminho 3:**
-
-| Fase | Onde no código | Caminho 2 (agora) | Caminho 3 (2027) |
-|------|---------------|-------------------|-------------------|
-| **INPUT** | `ComplianceDomainPrompt.process_intent()` — primeiras linhas, antes de tocar a query | InjectionGuard + FairnessGuard | Mesmos + feature flag por domínio |
-| **PRE-LLM** | `ComplianceDomainPrompt.process_intent()` — após guards, antes de chamar `_domain_process_intent()` | PII Strip + Guardrails (só autonomous) | Mesmos + Guardrails para todos os domínios |
-| **LLM/TOOLS** | `applies/react_agent.py` no `call_tools()` — entre o LLM gerar a tool call e o código executá-la | FairnessGuard em tool args (só applies) | Mesmos + em todos os domínios que usam tools |
-| **POST-LLM** | `ComplianceDomainPrompt.execute_action()` — após `_domain_execute_action()` retornar, antes de devolver ao recrutador | Confidence + FactCheck + BiasAudit | Mesmos + output sanitization |
-| **OUTPUT** | Não existe no Caminho 2 — será método novo em `ComplianceDomainPrompt` ou mixin separado | Nenhum filtro | **NOVO:** PII output filter + Fairness output check |
-| **AUDIT** | `src/services/audit/audit_writer.py` — callback assíncrono, grava em PostgreSQL em paralelo | AuditCallback imutável | Mesmos + log por concern separado |
-
-**O que é HiringPolicy / PolicyMiddleware?**
-
-Diferente dos controles acima (que são de **compliance/segurança**), o `HiringPolicy` é um controle de **regras de negócio** configuráveis por empresa (tenant):
-
-```
-HiringPolicy (por tenant, configurável)
-├── Dias permitidos para agendamento (scheduling)
-├── Limites de candidatos por vaga (applies)
-├── Templates de comunicação obrigatórios (messaging)
-├── Regras de aprovação em X etapas (evaluation)
-└── Restrições de sourcing por região (sourcing)
-```
-
-No Caminho 2, `HiringPolicy` é resolvido parcialmente — o `ComplianceDomainPrompt` pode injetar policies via `context`, mas sem feature flags granulares. No Caminho 3, vira um mixin separado com configuração completa por tenant.
-
-O `PolicyMiddleware` na LIA (`app/shared/policy_middleware.py`, 100L) é a referência de implementação — ele intercepta chamadas e aplica regras do tenant antes da execução.
-
----
-
-### 0.12 Avaliação Arquitetural: v5 vs LIA
-
-O v5 e a LIA resolvem o mesmo problema (assistente de recrutamento com IA) usando abordagens arquiteturais fundamentalmente diferentes. Esta seção mapeia cada domínio v5 ao padrão equivalente na LIA.
-
-#### Comparação por Domínio
-
-| Domínio v5 | Padrão v5 | Equivalente LIA | Padrão LIA | Nível de divergência |
-|------------|-----------|------------------|------------|---------------------|
-| `jobs` | Flat (keyword → action) | `WizardReActAgent` + `JobWizardGraph` | ReAct + deterministic graph | **Alta** — Flat não encadeia |
-| `messaging` | Flat (keyword → action) | `CommunicationReActAgent` | ReAct | **Alta** — mesma limitação |
-| `insights` | Flat (keyword → action) | `AnalyticsReActAgent` | ReAct | **Alta** — mesma limitação |
-| `scheduling` | LangGraph (StateGraph) | `SchedulingReActAgent` | ReAct | **Média** — LangGraph funciona, mas scheduling é simples demais para grafo |
-| `evaluation` | LangGraph (StateGraph) | `ScreeningAgent` + `EvaluationGraph` | ReAct + deterministic graph | **Baixa** — ambos usam grafos; LIA adiciona BARS |
-| `applies` | Flat + `react_agent.py` (híbrido) | `PipelineReActAgent` | ReAct | **Média** — react_agent.py já converge para ReAct |
-| `sourced_profile_sourcing` | LangGraph + BaseAgent ABC | `SourcingReActAgent` | ReAct multi-tool | **Média** — BaseAgent ≈ proto-ReAct |
-| `autonomous` | Multi-Agent (UniversalReActAgent) | `AutonomousAgent` | ReAct com todas as tools | **Baixa** — ambos são ReAct, mesma ideia |
-
-#### ReAct É um LangGraph de 2 Nós
-
-Uma confusão comum: "ReAct e LangGraph são alternativas — preciso escolher um ou outro." Na realidade, **ReAct é implementado COMO um LangGraph** — é um grafo de 2 nós com loop:
-
-```
-┌─────────────────────────────────────────────────────────┐
-│          ReAct = LangGraph de 2 nós                     │
-│                                                          │
-│    ┌──────────┐     tool_calls?      ┌──────────────┐   │
-│    │   LLM    │ ─── sim ──────────► │  Tool Exec   │   │
-│    │  (think) │ ◄── resultado ───── │  (act)       │   │
-│    │          │                      │              │   │
-│    │          │ ─── não (final) ──► SAÍDA           │   │
-│    └──────────┘                      └──────────────┘   │
-│                                                          │
-│    Loop: think → act → think → act → ... → resposta     │
-│    Controle: MAX_ITERATIONS (v5=12, LIA=15)             │
-└─────────────────────────────────────────────────────────┘
-```
-
-Um grafo **determinístico** (como `EvaluationGraph`) tem nós fixos com edges definidos em código:
-
-```
-┌─────────────────────────────────────────────────────────┐
-│          Grafo Determinístico (evaluation)               │
-│                                                          │
-│    Parse ──► Enrich ──► Score ──► Calibrate ──► Report  │
-│                            │                     │      │
-│                            ├── BARS (se eval)    │      │
-│                            └── FactCheck ────────┘      │
-│                                                          │
-│    Nós são funções Python, não LLM. Ordem é fixa.       │
-└─────────────────────────────────────────────────────────┘
-```
-
-A LIA usa **3 padrões**, todos sobre LangGraph:
-
-| Padrão | Quando usar | Exemplo LIA |
-|--------|------------|-------------|
-| **A. ReAct** (2 nós + loop) | Queries abertas, exploratórias | `SourcingReActAgent`, `PipelineReActAgent` |
-| **B. Deterministic Graph** (N nós fixos) | Processos com passos obrigatórios | `EvaluationGraph`, `JobWizardGraph` |
-| **C. ReAct + Graph** (híbrido) | Query aberta que pode acionar processo formal | `ScreeningAgent` → detecta `evaluate` → chama `EvaluationGraph` |
-
-#### Regra de Decisão para Migração (Caminho 3)
-
-```
-Domínio usa keyword matching? ──► SIM ──► Migrar para ReAct (Padrão A)
-                              └► NÃO
-                                  │
-Domínio tem passos obrigatórios? ──► SIM ──► Manter grafo + adicionar ReAct entry (Padrão C)
-                                 └► NÃO ──► Avaliar: se ReAct puro resolve, usar Padrão A
-```
-
-#### 0.12.1 Como Funciona o Roteamento: v5 vs LIA
+### 3.1 Como Funciona o Roteamento: v5 vs LIA
 
 O primeiro ponto de falha é o **roteamento** — como o sistema decide qual domínio deve processar uma mensagem do recrutador.
 
@@ -972,7 +463,7 @@ Problemas concretos:
 | **Referência temporal** | ❌ "ontem" não é keyword | ✅ MemoryResolver resolve datas |
 | **Custo por query** | ~0 (string match) | Variável: cache=0, LLM=$0.001-0.01 |
 
-#### 0.12.2 Inventário Real por Domínio: O Que Cada Domínio v5 TEM e NÃO TEM
+### 3.2 Inventário Real por Domínio: O Que Cada Domínio v5 TEM e NÃO TEM
 
 A tabela abaixo mostra, para cada um dos 8 domínios v5 (lidos diretamente dos arquivos `domain.py` em `lia-agent-system/app/domains/`), quais capacidades existem no código do domínio vs o que a infraestrutura LIA (CascadedRouter, PromptRegistry, ReAct agents) adiciona.
 
@@ -1014,7 +505,7 @@ A tabela abaixo mostra, para cada um dos 8 domínios v5 (lidos diretamente dos a
 
 5. **Apenas 2 domínios têm agent-level tools:** `applies` (pipeline) tem ~25 tools no `pipeline_tool_registry.py` e `autonomous` herda todas as tools. Os demais 6 domínios só têm domain-level tools (4-13 cada).
 
-#### 0.12.3 Mapa Cenário → Domínio → Problemas Aplicáveis
+### 3.3 Mapa Cenário → Domínio → Problemas Aplicáveis
 
 Para cada cenário real de uso, a tabela mostra qual domínio recebe a query, como a processa, e quais dos problemas P8-P11 efetivamente se aplicam:
 
@@ -1045,35 +536,7 @@ Para cada cenário real de uso, a tabela mostra qual domínio recebe a query, co
 
 ---
 
-### 0.13 Por Que as Respostas São Limitadas, Equivocadas ou Robóticas
-
-As respostas do v5 sofrem de 4 camadas de problemas, cada uma contribuindo para um tipo de falha diferente:
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│          4 CAMADAS DE PROBLEMAS NAS RESPOSTAS DO v5                │
-│                                                                     │
-│  CAMADA 4: ARQUITETURA (P8)                                        │
-│  └─ Flat não encadeia ações → respostas parciais                   │
-│                                                                     │
-│  CAMADA 3: INTERPRETAÇÃO (P9)                                      │
-│  └─ Regex/keyword não entende linguagem natural → ação errada      │
-│                                                                     │
-│  CAMADA 2: CONTEXTO (P10)                                          │
-│  └─ Sem memória/state → não sabe do que se trata → genérico        │
-│                                                                     │
-│  CAMADA 1: PROMPT (P11)                                            │
-│  └─ Prompt estático sem blocos/few-shot → tom robótico             │
-│                                                                     │
-│  ───────────────────────────────────────────────────────────────    │
-│  Resolver SÓ a camada 1 (prompt) não adianta se as camadas         │
-│  2, 3 e 4 continuam falhando. A correção é de baixo para cima.     │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-> **Nota importante:** Nem todos os problemas se aplicam a todos os cenários. A seção 0.12.3 mostra que **P8 (Flat) não se aplica** a cenários de `evaluation`, `scheduling` e `autonomous` — eles já usam LangGraph/ReAct. Generalizar "tudo é Flat" é impreciso e leva a esforço de migração desnecessário.
-
-#### 0.13.1 Diagnóstico Granular por Cenário de Uso
+### 3.4 Diagnóstico Granular por Cenário de Uso
 
 Para cada cenário, o diagnóstico abaixo mostra **exatamente onde a cadeia quebra**, qual componente falha primeiro, e o que a LIA faria diferente.
 
@@ -1270,7 +733,7 @@ EXECUÇÃO:
 PROBLEMAS APLICÁVEIS: P8 ✅ | P9 ❌ | P10 ⚠️ | P11 ✅ — Flat + sem compliance
 ```
 
-#### 0.13.2 Diagnóstico dos Prompts: v5 vs LIA
+### 3.5 Diagnóstico dos Prompts: v5 vs LIA
 
 O prompt que o LLM recebe determina o tom, a profundidade e a consistência da resposta. No v5, os prompts são strings Python estáticas dentro dos `domain.py`. Na LIA, são YAML estruturados com 6 seções e blocos composíveis.
 
@@ -1364,7 +827,7 @@ LIA (com CoT — task=job_extraction):
   → Resultado: extração completa + follow-up contextual
 ```
 
-#### 0.13.3 Gap de Tools: Ações Declaradas vs Tools Executáveis
+### 3.6 Gap de Tools: Ações Declaradas vs Tools Executáveis
 
 Mesmo resolvendo prompts, contexto e arquitetura, as respostas do v5 são limitadas se as **tools disponíveis para o agente** forem insuficientes. A análise do código revela 3 níveis de tools no sistema:
 
@@ -1441,7 +904,7 @@ E montar uma comparação multi-dimensional. A diferença não é de prompt — 
 | **P3 — Médio** | `insights` | cross-domain aggregation tools | Dashboards integrados |
 | **P4 — Médio** | `sourcing` | ranking tools (WRF), fit scoring | Busca mais precisa |
 
-#### 0.13.4 Relação entre Camadas e Problemas
+### 3.7 Relação entre Camadas e Problemas
 
 | Camada | Problema | Resolve com | Quando |
 |--------|----------|-------------|--------|
@@ -1455,103 +918,597 @@ E montar uma comparação multi-dimensional. A diferença não é de prompt — 
 
 ---
 
-### 0.14 Capacidades da LIA que o v5 Precisa Implementar
 
-Esta seção lista as capacidades da LIA que não existem no v5, organizadas por prioridade de implementação no Caminho 3.
+---
 
-#### Prioridade 1 — Infraestrutura de Prompts
+## 4. Conceitos Fundamentais
 
-| Capacidade | Arquivo LIA de referência | O que faz | Esforço |
-|-----------|--------------------------|-----------|---------|
-| **PromptRegistry** | `app/shared/prompts/prompt_registry.py` | Registry centralizado com versionamento. Cada prompt tem `name`, `version`, `template`, `variables`. Carrega de YAML, suporta variantes | ~20h |
-| **Prompts em YAML** | `app/prompts/domains/*.yaml` | Templates Jinja2 com placeholders: `{{ company_name }}`, `{{ candidate_name }}`, `{{ job_title }}`. Separação entre lógica e conteúdo | ~10h |
-| **Blocos composíveis** | `app/shared/prompts/blocks/` | `ANTI_SYCOPHANCY_BLOCK`, `CHAIN_OF_THOUGHT_BLOCK`, `INCLUSION_BLOCK`, `BARS_BLOCK`. Cada domínio compõe seu prompt a partir de blocos reutilizáveis | ~15h |
-| **Few-shot examples** | `app/shared/prompts/intent_few_shot_examples.py` | Exemplos "Clear" vs "Ambiguous" co-criados com profissionais de RH. Melhoram a classificação de intent sem fine-tuning | ~8h |
+> **Leia esta seção como referência.** Ela explica os conceitos usados ao longo do guia — o que é ComplianceDomainPrompt, como funcionam Tools, a diferença entre ReAct e LangGraph, etc.
 
-#### Prioridade 2 — Contexto e Memória
+### 4.1 Compliance vs Arquitetura — São Problemas Diferentes
 
-| Capacidade | Arquivo LIA de referência | O que faz | Esforço |
-|-----------|--------------------------|-----------|---------|
-| **MemoryResolver** | `app/orchestrator/memory_resolver.py` | Resolve pronomes e referências anafóricas: "ele" → candidato, "a vaga" → última vaga mencionada, "ontem" → data. Usa histórico de chat + LLM | ~25h |
-| **ContextAggregator** | `app/services/context_aggregator_service.py` | Monta bloco de contexto pré-LLM: empresa, departamento, vagas ativas, histórico de ações recentes, configurações do tenant | ~20h |
-| **TenantContext** | `app/shared/tenant_context.py` | Injeta dados da empresa: setor (tech/finance/retail), plano (starter/pro/enterprise), nível de autonomia do agente, idioma preferido | ~10h |
-| **StageContext** | `app/shared/stage_context.py` | Injeta onde o recrutador está no fluxo: vaga selecionada, etapa do funil, candidatos visíveis, ação em progresso | ~10h |
+Esta migração resolve **compliance** — não unifica a arquitetura dos agentes. São problemas diferentes com prazos diferentes:
 
-#### Prioridade 3 — Qualidade de Avaliação
+| O que | Quando | Como |
+|-------|--------|------|
+| **Compliance** (fairness, PII, injection, audit, confidence) | **Agora** — Caminho 2, 3 sprints, ~23.5h | `ComplianceDomainPrompt` como classe intermediária |
+| **Arquitetura** (unificar os 3 esqueletos em 1 base) | **2027** — Caminho 3, 16 semanas, ~125h | Mixins + base única parametrizada |
 
-| Capacidade | Arquivo LIA de referência | O que faz | Esforço |
-|-----------|--------------------------|-----------|---------|
-| **BARS (Behaviorally Anchored Rating Scale)** | `app/shared/prompts/blocks/bars_block.py` | Escala de 4 níveis (EXCEEDS/MEETS/PARTIAL/MISSING) com pesos configuráveis. Hard Skills 70% + Soft Skills 30% por padrão. Garante avaliações comparáveis | ~20h |
-| **A/B Testing de prompts** | `app/shared/prompts/prompt_registry.py` (variantes) | Suporta múltiplas variantes de um prompt com distribuição por % de tráfego. Métricas de qualidade por variante (confidence médio, satisfação, tempo de resposta) | ~15h |
+O Caminho 2 não exige reescrever como os domínios funcionam internamente. Um domínio Flat continua sendo Flat, um LangGraph continua usando StateGraph. A única mudança é que todos passam pela mesma camada de compliance antes e depois de executar sua lógica.
 
-#### Prioridade 4 — Arquitetura (dependente do Caminho 3)
+Isso é intencional: resolver o problema mais urgente (compliance) com o menor risco possível, sem mexer no que já funciona.
 
-| Capacidade | O que faz | Esforço |
-|-----------|-----------|---------|
-| **Migração Flat→ReAct** | Converter `jobs`, `messaging`, `insights` de keyword matching para ReAct (LangGraph 2 nós). Elimina regex, habilita encadeamento de ações | ~40h (3 domínios) |
-| **Base unificada parametrizada** | Todos os domínios herdam de uma base única. Diferença é configuração (tools, prompt, max_iterations), não estrutura | ~30h |
+---
 
-#### Estimativa Total do Caminho 3 Expandido
+### 4.2 O Que É o ComplianceDomainPrompt?
+
+É a peça que sempre deveria ter existido entre a classe base (`DomainPrompt`) e os domínios.
+
+**Antes da migração** — cada domínio se conecta diretamente à base:
 
 ```
-Prioridade 1 (Prompts):     ~53h  → Sprint 1-2 do Caminho 3
-Prioridade 2 (Contexto):    ~65h  → Sprint 2-4 do Caminho 3
-Prioridade 3 (Avaliação):   ~35h  → Sprint 3-4 do Caminho 3
-Prioridade 4 (Arquitetura): ~70h  → Sprint 5-8 do Caminho 3
-──────────────────────────────────────────────────────────
-TOTAL:                      ~223h  → 16-20 semanas
-Início recomendado: Q2 2027 (após 6+ meses de Caminho 2 em produção)
+DomainPrompt (base com 5 métodos abstratos)
+├── EvaluationDomain      ← sem compliance automático
+├── SchedulingDomain      ← sem compliance automático
+├── MessagingDomain       ← sem compliance automático
+├── JobsDomain            ← sem compliance automático
+├── AppliesDomain         ← sem compliance automático
+├── InsightsDomain        ← sem compliance automático
+├── SourcingDomain        ← fairness/fact_check manuais (o dev lembrou)
+└── AutonomousDomain      ← sem compliance automático
+```
+
+**Depois da migração** — uma camada intermediária intercepta e aplica compliance:
+
+```
+DomainPrompt (base, inalterada)
+└── ComplianceDomainPrompt (NOVO — intercepta, aplica guards, delega)
+    ├── EvaluationDomain      ← compliance automático ✅
+    ├── SchedulingDomain      ← compliance automático ✅
+    ├── MessagingDomain       ← compliance automático ✅
+    ├── JobsDomain            ← compliance automático ✅
+    ├── AppliesDomain         ← compliance automático ✅
+    ├── InsightsDomain        ← compliance automático ✅
+    ├── SourcingDomain        ← compliance automático ✅ (manuais removidos)
+    └── AutonomousDomain      ← compliance automático ✅
+```
+
+Quando um novo domínio for criado no futuro, basta herdar de `ComplianceDomainPrompt` — e automaticamente terá fairness, injection guard, PII stripping e confidence scoring. O Python garante isso pela herança, não a memória do desenvolvedor.
+
+---
+
+### 4.3 O Contrato de 5 Métodos — O Que Muda e O Que Não Muda
+
+O `DomainPrompt` do v5 define 5 métodos abstratos que todo domínio implementa:
+
+```
+DomainPrompt
+├── get_allowed_actions()     → lista de ações disponíveis
+├── get_system_prompt()       → prompt de sistema para o LLM
+├── get_capabilities()        → extensão do v5 (não existe na LIA)
+├── process_intent(query)     → interpreta a intenção do usuário
+└── execute_action(action)    → executa a ação identificada
+```
+
+O `ComplianceDomainPrompt` **intercepta apenas 2** desses 5 métodos:
+
+| Método | O que acontece | Muda? |
+|--------|---------------|-------|
+| `get_allowed_actions()` | Passa direto para o domínio | Não |
+| `get_system_prompt()` | Passa direto para o domínio | Não |
+| `get_capabilities()` | Passa direto para o domínio | Não |
+| **`process_intent()`** | **Intercepta:** injection → fairness → PII → delega | **Sim** |
+| **`execute_action()`** | **Intercepta:** sanitize → delega → confidence → hooks | **Sim** |
+
+Na prática, o domínio renomeia dois métodos:
+- `process_intent()` → `_domain_process_intent()` (mesma lógica, nome diferente)
+- `execute_action()` → `_domain_execute_action()` (mesma lógica, nome diferente)
+
+A lógica de negócio de cada domínio **não muda**. Apenas os nomes dos métodos mudam para que o `ComplianceDomainPrompt` possa interceptar.
+
+---
+
+### 4.4 O Que Acontece com os Arquivos Duplicados Dentro dos Domínios?
+
+Alguns domínios já implementaram compliance manualmente — criando arquivos como `fairness.py` e `fact_checker.py` dentro da própria pasta do domínio. Após a migração, esses arquivos **devem ser deletados** porque a compliance agora vem automaticamente pela herança.
+
+**Arquivos a deletar (no mesmo commit da migração do domínio):**
+
+| Arquivo | Domínio | Por que deletar |
+|---------|---------|-----------------|
+| `src/domains/jobs/fairness.py` | jobs | Coberto por `ComplianceDomainPrompt` via `FairnessGuard` centralizado |
+| `src/domains/evaluation/security.py` | evaluation | Coberto por `PromptInjectionGuard` centralizado |
+| `src/domains/sourced_profile_sourcing/fairness.py` | sourcing | Coberto por `ComplianceDomainPrompt` via `FairnessGuard` centralizado |
+| `src/domains/sourced_profile_sourcing/fact_checker.py` | sourcing | Coberto por `FactChecker` centralizado em `src/services/compliance/` |
+
+**Além dos arquivos, remover também:**
+- Imports diretos de `FairnessGuard` / `PromptInjectionGuard` em qualquer `domain.py`
+- Chamadas manuais a guards dentro de `process_intent()` ou `execute_action()`
+- Referência a `self._fact_checker` no `agents/base.py` do sourcing (refatorar para usar o centralizado)
+
+**Como verificar que não ficou duplicação:**
+
+```bash
+grep -rn "FairnessGuard" src/domains/*/domain.py
+grep -rn "PromptInjectionGuard" src/domains/*/domain.py
+grep -rn "strip_pii_for_llm_prompt" src/domains/*/domain.py
+```
+
+Se encontrar hits (exceto em `compliance_base.py`), são duplicações a remover.
+
+---
+
+### 4.5 Fluxo "Antes → Depois" por Grupo Arquitetural
+
+#### Grupo 1 — Flat (jobs, messaging, scheduling)
+
+```
+ANTES:
+  query → process_intent()
+         → keyword matching / LLM classifica
+         → retorna action_id
+  action_id → execute_action()
+         → dispatch map → handler → HTTP Rails
+         → retorna resultado
+
+DEPOIS:
+  query → ComplianceDomainPrompt.process_intent()
+         → [1] Injection Guard → bloqueio se "high risk"
+         → [2] Fairness Guard  → bloqueio se discriminatório
+         → [3] PII Strip       → remove CPF, email, idade, etc.
+         → _domain_process_intent()      ← MESMA lógica de antes
+            → keyword matching / LLM classifica
+            → retorna action_id
+  action_id → ComplianceDomainPrompt.execute_action()
+         → [1] Sanitizar params (injection + PII)
+         → _domain_execute_action()      ← MESMA lógica de antes
+            → dispatch map → handler → HTTP Rails
+         → [2] Confidence scoring
+         → retorna resultado com "confidence": 0.xx
+
+ARQUIVOS REMOVIDOS:
+  jobs/fairness.py → DELETAR (coberto pelo ComplianceDomainPrompt)
+```
+
+#### Grupo 2 — LangGraph (evaluation, applies, insights, sourcing)
+
+```
+ANTES:
+  query → process_intent()
+         → LLM classifica intent
+         → retorna action_id
+  action_id → execute_action()
+         → graph.py → StateGraph com nós → resultado
+
+DEPOIS:
+  query → ComplianceDomainPrompt.process_intent()
+         → [1] Injection Guard
+         → [2] Fairness Guard
+         → [3] PII Strip
+         → _domain_process_intent()      ← MESMA lógica de antes
+            → LLM classifica intent
+            → retorna action_id
+  action_id → ComplianceDomainPrompt.execute_action()
+         → [1] Sanitizar params
+         → _domain_execute_action()      ← MESMA lógica de antes
+            → graph.py → StateGraph com nós → resultado
+         → [2] Confidence scoring
+         → [3] _post_execute_hook()      ← NOVO (override por domínio)
+            → evaluation: BiasAuditSnapshot + FactCheck
+            → insights: FactCheck
+            → sourcing: (guards manuais removidos)
+         → retorna resultado com "confidence" + "fact_check"
+
+ARQUIVOS REMOVIDOS:
+  evaluation/security.py                     → DELETAR
+  sourced_profile_sourcing/fairness.py       → DELETAR
+  sourced_profile_sourcing/fact_checker.py   → DELETAR
+```
+
+**Caso especial — `applies/react_agent.py`:**
+
+O `applies` tem compliance em **dois níveis**:
+1. **Nível domínio** — `ComplianceDomainPrompt` protege `process_intent` e `execute_action` (igual aos outros)
+2. **Nível tool call** — `call_tools()` no `react_agent.py` recebe fairness check adicional em tools que filtram candidatos (`filter_applications`, `rank_candidates`)
+
+Esse segundo nível é necessário porque o LLM pode gerar tool calls com critérios discriminatórios mesmo quando a query original era limpa.
+
+#### Grupo 3 — Multi-Agent (autonomous)
+
+> **Nota:** `sourced_profile_sourcing` é híbrido — seu `domain.py` segue o padrão LangGraph (Grupo 2),
+> mas internamente usa `BaseAgent` ABC com características de multi-agent. Para fins de migração,
+> ele é tratado no Grupo 2 (seção 4.3). Aqui mostramos apenas o `autonomous`, que é puramente multi-agent.
+
+```
+ANTES (autonomous):
+  query → domain.py.process_intent()
+         → delega para agent.py.execute()
+         → UniversalReActAgent → loop ReAct → tools
+         → resultado
+
+DEPOIS (autonomous):
+  query → ComplianceDomainPrompt.process_intent()
+         → [1] Injection Guard
+         → [2] Fairness Guard
+         → [3] PII Strip
+         → _domain_process_intent()
+            → delega para agent.py.execute()
+               → [G] Guardrails check (NOVO — no agent.py direto)
+               → loop ReAct → tools
+            → resultado
+         → [4] Confidence scoring
+
+NOTA: agent.py (UniversalReActAgent, 895 linhas) NÃO muda de herança.
+      Ele NÃO herda de DomainPrompt. Apenas domain.py migra.
+      Guardrails são injetados direto no agent.py.execute().
 ```
 
 ---
 
-## 1. Contexto Rápido
+### 4.6 Os 8 Domínios Continuam Separados
 
-### 1.1 Três Arquiteturas no v5
+Uma dúvida comum: "se vamos unificar tudo, os domínios vão virar um só?"
 
-O v5 possui 8 domínios organizados em 3 grupos arquiteturais distintos:
+**Não.** Os 8 domínios continuam existindo separados, cada um cuidando de um assunto diferente:
 
-| Grupo | Padrão | Domínios | Arquivo principal |
-|-------|--------|----------|-------------------|
-| **Flat** | `DomainPrompt` direto (`process_intent` → `execute_action`) | `scheduling`, `messaging`, `jobs` | `domain.py` |
-| **LangGraph** | `StateGraph` com nós (`graph.py` + `nodes.py` + `state.py`) | `evaluation`, `applies`, `insights`, `sourced_profile_sourcing` | `domain.py` → `graph.py` |
-| **Multi-Agent** | `UniversalReActAgent` com loop ReAct autônomo | `autonomous` | `agent.py` (895L) |
+| Domínio | O que faz |
+|---------|-----------|
+| `evaluation` | Avalia candidatos em entrevistas |
+| `autonomous` | Resolve queries complexas e cross-domain |
+| `applies` | Gerencia candidaturas e pipeline |
+| `scheduling` | Agenda entrevistas |
+| `messaging` | Envia emails e comunicações |
+| `jobs` | Gerencia vagas |
+| `sourced_profile_sourcing` | Busca e analisa perfis de candidatos |
+| `insights` | Gera relatórios e análises |
 
-### 1.2 Cobertura de Compliance Atual
+Pense numa analogia: imagine 8 carros diferentes (sedan, SUV, pickup, etc.). Cada um serve para um propósito diferente — e isso não muda. O que estamos fazendo é colocar o **mesmo motor** em todos eles.
 
 ```
-Domínio               Fairness  PII-LLM  Injection  Audit  Confidence  FactCheck
-─────────────────────────────────────────────────────────────────────────────────
-evaluation            ❌        ❌       ❌         ✅(*)  ❌          ❌
-autonomous            ❌        ❌       ❌         ✅(*)  ❌          ❌
-applies               ❌        ❌       ❌         ✅(*)  ❌          ❌
-scheduling            ❌        ❌       ❌         ❌     ❌          ─
-messaging             ❌        ❌       ❌         ❌     ❌          ─
-jobs                  ❌        ❌       ❌         ❌     ❌          ─
-sourced_profile       ✅        ❌       ❌         ✅(*)  ❌          ✅
-insights              ❌        ❌       ❌         ❌     ❌          ❌
-─────────────────────────────────────────────────────────────────────────────────
-(*) = audit_callback existe em src/services/audit/ mas é mutável (ON CONFLICT DO UPDATE)
-✅ = implementado    ❌ = ausente    ─ = não aplicável ao domínio
+ANTES: 8 carros com 3 motores diferentes
+  sedan (jobs)        → motor a gasolina (Flat)
+  SUV (evaluation)    → motor diesel (LangGraph)
+  pickup (autonomous) → motor elétrico (Multi-Agent)
+
+DEPOIS: 8 carros com infraestrutura de compliance igual
+  sedan (jobs)        → mesmo motor de compliance, lógica de vagas
+  SUV (evaluation)    → mesmo motor de compliance, lógica de avaliação
+  pickup (autonomous) → mesmo motor de compliance, lógica autônoma
 ```
 
-### 1.3 Por Que "Disciplina" Falhou
-
-O v5 disponibiliza serviços em `src/services/` (pii_filter, circuit_breaker, audit) como **opções** — não são injetados automaticamente. Cada domínio decide se os usa. Resultado:
-
-- `sourced_profile_sourcing` → desenvolvedor incluiu `fairness.py` + `fact_checker.py` manualmente
-- `evaluation`, `applies`, `insights`, `messaging` → nenhum guard
-- Novos domínios criados sem contexto histórico não herdam nada
-
-**Solução:** Herança automática via `ComplianceDomainPrompt`. O Python garante compliance — não a memória do desenvolvedor.
+A **lógica de negócio** (tools disponíveis, prompt de sistema, regras específicas) sempre será diferente entre domínios. O que fica igual é a **infraestrutura de compliance** (fairness, injection, PII, audit, confidence).
 
 ---
 
-## 2. Pré-Requisitos: 9 Controles de Compliance
+### 4.7 Estrutura dos Agentes: LIA vs v5
+
+**Na LIA**, todos os agentes herdam da mesma base e a diferença entre eles é de **configuração**:
+
+```
+LangGraphReActBase + EnhancedAgentMixin (base única)
+├── ScreeningAgent      → 12 tools, prompt de screening
+├── PipelineAgent       → 20 tools, prompt de pipeline
+├── SourcingAgent       → 15 tools, prompt de sourcing
+└── AutonomousAgent     → todas as tools, timeout 180s
+```
+
+Criar um agente novo na LIA = herdar da base + definir tools + definir prompt. Compliance vem automaticamente.
+
+**No v5 hoje**, cada grupo tem uma base diferente:
+
+```
+Grupo 1: DomainPrompt → lógica direta (sem agente real)
+Grupo 2: DomainPrompt → StateGraph manual (grafo customizado)
+Grupo 3: DomainPrompt → BaseAgent ABC (sourcing) / UniversalReActAgent (autonomous)
+```
+
+São 3 "esqueletos" diferentes. O `BaseAgent` do sourcing nem é o mesmo que o `UniversalReActAgent` do autonomous.
+
+**No v5 após Caminho 2:** a compliance fica unificada via `ComplianceDomainPrompt`, mas os 3 esqueletos continuam existindo. Isso é aceitável para o momento atual.
+
+**No v5 após Caminho 3 (2027+):** os 3 esqueletos convergem para uma base única parametrizada — igual ao padrão LIA. Mesmo um domínio simples como `jobs` seria um agente com StateGraph de 3 nós (input → LLM → output), e um complexo como `autonomous` teria 10 nós. Mesma estrutura, complexidade configurável.
+
+| Aspecto | v5 Hoje | v5 pós-Caminho 2 | v5 pós-Caminho 3 | LIA |
+|---------|---------|-------------------|-------------------|-----|
+| Bases de agentes | 3 diferentes | 3 diferentes | 1 parametrizada | 1 parametrizada |
+| Compliance | Manual (opt-in) | Automático (herança) | Automático (mixins) | Automático (herança) |
+| Diferença entre domínios | Código estrutural | Código estrutural | Configuração | Configuração |
+
+---
+
+### 4.8 Resumo Visual — O Que Muda e O Que Não Muda
+
+| Aspecto | Muda? | Detalhes |
+|---------|-------|---------|
+| Número de domínios | Não | Continuam 8 (ou mais no futuro) |
+| Lógica de negócio de cada domínio | Não | Tools, prompts, regras — tudo inalterado |
+| Arquitetura interna (Flat/LangGraph/Multi-Agent) | Não | Cada grupo continua funcionando como antes |
+| Classe base de herança | **Sim** | `DomainPrompt` → `ComplianceDomainPrompt` |
+| Nome de 2 métodos | **Sim** | `process_intent` → `_domain_process_intent` |
+| Arquivos duplicados em domínios | **Sim** | `fairness.py`, `security.py`, `fact_checker.py` locais → deletados |
+| Infraestrutura de compliance | **Sim** | Centralizada em `src/services/compliance/` |
+| `agent.py` do autonomous | **Parcial** | Guardrails adicionados, mas herança não muda |
+| `react_agent.py` do applies | **Parcial** | Fairness em `call_tools()` adicionado |
+
+---
+
+### 4.9 O Que São "Tools" no Contexto de Agentes IA
+
+Ao longo deste guia (e do código), a palavra **"tool"** aparece frequentemente. Se você vem de desenvolvimento web tradicional, pode não ser óbvio o que isso significa.
+
+**Um "tool" é uma função que o LLM pode decidir chamar.** O LLM não acessa APIs, bancos de dados ou serviços diretamente. Em vez disso, ele recebe uma lista de ferramentas disponíveis (tools) e, quando precisa fazer algo no mundo real, gera uma "tool call" — uma instrução estruturada dizendo qual tool quer usar e com quais argumentos.
+
+```
+EXEMPLO CONCRETO — domínio applies:
+
+O recrutador pergunta: "Quais candidatos aplicaram para a vaga de DevOps?"
+
+1. LLM recebe a query + lista de tools disponíveis:
+   - filter_applications(job_id, filters)
+   - rank_candidates(job_id, criteria)
+   - get_application_details(application_id)
+   - send_notification(candidate_id, template)
+
+2. LLM decide chamar: filter_applications(job_id="devops-01", filters={})
+
+3. O código Python EXECUTA filter_applications() → consulta banco → retorna lista
+
+4. LLM recebe o resultado e formula a resposta para o recrutador
+```
+
+**Por que isso importa para compliance:**
+
+O LLM pode gerar tool calls com critérios problemáticos. Por exemplo:
+
+```
+Recrutador: "Mostre candidatos qualificados para a vaga"
+LLM gera:   filter_applications(job_id="abc", filters={"age": "<35"})
+                                                        ^^^^^^^^^^
+                                            Critério discriminatório gerado pelo LLM,
+                                            NÃO pelo recrutador!
+```
+
+É por isso que o `applies` tem compliance em **dois níveis**:
+1. Na query do recrutador (ComplianceDomainPrompt intercepta)
+2. Nos argumentos das tool calls (fairness check no `call_tools()`)
+
+**Cada domínio tem tools diferentes, adequadas ao seu propósito:**
+
+| Domínio | Exemplos de tools | Quantidade típica |
+|---------|-------------------|-------------------|
+| `evaluation` | `evaluate_candidate`, `generate_report`, `compare_candidates` | 8-12 |
+| `applies` | `filter_applications`, `rank_candidates`, `update_status` | 10-15 |
+| `autonomous` | Todas as tools de todos os domínios (cross-domain) | 30+ |
+| `scheduling` | `check_availability`, `book_interview`, `send_invite` | 5-8 |
+| `messaging` | `send_email`, `get_templates`, `personalize_message` | 4-6 |
+| `jobs` | `create_job`, `update_job`, `search_jobs` | 5-8 |
+| `sourcing` | `search_profiles`, `enrich_profile`, `score_match` | 8-12 |
+| `insights` | `query_metrics`, `generate_chart`, `aggregate_data` | 6-10 |
+
+**Na LIA**, as tools são o principal diferenciador entre agentes — todos usam a mesma base, mas cada um tem seu conjunto de tools. No v5, as tools são definidas por domínio e passadas ao LLM via `get_capabilities()` e `get_allowed_actions()`.
+
+---
+
+### 4.10 Onde Cada Controle Atua no Pipeline
+
+O pipeline completo de processamento tem **6 fases**. Cada controle de compliance atua em um ponto específico. Todo o pipeline roda no **backend Python** (`src/domains/` e `src/services/`) — o frontend (React) apenas envia a query do recrutador e exibe a resposta final:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                     PIPELINE COMPLETO DE UM REQUEST                        │
+│                                                                            │
+│  ┌──────────┐   ┌──────────┐   ┌───────┐   ┌──────────┐   ┌───────────┐  │
+│  │  INPUT   │──►│ PRE-LLM  │──►│  LLM  │──►│ POST-LLM │──►│  OUTPUT   │  │
+│  │          │   │          │   │       │   │          │   │           │  │
+│  │ Query do │   │ Limpar   │   │ Gera  │   │ Validar  │   │ Resposta  │  │
+│  │ recruta- │   │ texto    │   │ ação  │   │ qualidade│   │ final ao  │  │
+│  │ dor      │   │ antes de │   │ ou    │   │ e fatos  │   │ recruta-  │  │
+│  │          │   │ enviar   │   │ tool  │   │          │   │ dor       │  │
+│  │          │   │          │   │ call  │   │          │   │           │  │
+│  └──────────┘   └──────────┘   └───────┘   └──────────┘   └───────────┘  │
+│       │              │             │             │              │          │
+│       ▼              ▼             ▼             ▼              ▼          │
+│  ┌──────────────────────────────────────────────────────────────────────┐  │
+│  │                    AUDIT (paralelo a tudo)                           │  │
+│  │              Grava cada etapa — imutável — evidência legal           │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Mapa de onde cada controle atua (após migração Caminho 2):**
+
+> Todos os controles rodam no **backend Python** (`src/`). O frontend (React) apenas envia a query e recebe a resposta — não executa nenhum guard.
+
+| # | Controle | Fase | Onde roda (arquivo + método) | O que faz | Quando bloqueia |
+|---|----------|------|------------------------------|-----------|-----------------|
+| 1 | **PromptInjectionGuard** | INPUT | `src/services/compliance/prompt_injection_guard.py` — chamado por `ComplianceDomainPrompt.process_intent()` como primeiro passo, antes de qualquer outro processamento | Detecta tentativas de manipulação do LLM (OWASP LLM01). Analisa padrões como "ignore instruções anteriores", "revele o system prompt" | `risk_level == "high"` → bloqueia, retorna erro sem executar nada |
+| 2 | **FairnessGuard (query)** | INPUT | `src/services/compliance/fairness_guard.py` — chamado por `ComplianceDomainPrompt.process_intent()` como segundo passo, após InjectionGuard passar | Verifica se a query do recrutador contém viés discriminatório (gênero, idade, etnia, PCD, estado civil, religião) | `is_blocked == True` → retorna mensagem educativa, não executa |
+| 3 | **PII Stripping** | PRE-LLM | `src/services/compliance/pii_stripper.py` — chamado por `ComplianceDomainPrompt.process_intent()` como terceiro passo, modificando o texto da query antes de passá-la para `_domain_process_intent()` | Remove CPF, email, telefone, RG, CNPJ, idade explícita, ano de formatura e endereço do texto ANTES de enviar ao LLM | Nunca bloqueia — substitui por placeholders `[CPF REMOVIDO]`, `[EMAIL REMOVIDO]`, etc. |
+| 4 | **Guardrails** | PRE-LLM | `src/services/compliance/guardrail_repository.py` — chamado dentro de `autonomous/agent.py` no método `execute()`, antes de iniciar o loop ReAct | Verifica se a ação planejada é permitida pelas políticas do tenant. Regras configuráveis por empresa | Regra regex match → bloqueia com mensagem do guardrail. Só atua no `autonomous` (Caminho 2); no Caminho 3, atua em todos |
+| 5 | **FairnessGuard (tool args)** | LLM/TOOLS | `src/services/compliance/fairness_guard.py` (mesmo serviço do item 2) — chamado dentro de `applies/react_agent.py` no método `call_tools()`, verificando cada tool call antes de executá-la | Verifica se os argumentos das tool calls geradas pelo LLM contêm critérios discriminatórios (ex: `{"age": "<35"}`) | `is_blocked == True` → tool call não é executada; retorna erro ao LLM para que reformule |
+| 6 | **ConfidenceNode** | POST-LLM | `src/services/compliance/confidence_node.py` — chamado por `ComplianceDomainPrompt.execute_action()` após `_domain_execute_action()` retornar o resultado | Calcula score de confiança (0.0–1.0) baseado em: número de tool calls, observações verificadas, tamanho da resposta, presença de erros | Nunca bloqueia — adiciona `"confidence": 0.xx` ao dicionário de resposta |
+| 7 | **FactChecker** | POST-LLM | `src/services/compliance/fact_checker.py` — chamado por `_post_execute_hook()` nos domínios que geram afirmações narrativas (`evaluation/domain.py`, `insights/domain.py`, `sourcing/domain.py`) | Valida afirmações do LLM contra dados reais do banco. Ex: LLM diz "15 anos de experiência" mas currículo diz 3 anos | Nunca bloqueia — adiciona `"fact_check": {has_discrepancies, claims}` ao resultado |
+| 8 | **BiasAuditSnapshot** | POST-LLM | `src/services/compliance/bias_audit.py` — chamado por `_post_execute_hook()` em `evaluation/domain.py` (e futuramente `applies` e `sourcing`). Grava snapshot em tabela de auditoria no banco PostgreSQL | Agrega métricas por dimensão (gênero, idade, PCD, região) após ciclos de avaliação. Detecta drift discriminatório ao longo do tempo | Nunca bloqueia execuções individuais — monitora padrões estatísticos para auditoria |
+| 9 | **AuditCallback** | PARALELO | `src/services/audit/audit_writer.py` — chamado via callback assíncrono por `ComplianceDomainPrompt` ao final de cada etapa. Grava em tabela PostgreSQL com `ON CONFLICT DO NOTHING` | Grava tudo que aconteceu em cada etapa: query, intent, ação, resultado, scores. Logs imutáveis — evidência legal inalterável (SOX/BCB-498) | Nunca bloqueia — opera em paralelo. Falha do audit nunca impede execução (fail-safe) |
+
+**Diagrama detalhado do fluxo com todos os controles:**
+
+```
+QUERY DO RECRUTADOR
+        │
+        ▼
+┌─ process_intent() ──────────────────────────────────────────────────────┐
+│                                                                         │
+│   [1] PromptInjectionGuard ──── risk=="high"? ──► BLOQUEIO             │
+│         │ ok                                                            │
+│         ▼                                                               │
+│   [2] FairnessGuard (query) ── is_blocked? ──► BLOQUEIO + msg educativa│
+│         │ ok                                                            │
+│         ▼                                                               │
+│   [3] PII Strip ── remove CPF, email, idade, etc. ──► query limpa      │
+│         │                                                               │
+│         ▼                                                               │
+│   [4] _domain_process_intent() ── lógica de negócio do domínio         │
+│         │                         (keyword match / LLM classifica)      │
+│         ▼                                                               │
+│   Retorna: action_id + params                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+        │
+        ▼
+┌─ execute_action() ──────────────────────────────────────────────────────┐
+│                                                                         │
+│   [5] Sanitizar params ── injection + PII nos argumentos de texto       │
+│         │                                                               │
+│         ▼                                                               │
+│   [6] _domain_execute_action() ── lógica de negócio do domínio         │
+│         │                                                               │
+│         │   ┌─ Caso applies: call_tools() ──────────────────────┐      │
+│         │   │  [7] FairnessGuard (tool args) ── verifica args   │      │
+│         │   │       de filter/rank/search antes de executar tool │      │
+│         │   └───────────────────────────────────────────────────┘      │
+│         │                                                               │
+│         │   ┌─ Caso autonomous: agent.py.execute() ─────────────┐      │
+│         │   │  [8] Guardrails ── verifica política do tenant     │      │
+│         │   │       antes do loop ReAct                          │      │
+│         │   └───────────────────────────────────────────────────┘      │
+│         │                                                               │
+│         ▼                                                               │
+│   [9] ConfidenceNode ── calcula score de confiança                     │
+│         │                                                               │
+│         ▼                                                               │
+│   [10] _post_execute_hook() ── extensões por domínio                   │
+│         │                                                               │
+│         ├── evaluation: BiasAuditSnapshot + FactChecker                │
+│         ├── insights: FactChecker                                      │
+│         └── outros: nenhum hook adicional                              │
+│                                                                         │
+│   Retorna: resultado + confidence + fact_check (se aplicável)          │
+└─────────────────────────────────────────────────────────────────────────┘
+        │
+        ▼
+   RESPOSTA AO RECRUTADOR
+        │
+        ▼
+   [PARALELO] AuditCallback grava tudo ── imutável ── evidência legal
+```
+
+**Limitações conhecidas (Caminho 2):**
+
+| Limitação | Detalhe | Quando resolve |
+|-----------|---------|----------------|
+| PII na saída | O LLM pode "reinventar" dados que foram removidos do input. Ex: se removemos a idade, o LLM pode inferir "candidato jovem" pelo ano de formatura | Caminho 3 — PII check na saída (output filter) |
+| Fairness na saída | O relatório/parecer gerado pode conter viés mesmo com query limpa | Caminho 3 — FairnessGuard na saída |
+| Feature flags | Não é possível desabilitar um controle específico por domínio sem editar código | Caminho 3 — feature flags por concern × domínio |
+| Monitoramento | BiasAuditSnapshot só existe em `evaluation`. Outros domínios que filtram candidatos (`applies`, `sourcing`) não têm audit agregado | Sprint 2+ — estender BiasAudit para applies e sourcing |
+
+**Comparação: Pontos de interceptação Caminho 2 vs Caminho 3:**
+
+| Fase | Onde no código | Caminho 2 (agora) | Caminho 3 (2027) |
+|------|---------------|-------------------|-------------------|
+| **INPUT** | `ComplianceDomainPrompt.process_intent()` — primeiras linhas, antes de tocar a query | InjectionGuard + FairnessGuard | Mesmos + feature flag por domínio |
+| **PRE-LLM** | `ComplianceDomainPrompt.process_intent()` — após guards, antes de chamar `_domain_process_intent()` | PII Strip + Guardrails (só autonomous) | Mesmos + Guardrails para todos os domínios |
+| **LLM/TOOLS** | `applies/react_agent.py` no `call_tools()` — entre o LLM gerar a tool call e o código executá-la | FairnessGuard em tool args (só applies) | Mesmos + em todos os domínios que usam tools |
+| **POST-LLM** | `ComplianceDomainPrompt.execute_action()` — após `_domain_execute_action()` retornar, antes de devolver ao recrutador | Confidence + FactCheck + BiasAudit | Mesmos + output sanitization |
+| **OUTPUT** | Não existe no Caminho 2 — será método novo em `ComplianceDomainPrompt` ou mixin separado | Nenhum filtro | **NOVO:** PII output filter + Fairness output check |
+| **AUDIT** | `src/services/audit/audit_writer.py` — callback assíncrono, grava em PostgreSQL em paralelo | AuditCallback imutável | Mesmos + log por concern separado |
+
+**O que é HiringPolicy / PolicyMiddleware?**
+
+Diferente dos controles acima (que são de **compliance/segurança**), o `HiringPolicy` é um controle de **regras de negócio** configuráveis por empresa (tenant):
+
+```
+HiringPolicy (por tenant, configurável)
+├── Dias permitidos para agendamento (scheduling)
+├── Limites de candidatos por vaga (applies)
+├── Templates de comunicação obrigatórios (messaging)
+├── Regras de aprovação em X etapas (evaluation)
+└── Restrições de sourcing por região (sourcing)
+```
+
+No Caminho 2, `HiringPolicy` é resolvido parcialmente — o `ComplianceDomainPrompt` pode injetar policies via `context`, mas sem feature flags granulares. No Caminho 3, vira um mixin separado com configuração completa por tenant.
+
+O `PolicyMiddleware` na LIA (`app/shared/policy_middleware.py`, 100L) é a referência de implementação — ele intercepta chamadas e aplica regras do tenant antes da execução.
+
+---
+
+### 4.11 ReAct, LangGraph e Flat — Comparação Arquitetural
+
+
+O v5 e a LIA resolvem o mesmo problema (assistente de recrutamento com IA) usando abordagens arquiteturais fundamentalmente diferentes. Esta seção mapeia cada domínio v5 ao padrão equivalente na LIA.
+
+
+| Domínio v5 | Padrão v5 | Equivalente LIA | Padrão LIA | Nível de divergência |
+|------------|-----------|------------------|------------|---------------------|
+| `jobs` | Flat (keyword → action) | `WizardReActAgent` + `JobWizardGraph` | ReAct + deterministic graph | **Alta** — Flat não encadeia |
+| `messaging` | Flat (keyword → action) | `CommunicationReActAgent` | ReAct | **Alta** — mesma limitação |
+| `insights` | Flat (keyword → action) | `AnalyticsReActAgent` | ReAct | **Alta** — mesma limitação |
+| `scheduling` | LangGraph (StateGraph) | `SchedulingReActAgent` | ReAct | **Média** — LangGraph funciona, mas scheduling é simples demais para grafo |
+| `evaluation` | LangGraph (StateGraph) | `ScreeningAgent` + `EvaluationGraph` | ReAct + deterministic graph | **Baixa** — ambos usam grafos; LIA adiciona BARS |
+| `applies` | Flat + `react_agent.py` (híbrido) | `PipelineReActAgent` | ReAct | **Média** — react_agent.py já converge para ReAct |
+| `sourced_profile_sourcing` | LangGraph + BaseAgent ABC | `SourcingReActAgent` | ReAct multi-tool | **Média** — BaseAgent ≈ proto-ReAct |
+| `autonomous` | Multi-Agent (UniversalReActAgent) | `AutonomousAgent` | ReAct com todas as tools | **Baixa** — ambos são ReAct, mesma ideia |
+
+#### ReAct É um LangGraph de 2 Nós
+
+Uma confusão comum: "ReAct e LangGraph são alternativas — preciso escolher um ou outro." Na realidade, **ReAct é implementado COMO um LangGraph** — é um grafo de 2 nós com loop:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│          ReAct = LangGraph de 2 nós                     │
+│                                                          │
+│    ┌──────────┐     tool_calls?      ┌──────────────┐   │
+│    │   LLM    │ ─── sim ──────────► │  Tool Exec   │   │
+│    │  (think) │ ◄── resultado ───── │  (act)       │   │
+│    │          │                      │              │   │
+│    │          │ ─── não (final) ──► SAÍDA           │   │
+│    └──────────┘                      └──────────────┘   │
+│                                                          │
+│    Loop: think → act → think → act → ... → resposta     │
+│    Controle: MAX_ITERATIONS (v5=12, LIA=15)             │
+└─────────────────────────────────────────────────────────┘
+```
+
+Um grafo **determinístico** (como `EvaluationGraph`) tem nós fixos com edges definidos em código:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│          Grafo Determinístico (evaluation)               │
+│                                                          │
+│    Parse ──► Enrich ──► Score ──► Calibrate ──► Report  │
+│                            │                     │      │
+│                            ├── BARS (se eval)    │      │
+│                            └── FactCheck ────────┘      │
+│                                                          │
+│    Nós são funções Python, não LLM. Ordem é fixa.       │
+└─────────────────────────────────────────────────────────┘
+```
+
+A LIA usa **3 padrões**, todos sobre LangGraph:
+
+| Padrão | Quando usar | Exemplo LIA |
+|--------|------------|-------------|
+| **A. ReAct** (2 nós + loop) | Queries abertas, exploratórias | `SourcingReActAgent`, `PipelineReActAgent` |
+| **B. Deterministic Graph** (N nós fixos) | Processos com passos obrigatórios | `EvaluationGraph`, `JobWizardGraph` |
+| **C. ReAct + Graph** (híbrido) | Query aberta que pode acionar processo formal | `ScreeningAgent` → detecta `evaluate` → chama `EvaluationGraph` |
+
+#### Regra de Decisão para Migração (Caminho 3)
+
+```
+Domínio usa keyword matching? ──► SIM ──► Migrar para ReAct (Padrão A)
+                              └► NÃO
+                                  │
+Domínio tem passos obrigatórios? ──► SIM ──► Manter grafo + adicionar ReAct entry (Padrão C)
+                                 └► NÃO ──► Avaliar: se ReAct puro resolve, usar Padrão A
+```
+
+
+---
+
+## 5. Os 9 Controles de Compliance
 
 Antes de criar a `ComplianceDomainPrompt`, os controles devem estar disponíveis em `src/services/compliance/`. São 6 controles principais (usados diretamente pelo ComplianceDomainPrompt) + 3 complementares (usados por domínios específicos ou como infraestrutura).
 
-### 2.1 Estrutura de Destino
+### 5.1 Estrutura de Destino
 
 ```
 src/services/compliance/                          ← DIRETÓRIO PRINCIPAL (criar)
@@ -1570,7 +1527,7 @@ src/models/bias_audit_snapshot.py ← [C7] Modelo SQLAlchemy NOVO (~40L)
 > **[C9] HiringPolicy/PolicyMiddleware** — no Caminho 2 é parcial (via `context`).
 > Implementação completa no Caminho 3. Ver seção 2.11 para detalhes.
 
-### 2.2 Tabela de Origem → Destino
+### 5.2 Tabela de Origem → Destino
 
 | # | Controle | Arquivo LIA (origem) | Arquivo v5 (destino) | Adaptações |
 |---|----------|---------------------|---------------------|------------|
@@ -1584,7 +1541,7 @@ src/models/bias_audit_snapshot.py ← [C7] Modelo SQLAlchemy NOVO (~40L)
 | 8 | **GuardrailRepository** | `lia-agent-system/app/shared/compliance/guardrail_repository.py` (185L) | `src/services/compliance/guardrail_repository.py` | Remover `from app.core.database import get_db`; aceitar `db` via parâmetro |
 | 9 | **HiringPolicy** | `lia-agent-system/app/shared/policy_middleware.py` (100L) | — (**parcial no Caminho 2**) | Referência para Sprint 2+; integração completa no Caminho 3 |
 
-### 2.3 Controle 1 — FairnessGuard
+### 5.3 Controle 1 — FairnessGuard
 
 **O que faz:** Verifica queries contra padrões discriminatórios (gênero, idade, etnia, PCD, estado civil, religião). Retorna `FairnessCheckResult` com `is_blocked`, `educational_message`, `soft_warnings`.
 
@@ -1630,7 +1587,7 @@ r2 = fg.check("candidatos com experiência em Python para backend")
 assert r2.is_blocked is False
 ```
 
-### 2.4 Controle 2 — PromptInjectionGuard
+### 5.4 Controle 2 — PromptInjectionGuard
 
 **O que faz:** Detecta tentativas de prompt injection em inputs (OWASP LLM01). Retorna `InjectionCheckResult` com `is_suspicious`, `risk_level`, `sanitized_input`.
 
@@ -1659,7 +1616,7 @@ r2 = pig.check("Quero marcar uma entrevista para amanhã às 14h")
 assert r2.is_suspicious is False
 ```
 
-### 2.5 Controle 3 — FactChecker
+### 5.5 Controle 3 — FactChecker
 
 **O que faz:** Valida afirmações do LLM contra dados verificáveis. Método principal: `check_response()` (NÃO `check()`). Aplicar apenas em domínios narrativos (`evaluation`, `insights`, `autonomous`).
 
@@ -1695,7 +1652,7 @@ result = fc.check_response(
 assert result.has_discrepancies is True
 ```
 
-### 2.6 Controle 4 — ConfidenceNode
+### 5.6 Controle 4 — ConfidenceNode
 
 **O que faz:** Calcula score de confiança (0.0-1.0) baseado em heurísticas da execução: tool calls feitas, observações verificadas, tamanho da resposta, presença de erros.
 
@@ -1721,7 +1678,7 @@ node = ConfidenceNode(domain="evaluation")
 new_state = node(state)  # adiciona state["confidence"]
 ```
 
-### 2.7 Controle 5 — PII Stripping (expandir pii_filter.py existente)
+### 5.7 Controle 5 — PII Stripping (expandir pii_filter.py existente)
 
 **O que faz:** Remove PII e quasi-identificadores de texto ANTES de enviar ao LLM. 4 camadas: regex direto, quasi-identifiers, Presidio NER (opt-in).
 
@@ -1786,7 +1743,7 @@ assert "joao@empresa.com" not in clean
 assert "2005" not in clean  # quasi-identifier removido
 ```
 
-### 2.8 Controle 6 — AuditCallback (corrigir imutabilidade)
+### 5.8 Controle 6 — AuditCallback (corrigir imutabilidade)
 
 **O que faz:** O v5 JÁ TEM `AuditCallbackHandler` em `src/services/audit/`. O problema é que o `audit_writer.py` usa `ON CONFLICT DO UPDATE` — logs mutáveis violam SOX e BCB-498.
 
@@ -1818,7 +1775,7 @@ async def cleanup_by_tier(db):
     # Tier 2 (SOX/BCB-498): NÃO deletar — mover para cold storage
 ```
 
-### 2.9 Controle 7 — BiasAuditSnapshot (modelo de dados)
+### 5.9 Controle 7 — BiasAuditSnapshot (modelo de dados)
 
 **O que faz:** Modelo SQLAlchemy que persiste snapshots agregados de métricas de diversidade após ciclos de avaliação. Registra dimensões como gênero, idade, PCD e região — sem IDs individuais de candidatos (LGPD-safe). Usado no `_post_execute_hook()` do `evaluation` para detectar drift discriminatório ao longo do tempo.
 
@@ -1858,7 +1815,7 @@ snapshot = BiasAuditSnapshot(
 assert snapshot.company_id == "acme"
 ```
 
-### 2.10 Controle 8 — GuardrailRepository (políticas por tenant)
+### 5.10 Controle 8 — GuardrailRepository (políticas por tenant)
 
 **O que faz:** Repositório que consulta regras de guardrails configuráveis por tenant/empresa. Cada guardrail é uma regra regex + mensagem de bloqueio que impede ações específicas no domínio `autonomous`. Ex: "não contatar candidatos reprovados", "não compartilhar dados salariais".
 
@@ -1901,7 +1858,7 @@ assert len(active) >= 1
 assert active[0].domain == "autonomous"
 ```
 
-### 2.11 Controle 9 — HiringPolicy / PolicyMiddleware (regras de negócio)
+### 5.11 Controle 9 — HiringPolicy / PolicyMiddleware (regras de negócio)
 
 **O que faz:** Middleware que aplica regras de negócio configuráveis por empresa (tenant). Diferente dos controles 1-8 que são de **compliance/segurança**, o HiringPolicy é de **regras de negócio** — define limites operacionais do recrutamento.
 
@@ -1935,7 +1892,7 @@ assert active[0].domain == "autonomous"
 
 **Por que é parcial no Caminho 2:** O `ComplianceDomainPrompt` passa `context` para os domínios, e o domínio pode consultar `context.policies`. Mas não existe interceptação automática — o desenvolvedor do domínio precisa verificar as policies manualmente. No Caminho 3, isso se torna automático via mixin.
 
-### 2.12 Resumo dos 9 Controles
+### 5.12 Resumo dos 9 Controles
 
 | # | Controle | Tipo | Natureza | Novo/Existente | Sprint |
 |---|----------|------|----------|----------------|--------|
@@ -1951,9 +1908,12 @@ assert active[0].domain == "autonomous"
 
 ---
 
-## 3. ComplianceDomainPrompt — Classe Completa
 
-### 3.1 Conceito
+---
+
+## 6. ComplianceDomainPrompt — Classe Completa
+
+### 6.1 Conceito
 
 A `ComplianceDomainPrompt` é uma subclasse de `DomainPrompt` que implementa o **Template Method Pattern**: ela sobrescreve `process_intent()` e `execute_action()` para aplicar controles de compliance automaticamente, delegando a lógica de negócio para métodos abstratos `_domain_process_intent()` e `_domain_execute_action()`.
 
@@ -1968,7 +1928,7 @@ DomainPrompt (base v5, src/domains/base.py)
             └── ... (todos os domínios)
 ```
 
-### 3.2 Arquivo: `src/domains/compliance_base.py`
+### 6.2 Arquivo: `src/domains/compliance_base.py`
 
 ```python
 """
@@ -2179,7 +2139,7 @@ class ComplianceDomainPrompt(DomainPrompt, ABC):
         return result
 ```
 
-### 3.3 Diagrama de Fluxo
+### 6.3 Diagrama de Fluxo
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -2220,9 +2180,12 @@ class ComplianceDomainPrompt(DomainPrompt, ABC):
 
 ---
 
-## 4. Migração dos 8 Domínios
 
-### 4.1 Procedimento Mecânico (5 passos por domínio)
+---
+
+## 7. Migração dos 8 Domínios
+
+### 7.1 Procedimento Mecânico (5 passos por domínio)
 
 Para cada domínio, os mesmos 5 passos:
 
@@ -2234,7 +2197,7 @@ PASSO 4: Renomear execute_action() → _domain_execute_action()
 PASSO 5: Testar — query limpa passa, query discriminatória bloqueia
 ```
 
-### 4.2 Grupo A — Domínios Flat (scheduling, messaging, jobs)
+### 7.2 Grupo A — Domínios Flat (scheduling, messaging, jobs)
 
 **Antes:**
 
@@ -2266,7 +2229,7 @@ class SchedulingDomain(ComplianceDomainPrompt):
 
 **Tempo estimado:** 30 min por domínio × 3 = **1.5h**
 
-### 4.3 Grupo B — Domínios LangGraph (evaluation, applies, insights, sourced_profile)
+### 7.3 Grupo B — Domínios LangGraph (evaluation, applies, insights, sourced_profile)
 
 A mudança de herança é idêntica ao Grupo A. A diferença é que estes domínios têm `graph.py` + `nodes.py` que também precisam de atenção.
 
@@ -2437,7 +2400,7 @@ class SourcingDomain(ComplianceDomainPrompt):
 
 **Tempo estimado Grupo B:** 1.5h por domínio × 4 = **6h**
 
-### 4.4 Grupo C — Autonomous (Multi-Agent)
+### 7.4 Grupo C — Autonomous (Multi-Agent)
 
 **REGRA:** Somente `src/domains/autonomous/domain.py` migra para `ComplianceDomainPrompt`. O `agent.py` (`UniversalReActAgent`, 895L) **NÃO É TOCADO** — ele não herda de `DomainPrompt`.
 
@@ -2488,11 +2451,16 @@ async def execute(self, user_query, params, context, callbacks=None):
 
 ---
 
-## 5. Anti-Duplicação (Limpeza pós-Caminho 1)
+
+---
+
+## 8. Limpeza e Sprint Plan
+
+### 8.1 Anti-Duplicação (Limpeza pós-Caminho 2)
 
 Se o Caminho 1 (patch por domínio) foi aplicado parcialmente antes do Caminho 2, remover os guards manuais duplicados:
 
-### 5.1 Checklist de Remoção
+#### 1 Checklist de Remoção
 
 ```
 Arquivo                                          O que remover
@@ -2504,7 +2472,7 @@ src/domains/sourced_profile_sourcing/fact_checker.py  Arquivo inteiro (agora cen
 src/domains/*/domain.py                          Imports diretos de fairness_guard/injection
 ```
 
-### 5.2 Verificação de Duplicação
+#### 2 Verificação de Duplicação
 
 ```bash
 # Encontrar chamadas diretas que agora são cobertas pelo ComplianceDomainPrompt:
@@ -2517,9 +2485,9 @@ grep -rn "strip_pii_for_llm_prompt" src/domains/*/domain.py
 
 ---
 
-## 6. Sprint Plan (3 Sprints, ~23.5h)
+### 8.2 Sprint Plan (3 Sprints, ~23.5h)
 
-### Sprint 1 — Infraestrutura de Compliance (8h)
+#### Sprint 1 — Infraestrutura de Compliance (8h)
 
 | # | Tarefa | Arquivo | Concerns | Duração | Critério de Aceite |
 |---|--------|---------|----------|---------|-------------------|
@@ -2534,7 +2502,7 @@ grep -rn "strip_pii_for_llm_prompt" src/domains/*/domain.py
 
 **Entrega Sprint 1:** 6 controles disponíveis + `ComplianceDomainPrompt` funcional.
 
-### Sprint 2 — Migração dos 8 Domínios (10.5h)
+#### Sprint 2 — Migração dos 8 Domínios (10.5h)
 
 | # | Tarefa | Arquivo(s) | Duração | Critério de Aceite |
 |---|--------|-----------|---------|-------------------|
@@ -2549,7 +2517,7 @@ grep -rn "strip_pii_for_llm_prompt" src/domains/*/domain.py
 
 **Entrega Sprint 2:** 8/8 domínios com compliance automático.
 
-### Sprint 3 — Validação e Hardening (5h)
+#### Sprint 3 — Validação e Hardening (5h)
 
 | # | Tarefa | Duração | Critério de Aceite |
 |---|--------|---------|-------------------|
@@ -2560,7 +2528,7 @@ grep -rn "strip_pii_for_llm_prompt" src/domains/*/domain.py
 
 **Entrega Sprint 3:** Compliance verificado, documentado, mergeado.
 
-### Totais
+#### Totais
 
 ```
 Sprint 1 (Infraestrutura):     8.0h
@@ -2572,9 +2540,9 @@ TOTAL:                         23.5h (~3 semanas, 1 dev)
 
 ---
 
-## 7. Testes de Validação por Domínio
+## 9. Testes de Validação por Domínio
 
-### 7.1 Suite de Testes por Controle
+### 9.1 Suite de Testes por Controle
 
 ```
 tests/compliance/
@@ -2587,7 +2555,7 @@ tests/compliance/
 └── test_compliance_base.py
 ```
 
-### 7.2 Cenários por Domínio
+### 9.2 Cenários por Domínio
 
 #### evaluation
 
@@ -2668,7 +2636,7 @@ def test_flat_domain_strips_pii(domain_class):
     # Verificar via mock que _domain_process_intent recebe query sem PII
 ```
 
-### 7.3 Testes de Infraestrutura
+### 9.3 Testes de Infraestrutura
 
 ```python
 def test_audit_writer_immutability():
@@ -2696,11 +2664,68 @@ def test_compliance_base_is_abstract():
 
 ---
 
-## 8. Roadmap Caminho 3 — Refatoração com Mixins
+
+---
+
+## 10. Roadmap — Caminho 3
+
+O Caminho 3 aborda os problemas de qualidade de resposta (P8-P11) e o gap de tools, indo além da compliance do Caminho 2.
+
+### 10.1 Capacidades da LIA que o v5 Precisa Implementar
+
+Esta seção lista as capacidades da LIA que não existem no v5, organizadas por prioridade de implementação no Caminho 3.
+
+#### Prioridade 1 — Infraestrutura de Prompts
+
+| Capacidade | Arquivo LIA de referência | O que faz | Esforço |
+|-----------|--------------------------|-----------|---------|
+| **PromptRegistry** | `app/shared/prompts/prompt_registry.py` | Registry centralizado com versionamento. Cada prompt tem `name`, `version`, `template`, `variables`. Carrega de YAML, suporta variantes | ~20h |
+| **Prompts em YAML** | `app/prompts/domains/*.yaml` | Templates Jinja2 com placeholders: `{{ company_name }}`, `{{ candidate_name }}`, `{{ job_title }}`. Separação entre lógica e conteúdo | ~10h |
+| **Blocos composíveis** | `app/shared/prompts/blocks/` | `ANTI_SYCOPHANCY_BLOCK`, `CHAIN_OF_THOUGHT_BLOCK`, `INCLUSION_BLOCK`, `BARS_BLOCK`. Cada domínio compõe seu prompt a partir de blocos reutilizáveis | ~15h |
+| **Few-shot examples** | `app/shared/prompts/intent_few_shot_examples.py` | Exemplos "Clear" vs "Ambiguous" co-criados com profissionais de RH. Melhoram a classificação de intent sem fine-tuning | ~8h |
+
+#### Prioridade 2 — Contexto e Memória
+
+| Capacidade | Arquivo LIA de referência | O que faz | Esforço |
+|-----------|--------------------------|-----------|---------|
+| **MemoryResolver** | `app/orchestrator/memory_resolver.py` | Resolve pronomes e referências anafóricas: "ele" → candidato, "a vaga" → última vaga mencionada, "ontem" → data. Usa histórico de chat + LLM | ~25h |
+| **ContextAggregator** | `app/services/context_aggregator_service.py` | Monta bloco de contexto pré-LLM: empresa, departamento, vagas ativas, histórico de ações recentes, configurações do tenant | ~20h |
+| **TenantContext** | `app/shared/tenant_context.py` | Injeta dados da empresa: setor (tech/finance/retail), plano (starter/pro/enterprise), nível de autonomia do agente, idioma preferido | ~10h |
+| **StageContext** | `app/shared/stage_context.py` | Injeta onde o recrutador está no fluxo: vaga selecionada, etapa do funil, candidatos visíveis, ação em progresso | ~10h |
+
+#### Prioridade 3 — Qualidade de Avaliação
+
+| Capacidade | Arquivo LIA de referência | O que faz | Esforço |
+|-----------|--------------------------|-----------|---------|
+| **BARS (Behaviorally Anchored Rating Scale)** | `app/shared/prompts/blocks/bars_block.py` | Escala de 4 níveis (EXCEEDS/MEETS/PARTIAL/MISSING) com pesos configuráveis. Hard Skills 70% + Soft Skills 30% por padrão. Garante avaliações comparáveis | ~20h |
+| **A/B Testing de prompts** | `app/shared/prompts/prompt_registry.py` (variantes) | Suporta múltiplas variantes de um prompt com distribuição por % de tráfego. Métricas de qualidade por variante (confidence médio, satisfação, tempo de resposta) | ~15h |
+
+#### Prioridade 4 — Arquitetura (dependente do Caminho 3)
+
+| Capacidade | O que faz | Esforço |
+|-----------|-----------|---------|
+| **Migração Flat→ReAct** | Converter `jobs`, `messaging`, `insights` de keyword matching para ReAct (LangGraph 2 nós). Elimina regex, habilita encadeamento de ações | ~40h (3 domínios) |
+| **Base unificada parametrizada** | Todos os domínios herdam de uma base única. Diferença é configuração (tools, prompt, max_iterations), não estrutura | ~30h |
+
+#### Estimativa Total do Caminho 3 Expandido
+
+```
+Prioridade 1 (Prompts):     ~53h  → Sprint 1-2 do Caminho 3
+Prioridade 2 (Contexto):    ~65h  → Sprint 2-4 do Caminho 3
+Prioridade 3 (Avaliação):   ~35h  → Sprint 3-4 do Caminho 3
+Prioridade 4 (Arquitetura): ~70h  → Sprint 5-8 do Caminho 3
+──────────────────────────────────────────────────────────
+TOTAL:                      ~223h  → 16-20 semanas
+Início recomendado: Q2 2027 (após 6+ meses de Caminho 2 em produção)
+```
+
+---
+
+### 10.2 Refatoração com Mixins
 
 > O Caminho 3 é o objetivo de longo prazo **após** o Caminho 2 estar em produção. Não implementar antes de Q2 2027.
 
-### 8.1 Visão Alvo
+#### 1 Visão Alvo
 
 ```
 src/
@@ -2719,7 +2744,7 @@ src/
 │   └── ...
 ```
 
-### 8.2 Cinco Fases
+#### 2 Cinco Fases
 
 | Fase | Descrição | Duração | Pré-requisito |
 |------|-----------|---------|---------------|
@@ -2729,7 +2754,7 @@ src/
 | **Fase 4: Cleanup** | Remover `ComplianceDomainPrompt`. Cada concern tem arquivo de teste isolado. CI guards por concern. | 2 semanas | Fase 3 completa |
 | **Fase 5: Docs** | Documentação, onboarding de novos devs, runbook de compliance. | 2 semanas | Fase 4 completa |
 
-### 8.3 Estimativa Total
+#### 3 Estimativa Total
 
 ```
 Fase 1 (Shadow):      4 semanas  →  ~40h
@@ -2742,7 +2767,7 @@ TOTAL:                16 semanas  →  ~125h
 Início recomendado:   Q2 2027 (após 6+ meses de Caminho 2 em produção)
 ```
 
-### 8.4 Exemplo de Mixin
+#### 4 Exemplo de Mixin
 
 ```python
 # src/shared/compliance/fairness_mixin.py (Caminho 3 — futuro)
@@ -2770,7 +2795,7 @@ class FairnessMixin:
         self._fairness_enabled = False
 ```
 
-### 8.5 Vantagens do Caminho 3 sobre Caminho 2
+#### 5 Vantagens do Caminho 3 sobre Caminho 2
 
 | Aspecto | Caminho 2 | Caminho 3 |
 |---------|-----------|-----------|
@@ -2780,7 +2805,7 @@ class FairnessMixin:
 | Auditoria | Log centralizado | Log por concern separado |
 | Complexidade | Baixa | Média-Alta |
 
-### 8.6 Mapeamento Domínio → Padrão Alvo (Caminho 3)
+#### 6 Mapeamento Domínio → Padrão Alvo (Caminho 3)
 
 Cada domínio v5 deve convergir para um dos 3 padrões LIA. A tabela abaixo define o padrão alvo e a justificativa:
 
@@ -2812,7 +2837,7 @@ Padrão C (Híbrido): evaluation (ReAct entry → EvaluationGraph quando detecta
 * jobs usa ReAct para queries e Graph para criação guiada
 ```
 
-### 8.7 Roadmap de Capacidades (Prompt, Contexto, Avaliação)
+#### 7 Roadmap de Capacidades (Prompt, Contexto, Avaliação)
 
 Além da migração de compliance (Seção 8.1-8.5) e unificação arquitetural (8.6), o Caminho 3 inclui a implementação de capacidades da LIA que resolvem P8-P11:
 
@@ -2845,7 +2870,12 @@ TOTAL INTEGRADO:            ~348h em 8 sprints (~32 semanas)
 
 ---
 
-## 9. Matriz de Decisão: Caminho 1 vs 2 vs 3
+
+---
+
+## 11. Decisão e Apêndices
+
+### 11.1 Matriz de Decisão: Caminho 1 vs 2 vs 3
 
 | Critério | Caminho 1 (Patch) | **Caminho 2 (ComplianceDomainPrompt)** | Caminho 3 (Mixins + Capacidades) |
 |----------|-------------------|-----------------------------------------|----------------------------------|
@@ -2863,7 +2893,7 @@ TOTAL INTEGRADO:            ~348h em 8 sprints (~32 semanas)
 | **Flat→ReAct (elimina regex)** | Não | Não | Sim |
 | **Recomendação** | Emergência apenas | **Solução principal (agora)** | Objetivo Q2 2027 |
 
-### Veredicto
+#### Veredicto
 
 O **Caminho 2** resolve 100% dos concerns CRITICOS e ALTOS em 3 semanas com risco mínimo de regressão, sem reescrever a arquitetura. É o único caminho que garante que novos domínios herdam compliance automaticamente via herança Python.
 
@@ -2873,9 +2903,9 @@ O **Caminho 1** só deve ser usado como medida emergencial para `evaluation` e `
 
 ---
 
-## 10. Apêndice: 23 Concerns — Mapeamento Completo
+### 11.2 Apêndice: 23 Concerns — Mapeamento Completo
 
-### Tabela de Cobertura: Concern × Domínio
+#### Tabela de Cobertura: Concern × Domínio
 
 ```
  #  Concern                          eval  auto  appl  sched  spf   msg   jobs  ins
@@ -2907,7 +2937,7 @@ O **Caminho 1** só deve ser usado como medida emergencial para `evaluation` e `
 C = CRITICO    A = ALTO    · = não afetado diretamente
 ```
 
-### Mapeamento Detalhado: Concern → Risco → Arquivo v5 → Controle → Caminho 2
+#### Mapeamento Detalhado: Concern → Risco → Arquivo v5 → Controle → Caminho 2
 
 | # | Concern | Risco | Regulação | Arquivo v5 Afetado | Controle LIA | Resolvido por |
 |---|---------|-------|-----------|-------------------|-------------|---------------|
@@ -2935,7 +2965,7 @@ C = CRITICO    A = ALTO    · = não afetado diretamente
 | 22 | Hiring policy (todos) | A | CLT, BCB-498 | Todos os 8 `domain.py` | PolicyMiddleware | Resolver via inject no ComplianceDomainPrompt (Sprint 2+) |
 | 23 | Confidence calibration | C/A | EU AI Act Art. 13 | Todos os 8 `domain.py` | ConfidenceNode | ComplianceDomainPrompt.execute_action() |
 
-### Status de Resolução pelo Caminho 2
+#### Status de Resolução pelo Caminho 2
 
 ```
 Concerns CRITICOS (C01-C12):  12/12 resolvidos pelo Caminho 2     ✅
