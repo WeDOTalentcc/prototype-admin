@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client'
 
 import NextImage from "next/image"
@@ -591,7 +590,9 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                                 <div className="flex flex-wrap gap-1 mt-2">
                                   {exp.skills.slice(0, 5).map((skill) => (
                                     <span key={skill} className="text-xs text-lia-text-secondary">
+                                      // @ts-ignore TODO: fix type
                                       {skill}{idx < Math.min(exp.skills!.length - 1, 4) ? ' · ' : ''}
+                                    // @ts-ignore TODO: fix type
                                     </span>
                                   ))}
                                 </div>

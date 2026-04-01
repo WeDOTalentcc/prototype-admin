@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React from "react"
@@ -132,6 +131,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                         setJobEditForm((prev: Record<string, unknown>) => ({ ...prev, screeningStatus: newStatus }))
                         toast({ title: `Triagem ${newStatus === 'active' ? 'ativada' : newStatus === 'paused' ? 'pausada' : 'atualizada'}` })
                       } catch {
+                        // @ts-ignore TODO: fix type
                         toast({ title: 'Erro ao atualizar triagem', variant: 'destructive' })
                       }
                     }
@@ -310,6 +310,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                 if (selectedCandidates.size > 0) {
                   setShowShareGestorModal(true)
                 } else {
+                  // @ts-ignore TODO: fix type
                   setSelectedCandidates(new Set(allTableCandidates.map(c => c.id as string)))
                   toast({
                     title: "Modo Compartilhamento",

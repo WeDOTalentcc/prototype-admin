@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { FavoritesTab } from "@/components/talent-funnel-tabs/favorites-tab"
@@ -333,7 +332,9 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                   <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-gray-300 dark:bg-lia-bg-elevated group-hover:bg-gray-400 dark:group-hover:bg-gray-500 rounded-full transition-colors motion-reduce:transition-none"></div>
                 </div>
                 <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
+                  // @ts-ignore TODO: fix type
                   <CandidatePreview
+                    // @ts-ignore TODO: fix type
                     candidate={previewCandidate as unknown as never}
                     isOpen={showCandidatePreview}
                     onClose={handleCloseCandidatePreview}
@@ -379,6 +380,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                 setIsLoading(true)
                 const listDetails = await liaApi.getCandidateList(listId, { limit: 100 })
                 
+                // @ts-ignore TODO: fix type
                 const mappedCandidates: Candidate[] = listDetails.candidates.items.map((member) => {
                   const c = member.candidate
                   const location = [c.location_city, c.location_state, c.location_country].filter(Boolean).join(', ') || 'Não informado'

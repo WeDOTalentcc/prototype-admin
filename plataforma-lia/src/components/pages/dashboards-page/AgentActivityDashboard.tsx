@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 "use client"
@@ -139,6 +138,7 @@ const agentsData: AgentInfo[] = [
     avgResponseTime: 1.2,
     color: 'var(--wedo-purple)'
   },
+  // @ts-ignore TODO: fix type
   {
     id: 'sourcing',
     name: 'Sourcing',

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useCallback } from "react"
@@ -185,6 +184,7 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
       } else if (selectedCandidates.size === 1) {
         return `⚖️ **Comparar Candidatos**\n\nVocê selecionou apenas 1 candidato. Selecione mais candidatos para fazer uma comparação.`
       } else {
+        // @ts-ignore TODO: fix type
         const selectedList = allTableCandidates.filter(c => selectedCandidates.has(c.id))
         return `⚖️ **Comparação - ${selectedList.length} Candidatos**\n\n` +
           selectedList.map(c => {
@@ -224,6 +224,7 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
   const handleLiaUiAction = useCallback((action: string, params: Record<string, unknown>) => {
     if (action === 'start_job_wizard') return
 
+    // @ts-ignore TODO: fix type
     const candidateIds: string[] = params.candidate_ids || []
     const matchedCandidates = candidateIds.map(id => findCandidateById(id)).filter(Boolean)
     const firstCandidate = matchedCandidates.length > 0 ? matchedCandidates[0] : null
@@ -355,7 +356,9 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
 
       const response = await callOrchestratedJobChat({
         message: command,
+        // @ts-ignore TODO: fix type
         job_context: jobContext,
+        // @ts-ignore TODO: fix type
         candidates: candidatesForApi,
         selected_candidate_ids: selectedIds,
         conversation_id: liaConversationId,
@@ -431,6 +434,7 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
           }
           handleLiaUiAction(response.ui_action, enrichedParams)
         }
+      // @ts-ignore TODO: fix type
       } else if (response.error === 'auth_error') {
         const authMsg = {
           id: `auth-error-${timestamp}`,
@@ -476,7 +480,9 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
         const selectedIds = selectedCandidates.size > 0 ? Array.from(selectedCandidates) : undefined
         const fallbackResponse = await callKanbanAssistant({
           command,
+          // @ts-ignore TODO: fix type
           job_context: jobContext,
+          // @ts-ignore TODO: fix type
           candidates: candidatesForApi,
           selected_candidate_ids: selectedIds
         })
@@ -558,13 +564,16 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
     try {
       const response = await callOrchestratedJobChat({
         message,
+        // @ts-ignore TODO: fix type
         job_context: jobContext,
+        // @ts-ignore TODO: fix type
         candidates: candidatesForApi,
         selected_candidate_ids: selectedIds,
         conversation_id: liaConversationId,
         company_id: user?.company || 'default',
       })
 
+      // @ts-ignore TODO: fix type
       if (response.error === 'auth_error') {
         return {
           content: response.content || 'Sessao expirada. Recarregue a pagina para continuar.',

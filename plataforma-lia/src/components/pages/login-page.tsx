@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useCallback } from "react"
@@ -71,6 +70,7 @@ export function LoginPage() {
       await new Promise(resolve => setTimeout(resolve, 1500))
 
       if (email === "ana.silva@sodexo.com" && password === "123456") {
+        // @ts-ignore TODO: fix type
         login({
           name: "Ana Silva",
           email: "ana.silva@sodexo.com",
@@ -88,6 +88,7 @@ export function LoginPage() {
   }
 
   const handleSocialLogin = (provider: string) => {
+    // @ts-ignore TODO: fix type
     login({
       name: "Ana Silva",
       email: "ana.silva@sodexo.com",
@@ -393,6 +394,7 @@ export function LoginPage() {
                       // Trigger onboarding for logged user
                       localStorage.setItem('lia_first_access', 'true')
                       // Login with demo user first
+                      // @ts-ignore TODO: fix type
                       login({
                         name: "Demo User",
                         email: "demo@wedotalent.com",
@@ -412,6 +414,7 @@ export function LoginPage() {
                     onClick={() => {
                       // Login and set replay flag
                       localStorage.setItem('lia_can_replay_onboarding', 'true')
+                      // @ts-ignore TODO: fix type
                       login({
                         name: "Ana Silva",
                         email: "ana.silva@sodexo.com",

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useCallback } from "react"
@@ -65,6 +64,7 @@ export function useChatPageHandlers(ctx: ChatPageHandlersContext) {
     const finalMetadata: SearchMetadata = metadata || { mode: finalMode }
     
     // Submit search with all context (mode, metadata, filters)
+    // @ts-ignore TODO: fix type
     searchFlow.submitSearch({
       query,
       entities,
@@ -119,6 +119,7 @@ export function useChatPageHandlers(ctx: ChatPageHandlersContext) {
       })
       
       const workflowData = response.conversation?.workflow_data || response.message.message_metadata?.workflow_data
+      // @ts-ignore TODO: fix type
       const searchResults = workflowData?.search_results
       
       const localCount = searchResults?.local_count || searchResults?.local_candidates?.length || 0
@@ -155,6 +156,7 @@ export function useChatPageHandlers(ctx: ChatPageHandlersContext) {
       
       if (searchResults) {
         setHasSearchResults(true)
+        // @ts-ignore TODO: fix type
         searchFlow.showResults()
         
         const totalCount = localCount + globalCandidates.length
@@ -243,6 +245,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
       setMessages(prev => [...prev, liaResponse])
       
       // Activate Smart Search mode for profile collection
+      // @ts-ignore TODO: fix type
       searchFlow.startProfileCollection()
       setIsSmartSearchMode(true)
       setSmartSearchQuery("")
@@ -293,6 +296,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
 
     try {
       const messageContent = currentFileAnalysis
+        // @ts-ignore TODO: fix type
         ? `${userMessageContent}\n\n[Contexto do arquivo analisado: ${currentFileAnalysis.filename}]\n${currentFileAnalysis.summary || ''}\n${currentFileAnalysis.extractedText ? `Texto extraído: ${currentFileAnalysis.extractedText.substring(0, 500)}...` : ''}`
         : userMessageContent
 
@@ -402,7 +406,9 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
 
         const workflowData = response.conversation?.workflow_data || response.message.message_metadata?.workflow_data
 
+        // @ts-ignore TODO: fix type
         if (workflowData?.search_results) {
+          // @ts-ignore TODO: fix type
           const searchResults = workflowData.search_results
           const totalCount = (searchResults.local_candidates?.length || 0) + (searchResults.global_candidates?.length || 0)
           const panelData = {
@@ -420,25 +426,33 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
           setContextData(panelData)
           setIsPanelOpen(true)
         } else if (response.conversation?.workflow_type === 'job_creation' && workflowData) {
+          // @ts-ignore TODO: fix type
           if (workflowData.completion_percentage !== undefined) {
             const jobState = workflowData
+            // @ts-ignore TODO: fix type
             const collectedFields = Object.keys(jobState.field_status || {}).filter(k => jobState.field_status[k] === 'collected')
+            // @ts-ignore TODO: fix type
             const pendingFields = Object.keys(jobState.field_status || {}).filter(k => jobState.field_status[k] === 'pending')
             const panelData = {
               type: "job-creation-progress" as const,
               title: "Progresso: Criação de Vaga",
               data: {
+                // @ts-ignore TODO: fix type
                 completion_percentage: Math.round(jobState.completion_percentage || 0),
                 collected_fields: collectedFields,
                 pending_fields: pendingFields,
+                // @ts-ignore TODO: fix type
                 next_panel: jobState.current_panel || 'Aguardando próxima etapa'
               }
             }
             liaResponse.contextData = panelData
             setContextData(panelData)
             setIsPanelOpen(true)
+          // @ts-ignore TODO: fix type
           } else if (workflowData.frames) {
+            // @ts-ignore TODO: fix type
             const frames = workflowData.frames
+            // @ts-ignore TODO: fix type
             let panelData: ContextPanelData | null = null
             if (frames.org_chart) panelData = { type: "org-chart", title: "Organograma da Posição", data: frames.org_chart }
             else if (frames.interview_flow) panelData = { type: "interview-flow", title: "Fluxo de Entrevistas", data: frames.interview_flow }
@@ -460,9 +474,11 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
 
         // Ciclo fechado: notificar outros componentes (ex: kanban) quando uma ação foi executada
         const actionResult = response.message.message_metadata?.action_result
+        // @ts-ignore TODO: fix type
         if (actionResult?.success) {
           window.dispatchEvent(
             new CustomEvent("lia:action-executed", {
+              // @ts-ignore TODO: fix type
               detail: { action_id: actionResult.action_id, data: actionResult.data }
             })
           )
@@ -554,6 +570,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
 
   return {
     handleSmartSearchSubmit,
+    // @ts-ignore TODO: fix type
     handleSmartSearchCancel,
     handleSendMessage,
     handlePipelineAction,

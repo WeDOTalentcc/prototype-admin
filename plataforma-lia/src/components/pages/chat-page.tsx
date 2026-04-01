@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React from "react"
@@ -261,6 +260,7 @@ export function ChatPage() {
               )}
 
               <ChatMessageList
+                // @ts-ignore TODO: fix type
                 messages={messages}
                 isLoading={isLoading}
                 searchTerm={searchTerm}
@@ -315,6 +315,7 @@ export function ChatPage() {
         <div className="p-6 flex-shrink-0 bg-gray-50">
           <div className={inputContainerClass}>
             {/* Context Pills */}
+            // @ts-ignore TODO: fix type
             {contextData && contextData.data?.totalCount > 0 && (
               <div className="mb-4">
                 <ContextPill
@@ -351,7 +352,9 @@ export function ChatPage() {
                 {/* Sugestões Rápidas */}
                 {(getQuickSuggestions().length > 0 || (hasSearchResults && contextData && getQuickActions().length > 0)) && !isLoading && searchFlow.flowState !== "collecting_profile" && (
                   <div className="space-y-3">
+                    // @ts-ignore TODO: fix type
                     {getQuickSuggestions().length > 0 && searchFlow.flowState !== "collecting_profile" && (
+                      // @ts-ignore TODO: fix type
                       <div className="flex flex-wrap gap-2">
                         {getQuickSuggestions().map((suggestion, index) => (
                           <Button
@@ -366,7 +369,9 @@ export function ChatPage() {
                       </div>
                     )}
                     
+                    // @ts-ignore TODO: fix type
                     {hasSearchResults && contextData && contextData.data?.totalCount > 0 && getQuickActions().length > 0 && (
+                      // @ts-ignore TODO: fix type
                       <QuickActionChips actions={getQuickActions()} />
                     )}
                   </div>
@@ -640,6 +645,7 @@ export function ChatPage() {
           setSelectedCandidateForDetail(null)
         }}
         onAddToJob={handleAddCandidateToJob}
+        // @ts-ignore TODO: fix type
         onScheduleInterview={(candidateId) => {
           if (selectedCandidateForDetail) {
             handleSendMessage(`Agendar entrevista com ${selectedCandidateForDetail.name}`)
@@ -655,6 +661,7 @@ export function ChatPage() {
       {/* Credit Confirmation Dialog */}
       <CreditConfirmationDialog
         open={isCreditDialogOpen}
+        // @ts-ignore TODO: fix type
         onClose={() => {
           setIsCreditDialogOpen(false)
         }}

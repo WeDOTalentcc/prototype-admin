@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useEffect } from "react"
@@ -273,6 +272,7 @@ export function RealTimeDashboardPage() {
             </div>
             <div className="flex items-center gap-3">
               <Button
+                // @ts-ignore TODO: fix type
                 variant={isLive ? "default" : "outline"}
                 size="sm"
                 onClick={() => setIsLive(!isLive)}

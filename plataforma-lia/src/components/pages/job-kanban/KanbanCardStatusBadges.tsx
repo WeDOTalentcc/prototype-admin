@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React from "react"
@@ -96,6 +95,7 @@ export function KanbanCardStatusBadges({
 <div className="mt-2 flex flex-wrap gap-1">
   {/* AI Suggestion Badge */}
   {(() => {
+    // @ts-ignore TODO: fix type
     const suggestion = getSuggestionForCandidate(aiSuggestions, candidate.id)
     if (suggestion) {
       return (
@@ -360,13 +360,16 @@ export function KanbanCardStatusBadges({
         <OverrideApproveButton
           candidateId={candidate.id}
           candidateName={candidate.name}
+          // @ts-ignore TODO: fix type
           vacancyId={(currentJob.backendId || currentJob.id).toString()}
           onApproved={(cId: string) => {
             setCandidatesData((prev) => {
               const updated = { ...prev }
               Object.keys(updated).forEach((key) => {
                 updated[key] = updated[key].map((c) =>
+                  // @ts-ignore TODO: fix type
                   c.id === cId
+                    // @ts-ignore TODO: fix type
                     ? { ...c, status: "triado_aprovado", sub_status: undefined, subStatus: undefined }
                     : c
                 )

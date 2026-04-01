@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useEffect, useRef, useMemo } from "react"
@@ -226,13 +225,16 @@ export function useJobsFilters({ backendJobs }: UseJobsFiltersOptions): UseJobsF
         job.requirements.some(req => req.toLowerCase().includes(searchLower)) ||
         job.benefits.some(benefit => benefit.toLowerCase().includes(searchLower)) ||
         (job.tags || []).some(tag => tag.toLowerCase().includes(searchLower)) ||
+        // @ts-ignore TODO: fix type
         (job.technicalRequirements || []).some((tr: Record<string, unknown>) =>
           (tr.technology as string)?.toLowerCase().includes(searchLower) ||
           (tr.category as string)?.toLowerCase().includes(searchLower)
         ) ||
+        // @ts-ignore TODO: fix type
         (job.languages || []).some((lang: Record<string, unknown>) =>
           (lang.language as string)?.toLowerCase().includes(searchLower)
         ) ||
+        // @ts-ignore TODO: fix type
         (job.behavioralCompetencies || []).some((bc: Record<string, unknown>) =>
           (bc.competency as string)?.toLowerCase().includes(searchLower)
         ) ||
@@ -327,10 +329,12 @@ export function useJobsFilters({ backendJobs }: UseJobsFiltersOptions): UseJobsF
         const publishedChannels: string[] = []
         if (job.publishedLinkedIn) publishedChannels.push('linkedin')
         if (job.publishedWebsite) publishedChannels.push('website')
+        // @ts-ignore TODO: fix type
         if ((job as Record<string, unknown>).publishedIndeed) publishedChannels.push('indeed')
         matchesInlineFilters = matchesInlineFilters && jobFilters.publishing.channels.some(c => publishedChannels.includes(c))
       }
       if (jobFilters.publishing?.unpublished)
+        // @ts-ignore TODO: fix type
         matchesInlineFilters = matchesInlineFilters && !job.publishedLinkedIn && !job.publishedWebsite && !(job as Record<string, unknown>).publishedIndeed
       if (jobFilters.funnel?.emptyPipeline)
         matchesInlineFilters = matchesInlineFilters && job.funnel.total === 0

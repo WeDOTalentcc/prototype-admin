@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { useState, useRef } from "react"
@@ -322,9 +321,12 @@ export function InlineChatPanel({
                               return line ? <p key={i}>{line}</p> : null
                             })}
                           </div>
+                          // @ts-ignore TODO: fix type
                           {(message as { action_executed?: boolean; action_result?: unknown; action_type?: string }).action_executed && (message as { action_executed?: boolean; action_result?: unknown; action_type?: string }).action_result && (
+                            // @ts-ignore TODO: fix type
                             <ActionResultCard
                               actionType={(message as { action_executed?: boolean; action_result?: unknown; action_type?: string }).action_type || "pause_job"}
+                              // @ts-ignore TODO: fix type
                               result={(message as { action_executed?: boolean; action_result?: unknown; action_type?: string }).action_result}
                             />
                           )}

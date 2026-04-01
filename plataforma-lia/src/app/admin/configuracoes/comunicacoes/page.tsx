@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { useState, useEffect, useCallback } from "react"
@@ -359,10 +358,13 @@ export default function AdminComunicacoesPage() {
       if (data.success && data.data?.modules) {
         const modules: MatrixModule[] = data.data.modules.map((mod: Record<string, unknown>) => ({
           module: mod.module,
+          // @ts-ignore TODO: fix type
           label: mod.label || moduleLabels[mod.module]?.label || mod.module,
           description: mod.description || '',
           icon: mod.icon || 'folder',
+          // @ts-ignore TODO: fix type
           entries: (mod.entries || []).map(mapApiMatrixEntryToLocal),
+          // @ts-ignore TODO: fix type
           totalEntries: mod.total_entries || mod.entries?.length || 0,
           activeEntries: mod.active_entries || 0
         }))

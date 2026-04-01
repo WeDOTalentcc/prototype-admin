@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useMemo, useRef } from "react"
@@ -517,6 +516,7 @@ export function BigFiveDashboardPage() {
           </CardHeader>
           <CardContent>
             <div style={{height: '300px'}}>
+              // @ts-ignore TODO: fix type
               <Pie data={pieChartData} options={pieOptions} />
             </div>
           </CardContent>

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { useState, useEffect, useCallback } from "react"
@@ -269,9 +268,12 @@ export default function HealthCheckPage() {
             evidence: item.evidence || '',
             evidenceDetails: item.evidence_details || null,
             checklistItems: item.checklist_items || [],
+            // @ts-ignore TODO: fix type
             lastVerification: item.last_checked_at,
+            // @ts-ignore TODO: fix type
             comment: item.check_comments || item.comment,
             nextReviewDate: item.next_review_date,
+            // @ts-ignore TODO: fix type
             verified: item.last_checked_at ? true : false,
             referenceUrl: item.reference_url,
             referenceLabel: item.reference_label
@@ -338,9 +340,12 @@ export default function HealthCheckPage() {
           evidence: item.evidence || '',
           evidenceDetails: item.evidence_details || null,
           checklistItems: item.checklist_items || [],
+          // @ts-ignore TODO: fix type
           lastVerification: item.last_checked_at,
+          // @ts-ignore TODO: fix type
           comment: item.check_comments || item.comment,
           nextReviewDate: item.next_review_date,
+          // @ts-ignore TODO: fix type
           verified: item.last_checked_at ? true : false,
           referenceUrl: item.reference_url,
           referenceLabel: item.reference_label

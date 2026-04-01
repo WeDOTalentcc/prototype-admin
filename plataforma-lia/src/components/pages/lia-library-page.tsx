@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client'
 
 import React, { useState, useEffect } from 'react'
@@ -226,6 +225,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
             </p>
           </div>
           <Button
+            // @ts-ignore TODO: fix type
             variant={showFavoritesOnly ? "default" : "outline"}
             onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
             className="gap-2 h-8 px-3"

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState } from "react"
@@ -328,6 +327,7 @@ export function JobTemplatesPage() {
           {categories.map((category) => (
             <Button
               key={category.id}
+              // @ts-ignore TODO: fix type
               variant={selectedCategory === category.id ? "default" : "outline"}
               size="sm"
               onClick={() => setSelectedCategory(category.id)}
@@ -445,6 +445,7 @@ export function JobTemplatesPage() {
                     </Button>
                   </div>
 
+                  // @ts-ignore TODO: fix type
                   <Button size="sm" variant="default" className="w-full gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200">
                     <Wand2 className="w-3 h-3" />
                     Criar Vaga

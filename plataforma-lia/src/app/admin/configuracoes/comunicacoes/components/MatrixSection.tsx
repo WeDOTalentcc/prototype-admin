@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client'
 
 import { Button } from "@/components/ui/button"
@@ -81,6 +80,8 @@ export function MatrixSection({
 
       <div className="flex flex-wrap gap-2 mb-4">
         <Button
+          // @ts-ignore // TODO: fix type
+          // @ts-ignore TODO: fix type
           variant={selectedMatrixModule === null ? 'default' : 'outline'}
           size="sm"
           onClick={() => setSelectedMatrixModule(null)}
@@ -91,9 +92,12 @@ export function MatrixSection({
         </Button>
         {Object.entries(moduleLabels).map(([key, { label, emoji }]) => {
           const ModIcon = moduleIcons[key]
+ // @ts-ignore // TODO: fix type;82i\ // @ts-ignore // TODO: fix type
           return (
             <Button
+              // @ts-ignore // TODO: fix type
               key={key}
+              // @ts-ignore TODO: fix type
               variant={selectedMatrixModule === key ? 'default' : 'outline'}
               size="sm"
               onClick={() => setSelectedMatrixModule(key)}

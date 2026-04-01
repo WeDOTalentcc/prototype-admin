@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React from "react"
@@ -192,6 +191,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
     <>
       {showReport && reportJob && (
         <JobReportModal
+          // @ts-ignore TODO: fix type
           job={reportJob}
           isOpen={showReport}
           onClose={onCloseReport}
@@ -201,6 +201,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
       <JobCompareModal
         isOpen={showCompareModal}
         onClose={onCloseCompareModal}
+        // @ts-ignore TODO: fix type
         jobs={allJobs.filter(job => selectedJobsForBatch.has(job.id)).map(job => ({
           id: String(job.id),
           code: job.jobId,
@@ -535,6 +536,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
               const channels = channelMap[data.recruiterNotificationChannel] || ['bell']
               
               const recruiterIds = [...new Set(selectedJobs
+                // @ts-ignore TODO: fix type
                 .map(j => j.recruiter?.id || j.recruiterId)
                 .filter(Boolean) as string[])]
               
@@ -589,6 +591,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
             })
             await Promise.all(updatePromises)
             
+            // @ts-ignore TODO: fix type
             if (data.sendRecruiterSummary && data.recruiterNotificationChannel) {
               const channelMap: Record<string, string[]> = {
                 'email': ['email'],
@@ -597,9 +600,11 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
                 'email_teams': ['email', 'teams'],
                 'all': ['email', 'teams', 'bell']
               }
+              // @ts-ignore TODO: fix type
               const channels = channelMap[data.recruiterNotificationChannel] || ['bell']
               
               const recruiterIds = [...new Set(selectedJobs
+                // @ts-ignore TODO: fix type
                 .map(j => j.recruiter?.id || j.recruiterId)
                 .filter(Boolean) as string[])]
               
@@ -676,6 +681,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
             }
             
             const previousRecruiters = [...new Set(selectedJobs
+              // @ts-ignore TODO: fix type
               .map(j => j.recruiter?.id || j.recruiterId)
               .filter(Boolean) as string[])]
             
@@ -715,6 +721,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
               }
             }
             
+            // @ts-ignore TODO: fix type
             onSetBackendJobs(prev => prev.map(job => 
               selectedJobsForBatch.has(job.id) 
                 ? { ...job, recruiter: recruiter.name, recruiterEmail: recruiter.email } 
@@ -759,6 +766,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
         job={editingJob}
         onSave={async (jobId, updates) => {
           try {
+            // @ts-ignore TODO: fix type
             await liaApi.updateJobVacancy(jobId, updates)
             toast.success('Vaga atualizada com sucesso!')
             onCloseEditJobModal()
@@ -775,6 +783,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
         isOpen={showScreeningChannelsModal}
         onClose={onCloseScreeningChannelsModal}
         config={screeningConfig}
+        // @ts-ignore TODO: fix type
         updateConfig={updateScreeningConfig}
       />
 
@@ -782,6 +791,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
         isOpen={showScreeningSettingsModal}
         onClose={onCloseScreeningSettingsModal}
         config={screeningConfig}
+        // @ts-ignore TODO: fix type
         updateConfig={updateScreeningConfig}
       />
 
@@ -789,6 +799,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
         isOpen={showScreeningSchedulingModal}
         onClose={onCloseScreeningSchedulingModal}
         config={screeningConfig}
+        // @ts-ignore TODO: fix type
         updateConfig={updateScreeningConfig}
       />
 

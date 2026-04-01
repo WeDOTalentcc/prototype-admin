@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { use, useState, useEffect } from "react"
@@ -200,6 +199,7 @@ export default function ClientComunicacoesPage({
               return (
                 <Button
                   key={filter.id}
+                  // @ts-ignore TODO: fix type
                   variant={isActive ? "default" : "outline"}
                   size="sm"
                   onClick={() => setChannelFilter(filter.id)}

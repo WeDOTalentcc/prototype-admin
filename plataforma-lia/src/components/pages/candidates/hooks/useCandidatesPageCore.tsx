@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 // useCandidatesPageCore.tsx
@@ -95,6 +94,7 @@ const CandidatePage = dynamic(
   { ssr: false }
 )
 const SmartSearchInput = dynamic(
+  // @ts-ignore TODO: fix type
   () =>
     import("@/components/search/smart-search-input")
       .then(m => ({ default: m.SmartSearchInput }))
@@ -126,6 +126,7 @@ export function useCandidatesPageCore({
 
   const hideViewedCandidates = useHideViewedCandidates({
     userId: user?.id,
+    // @ts-ignore TODO: fix type
     companyId: user?.company_id,
     userEmail: user?.email,
   })
@@ -344,6 +345,7 @@ export function useCandidatesPageCore({
   const [pearchSearchOptions, setPearchSearchOptions] = useState<PearchSearchOptions>(DEFAULT_PEARCH_OPTIONS)
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
   const [activeSearchFilters, setActiveSearchFilters] = useState<SearchFilters>({
+    // @ts-ignore TODO: fix type
     ppiOptions: {}, general: {}, locations: {}, job: {}, company: {},
     skills: {}, education: {}, languages: {},
   })
@@ -480,11 +482,13 @@ export function useCandidatesPageCore({
 
   // ── Archetypes ────────────────────────────────────────────────────────────
   const archetypesHook = useCandidatesArchetypes({
+    // @ts-ignore TODO: fix type
     searchSource, pearchSearchOptions, toast,
     setCandidates, setHasSearchResults, setSearchResultsCount,
     setLocalResultsCount, setPearchResultsCount,
     setLastSearchQuery, setLastSearchMode,
     setActiveSearchTab: (_v: string) => setActiveSearchTab(_v as SearchTab),
+    // @ts-ignore TODO: fix type
     setLiaPromptValue, setChatMessages,
   })
   const {
@@ -510,7 +514,9 @@ export function useCandidatesPageCore({
   // ── Reveal contact ────────────────────────────────────────────────────────
   const revealContactHook = useRevealContact({
     setCreditsRemaining: (fn) =>
+      // @ts-ignore TODO: fix type
       setCreditsRemaining(typeof fn === 'function' ? fn(creditsRemaining) : fn),
+    // @ts-ignore TODO: fix type
     toast,
   })
   const { showRevealModal, revealCandidate, revealType, revealedContacts, isRevealing } = revealContactHook.state
@@ -520,21 +526,28 @@ export function useCandidatesPageCore({
   const { executeSearch } = useCandidatesExecuteSearch({
     searchSource, pearchSearchOptions, searchThreadId, setSearchThreadId,
     hideViewedCandidatesFilter: hideViewedCandidates.filterCandidates,
+    // @ts-ignore TODO: fix type
     talentFunnel,
+    // @ts-ignore TODO: fix type
     setCandidates, setSearchResults, setHasSearchResults, setSearchResultsCount,
     setLocalResultsCount, setPearchResultsCount, setCreditsUsedInSearch,
     setCreditsRemaining: (fn) =>
       setCreditsRemaining(typeof fn === 'function' ? fn(creditsRemaining ?? 0) : fn),
+    // @ts-ignore TODO: fix type
     setShowSearchResults, setDisplayedResultsCount, setCurrentSearchSource,
     setHasSearched, setLastSearchEntities, setLastSearchMetadata, setLastSearchUsedPearch,
     setSearchExecutionId, setShowExpandGlobalOption, setShowExpandedLIA, setUserCollapsedLIA,
+    // @ts-ignore TODO: fix type
     setLastSuccessfulQuery, setChatMessages, setIsLoading, setIsSearchActive,
   })
 
   // ── CV handlers ───────────────────────────────────────────────────────────
   const cvHandlers = useCandidatesCVHandlers({
+    // @ts-ignore TODO: fix type
     setCandidates, setIsDroppingCV, setCvUploadLoading,
+    // @ts-ignore TODO: fix type
     setHasSearchResults, setSearchResultsCount, setShowSearchResults,
+    // @ts-ignore TODO: fix type
     setDisplayedResultsCount, setChatMessages, toast,
   })
   const handleCVDrop = cvHandlers.handleCVDrop
@@ -547,23 +560,36 @@ export function useCandidatesPageCore({
     searchResults, setSearchResults,
     searchTerm,
     lastSearchQuery, lastSearchEntities, lastSearchMode, lastSearchMetadata, lastSearchUsedPearch,
+    // @ts-ignore TODO: fix type
     searchSource, setSearchSource, currentSearchSource, setCurrentSearchSource,
     openCreditModals, setOpenCreditModals,
     pearchSearchOptions, setPearchSearchOptions,
+    // @ts-ignore TODO: fix type
     creditsRemaining, setCreditsRemaining,
+    // @ts-ignore TODO: fix type
     creditsUsedInSearch, setCreditsUsedInSearch,
+    // @ts-ignore TODO: fix type
     pearchResultsCount, setPearchResultsCount,
+    // @ts-ignore TODO: fix type
     localResultsCount, setLocalResultsCount,
+    // @ts-ignore TODO: fix type
     searchResultsCount, setSearchResultsCount,
+    // @ts-ignore TODO: fix type
     showSearchResults, setShowSearchResults,
+    // @ts-ignore TODO: fix type
     hasSearchResults, setHasSearchResults,
+    // @ts-ignore TODO: fix type
     showGlobalExpansionConfirm, setShowGlobalExpansionConfirm,
+    // @ts-ignore TODO: fix type
     isExpandingToGlobal, setIsExpandingToGlobal,
+    // @ts-ignore TODO: fix type
     displayedResultsCount, setDisplayedResultsCount,
+    // @ts-ignore TODO: fix type
     isLoadingMore, setIsLoadingMore,
     searchFeedbacks, setSearchFeedbacks,
     hasSearched, lastSuccessfulQuery,
     setSearchThreadId, searchThreadId,
+    // @ts-ignore TODO: fix type
     showExpandGlobalOption, setShowExpandGlobalOption,
     setChatMessages,
     showSourceChangeModal, setShowSourceChangeModal,
@@ -574,7 +600,9 @@ export function useCandidatesPageCore({
     pendingSearchRequest, setPendingSearchRequest,
     activeSearchFilters, setActiveSearchFilters,
     setSelectedTemplate,
+    // @ts-ignore TODO: fix type
     executeSearch,
+    // @ts-ignore TODO: fix type
     toast, user,
   })
   const handleConfirmPearchSearch = searchHandlers.handleConfirmPearchSearch
@@ -613,6 +641,7 @@ export function useCandidatesPageCore({
     searchQuery: searchResults.query,
     viewedCandidateIds,
     expandedRows,
+    // @ts-ignore TODO: fix type
     onSearchFeedbackChange: handleSearchFeedbackChange,
     onRevealContact: openRevealModal,
     onToggleExpandedRow: (candidateId) =>
@@ -629,7 +658,9 @@ export function useCandidatesPageCore({
     filteredCandidates, sortedCandidates, paginatedCandidates,
     searchDisplayCandidates, visibleCandidates, getPaginatedCandidates,
   } = useCandidatesFilterSort({
+    // @ts-ignore TODO: fix type
     candidates, searchTerm, hasSearchResults, quickFilters, columnFilters,
+    // @ts-ignore TODO: fix type
     advancedFilters, tableFilters, sortBy, sortOrder, searchSortBy, searchFeedbacks,
     displayedResultsCount, showSearchResults, currentPage, itemsPerPage,
     showOnlyNew, viewedCandidateIds,
@@ -642,6 +673,7 @@ export function useCandidatesPageCore({
     markCandidateAsViewed(candidate.id, 'profile')
     onAddRecentItem?.({
       id: candidate.id, type: 'candidato', title: candidate.name,
+      // @ts-ignore TODO: fix type
       subtitle: candidate.currentRole || candidate.location,
       meta: { candidateId: candidate.id },
     })
@@ -672,7 +704,9 @@ export function useCandidatesPageCore({
   // ── Actions sub-hook ──────────────────────────────────────────────────────
   const candidatesActions = useCandidatesActions({
     candidates, setCandidates,
+    // @ts-ignore TODO: fix type
     activeTab, setActiveTab,
+    // @ts-ignore TODO: fix type
     viewingList, setViewingList,
     candidateListsForModal,
     selectedCandidatesForBatch, setSelectedCandidatesForBatch,
@@ -684,8 +718,10 @@ export function useCandidatesPageCore({
     showUnsavedWarningModal, setShowUnsavedWarningModal,
     pendingTabChange, setPendingTabChange,
     hasUnsavedPearchCandidates, unsavedPearchCandidates,
+    // @ts-ignore TODO: fix type
     showSearchResults, setShowSearchResults,
     lastSearchQuery, deselectAllCandidates,
+    // @ts-ignore TODO: fix type
     toast, user,
   })
   const handleSaveToLocalBase = candidatesActions.handleSaveToLocalBase
@@ -801,9 +837,11 @@ export function useCandidatesPageCore({
   const liaHandlers = useCandidatesLIAHandlers({
     candidates, setCandidates,
     chatMessages, setChatMessages,
+    // @ts-ignore TODO: fix type
     liaPromptValue, setLiaPromptValue,
     liaWidth, setLiaWidth,
     activeSearchTab, setActiveSearchTab,
+    // @ts-ignore TODO: fix type
     talentConversationId, setTalentConversationId,
     liaIsParsingEntities, setLiaIsParsingEntities,
     liaSuggestions, setLiaSuggestions,
@@ -813,9 +851,13 @@ export function useCandidatesPageCore({
     searchResults, lastSearchQuery,
     activeSearchFilters,
     liaPromptEntities, setLiaPromptEntities,
+    // @ts-ignore TODO: fix type
     setShowExpandedLIA, userCollapsedLIA, setUserCollapsedLIA,
+    // @ts-ignore TODO: fix type
     selectedCandidateForLIA, setSelectedCandidateForLIA,
+    // @ts-ignore TODO: fix type
     showLIAPromptForCandidate, setShowLIAPromptForCandidate,
+    // @ts-ignore TODO: fix type
     selectedCandidate, setSelectedCandidate,
     showQuickViewModal, setShowQuickViewModal,
     showComparisonModal, setShowComparisonModal,

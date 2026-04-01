@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { useState, useMemo, useCallback, useEffect } from "react"
@@ -372,7 +371,9 @@ export default function SettingsPageEnhanced() {
         return (
           <CompanyTeamHub
             activeSubsection={activeSubsection}
+            // @ts-ignore TODO: fix type
             onUserUpdate={handleUserUpdate}
+            // @ts-ignore TODO: fix type
             onGoalUpdate={handleGoalUpdate}
           />
         )
@@ -392,6 +393,7 @@ export default function SettingsPageEnhanced() {
         return (
           <GoalsPlanningHub
             users={users}
+            // @ts-ignore TODO: fix type
             onGoalUpdate={handleGoalUpdate}
             activeSubsection={activeSubsection}
           />

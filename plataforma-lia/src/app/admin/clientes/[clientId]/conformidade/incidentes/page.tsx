@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { use, useState, useEffect, useCallback } from "react"
@@ -142,11 +141,15 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
 
   const allIncidents: Incident[] = breaches.map(b => ({
     id: b.id,
+    // @ts-ignore TODO: fix type
     title: b.title,
     severity: b.severity as 'critical' | 'high' | 'medium' | 'low',
+    // @ts-ignore TODO: fix type
     status: b.status === 'closed' ? 'resolved' as const : b.status === 'investigating' ? 'investigating' as const : 'open' as const,
+    // @ts-ignore TODO: fix type
     startedAt: b.detectedAt,
     resolvedAt: b.resolvedAt,
+    // @ts-ignore TODO: fix type
     affectedServices: b.affectedSystems || [],
   }))
 

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import type React from "react"
@@ -373,7 +372,9 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
             linkedin: c.linkedin_url || '',
             avatar: c.avatar_url || c.picture_url,
             // Mapeamento de experiências profissionais da Pearch
+            // @ts-ignore TODO: fix type
             experiences: c.experiences || [],
+            // @ts-ignore TODO: fix type
             workHistory: (c.experiences || []).map((exp: {
               company_info?: { name?: string; location?: string }
               company?: string
@@ -394,6 +395,7 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
               description: exp.company_roles?.[0]?.description || exp.description || ''
             })),
             // Mapeamento de formação acadêmica da Pearch
+            // @ts-ignore TODO: fix type
             education: (c.education || []).map((edu: {
               school?: string
               degree?: string
@@ -432,6 +434,7 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
         const globalCandidates = mappedCandidates.filter(c => isGlobalSource(c.source, Boolean(c.pearch_profile_id)))
 
         // Atualizar estados
+        // @ts-ignore TODO: fix type
         setCandidates(mappedCandidates)
         setCurrentSearchSource('hybrid')
         setSearchResultsCount(searchResponse.total_count || mappedCandidates.length)
@@ -440,6 +443,7 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
         setCreditsUsedInSearch(searchResponse.credits_used || 0)
 
         // Atualizar searchResults para exibição no painel LIA
+        // @ts-ignore TODO: fix type
         setSearchResults(prev => ({
           ...prev,
           local: localCandidates,
@@ -539,10 +543,14 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
   const buildQueryFromFilters = (filters: SearchFilters): string => {
     const parts: string[] = []
 
+    // @ts-ignore TODO: fix type
     if (filters.skills?.skills && filters.skills.skills.length > 0) {
+      // @ts-ignore TODO: fix type
       parts.push(`skills: ${filters.skills.skills.join(', ')}`)
     }
+    // @ts-ignore TODO: fix type
     if (filters.locations?.locations && filters.locations.locations.length > 0) {
+      // @ts-ignore TODO: fix type
       parts.push(`localização: ${filters.locations.locations.join(', ')}`)
     }
     if (filters.general?.minExperience || filters.general?.maxExperience) {

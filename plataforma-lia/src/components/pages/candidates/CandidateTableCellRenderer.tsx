@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React from "react"
@@ -123,9 +122,11 @@ export function createCellRenderer(deps: CellRendererDeps) {
               candidateId={candidate.id}
               candidateName={candidate.name}
               candidateScore={
+                // @ts-ignore TODO: fix type
                 candidate.match_score || candidate.lia_score || candidate.score
               }
               initialFeedback={searchFeedbacks[candidate.id] || null}
+              // @ts-ignore TODO: fix type
               onFeedbackChange={onSearchFeedbackChange}
               size="sm"
               alwaysVisible={hasFeedback}
@@ -153,9 +154,13 @@ export function createCellRenderer(deps: CellRendererDeps) {
                   src={
                     candidate.avatar_url ||
                     candidate.avatar ||
+                    // @ts-ignore TODO: fix type
                     candidate.photo_url ||
+                    // @ts-ignore TODO: fix type
                     candidate.picture_url ||
+                    // @ts-ignore TODO: fix type
                     candidate.photoUrl ||
+                    // @ts-ignore TODO: fix type
                     candidate.profile_picture
                   }
                   alt={candidate.name}
@@ -350,6 +355,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
           </span>
         )
       case "education": {
+        // @ts-ignore TODO: fix type
         const educationData = candidate.education || candidate.educations
         if (Array.isArray(educationData) && educationData.length > 0) {
           const firstEdu = educationData[0]

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { use } from "react"
@@ -76,16 +75,22 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
     return pathname === fullPath
   }
 
+  // @ts-ignore TODO: fix type
   const overallCompliance = dashboard?.overallCompliance ?? 0
   const totalControls = dashboard?.totalControls ?? 0
   const implementedControls = dashboard?.totalImplemented ?? 0
+  // @ts-ignore TODO: fix type
   const pendingControls = dashboard?.totalNotStarted ?? 0
+  // @ts-ignore TODO: fix type
   const inProgressControls = dashboard?.totalInProgress ?? 0
   const upcomingReviews = dashboard?.upcomingReviews ?? 0
   const overdueReviews = dashboard?.overdueReviews ?? 0
   
+  // @ts-ignore TODO: fix type
   const openIncidents = breaches.filter(b => b.status !== 'closed').length
+  // @ts-ignore TODO: fix type
   const dsrPending = lgpdStats?.pendingDSRs ?? 0
+  // @ts-ignore TODO: fix type
   const consentRate = lgpdStats?.consentComplianceRate ?? 0
 
   if (isLoading) {
@@ -331,11 +336,11 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-3 rounded-md bg-status-success/10 dark:bg-status-success/20">
-                    <p className="text-lg font-semibold text-status-success dark:text-status-success">{lgpdStats.totalConsents || 0}</p>
+                    <p className="text-lg font-semibold text-status-success dark:text-status-success">{(lgpdStats as any).totalConsents || 0}</p>
                     <p className="text-xs text-status-success dark:text-status-success">Consentimentos Ativos</p>
                   </div>
                   <div className="p-3 rounded-md bg-status-warning/10 dark:bg-status-warning/20">
-                    <p className="text-lg font-semibold text-status-warning dark:text-status-warning">{lgpdStats.pendingDSRs || 0}</p>
+                    <p className="text-lg font-semibold text-status-warning dark:text-status-warning">{(lgpdStats as any).pendingDSRs || 0}</p>
                     <p className="text-xs text-status-warning dark:text-status-warning">DSRs Pendentes</p>
                   </div>
                 </div>
@@ -343,15 +348,17 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
                 <div className="pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm lia-text-500 dark:text-lia-text-tertiary">Taxa de Retenção de Dados</span>
-                    <span className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">{lgpdStats.dataRetentionCompliance?.toFixed(0) || 0}%</span>
+                    <span className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">{(lgpdStats as any).dataRetentionCompliance?.toFixed(0) || 0}%</span>
                   </div>
-                  <Progress value={lgpdStats.dataRetentionCompliance || 0} className="h-2" />
+                  <Progress value={(lgpdStats as any).dataRetentionCompliance || 0} className="h-2" />
                 </div>
 
-                {lgpdStats.lastAuditDate && (
+                // @ts-ignore TODO: fix type
+                {(lgpdStats as any).lastAuditDate && (
                   <div className="flex items-center gap-2 text-xs lia-text-400 dark:lia-text-500">
                     <Calendar className="w-3 h-3" />
-                    Última auditoria: {formatDate(lgpdStats.lastAuditDate)}
+                    // @ts-ignore TODO: fix type
+                    Última auditoria: {formatDate((lgpdStats as any).lastAuditDate)}
                   </div>
                 )}
               </div>
@@ -427,6 +434,7 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
                 <div className="flex items-center gap-3">
                   <CheckCircle2 className="w-5 h-5 text-status-success" />
                   <div>
+                    // @ts-ignore TODO: fix type
                     <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">{biasSummary.passedAudits || 0}</p>
                     <p className="text-xs lia-text-400 dark:lia-text-500">Aprovadas</p>
                   </div>
@@ -436,6 +444,7 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
                 <div className="flex items-center gap-3">
                   <AlertTriangle className="w-5 h-5 text-status-warning" />
                   <div>
+                    // @ts-ignore TODO: fix type
                     <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">{biasSummary.concernAudits || 0}</p>
                     <p className="text-xs lia-text-400 dark:lia-text-500">Com Alertas</p>
                   </div>

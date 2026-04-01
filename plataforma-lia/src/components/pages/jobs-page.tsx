@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { useState, useRef, useEffect, useMemo } from"react"
@@ -85,10 +84,12 @@ interface JobsPageProps {
 
 export function JobsPage(props: JobsPageProps) {
   const { onAddRecentItem } = props
+  // @ts-ignore TODO: fix type
   const state = useJobsPageCore(props)
 
   // Kanban navigation (moved from hook — hooks must not return JSX)
   if (state.showKanban && state.selectedJob) {
+    // @ts-ignore TODO: fix type
     return <JobKanbanPage key={`kanban-${state.selectedJob.id}`} job={state.selectedJob} onBack={state.handleBackToJobs} />
   }
   if (state.showKanban && !state.selectedJob) {
@@ -352,6 +353,7 @@ export function JobsPage(props: JobsPageProps) {
                     <div className="flex items-center gap-1">
                       {/* Botão Microfone */}
                       <AudioRecordButton
+                        // @ts-ignore TODO: fix type
                         onTranscription={(text) => setLiaPromptValue(prev => prev ? `${prev} ${text}` : text)}
                         className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                       />
@@ -486,6 +488,7 @@ export function JobsPage(props: JobsPageProps) {
 
               {/* Botões de controle */}
               <Button
+                // @ts-ignore TODO: fix type
                 variant={showTableFiltersPanel ?"default" :"outline"}
                 size="sm"
                 className={`gap-2 text-xs h-8 px-3 ${showTableFiltersPanel ?'bg-gray-900 hover:bg-gray-800 dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover dark:text-lia-text-disabled text-white' :''}`}
@@ -502,6 +505,7 @@ export function JobsPage(props: JobsPageProps) {
               </Button>
 
               <Button
+                // @ts-ignore TODO: fix type
                 variant={showColumnConfig ?"default" :"outline"}
                 size="sm"
                 className={`gap-2 text-xs h-8 px-3 ${showColumnConfig ?'bg-gray-900 hover:bg-black dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover dark:text-lia-text-disabled text-white' :''}`}
@@ -570,6 +574,7 @@ export function JobsPage(props: JobsPageProps) {
               userCollapsedLIA={userCollapsedLIA}
               selectedJobsForBatch={selectedJobsForBatch}
               liaPromptValue={liaPromptValue}
+              // @ts-ignore TODO: fix type
               onSetLiaPromptValue={setLiaPromptValue}
               onCloseChat={closeChat}
               onOpenGeneralChat={openGeneralChat}
@@ -594,6 +599,7 @@ export function JobsPage(props: JobsPageProps) {
               searchTerm={searchTerm}
               onSearchTermChange={setSearchTerm}
               jobFilters={jobFilters}
+              // @ts-ignore TODO: fix type
               onToggleFilter={toggleJobFilter}
               onClearAllFilters={clearAllJobFilters}
               getActiveFiltersCount={getActiveJobFiltersCount}
@@ -793,6 +799,7 @@ export function JobsPage(props: JobsPageProps) {
           screeningConfig={screeningConfig}
           updateScreeningConfig={updateScreeningConfig}
           showReactivateScreeningDialog={showReactivateScreeningDialog}
+          // @ts-ignore TODO: fix type
           reactivateScreeningJobs={reactivateScreeningJobs}
           reactivateEndDate={reactivateEndDate}
           showWSITutorialModal={showWSITutorialModal}
@@ -809,6 +816,7 @@ export function JobsPage(props: JobsPageProps) {
           onOpenJobCreationChat={openJobCreationChat}
           onSetPendingNavigateJobId={setPendingNavigateJobId}
           onSetReactivateScreeningDialog={setShowReactivateScreeningDialog}
+          // @ts-ignore TODO: fix type
           onSetReactivateScreeningJobs={setReactivateScreeningJobs}
           onSetReactivateEndDate={setReactivateEndDate}
           jobs={allJobs.filter(job => selectedJobsForBatch.has(job.id)).map(job => ({

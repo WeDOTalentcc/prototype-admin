@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React from "react"
@@ -197,6 +196,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
     handleTableTransitionRequest, handleTransitionRequired,
     setSelectedCandidateForModal, setActiveModal,
     setShowBigFiveModal, scoreModalCandidate,
+    // @ts-ignore TODO: fix type
     getDataRequestForCandidate, handleDataRequestResend, handleDataRequestViewDetails,
     setTransitionInitialPrompt, setTransitionAllowStageSelection, setTransitionInterviewAlert,
     openTransition, router, user, toast,
@@ -411,9 +411,11 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
         currentJob={currentJob}
         jobEditForm={jobEditForm}
         setJobEditForm={setJobEditForm}
+        // @ts-ignore TODO: fix type
         setJobStatusModalMode={setJobStatusModalMode}
         setShowJobStatusModal={setShowJobStatusModal}
         setShowCloseVacancyModal={setShowCloseVacancyModal}
+        // @ts-ignore TODO: fix type
         setActiveTab={setActiveTab}
         computedSuggestions={computedSuggestions}
         setShowExpandedLIA={setShowExpandedLIA}
@@ -549,6 +551,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             viewMode={viewMode}
+            // @ts-ignore TODO: fix type
             setViewMode={setViewMode}
             showKanbanFiltersPanel={showKanbanFiltersPanel}
             setShowKanbanFiltersPanel={setShowKanbanFiltersPanel}
@@ -556,6 +559,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
             setShowTableFiltersPanel={setShowTableFiltersPanel}
             showColumnConfig={showColumnConfig}
             setShowColumnConfig={setShowColumnConfig}
+            // @ts-ignore TODO: fix type
             tableColumns={tableColumns}
             selectedCandidates={selectedCandidates}
             setSelectedCandidates={setSelectedCandidates}

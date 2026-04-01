@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
@@ -798,6 +797,7 @@ export default function SharedSearchPage() {
                             <div className="flex flex-wrap gap-2">
                               <Button
                                 onClick={() => updatePendingFeedback(candidate.id, 'approved')}
+                                // @ts-ignore TODO: fix type
                                 variant={pending?.rating === 'approved' ? 'default' : 'outline'}
                                 size="sm"
                                 className={
@@ -811,6 +811,7 @@ export default function SharedSearchPage() {
                               </Button>
                               <Button
                                 onClick={() => updatePendingFeedback(candidate.id, 'maybe')}
+                                // @ts-ignore TODO: fix type
                                 variant={pending?.rating === 'maybe' ? 'default' : 'outline'}
                                 size="sm"
                                 className={
@@ -824,6 +825,7 @@ export default function SharedSearchPage() {
                               </Button>
                               <Button
                                 onClick={() => updatePendingFeedback(candidate.id, 'rejected')}
+                                // @ts-ignore TODO: fix type
                                 variant={pending?.rating === 'rejected' ? 'default' : 'outline'}
                                 size="sm"
                                 className={

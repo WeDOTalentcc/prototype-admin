@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React from "react"
@@ -285,6 +284,7 @@ export function KanbanColumnRenderer({
     sortedCandidates = candidates.sort((a, b) => {
       if (a.needsAction && !b.needsAction) return -1
       if (!a.needsAction && b.needsAction) return 1
+      // @ts-ignore TODO: fix type
       return b.score - a.score
     })
   }
@@ -349,6 +349,7 @@ export function KanbanColumnRenderer({
               {filteredCandidates.length}
             </span>
             {stageId === "screening" && (currentJob.backendId || currentJob.id) && (
+              // @ts-ignore TODO: fix type
               <SaturationBadge jobId={(currentJob.backendId || currentJob.id).toString()} />
             )}
             {dynamicStage && (
@@ -444,11 +445,17 @@ export function KanbanColumnRenderer({
                 candidate={candidate}
                 shortListedCandidateIds={shortListedCandidateIds}
                 favoriteCandidates={favoriteCandidates}
+                // @ts-ignore TODO: fix type
                 onOpenPreview={onOpenPreview}
+                // @ts-ignore TODO: fix type
                 onSendEmail={onSendEmail}
+                // @ts-ignore TODO: fix type
                 onSendWhatsApp={onSendWhatsApp}
+                // @ts-ignore TODO: fix type
                 onScheduleInterview={onScheduleInterview}
+                // @ts-ignore TODO: fix type
                 onSendWSIInvite={onSendWSIInvite}
+                // @ts-ignore TODO: fix type
                 onSendFeedback={onSendFeedback}
                 onToggleShortList={onToggleShortList}
                 onToggleFavorite={onToggleFavorite}
@@ -569,8 +576,10 @@ export function KanbanColumnRenderer({
               {/* Scores */}
               <KanbanCardScores
                 candidate={candidate}
+                // @ts-ignore TODO: fix type
                 calculateNotaLiaGeral={calculateNotaLiaGeral}
                 _jobIdForSL={_jobIdForSL}
+                // @ts-ignore TODO: fix type
                 onOpenScoreModal={onOpenScoreModal}
               />
 
@@ -596,7 +605,9 @@ export function KanbanColumnRenderer({
                 stageId={stageId}
                 aiSuggestions={aiSuggestions}
                 currentJob={currentJob}
+                // @ts-ignore TODO: fix type
                 setCandidatesData={setCandidatesData}
+                // @ts-ignore TODO: fix type
                 onOpenAnalysis={onOpenAnalysis}
                 approveSuggestion={approveSuggestion}
                 rejectSuggestion={rejectSuggestion}
@@ -610,12 +621,17 @@ export function KanbanColumnRenderer({
               setTransitionInitialPrompt={setTransitionInitialPrompt}
               setTransitionInterviewAlert={setTransitionInterviewAlert}
               setTransitionAllowStageSelection={setTransitionAllowStageSelection}
+              // @ts-ignore TODO: fix type
               setDecisionFlowCandidate={setDecisionFlowCandidate}
               setDecisionFlowType={setDecisionFlowType}
               setShowDecisionFlowModal={setShowDecisionFlowModal}
+              // @ts-ignore TODO: fix type
               onOpenDecisionFlowModal={onOpenDecisionFlowModal}
+              // @ts-ignore TODO: fix type
               onApproveFromScreening={onApproveFromScreening}
+              // @ts-ignore TODO: fix type
               onRejectFromScreening={onRejectFromScreening}
+              // @ts-ignore TODO: fix type
               openTransition={openTransition}
             />
           </div>

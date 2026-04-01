@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -319,6 +318,7 @@ export function RecruitersTab({
               {VIEW_MODES.map((mode) => (
                 <Button
                   key={mode.id}
+                  // @ts-ignore TODO: fix type
                   variant={viewMode === mode.id ? "default" : "outline"}
                   size="sm"
                   onClick={() => setViewMode(mode.id)}

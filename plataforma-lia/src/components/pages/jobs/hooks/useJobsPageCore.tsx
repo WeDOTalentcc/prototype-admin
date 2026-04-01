@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { useEffect, useRef } from "react"
@@ -86,6 +85,7 @@ export function useJobsPageCore(props: JobsPageProps) {
     setBackendJobs,
     setShowExpandedLIA: (v) => chatActions.setShowExpandedLIA(v),
     setLiaPromptValue: (v) => chatActions.setLiaPromptValue(v),
+    // @ts-ignore TODO: fix type
     setLiaHighlight: (v) => chatActions.setLiaHighlight?.(v),
     liaInputRef: undefined, // will be supplied after chat state is created
   })
@@ -146,6 +146,7 @@ export function useJobsPageCore(props: JobsPageProps) {
           id: matchedJob.backendId || matchedJob.jobId || String(matchedJob.id),
           type: 'vaga',
           title: matchedJob.title,
+          // @ts-ignore TODO: fix type
           subtitle: (matchedJob as Record<string, unknown>).company as string | undefined,
           meta: { jobId: matchedJob.backendId || matchedJob.jobId || String(matchedJob.id) },
         })
@@ -186,8 +187,10 @@ export function useJobsPageCore(props: JobsPageProps) {
                 'Planejamento': 'Planejamento', 'Aprovação': 'Aprovação', 'Publicada': 'Publicada',
                 'Triagem': 'Triagem', 'Entrevistas': 'Entrevistas', 'Finalização': 'Finalização', 'Encerrada': 'Encerrada',
               }
+              // @ts-ignore TODO: fix type
               const convertedJobs: Job[] = response.items.map((jv: Record<string, unknown>, index: number) => {
                 const funnelData = (jv.funnel_data as Record<string, number>) || { total: 0, screening: 0, interview: 0, final: 0, hired: 0 }
+                // @ts-ignore TODO: fix type
                 return {
                   id: index + 1,
                   backendId: jv.id as string,
@@ -262,6 +265,7 @@ export function useJobsPageCore(props: JobsPageProps) {
       id: job.backendId || job.jobId || String(job.id),
       type: 'vaga',
       title: job.title,
+      // @ts-ignore TODO: fix type
       subtitle: (job as Record<string, unknown>).company as string | undefined,
       meta: { jobId: job.backendId || job.jobId || String(job.id) },
     })

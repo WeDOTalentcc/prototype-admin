@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useCallback, useEffect, useMemo, useRef } from "react"
@@ -307,6 +306,7 @@ export function useChatPageCore() {
         // @ts-ignore
           <CandidateSummaryCard
             data={chatCardData as unknown as any}
+            // @ts-ignore TODO: fix type
             onScheduleInterview={() => handleCardAction("schedule")}
             onViewDetails={() => handleCardAction("view_details")}
             onAddToShortlist={() => handleCardAction("add_shortlist")}
@@ -325,6 +325,7 @@ export function useChatPageCore() {
           <CompensationSummaryCard
             data={chatCardData as unknown as any}
             onEdit={() => handleCardAction("edit")}
+            // @ts-ignore TODO: fix type
             onApprove={() => handleCardAction("approve")}
           />
         )
@@ -333,6 +334,7 @@ export function useChatPageCore() {
         // @ts-ignore
           <InterviewConfirmationCard
             data={chatCardData as unknown as any}
+            // @ts-ignore TODO: fix type
             onReschedule={() => handleCardAction("reschedule")}
             onCancel={() => handleCardAction("cancel")}
             onConfirm={() => handleCardAction("confirm")}
@@ -343,6 +345,7 @@ export function useChatPageCore() {
         // @ts-ignore
           <ProgressTrackerCard
             data={chatCardData as unknown as any}
+            // @ts-ignore TODO: fix type
             onViewDetails={() => handleCardAction("view_details")}
           />
         )
@@ -353,6 +356,7 @@ export function useChatPageCore() {
             data={chatCardData as unknown as any}
             onEdit={() => handleCardAction("edit")}
             onPublish={() => handleCardAction("publish")}
+            // @ts-ignore TODO: fix type
             onViewCandidates={() => handleCardAction("view_candidates")}
           />
         )

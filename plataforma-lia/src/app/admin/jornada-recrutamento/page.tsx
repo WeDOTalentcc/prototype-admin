@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { useState, useEffect, useRef, useCallback } from "react"
@@ -84,6 +83,7 @@ export default function JornadaRecrutamentoPage() {
         }
       }
     } catch (error: unknown) {
+      // @ts-ignore TODO: fix type
       if (error.name === 'AbortError') return
     } finally {
       if (isMountedRef.current) {

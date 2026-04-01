@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { liaApi, CandidateLocal } from "@/services/lia-api"
 import {
   searchCandidates as searchCandidatesHybrid,
@@ -328,6 +327,7 @@ export function createExecuteSearch(deps: ExecuteSearchDeps) {
         }
 
         if (searchResponse.candidates?.length > 0) {
+          // @ts-ignore TODO: fix type
           mappedCandidates = searchResponse.candidates.map((c) => {
             const candidateSource = c.source || 'pearch'
             return {
@@ -359,7 +359,9 @@ export function createExecuteSearch(deps: ExecuteSearchDeps) {
               contractType: 'CLT' as const,
               linkedin: c.linkedin_url || '',
               avatar: c.avatar_url,
+              // @ts-ignore TODO: fix type
               experiences: c.experiences || c.work_history || [],
+              // @ts-ignore TODO: fix type
               workHistory: (c.experiences || c.work_history || []).map((exp: RawExperience) => ({
                 company: exp.company_info?.name || exp.company || '',
                 title: exp.company_roles?.[0]?.title || exp.title || '',
@@ -369,6 +371,7 @@ export function createExecuteSearch(deps: ExecuteSearchDeps) {
                 location: exp.company_info?.location || exp.location || '',
                 description: exp.company_roles?.[0]?.description || exp.description || ''
               })),
+              // @ts-ignore TODO: fix type
               education: (c.education || c.educations || []).map((edu: RawEducation) => ({
                 school: edu.school || '',
                 degree: edu.degree || '',
@@ -416,6 +419,7 @@ export function createExecuteSearch(deps: ExecuteSearchDeps) {
           localCount = filtered.length
           pearchCount = 0
 
+          // @ts-ignore TODO: fix type
           mappedCandidates = filtered.map((c: CandidateLocal) => ({
             id: c.id,
             candidateId: c.id.substring(0, 8).toUpperCase(),

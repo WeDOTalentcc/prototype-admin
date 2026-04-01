@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { useState, useEffect, useCallback } from "react"
@@ -108,6 +107,7 @@ export default function CoberturaPage() {
     }
   ]
 
+  // @ts-ignore TODO: fix type
   const gaps: GapItem[] = allControls
     .filter(control => {
       const companyControl = companyControls.find(cc => cc.controlLibraryId === control.id)
