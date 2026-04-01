@@ -1,7 +1,7 @@
 # Guia de Migração v5 → Compliance Compartilhada
 
 > **Plataforma LIA — WeDO Talent**
-> Versão: 1.3 | Data: 2026-04-01
+> Versão: 1.4 | Data: 2026-04-01
 > Fonte: `WeDO/analises/diagnostico_arquitetura_codigo_lia_vs_v5.md` (8070 linhas)
 > Caminho recomendado: **Caminho 2 — ComplianceDomainPrompt** (~23.5h, 3 sprints)
 
@@ -266,7 +266,14 @@ Impacto concreto:
    - 0.10: [O Que São "Tools" no Contexto de Agentes IA](#010-o-que-são-tools-no-contexto-de-agentes-ia)
    - 0.11: [Onde Cada Controle Atua no Pipeline](#011-onde-cada-controle-atua-no-pipeline)
    - 0.12: [Avaliação Arquitetural: v5 vs LIA](#012-avaliação-arquitetural-v5-vs-lia)
+     - 0.12.1: [Como Funciona o Roteamento: v5 vs LIA](#0121-como-funciona-o-roteamento-v5-vs-lia)
+     - 0.12.2: [Inventário Real por Domínio](#0122-inventário-real-por-domínio-o-que-cada-domínio-v5-tem-e-não-tem)
+     - 0.12.3: [Mapa Cenário → Domínio → Problemas Aplicáveis](#0123-mapa-cenário--domínio--problemas-aplicáveis)
    - 0.13: [Por Que as Respostas São Limitadas, Equivocadas ou Robóticas](#013-por-que-as-respostas-são-limitadas-equivocadas-ou-robóticas)
+     - 0.13.1: [Diagnóstico Granular por Cenário de Uso](#0131-diagnóstico-granular-por-cenário-de-uso)
+     - 0.13.2: [Diagnóstico dos Prompts: v5 vs LIA](#0132-diagnóstico-dos-prompts-v5-vs-lia)
+     - 0.13.3: [Gap de Tools: Ações Declaradas vs Tools Executáveis](#0133-gap-de-tools-ações-declaradas-vs-tools-executáveis)
+     - 0.13.4: [Relação entre Camadas e Problemas](#0134-relação-entre-camadas-e-problemas)
    - 0.14: [Capacidades da LIA que o v5 Precisa Implementar](#014-capacidades-da-lia-que-o-v5-precisa-implementar)
 1. [Contexto Rápido](#1-contexto-rápido)
 2. [Pré-Requisitos: 9 Controles de Compliance](#2-pré-requisitos-9-controles-de-compliance)
@@ -899,6 +906,143 @@ Domínio tem passos obrigatórios? ──► SIM ──► Manter grafo + adicio
                                  └► NÃO ──► Avaliar: se ReAct puro resolve, usar Padrão A
 ```
 
+#### 0.12.1 Como Funciona o Roteamento: v5 vs LIA
+
+O primeiro ponto de falha é o **roteamento** — como o sistema decide qual domínio deve processar uma mensagem do recrutador.
+
+**v5 — Keyword Matching com Fallback de Confiança Baixa:**
+
+Todos os 11 domínios usam o mesmo padrão em `process_intent()`:
+
+```python
+# Padrão real em TODOS os domain.py do v5
+for keyword, action_id in _KEYWORD_ACTION_MAP.items():
+    if keyword in user_message.lower():
+        confidence = min(0.95, 0.6 + len(keyword) * 0.02)
+        return IntentResult(action=action_id, confidence=confidence)
+
+# Se nenhum keyword match → fallback com confiança baixa
+return IntentResult(action=DEFAULT_ACTION, confidence=0.3)
+```
+
+Problemas concretos:
+- `"manje de AWS"` → nenhum keyword match → fallback (0.3) → ação genérica
+- `"avancei ontem"` → nenhum keyword match → perde a query inteira
+- `"pipeline"` → match em `applies` (pipeline), `recruiter_assistant` (pipeline_health), E `automation` (engagement_pipeline) → **colisão** (P9)
+- Confiança é baseada em **comprimento do keyword**, não em relevância semântica
+
+**LIA — CascadedRouter com 6 Tiers:**
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│          CascadedRouter — 6 Tiers de Roteamento               │
+│                                                                │
+│  Tier 1: MemoryResolver                                       │
+│  └─ Resolve pronomes: "ele"→candidato, "a vaga"→última vaga  │
+│                                                                │
+│  Tier 2: LRU Cache (in-memory)                                │
+│  └─ Intents repetidos → resposta instantânea (<1ms)           │
+│                                                                │
+│  Tier 3: Redis Cache (cross-session)                          │
+│  └─ Intents do mesmo tenant → compartilha entre sessões       │
+│                                                                │
+│  Tier 4: VectorSemanticCache                                  │
+│  └─ Queries semanticamente similares → reutiliza rota         │
+│  └─ "como tá o pipe" ≈ "status do pipeline" → mesma rota     │
+│                                                                │
+│  Tier 5: FastRouter (regex otimizado)                         │
+│  └─ Patterns com word boundaries: \b(criar|nova)\s+vaga\b    │
+│  └─ Mais preciso que substring match                          │
+│                                                                │
+│  Tier 6: LLM Cascade (Haiku → Sonnet → Opus)                 │
+│  └─ Se tiers 1-5 falham, LLM classifica o intent             │
+│  └─ Começa com modelo barato (Haiku), escala se confiança<0.7│
+│                                                                │
+│  Referência: app/orchestrator/cascaded_router.py              │
+│              app/orchestrator/memory_resolver.py               │
+└──────────────────────────────────────────────────────────────┘
+```
+
+| Aspecto | v5 | LIA |
+|---------|-----|------|
+| **Classificação** | Substring match, case-insensitive | 6 tiers: cache → regex → LLM cascade |
+| **Confiança** | `min(0.95, 0.6 + len(keyword) * 0.02)` | Semântica + LLM confidence score |
+| **Gírias/informal** | ❌ Falha (sem match) | ✅ LLM tier entende |
+| **Colisão entre domínios** | Primeiro match ganha | Semantic routing resolve ambiguidade |
+| **Referência temporal** | ❌ "ontem" não é keyword | ✅ MemoryResolver resolve datas |
+| **Custo por query** | ~0 (string match) | Variável: cache=0, LLM=$0.001-0.01 |
+
+#### 0.12.2 Inventário Real por Domínio: O Que Cada Domínio v5 TEM e NÃO TEM
+
+A tabela abaixo mostra, para cada um dos 8 domínios v5 (lidos diretamente dos arquivos `domain.py` em `lia-agent-system/app/domains/`), quais capacidades existem no código do domínio vs o que a infraestrutura LIA (CascadedRouter, PromptRegistry, ReAct agents) adiciona.
+
+**Legenda:** ✅ = implementado no domínio | ⚠️ = parcial/limitado | ❌ = ausente no domínio | 🔧 = existe na infra LIA mas domínio não usa
+
+| Capacidade | `jobs` | `messaging` | `insights` | `scheduling` | `evaluation` | `applies` | `sourcing` | `autonomous` |
+|-----------|--------|------------|-----------|-------------|-------------|---------|-----------|-------------|
+| **Keyword matching** | ✅ 29 keywords | ✅ 20 keywords | ✅ 18 keywords | ✅ 20 keywords | ✅ 24 keywords | ✅ 5 keywords | ✅ 30 keywords | ✅ 20 keywords |
+| **LLM fallback** | ⚠️ confidence=0.3 | ⚠️ confidence=0.3 | ⚠️ confidence=0.3 | ⚠️ confidence=0.3 | ⚠️ confidence=0.3 | ⚠️ confidence=0.4 | ⚠️ confidence=0.3 | ⚠️ confidence=0.3 |
+| **YAML prompt** | 🔧 `job_management.yaml` | 🔧 `communication.yaml` | 🔧 `analytics.yaml` | 🔧 `interview_scheduling.yaml` | 🔧 `cv_screening.yaml` | ⚠️ inline em domain.py | 🔧 `sourcing.yaml` | 🔧 `automation.yaml` |
+| **Persona definida** | 🔧 no YAML | 🔧 no YAML | 🔧 no YAML | 🔧 no YAML | 🔧 no YAML | ❌ | 🔧 no YAML | 🔧 no YAML |
+| **scope_in/scope_out** | 🔧 no YAML | 🔧 no YAML | 🔧 no YAML | 🔧 no YAML | 🔧 no YAML | ❌ | 🔧 no YAML | 🔧 no YAML |
+| **behavioral_rules** | 🔧 no YAML | 🔧 no YAML | 🔧 no YAML | 🔧 no YAML | 🔧 no YAML | ❌ | 🔧 no YAML | 🔧 no YAML |
+| **intent_examples (few-shot)** | 🔧 3-4 exemplos | 🔧 3-4 exemplos | 🔧 3-4 exemplos | 🔧 3-4 exemplos | 🔧 3-4 exemplos | ❌ | 🔧 3-4 exemplos | 🔧 3-4 exemplos |
+| **ANTI_SYCOPHANCY block** | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| **CHAIN_OF_THOUGHT block** | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| **DEFENSIVE block** | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| **MemoryResolver** | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| **ContextAggregator** | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| **StageContext** | ❌ | ❌ | ❌ | ⚠️ typed state | ⚠️ typed state | ❌ | ❌ | ❌ |
+| **TenantContext** | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| **FairnessGuard** | ❌ | ❌ | ❌ | ❌ | ⚠️ existe mas opcional | ❌ | ❌ | ❌ |
+| **BARS (escala de avaliação)** | N/A | N/A | N/A | N/A | ❌ | N/A | N/A | N/A |
+| **Batch processing** | ❌ | ❌ | ❌ | ❌ | ❌ (1 por vez) | ❌ | ❌ | ❌ |
+| **ReAct agent** | ❌ Flat | ❌ Flat | ❌ Flat | ⚠️ LangGraph | ⚠️ LangGraph | ⚠️ react_agent.py | ⚠️ BaseAgent | ✅ UniversalReAct |
+| **Ações declaradas** | 29 | 20 | 18 | 20 | 24 | 5 | 30 | 20 |
+| **Tools no registry** | 13 | 10 | 10 | 10 | 11 | 5 | 10 | 10 |
+| **Tools no agent (ReAct)** | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ ~25 | ❌ | ✅ todas |
+
+**Leitura da tabela:**
+
+1. **🔧 (existe na infra LIA mas domínio não usa):** Os arquivos YAML existem em `app/prompts/domains/` com persona, scope, rules e few-shot examples. Mas o código dos domínios v5 (os `domain.py`) não carrega esses YAMLs na execução — usa prompts inline ou o `PromptLoader` da infra LIA. A migração precisa conectar os dois.
+
+2. **Todos os domínios têm keyword matching**, com entre 5 e 30 keywords. A fórmula de confiança é idêntica: `min(0.95, 0.6 + len(keyword) * 0.02)`. Nenhum domínio usa regex com word boundaries (exceto `applies` que tem padrões `\b`).
+
+3. **Nenhum domínio v5 usa** MemoryResolver, ContextAggregator, TenantContext, ou os blocos composíveis (ANTI_SYCOPHANCY, CHAIN_OF_THOUGHT, DEFENSIVE). Essas capacidades existem na infraestrutura LIA mas não foram integradas aos domínios.
+
+4. **Gap de ações vs tools:** `sourcing` declara 30 ações mas tem 10 tools implementadas. `jobs` declara 29 ações mas tem 13 tools. As ações não-implementadas são stubs que retornam respostas genéricas.
+
+5. **Apenas 2 domínios têm agent-level tools:** `applies` (pipeline) tem ~25 tools no `pipeline_tool_registry.py` e `autonomous` herda todas as tools. Os demais 6 domínios só têm domain-level tools (4-13 cada).
+
+#### 0.12.3 Mapa Cenário → Domínio → Problemas Aplicáveis
+
+Para cada cenário real de uso, a tabela mostra qual domínio recebe a query, como a processa, e quais dos problemas P8-P11 efetivamente se aplicam:
+
+| # | Cenário | Entry Point | Domínio | Padrão | P8 (Flat) | P9 (Keyword) | P10 (Contexto) | P11 (Prompt) | Falha Primária |
+|---|---------|------------|---------|--------|-----------|-------------|---------------|-------------|---------------|
+| 1 | "Como está o pipeline?" no Teams | Teams bot | `recruiter_assistant` ou `applies` | Flat | ✅ | ✅ colisão | ✅ sem job_id | ✅ | P10: sem contexto de vaga |
+| 2 | "Mostre os que avancei ontem" chat flutuante | Chat widget | ❌ nenhum match | N/A | ✅ | ✅ "avancei" não é keyword | ✅ "ontem" sem resolver | ✅ | P9: keyword não reconhece |
+| 3 | "Avalie os 5 finalistas" dentro da vaga | Página da vaga | `evaluation` | LangGraph | ❌ não é Flat | ⚠️ "avalie" match ok | ⚠️ tem job_id | ✅ sem BARS | P11: sem escala BARS |
+| 4 | "Cria vaga tech lead, remoto, 25k" | Chat | `jobs` | Flat | ✅ | ⚠️ "cria" match ok | ⚠️ parcial | ✅ sem extração | P8+P11: Flat não encadeia wizard |
+| 5 | "Agendar entrevista com Maria às 14h" | Página candidato | `scheduling` | LangGraph | ❌ | ⚠️ match ok | ⚠️ tem candidato_id | ⚠️ | Funciona razoavelmente ✅ |
+| 6 | "Comparar os 3 finalistas" | Página vaga | `evaluation` ou `recruiter_assistant` | Misto | ⚠️ | ✅ colisão entre domínios | ⚠️ tem job_id | ✅ sem BARS comparativo | P9: colisão + P11: sem critérios |
+| 7 | "Buscar devs Java senior em SP" | Chat | `sourcing` | LangGraph+BaseAgent | ❌ | ⚠️ match ok | ✅ sem vaga para comparar | ⚠️ | P10: sem vaga para fit score |
+| 8 | "Mandar feedback de rejeição" | Página candidato | `messaging` | Flat | ✅ | ⚠️ match ok | ⚠️ tem candidato_id | ✅ sem FairnessGuard | P11+P1: sem compliance |
+| 9 | "Qual minha taxa de conversão este mês?" | Teams | `insights` | Flat | ✅ | ⚠️ "taxa de conversão" match | ✅ sem período resolvido | ⚠️ | P10: "este mês" não resolvido |
+| 10 | "Automatizar: aprovação → agendar entrevista" | Chat | `autonomous` ou `automation` | ReAct | ❌ | ⚠️ | ⚠️ | ⚠️ | Funciona parcialmente ✅ |
+
+**Leitura da tabela — insights por cenário:**
+
+**Cenário 1 (Teams pipeline):** O keyword "pipeline" causa **colisão** (P9) entre 3 domínios: `applies` (pipeline transitions), `recruiter_assistant` (pipeline_health), e `automation` (engagement_pipeline). O primeiro match ganha — pode ser o errado. Mesmo que acerte, sem `job_id` do Teams (P10), retorna "especifique a vaga".
+
+**Cenário 2 (avancei ontem):** O verbo "avancei" não está no `_KEYWORD_ACTION_MAP` de nenhum domínio. O sistema cai no LLM fallback com confidence=0.3 (P9). Mesmo que o LLM acertasse, "ontem" é referência temporal que nenhum domínio resolve (P10).
+
+**Cenário 3 (avalie finalistas):** O keyword "avalie" match em `evaluation`. P8 **NÃO se aplica** — evaluation usa LangGraph, não Flat. Mas o LangGraph processa 1 candidato por vez (sem batch), e não tem BARS (P11), então as 5 avaliações são inconsistentes entre si.
+
+**Cenário 5 (agendar entrevista):** É o cenário que **funciona melhor** no v5. `scheduling` usa LangGraph com `WSIInterviewGraph` que extrai entidades (email, data, horário) conversacionalmente. Quando o recrutador está na página do candidato (tem `candidate_id`), o contexto é suficiente.
+
+**Cenário 10 (automatizar):** `autonomous` usa `UniversalReActAgent` — o único domínio v5 que já é ReAct. P8 e P9 não se aplicam. O gargalo é que as tools disponíveis dependem da integração com outros domínios.
+
 ---
 
 ### 0.13 Por Que as Respostas São Limitadas, Equivocadas ou Robóticas
@@ -927,73 +1071,377 @@ As respostas do v5 sofrem de 4 camadas de problemas, cada uma contribuindo para 
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-#### Exemplos Reais por Contexto de Uso
+> **Nota importante:** Nem todos os problemas se aplicam a todos os cenários. A seção 0.12.3 mostra que **P8 (Flat) não se aplica** a cenários de `evaluation`, `scheduling` e `autonomous` — eles já usam LangGraph/ReAct. Generalizar "tudo é Flat" é impreciso e leva a esforço de migração desnecessário.
 
-**1. Chat no Microsoft Teams (sem contexto de página):**
+#### 0.13.1 Diagnóstico Granular por Cenário de Uso
 
-```
-Recrutador: "Como está o pipeline?"
-  → CAMADA 3 falha: keyword "pipeline" match → show_pipeline
-  → CAMADA 2 falha: qual vaga? Qual pipeline? Chat Teams não tem job_id
-  → Resultado: "Por favor, especifique a vaga." ❌
+Para cada cenário, o diagnóstico abaixo mostra **exatamente onde a cadeia quebra**, qual componente falha primeiro, e o que a LIA faria diferente.
 
-Na LIA:
-  → MemoryResolver: última vaga mencionada = "Java Pleno SP"
-  → ContextAggregator: empresa = Acme, 3 vagas ativas
-  → ReAct: Tool 1 get_pipeline(job=Java Pleno SP) → monta visão
-  → Resultado: "O pipeline da vaga Java Pleno SP tem 42 candidatos..." ✅
-```
-
-**2. Chat flutuante dentro da plataforma (sem vaga selecionada):**
+**Cenário 1: "Como está o pipeline?" — Microsoft Teams (sem contexto de página)**
 
 ```
-Recrutador: "Mostre os candidatos que avancei ontem"
-  → CAMADA 3 falha: "avancei" não está no keyword map de nenhum domínio
-  → CAMADA 2 falha: "ontem" é referência temporal — Flat não resolve datas
-  → CAMADA 4 falha: precisaria cross-domain (applies → scheduling → evaluation)
-  → Resultado: LLM fallback → resposta genérica sem dados ❌
+ROTEAMENTO:
+  v5: keyword "pipeline" → match em recruiter_assistant (pipeline_health)
+      MAS TAMBÉM match em applies (pipeline) e automation (engagement_pipeline)
+      → P9 COLISÃO: primeiro match ganha, pode ser o errado
 
-Na LIA:
-  → MemoryResolver: resolve "ontem" → 2026-03-31
-  → Router: detecta intent cross-domain → AutonomousAgent
-  → ReAct: Tool 1 list_stage_changes(date=2026-03-31, action=advance)
-         → Tool 2 get_candidate_details(ids=[...])
-  → Resultado: "Ontem você avançou 3 candidatos: Maria (para entrevista técnica)..." ✅
+  LIA: CascadedRouter → MemoryResolver resolve "o pipeline" → última vaga mencionada
+       → VectorSemantic: "como está o pipeline" ≈ intent pipeline_health
+       → Rota: recruiter_assistant.pipeline_health com job_id resolvido
+
+EXECUÇÃO:
+  v5: Flat → chama pipeline_health(job_id=None) → "Especifique a vaga" ❌
+      → P10: Teams não injeta job_id, sem StageContext
+      → P8: Flat não pode buscar vagas ativas e perguntar qual
+
+  LIA: ReAct → Tool 1: list_active_jobs() → 3 vagas
+       → Se 1 vaga: assume. Se >1: pergunta "Qual: Java Pleno SP, PM Sênior, ou UX?"
+       → Tool 2: get_pipeline_stats(job_id=resolved) → monta visão completa
+
+PROMPT:
+  v5: prompt genérico sem persona → resposta: "Pipeline da vaga: [dados]" ❌ robótico
+  LIA: persona "assistente pessoal proativo" + behavioral_rules "antecipe ações"
+       → "O pipeline da Java Pleno SP tem 42 candidatos. 5 estão parados há 7 dias
+          na etapa Entrevista — quer que eu envie um lembrete?" ✅
+
+PROBLEMAS APLICÁVEIS: P8 ✅ | P9 ✅ | P10 ✅ | P11 ✅ — todas as 4 camadas falham
 ```
 
-**3. Dentro de uma vaga específica (context de job_id existe):**
+**Cenário 2: "Mostre os candidatos que avancei ontem" — Chat flutuante**
 
 ```
-Recrutador: "Avalie os 5 finalistas"
-  → CAMADA 3 ok: keyword "avalie" → evaluation ✅
-  → CAMADA 4 falha: Flat faz 1 avaliação por vez, não 5 em batch
-  → CAMADA 1 falha: sem BARS, avaliação usa critérios ad-hoc
-  → Resultado: 5 avaliações inconsistentes sem escala comparável ❌
+ROTEAMENTO:
+  v5: keyword scan em TODOS os domínios:
+      - "avancei" → ❌ não está em _KEYWORD_ACTION_MAP de NENHUM domínio
+      - "candidatos" → match em sourcing (search_candidates), cv_screening (parse_cv)
+      - "ontem" → ❌ nenhum keyword temporal
+      → Resultado: LLM fallback (0.3 confidence) → provavelmente sourcing.search_candidates
+      → P9: keyword errado → domínio errado
 
-Na LIA:
-  → ReAct: itera → Tool evaluate_candidate × 5
-  → BARS: cada avaliação usa mesma escala (EXCEEDS/MEETS/PARTIAL/MISSING)
-  → Resultado: 5 avaliações comparáveis com scores normalizados ✅
+  LIA: MemoryResolver: "ontem" → 2026-03-31, "avancei" → action=stage_change
+       → Router: intent = "listar mudanças de etapa do recrutador"
+       → Rota: recruiter_assistant.search_context ou pipeline.list_stage_changes
+
+EXECUÇÃO:
+  v5: sourcing.search_candidates(query="avancei ontem") → busca textual por "avancei ontem"
+      → retorna candidatos irrelevantes ❌
+      → P8: Flat não consegue cross-domain (applies → scheduling → evaluation)
+      → P10: não resolve "ontem" como data, não filtra por recrutador
+
+  LIA: ReAct → Tool 1: list_stage_changes(recruiter=current, date=2026-03-31, direction=forward)
+       → Tool 2: get_candidate_details(ids=[c1, c2, c3])
+       → Resposta com dados reais
+
+PROBLEMAS APLICÁVEIS: P8 ✅ | P9 ✅ | P10 ✅ | P11 ✅
 ```
 
-**4. Criação de vaga complexa:**
+**Cenário 3: "Avalie os 5 finalistas" — Dentro de uma vaga específica**
 
 ```
-Recrutador: "Cria uma vaga de tech lead, remoto, 25k, preciso de alguém
-             com 8+ anos, que manje de AWS e lidere time de 5"
-  → CAMADA 3 ok: keyword "cria" → create_job ✅
-  → CAMADA 4 falha: Flat extrai params por regex — perde "manje de AWS" (gíria)
-  → CAMADA 1 falha: prompt não tem instrução para extrair requisitos informais
-  → Resultado: vaga criada com título e salário, sem requisitos detalhados ❌
+ROTEAMENTO:
+  v5: keyword "avalie" → match em cv_screening (auto_screen) ✅ rota correta
+  LIA: mesma rota, keyword match funciona neste caso
 
-Na LIA:
-  → JobWizardGraph: grafo determinístico com nós Extract → Validate → Enrich
-  → LLM entende linguagem informal → extrai todos os campos
-  → Se faltar algo, pergunta dinamicamente (guided wizard)
-  → Resultado: vaga completa com requisitos, seniority, stack, modelo de trabalho ✅
+EXECUÇÃO:
+  v5: LangGraph StateGraph → auto_screen(job_id=current_job)
+      → MAS: StateGraph processa 1 candidato por chamada
+      → Recrutador precisa chamar 5 vezes manualmente
+      → P8 NÃO se aplica (evaluation É LangGraph)
+      → Problema real: sem batch processing
+
+  LIA: CVScreeningBatchService → asyncio.Semaphore(max_concurrent=5)
+       → 5 avaliações em paralelo
+       → BARS: mesma escala (EXCEEDS/MEETS/PARTIAL/MISSING) para todas
+       → Resultado: tabela comparativa com scores normalizados
+
+PROMPT:
+  v5: prompt estático sem BARS → cada avaliação usa critérios ad-hoc
+      → candidato 1 avaliado por "experiência", candidato 2 por "formação"
+      → scores incomparáveis
+      → P11 ✅: sem behavioral_rules de avaliação, sem bloco BARS
+
+  LIA: prompt com scope_in (WSI Scoring 7 blocks, Ranking), behavioral_rules
+       (check FairnessGuard, use objective criteria, document evidence)
+       → avaliações comparáveis
+
+PROBLEMAS APLICÁVEIS: P8 ❌ | P9 ❌ | P10 ⚠️ parcial | P11 ✅ — problema é de PROMPT e BATCH
 ```
 
-#### Relação entre Camadas e Problemas
+**Cenário 4: "Cria uma vaga de tech lead, remoto, 25k, alguém com 8+ anos que manje de AWS"**
+
+```
+ROTEAMENTO:
+  v5: keyword "cria" → match em jobs (create_job) ✅ rota correta
+  LIA: mesma rota funciona
+
+EXECUÇÃO:
+  v5: Flat → create_job(title="tech lead", salary=25000)
+      → P8 ✅: Flat executa 1 ação (create_job) e para
+      → Não encadeia: extract_requirements → generate_rubrics → generate_jd
+      → Resultado: vaga criada com título e salário, sem requisitos
+
+  LIA: WizardReActAgent → JobWizardGraph (determinístico):
+       → Nó 1 Extract: LLM extrai de linguagem informal:
+         "manje de AWS" → AWS (Cloud), "lidere time de 5" → liderança técnica (5+ reports)
+       → Nó 2 Validate: verifica campos obrigatórios
+       → Nó 3 Enrich: gera JD, sugere competências WSI, sugere faixa salarial de mercado
+       → Se faltar info, pergunta dinamicamente (guided wizard)
+
+PROMPT:
+  v5: prompt do domínio jobs não tem instrução para extrair requisitos de linguagem informal
+      → "manje de AWS" → ignorado (não é keyword para extract_requirements)
+      → P11 ✅: prompt não guia o LLM a entender gírias
+
+  LIA: job_management.yaml behavioral_rules:
+       "Nunca crie requisitos discriminatórios"
+       "Alerte se requisitos são restritivos demais"
+       + CHAIN_OF_THOUGHT para extração estruturada
+
+PROBLEMAS APLICÁVEIS: P8 ✅ | P9 ⚠️ parcial | P10 ⚠️ | P11 ✅ — Flat + prompt limitado
+```
+
+**Cenário 5: "Agendar entrevista com Maria às 14h" — Página do candidato**
+
+```
+ROTEAMENTO:
+  v5: keyword "agendar entrevista" → scheduling (schedule_interview) ✅
+  LIA: mesma rota
+
+EXECUÇÃO:
+  v5: LangGraph → WSIInterviewGraph → extrai entidades conversacionalmente:
+      "Maria" → candidate_id (se na página do candidato)
+      "14h" → horário → check_availability → schedule
+      → P8 ❌: scheduling JÁ usa LangGraph, funciona
+      → P10 ⚠️: se tem candidate_id da página, contexto é suficiente
+
+  LIA: SchedulingReActAgent → mesma lógica com tools mais ricas
+       (self_scheduling_link, calendar integration)
+
+PROMPT:
+  v5: prompt de scheduling é funcional — foco é extrair data/hora/participantes
+  LIA: interview_scheduling.yaml com CBI methodology, consent rules
+
+PROBLEMAS APLICÁVEIS: P8 ❌ | P9 ❌ | P10 ⚠️ | P11 ⚠️ — funciona razoavelmente ✅
+NOTA: scheduling é o domínio mais funcional do v5 porque já é LangGraph
+```
+
+**Cenário 6: "Comparar os 3 finalistas desta vaga"**
+
+```
+ROTEAMENTO:
+  v5: "comparar" → match em cv_screening (compare_candidates) e sourcing (compare_candidates)
+      e recruiter_assistant (compare_candidates)
+      → P9 ✅ COLISÃO: 3 domínios competem pelo mesmo keyword
+
+EXECUÇÃO:
+  v5: depende de qual domínio ganha:
+      - cv_screening.compare_candidates → compara por WSI score (se existir)
+      - sourcing.compare_candidates → compara por fit com a vaga
+      - recruiter_assistant.compare_candidates → compara métricas gerais
+      → Nenhum faz comparação integrada (WSI + fit + entrevista + cultural)
+      → P8 ✅: precisaria cross-domain para comparação completa
+
+  LIA: PipelineReActAgent com 25+ tools:
+       → Tool 1: get_candidate_wsi_scores(ids=[c1,c2,c3])
+       → Tool 2: get_candidate_screening_results(ids=[c1,c2,c3])
+       → Tool 3: view_candidate_profile(ids=[c1,c2,c3])
+       → Monta tabela comparativa integrada
+
+PROBLEMAS APLICÁVEIS: P8 ✅ | P9 ✅ | P10 ⚠️ | P11 ✅ — colisão + Flat + sem critérios
+```
+
+**Cenário 7: "Mandar feedback de rejeição para o candidato"**
+
+```
+ROTEAMENTO:
+  v5: "feedback" + "rejeição" → messaging (send_feedback) ✅
+
+EXECUÇÃO:
+  v5: Flat → send_feedback(candidate_id, type="rejection")
+      → Gera texto de rejeição sem FairnessGuard
+      → P11 ✅: prompt não inclui behavioral_rules de tom respeitoso
+      → P1 ✅: FairnessGuard existe mas não está no fluxo de messaging
+
+  LIA: CommunicationReActAgent → send_feedback com FairnessGuard Layer 3:
+       → Sanitiza texto antes de enviar
+       → behavioral_rules: "respectful rejection feedback", "LGPD consent check"
+       → Bloco ANTI_SYCOPHANCY: não aceita pedido discriminatório
+
+PROBLEMAS APLICÁVEIS: P8 ✅ | P9 ❌ | P10 ⚠️ | P11 ✅ — Flat + sem compliance
+```
+
+#### 0.13.2 Diagnóstico dos Prompts: v5 vs LIA
+
+O prompt que o LLM recebe determina o tom, a profundidade e a consistência da resposta. No v5, os prompts são strings Python estáticas dentro dos `domain.py`. Na LIA, são YAML estruturados com 6 seções e blocos composíveis.
+
+**Estrutura de um prompt v5 (exemplo real de `pipeline/domain.py`):**
+
+```python
+# Em app/domains/pipeline/domain.py — prompt inline
+SYSTEM_PROMPT = """Você é LIA, assistente de recrutamento especializada em
+gerenciar o pipeline de candidatos. Você pode mover candidatos entre etapas,
+interpretar contextos de transição, predizer sub-status e sugerir próximas
+ações baseadas no estado atual do pipeline."""
+```
+
+Características: string única, sem seções, sem regras comportamentais, sem exemplos, sem limites de escopo.
+
+**Estrutura do prompt LIA equivalente (`app/prompts/domains/pipeline_transition.yaml`):**
+
+```yaml
+metadata:
+  domain: pipeline_transition
+  version: "1.0"
+
+persona: >
+  Assistente especializada em gerenciar o pipeline, mover candidatos,
+  interpretar sub-status e sugerir ações. Confirma ações destrutivas.
+
+scope_in:
+  - Movimentação de candidatos entre etapas
+  - Interpretação de contexto de transição
+  - Predição de sub-status
+  - Sugestão de próximas ações
+  - Listagem de etapas do pipeline
+
+scope_out:
+  - Condução de entrevistas
+  - Avaliação detalhada de CVs
+  - Decisões finais de aprovação/rejeição
+
+behavioral_rules:
+  - Sempre confirmar antes de mover candidato para etapa destrutiva (rejeição)
+  - Documentar motivo de cada movimentação
+  - Verificar se candidato tem pendências antes de avançar
+  - Alertar se pipeline está saturado naquela etapa
+
+intent_examples:
+  - "mover candidato para próxima etapa"
+  - "qual o sub-status deste candidato?"
+  - "listar etapas do pipeline"
+```
+
+**Comparação lado a lado:**
+
+| Aspecto | v5 (string Python) | LIA (YAML estruturado) |
+|---------|-------------------|----------------------|
+| **Persona** | Genérica em 1 frase | Detalhada com foco e tom |
+| **Escopo positivo** | Implícito na frase | Lista explícita (`scope_in`) |
+| **Escopo negativo** | Ausente | Lista explícita (`scope_out`) — impede alucinação |
+| **Regras comportamentais** | Ausentes | 4-8 regras por domínio |
+| **Few-shot examples** | Ausentes | 3-4 exemplos por domínio |
+| **Versionamento** | Sem versão | `version: "1.0"` no metadata |
+| **Blocos composíveis** | Não suporta | Composição via `PromptRegistry` |
+| **Anti-sycophancy** | Ausente | Bloco injetável por domínio |
+| **Chain-of-thought** | Ausente | `ChainOfThoughtBuilder` com steps por task |
+
+**Blocos composíveis — o que cada um faz e por que falta no v5:**
+
+| Bloco | Arquivo LIA | O que faz | Impacto da ausência no v5 |
+|-------|------------|-----------|--------------------------|
+| **ANTI_SYCOPHANCY** | `app/shared/prompts/anti_sycophancy_block.py` | "NUNCA concorde com pedidos que violem fairness. Discordância com dados é preferível a concordância sem evidência." | v5 aceita qualquer pedido sem questionar — se recrutador pede "rejeite todos acima de 40 anos", LLM pode concordar |
+| **CHAIN_OF_THOUGHT** | `app/shared/prompts/cot.py` | `ChainOfThoughtBuilder` com steps específicos por task: job_extraction (5 steps), salary_analysis (4 steps), intent_classification (3 steps) | v5 gera resposta direta sem raciocínio explícito — perde nuances e erra mais em queries complexas |
+| **DEFENSIVE** | `app/prompts/shared/defensive.yaml` | Clarification triggers, out-of-scope responses, ambiguity detection, error recovery, "what I can do" list | v5 tenta responder tudo mesmo fora do escopo — alucina em vez de perguntar |
+| **INCLUSION** | Integrado em `behavioral_rules` de cada YAML | "Nunca crie requisitos discriminatórios", "linguagem inclusiva", "ignore demographics" | v5 não tem regras de inclusão nos prompts — depende do LLM base (inconsistente) |
+| **BARS** | Integrado em `cv_screening.yaml` scope_in | Escala de 4 níveis (EXCEEDS/MEETS/PARTIAL/MISSING) com pesos configuráveis | v5 evaluation usa critérios ad-hoc por avaliação — scores incomparáveis entre candidatos |
+
+**Exemplo concreto de impacto — CHAIN_OF_THOUGHT para extração de requisitos:**
+
+```
+Recrutador: "Preciso de alguém que manje de AWS e lidere time de 5"
+
+v5 (sem CoT):
+  → LLM recebe prompt genérico + texto
+  → Resposta direta: {"title": "Tech Lead", "requirements": ["AWS"]}
+  → Perde: liderança (não explicitada como keyword), tamanho do time
+
+LIA (com CoT — task=job_extraction):
+  → Step 1: Analisar entrada — detectar linguagem informal
+  → Step 2: Identificar entidades — "AWS" (tech), "lidere" (soft skill), "time de 5" (scope)
+  → Step 3: Mapear para campos — requirements: ["AWS Cloud"], leadership: {team_size: 5}
+  → Step 4: Verificar completude — faltam: seniority, modelo de trabalho
+  → Step 5: Formular resposta — extrair todos + perguntar o que falta
+  → Resultado: extração completa + follow-up contextual
+```
+
+#### 0.13.3 Gap de Tools: Ações Declaradas vs Tools Executáveis
+
+Mesmo resolvendo prompts, contexto e arquitetura, as respostas do v5 são limitadas se as **tools disponíveis para o agente** forem insuficientes. A análise do código revela 3 níveis de tools no sistema:
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│          3 NÍVEIS DE TOOLS NO SISTEMA                         │
+│                                                                │
+│  Nível 1: AÇÕES DECLARADAS (actions.py)                       │
+│  └─ O que o sistema PODE conceitualmente fazer                │
+│  └─ Ex: jobs declara 29 ações                                 │
+│                                                                │
+│  Nível 2: TOOLS NO REGISTRY (tools/__init__.py)               │
+│  └─ O que está IMPLEMENTADO como código executável            │
+│  └─ Ex: jobs tem 13 tools implementadas (44% das ações)       │
+│                                                                │
+│  Nível 3: TOOLS DO AGENT (agents/tool_registry.py)            │
+│  └─ O que o ReAct agent pode ACESSAR (inclui cross-domain)   │
+│  └─ Ex: pipeline agent tem ~25 tools (5× o domain-level)     │
+│                                                                │
+│  v5 Flat: só acessa Nível 1-2 (keyword → ação → tool)        │
+│  LIA ReAct: acessa Nível 3 (LLM escolhe qual tool chamar)    │
+└──────────────────────────────────────────────────────────────┘
+```
+
+**Tabela de gap por domínio:**
+
+| Domínio | Ações declaradas (N1) | Tools implementadas (N2) | Tools do agent (N3) | Gap N1→N2 | Gap N2→N3 |
+|---------|----------------------|--------------------------|---------------------|-----------|-----------|
+| `jobs` | 29 | 13 | ❌ sem agent | 55% sem tool | 100% — sem ReAct |
+| `messaging` | 20 | 10 | ❌ sem agent | 50% sem tool | 100% — sem ReAct |
+| `insights` | 18 | 10 | ❌ sem agent | 44% sem tool | 100% — sem ReAct |
+| `scheduling` | 20 | 10 | ❌ sem agent | 50% sem tool | 100% — sem ReAct |
+| `evaluation` | 24 | 11 | ❌ sem agent | 54% sem tool | 100% — sem ReAct |
+| `applies` | 5 | 5 | ✅ ~25 tools | 0% | ✅ 5× mais tools |
+| `sourcing` | 30 | 10 | ❌ sem agent | 67% sem tool | 100% — sem ReAct |
+| `autonomous` | 20 | 10 | ✅ todas | 50% sem tool | ✅ acesso total |
+
+**Tools críticas que existem no agent-level mas não no domain-level:**
+
+O `pipeline_tool_registry.py` (usado pelo agent ReAct de `applies` e `evaluation`) contém 25+ tools, incluindo:
+
+| Tool do Agent | O que faz | Disponível via Flat? |
+|--------------|-----------|---------------------|
+| `get_candidate_wsi_scores` | Retorna scores WSI (técnico + comportamental) | ❌ |
+| `view_screening_results` | Sumário de resultados de triagem | ❌ |
+| `batch_move` | Move múltiplos candidatos de uma vez | ❌ |
+| `validate_transition` | Verifica se movimentação é válida no pipeline | ❌ |
+| `check_rejection_fairness` | FairnessGuard para verificar bias em rejeição | ❌ |
+| `request_data_collection` | Agenda coleta de dados faltantes (portfolio, referências) | ❌ |
+| `get_recruiter_preferences` | Recupera hábitos e preferências do recrutador | ❌ |
+| `personalize_communication` | Ajusta tom e linguagem para outreach | ❌ |
+| `extract_preferences` | Extrai preferências de entrevista do texto (data, horário, plataforma) | ❌ |
+| `suggest_sub_status` | Recomenda sub-status baseado no comportamento do recrutador | ❌ |
+
+**Impacto prático:**
+
+Quando o recrutador diz "compare os 3 finalistas" via Flat, o sistema tem acesso a `compare_candidates` (uma tool domain-level). Mas essa tool só compara por um critério.
+
+Quando o mesmo pedido vai via ReAct agent, o agente pode chamar:
+1. `get_candidate_wsi_scores` → scores WSI
+2. `view_screening_results` → resultados de triagem
+3. `get_candidate_profile` → dados completos
+4. `get_candidate_screening_results` → respostas detalhadas
+
+E montar uma comparação multi-dimensional. A diferença não é de prompt — é de **acesso a ferramentas**.
+
+**Priorização de implementação de tools:**
+
+| Prioridade | Domínios | Tools a implementar | Impacto |
+|-----------|---------|-------------------|---------|
+| **P0 — Crítico** | `evaluation` | agent-level tools (WSI scores, batch, FairnessGuard) | Avaliações comparáveis e justas |
+| **P1 — Alto** | `jobs` | guided wizard tools (extract, validate, enrich) | Criação de vagas completas |
+| **P2 — Alto** | `messaging` | FairnessGuard integration, personalization | Comunicação compliance-safe |
+| **P3 — Médio** | `insights` | cross-domain aggregation tools | Dashboards integrados |
+| **P4 — Médio** | `sourcing` | ranking tools (WRF), fit scoring | Busca mais precisa |
+
+#### 0.13.4 Relação entre Camadas e Problemas
 
 | Camada | Problema | Resolve com | Quando |
 |--------|----------|-------------|--------|
@@ -1001,6 +1449,9 @@ Na LIA:
 | 3. Interpretação | P9 (regex→LLM) | Eliminar keyword matching, LLM classifica intent | Caminho 3, junto com ReAct |
 | 2. Contexto | P10 (sem memória) | MemoryResolver + ContextAggregator + StageContext | Caminho 3, Fase 2 |
 | 1. Prompt | P11 (estático) | PromptRegistry + blocos + few-shot + BARS | Caminho 3, Fase 2-3 |
+| 0. Tools | Gap N2→N3 | Criar agent-level tool registries para todos os domínios | Caminho 3, Fase 1-2 |
+
+> **Adição v1.4:** A Camada 0 (Tools) foi adicionada porque o diagnóstico granular revelou que mesmo com ReAct (P8 resolvido), prompt YAML (P11 resolvido), e contexto (P10 resolvido), o agente é limitado pelas tools disponíveis. Implementar agent-level tool registries para os 6 domínios que não têm (jobs, messaging, insights, scheduling, evaluation, sourcing) é pré-requisito para que as outras camadas funcionem.
 
 ---
 
