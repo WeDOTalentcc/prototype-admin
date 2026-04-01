@@ -37,17 +37,17 @@ Na prática, quem lembra de usar, usa. Quem não lembra (ou não sabe que existe
 
 ### P3. Serviços de compliance estão incompletos ou ausentes
 
-| Serviço | Status no v5 hoje | Problema |
-|---------|-------------------|----------|
-| **FairnessGuard** | Não existe | Nenhum domínio verifica viés discriminatório em queries |
-| **PromptInjectionGuard** | Não existe | Nenhum domínio detecta prompt injection (OWASP LLM01) |
-| **PII Stripping (pré-LLM)** | Parcial | `pii_filter.py` existe mas não tem `strip_pii_for_llm_prompt()` — PII vai inteiro para o LLM |
-| **ConfidenceNode** | Não existe | Nenhum domínio calcula score de confiança das respostas |
-| **FactChecker** | Não existe centralizado | Só `sourcing` tem um local; os outros domínios narrativos não validam claims |
-| **AuditCallback** | Existe mas é mutável | `ON CONFLICT DO UPDATE` permite sobrescrever logs — viola SOX/BCB-498 |
-| **BiasAuditSnapshot** | Não existe | Nenhum monitoramento agregado de viés por dimensão (gênero, idade, PCD) |
-| **GuardrailRepository** | Não existe | Nenhuma política configurável por tenant para bloquear ações indesejadas |
-| **HiringPolicy** | Não existe | Nenhuma regra de negócio por empresa (limites de candidatos, dias, templates) |
+| Serviço | O que é | Status no v5 hoje | Problema |
+|---------|---------|-------------------|----------|
+| **FairnessGuard** | Analisa queries e tool calls para detectar critérios discriminatórios (gênero, idade, etnia, PCD, estado civil, religião). Bloqueia a execução e retorna mensagem educativa ao recrutador | Não existe | Nenhum domínio verifica viés discriminatório em queries |
+| **PromptInjectionGuard** | Detecta tentativas de manipulação do LLM — padrões como "ignore instruções anteriores", "revele o system prompt", "aja como se fosse outro sistema". Classifica risco (low/medium/high) e bloqueia se high | Não existe | Nenhum domínio detecta prompt injection (OWASP LLM01) |
+| **PII Stripping (pré-LLM)** | Remove dados pessoais (CPF, email, telefone, RG, CNPJ, idade, endereço) do texto ANTES de enviar ao LLM, substituindo por placeholders como `[CPF REMOVIDO]`, `[EMAIL REMOVIDO]` | Parcial | `pii_filter.py` existe mas não tem `strip_pii_for_llm_prompt()` — PII vai inteiro para o LLM |
+| **ConfidenceNode** | Calcula um score de confiança (0.0–1.0) para cada resposta do agente, baseado em: número de tool calls realizadas, observações verificadas, tamanho da resposta, presença de erros. Adicionado ao resultado como `"confidence": 0.xx` | Não existe | Nenhum domínio calcula score de confiança das respostas |
+| **FactChecker** | Valida afirmações do LLM contra dados reais do banco. Ex: LLM diz "candidato tem 15 anos de experiência" mas o currículo registra 3 anos. Retorna lista de discrepâncias sem bloquear a resposta | Não existe centralizado | Só `sourcing` tem um local; os outros domínios narrativos não validam claims |
+| **AuditCallback** | Grava log imutável de cada etapa do processamento — query, intent, ação executada, resultado, scores. Serve como evidência legal para auditoria. Deve usar `ON CONFLICT DO NOTHING` (nunca sobrescrever) | Existe mas é mutável | `ON CONFLICT DO UPDATE` permite sobrescrever logs — viola SOX/BCB-498 |
+| **BiasAuditSnapshot** | Agrega métricas de viés por dimensão (gênero, idade, PCD, região) após ciclos de avaliação. Detecta drift discriminatório ao longo do tempo — ex: se 80% dos aprovados são homens, dispara alerta | Não existe | Nenhum monitoramento agregado de viés por dimensão (gênero, idade, PCD) |
+| **GuardrailRepository** | Repositório de políticas configuráveis por tenant que bloqueiam ações indesejadas antes da execução. Ex: "agente autônomo não pode enviar email sem aprovação", "não agendar fora do horário comercial" | Não existe | Nenhuma política configurável por tenant para bloquear ações indesejadas |
+| **HiringPolicy** | Regras de negócio configuráveis por empresa: limites de candidatos por vaga, dias permitidos para agendamento, templates de comunicação obrigatórios, número de etapas de aprovação | Não existe | Nenhuma regra de negócio por empresa (limites de candidatos, dias, templates) |
 
 De 9 controles necessários, **6 não existem**, **2 estão incompletos**, **1 é parcial**.
 
