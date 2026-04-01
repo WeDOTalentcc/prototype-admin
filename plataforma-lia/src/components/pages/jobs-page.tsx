@@ -11,6 +11,7 @@ import { Badge } from"@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import { Input } from"@/components/ui/input"
 import { AISearchToggle } from"@/components/ai-search-toggle"
+import { tabStyles } from"@/lib/design-tokens"
 import { IntelligenceNotifications } from"@/components/intelligence-notifications"
 import { Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clock, Layout, Layers3, Layers, ChevronDown, ChevronUp, ChevronLeft, BarChart3, TrendingUp, TrendingDown, FileText, ExternalLink, Briefcase, Building, Building2, Target, CheckCircle, CheckCircle2, XCircle, Linkedin, Globe, Shield, Hash, UserCheck, Heart, MoreHorizontal, Grid3X3, List, Maximize2, Minimize2, Star, Brain, Expand, Copy, MessageSquare, MoreVertical, Settings, Settings2, X, ChevronsLeftRight, Bell, Pin, Github, Mail, Lock, LockOpen, MessageCircle, AlertCircle, AlertTriangle, ShieldAlert, Lightbulb, ChevronRight, Home, Zap, ClipboardList, ListChecks, CalendarCheck, ThumbsUp, Phone, Send, Bookmark, Paperclip, Mic, GripVertical, ArrowUp, ArrowDown, ArrowUpDown, Filter, Award, Trash2, RefreshCw, ArrowRight, ArrowLeft, HelpCircle, Timer, GraduationCap, BookOpen, Scale, Loader2, History, Languages, UserCircle, CalendarDays, Link, Save, Check, RotateCcw, CalendarClock, Info, Archive, Gauge } from"lucide-react"
 import { JobKanbanPage } from"./job-kanban-page"
@@ -234,18 +235,14 @@ export function JobsPage(props: JobsPageProps) {
                 }}
                 role="tab"
                 aria-selected={activeFilter === filter.id}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-colors tab-button ${
-                  activeFilter === filter.id
-                    ? 'bg-gray-100 text-gray-900 dark:bg-lia-bg-elevated dark:text-lia-text-primary'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-lia-text-tertiary dark:hover:text-lia-text-secondary dark:hover:bg-lia-bg-secondary'
-                }`}
+                className={activeFilter === filter.id ? tabStyles.pillActive : tabStyles.pill}
               >
                 <span>{filter.label}</span>
                 {!filter.isDashboard && (
                   <span className={`text-[10px] font-semibold ${
                     activeFilter === filter.id
-                      ? 'text-gray-500 dark:text-lia-text-tertiary'
-                      : 'text-gray-400 dark:text-lia-text-tertiary'
+                      ? 'text-white/60 dark:text-lia-text-tertiary'
+                      : 'text-lia-text-tertiary dark:text-lia-text-tertiary'
                   }`}>
                     {isLoadingJobs ? (
                       <span className="inline-block w-4 h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded animate-pulse motion-reduce:animate-none" />

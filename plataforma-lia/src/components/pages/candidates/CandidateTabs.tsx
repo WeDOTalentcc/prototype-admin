@@ -1,6 +1,7 @@
 "use client"
 
 import { memo } from 'react'
+import { tabStyles } from "@/lib/design-tokens"
 
 interface Tab {
   id: string
@@ -24,13 +25,9 @@ const CandidateTabs = memo(function CandidateTabs({ tabs, activeTab, onTabChange
             onClick={() => onTabChange(tab.id)}
             role="tab"
             aria-selected={activeTab === tab.id}
-            className={`inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-full transition-colors tab-button ${
-              activeTab === tab.id
-                ? 'bg-gray-100 text-gray-900 dark:bg-lia-bg-elevated dark:text-lia-text-primary'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-lia-text-tertiary dark:hover:text-lia-text-secondary dark:hover:bg-lia-bg-secondary'
-            }`}
+            className={activeTab === tab.id ? tabStyles.pillActive : tabStyles.pill}
           >
-            <span>{tab.label}</span>
+            {tab.label}
             {tab.comingSoon && (
               <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-gray-200 text-gray-600 dark:bg-lia-bg-secondary dark:text-lia-text-tertiary">
                 Em Breve
