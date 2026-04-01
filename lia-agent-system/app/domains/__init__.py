@@ -6,6 +6,7 @@ from app.domains.base import (
     IntentResult,
 )
 from app.domains.registry import DomainRegistry, register_domain
+from app.domains.compliance_base import ComplianceDomainPrompt  # LIA-C01
 
 # --- Domain auto-discovery ---
 # Importing domain modules triggers @register_domain decorators

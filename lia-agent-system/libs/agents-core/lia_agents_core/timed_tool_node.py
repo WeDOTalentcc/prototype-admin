@@ -8,11 +8,15 @@ Subclasse de ToolNode do LangGraph que:
   - em TimeoutError: injeta ToolMessage de erro + retorna gracefully
 - Mede latência e emite métricas Prometheus (opcional)
 - Compatível com create_react_agent (aceita ToolNode diretamente)
+- LIA-C03: Intercepta tool call args para verificar filtros discriminatórios
+  via FairnessGuard antes de executar a tool.
 
 Compatível com LangGraph 0.2.x.
 """
 import asyncio
+import json
 import logging
+import os
 import time
 from typing import Any, Dict, List, Optional
 
@@ -30,6 +34,13 @@ try:
     _METRICS_AVAILABLE = True
 except ImportError:
     _METRICS_AVAILABLE = False
+
+# ---------------------------------------------------------------------------
+# LIA-C03: Feature flag — desative via env FAIRNESS_TOOL_CHECK_ENABLED=false
+# ---------------------------------------------------------------------------
+_FAIRNESS_TOOL_CHECK_ENABLED_DEFAULT = (
+    os.environ.get("FAIRNESS_TOOL_CHECK_ENABLED", "true").lower() == "true"
+)
 
 
 if _HAS_LANGGRAPH:
@@ -54,6 +65,7 @@ if _HAS_LANGGRAPH:
             handle_tool_errors: bool = True,
             default_timeout_seconds: int = 15,
             tool_timeouts: Optional[Dict[str, int]] = None,
+            fairness_tool_check_enabled: Optional[bool] = None,
             **kwargs: Any,
         ):
             super().__init__(
@@ -65,11 +77,128 @@ if _HAS_LANGGRAPH:
             self.default_timeout_seconds = default_timeout_seconds
             self.tool_timeouts: Dict[str, int] = tool_timeouts or {}
             self._tools_list = tools
+            # LIA-C03: flag de instância (sobrescreve env se fornecido explicitamente)
+            if fairness_tool_check_enabled is not None:
+                self._fairness_tool_check_enabled = fairness_tool_check_enabled
+            else:
+                self._fairness_tool_check_enabled = _FAIRNESS_TOOL_CHECK_ENABLED_DEFAULT
+
+        # ------------------------------------------------------------------
+        # LIA-C03: Fairness check nos argumentos da tool call
+        # ------------------------------------------------------------------
+
+        async def _check_tool_args_fairness(
+            self, tool_name: str, tool_args: dict
+        ) -> Optional[str]:
+            """
+            Verifica se os argumentos de uma tool call contêm filtros discriminatórios.
+
+            Retorna mensagem educacional de bloqueio se detectado, None se limpo.
+            Falha silenciosamente (retorna None) em caso de erro para não
+            interromper o pipeline principal.
+
+            LIA-C03 — EU AI Act Art. 14: supervisão humana em sistemas de alto risco.
+            """
+            if not self._fairness_tool_check_enabled:
+                return None
+
+            args_str = json.dumps(tool_args, ensure_ascii=False)
+
+            try:
+                from app.shared.compliance.fairness_guard import FairnessGuard
+                guard = FairnessGuard()
+                result = guard.check(args_str)
+                if result.is_blocked:
+                    logger.warning(
+                        "[LIA-C03][TimedToolNode] FairnessGuard BLOQUEOU tool domain=%s "
+                        "tool=%s category=%s terms=%s args_preview=%s",
+                        self.domain,
+                        tool_name,
+                        result.category,
+                        result.blocked_terms,
+                        args_str[:200],
+                    )
+                    return result.educational_message
+            except Exception as exc:
+                logger.warning(
+                    "[LIA-C03][TimedToolNode] FairnessGuard tool check falhou (fail-safe): "
+                    "domain=%s tool=%s error=%s",
+                    self.domain, tool_name, exc,
+                )
+            return None
+
+        def _build_fairness_block_response(
+            self,
+            input: Any,
+            tool_calls: List[Any],
+            blocked_tool_name: str,
+            educational_message: str,
+        ) -> Any:
+            """Injeta ToolMessage de bloqueio de fairness para a tool_call bloqueada."""
+            try:
+                from langchain_core.messages import ToolMessage
+
+                block_messages = []
+                for tc in tool_calls:
+                    tool_call_id = (
+                        tc.get("id", "unknown") if isinstance(tc, dict)
+                        else getattr(tc, "id", "unknown")
+                    )
+                    tool_name = (
+                        tc.get("name", "unknown") if isinstance(tc, dict)
+                        else getattr(tc, "name", "unknown")
+                    )
+                    block_messages.append(
+                        ToolMessage(
+                            content=(
+                                f"[COMPLIANCE LIA-C03] A ferramenta '{tool_name}' foi bloqueada "
+                                f"por conter filtros que podem configurar discriminação. "
+                                f"{educational_message}"
+                            ),
+                            tool_call_id=tool_call_id,
+                            name=tool_name,
+                        )
+                    )
+
+                if hasattr(input, "messages"):
+                    existing = list(input.messages) + block_messages
+                    if hasattr(input, "model_copy"):
+                        return input.model_copy(update={"messages": existing})
+                    return {**input, "messages": existing}
+                elif isinstance(input, dict):
+                    existing = list(input.get("messages", [])) + block_messages
+                    return {**input, "messages": existing}
+            except Exception as exc:
+                logger.error(
+                    "[LIA-C03][TimedToolNode] Erro ao construir fairness block response: %s", exc
+                )
+            return input
+
+        # ------------------------------------------------------------------
+        # Core: ainvoke com timeout + fairness check (LIA-C03)
+        # ------------------------------------------------------------------
 
         async def ainvoke(self, input: Any, config: Any = None, **kwargs: Any) -> Any:
-            """Override de ainvoke com timeout e métricas."""
+            """Override de ainvoke com timeout, fairness check e métricas."""
             start = time.time()
             tool_calls = self._extract_tool_calls(input)
+
+            # LIA-C03: Verificar fairness nos args de cada tool call ANTES de executar
+            for tc in tool_calls:
+                tool_name = (
+                    tc.get("name", "unknown") if isinstance(tc, dict)
+                    else getattr(tc, "name", "unknown")
+                )
+                tool_args = (
+                    tc.get("args", {}) if isinstance(tc, dict)
+                    else getattr(tc, "args", {})
+                ) or {}
+
+                block_msg = await self._check_tool_args_fairness(tool_name, tool_args)
+                if block_msg is not None:
+                    return self._build_fairness_block_response(
+                        input, tool_calls, tool_name, block_msg
+                    )
 
             # Timeout conservador: menor entre default e overrides das tools chamadas
             timeout = self.default_timeout_seconds
@@ -175,6 +304,7 @@ else:
             handle_tool_errors: bool = True,
             default_timeout_seconds: int = 15,
             tool_timeouts: Optional[Dict[str, int]] = None,
+            fairness_tool_check_enabled: Optional[bool] = None,
             **kwargs: Any,
         ):
             self.domain = domain
@@ -182,6 +312,39 @@ else:
             self.tool_timeouts: Dict[str, int] = tool_timeouts or {}
             self._tools_list = tools
             self._node = None
+            if fairness_tool_check_enabled is not None:
+                self._fairness_tool_check_enabled = fairness_tool_check_enabled
+            else:
+                self._fairness_tool_check_enabled = _FAIRNESS_TOOL_CHECK_ENABLED_DEFAULT
+
+        async def _check_tool_args_fairness(
+            self, tool_name: str, tool_args: dict
+        ) -> Optional[str]:
+            if not self._fairness_tool_check_enabled:
+                return None
+            args_str = json.dumps(tool_args, ensure_ascii=False)
+            try:
+                from app.shared.compliance.fairness_guard import FairnessGuard
+                guard = FairnessGuard()
+                result = guard.check(args_str)
+                if result.is_blocked:
+                    logger.warning(
+                        "[LIA-C03][TimedToolNode] FairnessGuard BLOQUEOU tool domain=%s "
+                        "tool=%s category=%s terms=%s args_preview=%s",
+                        self.domain,
+                        tool_name,
+                        result.category,
+                        result.blocked_terms,
+                        args_str[:200],
+                    )
+                    return result.educational_message
+            except Exception as exc:
+                logger.warning(
+                    "[LIA-C03][TimedToolNode] FairnessGuard tool check falhou (fail-safe): "
+                    "domain=%s tool=%s error=%s",
+                    self.domain, tool_name, exc,
+                )
+            return None
 
         async def ainvoke(self, input: Any, config: Any = None, **kwargs: Any) -> Any:
             logger.error("[TimedToolNode] LangGraph não disponível")

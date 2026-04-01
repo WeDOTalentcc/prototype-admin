@@ -30,6 +30,7 @@ import {
   Shield,
   Search,
   Library,
+  DollarSign,
 } from "lucide-react"
 import { SmartImportZone } from "./SmartImportZone"
 import { LiaFieldToggle, defaultLiaFieldExamples } from "./LiaFieldToggle"

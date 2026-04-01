@@ -5,6 +5,7 @@ from typing import Dict, Any, List
 import logging
 
 from app.domains.base import DomainPrompt, DomainContext, DomainAction, IntentResult, DomainResponse
+from app.domains.compliance_base import ComplianceDomainPrompt
 from app.domains.registry import register_domain
 
 logger = logging.getLogger(__name__)
@@ -68,8 +69,10 @@ _KEYWORD_ACTION_MAP: Dict[str, str] = {
 
 
 @register_domain
-class SourcingDomain(DomainPrompt):
+class SourcingDomain(ComplianceDomainPrompt):
     """Domínio de Sourcing & Busca de Talentos da LIA."""
+
+    _compliance_config = {'high_impact': True, 'fairness_action_type': 'sourcing'}
 
     domain_id = "sourcing"
     domain_name = "Sourcing & Talent Search"
@@ -120,3 +123,18 @@ class SourcingDomain(DomainPrompt):
             domain_id=self.domain_id,
             action_id=action_id,
         )
+
+
+# ---------------------------------------------------------------------------
+# LIA-C06 - Registro de validador domain-specific para sourcing
+# ---------------------------------------------------------------------------
+try:
+    from app.shared.compliance.fact_checker import FactChecker
+    from app.shared.compliance.domain_validators import validate_sourcing_count_claim
+    FactChecker.register_validator("sourcing", validate_sourcing_count_claim)
+    logger.debug("sourcing domain validator registered")
+except Exception as _e:
+    import logging as _logging
+    _logging.getLogger(__name__).warning(
+        "Could not register sourcing domain validator: %s", _e
+    )

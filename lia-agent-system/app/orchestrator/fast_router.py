@@ -6,6 +6,7 @@ Part of the CascadedRouter pipeline: memory → fast → LLM fallback.
 """
 import re
 import logging
+import math
 from typing import Optional, Dict, List, Tuple
 from dataclasses import dataclass
 
@@ -303,6 +304,81 @@ class FastRouter:
     def __init__(self):
         _ensure_compiled()
 
+    # ------------------------------------------------------------------
+    # P06: Deduplication helper
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _deduplicate_matches(
+        matches: List[Tuple[str, float]],
+    ) -> List[Tuple[str, float]]:
+        """Deduplicate ambiguous domain matches by confidence bucket.
+
+        Groups matches into 0.05-width confidence buckets.  Within the
+        highest-confidence bucket, keeps only the single match whose
+        ``matched_pattern`` string is longest (most specific).  All matches
+        from lower buckets are preserved unchanged.
+
+        Args:
+            matches: List of ``(domain_id, confidence)`` tuples, where
+                     ``domain_id`` may carry the matched_pattern appended
+                     as ``"domain|pattern"`` for tiebreaking.  If no pipe
+                     separator is present the domain_id itself is used as
+                     the tiebreaker string.
+
+        Returns:
+            Deduplicated list sorted by confidence descending.
+
+        Note:
+            Callers should pass tuples enriched with pattern info using the
+            ``"domain|pattern"`` convention so that specificity tiebreaking
+            works correctly.  The returned tuples always expose only the
+            ``domain_id`` part (before the pipe).
+        """
+        if not matches:
+            return []
+
+        # Bucket floor: round confidence DOWN to nearest 0.05
+        def _bucket(conf: float) -> float:
+            return math.floor(conf / 0.05) * 0.05
+
+        # Find the top bucket value
+        top_bucket = _bucket(max(conf for _, conf in matches))
+
+        top_group: List[Tuple[str, float]] = []
+        rest: List[Tuple[str, float]] = []
+
+        for domain_with_pattern, conf in matches:
+            if _bucket(conf) == top_bucket:
+                top_group.append((domain_with_pattern, conf))
+            else:
+                rest.append((domain_with_pattern, conf))
+
+        # Within the top bucket keep only the most specific (longest pattern)
+        if len(top_group) > 1:
+            def _pattern_len(item: Tuple[str, float]) -> int:
+                key = item[0]
+                if "|" in key:
+                    return len(key.split("|", 1)[1])
+                return len(key)
+
+            top_group = [max(top_group, key=_pattern_len)]
+
+        # Strip the "|pattern" suffix before returning
+        def _strip_pattern(item: Tuple[str, float]) -> Tuple[str, float]:
+            domain, conf = item
+            return (domain.split("|", 1)[0], conf)
+
+        deduped = [_strip_pattern(t) for t in top_group] + [
+            _strip_pattern(t) for t in rest
+        ]
+        deduped.sort(key=lambda t: t[1], reverse=True)
+        return deduped
+
+    # ------------------------------------------------------------------
+    # Core matching
+    # ------------------------------------------------------------------
+
     def match(self, message: str) -> Optional[FastRouteResult]:
         message_lower = message.lower().strip()
         if not message_lower:
@@ -344,6 +420,34 @@ class FastRouter:
                     f"Applying penalty."
                 )
                 best_match.confidence = max(0.3, best_match.confidence - 0.15)
+
+        # P06: deduplication — resolve ties by most-specific pattern string
+        raw_tuples: List[Tuple[str, float]] = [
+            (f"{r.domain_id}|{r.matched_pattern}", r.confidence)
+            for r in all_matches
+        ]
+        before_count = len(raw_tuples)
+        deduped_tuples = self._deduplicate_matches(raw_tuples)
+        after_count = len(deduped_tuples)
+
+        logger.debug(
+            "[FastRouter] dedup: %d -> %d matches for '%s'",
+            before_count,
+            after_count,
+            message[:50],
+        )
+
+        # Re-resolve best_match from deduped result (domain_id is first element)
+        if deduped_tuples:
+            top_domain_id, top_conf = deduped_tuples[0]
+            # Find the original FastRouteResult for the winning domain
+            for r in all_matches:
+                if r.domain_id == top_domain_id:
+                    best_match = r
+                    # Preserve the (possibly penalised) confidence from above
+                    # but ensure the deduplication winner's confidence is used
+                    # only if it differs meaningfully (dedup doesn't change conf)
+                    break
 
         logger.debug(
             f"FastRouter matched '{message[:50]}...' → {best_match.domain_id} "

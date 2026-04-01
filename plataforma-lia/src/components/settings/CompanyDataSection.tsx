@@ -59,7 +59,6 @@ import {
 import { LiaFieldKey } from '@/hooks/use-company-lia-instructions'
 import { textStyles } from '@/lib/design-tokens'
 import { GeneralInfoSection } from './company'
-import { GeneralInfoSection } from './company'
 
 interface CompanyData {
   logo?: string

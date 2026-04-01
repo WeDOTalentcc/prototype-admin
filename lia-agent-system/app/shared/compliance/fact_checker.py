@@ -9,7 +9,7 @@ Part of the 3-pillar compliance architecture (LGPD, SOX, EU AI Act).
 """
 import re
 import logging
-from typing import Dict, Any, Optional, List
+from typing import Callable, Dict, Any, Optional, List
 from dataclasses import dataclass, field
 from datetime import datetime
 
@@ -382,6 +382,90 @@ class FactChecker:
             claim.notes = f"Claimed top-{n} but expected top-{expected_top_n}"
 
         return claim
+
+
+    # ------------------------------------------------------------------
+    # LIA-C06 - Domain-specific validator registry
+    # ------------------------------------------------------------------
+
+    _domain_validators: Dict[str, List[Callable]] = {}
+
+    @classmethod
+    def register_validator(
+        cls,
+        domain_id: str,
+        validator_fn: Callable,
+    ) -> None:
+        """Registra um validador domain-specific.
+
+        Args:
+            domain_id: ID do dominio (ex: 'cv_screening', 'analytics', 'sourcing')
+            validator_fn: coroutine async que recebe (claim_text, context_data)
+                          e retorna mensagem de discrepancia ou None se ok.
+
+        Exemplo::
+
+            FactChecker.register_validator('cv_screening', validate_cv_score_claim)
+        """
+        if domain_id not in cls._domain_validators:
+            cls._domain_validators[domain_id] = []
+        if validator_fn not in cls._domain_validators[domain_id]:
+            cls._domain_validators[domain_id].append(validator_fn)
+        logger.debug(
+            "Registered domain validator '%s' for domain '%s'",
+            getattr(validator_fn, "__name__", repr(validator_fn)),
+            domain_id,
+        )
+
+    async def check_response_with_domain(
+        self,
+        response_text: str,
+        context_data: Dict[str, Any],
+        domain_id: str,
+    ) -> "FactCheckResult":
+        """Verifica resposta usando validadores genericos + validadores domain-specific.
+
+        Executa primeiro check_response() (sincrono) para claims genericas
+        (salario, contagem, percentual, data) e depois aplica os validadores
+        assincronos registrados para o dominio informado.
+
+        Args:
+            response_text: Texto da resposta gerada pelo agente LIA.
+            context_data:  Dicionario com dados reais de contexto.
+            domain_id:     ID do dominio para selecao de validadores.
+
+        Returns:
+            FactCheckResult enriquecido com claims domain-specific.
+        """
+        result = self.check_response(response_text, context_data)
+
+        for validator in self._domain_validators.get(domain_id, []):
+            try:
+                discrepancy = await validator(response_text, context_data)
+                if discrepancy:
+                    domain_claim = FactCheckClaim(
+                        claim_type=f"domain_{domain_id}",
+                        original_value=discrepancy,
+                        is_verified=True,
+                        is_accurate=False,
+                        notes=f"[{domain_id}] {discrepancy}",
+                        source=getattr(validator, "__name__", "domain_validator"),
+                    )
+                    result.add_claim(domain_claim)
+                    logger.warning(
+                        "Domain validator '%s' found discrepancy: %s",
+                        getattr(validator, "__name__", domain_id),
+                        discrepancy,
+                    )
+            except Exception as e:
+                logger.warning(
+                    "Domain validator '%s' for domain '%s' raised: %s",
+                    getattr(validator, "__name__", repr(validator)),
+                    domain_id,
+                    e,
+                )
+
+        return result
 
     def register_data_source(self, name: str, source: Any) -> None:
         self._data_sources[name] = source

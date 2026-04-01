@@ -330,6 +330,11 @@ HIGH_IMPACT_ACTIONS = {
     "sourcing_search", "jd_import",
     # FAR-2/A: transição de pipeline também é ação de alto impacto
     "pipeline_move",
+    # LIA-R05: domínios adicionais com ações de alto impacto
+    "analytics_query",           # analytics domain
+    "job_create", "job_edit",    # job_management domain
+    "bulk_automation",           # automation domain
+    "policy_check", "diversity_check",  # hiring_policy domain
 }
 
 
@@ -520,12 +525,17 @@ class FairnessGuard:
         _redis = None
         try:
             import json
-            import redis
+            import redis.asyncio as _aioredis
             from lia_config.config import settings
-            _redis = redis.from_url(settings.REDIS_URL)
-            cached = _redis.get(cache_key)
+            _redis = _aioredis.from_url(settings.REDIS_URL)
+            cached = await _redis.get(cache_key)
             if cached:
                 cached_data = json.loads(cached)
+                # Close client before returning cached result
+                try:
+                    await _redis.aclose()
+                except Exception:
+                    pass
                 return FairnessCheckResult(**cached_data)
         except Exception:
             pass
@@ -559,7 +569,7 @@ class FairnessGuard:
             try:
                 import json
                 if _redis is not None:
-                    _redis.setex(cache_key, 3600, json.dumps({
+                    await _redis.setex(cache_key, 3600, json.dumps({
                         "is_blocked": semantic_result.is_blocked,
                         "blocked_terms": semantic_result.blocked_terms,
                         "category": semantic_result.category,

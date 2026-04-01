@@ -387,3 +387,149 @@ class FewShotExamples:
             part += f"  Saída: {ex.get('output')}\n"
             formatted_parts.append(part)
         return "\n".join(formatted_parts)
+
+
+# ---------------------------------------------------------------------------
+# LIA-P05 — Categorias adicionais de few-shot examples
+# ---------------------------------------------------------------------------
+
+CANDIDATE_EVALUATION_EXAMPLES: List[Dict[str, Any]] = [
+    {
+        "input": "avalia o Joao para a vaga de Dev Senior",
+        "domain": "cv_screening",
+        "action": "evaluate_candidate",
+        "expected_behavior": "Aplica rubric BARS, retorna score com justificativa por competencia",
+        "reasoning": "Nome especifico + vaga especifica + verbo avaliar -> evaluate_candidate com rubric estruturado."
+    },
+    {
+        "input": "esse candidato e bom?",
+        "domain": "cv_screening",
+        "action": "evaluate_candidate",
+        "expected_behavior": "Solicita vaga de referencia antes de avaliar",
+        "reasoning": "Sem vaga de referencia nao e possivel avaliar contra criterios. Pede contexto primeiro."
+    },
+    {
+        "input": "me da um parecer tecnico do Carlos para a vaga de arquiteto",
+        "domain": "cv_screening",
+        "action": "generate_report",
+        "expected_behavior": "Gera parecer estruturado com pontos fortes, gaps e recomendacao final",
+        "reasoning": "Parecer tecnico implica analise profunda, nao apenas score. Usa generate_report."
+    },
+    {
+        "input": "quem dos 5 candidatos triados tem mais fit cultural?",
+        "domain": "cv_screening",
+        "action": "compare_candidates",
+        "expected_behavior": "Compara candidatos em dimensao de fit cultural, usa Big Five se disponivel",
+        "reasoning": "Comparacao entre multiplos candidatos com criterio especifico -> compare_candidates."
+    },
+    {
+        "input": "o score do Pedro ta certo? parece alto demais",
+        "domain": "cv_screening",
+        "action": "calculate_wsi_score",
+        "expected_behavior": "Reexecuta calculo WSI e explica criterios que geraram o score atual",
+        "reasoning": "Questionamento sobre score -> recalcular e explicar metodologia WSI."
+    },
+]
+
+
+SCHEDULING_NEGOTIATION_EXAMPLES: List[Dict[str, Any]] = [
+    {
+        "input": "deixa pra amanha",
+        "domain": "interview_scheduling",
+        "action": "reschedule_interview",
+        "expected_behavior": "Identifica como reschedule, propoe horarios disponiveis de amanha",
+        "reasoning": "Expressao coloquial de adiamento -> reschedule_interview com data=amanha."
+    },
+    {
+        "input": "nao vai dar pra hoje",
+        "domain": "interview_scheduling",
+        "action": "reschedule_interview",
+        "expected_behavior": "Reconhece cancelamento implicito, pergunta nova data",
+        "reasoning": "Negacao + hoje -> cancelamento implicito, precisa nova data antes de reagendar."
+    },
+    {
+        "input": "o candidato pediu pra adiar uma semana",
+        "domain": "interview_scheduling",
+        "action": "reschedule_interview",
+        "expected_behavior": "Calcula data +7 dias, propoe slots disponiveis nesse periodo",
+        "reasoning": "Pedido explicito de adiamento com prazo -> reagenda no periodo indicado."
+    },
+    {
+        "input": "confirma a entrevista de amanha com a Ana",
+        "domain": "interview_scheduling",
+        "action": "confirm_interview",
+        "expected_behavior": "Envia confirmacao para candidata Ana via canal preferencial",
+        "reasoning": "Verbo confirmar + candidata nomeada + data -> confirm_interview."
+    },
+    {
+        "input": "cancela tudo que tinha agendado com o Paulo",
+        "domain": "interview_scheduling",
+        "action": "cancel_interview",
+        "expected_behavior": "Lista agendamentos com Paulo, solicita confirmacao antes de cancelar",
+        "reasoning": "Acao irreversivel -> confirmar antes de executar, mesmo com instrucao clara."
+    },
+]
+
+
+COMMUNICATION_TONE_EXAMPLES: List[Dict[str, Any]] = [
+    {
+        "input": "manda um zap pro candidato",
+        "domain": "communication",
+        "action": "send_whatsapp_message",
+        "expected_behavior": "Entende 'zap' como WhatsApp, pede confirmacao do template",
+        "reasoning": "Girao 'zap' = WhatsApp no contexto brasileiro de RH."
+    },
+    {
+        "input": "fala com ele que nao foi dessa vez",
+        "domain": "communication",
+        "action": "send_rejection_message",
+        "expected_behavior": "Identifica rejeicao, usa template humanizado, verifica FairnessGuard",
+        "reasoning": "Expressao coloquial de rejeicao -> template empatetico, passa por FairnessGuard."
+    },
+    {
+        "input": "manda um email de feedback construtivo para os reprovados da etapa tecnica",
+        "domain": "communication",
+        "action": "send_feedback_email",
+        "expected_behavior": "Gera feedback individualizado por candidato com pontos de melhoria",
+        "reasoning": "Feedback construtivo = personalizado, nao generico. Processa cada reprovado."
+    },
+    {
+        "input": "avisa os aprovados que passaram pra proxima fase",
+        "domain": "communication",
+        "action": "send_advancement_message",
+        "expected_behavior": "Envia mensagem de avanco com detalhes da proxima etapa",
+        "reasoning": "Aprovados + proxima fase -> advancement_message com instrucoes da etapa seguinte."
+    },
+]
+
+
+ANALYTICS_QUERY_EXAMPLES: List[Dict[str, Any]] = [
+    {
+        "input": "como ta o funil esse mes?",
+        "domain": "analytics",
+        "action": "get_funnel_stats",
+        "expected_behavior": "Entende 'funil' como pipeline_stats, periodo = mes atual",
+        "reasoning": "Funil = pipeline de candidatos. Mes atual sem data explicita."
+    },
+    {
+        "input": "qual minha taxa de conversao?",
+        "domain": "analytics",
+        "action": "get_conversion_rate",
+        "expected_behavior": "Retorna taxa de conversao por etapa com comparativo periodo anterior",
+        "reasoning": "Taxa de conversao requer etapas do funil + benchmark para ser util."
+    },
+    {
+        "input": "quantos dias em media leva pra fechar uma vaga?",
+        "domain": "analytics",
+        "action": "get_time_to_hire",
+        "expected_behavior": "Retorna avg_time_to_hire com breakdown por nivel de senioridade",
+        "reasoning": "Pergunta sobre tempo de contratacao -> time_to_hire com segmentacao por seniority."
+    },
+    {
+        "input": "qual foi a performance do time de recrutamento no trimestre?",
+        "domain": "analytics",
+        "action": "get_team_performance",
+        "expected_behavior": "Compila metricas de SLA, volume e qualidade de contratacoes do trimestre",
+        "reasoning": "Performance do time = multiplas metricas agregadas, periodo = trimestre atual."
+    },
+]

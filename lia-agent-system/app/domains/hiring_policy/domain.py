@@ -5,6 +5,7 @@ from typing import Dict, Any, List
 import logging
 
 from app.domains.base import DomainPrompt, DomainContext, DomainAction, IntentResult, DomainResponse
+from app.domains.compliance_base import ComplianceDomainPrompt
 from app.domains.registry import register_domain
 
 logger = logging.getLogger(__name__)
@@ -101,8 +102,10 @@ HIRING_POLICY_ACTIONS = [
 
 
 @register_domain
-class HiringPolicyDomain(DomainPrompt):
+class HiringPolicyDomain(ComplianceDomainPrompt):
     """Domínio de Política de Contratação da LIA."""
+
+    _compliance_config = {'high_impact': True, 'fairness_action_type': 'policy_check'}
 
     domain_id = "hiring_policy"
     domain_name = "Hiring Policy"

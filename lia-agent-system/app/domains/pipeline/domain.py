@@ -6,6 +6,7 @@ import logging
 from typing import Dict, Any, Optional, List
 
 from app.domains.base import DomainPrompt, DomainContext, DomainAction, IntentResult, DomainResponse, ConfidenceLevel
+from app.domains.compliance_base import ComplianceDomainPrompt
 from app.domains.registry import register_domain
 
 logger = logging.getLogger(__name__)
@@ -95,7 +96,9 @@ _KEYWORD_ACTION_MAP: Dict[str, str] = {
 
 
 @register_domain
-class PipelineTransitionDomain(DomainPrompt):
+class PipelineTransitionDomain(ComplianceDomainPrompt):
+
+    _compliance_config = {'high_impact': True, 'fairness_action_type': 'rejection'}
     domain_id = "pipeline_transition"
     domain_name = "Pipeline Transition"
     description = DOMAIN_DESCRIPTION

@@ -22,6 +22,15 @@ from app.domains.base import (
     ConfidenceLevel,
 )
 
+# LIA-C02: Import lazy para evitar circular imports
+def _get_compliance_class():
+    """Lazy import de ComplianceDomainPrompt para evitar importação circular."""
+    try:
+        from app.domains.compliance_base import ComplianceDomainPrompt
+        return ComplianceDomainPrompt
+    except ImportError:
+        return None
+
 logger = logging.getLogger(__name__)
 
 
@@ -106,10 +115,32 @@ class DomainWorkflow:
         state = WorkflowState(query=query, domain=domain, context=context)
 
         try:
+            # LIA-C02: Type check — domínios devem herdar ComplianceDomainPrompt
+            _ComplianceDomainPrompt = _get_compliance_class()
+            if _ComplianceDomainPrompt is not None and not isinstance(domain, _ComplianceDomainPrompt):
+                logger.warning(
+                    "[LIA-C02] Domain '%s' herda DomainPrompt diretamente — "
+                    "migre para ComplianceDomainPrompt para compliance automático. "
+                    "(classe=%s)",
+                    domain.domain_id,
+                    domain.__class__.__name__,
+                )
+
             if self.enable_fairness_guard:
                 blocked_response = await self._pre_check(state)
                 if blocked_response is not None:
                     return blocked_response
+
+            # LIA-C02: Pre-process compliance (FairnessGuard L3 + PII + InjectionGuard)
+            # Executado APÓS _pre_check para não duplicar check L1 do FairnessGuard
+            if _ComplianceDomainPrompt is not None and isinstance(domain, _ComplianceDomainPrompt):
+                pre_response = await domain.pre_process(query, context)
+                if pre_response is not None:
+                    logger.info(
+                        "[LIA-C02] pre_process bloqueou query no domínio '%s'",
+                        domain.domain_id,
+                    )
+                    return pre_response
 
             await self._resolve_references(state)
 
@@ -125,7 +156,25 @@ class DomainWorkflow:
 
             state = await self._format(state)
 
-            if self.enable_fact_checker:
+            # LIA-C02: Post-process compliance (FactCheck via ComplianceDomainPrompt)
+            _ComplianceDomainPrompt2 = _get_compliance_class()
+            if (
+                _ComplianceDomainPrompt2 is not None
+                and isinstance(domain, _ComplianceDomainPrompt2)
+                and state.formatted_response is not None
+            ):
+                state.formatted_response = await domain.post_process(
+                    state.formatted_response, context
+                )
+                state.log_step("post_process_compliance", {"status": "completed"})
+
+            # Skip _post_check if ComplianceDomainPrompt.post_process already ran FactChecker
+            # to avoid double fact-checking the same response (performance + accuracy)
+            _already_fact_checked = (
+                _ComplianceDomainPrompt2 is not None
+                and isinstance(domain, _ComplianceDomainPrompt2)
+            )
+            if self.enable_fact_checker and not _already_fact_checked:
                 state = await self._post_check(state)
 
             state.current_step = WorkflowStep.COMPLETE

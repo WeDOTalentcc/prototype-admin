@@ -40,7 +40,7 @@ export function CandidatePageFilesTab({
       <Card className="border-2 border-dashed border-lia-border-default dark:border-lia-border-default hover:border-gray-400 dark:hover:border-gray-500">
         <CardContent className="p-6">
           <div
-            className={}
+            className={`text-center cursor-pointer transition-colors ${isDragging ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
             onDragOver={(e) => {
               e.preventDefault()
               setIsDragging(true)

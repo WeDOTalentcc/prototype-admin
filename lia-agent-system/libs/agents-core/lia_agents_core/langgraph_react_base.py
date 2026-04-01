@@ -51,7 +51,57 @@ class LangGraphReActBase(LangGraphBase):
         if settings.USE_LANGGRAPH_NATIVE:
             return await self._process_langgraph(input)
         return await self._process_react_loop(input)  # legado
+
+    LIA-C04: PII auto-sanitization em mensagens antes do LLM.
+    Subclasses podem setar `_enable_pii_strip = False` apenas em casos excepcionais
+    onde PII é necessário por design (ex: serviço de armazenamento de CV).
     """
+
+    # LIA-C04: PII auto-sanitization (True por padrão — desative explicitamente se necessário)
+    _enable_pii_strip: bool = True
+
+    # ------------------------------------------------------------------
+    # LIA-C04: PII sanitization automática antes de enviar mensagens ao LLM
+    # ------------------------------------------------------------------
+
+    async def _sanitize_messages_pii(self, messages: list) -> list:
+        """Remove PII de HumanMessage e AIMessage antes de enviar ao LLM.
+
+        SystemMessage não é sanitizado — pode conter placeholders necessários.
+        Falha silenciosamente (retorna lista original) em caso de erro.
+
+        LIA-C04 — LGPD Art. 12: minimização de dados pessoais em sistemas de IA.
+        EU AI Act Art. 13: transparência sobre dados em sistemas de alto risco.
+        """
+        if not getattr(self, "_enable_pii_strip", True):
+            return messages
+
+        try:
+            from app.shared.pii_masking import strip_pii_for_llm_prompt
+            _pii_logger = logging.getLogger("app.shared.pii_masking")
+            sanitized = []
+            for msg in messages:
+                if hasattr(msg, "content") and isinstance(msg.content, str):
+                    msg_type = msg.__class__.__name__
+                    # Apenas HumanMessage e AIMessage — SystemMessage preservado
+                    if msg_type in ("HumanMessage", "AIMessage"):
+                        stripped = strip_pii_for_llm_prompt(msg.content)
+                        if stripped != msg.content:
+                            _pii_logger.warning(
+                                "[LIA-C04][%s] PII removido de %s domain=%s",
+                                self.__class__.__name__,
+                                msg_type,
+                                self.domain_name,
+                            )
+                            msg = msg.__class__(content=stripped)
+                sanitized.append(msg)
+            return sanitized
+        except Exception as exc:
+            logger.warning(
+                "[LIA-C04][%s] PII sanitization falhou (fail-safe): %s",
+                self.__class__.__name__, exc,
+            )
+            return messages
 
     def _build_graph(self) -> Any:
         """Constrói o grafo ReAct com create_react_agent."""
@@ -204,6 +254,11 @@ class LangGraphReActBase(LangGraphBase):
             async def _noop():
                 yield
             _latency_ctx = _noop()
+
+        # LIA-C04: Sanitização de PII nas mensagens antes de enviar ao LLM
+        initial_state["messages"] = await self._sanitize_messages_pii(
+            initial_state["messages"]
+        )
 
         import time as _time
         _t0 = _time.monotonic()

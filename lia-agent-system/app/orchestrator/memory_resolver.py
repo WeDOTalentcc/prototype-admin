@@ -321,7 +321,65 @@ class MemoryResolver:
                 if candidate_name := fields.get("candidate_name"):
                     lines.append(f"candidato em foco: {candidate_name}")
 
+        # LIA-R04: inject recent actions if available
+        recent = self.get_recent_actions(limit=3)
+        if recent:
+            action_summary = "; ".join(
+                f"{a['domain']}.{a['action']}" for a in recent
+            )
+            lines.append(f"ações recentes: {action_summary}")
         return lines[:5]  # Máximo 5 linhas para não poluir o prompt
+
+
+    # ── LIA-R04: action_history ──────────────────────────────────────────────
+
+    _MAX_ACTION_HISTORY: int = 20
+
+    def _ensure_action_history(self) -> None:
+        if not hasattr(self, "_action_history"):
+            self._action_history: list = []
+
+    def add_action(
+        self,
+        domain: str,
+        action: str,
+        metadata: dict | None = None,
+    ) -> None:
+        """Registra uma ação no histórico (LIA-R04).
+
+        Args:
+            domain: Domínio que executou a ação (ex: "cv_screening").
+            action: Identificador da ação (ex: "shortlist_candidate").
+            metadata: Dados adicionais opcionais (ex: candidate_id, job_id).
+        """
+        import datetime as _dt
+        self._ensure_action_history()
+        entry = {
+            "domain": domain,
+            "action": action,
+            "timestamp": _dt.datetime.now(_dt.timezone.utc).isoformat(),
+            "metadata": metadata or {},
+        }
+        self._action_history.append(entry)
+        if len(self._action_history) > self._MAX_ACTION_HISTORY:
+            self._action_history = self._action_history[-self._MAX_ACTION_HISTORY:]
+
+    def get_recent_actions(self, limit: int = 5) -> list:
+        """Retorna as ações mais recentes do histórico (LIA-R04).
+
+        Args:
+            limit: Número máximo de ações a retornar (padrão 5).
+
+        Returns:
+            Lista de dicts com domain, action, timestamp, metadata.
+        """
+        self._ensure_action_history()
+        return list(self._action_history[-limit:])
+
+    def get_action_history(self) -> list:
+        """Retorna o histórico completo de ações (até _MAX_ACTION_HISTORY)."""
+        self._ensure_action_history()
+        return list(self._action_history)
 
 
 # Singleton compartilhado

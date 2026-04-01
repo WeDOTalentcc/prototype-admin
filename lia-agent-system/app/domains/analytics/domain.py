@@ -4,6 +4,7 @@ import re
 import logging
 
 from app.domains.base import DomainPrompt, DomainContext, DomainAction, IntentResult, DomainResponse
+from app.domains.compliance_base import ComplianceDomainPrompt
 from app.domains.registry import register_domain
 
 logger = logging.getLogger(__name__)
@@ -114,7 +115,9 @@ _KEYWORD_ACTION_MAP: Dict[str, str] = {
 
 
 @register_domain
-class AnalyticsDomain(DomainPrompt):
+class AnalyticsDomain(ComplianceDomainPrompt):
+
+    _compliance_config = {'high_impact': False}
     domain_id = "analytics"
     domain_name = "Analytics & Reporting"
 
@@ -200,3 +203,18 @@ class AnalyticsDomain(DomainPrompt):
             domain_id=self.domain_id,
             action_id=action_id,
         )
+
+
+# ---------------------------------------------------------------------------
+# LIA-C06 - Registro de validador domain-specific para analytics
+# ---------------------------------------------------------------------------
+try:
+    from app.shared.compliance.fact_checker import FactChecker
+    from app.shared.compliance.domain_validators import validate_analytics_metric_claim
+    FactChecker.register_validator("analytics", validate_analytics_metric_claim)
+    logger.debug("analytics domain validator registered")
+except Exception as _e:
+    import logging as _logging
+    _logging.getLogger(__name__).warning(
+        "Could not register analytics domain validator: %s", _e
+    )

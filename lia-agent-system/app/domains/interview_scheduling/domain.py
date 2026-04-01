@@ -4,6 +4,7 @@ import re
 import logging
 
 from app.domains.base import DomainPrompt, DomainContext, DomainAction, IntentResult, DomainResponse
+from app.domains.compliance_base import ComplianceDomainPrompt
 from app.domains.registry import register_domain
 from app.domains.interview_scheduling.agents.interview_graph import interview_graph
 from app.services.interview_session_store import interview_session_store
@@ -129,7 +130,9 @@ _KEYWORD_ACTION_MAP: Dict[str, str] = {
 
 
 @register_domain
-class InterviewSchedulingDomain(DomainPrompt):
+class InterviewSchedulingDomain(ComplianceDomainPrompt):
+
+    _compliance_config = {'high_impact': False}
     domain_id = "interview_scheduling"
     domain_name = "Interview & Scheduling"
 

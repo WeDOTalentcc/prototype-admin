@@ -4,6 +4,7 @@ import re
 import logging
 
 from app.domains.base import DomainPrompt, DomainContext, DomainAction, IntentResult, DomainResponse
+from app.domains.compliance_base import ComplianceDomainPrompt
 from app.domains.registry import register_domain
 
 logger = logging.getLogger(__name__)
@@ -149,7 +150,9 @@ _KEYWORD_ACTION_MAP: Dict[str, str] = {
 
 
 @register_domain
-class RecruiterAssistantDomain(DomainPrompt):
+class RecruiterAssistantDomain(ComplianceDomainPrompt):
+
+    _compliance_config = {'high_impact': False}
     domain_id = "recruiter_assistant"
     domain_name = "Recruiter Assistant"
 

@@ -5,6 +5,7 @@ from typing import Dict, Any, List
 import logging
 
 from app.domains.base import DomainPrompt, DomainContext, DomainAction, IntentResult, DomainResponse
+from app.domains.compliance_base import ComplianceDomainPrompt
 from app.domains.registry import register_domain
 
 logger = logging.getLogger(__name__)
@@ -97,8 +98,10 @@ _KEYWORD_ACTION_MAP: Dict[str, str] = {
 
 
 @register_domain
-class CVScreeningDomain(DomainPrompt):
+class CVScreeningDomain(ComplianceDomainPrompt):
     """Domínio de CV Screening & WSI Assessment da LIA."""
+
+    _compliance_config = {'high_impact': True, 'fairness_action_type': 'shortlist'}
 
     domain_id = "cv_screening"
     domain_name = "CV Screening & WSI Assessment"
@@ -108,9 +111,18 @@ class CVScreeningDomain(DomainPrompt):
         from app.domains.cv_screening.actions import CV_SCREENING_ACTIONS
         return CV_SCREENING_ACTIONS
 
-    def get_system_prompt(self) -> str:
-        from app.prompts import PromptLoader
-        return PromptLoader.get_domain_prompt(self.domain_id)
+    def get_system_prompt(self, base_prompt: str = "") -> str:
+        """Returns the cv_screening system prompt enriched with compliance blocks.
+
+        Calls super().get_system_prompt() to auto-inject LGPD, non-discrimination
+        and defensive blocks from ComplianceDomainPrompt (LIA-P02).
+        """
+        try:
+            from app.prompts import PromptLoader
+            domain_prompt = PromptLoader.get_domain_prompt(self.domain_id)
+        except Exception:
+            domain_prompt = base_prompt or ""
+        return super().get_system_prompt(base_prompt=domain_prompt)
 
     async def process_intent(self, query: str, context: DomainContext) -> IntentResult:
         query_lower = query.lower()
@@ -181,3 +193,18 @@ class CVScreeningDomain(DomainPrompt):
             domain_id=self.domain_id,
             action_id=action_id,
         )
+
+
+# ---------------------------------------------------------------------------
+# LIA-C06 - Registro de validador domain-specific para cv_screening
+# ---------------------------------------------------------------------------
+try:
+    from app.shared.compliance.fact_checker import FactChecker
+    from app.shared.compliance.domain_validators import validate_cv_score_claim
+    FactChecker.register_validator("cv_screening", validate_cv_score_claim)
+    logger.debug("cv_screening domain validator registered")
+except Exception as _e:
+    import logging as _logging
+    _logging.getLogger(__name__).warning(
+        "Could not register cv_screening domain validator: %s", _e
+    )
