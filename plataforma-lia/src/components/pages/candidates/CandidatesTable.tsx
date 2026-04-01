@@ -229,7 +229,7 @@ const CandidatesTableComponent = memo(function CandidatesTable({
           {candidates.map((candidate) => (
             <tr
               key={candidate.id}
-              className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors motion-reduce:transition-none"
+              className="border-b border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors motion-reduce:transition-none"
               onClick={() => onCandidateClick(candidate)}
             >
               <td className="w-12 p-4" onClick={(e) => e.stopPropagation()}>
