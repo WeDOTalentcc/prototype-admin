@@ -41,7 +41,7 @@ import type { CandidateLocal } from "@/services/lia-api"
 
 import { KanbanTablePagination } from "./KanbanTablePagination"
 import { KanbanCandidatePreviewPanel } from "./KanbanCandidatePreviewPanel"
-import { createKanbanCellRenderer } from "./KanbanTableCellRenderer"
+import { createKanbanCellRenderer, type KanbanTableCellRendererProps } from "./KanbanTableCellRenderer"
 type QueryInsight = {
   match_level?: string
   subquery?: string
@@ -234,7 +234,7 @@ export function KanbanTableView({
   const itemsPerPage = 50
 
 
-  const renderCustomCell = createKanbanCellRenderer({
+  const renderCustomCell = createKanbanCellRenderer(({
     dynamicStages,
     jobVacancyId,
     viewedCandidateIds,
@@ -261,7 +261,7 @@ export function KanbanTableView({
     onTransitionRequired,
     onStatusChange,
     onCandidateClick,
-  })
+  }) as unknown as KanbanTableCellRendererProps)
   return (
     <>
     {/* Painel de Filtros - TABLE */}
