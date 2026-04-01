@@ -8,7 +8,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params
   return {
-    title: ,
+    title: `Vaga ${id} | LIA — WeDo Talent`,
     description: "Detalhes da vaga, candidatos inscritos e kanban de seleção. Gerencie o processo seletivo com inteligência artificial.",
     robots: { index: false, follow: false },
   }

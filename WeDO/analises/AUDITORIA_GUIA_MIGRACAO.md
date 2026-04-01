@@ -193,6 +193,44 @@ Este erro fundamental contamina sistematicamente todas as seções do guia, caus
 
 ---
 
+## Matriz de Status por Problema (P2–P13 + Subitens)
+
+| # | Problema | Status v2.2 | Status v2.3 | Detalhe |
+|---|----------|-------------|-------------|---------|
+| P2 | Audit trail parcial | INCORRETO | CORRETO | `_pre_check`/`_post_check` clarificados como LIA-only; v5 não tem compliance no workflow |
+| P3 | Compliance gaps (geral) | INCORRETO | CORRETO | Seção reescrita com distinção v5 vs LIA |
+| P3.a | Audit `ON CONFLICT` | INCORRETO (invertido) | CORRETO | Bug em v5 `audit_writer.py` (DO UPDATE SET); LIA já usa DO NOTHING |
+| P3.b | PII logging | INCORRETO | CORRETO | `LangGraphReActBase` removido (LIA-only); v5 tem `mask_pii()` para logs |
+| P3.c | FactChecker ausente | INCORRETO | CORRETO | FactChecker global via `_post_check` é LIA-only; v5 tem fact_checker local (sourcing) |
+| P4 | FairnessGuard incompleto | INCORRETO | CORRETO | Arquivos LIA substituídos por v5 reais (`jobs/fairness.py`, `sourcing/fairness.py`) |
+| P5 | Compliance gaps detalhados | INCORRETO | CORRETO | Todas refs a `_pre_check`/`_post_check` como LIA-only |
+| P5.a | Audit consistency | PARCIAL | CORRETO | Corrigido para refletir dois repos |
+| P5.b | PII nos logs | INCORRETO | CORRETO | `LangGraphReActBase` removido; v5 usa `mask_pii()` |
+| P5.c | FactChecker | INCORRETO | CORRETO | Clarificado como LIA-only via `_post_check` |
+| P6 | Avaliações sem BARS | CORRETO | CORRETO | Diagnóstico original já era preciso |
+| P7 | Multi-turn context loss | CORRETO | CORRETO | Diagnóstico original já era preciso |
+| P8 | Flat domains sem ReAct | INCORRETO | CORRETO | `ActionExecutorService` substituído por `DomainOrchestrator` (v5) |
+| P9 | Keyword/regex matching frágil | INCORRETO | CORRETO | Seção reescrita com `_CONTEXT_ACTION_PATTERNS` |
+| P9.a | Keyword matching | INCORRETO | CORRETO | `_KEYWORD_ACTION_MAP` → `_CONTEXT_ACTION_PATTERNS` (regex tuples) |
+| P9.b | Negação não detectada | INCORRETO | CORRETO | `NEGATION_DETECTION_BLOCK`/`interaction_patterns.py` removidos (LIA-only) |
+| P10 | Context loss em integrações | CORRETO | CORRETO | Diagnóstico original já era preciso |
+| P11 | Prompt hardcoded | INCORRETO | CORRETO | `PromptRegistry`, `PromptLoader`, YAMLs, `few_shot_examples.py` removidos (LIA-only) |
+| P11.a | Prompt injection | CORRETO | CORRETO | Diagnóstico original já era preciso |
+| P11.b | Sem few-shot | INCORRETO | CORRETO | `few_shot_examples.py` removido (LIA-only) |
+| P11.c | Sem anti-sycophancy | INCORRETO | CORRETO | `ANTI_SYCOPHANCY_BLOCK` removido (LIA-only) |
+| P11.d | Sem versionamento | CORRETO | CORRETO | Diagnóstico original já era preciso |
+| P11.e | Sem consistency | INCORRETO | CORRETO | `interaction_patterns.py` removido (LIA-only) |
+| P11.f | Prompt leaking | INCORRETO | CORRETO | Refs a LIA-only components removidas |
+| P12 | Tool registry sem governança | PARCIAL | CORRETO | Clarificado `DomainRegistry` (v5) vs `ToolRegistry`/`ActionExecutorService` (LIA) |
+| P13 | Observabilidade incompleta | CORRETO | CORRETO | Diagnóstico original já era preciso |
+
+**Resumo da Matriz:**
+- **CORRETO na v2.2:** 7 itens (P6, P7, P10, P11.a, P11.d, P13 + diagnósticos parciais)
+- **INCORRETO/PARCIAL na v2.2 → CORRETO na v2.3:** 20 itens corrigidos
+- **Status final v2.3:** 27/27 itens CORRETO
+
+---
+
 ## Correções Aplicadas na v2.3
 
 1. **L98** — Remover a premissa falsa "mesmo codebase"; documentar que são repos separados
