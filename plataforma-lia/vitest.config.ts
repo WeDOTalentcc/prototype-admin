@@ -27,6 +27,33 @@ export default defineConfig({
           },
         },
       },
+      // ── Colocated unit tests (next to source files, no __tests__ dir) ─────
+      {
+        test: {
+          name: 'unit-colocated',
+          environment: 'jsdom',
+          include: [
+            'src/lib/**/*.test.ts',
+            'src/utils/**/*.test.ts',
+            'src/components/**/*.test.ts',
+            'src/components/**/*.test.tsx',
+          ],
+          exclude: [
+            'src/**/__tests__/**',
+            'src/hooks/__tests__/**',
+          ],
+          globals: true,
+          setupFiles: ['src/hooks/__tests__/setup.ts'],
+          alias: {
+            '@': path.resolve(dirname, 'src'),
+          },
+        },
+        esbuild: {
+          jsxInject: `import React from 'react'`,
+          jsx: 'automatic',
+          jsxImportSource: 'react',
+        },
+      },
       // ── Hook tests (jsdom — precisam de DOM/React context) ────────────────
       {
         test: {
