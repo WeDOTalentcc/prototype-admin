@@ -30,6 +30,8 @@ import {
   Search,
   Library,
   DollarSign,
+  Percent,
+  Info,
 } from "lucide-react"
 import { SmartImportZone } from "./SmartImportZone"
 import { LiaFieldToggle, defaultLiaFieldExamples } from "./LiaFieldToggle"
@@ -62,9 +64,7 @@ const SENIORITY_LEVELS = [
 
 const VALUE_TYPES = [
   { id: "monetary", name: "Valor Monetário", icon: DollarSign, description: "Valor fixo em R$" },
-  // @ts-ignore TODO: fix type — Cannot find name 'Percent'.
   { id: "percentage", name: "Percentual", icon: Percent, description: "Porcentagem (ex: 5% contribuição)" },
-  // @ts-ignore TODO: fix type — Cannot find name 'Info'.
   { id: "informative", name: "Informativo", icon: Info, description: "Apenas descrição, sem valor" },
 ]
 
