@@ -275,7 +275,7 @@ export function KanbanTableView({
     )}
 
     {/* Conteúdo da Tabela */}
-    <div className="flex-1 overflow-hidden bg-gray-50 dark:bg-lia-bg-primary flex flex-col min-w-0">
+    <div className="flex-1 overflow-hidden bg-white dark:bg-lia-bg-primary flex flex-col min-w-0">
       <div className="flex-1 overflow-auto px-4 py-2">
       {/* Tabela Elegante - Unified Component */}
       {(() => {

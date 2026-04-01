@@ -58,7 +58,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
 
   return (
     <>
-    <div className="h-full flex flex-col bg-gray-50 dark:bg-lia-bg-primary overflow-hidden">
+    <div className="h-full flex flex-col bg-white dark:bg-lia-bg-primary overflow-hidden">
       <div className="p-2 max-w-full overflow-x-auto">
 
         {/* Header - Saudação no topo (alinhado com outras páginas) */}

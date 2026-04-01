@@ -207,7 +207,7 @@ export function DashboardsPage({ onNavigate }: DashboardsPageProps = {}) {
   }
 
   return (
-    <div className="flex gap-3 h-full px-3 pt-3 pb-6 bg-gray-50 dark:bg-lia-bg-primary overflow-hidden">
+    <div className="flex gap-3 h-full px-3 pt-3 pb-6 bg-white dark:bg-lia-bg-primary overflow-hidden">
       {/* Menu Lateral de Dashboards - Retrátil com Auto-Expand */}
       <div 
         className={`bg-gray-50 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4 space-y-4 shrink-0 transition-colors motion-reduce:transition-none duration-300 ${

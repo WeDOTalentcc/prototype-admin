@@ -70,7 +70,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
   } = useCandidatesPageCore({ onAddRecentItem, pendingCandidateOpen, onCandidateOpened })
 
   return (
-    <div className="h-full flex flex-col bg-gray-50 dark:bg-lia-bg-primary overflow-hidden">
+    <div className="h-full flex flex-col bg-white dark:bg-lia-bg-primary overflow-hidden">
       {/* Header Fixo - Título e Tabs */}
       <CandidatesPageHeader
         tabs={tabs as unknown as Parameters<typeof CandidatesPageHeader>[0]["tabs"]}

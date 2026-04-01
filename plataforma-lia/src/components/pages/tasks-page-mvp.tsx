@@ -462,8 +462,8 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
   )
 
   return (
-    <div className="h-full flex flex-col bg-gray-50 dark:bg-lia-bg-primary overflow-hidden">
-      <div className="flex-shrink-0 px-4 pt-3 pb-0 bg-gray-50 dark:bg-lia-bg-primary">
+    <div className="h-full flex flex-col bg-white dark:bg-lia-bg-primary overflow-hidden">
+      <div className="flex-shrink-0 px-4 pt-3 pb-0 bg-white dark:bg-lia-bg-primary">
         <div className="flex items-center justify-between mb-0.5">
           <div className="flex items-center gap-3">
             <div>

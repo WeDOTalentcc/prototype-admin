@@ -106,7 +106,7 @@ export function JobsPage(props: JobsPageProps) {
   }
   if (state.showKanban && !state.selectedJob) {
     return (
-      <div className="h-full flex items-center justify-center bg-gray-50 dark:bg-lia-bg-primary">
+      <div className="h-full flex items-center justify-center bg-white dark:bg-lia-bg-primary">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-lia-border-default border-t-gray-600 rounded-full animate-spin motion-reduce:animate-none mx-auto mb-3" />
           <p className="text-base-ui text-lia-text-tertiary dark:text-lia-text-tertiary">Carregando vaga...</p>
@@ -155,7 +155,7 @@ export function JobsPage(props: JobsPageProps) {
 
   if (!hasMounted) {
     return (
-      <div className="h-full flex flex-col bg-gray-50 dark:bg-lia-bg-primary overflow-hidden">
+      <div className="h-full flex flex-col bg-white dark:bg-lia-bg-primary overflow-hidden">
         <div className="flex-1 overflow-hidden">
           <div className="p-2.5 max-w-full overflow-x-auto">
             <div className="flex items-center justify-between mb-4">
@@ -177,7 +177,7 @@ export function JobsPage(props: JobsPageProps) {
   }
 
   return (
-    <div className="h-full flex flex-col bg-gray-50 dark:bg-lia-bg-primary overflow-hidden relative">
+    <div className="h-full flex flex-col bg-white dark:bg-lia-bg-primary overflow-hidden relative">
       {/* Super Chat Fullscreen Mode - Cobre toda a área de conteúdo */}
       {chatMode ==='job-creation' && isChatFullscreen && showInlineChat && (
         <div className="absolute inset-0 z-50 bg-white dark:bg-lia-bg-primary flex flex-col">
@@ -200,7 +200,7 @@ export function JobsPage(props: JobsPageProps) {
       )}
       
       {/* Header Fixo - Título e Tabs (oculto em fullscreen) */}
-      <div className={`flex-shrink-0 px-4 pt-3 pb-0 bg-gray-50 dark:bg-lia-bg-primary ${chatMode ==='job-creation' && isChatFullscreen ?'hidden' :''}`}>
+      <div className={`flex-shrink-0 px-4 pt-3 pb-0 bg-white dark:bg-lia-bg-primary ${chatMode ==='job-creation' && isChatFullscreen ?'hidden' :''}`}>
         {/* Header Principal - Padrão Funil de Talentos */}
         <div className="flex items-center justify-between mb-0.5">
             <div className="flex items-center gap-3">
