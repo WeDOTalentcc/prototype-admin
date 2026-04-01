@@ -70,43 +70,6 @@ export function useExpandedChatProactiveHandlers(ctx: ExpandedChatProactiveHandl
     if (salaryProactiveTimerRef.current) {
       clearTimeout(salaryProactiveTimerRef.current)
       salaryProactiveTimerRef.current = null
-
-  // Salary benchmark loading — moved from useExpandedChatEffects
-  // Fetch salary benchmark when entering salary stage
-  useEffect(() => {
-    const fetchBenchmark = async () => {
-      if (currentStage !== 'salary' || !basicInfoFields.cargo) return
-      if (salaryBenchmark !== null) return
-      
-      setIsLoadingBenchmark(true)
-      try {
-        const benchmarkData = await liaApi.getSalaryBenchmark({
-          job_title: basicInfoFields.cargo,
-          seniority: detectedCriteria.senioridadeIdiomas || '',
-          location: basicInfoFields.localidade,
-          department: basicInfoFields.area,
-          company_id: 'default'
-        })
-        
-        if (benchmarkData && (benchmarkData.internal || benchmarkData.market)) {
-          setSalaryBenchmark(benchmarkData)
-          
-          if (benchmarkData.combined && !salaryInfo.minSalary && !salaryInfo.maxSalary) {
-            setSalaryInfo(prev => ({
-              ...prev,
-              minSalary: benchmarkData.combined!.min.toLocaleString(),
-              maxSalary: benchmarkData.combined!.max.toLocaleString()
-            }))
-          }
-        }
-      } catch (error) {
-      } finally {
-        setIsLoadingBenchmark(false)
-      }
-    }
-    
-    fetchBenchmark()
-  }, [currentStage, basicInfoFields.cargo])
     }
     
     // Only trigger when in salary stage and not already shown
@@ -174,6 +137,43 @@ Quer que eu avance para a etapa de **Competências**, ou prefere ajustar algo an
       }
     }
   }, [currentStage, salaryInfo, salaryStageCompletionShown, isFieldRequiredForWizard, PROACTIVE_MESSAGE_DELAY])
+
+  // Salary benchmark loading — moved from useExpandedChatEffects
+  // Fetch salary benchmark when entering salary stage
+  useEffect(() => {
+    const fetchBenchmark = async () => {
+      if (currentStage !== 'salary' || !basicInfoFields.cargo) return
+      if (salaryBenchmark !== null) return
+      
+      setIsLoadingBenchmark(true)
+      try {
+        const benchmarkData = await liaApi.getSalaryBenchmark({
+          job_title: basicInfoFields.cargo,
+          seniority: detectedCriteria.senioridadeIdiomas || '',
+          location: basicInfoFields.localidade,
+          department: basicInfoFields.area,
+          company_id: 'default'
+        })
+        
+        if (benchmarkData && (benchmarkData.internal || benchmarkData.market)) {
+          setSalaryBenchmark(benchmarkData)
+          
+          if (benchmarkData.combined && !salaryInfo.minSalary && !salaryInfo.maxSalary) {
+            setSalaryInfo(prev => ({
+              ...prev,
+              minSalary: benchmarkData.combined!.min.toLocaleString(),
+              maxSalary: benchmarkData.combined!.max.toLocaleString()
+            }))
+          }
+        }
+      } catch (error) {
+      } finally {
+        setIsLoadingBenchmark(false)
+      }
+    }
+    
+    fetchBenchmark()
+  }, [currentStage, basicInfoFields.cargo])
 
   // Proactive input-evaluation stage completion detection - timer resets on each basicInfoFields change
   useEffect(() => {

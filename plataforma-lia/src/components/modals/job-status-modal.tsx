@@ -50,6 +50,8 @@ import {
 import { toast } from "sonner"
 import { useCommunicationTemplates, type TemplateSituation } from "@/hooks/use-communication-templates"
 import { formatPausedDuration, replaceTemplateVariables } from "./job-status/job-status-utils"
+import { PauseOptionsStep } from "./job-status/PauseOptionsStep"
+import { ActivateOptionsStep } from "./job-status/ActivateOptionsStep"
 
 export interface PauseData {
   jobIds: string[]
