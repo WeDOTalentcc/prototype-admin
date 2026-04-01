@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState } from "react"
@@ -432,10 +431,7 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
               Templates de Email para Relatórios
             </h2>
             <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">
-              // @ts-ignore TODO: fix type — Type 'unknown' is not assignable to type 'ReactNode'.
-              // @ts-ignore TODO: fix type — unknown from API
-              // @ts-ignore TODO: fix type — unknown from API
-              Vaga: {jobData.title} ({jobData.jobId})
+              Vaga: {jobData.title as string} ({jobData.jobId as string})
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -509,7 +505,7 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
                       )}
                     </div>
                     <p className="text-sm text-lia-text-primary dark:text-lia-text-primary mb-3">
-                      {processTemplate(template.subject, getTemplateVariables())}
+                      {processTemplate(template.subject, getTemplateVariables() as Record<string, string>)}
                     </p>
                     <div className="flex items-center justify-between">
                       <Badge
@@ -719,7 +715,7 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
               <div className="border border-lia-border-subtle rounded-md overflow-hidden">
                 {showPreview ? (
                   <div className="p-4 bg-gray-50 font-mono text-sm whitespace-pre-wrap">
-                    {processTemplate(selectedTemplate.textContent, getTemplateVariables())}
+                    {processTemplate(selectedTemplate.textContent, getTemplateVariables() as Record<string, string>)}
                   </div>
                 ) : (
                   <div

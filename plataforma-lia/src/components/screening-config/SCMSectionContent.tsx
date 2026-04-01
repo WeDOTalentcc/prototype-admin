@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React from "react"
@@ -104,15 +103,14 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                   <div className="flex items-center gap-3 text-micro text-lia-text-secondary dark:text-lia-text-tertiary flex-wrap mb-3">
                     <span>Total: {(job as any).screeningQuestions?.length || 0} perguntas WSI</span>
                     <span>•</span>
-                    <span>{(job.screeningQuestions || []).filter((q: ScreeningQuestionItem) => q.type === 'eliminatory' || q.required).length} eliminatórias</span>
+                    <span>{((job.screeningQuestions as ScreeningQuestionItem[]) || []).filter((q: ScreeningQuestionItem) => q.type === 'eliminatory' || q.required).length} eliminatórias</span>
                     <span>•</span>
-                    <span>{(job.screeningQuestions || []).filter((q: ScreeningQuestionItem) => q.type !== 'eliminatory' && !q.required).length} informativas</span>
+                    <span>{((job.screeningQuestions as ScreeningQuestionItem[]) || []).filter((q: ScreeningQuestionItem) => q.type !== 'eliminatory' && !q.required).length} informativas</span>
                   </div>
                 </div>
                 <div className="space-y-2">
                   {WSI_BLOCKS.map((block) => {
-                    // @ts-ignore TODO: fix type — Property 'filter' does not exist on type '{}'.
-                    const blockQuestions = (job.screeningQuestions || []).filter((q: ScreeningQuestionItem) => q.block_id === block.id)
+                    const blockQuestions = ((job.screeningQuestions as ScreeningQuestionItem[]) || []).filter((q: ScreeningQuestionItem) => q.block_id === block.id)
                     const isAutomatic = !block.editable
                     const block2Count = block.id === 2 ? (companyQuestions.length - disabledCompanyQIds.size) + selectedBankQuestions.length + customQuestions.length : 0
                     const totalBlockCount = block.id === 2 ? block2Count + blockQuestions.length : blockQuestions.length

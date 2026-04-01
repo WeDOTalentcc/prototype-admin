@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react"
@@ -226,7 +225,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                   </AvatarFallback>
                 </Avatar>
                 <span className="text-xs text-lia-text-primary dark:text-lia-text-primary" aria-live="polite" aria-atomic="true">
-                  {(candidate.name || `Candidato ${index + 1}` as React.ReactNode)}
+                  {((candidate.name || `Candidato ${index + 1}`) as React.ReactNode)}
                 </span>
               </div>
             ))}
@@ -485,7 +484,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                     <div className="text-xs mb-2 lia-body">
                       Ações rápidas:
                     </div>
-                    <QuickActionChips actions={quickActions} />
+                    <QuickActionChips actions={quickActions as unknown as QuickAction[]} />
                   </div>
                 )}
               </div>
@@ -782,18 +781,15 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                         : 'hover:border-gray-400 hover:'
                     }`}
                   >
-                    // @ts-ignore TODO: fix type — Type 'unknown' is not assignable to type 'ReactNode'.
-                    <span className="text-lg flex-shrink-0">{suggestion.icon}</span>
+                    <span className="text-lg flex-shrink-0">{suggestion.icon as React.ReactNode}</span>
                     <div className="flex-1">
                       <div className="text-base-ui font-semibold lia-text-strong group-hover:lia-text-base">
-                        // @ts-ignore TODO: fix type — 'div' components don't accept text as child elements. Text in JSX has the type '
-                        // @ts-ignore TODO: fix type — Type '{}' is not assignable to type 'ReactNode'.
-                        {suggestion.label}
+                        {suggestion.label as React.ReactNode}
                       </div>
                       <div className="text-xs lia-text-base mt-1">
                         {(suggestion.description as React.ReactNode)}
                       </div>
-                      {suggestion.category && (
+                      {!!(suggestion.category) && (
                         <Badge className="mt-2 text-micro bg-gray-100 text-lia-text-primary dark:text-lia-text-primary border-0">
                           {(suggestion.category as React.ReactNode)}
                         </Badge>

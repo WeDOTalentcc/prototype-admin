@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import {
@@ -307,7 +306,7 @@ export function SearchModeArchetypes({
                               </span>
                             </div>
                           )}
-                          {arch.filters?.experience_years_min && (
+                          {!!(arch.filters?.experience_years_min) && (
                             <div className="flex items-center gap-1">
                               <span className="lia-text-400">Experiência:</span>
                               <span className="font-medium lia-text-700">
@@ -315,13 +314,13 @@ export function SearchModeArchetypes({
                               </span>
                             </div>
                           )}
-                          {arch.filters?.location && (
+                          {!!(arch.filters?.location) && (
                             <div className="flex items-center gap-1">
                               <span className="lia-text-400">Localização:</span>
                               <span className="font-medium lia-text-700">{(arch.filters as any).location}</span>
                             </div>
                           )}
-                          {arch.filters?.work_model && (
+                          {!!(arch.filters?.work_model) && (
                             <div className="flex items-center gap-1">
                               <span className="lia-text-400">Modelo:</span>
                               <span className="font-medium lia-text-700">
@@ -335,7 +334,7 @@ export function SearchModeArchetypes({
                               </span>
                             </div>
                           )}
-                          {arch.filters?.employment_type && (
+                          {!!(arch.filters?.employment_type) && (
                             <div className="flex items-center gap-1">
                               <span className="lia-text-400">Contrato:</span>
                               <span className="font-medium lia-text-700">
