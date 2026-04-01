@@ -70,17 +70,23 @@ O desenvolvedor que criou `sourcing` lembrou de adicionar fairness e fact_check.
 
 ### P5. Serviços não atuam no ponto correto do pipeline
 
-Mesmo quando um serviço existe, ele pode estar atuando no lugar errado:
+Mesmo quando um serviço existe, ele pode estar atuando no lugar errado. Os termos usados abaixo referem-se a **onde no código backend Python** cada controle roda — tudo acontece no servidor, nunca no frontend:
 
-| Problema | Onde atua | Onde deveria atuar | Impacto |
-|----------|-----------|-------------------|---------|
-| PII vai para o LLM | Em nenhum ponto | PRE-LLM (antes de enviar ao modelo) | CPF, email, idade chegam ao LLM — violação LGPD |
-| Audit é mutável | POST-LLM (gravação) | Deveria ser imutável (`DO NOTHING`) | Logs podem ser sobrescritos — viola SOX/BCB-498 |
-| FairnessGuard só na query | INPUT (onde existe) | INPUT + LLM/TOOLS (nos argumentos de tool calls) | LLM pode gerar filtros discriminatórios mesmo com query limpa |
-| Confidence não existe | Em nenhum ponto | POST-LLM (após execução) | Respostas sem indicação de qualidade/confiança |
-| FactChecker só no sourcing | POST-LLM (apenas sourcing) | POST-LLM (todos os domínios narrativos) | evaluation e insights podem afirmar coisas incorretas sem validação |
-| BiasAudit não existe | Em nenhum ponto | POST-LLM (agregado, por ciclo) | Nenhum monitoramento de drift discriminatório ao longo do tempo |
-| Guardrails não existem | Em nenhum ponto | PRE-LLM (antes da execução) | autonomous executa qualquer ação sem verificar políticas do tenant |
+- **INPUT** = início do método `process_intent()` no `domain.py` de cada domínio — é o primeiro código que toca a query do recrutador
+- **PRE-LLM** = depois de interpretar a query, mas antes de enviar o prompt ao modelo LLM (chamada à API da OpenAI/Anthropic/etc.)
+- **POST-LLM** = depois que o LLM respondeu e a ação foi executada, antes de devolver o resultado ao recrutador
+- **LLM/TOOLS** = dentro do loop ReAct, quando o LLM gera uma tool call e o código vai executá-la
+- **PARALELO** = roda em background junto com todo o fluxo, sem bloquear
+
+| Problema | Onde atua hoje (arquivo) | Onde deveria atuar (arquivo + método) | Impacto |
+|----------|------------------------|---------------------------------------|---------|
+| PII vai para o LLM | Em nenhum ponto — `pii_filter.py` existe em `src/services/` mas nenhum `domain.py` chama `strip_pii_for_llm_prompt()` antes de montar o prompt | **PRE-LLM** — dentro de `ComplianceDomainPrompt.process_intent()`, após FairnessGuard e antes de chamar `_domain_process_intent()`. O texto da query é limpo antes de qualquer chamada ao LLM | CPF, email, idade chegam ao LLM — violação LGPD |
+| Audit é mutável | **POST-LLM** — `src/services/audit/audit_writer.py` grava logs com `ON CONFLICT DO UPDATE` (sobrescreve se já existe) | **PARALELO** — mesmo arquivo `audit_writer.py`, mas alterando a query SQL para `ON CONFLICT DO NOTHING` (nunca sobrescreve). Roda em paralelo via callback assíncrono | Logs podem ser sobrescritos — viola SOX/BCB-498 |
+| FairnessGuard só na query | **INPUT** — `src/domains/jobs/fairness.py` e `src/domains/sourced_profile_sourcing/fairness.py` verificam a query do recrutador, mas apenas nesses 2 domínios | **INPUT** (todos os domínios, via `ComplianceDomainPrompt.process_intent()`) + **LLM/TOOLS** (no `applies/react_agent.py` dentro de `call_tools()`, verificando os argumentos das tool calls antes de executar cada tool) | LLM pode gerar filtros discriminatórios como `{"age": "<35"}` mesmo com query limpa |
+| Confidence não existe | Em nenhum ponto — nenhum `domain.py` calcula ou retorna score de confiança | **POST-LLM** — dentro de `ComplianceDomainPrompt.execute_action()`, após `_domain_execute_action()` retornar o resultado. Calcula score baseado em evidências e adiciona `"confidence": 0.xx` ao dicionário de resposta | Respostas sem indicação de qualidade/confiança |
+| FactChecker só no sourcing | **POST-LLM** — apenas em `src/domains/sourced_profile_sourcing/fact_checker.py`, chamado manualmente pelo sourcing após execução | **POST-LLM** — em `_post_execute_hook()` de cada domínio narrativo (`evaluation`, `insights`, `sourcing`). Centralizado em `src/services/compliance/fact_checker.py`, chamado automaticamente pelo hook | evaluation e insights podem afirmar coisas incorretas sem validação |
+| BiasAudit não existe | Em nenhum ponto — nenhum domínio agrega métricas de viés | **POST-LLM** — em `_post_execute_hook()` do `evaluation/domain.py` (e futuramente `applies` e `sourcing`). Após cada ciclo de avaliação, grava snapshot com distribuição por gênero, idade, PCD e região em tabela de auditoria | Nenhum monitoramento de drift discriminatório ao longo do tempo |
+| Guardrails não existem | Em nenhum ponto — `autonomous/agent.py` executa qualquer ação sem verificar políticas | **PRE-LLM** — dentro de `autonomous/agent.py`, no método `execute()`, antes de iniciar o loop ReAct. Consulta `GuardrailRepository` (novo, em `src/services/compliance/`) com a ação planejada + políticas do tenant. Se a política bloqueia, retorna mensagem sem executar | autonomous executa qualquer ação sem verificar políticas do tenant |
 
 ---
 
@@ -683,7 +689,7 @@ LLM gera:   filter_applications(job_id="abc", filters={"age": "<35"})
 
 ### 0.11 Onde Cada Controle Atua no Pipeline
 
-O pipeline completo de processamento tem **6 fases**. Cada controle de compliance atua em um ponto específico:
+O pipeline completo de processamento tem **6 fases**. Cada controle de compliance atua em um ponto específico. Todo o pipeline roda no **backend Python** (`src/domains/` e `src/services/`) — o frontend (React) apenas envia a query do recrutador e exibe a resposta final:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -707,19 +713,21 @@ O pipeline completo de processamento tem **6 fases**. Cada controle de complianc
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Mapa de onde cada controle atua:**
+**Mapa de onde cada controle atua (após migração Caminho 2):**
 
-| # | Controle | Fase | O que faz | Quando bloqueia |
-|---|----------|------|-----------|-----------------|
-| 1 | **PromptInjectionGuard** | INPUT | Detecta tentativas de manipulação do LLM (OWASP LLM01). Analisa padrões como "ignore instruções anteriores", "revele o system prompt" | `risk_level == "high"` → bloqueia antes de qualquer processamento |
-| 2 | **FairnessGuard (query)** | INPUT | Verifica se a query do recrutador contém viés discriminatório (gênero, idade, etnia, PCD, estado civil, religião) | `is_blocked == True` → retorna mensagem educativa, não executa |
-| 3 | **PII Stripping** | PRE-LLM | Remove CPF, email, telefone, RG, CNPJ, idade explícita, ano de formatura e endereço do texto ANTES de enviar ao LLM | Nunca bloqueia — substitui por placeholders `[CPF REMOVIDO]`, `[EMAIL REMOVIDO]`, etc. |
-| 4 | **Guardrails** | PRE-LLM | Verifica se a ação planejada é permitida pelas políticas do tenant. Regras configuráveis por empresa | Regra regex match → bloqueia com mensagem do guardrail. Só atua no `autonomous` |
-| 5 | **FairnessGuard (tool args)** | LLM/TOOLS | Verifica se os argumentos das tool calls geradas pelo LLM contêm critérios discriminatórios | `is_blocked == True` → tool call não é executada; retorna erro ao LLM. Só atua no `applies` |
-| 6 | **ConfidenceNode** | POST-LLM | Calcula score de confiança (0.0–1.0) baseado em: número de tool calls, observações verificadas, tamanho da resposta, presença de erros | Nunca bloqueia — adiciona `"confidence": 0.xx` ao resultado |
-| 7 | **FactChecker** | POST-LLM | Valida afirmações do LLM contra dados reais do banco. Ex: LLM diz "15 anos de experiência" mas currículo diz 3 anos | Nunca bloqueia — adiciona `"fact_check": {has_discrepancies, claims}` ao resultado |
-| 8 | **BiasAuditSnapshot** | POST-LLM | Agrega métricas por dimensão (gênero, idade, PCD, região) após ciclos de avaliação. Detecta drift discriminatório ao longo do tempo | Nunca bloqueia execuções individuais — monitora padrões estatísticos para auditoria |
-| 9 | **AuditCallback** | PARALELO | Grava tudo que aconteceu em cada etapa. Logs imutáveis (`ON CONFLICT DO NOTHING`) — evidência legal inalterável (SOX/BCB-498) | Nunca bloqueia — opera em paralelo. Falha do audit nunca impede execução (fail-safe) |
+> Todos os controles rodam no **backend Python** (`src/`). O frontend (React) apenas envia a query e recebe a resposta — não executa nenhum guard.
+
+| # | Controle | Fase | Onde roda (arquivo + método) | O que faz | Quando bloqueia |
+|---|----------|------|------------------------------|-----------|-----------------|
+| 1 | **PromptInjectionGuard** | INPUT | `src/services/compliance/prompt_injection_guard.py` — chamado por `ComplianceDomainPrompt.process_intent()` como primeiro passo, antes de qualquer outro processamento | Detecta tentativas de manipulação do LLM (OWASP LLM01). Analisa padrões como "ignore instruções anteriores", "revele o system prompt" | `risk_level == "high"` → bloqueia, retorna erro sem executar nada |
+| 2 | **FairnessGuard (query)** | INPUT | `src/services/compliance/fairness_guard.py` — chamado por `ComplianceDomainPrompt.process_intent()` como segundo passo, após InjectionGuard passar | Verifica se a query do recrutador contém viés discriminatório (gênero, idade, etnia, PCD, estado civil, religião) | `is_blocked == True` → retorna mensagem educativa, não executa |
+| 3 | **PII Stripping** | PRE-LLM | `src/services/compliance/pii_stripper.py` — chamado por `ComplianceDomainPrompt.process_intent()` como terceiro passo, modificando o texto da query antes de passá-la para `_domain_process_intent()` | Remove CPF, email, telefone, RG, CNPJ, idade explícita, ano de formatura e endereço do texto ANTES de enviar ao LLM | Nunca bloqueia — substitui por placeholders `[CPF REMOVIDO]`, `[EMAIL REMOVIDO]`, etc. |
+| 4 | **Guardrails** | PRE-LLM | `src/services/compliance/guardrail_repository.py` — chamado dentro de `autonomous/agent.py` no método `execute()`, antes de iniciar o loop ReAct | Verifica se a ação planejada é permitida pelas políticas do tenant. Regras configuráveis por empresa | Regra regex match → bloqueia com mensagem do guardrail. Só atua no `autonomous` (Caminho 2); no Caminho 3, atua em todos |
+| 5 | **FairnessGuard (tool args)** | LLM/TOOLS | `src/services/compliance/fairness_guard.py` (mesmo serviço do item 2) — chamado dentro de `applies/react_agent.py` no método `call_tools()`, verificando cada tool call antes de executá-la | Verifica se os argumentos das tool calls geradas pelo LLM contêm critérios discriminatórios (ex: `{"age": "<35"}`) | `is_blocked == True` → tool call não é executada; retorna erro ao LLM para que reformule |
+| 6 | **ConfidenceNode** | POST-LLM | `src/services/compliance/confidence_node.py` — chamado por `ComplianceDomainPrompt.execute_action()` após `_domain_execute_action()` retornar o resultado | Calcula score de confiança (0.0–1.0) baseado em: número de tool calls, observações verificadas, tamanho da resposta, presença de erros | Nunca bloqueia — adiciona `"confidence": 0.xx` ao dicionário de resposta |
+| 7 | **FactChecker** | POST-LLM | `src/services/compliance/fact_checker.py` — chamado por `_post_execute_hook()` nos domínios que geram afirmações narrativas (`evaluation/domain.py`, `insights/domain.py`, `sourcing/domain.py`) | Valida afirmações do LLM contra dados reais do banco. Ex: LLM diz "15 anos de experiência" mas currículo diz 3 anos | Nunca bloqueia — adiciona `"fact_check": {has_discrepancies, claims}` ao resultado |
+| 8 | **BiasAuditSnapshot** | POST-LLM | `src/services/compliance/bias_audit.py` — chamado por `_post_execute_hook()` em `evaluation/domain.py` (e futuramente `applies` e `sourcing`). Grava snapshot em tabela de auditoria no banco PostgreSQL | Agrega métricas por dimensão (gênero, idade, PCD, região) após ciclos de avaliação. Detecta drift discriminatório ao longo do tempo | Nunca bloqueia execuções individuais — monitora padrões estatísticos para auditoria |
+| 9 | **AuditCallback** | PARALELO | `src/services/audit/audit_writer.py` — chamado via callback assíncrono por `ComplianceDomainPrompt` ao final de cada etapa. Grava em tabela PostgreSQL com `ON CONFLICT DO NOTHING` | Grava tudo que aconteceu em cada etapa: query, intent, ação, resultado, scores. Logs imutáveis — evidência legal inalterável (SOX/BCB-498) | Nunca bloqueia — opera em paralelo. Falha do audit nunca impede execução (fail-safe) |
 
 **Diagrama detalhado do fluxo com todos os controles:**
 
@@ -793,14 +801,14 @@ QUERY DO RECRUTADOR
 
 **Comparação: Pontos de interceptação Caminho 2 vs Caminho 3:**
 
-| Fase | Caminho 2 (agora) | Caminho 3 (2027) |
-|------|-------------------|-------------------|
-| **INPUT** | InjectionGuard + FairnessGuard | Mesmos + feature flag por domínio |
-| **PRE-LLM** | PII Strip + Guardrails (autonomous) | Mesmos + Guardrails para todos os domínios |
-| **LLM/TOOLS** | FairnessGuard em tool args (applies) | Mesmos + em todos que usam tools |
-| **POST-LLM** | Confidence + FactCheck + BiasAudit | Mesmos + output sanitization |
-| **OUTPUT** | Nenhum filtro | **NOVO:** PII output filter + Fairness output check |
-| **AUDIT** | AuditCallback imutável | Mesmos + log por concern separado |
+| Fase | Onde no código | Caminho 2 (agora) | Caminho 3 (2027) |
+|------|---------------|-------------------|-------------------|
+| **INPUT** | `ComplianceDomainPrompt.process_intent()` — primeiras linhas, antes de tocar a query | InjectionGuard + FairnessGuard | Mesmos + feature flag por domínio |
+| **PRE-LLM** | `ComplianceDomainPrompt.process_intent()` — após guards, antes de chamar `_domain_process_intent()` | PII Strip + Guardrails (só autonomous) | Mesmos + Guardrails para todos os domínios |
+| **LLM/TOOLS** | `applies/react_agent.py` no `call_tools()` — entre o LLM gerar a tool call e o código executá-la | FairnessGuard em tool args (só applies) | Mesmos + em todos os domínios que usam tools |
+| **POST-LLM** | `ComplianceDomainPrompt.execute_action()` — após `_domain_execute_action()` retornar, antes de devolver ao recrutador | Confidence + FactCheck + BiasAudit | Mesmos + output sanitization |
+| **OUTPUT** | Não existe no Caminho 2 — será método novo em `ComplianceDomainPrompt` ou mixin separado | Nenhum filtro | **NOVO:** PII output filter + Fairness output check |
+| **AUDIT** | `src/services/audit/audit_writer.py` — callback assíncrono, grava em PostgreSQL em paralelo | AuditCallback imutável | Mesmos + log por concern separado |
 
 **O que é HiringPolicy / PolicyMiddleware?**
 

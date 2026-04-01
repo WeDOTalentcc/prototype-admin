@@ -14,6 +14,7 @@ import {
 import { liaApi, WSIResultDetails, WSICandidateRanking, WSIVacancyRanking } from "@/services/lia-api"
 import { cn } from "@/lib/utils"
 import type { Candidate } from "@/components/pages/candidates/types"
+import { TriagemScoresPanel, TriagemComparativoTab } from "./triagem-details"
 
 interface TriagemDetailsModalProps {
   candidate: Candidate
@@ -436,66 +437,12 @@ export function TriagemDetailsModal({
         <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
           {activeTab === 'triagem' && (
             <div className="space-y-4">
-              <div className="p-3 border border-lia-border-subtle bg-gray-50 rounded-lg">
-                <h3 className="text-xs font-semibold flex items-center gap-2 mb-3 text-lia-text-primary">
-                  <Brain className="w-4 h-4 text-wedo-cyan" />
-                  Scores por Dimensão
-                </h3>
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="text-center p-3 rounded-lg border border-lia-border-subtle">
-                    <p className="text-xl font-bold text-lia-text-primary">{scores.overall_wsi.toFixed(1)}</p>
-                    <p className="text-micro lia-text-secondary">Geral ({wsiToPercent(scores.overall_wsi)}%)</p>
-                    <Progress value={wsiToPercent(scores.overall_wsi)} className="h-1.5 mt-1.5" />
-                  </div>
-                  <div className="text-center p-3 rounded-lg border border-lia-border-subtle">
-                    <p className="text-xl font-bold text-lia-text-primary">{scores.technical_wsi.toFixed(1)}</p>
-                    <p className="text-micro lia-text-secondary">Comp. Técnicas ({wsiToPercent(scores.technical_wsi)}%)</p>
-                    <Progress value={wsiToPercent(scores.technical_wsi)} className="h-1.5 mt-1.5" />
-                  </div>
-                  <div className="text-center p-3 rounded-lg border border-lia-border-subtle">
-                    <p className="text-xl font-bold text-lia-text-primary">{scores.behavioral_wsi.toFixed(1)}</p>
-                    <p className="text-micro lia-text-secondary">Comp. Comportamentais ({wsiToPercent(scores.behavioral_wsi)}%)</p>
-                    <Progress value={wsiToPercent(scores.behavioral_wsi)} className="h-1.5 mt-1.5" />
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 mt-3 flex-wrap">
-                  <span className="flex items-center gap-1 text-xs lia-text-secondary bg-gray-100 px-2 py-1 rounded-full">
-                    {sessionInfo.screening_type === 'voice' ? <Mic className="w-3 h-3" /> : <MessageSquare className="w-3 h-3" />}
-                    {sessionInfo.screening_type === 'voice' ? 'Triagem por Voz' : 'Triagem por Texto'}
-                  </span>
-                  {scores.percentile && (
-                    <span className="text-micro lia-text-secondary flex items-center gap-1">
-                      <TrendingUp className="w-3 h-3" />
-                      Top {100 - scores.percentile}%
-                    </span>
-                  )}
-                  {sessionInfo.started_at && (
-                    <span className="text-micro lia-text-secondary">
-                      {new Date(sessionInfo.started_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                  )}
-                </div>
-                {f11Report?.seniority_weights && (
-                  <div className="flex items-center gap-1.5 text-xs lia-text-secondary bg-gray-50 border border-lia-border-subtle rounded-lg px-3 py-2 mt-2">
-                    <BarChart3 className="w-3 h-3 lia-text-secondary shrink-0" />
-                    <span>
-                      Para <span className="font-medium lia-text-base">{f11Report.seniority || details?.session?.seniority_label || 'N/A'}</span>: Competências Técnicas valem{' '}
-                      <span className="font-semibold lia-text-base">{Math.round(f11Report.seniority_weights.technical * 100)}%</span> e Comportamentais valem{' '}
-                      <span className="font-semibold lia-text-base">{Math.round(f11Report.seniority_weights.behavioral * 100)}%</span> do score final
-                    </span>
-                  </div>
-                )}
-                {f11Report?.mode && (
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-micro lia-text-secondary">Modo de triagem:</span>
-                    <span className="text-micro font-medium lia-text-base flex items-center gap-1">
-                      <Layers className="w-3 h-3 lia-text-secondary" />
-                      {f11Report.mode === 'compact' ? 'Compact' : f11Report.mode === 'full' ? 'Full' : f11Report.mode}
-                      {f11Report.question_count ? ` · ${f11Report.question_count} perguntas` : ''}
-                    </span>
-                  </div>
-                )}
-              </div>
+              <TriagemScoresPanel
+                scores={scores}
+                sessionInfo={sessionInfo}
+                f11Report={f11Report}
+                details={details}
+              />
 
 
               <div className="border border-lia-border-subtle bg-gray-50 rounded-lg overflow-hidden">
@@ -1055,99 +1002,11 @@ export function TriagemDetailsModal({
           )}
 
           {activeTab === 'comparativo' && (
-            <div className="p-4 space-y-4">
-              {/* Pool averages */}
-              {vacancyRanking && vacancyRanking.total_screened > 0 ? (
-                <>
-                  <div className="grid grid-cols-3 gap-3">
-                    {[
-                      { label: 'Média Geral', value: vacancyRanking.averages.overall, icon: BarChart3 },
-                      { label: 'Média Técnica', value: vacancyRanking.averages.technical, icon: Target },
-                      { label: 'Média Comportamental', value: vacancyRanking.averages.behavioral, icon: Brain },
-                    ].map(({ label, value, icon: Icon }) => (
-                      <div key={label} className="border border-lia-border-subtle rounded-md p-3 dark:border-lia-border-subtle">
-                        <div className="flex items-center gap-1.5 mb-1">
-                          <Icon className="w-3.5 h-3.5 lia-text-secondary" />
-                          <span className="text-micro lia-text-secondary uppercase tracking-wide">{label}</span>
-                        </div>
-                        <p className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary">
-                          {value.toFixed(1)}<span className="text-xs lia-text-secondary">/10</span>
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Ranking table */}
-                  <div className="border border-lia-border-subtle rounded-md overflow-hidden dark:border-lia-border-subtle">
-                    <div className="bg-gray-50 dark:bg-lia-bg-secondary px-3 py-2 flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <Trophy className="w-3.5 h-3.5 lia-text-secondary" />
-                        <span className="text-xs font-semibold text-lia-text-secondary dark:text-lia-text-secondary" aria-live="polite" aria-atomic="true">
-                          Ranking — {vacancyRanking.total_screened} candidato{vacancyRanking.total_screened !== 1 ? 's' : ''} avaliado{vacancyRanking.total_screened !== 1 ? 's' : ''}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="divide-y divide-gray-100 dark:divide-gray-700">
-                      {vacancyRanking.ranking.map((entry) => {
-                        const isCurrent = entry.candidate_id === candidate?.id
-                        return (
-                          <div
-                            key={entry.result_id}
-                            className={`flex items-center gap-3 px-3 py-2.5 ${isCurrent ? 'bg-gray-900 dark:bg-lia-bg-elevated' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
-                          >
-                            {/* Rank badge */}
-                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-micro font-bold flex-shrink-0 ${
- entry.rank === 1 ? 'bg-status-warning/10 text-status-warning' :
-                              entry.rank === 2 ? 'bg-gray-100 lia-text-base' :
-                              entry.rank === 3 ? 'bg-wedo-orange/10 text-wedo-orange' :
-                              isCurrent ? 'bg-lia-bg-primary lia-text-strong' : 'bg-gray-100 lia-text-secondary'
-                            }`}>
-                              {entry.rank}
-                            </div>
-                            {/* Name */}
-                            <div className="flex-1 min-w-0">
-                              <p className={`text-xs font-medium truncate ${isCurrent ? 'text-white' : 'text-lia-text-primary dark:text-lia-text-primary'}`}>
-                                {isCurrent ? `${entry.candidate_name} (você)` : entry.candidate_name}
-                              </p>
-                              {entry.candidate_title && (
-                                <p className={`text-micro truncate ${isCurrent ? 'lia-text-muted' : 'lia-text-secondary'}`}>{entry.candidate_title}</p>
-                              )}
-                            </div>
-                            {/* Scores */}
-                            <div className="flex items-center gap-3 flex-shrink-0">
-                              <div className="text-right">
-                                <p className={`text-micro ${isCurrent ? 'lia-text-secondary' : 'lia-text-secondary'}`}>Tec</p>
-                                <p className={`text-xs font-semibold ${isCurrent ? 'text-white' : 'text-lia-text-secondary dark:text-lia-text-secondary'}`}>{entry.technical_wsi.toFixed(1)}</p>
-                              </div>
-                              <div className="text-right">
-                                <p className={`text-micro ${isCurrent ? 'lia-text-secondary' : 'lia-text-secondary'}`}>Comp</p>
-                                <p className={`text-xs font-semibold ${isCurrent ? 'text-white' : 'text-lia-text-secondary dark:text-lia-text-secondary'}`}>{entry.behavioral_wsi.toFixed(1)}</p>
-                              </div>
-                              <div className="text-right min-w-[36px]">
-                                <p className={`text-micro ${isCurrent ? 'lia-text-secondary' : 'lia-text-secondary'}`}>WSI</p>
-                                <p className={`text-sm-ui font-bold ${isCurrent ? 'text-white' : 'text-lia-text-primary dark:text-lia-text-primary'}`}>{entry.overall_wsi.toFixed(1)}</p>
-                              </div>
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-16 gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
-                    <BarChart3 className="w-6 h-6 lia-text-secondary" />
-                  </div>
-                  <div className="text-center max-w-xs">
-                    <p className="text-sm font-semibold lia-text-base">Ranking e Comparativo</p>
-                    <p className="text-xs lia-text-secondary mt-1" aria-live="polite" aria-atomic="true">
-                      O comparativo entre candidatos estará disponível quando houver 2 ou mais candidatos avaliados nesta vaga.
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
+            <TriagemComparativoTab
+              vacancyRanking={vacancyRanking}
+              ranking={ranking}
+              candidate={candidate}
+            />
           )}
 
         </div>

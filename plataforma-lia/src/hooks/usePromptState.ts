@@ -9,7 +9,7 @@ import type { FileAnalysisResult } from "@/components/ui/file-upload-button"
 import {
   MapPin, Briefcase, Clock, Building2, Code
 } from "lucide-react"
-import { extractCriteriaFromText } from "./promptStateCriteriaUtils"
+import { extractCriteriaFromText, getTagColors, mapEntitiesToCriteria, extractTagsFromArchetypeCriteria } from "./promptStateCriteriaUtils"
 
 export interface SearchAnalysis {
   completeness_score: number
@@ -302,32 +302,7 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
         const entities = parseData.entities as BackendEntities
         setParsedEntities(entities || {})
         if (entities) {
-          const newCriteria: SearchCriterion[] = []
-          let idx = 0
-          if (entities.job_title) {
-            newCriteria.push({ id: `entity-job_title-${idx++}`, type: 'job_title', label: ENTITY_LABELS.job_title, value: entities.job_title, active: true })
-          }
-          if (entities.location) {
-            newCriteria.push({ id: `entity-location-${idx++}`, type: 'location', label: ENTITY_LABELS.location, value: entities.location, active: true })
-          }
-          if (entities.years_experience) {
-            newCriteria.push({ id: `entity-years_experience-${idx++}`, type: 'years_experience', label: ENTITY_LABELS.years_experience, value: entities.years_experience, active: true })
-          }
-          if (entities.industry) {
-            newCriteria.push({ id: `entity-industry-${idx++}`, type: 'industry', label: ENTITY_LABELS.industry, value: entities.industry, active: true })
-          }
-          if (entities.skills && entities.skills.length > 0) {
-            entities.skills.forEach((skill, skillIdx) => {
-              newCriteria.push({ id: `entity-skills-${idx++}-${skillIdx}`, type: 'skills', label: 'Habilidade', value: skill, active: true })
-            })
-          }
-          if (entities.seniority) {
-            newCriteria.push({ id: `entity-seniority-${idx++}`, type: 'seniority', label: ENTITY_LABELS.seniority, value: entities.seniority, active: true })
-          }
-          if (entities.company) {
-            newCriteria.push({ id: `entity-company-${idx++}`, type: 'company', label: ENTITY_LABELS.company, value: entities.company, active: true })
-          }
-          setExtractedCriteria(newCriteria)
+          setExtractedCriteria(mapEntitiesToCriteria(entities))
         }
       }
       if (analysisRes.ok) {
@@ -611,37 +586,24 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
     setIsCreatingArchetype(true)
     try {
       const generatedName = generateArchetypeName()
-      if (hasParsedEntities()) {
-        const searchSpec = buildSearchSpec()
-        const payload = { search_spec: searchSpec, name: generatedName, description, emoji: "🎯" }
-        const res = await fetch('/api/backend-proxy/search/archetypes/from-search', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-        })
-        if (res.ok) {
-          const data = await res.json()
-          const newArchetype = data.archetype || data
-          setArchetypes(prev => [...prev, newArchetype])
-          setNewArchetypeDescription("")
-          toast({ title: "Arquétipo criado", description: `"${newArchetype.name || generatedName || 'Novo arquétipo'}" foi criado com sucesso.` })
-        } else {
-          const error = await res.json()
-          toast({ title: "Erro ao criar arquétipo", description: error.detail || error.error || "Não foi possível criar o arquétipo.", variant: "destructive" })
-        }
+      const url = hasParsedEntities()
+        ? '/api/backend-proxy/search/archetypes/from-search'
+        : '/api/backend-proxy/search/archetypes/from-description/'
+      const payload = hasParsedEntities()
+        ? { search_spec: buildSearchSpec(), name: generatedName, description, emoji: "🎯" }
+        : { description, name: generatedName, emoji: "🎯" }
+      const res = await fetch(url, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+      })
+      if (res.ok) {
+        const data = await res.json()
+        const newArchetype = data.archetype || data
+        setArchetypes(prev => [...prev, newArchetype])
+        setNewArchetypeDescription("")
+        toast({ title: "Arquétipo criado", description: `"${newArchetype.name || generatedName || 'Novo arquétipo'}" foi criado com sucesso.` })
       } else {
-        const payload: Record<string, unknown> = { description, name: generatedName, emoji: "🎯" }
-        const res = await fetch('/api/backend-proxy/search/archetypes/from-description/', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-        })
-        if (res.ok) {
-          const data = await res.json()
-          const newArchetype = data.archetype || data
-          setArchetypes(prev => [...prev, newArchetype])
-          setNewArchetypeDescription("")
-          toast({ title: "Arquétipo criado", description: `"${newArchetype.name || generatedName || 'Novo arquétipo'}" foi criado com sucesso.` })
-        } else {
-          const error = await res.json()
-          toast({ title: "Erro ao criar arquétipo", description: error.detail || error.error || "Não foi possível criar o arquétipo.", variant: "destructive" })
-        }
+        const error = await res.json()
+        toast({ title: "Erro ao criar arquétipo", description: error.detail || error.error || "Não foi possível criar o arquétipo.", variant: "destructive" })
       }
     } catch (error) {
       toast({ title: "Erro ao criar arquétipo", description: "Ocorreu um erro de conexão. Tente novamente.", variant: "destructive" })
@@ -659,14 +621,7 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
     setEditArchetypeDescription(arch.description || "")
     const emoji = (arch as ArchetypeData & { emoji?: string }).emoji || arch.criteria?.emoji || "🎯"
     setEditArchetypeEmoji(String(emoji))
-    const tags: string[] = []
-    const criteria = arch.criteria || {}
-    if (criteria.job_title) tags.push(String(criteria.job_title))
-    if (criteria.location) tags.push(String(criteria.location))
-    if (criteria.seniority) tags.push(String(criteria.seniority))
-    if (criteria.industry) tags.push(String(criteria.industry))
-    if (criteria.skills && Array.isArray(criteria.skills)) tags.push(...criteria.skills)
-    setEditArchetypeTags(tags)
+    setEditArchetypeTags(extractTagsFromArchetypeCriteria(arch.criteria || {}))
     setNewTagInput("")
   }, [])
 
@@ -888,24 +843,6 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
   ], [parsedEntities])
 
   const filledTagsCount = useMemo(() => searchTags.filter(t => t.filled).length, [searchTags])
-
-  const getTagColors = useCallback((key: string, filled: boolean) => {
-    if (!filled) return { bg: "var(--gray-50)", text: "var(--gray-400)", iconBg: "var(--gray-400)" }
-    switch (key) {
-      case 'job_title':
-        return { bg: "var(--gray-50)", text: "var(--gray-600)", iconBg: "var(--gray-600)" }
-      case 'location':
-        return { bg: "var(--gray-50)", text: "var(--wedo-purple)", iconBg: "var(--wedo-purple)" }
-      case 'skills':
-        return { bg: "var(--gray-50)", text: "var(--status-success)", iconBg: "var(--wedo-green-light)" }
-      case 'years_experience':
-        return { bg: "var(--gray-50)", text: "var(--status-warning)", iconBg: "var(--wedo-orange)" }
-      case 'industry':
-        return { bg: "var(--gray-50)", text: "var(--gray-600)", iconBg: "var(--gray-600)" }
-      default:
-        return { bg: "var(--gray-50)", text: "var(--gray-600)", iconBg: "var(--gray-600)" }
-    }
-  }, [])
 
   const removeCriterion = (id: string) => {
     setExtractedCriteria(prev => prev.filter(c => c.id !== id))

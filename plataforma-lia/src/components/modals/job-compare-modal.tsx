@@ -37,6 +37,7 @@ import {
   XCircle,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { LiaAnalysisPanel, CandidateFunnelPanel } from "./job-compare"
 
 interface JobCompareModalProps {
   isOpen: boolean
@@ -861,186 +862,11 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
           </div>
 
           {jobs.length >= 2 && (
-            <div className="border border-lia-border-subtle rounded-md overflow-hidden">
-              <div className="bg-gray-50 border-b border-lia-border-subtle px-4 py-2.5">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 bg-gray-100 rounded-md flex items-center justify-center">
-                    <Filter className="w-3.5 h-3.5 text-lia-text-secondary" />
-                  </div>
-                  <h3 className="text-base-ui font-semibold text-lia-text-primary">Funil de Candidatos</h3>
-                </div>
-              </div>
-              
-              <div className="p-4 space-y-4">
-                {jobs.map((job, jobIndex) => {
-                  const jobColor = JOB_COLORS[jobIndex % JOB_COLORS.length]
-                  const total = job.candidates_count || 0
-                  const screening = job.screening_count || 0
-                  const approved = job.approved_count || 0
-                  const screeningPct = total > 0 ? (screening / total * 100) : 0
-                  const approvedPct = total > 0 ? (approved / total * 100) : 0
-
-                  return (
-                    <div key={job.id} className="space-y-2">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className={`w-2.5 h-2.5 rounded-full ${jobColor.bar}`} />
-                        <span className="text-xs font-semibold text-lia-text-primary">
-                          {job.code && <span className={`${jobColor.text} mr-1.5`}>[{job.code}]</span>}
-                          {job.title}
-                        </span>
-                      </div>
-                      
-                      <div className="space-y-1.5 pl-4">
-                        <div className="flex items-center gap-3">
-                          <span className="text-micro text-lia-text-secondary w-[70px]">Candidatos</span>
-                          <div className="flex-1 h-4 bg-gray-100 rounded-md overflow-hidden">
-                            <div
-                              className={`h-full ${jobColor.bar} transition-[width,height] duration-300`}
-                              style={{width: "100%"}}
-                            />
-                          </div>
-                          <span className={`text-xs font-semibold w-20 text-right ${jobColor.text}`}>
-                            {total} (100%)
-                          </span>
-                        </div>
-                        
-                        <div className="flex items-center gap-3">
-                          <span className="text-micro text-lia-text-secondary w-[70px]">Em Triagem</span>
-                          <div className="flex-1 h-4 bg-gray-100 rounded-md overflow-hidden">
-                            <div
-                              className={`h-full ${jobColor.bar} opacity-70 transition-[width,height] duration-300`}
-                              style={{width: `${Math.max(screeningPct, 0)}%`}}
-                            />
-                          </div>
-                          <span className={`text-xs font-medium w-20 text-right text-lia-text-secondary`}>
-                            {screening} ({screeningPct.toFixed(0)}%)
-                          </span>
-                        </div>
-                        
-                        <div className="flex items-center gap-3">
-                          <span className="text-micro text-lia-text-secondary w-[70px]">Aprovados</span>
-                          <div className="flex-1 h-4 bg-gray-100 rounded-md overflow-hidden">
-                            <div
-                              className={`h-full ${jobColor.bar} opacity-50 transition-[width,height] duration-300`}
-                              style={{width: `${Math.max(approvedPct, 0)}%`}}
-                            />
-                          </div>
-                          <span className={`text-xs font-medium w-20 text-right text-lia-text-secondary`}>
-                            {approved} ({approvedPct.toFixed(0)}%)
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
+            <CandidateFunnelPanel jobs={jobs} />
           )}
 
           {liaAnalysis && jobs.length >= 2 && (
-            <div className="border border-lia-border-subtle rounded-md overflow-hidden">
-              <div className="bg-gray-50 border-b border-lia-border-subtle px-4 py-2.5">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
-                    <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-                  </div>
-                  <h3 className="text-base-ui font-semibold text-lia-text-primary">Análise LIA</h3>
-                </div>
-              </div>
-              
-              <div className="p-4 space-y-4">
-                <p className="text-xs text-lia-text-secondary leading-relaxed">
-                  {liaAnalysis.summary}
-                </p>
-
-                <div>
-                  <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 flex items-center gap-1.5">
-                    <BarChart3 className="w-3 h-3" />
-                    Indicadores-Chave
-                  </h4>
-                  <div className="grid grid-cols-4 gap-3">
-                    {liaAnalysis.keyMetrics.map((metric, idx) => (
-                      <div
-                        key={`metric-${idx}`}
-                        className={`p-3 rounded-md border ${
-                          metric.highlight
-                            ? "bg-gray-50 dark:bg-lia-bg-elevated border-lia-border-default dark:border-lia-border-default"
-                            : "bg-gray-50 border-lia-border-subtle"
-                        }`}
-                      >
-                        <p className="text-micro text-lia-text-tertiary uppercase tracking-wide mb-1">
-                          {metric.label}
-                        </p>
-                        <div className="flex items-center gap-1.5">
-                          <span className={`text-lg font-semibold ${
-                            metric.highlight ? "text-lia-text-secondary dark:text-lia-text-tertiary" : "text-lia-text-primary"
-                          }`}>
-                            {metric.value}
-                          </span>
-                          {metric.trend === "up" && (
-                            <TrendingUp className="w-3.5 h-3.5 text-status-success" />
-                          )}
-                          {metric.trend === "down" && (
-                            <TrendingDown className="w-3.5 h-3.5 text-status-warning" />
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {liaAnalysis.insights.length > 0 && (
-                  <div>
-                    <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 flex items-center gap-1.5">
-                      <Lightbulb className="w-3 h-3" />
-                      Insights
-                    </h4>
-                    <div className="space-y-2">
-                      {liaAnalysis.insights.map((insight, idx) => {
-                        const style = INSIGHT_STYLES[insight.type]
-                        const IconComponent = style.icon
-                        return (
-                          <div
-                            key={idx}
-                            className={`p-3 rounded-md border flex items-start gap-2.5 ${style.bg} ${style.border}`}
-                          >
-                            <IconComponent className={`w-4 h-4 ${style.iconColor} flex-shrink-0 mt-0.5`} />
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <p className="text-xs font-semibold text-lia-text-primary">{insight.title}</p>
-                                <span className={`text-micro font-semibold px-1.5 py-0.5 rounded-full ${style.badgeBg}`}>
-                                  {style.badgeText}
-                                </span>
-                              </div>
-                              <p className="text-xs text-lia-text-secondary mt-0.5 leading-relaxed">
-                                {insight.description}
-                              </p>
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {liaAnalysis.recommendations.length > 0 && (
-                  <div>
-                    <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 flex items-center gap-1.5">
-                      <Target className="w-3 h-3" />
-                      Recomendações
-                    </h4>
-                    <ul className="space-y-1.5">
-                      {liaAnalysis.recommendations.map((rec, idx) => (
-                        <li key={`rec-${idx}`} className="flex items-start gap-2 text-xs text-lia-text-secondary">
-                          <span className="text-lia-text-disabled mt-0.5">•</span>
-                          <span className="leading-relaxed">{rec}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            </div>
+            <LiaAnalysisPanel liaAnalysis={liaAnalysis} />
           )}
         </div>
 
