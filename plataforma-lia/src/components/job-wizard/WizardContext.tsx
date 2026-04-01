@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client'
 
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react'
@@ -341,7 +340,7 @@ export function WizardProvider({ children, initialStage = 'input-evaluation', co
   }, [])
   
   const updateWSIQuestionExpectedAnswer = useCallback((id: string, answer: unknown) => {
-    setWsiCandidates(prev => prev.map(q => q.id === id ? { ...q, expectedAnswer: answer } : q))
+    setWsiCandidates(prev => prev.map(q => q.id === id ? { ...q, expectedAnswer: answer as WSIQuestion['expectedAnswer'] } : q))
   }, [])
   
   // Platform helpers
