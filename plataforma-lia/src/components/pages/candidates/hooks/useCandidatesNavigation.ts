@@ -19,7 +19,7 @@ interface UseCandidatesNavigationParams {
   activeTab: string
   lastSearchQuery: string
   searchSource: string
-  setSearchSource: (s: string) => void
+  setSearchSource: (s: 'local' | 'global' | 'hybrid') => void
   searchExecutionId: number
   lastSearchEntities: ParsedEntities | null | undefined
   setTableFilters: (fn: (prev: TableFilters) => TableFilters) => void
@@ -33,9 +33,9 @@ interface UseCandidatesNavigationParams {
   // Search state setters
   setShowSearchResults: (v: boolean) => void
   setDisplayedResultsCount: (v: number) => void
-  setActiveTab: (v: string) => void
+  setActiveTab: (v: 'search' | 'favorites' | 'lists' | 'history' | 'saved-searches' | 'agents') => void
   // Cross-tab filter setters
-  setCrossTabFilter: (v: unknown) => void
+  setCrossTabFilter: (v: Record<string, unknown> | null) => void
   setShowCrossTabBanner: (v: boolean) => void
   setSearchTerm: (v: string) => void
   setQuickFilters: (v: Set<string>) => void

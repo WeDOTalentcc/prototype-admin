@@ -52,7 +52,7 @@ interface UseCandidatesInteractionsParams {
   toast: (opts: { title: string; description?: string; duration?: number }) => void
   // Callbacks from props
   onAddRecentItem?: (item: {
-    id: string; type: string; title: string; subtitle?: string; meta?: Record<string, unknown>
+    id: string; type: 'candidato' | 'vaga' | 'chat'; title: string; subtitle?: string; meta?: Record<string, string | undefined>
   }) => void
   markCandidateAsViewed: (id: string, ctx: string) => void
   handleBulkActionComplete: () => void

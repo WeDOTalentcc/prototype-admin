@@ -8,6 +8,7 @@ interface UseCompanyConfigLoaderCtx {
   isOpen: boolean
   isInJobCreationMode: boolean
   configLoaded: boolean
+  companyConfig?: any
   basicInfoFields: {
     area: string
     modeloTrabalho: string
