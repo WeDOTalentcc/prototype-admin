@@ -20,6 +20,25 @@ const nextConfig = {
     '*.repl.co'
   ],
   reactStrictMode: true,
+  experimental: {
+    // Otimiza tree-shaking de pacotes com muitos exports (lucide-react tem ~1500 icones)
+    optimizePackageImports: [
+      'lucide-react',
+      '@radix-ui/react-accordion',
+      '@radix-ui/react-alert-dialog',
+      '@radix-ui/react-avatar',
+      '@radix-ui/react-checkbox',
+      '@radix-ui/react-collapsible',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-popover',
+      '@radix-ui/react-select',
+      '@radix-ui/react-tabs',
+      '@radix-ui/react-toast',
+      '@radix-ui/react-tooltip',
+      'recharts',
+    ],
+  },
   images: {
     unoptimized: false,
     formats: ["image/avif", "image/webp"],

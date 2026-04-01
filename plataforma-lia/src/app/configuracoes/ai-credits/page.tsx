@@ -1,5 +1,11 @@
 import type { Metadata } from "next"
-import { AiCreditsPage } from "@/components/pages/ai-credits-page"
+import dynamic from "next/dynamic"
+
+// AiCreditsPage usa recharts - lazy loaded para reduzir bundle inicial
+const AiCreditsPage = dynamic(
+  () => import("@/components/pages/ai-credits-page").then((m) => ({ default: m.AiCreditsPage })),
+  { ssr: false }
+)
 
 export const metadata: Metadata = {
   title: "Créditos de IA | LIA — WeDo Talent",
