@@ -129,6 +129,9 @@ import {
   getCoreSkillsForRole,
 } from '../utils/skill-weight-utils'
 import { ClearDraftConfirmModal, EditCriteriaModal, AddTechnicalSkillModal, AddCompetencyModal, AddBenefitModal, SkipCompetenciesWarningModal, CalibrationProfileModal } from '../modals'
+import { useAnalyticsSession } from './useAnalyticsSession'
+import { useConversationMemoryInit } from './useConversationMemoryInit'
+import { useProceedToNextStage } from './useProceedToNextStage'
 
 
   export function useExpandedChatModalCore({
@@ -601,78 +604,12 @@ import { ClearDraftConfirmModal, EditCriteriaModal, AddTechnicalSkillModal, AddC
     (syncContext as (mode: unknown, opts: Record<string, unknown>) => void)(wizardMode, { skipCallbacks: true, skipSnapshotRestore: true })
   }, [wizardMode, syncContext])
   
-  // Start analytics session when wizard opens
-  // Use refs to avoid infinite loops from function dependencies
-  const { startSession, trackStageChange, completeSession } = analytics
-  const startSessionRef = useRef(startSession)
-  const trackStageChangeRef = useRef(trackStageChange)
-  const completeSessionRef = useRef(completeSession)
-  const analyticsInitializedRef = useRef(false)
-  
-  // Keep refs updated
-  startSessionRef.current = startSession
-  trackStageChangeRef.current = trackStageChange
-  completeSessionRef.current = completeSession
-  
-  useEffect(() => {
-    // Only initialize once per modal open to prevent loops
-    if (isOpen && mode === 'job-creation' && !analyticsInitializedRef.current) {
-      analyticsInitializedRef.current = true
-      const sessionId = startSessionRef.current()
-      if (sessionId) {
-        trackStageChangeRef.current('input-evaluation')
-      }
-    }
-    
-    // Reset flag when modal closes
-    if (!isOpen) {
-      analyticsInitializedRef.current = false
-    }
-    
-    return () => {
-      if (mode === 'job-creation' && analyticsInitializedRef.current) {
-        completeSessionRef.current()
-      }
-    }
-  }, [isOpen, mode])
-  
-  // Initialize conversation memory when wizard opens
-  // Use refs to avoid infinite loops from function dependencies
-  const initConversationRef = useRef(conversationMemory.initConversation)
-  const updateSummaryRef = useRef(conversationMemory.updateSummary)
-  const conversationInitializedRef = useRef(false)
-  
-  // Keep refs updated
-  useEffect(() => {
-    initConversationRef.current = conversationMemory.initConversation
-    updateSummaryRef.current = conversationMemory.updateSummary
-  }, [conversationMemory.initConversation, conversationMemory.updateSummary])
-  
-  useEffect(() => {
-    // Only initialize once per modal open
-    if (isOpen && mode === 'job-creation' && user?.email && !conversationInitializedRef.current) {
-      conversationInitializedRef.current = true
-      initConversationRef.current(
-        user.email,
-        'wizard',
-        wizardDraftId
-      ).catch(() => {
-        // Silently ignore initialization errors - conversation is optional
-      })
-    }
-    
-    // Reset flag when modal closes
-    if (!isOpen) {
-      conversationInitializedRef.current = false
-    }
-    
-    return () => {
-      if (mode === 'job-creation' && conversationInitializedRef.current) {
-        updateSummaryRef.current(true).catch(() => {})
-      }
-    }
-  }, [isOpen, mode, user?.email, wizardDraftId])
-  
+  // Analytics session initialization (extracted to useAnalyticsSession)
+  useAnalyticsSession({ analytics, isOpen, mode })
+
+  // Conversation memory initialization (extracted to useConversationMemoryInit)
+  useConversationMemoryInit({ conversationMemory, isOpen, mode, user, wizardDraftId })
+
   // Fetch learning suggestions when job title changes
   // Note: Extract function to avoid infinite loop from hook object dependency
   const { fetchWizardSuggestions } = learning
@@ -782,89 +719,17 @@ import { ClearDraftConfirmModal, EditCriteriaModal, AddTechnicalSkillModal, AddC
   const { extractCriteriaFromText } = useExtractCriteria({ detectedCriteria, setDetectedCriteria })
 
 
-  // Proceed to next stage (called after modal or directly if no suggestions)
-  // Defined before hook so it can be passed as context
-  const proceedToNextStage = () => {
-    const nextIndex = currentStageIndex + 1
-    if (nextIndex < WIZARD_STAGES.length) {
-      const currentStageConfig = WIZARD_STAGES[currentStageIndex] as ExtendedWizardStageConfig
-      const nextStage = WIZARD_STAGES[nextIndex] as ExtendedWizardStageConfig
 
-      // Generate transition message from current stage
-      let transitionContent = ""
-      if (currentStageConfig.transition) {
-        const { congratsMessage, nextStepExplanation, whyItMatters, proactiveTips } = currentStageConfig.transition
-        transitionContent = `${congratsMessage}\n\n`
-        transitionContent += `**Próximo passo:** ${nextStepExplanation}\n\n`
-        transitionContent += `💡 *${whyItMatters}*`
-
-        if (proactiveTips && proactiveTips.length > 0) {
-          transitionContent += `\n\n**O que vou fazer:**\n`
-          proactiveTips.forEach(tip => {
-            transitionContent += `• ${tip}\n`
-          })
-        }
-      }
-
-      // Check for missing recommended fields and add gentle reminders
-      const missingFields = getMissingCriticalFields(currentStageConfig.id, detectedCriteria as unknown as Record<string, unknown>)
-      if (missingFields.recommended.length > 0) {
-        transitionContent += `\n\n📝 *Campos opcionais não preenchidos: ${missingFields.recommended.join(', ')}*`
-      }
-
-      // Add transition message first
-      if (transitionContent) {
-        const transitionMessage: Message = {
-          id: `transition-${currentStageConfig.id}-${Date.now()}`,
-          role: 'assistant',
-          content: transitionContent,
-          timestamp: new Date(),
-          isTyping: true
-        }
-        setMessages(prev => [...prev, transitionMessage])
-
-        // Type transition message, then after delay add next stage message
-        typeText(transitionContent, transitionMessage.id)
-
-        setTimeout(() => {
-          setCurrentStage(nextStage.id)
-          saveWizardDraft()
-
-          const stageMessage: Message = {
-            id: `stage-${nextStage.id}-${Date.now()}`,
-            role: 'assistant',
-            content: nextStage.liaMessage,
-            timestamp: new Date(),
-            isTyping: true
-          }
-
-          setMessages(prev => [...prev, stageMessage])
-          setDisplayedText("")
-          setTimeout(() => {
-            typeText(nextStage.liaMessage, stageMessage.id)
-          }, 300)
-        }, 2000) // Wait 2 seconds for transition message to be read
-      } else {
-        // No transition config, proceed directly
-        setCurrentStage(nextStage.id)
-        saveWizardDraft()
-
-        const stageMessage: Message = {
-          id: `stage-${nextStage.id}-${Date.now()}`,
-          role: 'assistant',
-          content: nextStage.liaMessage,
-          timestamp: new Date(),
-          isTyping: true
-        }
-
-        setMessages(prev => [...prev, stageMessage])
-        setDisplayedText("")
-        setTimeout(() => {
-          typeText(nextStage.liaMessage, stageMessage.id)
-        }, 300)
-      }
-    }
-  }
+  // Proceed to next stage (extracted to useProceedToNextStage)
+  const { proceedToNextStage } = useProceedToNextStage({
+    currentStageIndex,
+    detectedCriteria,
+    setMessages,
+    typeText,
+    setCurrentStage,
+    saveWizardDraft,
+    setDisplayedText,
+  })
 
   // === Sub-hook calls ===
   const subHooksResult = useExpandedChatSubHooks({
