@@ -248,6 +248,7 @@ Este erro fundamental contamina sistematicamente todas as seções do guia, caus
 13. **Seção 3.2 (L758)** — Corrigir: domínios v5 lidos de `WeDOTalent/recruiter_agent_v5/src/domains/`, não de `lia-agent-system/app/domains/`
 14. **Seção 3.2 (L788)** — Corrigir: YAMLs estão em `lia-agent-system`, v5 usa prompts inline em `prompts.py`; v5 não tem acesso ao `PromptLoader` da LIA
 15. **Seção 3.5 (L1033)** — Corrigir: path do exemplo de prompt v5 para `src/domains/applies/domain.py`
+16. **Seção 5.2 (L1844)** — Corrigir: row #6 referenciava `audit_callback.py` mas o bug `ON CONFLICT DO UPDATE SET` está em `audit_writer.py`; corrigido para `AuditWriter` com referência correta
 
 ### Verificação de Referências por Seção
 
@@ -257,5 +258,5 @@ Este erro fundamental contamina sistematicamente todas as seções do guia, caus
 | 2 (Diagnóstico P2-P13) | `src/domains/workflow.py` ✅, `src/domains/base.py` ✅, `src/services/audit/audit_writer.py` ✅, `src/domains/jobs/fairness.py` ✅, `src/domains/sourced_profile_sourcing/fairness.py` ✅ | `app/domains/workflow.py` ✅, `app/shared/compliance/fairness_guard.py` ✅, `app/shared/compliance/fact_checker.py` ✅ | CORRETO |
 | 3 (Roteamento + Inventário) | `_CONTEXT_ACTION_PATTERNS` ✅, `src/domains/*/domain.py` ✅ | `CascadedRouter` ✅, `PromptRegistry` ✅, `app/prompts/domains/` ✅ | CORRETO |
 | 3.5 (Prompts) | `src/domains/applies/domain.py` ✅, `prompts.py` inline ✅ | `app/prompts/domains/*.yaml` ✅, `PromptLoader` ✅ | CORRETO |
-| 5 (Componentes) | `src/services/audit/` ✅, `src/services/pii_filter.py` ✅ | LIA source paths ✅ | CORRETO |
+| 5 (Componentes) | `src/services/audit/audit_writer.py` ✅ (bug), `src/services/pii_filter.py` ✅ | `lia_audit/audit_writer.py` ✅ (ref, `DO NOTHING`), LIA source paths ✅ | CORRETO |
 | 7-11 (Sprints) | Target paths `src/services/compliance/` ✅ | Source paths `lia-agent-system/...` ✅ | CORRETO |
