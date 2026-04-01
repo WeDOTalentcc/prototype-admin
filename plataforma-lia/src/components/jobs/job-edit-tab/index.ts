@@ -1,3 +1,4 @@
 export * from "./job-edit-tab.types"
 export * from "./job-edit-tab.constants"
 export * from "./ScreeningBadge"
+export * from "./StatusChangeConfirmModal"

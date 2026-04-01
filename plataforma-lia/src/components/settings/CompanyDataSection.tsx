@@ -58,6 +58,8 @@ import {
 } from "@/lib/industry-constants"
 import { LiaFieldKey } from '@/hooks/use-company-lia-instructions'
 import { textStyles } from '@/lib/design-tokens'
+import { GeneralInfoSection } from './company'
+import { GeneralInfoSection } from './company'
 
 interface CompanyData {
   logo?: string
@@ -265,120 +267,13 @@ export function CompanyDataSection({
       </div>
 
       {/* Seção: Informações Gerais */}
-      <div className="space-y-3">
-        <h3 className="text-xs font-semibold lia-text-500 dark:text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
-          Informações Gerais
-        </h3>
-        
-        <div className="grid grid-cols-1 gap-3">
-          {/* Logo - Card especial com logo antes do nome e largura auto */}
-          <div className="inline-flex items-center gap-3 bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md px-4 py-3 w-fit">
-            <div className="relative w-14 h-14 rounded-md bg-gray-100 dark:bg-lia-bg-secondary border-2 border-dashed border-lia-border-default flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors motion-reduce:transition-none hover:border-gray-900 dark:hover:border-gray-50 flex-shrink-0 overflow-hidden">
-              {companyData.logo ? (
-                <NextImage src={companyData.logo} alt="Logo" fill className="object-cover rounded-md" />
-              ) : (
-                <div className="text-center">
-                  <Image className="w-5 h-5 mx-auto lia-text-400 dark:lia-text-500 mb-0.5" />
-                  <span className="text-micro lia-text-500 dark:text-lia-text-tertiary font-['Open_Sans',sans-serif]">Upload</span>
-                </div>
-              )}
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className={textStyles.label}>
-                Logo da Empresa
-              </span>
-              <span className="text-micro lia-text-500 bg-gray-100 dark:bg-lia-bg-elevated px-1.5 py-0.5 rounded-full font-['Open_Sans',sans-serif]">
-                Identidade Visual
-              </span>
-            </div>
-          </div>
-
-          {/* Razão Social */}
-          <SimpleDataCard
-            label="Razão Social"
-            category="Registro"
-            
-            isEditing={isEditingCompanyData}
-          >
-            <input
-              type="text"
-              value={companyData.name}
-              onChange={(e) => setCompanyData((prev) => ({ ...prev, name: e.target.value }))}
-              disabled={!isEditingCompanyData}
-              className={inputClass(!isEditingCompanyData)}
-              placeholder="Nome legal da empresa"
-            />
-          </SimpleDataCard>
-
-          {/* Nome Fantasia */}
-          <CompanyDataCard
-            fieldKey="trade_name"
-            label="Nome Fantasia"
-            category="Informações da Empresa"
-            
-            isActive={companyData.lia_field_toggles?.trade_name ?? true}
-            currentInstruction={companyData.lia_instructions?.trade_name || ''}
-            isEditing={isEditingCompanyData}
-            onToggleChange={updateLiaToggle}
-            onInstructionSave={updateLiaInstruction}
-          >
-            <input
-              type="text"
-              value={companyData.tradeName || ''}
-              onChange={(e) => setCompanyData((prev) => ({ ...prev, tradeName: e.target.value }))}
-              disabled={!isEditingCompanyData}
-              className={inputClass(!isEditingCompanyData)}
-              placeholder="Nome comercial da empresa"
-            />
-          </CompanyDataCard>
-
-          {/* CNPJ */}
-          <SimpleDataCard
-            label="CNPJ"
-            category="Registro"
-            
-            isEditing={isEditingCompanyData}
-          >
-            <input
-              type="text"
-              value={companyData.cnpj || ''}
-              onChange={(e) => setCompanyData((prev) => ({ ...prev, cnpj: e.target.value }))}
-              disabled={!isEditingCompanyData}
-              className={inputClass(!isEditingCompanyData)}
-              placeholder="00.000.000/0000-00"
-            />
-          </SimpleDataCard>
-
-          {/* Setor */}
-          <CompanyDataCard
-            fieldKey="industry"
-            label="Setor/Indústria"
-            category="Informações da Empresa"
-            
-            isActive={companyData.lia_field_toggles?.industry ?? true}
-            currentInstruction={companyData.lia_instructions?.industry || ''}
-            isEditing={isEditingCompanyData}
-            onToggleChange={updateLiaToggle}
-            onInstructionSave={updateLiaInstruction}
-          >
-            <select
-              value={companyData.industry || ''}
-              onChange={(e) => setCompanyData((prev) => ({ ...prev, industry: e.target.value }))}
-              disabled={!isEditingCompanyData}
-              className={selectClass(!isEditingCompanyData)}
-            >
-              <option value="">Selecione o setor...</option>
-              {(Object.keys(INDUSTRY_CATEGORIES) as IndustryCategory[]).map((category) => (
-                <optgroup key={category} label={INDUSTRY_CATEGORIES[category].labelPt}>
-                  {INDUSTRIES.filter((ind) => ind.category === category).map((ind) => (
-                    <option key={ind.key} value={ind.labelPt}>{ind.labelPt}</option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-          </CompanyDataCard>
-        </div>
-      </div>
+      <GeneralInfoSection
+        companyData={companyData}
+        setCompanyData={setCompanyData}
+        isEditing={isEditingCompanyData}
+        updateLiaToggle={updateLiaToggle}
+        updateLiaInstruction={updateLiaInstruction}
+      />
 
       {/* Seção: Contato e Presença Online */}
       <div className="space-y-3">

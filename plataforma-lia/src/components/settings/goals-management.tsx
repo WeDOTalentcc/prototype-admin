@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select"
 import { typography, textStyles } from "@/lib/design-tokens"
 import { EditableCell, GoalsStatsCards, getCategoryIcon, getCategoryColor, getStatusColor } from "./goals"
+import { ApplyAllModal, DeleteConfirmModal } from "./goals"
 
 // Camada 1 (hook): Todo o estado e ações extraídas
 import {
@@ -317,78 +318,18 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
       </Card>
 
       {showApplyAllModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-lia-bg-primary rounded-md p-6 w-full max-w-md">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className={textStyles.h4}>
-                Aplicar Valor para Todos
-              </h3>
-              <Button variant="ghost" size="sm" onClick={() => setShowApplyAllModal(null)} className="h-6 w-6 p-0">
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className={`${textStyles.label} block mb-1`}>
-                  Valor da Meta
-                </label>
-                <input
-                  type="number"
-                  value={applyAllValue}
-                  onChange={(e) => setApplyAllValue(parseFloat(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-primary text-sm font-['Open_Sans',sans-serif]"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={applyAllMonths}
-                    onChange={(e) => setApplyAllMonths(e.target.checked)}
-                    className="w-4 h-4 rounded-md border-lia-border-default accent-gray-900"
-                  />
-                  <span className={textStyles.bodySmall}>
-                    Aplicar mesmo valor a todos os meses
-                  </span>
-                </label>
-
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={applyAllUsers}
-                    onChange={(e) => setApplyAllUsers(e.target.checked)}
-                    className="w-4 h-4 rounded-md border-lia-border-default accent-gray-900"
-                  />
-                  <span className={textStyles.bodySmall}>
-                    Aplicar a todos os usuários
-                  </span>
-                </label>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <Button variant="outline" size="sm" onClick={() => setShowApplyAllModal(null)}>
-                  Cancelar
-                </Button>
-                <Button 
-                  size="sm"
-                  onClick={async () => {
-                    setShowApplyAllModal(null)
-                    await applyValueToAll(showApplyAllModal!, applyAllValue, {
-                      allMonths: applyAllMonths,
-                      allUsers: applyAllUsers
-                    })
-                  }}
-                  className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
-                >
-                  <Save className="w-3.5 h-3.5 mr-1.5" />
-                  Aplicar
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ApplyAllModal
+          templateId={showApplyAllModal}
+          applyAllValue={applyAllValue}
+          applyAllMonths={applyAllMonths}
+          applyAllUsers={applyAllUsers}
+          isSaving={isSaving}
+          setApplyAllValue={setApplyAllValue}
+          setApplyAllMonths={setApplyAllMonths}
+          setApplyAllUsers={setApplyAllUsers}
+          setShowApplyAllModal={setShowApplyAllModal}
+          applyValueToAll={applyValueToAll}
+        />
       )}
 
       {showTemplates && (
@@ -902,68 +843,12 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
       )}
 
       {deleteConfirmGoal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-lia-bg-primary rounded-md w-full max-w-md mx-4 overflow-hidden">
-            <div className="bg-status-error/10 px-6 py-4 border-b border-status-error/30">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-status-error/15 flex items-center justify-center">
-                  <Trash2 className="w-5 h-5 text-status-error" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold lia-text-950">Excluir Meta</h3>
-                  <p className="text-sm lia-text-600">Esta ação não pode ser desfeita</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-6">
-              <div className="bg-gray-50 rounded-md p-4 mb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  {getCategoryIcon(deleteConfirmGoal.category)}
-                  <span className="font-medium lia-text-950">{deleteConfirmGoal.name}</span>
-                </div>
-                <p className="text-sm lia-text-600">{deleteConfirmGoal.description}</p>
-                <div className="flex items-center gap-4 mt-3 text-xs lia-text-500">
-                  <span>Meta: {deleteConfirmGoal.target} {deleteConfirmGoal.unit}</span>
-                  <span>•</span>
-                  <span>{deleteConfirmGoal.period === 'monthly' ? 'Mensal' : 
-                         deleteConfirmGoal.period === 'quarterly' ? 'Trimestral' : 'Anual'}</span>
-                </div>
-              </div>
-
-              <p className="text-sm lia-text-600 mb-6">
-                Tem certeza que deseja excluir esta meta? O progresso registrado será perdido permanentemente.
-              </p>
-
-              <div className="flex justify-end gap-3">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setDeleteConfirmGoal(null)}
-                  disabled={isDeleting}
-                >
-                  Cancelar
-                </Button>
-                <Button 
-                  onClick={confirmDeleteGoal}
-                  disabled={isDeleting}
-                  className="bg-status-error hover:bg-status-error text-white"
-                >
-                  {isDeleting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mr-2" />
-                      Excluindo...
-                    </>
-                  ) : (
-                    <>
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Sim, Excluir
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <DeleteConfirmModal
+          goal={deleteConfirmGoal}
+          isDeleting={isDeleting}
+          onCancel={() => setDeleteConfirmGoal(null)}
+          onConfirm={confirmDeleteGoal}
+        />
       )}
 
       {editingTemplate && (

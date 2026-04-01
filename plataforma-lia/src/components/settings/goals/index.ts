@@ -1,3 +1,5 @@
 export { EditableCell } from "./EditableCell"
 export { GoalsStatsCards } from "./GoalsStatsCards"
-export { getCategoryIcon, getCategoryColor, getStatusColor } from "./goals-utils"
+export * from "./goals-utils"
+export { ApplyAllModal } from "./ApplyAllModal"
+export { DeleteConfirmModal } from "./DeleteConfirmModal"

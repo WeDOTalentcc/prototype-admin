@@ -31,6 +31,8 @@ import {
 } from "./job-edit-tab/job-edit-tab.constants"
 import { useJobEditTab } from "./job-edit-tab/useJobEditTab"
 import { ScreeningBadge } from "./job-edit-tab/ScreeningBadge"
+import { StatusChangeConfirmModal } from "./job-edit-tab/StatusChangeConfirmModal"
+import { StatusChangeConfirmModal } from "./job-edit-tab/StatusChangeConfirmModal"
 
 export function JobEditTab({
   jobEditForm,
@@ -268,88 +270,12 @@ export function JobEditTab({
 
               {/* Status change confirm modal */}
               {statusChangeConfirm && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-                  <div className="bg-white dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle w-[420px] p-5 animate-in fade-in zoom-in-95 duration-200">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-100 dark:bg-lia-bg-secondary">
-                        <AlertTriangle className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-semibold lia-text-900 dark:text-lia-text-primary">
-                          Alterar Status para {statusChangeConfirm.newStatus}
-                        </h3>
-                        <p className="text-xs lia-text-500 dark:text-lia-text-tertiary">
-                          {(job?.title as string) || (jobEditForm.title as string)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="rounded-md p-3 mb-4 border border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary/50">
-                      <div className="flex items-start gap-2.5">
-                        <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
-                          statusChangeConfirm.screeningImpact === "pause"
-                            ? "bg-status-warning/15 dark:bg-status-warning/30"
-                            : statusChangeConfirm.screeningImpact === "complete"
-                            ? "bg-wedo-cyan/15"
-                            : "bg-status-success/15 dark:bg-status-success/30"
-                        }`}>
-                          {statusChangeConfirm.screeningImpact === "pause" && <Pause className="w-3 h-3 text-status-warning" />}
-                          {statusChangeConfirm.screeningImpact === "complete" && <CheckCircle2 className="w-3 h-3 text-wedo-cyan-dark" />}
-                          {statusChangeConfirm.screeningImpact === "ask_reactivate" && <Play className="w-3 h-3 text-status-success" />}
-                        </div>
-                        <div>
-                          <p className="text-xs font-semibold lia-text-700 dark:text-lia-text-secondary mb-1">Impacto na Triagem</p>
-                          <p className="text-xs leading-relaxed lia-text-600 dark:text-lia-text-tertiary">
-                            {statusChangeConfirm.screeningImpact === "pause" &&
-                              "Ao paralisar esta vaga, a triagem ativa será pausada automaticamente. Candidatos em avaliação serão mantidos no estado atual até a reativação."}
-                            {statusChangeConfirm.screeningImpact === "complete" && statusChangeConfirm.newStatus === "Concluída" &&
-                              "Ao concluir esta vaga, a triagem será finalizada automaticamente. Nenhum novo candidato será avaliado."}
-                            {statusChangeConfirm.screeningImpact === "complete" && statusChangeConfirm.newStatus === "Cancelada" &&
-                              "Ao cancelar esta vaga, a triagem será finalizada automaticamente. Todos os processos de avaliação serão encerrados."}
-                            {statusChangeConfirm.screeningImpact === "ask_reactivate" &&
-                              "A triagem desta vaga está pausada. Deseja reativar a triagem automaticamente junto com a vaga?"}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-end gap-2 pt-1">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-xs rounded-md px-4 border-lia-border-subtle dark:border-lia-border-subtle"
-                        onClick={() => setStatusChangeConfirm(null)}
-                      >
-                        Cancelar
-                      </Button>
-                      {statusChangeConfirm.screeningImpact === "ask_reactivate" ? (
-                        <>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-xs rounded-md px-4 border-lia-border-default dark:border-lia-border-default"
-                            onClick={() => handleStatusChangeWithScreening(statusChangeConfirm.newStatus, false)}
-                          >
-                            Manter Pausada
-                          </Button>
-                          <Button
-                            size="sm"
-                            className="text-xs rounded-md px-4 bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:hover:bg-gray-200 dark:lia-text-900"
-                            onClick={() => handleStatusChangeWithScreening(statusChangeConfirm.newStatus, true)}
-                          >
-                            Reativar Triagem
-                          </Button>
-                        </>
-                      ) : (
-                        <Button
-                          size="sm"
-                          className="text-xs rounded-md px-4 bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:hover:bg-gray-200 dark:lia-text-900"
-                          onClick={() => handleStatusChangeWithScreening(statusChangeConfirm.newStatus)}
-                        >
-                          Confirmar
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                <StatusChangeConfirmModal
+                  state={statusChangeConfirm}
+                  jobTitle={(job?.title as string) || (jobEditForm.title as string)}
+                  onCancel={() => setStatusChangeConfirm(null)}
+                  onChange={handleStatusChangeWithScreening}
+                />
               )}
 
               {/* ── info-geral ─────────────────────────────────────────────── */}
