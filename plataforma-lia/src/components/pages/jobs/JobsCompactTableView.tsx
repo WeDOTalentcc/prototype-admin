@@ -207,8 +207,8 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
   return (
     <div className="overflow-auto max-h-full border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
       <table className="w-full table-fixed">
-        <thead className="sticky top-0 z-10 bg-white dark:bg-lia-bg-primary border-b border-lia-border-subtle dark:border-lia-border-subtle">
-          <tr className="">
+        <thead className="sticky top-0 z-10 bg-white dark:bg-lia-bg-primary">
+          <tr className="border-b border-lia-border-subtle dark:border-lia-border-subtle">
             {jobsColumnOrder.filter((columnId) => {
               if (columnId === 'checkbox' || columnId === 'acoes') return true
               const hookId = Object.entries(hookToTableColumnMap).find(([_, tableId]) => tableId === columnId)?.[0]
