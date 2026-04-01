@@ -1,7 +1,7 @@
 # Guia de Migração v5 → Compliance Compartilhada
 
 > **Plataforma LIA — WeDO Talent**
-> Versão: 2.1 | Data: 2026-04-01
+> Versão: 2.2 | Data: 2026-04-01
 > Fonte: `WeDO/analises/diagnostico_arquitetura_codigo_lia_vs_v5.md` (8070 linhas)
 > Caminho recomendado: **Caminho 2 — ComplianceDomainPrompt** (~23.5h, 3 sprints)
 
@@ -89,9 +89,74 @@ Sub-problemas:    24 (P3a-P3c, P4a, P5a-P5c, P8a, P9a-P9d, P10a-P10c, P11a-P11f,
 Total de itens:   37
 ```
 
-**O Caminho 2 resolve P2, P3 (com P3a-P3c), P4 (com P4a), P5 (com P5a-P5c), P6 e P7 em 3 sprints (~23.5h) — 7 problemas + 7 sub-problemas = 14 itens.**
+**O Caminho 2 resolve P2, P3 (com P3a-P3c), P4 (com P4a), P5 (com P5a-P5c), P6 e P7 em 3 sprints (~35-45h realistas) — 7 problemas + 7 sub-problemas = 14 itens.**
 
-**O Caminho 3 resolve P1, P8 (com P8a), P9 (com P9a-P9d), P10 (com P10a-P10c), P11 (com P11a-P11f), P12 (com P12a-P12c) e P13 (com P13a-P13b) — 7 problemas + 17 sub-problemas = 24 itens. Início recomendado: Q2 2027.**
+**O Caminho 3 resolve P1, P8 (com P8a), P9 (com P9a-P9d), P10 (com P10a-P10c), P11 (com P11a-P11f), P12 (com P12a-P12c) e P13 (com P13a-P13b) — 7 problemas + 17 sub-problemas = 24 itens. ~2-3 semanas.**
+
+### Mapa de Aproveitamento — O que já existe no codebase
+
+> **Descoberta chave (v2.2):** O v5 e a LIA são o **mesmo codebase** (`lia-agent-system`). O que chamamos de "v5" são os patterns antigos (Flat/keyword/hardcoded) e a "LIA" são os patterns novos (ReAct/LLM/YAML) — coexistem no mesmo repositório. A migração não é construir do zero nem conectar sistemas separados — é **eliminar o pattern antigo** e garantir que todos os domínios usem o novo.
+
+#### Compliance (Caminho 2)
+
+| # | Problema | O que v5 já tem | O que LIA já tem (mesmo repo) | Aproveitamento | Gap real |
+|---|----------|----------------|------------------------------|----------------|----------|
+| P2 | Compliance opt-in | `DomainWorkflow._pre_check` aplica FairnessGuard | Mesmo código | ~60% | APIs diretas e jobs em background bypessam DomainWorkflow |
+| P3 | 6/9 serviços faltam | FairnessGuard, FactChecker, AuditService, PII Masking | Mesmo código | ~40% | Faltam ExplainabilityService, RetentionPolicy, ConsentManager |
+| P3.a | AuditCallback mutável | `ON CONFLICT DO UPDATE` no audit_callback | AuditService com retention policies | ~30% | Precisa tornar audit immutable (INSERT only) |
+| P3.b | PII Stripping parcial | `install_global_pii_masking()` + `strip_pii_for_llm_prompt` | Mesmo código | ~70% | Falta aplicar em todos os pontos de envio ao LLM |
+| P3.c | FactChecker só local | FactChecker no `DomainWorkflow._post_check` | Mesmo código | ~50% | Já aplica globalmente via workflow, mas domains diretos escapam |
+| P4 | Serviços acoplados | FairnessGuard importado direto nos domínios | Middleware `FairnessGuardMiddleware` | ~50% | Migrar importações diretas para middleware centralizado |
+| P4.a | Implementações divergem | Cada domínio chama compliance de forma diferente | `DomainWorkflow` padroniza | ~60% | Garantir todos os domínios usam DomainWorkflow |
+| P5 | Pipeline errado | Compliance no `_pre_check` (só query) | `_pre_check` + `_post_check` | ~50% | Falta compliance nas tool calls intermediárias |
+| P5.a | PII vai ao LLM | `strip_pii_for_llm_prompt` em Screening e WSI | Mesmo código | ~40% | Falta nos outros domínios (jobs, messaging, sourcing) |
+| P5.b | FairnessGuard só na query | `_pre_check` antes do processamento | Layer 3 no Sourcing (output check) | ~30% | Layer 3 existe só no Sourcing — expandir para todos |
+| P5.c | FactChecker só sourcing | `_post_check` no DomainWorkflow | Mesmo código | ~60% | Já é global via workflow, mas precisa de validadores por domínio |
+| P6 | Sem camada intermediária | Cada domínio herda de `DomainPrompt` (base mínima) | `DomainWorkflow` como camada intermediária | ~40% | Criar `ComplianceDomainPrompt` que todos herdam |
+| P7 | Novos domínios sem compliance | `DomainPrompt` base não inclui compliance | — | 0% | ComplianceDomainPrompt resolve isso |
+
+#### Qualidade de Resposta (Caminho 3)
+
+| # | Problema | O que v5 já tem | O que LIA já tem (mesmo repo) | Aproveitamento | Gap real |
+|---|----------|----------------|------------------------------|----------------|----------|
+| P8 | Flat → ReAct | `ActionExecutorService` (Phase 1, if/elif) | `LangGraphReActBase` + 9 agentes ReAct | ~80% | Garantir ReAct registrado em todos os domínios |
+| P8.a | Sem cross-domain | Cada domínio isolado | `StateManager` cross-agente | ~60% | Orquestrar fluxos multi-domínio (applies→scheduling→eval) |
+| P9 | Keyword frágil | `FastRouter` (Tier 4, regex) | `CascadedRouter` 6 tiers + LLMCascade (Tier 5) | ~70% | Remover patterns ambíguos do FastRouter ou baixar prioridade |
+| P9.a | Colisão keywords | `_KEYWORD_ACTION_MAP` por domínio com overlap | LLMCascade resolve ambiguidade | ~70% | Limpar maps ou delegar ao LLM |
+| P9.b | Não entende negação | Regex não detecta "NÃO" | `NEGATION_DETECTION_BLOCK` no PromptRegistry | ~80% | Ativar bloco nos domínios que usam Flat |
+| P9.c | Linguagem natural | Regex literal | LLMCascade com few-shot examples | ~70% | Garantir INTENT_CLASSIFICATION_EXAMPLES cobertura |
+| P9.d | Referências temporais | Ignoradas pelo regex | MemoryResolver (parcial) | ~30% | Implementar parser temporal ("ontem", "semana passada") |
+| P10 | Sem memória | Flat handlers sem contexto entre turnos | WorkingMemoryService + MemoryResolver | ~70% | Domínios Flat herdam memória ao migrar para ReAct |
+| P10.a | Sem StageContext | Alguns domínios têm (Screening), outros não | `StageContext` pattern disponível | ~60% | Implementar StageContext nos domínios faltantes |
+| P10.b | Sem anáforas | — | MemoryResolver resolve "aquela vaga", "o candidato" | ~80% | Já funciona; expandir vocabulário de referências |
+| P10.c | Sem cross-session | Cada sessão começa do zero | WorkingMemory persiste no DB por session+domain | ~50% | Implementar resumo cross-session (ConversationMemory) |
+| P11 | Prompts estáticos | Strings hardcoded em `nodes.py`, dicionários | PromptRegistry + 10 YAMLs domínio + 5 compartilhados | ~75% | Migrar domínios de hardcoded para PromptLoader |
+| P11.a | Sem BARS | — | RubricEvaluationService com BARS (Exceeds/Meets/Partial/Missing) | ~80% | Expandir BARS para além de cv_screening |
+| P11.b | Sem few-shot | — | `few_shot_examples.py` (job, intent, salary) | ~60% | Adicionar exemplos para domínios faltantes |
+| P11.c | Sem blocos composíveis | — | `ANTI_SYCOPHANCY_BLOCK`, `CHAIN_OF_THOUGHT_BLOCK`, `DEFENSIVE` | ~80% | Injetar blocos nos prompts de todos os domínios |
+| P11.d | Sem A/B testing | — | PromptRegistry com versioning (compare_versions) | ~40% | Infraestrutura existe; falta implementar split test runner |
+| P11.e | YAMLs desconectados | v5 não carrega os YAMLs da LIA | PromptLoader + YAMLs prontos | ~90% | Conectar o PromptLoader nos domínios v5 |
+| P11.f | Sem persona | Prompts genéricos | `lia_persona.yaml` + `hr_vocabulary.yaml` | ~90% | Carregar persona nos domínios que não usam |
+| P12 | Gap de tools | `ToolRegistry` central + YAML metadata | Mesmo código + tools reais | ~55% | Completar tools faltantes nos domínios com stubs |
+| P12.a | Stubs sem implementação | Ações declaradas sem handler | Tools reais para Jobs, Screening, Communication, Analytics | ~50% | Implementar handlers para ações sem implementação |
+| P12.b | Sem agent-level registry | Domínios Flat sem tool registry próprio | Domínios ReAct têm `tool_registry.py` | ~60% | Criar tool_registry para domínios faltantes |
+| P12.c | Sem cross-domain access | Tools isoladas por domínio | `StateManager` + shared tools em `app/shared/tools/` | ~40% | Expor tools cross-domain via ToolRegistry global |
+| P13 | Sem batch | 1 item por vez | — | 0% | Implementar BatchService com asyncio.Semaphore |
+| P13.a | Sem paralelo | Processamento sequencial | — | 0% | Implementar worker pool |
+| P13.b | N chamadas manuais | Usuário repete N vezes | — | 0% | API de batch que aceita lista de itens |
+
+#### Resumo de Aproveitamento
+
+```
+Caminho 2 (Compliance):     Aproveitamento médio ~45%
+  → Esforço real: ~35-45h (1-1.5 semanas com Claude Code)
+  → Natureza: refatoração estrutural — mover código para o lugar certo
+
+Caminho 3 (Qualidade):      Aproveitamento médio ~60%
+  → Esforço real: ~2-3 semanas (com Claude Code)
+  → Natureza: eliminar patterns antigos + completar gaps
+  → P13 (batch) é o único item 0% — todo o resto aproveita infra existente
+```
 
 ---
 
