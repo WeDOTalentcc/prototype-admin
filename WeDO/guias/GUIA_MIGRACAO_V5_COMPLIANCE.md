@@ -1,7 +1,7 @@
 # Guia de Migração v5 → Compliance Compartilhada
 
 > **Plataforma LIA — WeDO Talent**
-> Versão: 2.2 | Data: 2026-04-01
+> Versão: 2.3 | Data: 2026-04-01 | Auditoria: `WeDO/analises/AUDITORIA_GUIA_MIGRACAO.md`
 > Fonte: `WeDO/analises/diagnostico_arquitetura_codigo_lia_vs_v5.md` (8070 linhas)
 > Caminho recomendado: **Caminho 2 — ComplianceDomainPrompt** (~23.5h, 3 sprints)
 
@@ -95,73 +95,73 @@ Total de itens:   37
 
 ### Mapa de Aproveitamento — O que já existe no codebase
 
-> **Descoberta chave (v2.2):** O v5 e a LIA são o **mesmo codebase** (`lia-agent-system`). O que chamamos de "v5" são os patterns antigos (Flat/keyword/hardcoded) e a "LIA" são os patterns novos (ReAct/LLM/YAML) — coexistem no mesmo repositório. A migração não é construir do zero nem conectar sistemas separados — é **eliminar o pattern antigo** e garantir que todos os domínios usem o novo.
+> **Correção (v2.3):** O v5 e a LIA são **repositórios separados**: v5 está em `WeDOTalent/recruiter_agent_v5` (GitHub) e LIA está em `lia-agent-system` (Replit). O v5 usa stack sync (psycopg2, Celery, RabbitMQ) com LangGraph `StateGraph`; a LIA usa stack async (SQLAlchemy async, FastAPI) com pipeline baseado em dataclasses. A migração envolve **adotar no v5 os patterns de compliance que a LIA já implementou** (FairnessGuard centralizado, FactChecker global, audit immutable, PII stripping automático) — construindo a camada `ComplianceDomainPrompt` que garante compliance por herança em vez de opt-in manual.
 
 #### Compliance (Caminho 2)
 
 > **Nota importante:** Os serviços de compliance que existem no v5 estão **incompletos** — funcionam para o caso de uso original mas precisam ser incrementados para cobertura completa. A migração do Caminho 2 não é só "mover para o lugar certo" — é também **completar** o que falta em cada serviço e **limpar** as implementações locais duplicadas que existem dentro de cada domínio (ver Seção 4.4 para lista de arquivos a deletar e Seção 4.5 para fluxos antes/depois por grupo arquitetural).
 
-> **Legenda colunas:** # | O que v5 já tem (incompleto) | O que LIA já tem (mesmo repo) | %
+> **Legenda colunas:** # | O que v5 já tem (incompleto) | O que LIA já tem (repo separado) | %
 
-| **P2** | `DomainWorkflow._pre_check` aplica FairnessGuard automaticamente | Mesmo código | 60% |
+| **P2** | v5 `DomainWorkflow` (LangGraph `StateGraph`) **não tem compliance automática** — nós analyze→execute→format sem guards | LIA `DomainWorkflow._pre_check` aplica FairnessGuard e `_post_check` aplica FactChecker automaticamente | 0% (v5) / 60% (LIA) |
 |---|---|---|---|
 
-**Gap real:** O `DomainWorkflow` já aplica compliance para quem passa por ele. O gap são os caminhos que **bypessam**: endpoints REST diretos em `app/api/v1/` (ex: `job_vacancies.py`), Celery tasks em background, e o `ActionExecutorService` (Phase 1) que executa ações sem passar pelo workflow. **Solução:** interceptar esses caminhos com middleware FastAPI ou wrapping do ActionExecutor
+**Gap real:** O v5 `DomainWorkflow` (`src/domains/workflow.py`) orquestra via `StateGraph` com nós `DomainIntentAgent`, `DomainActionExecutor`, `DomainAnswerFormatter` — **sem nenhum guard de compliance**. A LIA já tem `_pre_check` (FairnessGuard) e `_post_check` (FactChecker) no seu `DomainWorkflow` (`app/domains/workflow.py`). **Solução:** implementar guards equivalentes no v5: (1) nó `fairness_check` antes de `analyze_intent` no StateGraph, (2) nó `fact_check` após `format_answer`, ou (3) migrar para o pattern LIA com `ComplianceDomainPrompt`
 
-| **P3** | FairnessGuard (3 layers), FactChecker, AuditService, PII Masking — 4 de 9 serviços | Mesmo código | 40% |
+| **P3** | v5: FairnessGuard local (jobs, sourcing), FactChecker local (sourcing), AuditWriter (mutável), PII Masking (logs only) — 4 serviços parciais | LIA: FairnessGuard centralizado (`app/shared/compliance/`), FactChecker global (`_post_check`), AuditWriter immutable (`DO NOTHING`), PII Masking — 4 serviços mais completos | 40% |
 |---|---|---|---|
 
-**Gap real:** Faltam 5 serviços: **ExplainabilityService** (explicar rejeição ao candidato — LGPD Art.20), **RetentionPolicy** automática (AuditService tem `retention_days` mas não executa purge), **ConsentManager** (rastrear consentimento do candidato), **ComplianceReporter** (dashboard para DPO), **IncidentResponseService** (alertar violações). Os 4 existentes precisam de incremento: FairnessGuard precisa absorver Layer 3 do Sourcing e rejection check do Pipeline; AuditCallback precisa virar immutable; PII Stripping precisa cobrir todos os domínios
+**Gap real:** v5 tem 4 serviços parciais espalhados; LIA centralizou e melhorou. Faltam 5 serviços em ambos: **ExplainabilityService** (explicar rejeição ao candidato — LGPD Art.20), **RetentionPolicy** automática, **ConsentManager**, **ComplianceReporter** (dashboard para DPO), **IncidentResponseService**. Os existentes precisam de incremento: FairnessGuard precisa absorver Layer 3 do Sourcing e rejection check; AuditWriter do v5 precisa migrar para immutable (como a LIA já fez); PII Stripping precisa cobrir prompts LLM além de logs
 
-| P3.a | `ON CONFLICT DO UPDATE` em `libs/audit/lia_audit/audit_callback.py` | AuditService em `app/shared/compliance/audit_service.py` com retention | 30% |
+| P3.a | v5: `ON CONFLICT DO UPDATE SET` em `src/services/audit/audit_writer.py` — permite sobrescrever audit trail, violando SOX | LIA: `ON CONFLICT DO NOTHING` em `libs/audit/lia_audit/audit_writer.py` (L80) — **já corrigido** | 0% (v5) / 100% (LIA) |
 |---|---|---|---|
 
-**Gap real:** O AuditCallback usa `ON CONFLICT DO UPDATE` — permite sobrescrever audit trail, violando SOX. O AuditService separado tem retention policies mas usa o mesmo pattern. **Solução:** mudar para `INSERT` only + soft delete, ou append-only storage (tabela particionada por mês, sem UPDATE/DELETE permissions no role da aplicação)
+**Gap real:** O bug está no **v5** `src/services/audit/audit_writer.py` que usa `ON CONFLICT (execution_id) DO UPDATE SET` — permite sobrescrever registros de auditoria. A **LIA já corrigiu** em `libs/audit/lia_audit/audit_writer.py` usando `ON CONFLICT (execution_id) DO NOTHING`. **Solução para v5:** adotar o pattern LIA (`DO NOTHING`) ou migrar para append-only storage (tabela particionada por mês, sem UPDATE/DELETE permissions no role da aplicação)
 
-| P3.b | `install_global_pii_masking()` no `app/main.py` + `strip_pii_for_llm_prompt` | Mesmo código | 70% |
+| P3.b | v5: `mask_pii()` em `src/services/pii_filter.py` + `PIIMaskingFilter` para logs; `filter_response_tone()` em `src/services/response_filter.py` | LIA: mesmas funcionalidades + `strip_pii_for_llm_prompt` em alguns domínios | 70% (logs) / 20% (prompts LLM) |
 |---|---|---|---|
 
-**Gap real:** O masking global funciona nos **logs** (todos os `logging.*` passam pelo filtro PII). O `strip_pii_for_llm_prompt` existe mas só é chamado em 2/9 domínios: `rubric_evaluation_service.py` (L894) e `wsi_interview_graph.py` (L534). **Falta em:** jobs, messaging, sourcing, analytics, insights, automation, ats_integration. **Solução:** adicionar `strip_pii_for_llm_prompt` no `LangGraphReActBase` antes de montar o prompt — cobre todos os agentes automaticamente
+**Gap real:** v5 tem PII masking para **logs** via `mask_pii()` e `PIIMaskingFilter`. O v5 workflow chama `mask_pii()` nos nós. O gap: **prompts enviados ao LLM** não são filtrados — nome, email, telefone e CPF vão como contexto para Anthropic/Google. Na LIA, `strip_pii_for_llm_prompt` existe mas só é chamado em 2 domínios. **Solução:** (LIA) adicionar `strip_pii_for_llm_prompt` no `LangGraphReActBase` antes de montar o prompt; (v5) adicionar chamada equivalente no nó `DomainIntentAgent.analyze` e `DomainAnswerFormatter.format`
 
-| P3.c | FactChecker no `DomainWorkflow._post_check` | Mesmo código | 50% |
+| P3.c | v5: FactChecker **somente** em `src/domains/sourced_profile_sourcing/fact_checker.py` — local ao sourcing, com `verify_count_claim` e `verify_average_claim` | LIA: FactChecker global em `app/shared/compliance/fact_checker.py`, chamado automaticamente no `DomainWorkflow._post_check` para **todos** os domínios | 15% (v5) / 60% (LIA) |
 |---|---|---|---|
 
-**Gap real:** Já é **global** via workflow — todo domínio que passa recebe validação. **Gaps:** (1) domínios que bypessam o workflow (mesmos de P2); (2) FactChecker valida claims genéricos (números, datas) mas **não tem validadores por domínio** — ex: Evaluation diz "score 85" mas real é 72; Analytics diz "15 dias" mas real é 23. **Solução:** cada domínio registra validadores específicos (ex: `evaluation.validate_score`, `analytics.validate_metric`)
+**Gap real:** No v5, FactChecker é **local ao sourcing** — outros domínios não validam claims. Na LIA, é **global via `_post_check`** — todo domínio que passa pelo workflow recebe validação. **Gaps remanescentes (LIA):** (1) domínios que bypessam o workflow; (2) validadores domain-specific não existem — ex: Evaluation diz "score 85" mas real é 72. **Solução v5:** centralizar FactChecker e integrá-lo ao workflow como nó pós-formatação. **Solução LIA:** cada domínio registra validadores específicos (`evaluation.validate_score`, `analytics.validate_metric`)
 
-| **P4** | FairnessGuard importado direto em `sourcing_react_agent.py` (L151), `policy_react_agent.py`, `pipeline_tool_registry.py` (L513) | `FairnessGuardMiddleware` em `app/shared/compliance/` | 50% |
+| **P4** | v5: FairnessGuard acoplado localmente — `JobFairnessGuard` em `src/domains/jobs/fairness.py` (com `BLOCKED_FILTERS`, `check_filters()`), FairnessGuard elaborado em `src/domains/sourced_profile_sourcing/fairness.py` (com `SensitiveAttribute` enum, `FairnessMetrics`) | LIA: FairnessGuard centralizado em `app/shared/compliance/fairness_guard.py` (806L), chamado via `DomainWorkflow._pre_check`; importações diretas em agentes como `sourcing_react_agent.py`, `policy_react_agent.py`, `pipeline_tool_registry.py` | 50% |
 |---|---|---|---|
 
-**Gap real:** Middleware existe mas **não é usado consistentemente**. Cada domínio importa e chama de forma diferente. **Solução:** remover importações diretas, `ComplianceDomainPrompt` chama middleware em `pre_process`/`post_process`. **Limpeza (Seção 4.4):** deletar `jobs/fairness.py`, `evaluation/security.py`, `sourcing/fairness.py`, `sourcing/fact_checker.py` + remover imports diretos em cada `domain.py`. **Verificar:** `grep -rn "FairnessGuard" src/domains/*/domain.py`
+**Gap real:** v5 tem implementações locais divergentes por domínio. LIA centralizou mas ainda tem importações diretas em alguns agentes. **Solução:** (v5) centralizar FairnessGuard absorvendo `JobFairnessGuard` + `SourcingFairnessGuard`; (LIA) remover importações diretas dos agentes, `ComplianceDomainPrompt` chama middleware em `pre_process`/`post_process`. **Limpeza v5 (Seção 4.4):** consolidar `jobs/fairness.py` e `sourcing/fairness.py` em serviço central. **Verificar:** `grep -rn "FairnessGuard\|fairness" src/domains/*/domain.py`
 
 | P4.a | Sourcing usa Layer 3 (output check), Pipeline usa `check_rejection_reason`, Policy usa `check` básico | `DomainWorkflow` padroniza | 60% |
 |---|---|---|---|
 
 **Gap real:** Implementações locais **divergiram** do FairnessGuard original. Quando um fix é feito no central, as versões locais **não recebem**. **Incremento obrigatório:** antes de deletar cópias locais, o FairnessGuard central precisa absorver: (1) Layer 3 do Sourcing (análise semântica do output), (2) `check_rejection_reason` do Pipeline (bias em motivos de rejeição). **Solução:** parametrizar middleware por domínio (sourcing ativa Layer 3, pipeline ativa rejection check). Só depois deletar as cópias locais
 
-| **P5** | Compliance roda em `_pre_check` (antes) e `_post_check` (depois) | Mesmo código | 50% |
+| **P5** | v5: **sem compliance automática no workflow** — nenhum check antes, durante ou depois | LIA: `_pre_check` (FairnessGuard) antes e `_post_check` (FactChecker) depois, mas nada **durante** tool calls | 0% (v5) / 50% (LIA) |
 |---|---|---|---|
 
-**Gap real:** FairnessGuard roda **antes** (query) e FactChecker roda **depois** (resposta). Gap: **durante** o processamento, tool calls podem gerar filtros discriminatórios (ex: LLM gera `WHERE age < 30`). Nenhum check nesse ponto. **Solução:** adicionar FairnessGuard no `TimedToolNode` (já existe em `langgraph_react_base.py`) para interceptar inputs/outputs de cada tool call
+**Gap real:** v5 não tem compliance em nenhum ponto do workflow. LIA tem FairnessGuard **antes** (query) e FactChecker **depois** (resposta). Gap em ambos: **durante** o processamento, tool calls podem gerar filtros discriminatórios (ex: LLM gera `WHERE age < 30`). **Solução v5:** implementar guards no StateGraph como novos nós. **Solução LIA:** adicionar FairnessGuard no `TimedToolNode` (já existe em `langgraph_react_base.py`) para interceptar inputs/outputs de cada tool call
 
-| P5.a | `strip_pii_for_llm_prompt` usado em `cv_screening` e `wsi_interview` | Mesmo código | 40% |
+| P5.a | v5: `mask_pii()` usado nos logs via `PIIMaskingFilter`, workflow chama `mask_pii` nos nós — **mas prompts LLM não são filtrados** | LIA: `strip_pii_for_llm_prompt` usado em 2 domínios (cv_screening, wsi_interview) — 7 domínios sem cobertura | 40% |
 |---|---|---|---|
 
-**Gap real:** Só 2/9 domínios fazem PII stripping antes do LLM. Nos outros 7 (jobs, messaging, sourcing, analytics, automation, hiring_policy, ats_integration), nome, email, telefone e CPF vão como contexto para Anthropic/Google. **Impacto LGPD:** dados pessoais em API de terceiros sem base legal. **Solução:** `strip_pii_for_llm_prompt` no `LangGraphReActBase._build_messages()` — automático para todos os agentes
+**Gap real:** Em ambos v5 e LIA, a maioria dos domínios envia PII (nome, email, telefone, CPF) ao LLM sem stripping. **Impacto LGPD:** dados pessoais em API de terceiros sem base legal. **Solução LIA:** `strip_pii_for_llm_prompt` no `LangGraphReActBase._build_messages()` — automático para todos os agentes. **Solução v5:** adicionar `mask_pii()` antes das chamadas LLM nos nós do StateGraph
 
-| P5.b | `_pre_check` analisa mensagem do usuário | Layer 3 no `sourcing_react_agent.py` analisa output do LLM | 30% |
+| P5.b | v5: FairnessGuard local no sourcing (`sourced_profile_sourcing/fairness.py`) e jobs (`jobs/fairness.py`) — **sem check de output LLM fora do sourcing** | LIA: `_pre_check` analisa query; Layer 3 no `sourcing_react_agent.py` analisa output — **só no Sourcing** | 30% |
 |---|---|---|---|
 
-**Gap real:** Layer 1 (regex) e Layer 2 (implicit bias) rodam na **query**. Layer 3 (semântica) analisa o **output** mas **só no Sourcing**. Risco: recrutador pede "candidatos para startup dinâmica" (passa L1/L2), LLM gera filtro `age_range: 25-35` (discriminação etária) que **nenhum check intercepta** fora do Sourcing. **Solução:** ativar Layer 3 em todos os domínios via middleware centralizado
+**Gap real:** v5: FairnessGuard no sourcing tem análise de output (Layer 3 equivalente via `FairnessMetrics`), jobs tem `check_filters()` na query. LIA: Layer 1 (regex) e Layer 2 (implicit bias) rodam na **query** via `_pre_check`. Layer 3 (semântica) analisa o **output** mas **só no Sourcing**. Risco em ambos: recrutador pede "candidatos para startup dinâmica", LLM gera filtro `age_range: 25-35` (discriminação etária) que **nenhum check intercepta** fora do Sourcing. **Solução:** ativar Layer 3 em todos os domínios via middleware centralizado
 
-| P5.c | `_post_check` no DomainWorkflow aplica FactChecker | Mesmo código | 60% |
+| P5.c | v5: FactChecker **somente no sourcing** — outros domínios não validam claims | LIA: `_post_check` no DomainWorkflow aplica FactChecker **globalmente** — mas sem validadores domain-specific | 15% (v5) / 60% (LIA) |
 |---|---|---|---|
 
-**Gap real:** FactChecker valida claims genéricos (salários, contagens, datas) globalmente. Gap: validadores **domain-specific** não existem. Ex: Evaluation diz "score 85" mas real é 72; Analytics diz "tempo médio 15d" mas real é 23d. **Solução:** cada domínio registra validadores específicos no FactChecker (`evaluation.validate_score`, `analytics.validate_metric`)
+**Gap real:** v5 só valida claims no sourcing. LIA valida globalmente (salários, contagens, datas) mas sem validadores **domain-specific**. Ex: Evaluation diz "score 85" mas real é 72; Analytics diz "tempo médio 15d" mas real é 23d. **Solução:** cada domínio registra validadores específicos no FactChecker (`evaluation.validate_score`, `analytics.validate_metric`)
 
-| **P6** | `DomainPrompt` em `app/domains/base.py` — base mínima (só interface) | `DomainWorkflow` em `app/domains/workflow.py` — camada de execução | 40% |
+| **P6** | v5: `DomainPrompt` em `src/domains/base.py` — base com `ActionType`, `DomainAction`, `DomainContext` (sem compliance) | LIA: `DomainPrompt` (ABC) em `app/domains/base.py` — interface pura; `DomainWorkflow` em `app/domains/workflow.py` — orquestra com compliance | 40% |
 |---|---|---|---|
 
-**Gap real:** Duas "camadas" desconectadas: `DomainPrompt` define interface (process_intent, execute_action), `DomainWorkflow` orquestra (pre_check → execute → post_check). Gap: não existe classe entre elas que **garanta** compliance. Novo domínio pode herdar `DomainPrompt` sem nenhum check. **Solução:** criar `ComplianceDomainPrompt(DomainPrompt)` que adiciona compliance obrigatória; `DomainWorkflow` só aceita `ComplianceDomainPrompt`
+**Gap real:** Em ambos v5 e LIA, `DomainPrompt` é a base mínima sem compliance. Na LIA, `DomainWorkflow` adiciona compliance (pre_check/post_check) mas é uma camada de orquestração — não uma classe base. Gap: não existe classe entre `DomainPrompt` e os domínios que **garanta** compliance por herança. Novo domínio pode herdar `DomainPrompt` sem nenhum check. **Solução:** criar `ComplianceDomainPrompt(DomainPrompt)` que adiciona compliance obrigatória; `DomainWorkflow` só aceita `ComplianceDomainPrompt`
 
 | **P7** | `DomainPrompt` base não inclui compliance | — | 0% |
 |---|---|---|---|
@@ -172,12 +172,12 @@ Total de itens:   37
 
 #### Qualidade de Resposta (Caminho 3)
 
-> **Legenda colunas:** # | O que v5 já tem | O que LIA já tem (mesmo repo) | %
+> **Legenda colunas:** # | O que v5 já tem | O que LIA já tem (repo separado) | %
 
-| **P8** | `ActionExecutorService` em `action_executor.py` com `ACTIONABLE_INTENTS` (L28-247) e if/elif (L374-415) | `LangGraphReActBase` em `libs/agents-core/` + 9 agentes ReAct (Jobs, Screening, Sourcing, Policy, Recruiter×2, Communication, Analytics, ATS) | 80% |
+| **P8** | v5: `DomainOrchestrator` → `DomainWorkflow` (LangGraph StateGraph) com `DomainIntentAgent`, `DomainActionExecutor`, `DomainAnswerFormatter`. Domínios Flat usam `process_intent` → `execute_action` direto. Multi-Agent: `autonomous/agent.py` com loop ReAct | LIA: `DomainWorkflow` (async pipeline) com `_try_react_agent` (L359) fallback Flat. `LangGraphReActBase` em `libs/agents-core/` + 9 agentes ReAct | 80% |
 |---|---|---|---|
 
-**Gap real:** O `DomainWorkflow` já tenta ReAct primeiro (`_try_react_agent`, L359) e cai no Flat se não encontrar agente. Verificar quais domínios não têm agente ReAct no `DomainRegistry` e criar os faltantes — padrão canônico de 4 arquivos (agent, system_prompt, tool_registry, stage_context). O `ActionExecutorService` (Phase 1) pode ser mantido como fast-path para intents triviais. **Limpeza:** após criar ReAct para todos, os `_KEYWORD_ACTION_MAP` em cada `domain.py` podem ser removidos
+**Gap real:** Na LIA, o `DomainWorkflow` já tenta ReAct primeiro (`_try_react_agent`, L359) e cai no Flat se não encontrar agente. No v5, o `DomainOrchestrator` processa via StateGraph mas sem fallback ReAct. **Solução:** verificar quais domínios não têm agente ReAct e criar os faltantes — padrão canônico de 4 arquivos (agent, system_prompt, tool_registry, stage_context). **Limpeza:** após criar ReAct para todos, os `_CONTEXT_ACTION_PATTERNS` em cada `domain.py` (v5) podem ser removidos
 
 | P8.a | Cada agente processa isolado no seu domínio | `StateManager` em `state_manager.py` persiste resultados cross-agente | 60% |
 |---|---|---|---|
@@ -189,15 +189,15 @@ Total de itens:   37
 
 **Gap real:** O routing por LLM **já existe** como Tier 5 (LLMCascade). O problema é que o FastRouter (Tier 4) intercepta **antes** com matches errados. Ex: "comparar candidatos" bate em 3 domínios (analytics, screening, sourcing) via regex. **Solução:** (1) remover patterns ambíguos do FastRouter, (2) subir threshold de confiança para reduzir false positives, ou (3) inverter prioridade (LLM primeiro, FastRouter como fallback para latência)
 
-| P9.a | `_KEYWORD_ACTION_MAP` em cada `domain.py` — `analytics/domain.py` (L11-113), `interview_scheduling/domain.py` (L19-128), etc. | LLMCascade com `INTENT_CLASSIFICATION_EXAMPLES` em `few_shot_examples.py` | 70% |
+| P9.a | v5: `_CONTEXT_ACTION_PATTERNS` (lista de tuplas `(regex, action_id)`) em `src/domains/jobs/domain.py` — matching baseado em regex para decidir ação intra-domínio | LIA: `CascadedRouter` com 6 tiers (memory→redis→vector→FastRouter→LLMCascade→clarification); LLMCascade com `INTENT_CLASSIFICATION_EXAMPLES` | 70% |
 |---|---|---|---|
 
-**Gap real:** Após o CascadedRouter escolher o domínio, o domínio usa `_KEYWORD_ACTION_MAP` para decidir a **ação**. Colisão intra-domínio: "agendar" pode ser `schedule_interview` ou `schedule_report` dependendo do contexto. Quando o domínio migra para ReAct (P8), o agente LLM decide a ação por raciocínio, eliminando esses maps. **Resolve-se automaticamente com P8**
+**Gap real:** No v5, após o `DomainOrchestrator` escolher o domínio, o domínio usa `_CONTEXT_ACTION_PATTERNS` (regex) para decidir a **ação**. Colisão intra-domínio: "agendar" pode bater em múltiplos patterns. Na LIA, o `CascadedRouter` resolve o domínio; o domínio usa `process_intent` (podendo delegar ao LLM via ReAct). Quando o domínio migra para ReAct (P8), o agente LLM decide a ação por raciocínio, eliminando esses patterns. **Resolve-se automaticamente com P8**
 
-| P9.b | Regex no FastRouter não diferencia "mude o salário" de "NÃO mude o salário" | `NEGATION_DETECTION_BLOCK` em `interaction_patterns.py` já existe como bloco injetável | 80% |
+| P9.b | v5: regex em `_CONTEXT_ACTION_PATTERNS` não diferencia "mude o salário" de "NÃO mude o salário" — v5 **não tem** detecção de negação | LIA: `NEGATION_DETECTION_BLOCK` em `interaction_patterns.py` existe como bloco injetável no system prompt dos agentes ReAct | 0% (v5) / 80% (LIA) |
 |---|---|---|---|
 
-**Gap real:** O bloco de detecção de negação existe e funciona. Domínios que ainda usam `_KEYWORD_ACTION_MAP` (Flat) **não passam pelo LLM** onde o bloco seria aplicado. Quando migram para ReAct (P8), o bloco é automaticamente injetado no system prompt. **Resolve-se junto com P8** — não precisa de trabalho separado
+**Gap real:** O bloco de detecção de negação existe **na LIA** e funciona. v5 não tem nenhum mecanismo de detecção de negação. Domínios que ainda usam `_CONTEXT_ACTION_PATTERNS` (regex) **não passam pelo LLM** onde o bloco seria aplicado. Quando migram para ReAct (P8), o bloco é automaticamente injetado no system prompt. **Resolve-se junto com P8** — não precisa de trabalho separado
 
 | P9.c | Regex faz match literal: "agendar entrevista" funciona, "deixar pra outro dia" não | LLMCascade usa classificação por LLM + `INTENT_CLASSIFICATION_EXAMPLES` com few-shot | 70% |
 |---|---|---|---|
@@ -229,45 +229,45 @@ Total de itens:   37
 
 **Gap real:** O ConversationMemory existe mas **gera resumos genéricos**. Quando o recrutador volta no dia seguinte, o agente não sabe "ontem trabalhamos na vaga de Dev Senior e filtramos 12 candidatos". **Solução:** implementar `SessionBridge` que ao iniciar nova sessão, carrega o resumo da última sessão do mesmo usuário+domínio e injeta como contexto inicial
 
-| **P11** | `MASTER_ORCHESTRATOR_PROMPT` e `STAGE_SPECIALIZED_PROMPTS` hardcoded em `nodes.py` | `PromptRegistry` + `PromptLoader` + 10 YAMLs de domínio em `app/prompts/domains/` + 5 compartilhados em `app/prompts/shared/` | 75% |
+| **P11** | v5: prompts hardcoded em `prompts.py` dentro de cada domínio (ex: `src/domains/jobs/prompts.py`, `src/domains/sourced_profile_sourcing/prompts.py`) — strings Python diretamente no código | LIA: `PromptRegistry` + `PromptLoader` + 10 YAMLs de domínio em `app/prompts/domains/` + 5 compartilhados em `app/prompts/shared/` | 0% (v5) / 75% (LIA) |
 |---|---|---|---|
 
-**Gap real:** Os YAMLs existem e são completos (persona, scope, rules, behavioral_rules por domínio). O PromptLoader carrega e faz cache. O gap: os agentes v5 **não chamam** o PromptLoader — usam strings hardcoded diretamente. **Solução:** em cada `*_system_prompt.py`, substituir a string fixa por `PromptLoader.load("domains/{domain}.yaml")` + composição com blocos shared. Trabalho mecânico, ~30min por domínio
+**Gap real:** Os YAMLs existem **na LIA** e são completos (persona, scope, rules, behavioral_rules por domínio). O PromptLoader carrega e faz cache. O gap: os domínios v5 **não têm PromptRegistry nem PromptLoader** — usam classes `Prompts` com strings hardcoded em cada `prompts.py`. **Solução:** v5 precisa adotar o sistema de YAMLs da LIA ou replicar o PromptLoader. Em cada domínio, substituir a string fixa por carregamento de YAML + composição com blocos shared. Trabalho mecânico, ~30min por domínio
 
 | P11.a | — | `RubricEvaluationService` com escala BARS: EXCEEDS(100), MEETS(75), PARTIAL(40), MISSING(0). Modelo em `libs/models/lia_models/rubric.py` | 80% |
 |---|---|---|---|
 
 **Gap real:** BARS funciona completo no cv_screening. Evaluation, hiring_policy e sourcing fazem avaliações **sem escala padronizada** — critérios ad-hoc. **Solução:** generalizar `RubricEvaluationService` para aceitar rubrics por domínio e registrar rubrics específicas (policy compliance, sourcing quality, interview readiness)
 
-| P11.b | — | `few_shot_examples.py` com categorias: JOB_EXTRACTION, INTENT_CLASSIFICATION, SALARY_ANALYSIS | 60% |
+| P11.b | v5: **não tem** few-shot examples — prompts sem exemplos de bom vs ruim | LIA: `few_shot_examples.py` com categorias: JOB_EXTRACTION, INTENT_CLASSIFICATION, SALARY_ANALYSIS | 0% (v5) / 60% (LIA) |
 |---|---|---|---|
 
-**Gap real:** 3 categorias existem. Faltam: CANDIDATE_EVALUATION (bom vs ruim parecer), SCHEDULING_NEGOTIATION (agendar com restrições), COMMUNICATION_TONE (formal vs informal), ANALYTICS_QUERY (como pedir dados), SOURCING_QUERY (busca com filtros complexos). **Solução:** 3-5 exemplos por categoria faltante, seguindo formato existente
+**Gap real:** v5 não tem few-shot examples. Na LIA, 3 categorias existem. Faltam em ambos: CANDIDATE_EVALUATION, SCHEDULING_NEGOTIATION, COMMUNICATION_TONE, ANALYTICS_QUERY, SOURCING_QUERY. **Solução:** 3-5 exemplos por categoria faltante, seguindo formato existente da LIA
 
-| P11.c | — | `ANTI_SYCOPHANCY_BLOCK`, `CHAIN_OF_THOUGHT_BLOCK`, `NEGATION_DETECTION_BLOCK`, `DEFENSIVE_BLOCK` em `interaction_patterns.py` | 80% |
+| P11.c | v5: **não tem** blocos composíveis de prompt — cada domínio escreve regras inline | LIA: `ANTI_SYCOPHANCY_BLOCK`, `CHAIN_OF_THOUGHT_BLOCK`, `NEGATION_DETECTION_BLOCK`, `DEFENSIVE_BLOCK` em `interaction_patterns.py` | 0% (v5) / 80% (LIA) |
 |---|---|---|---|
 
-**Gap real:** Os blocos existem e funcionam. **Não são injetados automaticamente** — cada system_prompt importa manualmente. **Solução:** `ComplianceDomainPrompt` (P6/P7) injeta blocos obrigatórios (ANTI_SYCOPHANCY, DEFENSIVE) automaticamente ao montar o prompt; blocos opcionais (CoT) por configuração do domínio
+**Gap real:** Os blocos existem **na LIA** e funcionam. v5 não tem nenhum sistema de blocos composíveis. Na LIA, **não são injetados automaticamente** — cada system_prompt importa manualmente. **Solução:** `ComplianceDomainPrompt` (P6/P7) injeta blocos obrigatórios (ANTI_SYCOPHANCY, DEFENSIVE) automaticamente ao montar o prompt; blocos opcionais (CoT) por configuração do domínio
 
 | P11.d | — | `PromptRegistry.compare_versions()` compara prompts lado a lado. Versionamento semântico (X.Y.Z) por prompt | 40% |
 |---|---|---|---|
 
 **Gap real:** Infraestrutura de versionamento existe. **Não existe runner de split test** que direcione X% do tráfego para prompt v1.2 e Y% para v1.3, meça resultados (satisfação, accuracy, tempo de resposta) e declare vencedor. **Solução:** implementar `PromptExperiment` com seleção por session_id hash, logging no AuditService, e relatório de comparação
 
-| P11.e | v5 carrega prompts de strings Python, ignora os YAMLs | `PromptLoader` + 10 YAMLs completos (persona, scope_in, scope_out, behavioral_rules, system_prompt por domínio) | 90% |
+| P11.e | v5: carrega prompts de classes Python em `prompts.py` — ignora YAMLs (que **não existem no v5**) | LIA: `PromptLoader` + 10 YAMLs completos (persona, scope_in, scope_out, behavioral_rules, system_prompt por domínio) | 0% (v5) / 90% (LIA) |
 |---|---|---|---|
 
-**Gap real:** Os YAMLs estão prontos e o loader funciona. É o gap mais fácil de fechar: em cada agente, trocar `SYSTEM_PROMPT = "..."` por `PromptLoader.load("domains/sourcing.yaml").system_prompt`. **Literalmente 1 linha por agente.** O bloqueio não é técnico — ninguém fez
+**Gap real:** Os YAMLs existem **na LIA** e o loader funciona. O v5 **não tem** YAMLs nem PromptLoader — usa classes `Prompts` com strings Python. Para adotar: (1) copiar YAMLs da LIA para o v5, (2) implementar um loader equivalente, (3) em cada domínio, trocar `prompts.py` por carregamento de YAML. Na LIA os agentes ainda usam strings hardcoded em vez de chamar o loader — trocar por `PromptLoader.load("domains/{domain}.yaml")` é 1 linha por agente
 
-| P11.f | Prompts v5 não definem quem é a LIA — tom genérico de chatbot | `lia_persona.yaml` (identidade), `hr_vocabulary.yaml` (termos RH), `ethical_guidelines.yaml` (anti-bias) | 90% |
+| P11.f | v5: prompts não definem quem é a LIA — tom genérico de chatbot | LIA: `lia_persona.yaml` (identidade), `hr_vocabulary.yaml` (termos RH), `ethical_guidelines.yaml` (anti-bias) | 0% (v5) / 90% (LIA) |
 |---|---|---|---|
 
-**Gap real:** Mesmo caso de P11.e: YAMLs de persona existem, loader funciona, agentes v5 não carregam. **Solução idêntica:** `PromptLoader.load("shared/lia_persona.yaml")` na composição do prompt. Bônus: `hr_vocabulary.yaml` garante termos corretos de RH em PT-BR
+**Gap real:** v5 prompts não têm persona definida. Na LIA, YAMLs de persona existem e o loader funciona, mas os agentes **não carregam**. **Solução:** v5 precisa adotar os YAMLs da LIA; na LIA, `PromptLoader.load("shared/lia_persona.yaml")` na composição do prompt. Bônus: `hr_vocabulary.yaml` garante termos corretos de RH em PT-BR
 
-| **P12** | `ToolRegistry` em `registry.py` + metadata YAML em `tool_registry_metadata.yaml` + conversor `tool_definition_to_langchain_tool` | Tools reais para Jobs (`job_wizard_tools.py`), Screening (`candidate_tools.py`), Communication (`communication_tools.py`), Analytics (`analytics_query_tools.py`) | 55% |
+| **P12** | v5: `DomainRegistry` em `src/domains/registry.py` (registro de domínios, não de tools) + `action_registry.py` por domínio em `prompt_builder/` (declaração de ações com metadata) | LIA: `ToolRegistry` com tools reais para Jobs (`job_wizard_tools.py`), Screening (`candidate_tools.py`), Communication (`communication_tools.py`), Analytics (`analytics_query_tools.py`) | 55% |
 |---|---|---|---|
 
-**Gap real:** 4 domínios têm tools reais. 5 domínios têm tools parciais ou stubs: `messaging` (templates sem personalização), `insights` (sem aggregation cross-domain), `scheduling` (ações básicas, sem negociação), `automation` (triggers sem execução real), `ats_integration` (sync declarado, import parcial). **Solução:** implementar handlers faltantes domínio por domínio, seguindo padrão de `job_wizard_tools.py`
+**Gap real:** v5 declara ações em `action_registry.py` por domínio (metadata) mas a execução é via `execute_action` hardcoded. LIA tem tools reais para 4 domínios. 5 domínios têm tools parciais ou stubs em ambos: `messaging`, `insights`, `scheduling`, `automation`, `ats_integration`. **Solução:** implementar handlers faltantes domínio por domínio, seguindo padrão de `job_wizard_tools.py`
 
 | P12.a | Ações declaradas no YAML metadata sem handler Python correspondente | Tools reais com DB queries, validação, integração com serviços externos (Apify no Sourcing, SMTP no Communication) | 50% |
 |---|---|---|---|
@@ -381,7 +381,7 @@ jobs                  ❌        ❌       ❌         ❌     ❌          ─
 sourced_profile       ✅        ❌       ❌         ✅(*)  ❌          ✅
 insights              ❌        ❌       ❌         ❌     ❌          ❌
 ─────────────────────────────────────────────────────────────────────────────────
-(*) = audit_callback existe em src/services/audit/ mas é mutável (ON CONFLICT DO UPDATE)
+(*) = audit_writer existe em src/services/audit/audit_writer.py (v5) com ON CONFLICT DO UPDATE — mutável; LIA já usa DO NOTHING
 ✅ = implementado    ❌ = ausente    ─ = não aplicável ao domínio
 ```
 
@@ -537,12 +537,13 @@ O `applies` do v5 é evidência deste problema: começou Flat, mas o desenvolved
 
 ### P9. Keyword/regex matching é frágil
 
-O `process_intent` dos domínios Flat usa keyword matching com lógica de confiança baseada no tamanho do keyword:
+O `process_intent` dos domínios Flat usa regex matching via `_CONTEXT_ACTION_PATTERNS` (v5) — lista de tuplas `(regex_compilado, action_id)` que faz match sequencial:
 
 ```python
-for keyword, action_id in _KEYWORD_ACTION_MAP.items():
-    if keyword in query_lower:
-        confidence = min(0.95, 0.6 + len(keyword) * 0.02)
+# v5: src/domains/jobs/domain.py
+for pattern, action_id in _CONTEXT_ACTION_PATTERNS:
+    if pattern.search(query):
+        # match encontrado → usa action_id
 ```
 
 Problemas documentados:
@@ -690,18 +691,18 @@ As respostas do v5 sofrem de 6 camadas de problemas, cada uma contribuindo para 
 
 O primeiro ponto de falha é o **roteamento** — como o sistema decide qual domínio deve processar uma mensagem do recrutador.
 
-**v5 — Keyword Matching com Fallback de Confiança Baixa:**
+**v5 — Regex Matching via `_CONTEXT_ACTION_PATTERNS` com Fallback:**
 
-Todos os 11 domínios usam o mesmo padrão em `process_intent()`:
+Os domínios v5 (ex: `jobs`) usam listas de regex compilados em `process_intent()`:
 
 ```python
-# Padrão real em TODOS os domain.py do v5
-for keyword, action_id in _KEYWORD_ACTION_MAP.items():
-    if keyword in user_message.lower():
-        confidence = min(0.95, 0.6 + len(keyword) * 0.02)
-        return IntentResult(action=action_id, confidence=confidence)
+# Padrão real em src/domains/jobs/domain.py (v5)
+for pattern, action_id in _CONTEXT_ACTION_PATTERNS:
+    if pattern.search(user_message):
+        # match encontrado → determina action_id
+        return IntentResult(action=action_id, confidence=...)
 
-# Se nenhum keyword match → fallback com confiança baixa
+# Se nenhum pattern match → fallback LLM com confiança baixa
 return IntentResult(action=DEFAULT_ACTION, confidence=0.3)
 ```
 
@@ -815,7 +816,7 @@ Para cada cenário real de uso, a tabela mostra qual domínio recebe a query, co
 
 **Cenário 1 (Teams pipeline):** O keyword "pipeline" causa **colisão** (P9) entre 3 domínios: `applies` (pipeline transitions), `recruiter_assistant` (pipeline_health), e `automation` (engagement_pipeline). O primeiro match ganha — pode ser o errado. Mesmo que acerte, sem `job_id` do Teams (P10), retorna "especifique a vaga".
 
-**Cenário 2 (avancei ontem):** O verbo "avancei" não está no `_KEYWORD_ACTION_MAP` de nenhum domínio. O sistema cai no LLM fallback com confidence=0.3 (P9). Mesmo que o LLM acertasse, "ontem" é referência temporal que nenhum domínio resolve (P10).
+**Cenário 2 (avancei ontem):** O verbo "avancei" não está no `_CONTEXT_ACTION_PATTERNS` de nenhum domínio v5. O sistema cai no LLM fallback com confidence=0.3 (P9). Mesmo que o LLM acertasse, "ontem" é referência temporal que nenhum domínio resolve (P10).
 
 **Cenário 3 (avalie finalistas):** O keyword "avalie" match em `evaluation`. P8 **NÃO se aplica** — evaluation usa LangGraph, não Flat. Mas o LangGraph processa 1 candidato por vez (sem batch), e não tem BARS (P11), então as 5 avaliações são inconsistentes entre si.
 
@@ -864,7 +865,7 @@ PROBLEMAS APLICÁVEIS: P8 ✅ | P9 ✅ | P10 ✅ | P11 ✅ — todas as 4 camada
 ```
 ROTEAMENTO:
   v5: keyword scan em TODOS os domínios:
-      - "avancei" → ❌ não está em _KEYWORD_ACTION_MAP de NENHUM domínio
+      - "avancei" → ❌ não está em _CONTEXT_ACTION_PATTERNS de NENHUM domínio v5
       - "candidatos" → match em sourcing (search_candidates), cv_screening (parse_cv)
       - "ontem" → ❌ nenhum keyword temporal
       → Resultado: LLM fallback (0.3 confidence) → provavelmente sourcing.search_candidates
