@@ -211,7 +211,7 @@ export const ApproverSection = React.memo(function ApproverSection({
                     className="relative flex items-center gap-3 pb-4 last:pb-0"
                   >
                     <div
-                      className={}
+                      className=""
                     >
                       {approver.level}
                     </div>
@@ -238,7 +238,7 @@ export const ApproverSection = React.memo(function ApproverSection({
                         <div className="flex items-center gap-1">
                           <Badge
                             variant={approver.isActive ? "default" : "outline"}
-                            className={}
+                            className=""
                           >
                             {approver.isActive ? "Ativo" : "Inativo"}
                           </Badge>

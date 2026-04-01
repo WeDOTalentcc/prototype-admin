@@ -31,7 +31,6 @@ import {
 } from "./job-edit-tab/job-edit-tab.constants"
 import { useJobEditTab } from "./job-edit-tab/useJobEditTab"
 import { ScreeningBadge } from "./job-edit-tab/ScreeningBadge"
-import { ScreeningBadge } from "./job-edit-tab/ScreeningBadge"
 
 export function JobEditTab({
   jobEditForm,

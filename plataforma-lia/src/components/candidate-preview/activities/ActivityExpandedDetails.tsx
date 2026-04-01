@@ -8,7 +8,7 @@ import {
   Calendar, ExternalLink, CheckCircle, Mail, Download, Linkedin,
   Mic, Play, ClipboardCheck, FileText, Code, Gift, UserCheck,
   Shield, Users, Building, Clock,
-  Eye, Video, Target, ThumbsUp, ThumbsDown
+  Eye, Video, Target, ThumbsUp, ThumbsDown, AlertCircle
 } from "lucide-react"
 import { ScreeningQuestion, TranscriptionSegment } from "@/components/modals/screening-media-modal"
 import { Activity as ActivityData } from "@/data/demo-activities"

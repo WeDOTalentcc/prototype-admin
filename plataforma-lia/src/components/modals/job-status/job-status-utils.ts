@@ -9,9 +9,9 @@ export function formatPausedDuration(pausedSince?: string): string {
 
   if (diffDays === 0) return "Hoje"
   if (diffDays === 1) return "1 dia"
-  if (diffDays < 7) return 
-  if (diffDays < 30) return 
-  return 
+  if (diffDays < 7) return `${diffDays} dias`
+  if (diffDays < 30) return `${Math.ceil(diffDays / 7)} semanas`
+  return `${Math.ceil(diffDays / 30)} meses`
 }
 
 export function replaceTemplateVariables(content: string, jobTitle: string): string {
