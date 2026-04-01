@@ -39,7 +39,7 @@
 | ESLint warnings | ~155 | **110** |
 | `@ts-nocheck` | 269 | **0** ✅ |
 | `@ts-ignore` | ~800 | **1085** ⚠️ |
-| Arquivos >1000L | 39 | **1** (mock data) ✅ |
+| Arquivos >1000L | 39 | **3** (mock data + design-tokens.css + useExpandedChatModalCore) ✅ |
 | Testes passando | 625/625 | **625/625** ✅ |
 | Commits desta sessão | — | **~35** |
 
@@ -53,7 +53,7 @@
 - [x] ESLint: 0 erros
 - [x] Build flags limpas: `ignoreBuildErrors` e `ignoreDuringBuilds` removidos
 - [x] `.env.example` documentado (25 variáveis de ambiente)
-- [x] Arquivos >1000L: 39 → 1 (apenas mock data file — não migrar)
+- [x] Arquivos >1000L: 39 → 3 (mock data + design-tokens.css cresceu com tokens + useExpandedChatModalCore em 1.001L)
 - [x] Monolith eliminado: KanbanPageCore, CandidatesPageCore, CandidateSearchResultsView e outros splitados
 - [x] Hooks `.tsx` → `.ts`: 6 conversões (false-positives TypeScript generics)
 - [x] Context → Store map documentado em `vue-bridge.ts`
@@ -184,7 +184,7 @@ da6cdd9b fix(design): replace arbitrary spacing with Tailwind scale
 - [x] Tests: 625/625 passing (`npm test -- --run`)
 - [x] Build flags limpas (sem `ignoreBuildErrors`)
 - [x] `@ts-nocheck`: 0 arquivos
-- [x] Monolith: 0 arquivos >1000L (exceto 1 mock data)
+- [x] Monolith: 3 arquivos >1000L (mock data 1.559L, design-tokens.css 1.033L, useExpandedChatModalCore 1.001L)
 - [x] Vue bridge documentado (`src/lib/vue-bridge.ts`)
 - [x] Contextos mapeados para Pinia stores
 - [x] Proxy routes documentados para Nitro
