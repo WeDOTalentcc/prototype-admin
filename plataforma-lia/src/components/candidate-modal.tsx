@@ -576,7 +576,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
 
                 {candidateData.notes.map((note: { id: number; author: string; date?: string; content?: string; type?: string }) => (
 
-                  <div key={note.id} className={`p-4 rounded-md border-l-4 ${getNoteColor(note.type)}`}>
+                  <div key={note.id} className={`p-4 rounded-md border-l-4 ${getNoteColor(note.type ?? '')}`}>
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <Avatar className="w-6 h-6">

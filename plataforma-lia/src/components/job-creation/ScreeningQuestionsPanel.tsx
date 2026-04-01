@@ -671,7 +671,7 @@ export function ScreeningQuestionsPanel({
 
   const renderSuggestionCard = (question: UnifiedScreeningQuestion) => {
     const getCategoryBadges = () => {
-      const badges = []
+      const badges: { label: string; color: string }[] = []
       const isAffirmativeSuggestion = question.id?.includes('affirmative') || false
       const cat = (question.category || '').toLowerCase()
       if (isAffirmativeSuggestion) {

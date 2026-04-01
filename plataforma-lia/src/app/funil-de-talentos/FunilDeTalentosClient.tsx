@@ -17,6 +17,7 @@ import { useTalentFunnel } from "@/hooks/use-talent-funnel"
 import { textStyles } from "@/lib/design-tokens"
 import { Search, Share2, Users, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react"
 import type { Candidate, SortConfig } from "@/components/pages/candidates/types"
+import type { TableCandidate } from "@/components/tables"
 import type { CandidateLocal } from "@/services/lia-api"
 import { cn } from "@/lib/utils"
 
@@ -164,7 +165,7 @@ export default function FunilDeTalentosPage() {
               Funil de Talentos
             </h1>
 
-            <p className={cn(textStyles.secondary, "text-xs mt-0.5")} aria-live="polite">
+            <p className={cn(textStyles.description, "text-xs mt-0.5")} aria-live="polite">
 
 
               {total > 0 ? `${total.toLocaleString("pt-BR")} candidatos` : "Busque candidatos na base"}
@@ -339,7 +340,7 @@ export default function FunilDeTalentosPage() {
           <TabsContent value="favoritos" className="mt-4">
             <FavoritesTab
 
-              candidates={favoriteCandidates}
+              candidates={favoriteCandidates as unknown as TableCandidate[]}
 
               pinnedCandidates={pinnedIds}
 
