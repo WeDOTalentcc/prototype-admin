@@ -1,7 +1,7 @@
 # Guia de Migração v5 → Compliance Compartilhada
 
 > **Plataforma LIA — WeDO Talent**
-> Versão: 2.0 | Data: 2026-04-01
+> Versão: 2.1 | Data: 2026-04-01
 > Fonte: `WeDO/analises/diagnostico_arquitetura_codigo_lia_vs_v5.md` (8070 linhas)
 > Caminho recomendado: **Caminho 2 — ComplianceDomainPrompt** (~23.5h, 3 sprints)
 
@@ -16,9 +16,9 @@ Este guia documenta a migração do v5 para a arquitetura de **Compliance Compar
 
 **Como ler:**
 
-1. **Resumo Executivo** — visão geral dos 11 problemas e qual caminho resolve cada um
+1. **Resumo Executivo** — visão geral dos 13 problemas (+ 24 sub-problemas) e qual caminho resolve cada um
 2. **Contexto** (seção 1) — por que o v5 tem 3 arquiteturas diferentes
-3. **Diagnóstico** (seção 2) — os 11 problemas, ponto a ponto
+3. **Diagnóstico** (seção 2) — os 13 problemas (P1-P13), ponto a ponto
 4. **Análise Aprofundada** (seção 3) — roteamento, inventário por domínio, cenários reais, prompts, gap de tools
 5. **Conceitos** (seção 4) — glossário: o que é ComplianceDomainPrompt, Tools, ReAct, etc.
 6. **Migração Caminho 2** (seções 5-9) — os 9 controles, classe base, migração dos domínios, sprint plan, testes
@@ -30,30 +30,42 @@ Este guia documenta a migração do v5 para a arquitetura de **Compliance Compar
 
 ## Resumo Executivo
 
+O diagnóstico identificou **13 problemas estruturais** com **24 sub-problemas** — totalizando **37 itens** que precisam ser resolvidos. A lista completa abaixo garante que nenhum item seja subestimado.
 
-**Problemas de Compliance (P1-P7):**
+### Problemas de Compliance (P1-P7)
 
-| # | Problema | Gravidade | Regulação afetada |
-|---|----------|-----------|-------------------|
-| P1 | 3 arquiteturas diferentes | Estrutural | — |
-| P2 | Compliance é opcional (opt-in) | **Crítica** | Todas |
-| P3 | 6 de 9 serviços não existem | **Crítica** | EU AI Act, LGPD, SOX, BCB-498 |
-| P4 | Serviços acoplados aos domínios errados | Alta | EU AI Act Art. 6, 9 |
-| P5 | Serviços atuam no ponto errado do pipeline | Alta | LGPD Art. 12, SOX |
-| P6 | Sem camada intermediária (herança direta) | **Crítica** | Todas |
-| P7 | Novos domínios não herdam nada | **Crítica** | Todas |
+| # | Problema | Gravidade | Sub-problemas | Caminho |
+|---|----------|-----------|---------------|---------|
+| P1 | 3 arquiteturas diferentes (Flat, LangGraph, Multi-Agent) | Estrutural | — | Caminho 3 |
+| P2 | Compliance é opcional (opt-in) — quem não sabe, não usa | **Crítica** | — | Caminho 2 |
+| P3 | 6 de 9 serviços não existem | **Crítica** | P3a. AuditCallback é mutável (ON CONFLICT DO UPDATE → viola SOX); P3b. PII Stripping parcial (falta `strip_pii_for_llm_prompt`); P3c. FactChecker só local em sourcing | Caminho 2 |
+| P4 | Serviços acoplados aos domínios errados | Alta | P4a. Implementações locais divergem do original com o tempo | Caminho 2 |
+| P5 | Serviços atuam no ponto errado do pipeline | Alta | P5a. PII vai para o LLM sem stripping; P5b. FairnessGuard só na query, não nas tool calls (LLM pode gerar filtros discriminatórios); P5c. FactChecker só no sourcing — evaluation e insights não validam claims | Caminho 2 |
+| P6 | Sem camada intermediária entre base e domínios | **Crítica** | — | Caminho 2 |
+| P7 | Novos domínios não herdam compliance | **Crítica** | — | Caminho 2 |
 
-**Problemas de Qualidade de Resposta (P8-P11):**
+### Problemas de Qualidade de Resposta (P8-P13)
 
-| # | Problema | Gravidade | Impacto no produto |
-|---|----------|-----------|-------------------|
-| P8 | Domínios Flat incapazes de encadear ações | **Crítica** | Respostas limitadas — "preciso pedir uma coisa de cada vez" |
-| P9 | Keyword/regex matching frágil | Alta | Respostas equivocadas — entende errado e faz a coisa errada |
-| P10 | Contexto pobre (sem memória de sessão) | **Crítica** | Sistema "amnésico" — cada mensagem tratada como primeira |
-| P11 | Prompts estáticos sem composição dinâmica | Alta | Tom robótico — respostas genéricas sem personalidade |
+| # | Problema | Gravidade | Sub-problemas | Caminho |
+|---|----------|-----------|---------------|---------|
+| P8 | Domínios Flat incapazes de encadear ações | **Crítica** | P8a. Sem cross-domain (applies → scheduling → evaluation impossível) | Caminho 3 |
+| P9 | Keyword/regex matching frágil | Alta | P9a. Colisão de keywords entre domínios (3 domínios competem por "comparar"); P9b. Não entende negação ("NÃO mude o salário" → `edit_job`); P9c. Linguagem natural não bate ("deixar pra outro dia" ≠ "cancelar"); P9d. Referências temporais ignoradas ("ontem", "semana passada") | Caminho 3 |
+| P10 | Contexto pobre — sem memória de sessão | **Crítica** | P10a. Chat flutuante/Teams sem job_id (StageContext); P10b. Referências anafóricas não resolvidas ("aquela vaga", "o candidato"); P10c. Sem histórico cross-session (cada conversa começa do zero) | Caminho 3 |
+| P11 | Prompts estáticos — sem composição dinâmica | Alta | P11a. Sem BARS → avaliações incomparáveis (ad-hoc por domínio); P11b. Sem few-shot examples → LLM sem exemplos de bom vs ruim; P11c. Sem blocos composíveis (ANTI_SYCOPHANCY, CHAIN_OF_THOUGHT, DEFENSIVE); P11d. Sem A/B testing → impossível medir se prompt melhorou; P11e. YAMLs da LIA existem mas v5 não carrega (persona, scope, rules desconectados); P11f. Sem persona definida nos prompts v5 | Caminho 3 |
+| P12 | Gap de Tools — ações declaradas mas não executáveis | **Crítica** | P12a. 44-67% das ações declaradas são stubs sem implementação; P12b. 6/8 domínios sem agent-level tool registry; P12c. Tools cross-domain inacessíveis via Flat (WSI scores, batch_move, fairness check) | Caminho 3 |
+| P13 | Sem batch processing — 1 item por vez | Alta | P13a. Nenhum domínio processa múltiplos itens em paralelo; P13b. "Avalie os 50 candidatos" = 50 chamadas manuais | Caminho 3 |
 
-**O Caminho 2 resolve P2, P3, P4, P5, P6 e P7 em 3 sprints (~23.5h).**
-**O Caminho 3 resolve P1 (unificação arquitetural), P8 (Flat→ReAct), P9 (elimina regex), P10 (MemoryResolver+ContextAggregator) e P11 (PromptRegistry+blocos composíveis).**
+### Totais
+
+```
+Problemas:        13 (P1-P13)
+Sub-problemas:    24 (P3a-P3c, P4a, P5a-P5c, P8a, P9a-P9d, P10a-P10c, P11a-P11f, P12a-P12c, P13a-P13b)
+Total de itens:   37
+```
+
+**O Caminho 2 resolve P2, P3 (com P3a-P3c), P4 (com P4a), P5 (com P5a-P5c), P6 e P7 em 3 sprints (~23.5h) — 7 problemas + 7 sub-problemas = 14 itens.**
+
+**O Caminho 3 resolve P1, P8 (com P8a), P9 (com P9a-P9d), P10 (com P10a-P10c), P11 (com P11a-P11f), P12 (com P12a-P12c) e P13 (com P13a-P13b) — 7 problemas + 17 sub-problemas = 24 itens. Início recomendado: Q2 2027.**
 
 ---
 
@@ -61,8 +73,8 @@ Este guia documenta a migração do v5 para a arquitetura de **Compliance Compar
 
 1. [Contexto](#1-contexto)
 2. [Diagnóstico: Todos os Problemas](#2-diagnóstico-todos-os-problemas)
-   - P1-P7: Problemas de Compliance
-   - P8-P11: Problemas de Qualidade de Resposta
+   - P1-P7: Problemas de Compliance (7 problemas + 7 sub-problemas)
+   - P8-P13: Problemas de Qualidade de Resposta (6 problemas + 17 sub-problemas)
 3. [Análise Aprofundada](#3-análise-aprofundada)
    - 3.1: [Roteamento v5 vs LIA](#31-como-funciona-o-roteamento-v5-vs-lia)
    - 3.2: [Inventário Real por Domínio](#32-inventário-real-por-domínio)
@@ -143,7 +155,7 @@ O v5 disponibiliza serviços em `src/services/` (pii_filter, circuit_breaker, au
 
 ## 2. Diagnóstico: Todos os Problemas
 
-Abaixo estão os **11 problemas estruturais** identificados — 7 de compliance (P1-P7) e 4 de qualidade de resposta (P8-P11). Cada problema é descrito em detalhe com exemplos concretos do código.
+Abaixo estão os **13 problemas estruturais** (com **24 sub-problemas**) identificados — 7 de compliance (P1-P7) e 6 de qualidade de resposta (P8-P13). Cada problema é descrito em detalhe com exemplos concretos do código.
 
 ### P1. Os 8 domínios têm 3 arquiteturas diferentes
 
@@ -363,6 +375,30 @@ Impacto concreto:
 
 ---
 
+### P12. Gap de Tools — ações declaradas mas não executáveis
+
+Os domínios v5 declaram ações em `actions.py`, mas muitas não têm implementação real em `tools/__init__.py`. Além disso, 6 dos 8 domínios não possuem agent-level tool registry — as tools que existem no nível de agente ReAct (como WSI scores, batch_move, fairness check) são inacessíveis.
+
+| Sub-problema | Descrição | Dados |
+|-------------|-----------|-------|
+| **P12a.** Stubs sem implementação | 44-67% das ações declaradas não têm tool executável — retornam respostas genéricas | `sourcing`: 30 ações, 10 tools (67% gap); `jobs`: 29 ações, 13 tools (55% gap) |
+| **P12b.** Sem agent-level tools | 6/8 domínios não têm `tool_registry.py` — só `applies` e `autonomous` dão acesso ao ReAct agent a tools cross-domain | jobs, messaging, insights, scheduling, evaluation, sourcing = sem ReAct tools |
+| **P12c.** Tools cross-domain inacessíveis | Tools críticas como `get_candidate_wsi_scores`, `batch_move`, `check_rejection_fairness` existem no agent-level mas domínios Flat não acessam | 10+ tools cross-domain inacessíveis (ver tabela na seção 3.6) |
+
+Impacto: mesmo que o roteamento (P9) e o prompt (P11) estejam corretos, o agente **não pode fazer** o que foi pedido porque a tool não existe ou não está acessível.
+
+---
+
+### P13. Sem batch processing — sistema processa 1 item por vez
+
+Nenhum domínio v5 suporta processamento em lote. Operações que deveriam ser paralelas exigem múltiplas chamadas manuais.
+
+| Sub-problema | Descrição | Exemplo concreto |
+|-------------|-----------|-----------------|
+| **P13a.** Sem processamento paralelo | Nenhum domínio usa `asyncio.Semaphore` ou equivalente para processar N itens | Na LIA, `CVScreeningBatchService` avalia 5 candidatos em paralelo com `Semaphore(max_concurrent=5)` |
+| **P13b.** N itens = N chamadas manuais | "Avalie os 50 candidatos" = recrutador precisa chamar 50 vezes | "Agende entrevistas com todos os aprovados" = 1 agendamento por vez |
+
+Impacto: o sistema é percebido como lento e improdutivo para operações em escala — exatamente o cenário mais comum em recrutamento (triagem de dezenas/centenas de candidatos).
 
 ---
 
@@ -371,31 +407,37 @@ Impacto concreto:
 Esta seção aprofunda o diagnóstico com dados do código: como o roteamento funciona, o que cada domínio tem e não tem, cenários reais de falha, e o gap de tools.
 
 
-As respostas do v5 sofrem de 4 camadas de problemas, cada uma contribuindo para um tipo de falha diferente:
+As respostas do v5 sofrem de 6 camadas de problemas, cada uma contribuindo para um tipo de falha diferente:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│          4 CAMADAS DE PROBLEMAS NAS RESPOSTAS DO v5                │
+│          6 CAMADAS DE PROBLEMAS NAS RESPOSTAS DO v5                │
 │                                                                     │
-│  CAMADA 4: ARQUITETURA (P8)                                        │
+│  CAMADA 6: ARQUITETURA (P8)                                        │
 │  └─ Flat não encadeia ações → respostas parciais                   │
 │                                                                     │
-│  CAMADA 3: INTERPRETAÇÃO (P9)                                      │
+│  CAMADA 5: INTERPRETAÇÃO (P9)                                      │
 │  └─ Regex/keyword não entende linguagem natural → ação errada      │
 │                                                                     │
-│  CAMADA 2: CONTEXTO (P10)                                          │
+│  CAMADA 4: CONTEXTO (P10)                                          │
 │  └─ Sem memória/state → não sabe do que se trata → genérico        │
 │                                                                     │
-│  CAMADA 1: PROMPT (P11)                                            │
+│  CAMADA 3: PROMPT (P11)                                            │
 │  └─ Prompt estático sem blocos/few-shot → tom robótico             │
 │                                                                     │
+│  CAMADA 2: TOOLS (P12)                                             │
+│  └─ Ações declaradas sem implementação → agente não pode fazer     │
+│                                                                     │
+│  CAMADA 1: ESCALA (P13)                                            │
+│  └─ Sem batch → 1 item por vez → lento para recrutamento real      │
+│                                                                     │
 │  ───────────────────────────────────────────────────────────────    │
-│  Resolver SÓ a camada 1 (prompt) não adianta se as camadas         │
-│  2, 3 e 4 continuam falhando. A correção é de baixo para cima.     │
+│  Resolver SÓ uma camada não adianta se as outras continuam         │
+│  falhando. A correção é de baixo para cima.                         │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-> **Nota importante:** Nem todos os problemas se aplicam a todos os cenários. A seção 0.12.3 mostra que **P8 (Flat) não se aplica** a cenários de `evaluation`, `scheduling` e `autonomous` — eles já usam LangGraph/ReAct. Generalizar "tudo é Flat" é impreciso e leva a esforço de migração desnecessário.
+> **Nota importante:** Nem todos os problemas se aplicam a todos os cenários. A seção 3.3 mostra que **P8 (Flat) não se aplica** a cenários de `evaluation`, `scheduling` e `autonomous` — eles já usam LangGraph/ReAct. Generalizar "tudo é Flat" é impreciso e leva a esforço de migração desnecessário.
 
 ### 3.1 Como Funciona o Roteamento: v5 vs LIA
 
@@ -906,18 +948,14 @@ E montar uma comparação multi-dimensional. A diferença não é de prompt — 
 
 ### 3.7 Relação entre Camadas e Problemas
 
-| Camada | Problema | Resolve com | Quando |
-|--------|----------|-------------|--------|
-| 4. Arquitetura | P8 (Flat→ReAct) | Migrar domínios Flat para ReAct | Caminho 3, Fase 1 |
-| 3. Interpretação | P9 (regex→LLM) | Eliminar keyword matching, LLM classifica intent | Caminho 3, junto com ReAct |
-| 2. Contexto | P10 (sem memória) | MemoryResolver + ContextAggregator + StageContext | Caminho 3, Fase 2 |
-| 1. Prompt | P11 (estático) | PromptRegistry + blocos + few-shot + BARS | Caminho 3, Fase 2-3 |
-| 0. Tools | Gap N2→N3 | Criar agent-level tool registries para todos os domínios | Caminho 3, Fase 1-2 |
-
-> **Adição v1.4:** A Camada 0 (Tools) foi adicionada porque o diagnóstico granular revelou que mesmo com ReAct (P8 resolvido), prompt YAML (P11 resolvido), e contexto (P10 resolvido), o agente é limitado pelas tools disponíveis. Implementar agent-level tool registries para os 6 domínios que não têm (jobs, messaging, insights, scheduling, evaluation, sourcing) é pré-requisito para que as outras camadas funcionem.
-
----
-
+| Camada | Problema | Sub-problemas | Resolve com | Quando |
+|--------|----------|---------------|-------------|--------|
+| 6. Arquitetura | P8 (Flat→ReAct) | P8a (sem cross-domain) | Migrar domínios Flat para ReAct | Caminho 3, Fase 1 |
+| 5. Interpretação | P9 (regex→LLM) | P9a-P9d (colisão, negação, linguagem natural, temporal) | Eliminar keyword matching, LLM classifica intent | Caminho 3, junto com ReAct |
+| 4. Contexto | P10 (sem memória) | P10a-P10c (sem StageContext, sem anáforas, sem cross-session) | MemoryResolver + ContextAggregator + StageContext | Caminho 3, Fase 2 |
+| 3. Prompt | P11 (estático) | P11a-P11f (sem BARS, few-shot, blocos, A/B, YAMLs, persona) | PromptRegistry + blocos + few-shot + BARS | Caminho 3, Fase 2-3 |
+| 2. Tools | P12 (gap de tools) | P12a-P12c (stubs, sem agent-level, sem cross-domain) | Criar agent-level tool registries para todos os domínios | Caminho 3, Fase 1-2 |
+| 1. Escala | P13 (sem batch) | P13a-P13b (sem paralelo, N chamadas manuais) | BatchService com asyncio.Semaphore | Caminho 3, Fase 3 |
 
 ---
 
