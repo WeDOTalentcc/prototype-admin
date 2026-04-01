@@ -235,13 +235,17 @@ export function JobsPage(props: JobsPageProps) {
                 }}
                 role="tab"
                 aria-selected={activeFilter === filter.id}
-                className={activeFilter === filter.id ? tabStyles.pillActive : tabStyles.pill}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] ${
+                  activeFilter === filter.id
+                    ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-lia-text-primary'
+                    : 'text-lia-text-secondary hover:bg-gray-100 dark:text-lia-text-secondary dark:hover:bg-gray-800'
+                }`}
               >
                 <span>{filter.label}</span>
                 {!filter.isDashboard && (
                   <span className={`text-[10px] font-semibold ${
                     activeFilter === filter.id
-                      ? 'text-white/60 dark:text-lia-text-tertiary'
+                      ? 'text-gray-500 dark:text-lia-text-tertiary'
                       : 'text-lia-text-tertiary dark:text-lia-text-tertiary'
                   }`}>
                     {isLoadingJobs ? (

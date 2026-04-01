@@ -330,7 +330,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
               onClick={() => { setActiveTab('management'); setShowJobEditor(false); }}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] ${
                 activeTab === 'management'
-                  ? 'bg-gray-900 text-white dark:bg-gray-50 dark:text-lia-text-disabled'
+                  ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-lia-text-primary'
                   : 'text-lia-text-secondary hover:bg-gray-100 dark:text-lia-text-secondary dark:hover:bg-gray-800'
               }`}
             >
@@ -338,7 +338,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
               Gestão da Vaga
               <Badge className={`text-micro px-1.5 py-0 ml-1 ${
                 activeTab === 'management'
-                  ? 'bg-white/20 text-white dark:bg-gray-900/20 dark:text-lia-text-disabled'
+                  ? 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-lia-text-secondary'
                   : 'bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-secondary'
               }`}>
                 {allTableCandidates?.length || 0}
@@ -348,7 +348,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
               onClick={() => { setActiveTab('edit'); setShowJobEditor(true); }}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] ${
                 activeTab === 'edit'
-                  ? 'bg-gray-900 text-white dark:bg-gray-50 dark:text-lia-text-disabled'
+                  ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-lia-text-primary'
                   : 'text-lia-text-secondary hover:bg-gray-100 dark:text-lia-text-secondary dark:hover:bg-gray-800'
               }`}
             >

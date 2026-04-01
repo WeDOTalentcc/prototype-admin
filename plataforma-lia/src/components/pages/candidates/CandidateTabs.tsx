@@ -25,7 +25,11 @@ const CandidateTabs = memo(function CandidateTabs({ tabs, activeTab, onTabChange
             onClick={() => onTabChange(tab.id)}
             role="tab"
             aria-selected={activeTab === tab.id}
-            className={activeTab === tab.id ? tabStyles.pillActive : tabStyles.pill}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] ${
+              activeTab === tab.id
+                ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-lia-text-primary'
+                : 'text-lia-text-secondary hover:bg-gray-100 dark:text-lia-text-secondary dark:hover:bg-gray-800'
+            }`}
           >
             {tab.label}
             {tab.comingSoon && (
