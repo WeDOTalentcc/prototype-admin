@@ -101,89 +101,205 @@ Total de itens:   37
 
 > **Nota importante:** Os serviços de compliance que existem no v5 estão **incompletos** — funcionam para o caso de uso original mas precisam ser incrementados para cobertura completa. A migração do Caminho 2 não é só "mover para o lugar certo" — é também **completar** o que falta em cada serviço e **limpar** as implementações locais duplicadas que existem dentro de cada domínio (ver Seção 4.4 para lista de arquivos a deletar e Seção 4.5 para fluxos antes/depois por grupo arquitetural).
 
-| # | O que v5 já tem (incompleto) | O que LIA já tem (mesmo repo) | % |
-|---|------------------------------|-------------------------------|---|
+> **Legenda colunas:** # | O que v5 já tem (incompleto) | O que LIA já tem (mesmo repo) | %
+
 | **P2** | `DomainWorkflow._pre_check` aplica FairnessGuard automaticamente | Mesmo código | 60% |
-| | **Gap real:** O `DomainWorkflow` já aplica compliance para quem passa por ele. O gap são os caminhos que **bypessam**: endpoints REST diretos em `app/api/v1/` (ex: `job_vacancies.py`), Celery tasks em background, e o `ActionExecutorService` (Phase 1) que executa ações sem passar pelo workflow. **Solução:** interceptar esses caminhos com middleware FastAPI ou wrapping do ActionExecutor | | |
+|---|---|---|---|
+
+**Gap real:** O `DomainWorkflow` já aplica compliance para quem passa por ele. O gap são os caminhos que **bypessam**: endpoints REST diretos em `app/api/v1/` (ex: `job_vacancies.py`), Celery tasks em background, e o `ActionExecutorService` (Phase 1) que executa ações sem passar pelo workflow. **Solução:** interceptar esses caminhos com middleware FastAPI ou wrapping do ActionExecutor
+
 | **P3** | FairnessGuard (3 layers), FactChecker, AuditService, PII Masking — 4 de 9 serviços | Mesmo código | 40% |
-| | **Gap real:** Faltam 5 serviços: **ExplainabilityService** (explicar rejeição ao candidato — LGPD Art.20), **RetentionPolicy** automática (AuditService tem `retention_days` mas não executa purge), **ConsentManager** (rastrear consentimento do candidato), **ComplianceReporter** (dashboard para DPO), **IncidentResponseService** (alertar violações). Os 4 existentes precisam de incremento: FairnessGuard precisa absorver Layer 3 do Sourcing e rejection check do Pipeline; AuditCallback precisa virar immutable; PII Stripping precisa cobrir todos os domínios | | |
+|---|---|---|---|
+
+**Gap real:** Faltam 5 serviços: **ExplainabilityService** (explicar rejeição ao candidato — LGPD Art.20), **RetentionPolicy** automática (AuditService tem `retention_days` mas não executa purge), **ConsentManager** (rastrear consentimento do candidato), **ComplianceReporter** (dashboard para DPO), **IncidentResponseService** (alertar violações). Os 4 existentes precisam de incremento: FairnessGuard precisa absorver Layer 3 do Sourcing e rejection check do Pipeline; AuditCallback precisa virar immutable; PII Stripping precisa cobrir todos os domínios
+
 | P3.a | `ON CONFLICT DO UPDATE` em `libs/audit/lia_audit/audit_callback.py` | AuditService em `app/shared/compliance/audit_service.py` com retention | 30% |
-| | **Gap real:** O AuditCallback usa `ON CONFLICT DO UPDATE` — permite sobrescrever audit trail, violando SOX. O AuditService separado tem retention policies mas usa o mesmo pattern. **Solução:** mudar para `INSERT` only + soft delete, ou append-only storage (tabela particionada por mês, sem UPDATE/DELETE permissions no role da aplicação) | | |
+|---|---|---|---|
+
+**Gap real:** O AuditCallback usa `ON CONFLICT DO UPDATE` — permite sobrescrever audit trail, violando SOX. O AuditService separado tem retention policies mas usa o mesmo pattern. **Solução:** mudar para `INSERT` only + soft delete, ou append-only storage (tabela particionada por mês, sem UPDATE/DELETE permissions no role da aplicação)
+
 | P3.b | `install_global_pii_masking()` no `app/main.py` + `strip_pii_for_llm_prompt` | Mesmo código | 70% |
-| | **Gap real:** O masking global funciona nos **logs** (todos os `logging.*` passam pelo filtro PII). O `strip_pii_for_llm_prompt` existe mas só é chamado em 2/9 domínios: `rubric_evaluation_service.py` (L894) e `wsi_interview_graph.py` (L534). **Falta em:** jobs, messaging, sourcing, analytics, insights, automation, ats_integration. **Solução:** adicionar `strip_pii_for_llm_prompt` no `LangGraphReActBase` antes de montar o prompt — cobre todos os agentes automaticamente | | |
+|---|---|---|---|
+
+**Gap real:** O masking global funciona nos **logs** (todos os `logging.*` passam pelo filtro PII). O `strip_pii_for_llm_prompt` existe mas só é chamado em 2/9 domínios: `rubric_evaluation_service.py` (L894) e `wsi_interview_graph.py` (L534). **Falta em:** jobs, messaging, sourcing, analytics, insights, automation, ats_integration. **Solução:** adicionar `strip_pii_for_llm_prompt` no `LangGraphReActBase` antes de montar o prompt — cobre todos os agentes automaticamente
+
 | P3.c | FactChecker no `DomainWorkflow._post_check` | Mesmo código | 50% |
-| | **Gap real:** Já é **global** via workflow — todo domínio que passa recebe validação. **Gaps:** (1) domínios que bypessam o workflow (mesmos de P2); (2) FactChecker valida claims genéricos (números, datas) mas **não tem validadores por domínio** — ex: Evaluation diz "score 85" mas real é 72; Analytics diz "15 dias" mas real é 23. **Solução:** cada domínio registra validadores específicos (ex: `evaluation.validate_score`, `analytics.validate_metric`) | | |
+|---|---|---|---|
+
+**Gap real:** Já é **global** via workflow — todo domínio que passa recebe validação. **Gaps:** (1) domínios que bypessam o workflow (mesmos de P2); (2) FactChecker valida claims genéricos (números, datas) mas **não tem validadores por domínio** — ex: Evaluation diz "score 85" mas real é 72; Analytics diz "15 dias" mas real é 23. **Solução:** cada domínio registra validadores específicos (ex: `evaluation.validate_score`, `analytics.validate_metric`)
+
 | **P4** | FairnessGuard importado direto em `sourcing_react_agent.py` (L151), `policy_react_agent.py`, `pipeline_tool_registry.py` (L513) | `FairnessGuardMiddleware` em `app/shared/compliance/` | 50% |
-| | **Gap real:** Middleware existe mas **não é usado consistentemente**. Cada domínio importa e chama de forma diferente. **Solução:** remover importações diretas, `ComplianceDomainPrompt` chama middleware em `pre_process`/`post_process`. **Limpeza (Seção 4.4):** deletar `jobs/fairness.py`, `evaluation/security.py`, `sourcing/fairness.py`, `sourcing/fact_checker.py` + remover imports diretos em cada `domain.py`. **Verificar:** `grep -rn "FairnessGuard" src/domains/*/domain.py` | | |
+|---|---|---|---|
+
+**Gap real:** Middleware existe mas **não é usado consistentemente**. Cada domínio importa e chama de forma diferente. **Solução:** remover importações diretas, `ComplianceDomainPrompt` chama middleware em `pre_process`/`post_process`. **Limpeza (Seção 4.4):** deletar `jobs/fairness.py`, `evaluation/security.py`, `sourcing/fairness.py`, `sourcing/fact_checker.py` + remover imports diretos em cada `domain.py`. **Verificar:** `grep -rn "FairnessGuard" src/domains/*/domain.py`
+
 | P4.a | Sourcing usa Layer 3 (output check), Pipeline usa `check_rejection_reason`, Policy usa `check` básico | `DomainWorkflow` padroniza | 60% |
-| | **Gap real:** Implementações locais **divergiram** do FairnessGuard original. Quando um fix é feito no central, as versões locais **não recebem**. **Incremento obrigatório:** antes de deletar cópias locais, o FairnessGuard central precisa absorver: (1) Layer 3 do Sourcing (análise semântica do output), (2) `check_rejection_reason` do Pipeline (bias em motivos de rejeição). **Solução:** parametrizar middleware por domínio (sourcing ativa Layer 3, pipeline ativa rejection check). Só depois deletar as cópias locais | | |
+|---|---|---|---|
+
+**Gap real:** Implementações locais **divergiram** do FairnessGuard original. Quando um fix é feito no central, as versões locais **não recebem**. **Incremento obrigatório:** antes de deletar cópias locais, o FairnessGuard central precisa absorver: (1) Layer 3 do Sourcing (análise semântica do output), (2) `check_rejection_reason` do Pipeline (bias em motivos de rejeição). **Solução:** parametrizar middleware por domínio (sourcing ativa Layer 3, pipeline ativa rejection check). Só depois deletar as cópias locais
+
 | **P5** | Compliance roda em `_pre_check` (antes) e `_post_check` (depois) | Mesmo código | 50% |
-| | **Gap real:** FairnessGuard roda **antes** (query) e FactChecker roda **depois** (resposta). Gap: **durante** o processamento, tool calls podem gerar filtros discriminatórios (ex: LLM gera `WHERE age < 30`). Nenhum check nesse ponto. **Solução:** adicionar FairnessGuard no `TimedToolNode` (já existe em `langgraph_react_base.py`) para interceptar inputs/outputs de cada tool call | | |
+|---|---|---|---|
+
+**Gap real:** FairnessGuard roda **antes** (query) e FactChecker roda **depois** (resposta). Gap: **durante** o processamento, tool calls podem gerar filtros discriminatórios (ex: LLM gera `WHERE age < 30`). Nenhum check nesse ponto. **Solução:** adicionar FairnessGuard no `TimedToolNode` (já existe em `langgraph_react_base.py`) para interceptar inputs/outputs de cada tool call
+
 | P5.a | `strip_pii_for_llm_prompt` usado em `cv_screening` e `wsi_interview` | Mesmo código | 40% |
-| | **Gap real:** Só 2/9 domínios fazem PII stripping antes do LLM. Nos outros 7 (jobs, messaging, sourcing, analytics, automation, hiring_policy, ats_integration), nome, email, telefone e CPF vão como contexto para Anthropic/Google. **Impacto LGPD:** dados pessoais em API de terceiros sem base legal. **Solução:** `strip_pii_for_llm_prompt` no `LangGraphReActBase._build_messages()` — automático para todos os agentes | | |
+|---|---|---|---|
+
+**Gap real:** Só 2/9 domínios fazem PII stripping antes do LLM. Nos outros 7 (jobs, messaging, sourcing, analytics, automation, hiring_policy, ats_integration), nome, email, telefone e CPF vão como contexto para Anthropic/Google. **Impacto LGPD:** dados pessoais em API de terceiros sem base legal. **Solução:** `strip_pii_for_llm_prompt` no `LangGraphReActBase._build_messages()` — automático para todos os agentes
+
 | P5.b | `_pre_check` analisa mensagem do usuário | Layer 3 no `sourcing_react_agent.py` analisa output do LLM | 30% |
-| | **Gap real:** Layer 1 (regex) e Layer 2 (implicit bias) rodam na **query**. Layer 3 (semântica) analisa o **output** mas **só no Sourcing**. Risco: recrutador pede "candidatos para startup dinâmica" (passa L1/L2), LLM gera filtro `age_range: 25-35` (discriminação etária) que **nenhum check intercepta** fora do Sourcing. **Solução:** ativar Layer 3 em todos os domínios via middleware centralizado | | |
+|---|---|---|---|
+
+**Gap real:** Layer 1 (regex) e Layer 2 (implicit bias) rodam na **query**. Layer 3 (semântica) analisa o **output** mas **só no Sourcing**. Risco: recrutador pede "candidatos para startup dinâmica" (passa L1/L2), LLM gera filtro `age_range: 25-35` (discriminação etária) que **nenhum check intercepta** fora do Sourcing. **Solução:** ativar Layer 3 em todos os domínios via middleware centralizado
+
 | P5.c | `_post_check` no DomainWorkflow aplica FactChecker | Mesmo código | 60% |
-| | **Gap real:** FactChecker valida claims genéricos (salários, contagens, datas) globalmente. Gap: validadores **domain-specific** não existem. Ex: Evaluation diz "score 85" mas real é 72; Analytics diz "tempo médio 15d" mas real é 23d. **Solução:** cada domínio registra validadores específicos no FactChecker (`evaluation.validate_score`, `analytics.validate_metric`) | | |
+|---|---|---|---|
+
+**Gap real:** FactChecker valida claims genéricos (salários, contagens, datas) globalmente. Gap: validadores **domain-specific** não existem. Ex: Evaluation diz "score 85" mas real é 72; Analytics diz "tempo médio 15d" mas real é 23d. **Solução:** cada domínio registra validadores específicos no FactChecker (`evaluation.validate_score`, `analytics.validate_metric`)
+
 | **P6** | `DomainPrompt` em `app/domains/base.py` — base mínima (só interface) | `DomainWorkflow` em `app/domains/workflow.py` — camada de execução | 40% |
-| | **Gap real:** Duas "camadas" desconectadas: `DomainPrompt` define interface (process_intent, execute_action), `DomainWorkflow` orquestra (pre_check → execute → post_check). Gap: não existe classe entre elas que **garanta** compliance. Novo domínio pode herdar `DomainPrompt` sem nenhum check. **Solução:** criar `ComplianceDomainPrompt(DomainPrompt)` que adiciona compliance obrigatória; `DomainWorkflow` só aceita `ComplianceDomainPrompt` | | |
+|---|---|---|---|
+
+**Gap real:** Duas "camadas" desconectadas: `DomainPrompt` define interface (process_intent, execute_action), `DomainWorkflow` orquestra (pre_check → execute → post_check). Gap: não existe classe entre elas que **garanta** compliance. Novo domínio pode herdar `DomainPrompt` sem nenhum check. **Solução:** criar `ComplianceDomainPrompt(DomainPrompt)` que adiciona compliance obrigatória; `DomainWorkflow` só aceita `ComplianceDomainPrompt`
+
 | **P7** | `DomainPrompt` base não inclui compliance | — | 0% |
-| | **Gap real:** Hoje: `class MeuDominio(DomainPrompt)` — nada obriga compliance. Dev precisa **saber** e **lembrar** de importar cada serviço. Com `ComplianceDomainPrompt`: `class MeuDominio(ComplianceDomainPrompt)` — compliance vem automaticamente. É a diferença entre opt-in (falha) e opt-out (seguro por default) | | |
+|---|---|---|---|
+
+**Gap real:** Hoje: `class MeuDominio(DomainPrompt)` — nada obriga compliance. Dev precisa **saber** e **lembrar** de importar cada serviço. Com `ComplianceDomainPrompt`: `class MeuDominio(ComplianceDomainPrompt)` — compliance vem automaticamente. É a diferença entre opt-in (falha) e opt-out (seguro por default)
+
+
 
 #### Qualidade de Resposta (Caminho 3)
 
-| # | O que v5 já tem | O que LIA já tem (mesmo repo) | % |
-|---|-----------------|-------------------------------|---|
+> **Legenda colunas:** # | O que v5 já tem | O que LIA já tem (mesmo repo) | %
+
 | **P8** | `ActionExecutorService` em `action_executor.py` com `ACTIONABLE_INTENTS` (L28-247) e if/elif (L374-415) | `LangGraphReActBase` em `libs/agents-core/` + 9 agentes ReAct (Jobs, Screening, Sourcing, Policy, Recruiter×2, Communication, Analytics, ATS) | 80% |
-| | **Gap real:** O `DomainWorkflow` já tenta ReAct primeiro (`_try_react_agent`, L359) e cai no Flat se não encontrar agente. Verificar quais domínios não têm agente ReAct no `DomainRegistry` e criar os faltantes — padrão canônico de 4 arquivos (agent, system_prompt, tool_registry, stage_context). O `ActionExecutorService` (Phase 1) pode ser mantido como fast-path para intents triviais. **Limpeza:** após criar ReAct para todos, os `_KEYWORD_ACTION_MAP` em cada `domain.py` podem ser removidos | | |
+|---|---|---|---|
+
+**Gap real:** O `DomainWorkflow` já tenta ReAct primeiro (`_try_react_agent`, L359) e cai no Flat se não encontrar agente. Verificar quais domínios não têm agente ReAct no `DomainRegistry` e criar os faltantes — padrão canônico de 4 arquivos (agent, system_prompt, tool_registry, stage_context). O `ActionExecutorService` (Phase 1) pode ser mantido como fast-path para intents triviais. **Limpeza:** após criar ReAct para todos, os `_KEYWORD_ACTION_MAP` em cada `domain.py` podem ser removidos
+
 | P8.a | Cada agente processa isolado no seu domínio | `StateManager` em `state_manager.py` persiste resultados cross-agente | 60% |
-| | **Gap real:** O `MainOrchestrator` processa um domínio por vez. Fluxos como "aplique os 5 melhores → agende entrevistas → configure avaliação" exigem 3 domínios em sequência (screening→scheduling→evaluation). Hoje o recrutador dá 3 comandos separados. **Solução:** criar `MultiDomainPlan` que decompõe a intenção em steps e usa StateManager para passar resultados entre domínios automaticamente | | |
+|---|---|---|---|
+
+**Gap real:** O `MainOrchestrator` processa um domínio por vez. Fluxos como "aplique os 5 melhores → agende entrevistas → configure avaliação" exigem 3 domínios em sequência (screening→scheduling→evaluation). Hoje o recrutador dá 3 comandos separados. **Solução:** criar `MultiDomainPlan` que decompõe a intenção em steps e usa StateManager para passar resultados entre domínios automaticamente
+
 | **P9** | `FastRouter` em `fast_router.py` com regex por domínio (Tier 4 do CascadedRouter) | `CascadedRouter` em `cascaded_router.py` com 6 tiers: Cache LRU → Redis → VectorCache (pgvector) → FastRouter → LLMCascade (Haiku→Sonnet→Opus) → Clarification | 70% |
-| | **Gap real:** O routing por LLM **já existe** como Tier 5 (LLMCascade). O problema é que o FastRouter (Tier 4) intercepta **antes** com matches errados. Ex: "comparar candidatos" bate em 3 domínios (analytics, screening, sourcing) via regex. **Solução:** (1) remover patterns ambíguos do FastRouter, (2) subir threshold de confiança para reduzir false positives, ou (3) inverter prioridade (LLM primeiro, FastRouter como fallback para latência) | | |
+|---|---|---|---|
+
+**Gap real:** O routing por LLM **já existe** como Tier 5 (LLMCascade). O problema é que o FastRouter (Tier 4) intercepta **antes** com matches errados. Ex: "comparar candidatos" bate em 3 domínios (analytics, screening, sourcing) via regex. **Solução:** (1) remover patterns ambíguos do FastRouter, (2) subir threshold de confiança para reduzir false positives, ou (3) inverter prioridade (LLM primeiro, FastRouter como fallback para latência)
+
 | P9.a | `_KEYWORD_ACTION_MAP` em cada `domain.py` — `analytics/domain.py` (L11-113), `interview_scheduling/domain.py` (L19-128), etc. | LLMCascade com `INTENT_CLASSIFICATION_EXAMPLES` em `few_shot_examples.py` | 70% |
-| | **Gap real:** Após o CascadedRouter escolher o domínio, o domínio usa `_KEYWORD_ACTION_MAP` para decidir a **ação**. Colisão intra-domínio: "agendar" pode ser `schedule_interview` ou `schedule_report` dependendo do contexto. Quando o domínio migra para ReAct (P8), o agente LLM decide a ação por raciocínio, eliminando esses maps. **Resolve-se automaticamente com P8** | | |
+|---|---|---|---|
+
+**Gap real:** Após o CascadedRouter escolher o domínio, o domínio usa `_KEYWORD_ACTION_MAP` para decidir a **ação**. Colisão intra-domínio: "agendar" pode ser `schedule_interview` ou `schedule_report` dependendo do contexto. Quando o domínio migra para ReAct (P8), o agente LLM decide a ação por raciocínio, eliminando esses maps. **Resolve-se automaticamente com P8**
+
 | P9.b | Regex no FastRouter não diferencia "mude o salário" de "NÃO mude o salário" | `NEGATION_DETECTION_BLOCK` em `interaction_patterns.py` já existe como bloco injetável | 80% |
-| | **Gap real:** O bloco de detecção de negação existe e funciona. Domínios que ainda usam `_KEYWORD_ACTION_MAP` (Flat) **não passam pelo LLM** onde o bloco seria aplicado. Quando migram para ReAct (P8), o bloco é automaticamente injetado no system prompt. **Resolve-se junto com P8** — não precisa de trabalho separado | | |
+|---|---|---|---|
+
+**Gap real:** O bloco de detecção de negação existe e funciona. Domínios que ainda usam `_KEYWORD_ACTION_MAP` (Flat) **não passam pelo LLM** onde o bloco seria aplicado. Quando migram para ReAct (P8), o bloco é automaticamente injetado no system prompt. **Resolve-se junto com P8** — não precisa de trabalho separado
+
 | P9.c | Regex faz match literal: "agendar entrevista" funciona, "deixar pra outro dia" não | LLMCascade usa classificação por LLM + `INTENT_CLASSIFICATION_EXAMPLES` com few-shot | 70% |
-| | **Gap real:** O LLMCascade já lida com linguagem natural. Os few-shot examples cobrem job, intent e salary mas **não cobrem** cenários de scheduling ("deixar pra outro dia"), communication ("manda um zap"), ou analytics ("como tá o funil"). **Solução:** expandir `INTENT_CLASSIFICATION_EXAMPLES` com 3-5 exemplos por domínio, incluindo variações coloquiais em PT-BR | | |
+|---|---|---|---|
+
+**Gap real:** O LLMCascade já lida com linguagem natural. Os few-shot examples cobrem job, intent e salary mas **não cobrem** cenários de scheduling ("deixar pra outro dia"), communication ("manda um zap"), ou analytics ("como tá o funil"). **Solução:** expandir `INTENT_CLASSIFICATION_EXAMPLES` com 3-5 exemplos por domínio, incluindo variações coloquiais em PT-BR
+
 | P9.d | "Ontem", "semana passada", "mês que vem" ignoradas pelo regex | MemoryResolver em `memory_resolver.py` resolve entidades (candidatos, vagas) mas **não resolve tempo** | 30% |
-| | **Gap real:** Nenhuma parte do sistema converte referências temporais relativas em datas absolutas. "Entrevistas de ontem" deveria virar `date=2026-03-31` mas o regex ignora e o MemoryResolver só resolve entidades. **Solução:** implementar `TemporalResolver` (regex: "ontem"→`-1d`, "semana passada"→`-7d`) e integrar ao MemoryResolver como step antes do routing | | |
+|---|---|---|---|
+
+**Gap real:** Nenhuma parte do sistema converte referências temporais relativas em datas absolutas. "Entrevistas de ontem" deveria virar `date=2026-03-31` mas o regex ignora e o MemoryResolver só resolve entidades. **Solução:** implementar `TemporalResolver` (regex: "ontem"→`-1d`, "semana passada"→`-7d`) e integrar ao MemoryResolver como step antes do routing
+
 | **P10** | Flat handlers recebem `conversation_history` mas **não persistem estado entre turnos** | `WorkingMemoryService` em `libs/agents-core/` persiste `collected_fields`, `current_plan`, `pending_actions` no DB por session+domain | 70% |
-| | **Gap real:** Agentes ReAct já usam WorkingMemory automaticamente (herdado de `LangGraphReActBase`). Domínios Flat processam cada mensagem como se fosse a primeira. Quando migram para ReAct (P8), **herdam WorkingMemory automaticamente**. Gap se resolve junto com P8 | | |
+|---|---|---|---|
+
+**Gap real:** Agentes ReAct já usam WorkingMemory automaticamente (herdado de `LangGraphReActBase`). Domínios Flat processam cada mensagem como se fosse a primeira. Quando migram para ReAct (P8), **herdam WorkingMemory automaticamente**. Gap se resolve junto com P8
+
 | P10.a | `cv_screening` e `job_management` têm StageContext. `analytics`, `communication`, `automation`, `ats_integration` **não têm** | Pattern `StageContext` disponível em `jobs_mgmt_stage_context.py` como referência | 60% |
-| | **Gap real:** StageContext adapta o system prompt e as tools disponíveis conforme a "fase" do trabalho (ex: triage→screening→interview→offer). Domínios sem ele usam o mesmo prompt independente do contexto. **Solução:** criar StageContext para analytics (dashboard→drill-down→export), communication (template→personalizar→enviar), e automation (configurar→testar→ativar). Pattern documentado — replicar para domínios faltantes | | |
+|---|---|---|---|
+
+**Gap real:** StageContext adapta o system prompt e as tools disponíveis conforme a "fase" do trabalho (ex: triage→screening→interview→offer). Domínios sem ele usam o mesmo prompt independente do contexto. **Solução:** criar StageContext para analytics (dashboard→drill-down→export), communication (template→personalizar→enviar), e automation (configurar→testar→ativar). Pattern documentado — replicar para domínios faltantes
+
 | P10.b | — | MemoryResolver resolve "aquela vaga" → `job_id=123`, "o candidato" → `candidate_id=456`, "o segundo" → índice da lista mostrada | 80% |
-| | **Gap real:** Funciona bem para referências a **entidades** (candidatos, vagas, entrevistas). Não resolve referências a **ações anteriores** ("faz de novo", "repete", "desfaz isso") nem a **resultados** ("aquele relatório", "o score que você deu"). **Solução:** expandir o MemoryResolver com `action_history` e `result_cache` no WorkingMemory | | |
+|---|---|---|---|
+
+**Gap real:** Funciona bem para referências a **entidades** (candidatos, vagas, entrevistas). Não resolve referências a **ações anteriores** ("faz de novo", "repete", "desfaz isso") nem a **resultados** ("aquele relatório", "o score que você deu"). **Solução:** expandir o MemoryResolver com `action_history` e `result_cache` no WorkingMemory
+
 | P10.c | Cada sessão começa do zero — `session_id` novo = memória vazia | WorkingMemory persiste por session+domain. `ConversationMemory` gera resumos periódicos | 50% |
-| | **Gap real:** O ConversationMemory existe mas **gera resumos genéricos**. Quando o recrutador volta no dia seguinte, o agente não sabe "ontem trabalhamos na vaga de Dev Senior e filtramos 12 candidatos". **Solução:** implementar `SessionBridge` que ao iniciar nova sessão, carrega o resumo da última sessão do mesmo usuário+domínio e injeta como contexto inicial | | |
+|---|---|---|---|
+
+**Gap real:** O ConversationMemory existe mas **gera resumos genéricos**. Quando o recrutador volta no dia seguinte, o agente não sabe "ontem trabalhamos na vaga de Dev Senior e filtramos 12 candidatos". **Solução:** implementar `SessionBridge` que ao iniciar nova sessão, carrega o resumo da última sessão do mesmo usuário+domínio e injeta como contexto inicial
+
 | **P11** | `MASTER_ORCHESTRATOR_PROMPT` e `STAGE_SPECIALIZED_PROMPTS` hardcoded em `nodes.py` | `PromptRegistry` + `PromptLoader` + 10 YAMLs de domínio em `app/prompts/domains/` + 5 compartilhados em `app/prompts/shared/` | 75% |
-| | **Gap real:** Os YAMLs existem e são completos (persona, scope, rules, behavioral_rules por domínio). O PromptLoader carrega e faz cache. O gap: os agentes v5 **não chamam** o PromptLoader — usam strings hardcoded diretamente. **Solução:** em cada `*_system_prompt.py`, substituir a string fixa por `PromptLoader.load("domains/{domain}.yaml")` + composição com blocos shared. Trabalho mecânico, ~30min por domínio | | |
+|---|---|---|---|
+
+**Gap real:** Os YAMLs existem e são completos (persona, scope, rules, behavioral_rules por domínio). O PromptLoader carrega e faz cache. O gap: os agentes v5 **não chamam** o PromptLoader — usam strings hardcoded diretamente. **Solução:** em cada `*_system_prompt.py`, substituir a string fixa por `PromptLoader.load("domains/{domain}.yaml")` + composição com blocos shared. Trabalho mecânico, ~30min por domínio
+
 | P11.a | — | `RubricEvaluationService` com escala BARS: EXCEEDS(100), MEETS(75), PARTIAL(40), MISSING(0). Modelo em `libs/models/lia_models/rubric.py` | 80% |
-| | **Gap real:** BARS funciona completo no cv_screening. Evaluation, hiring_policy e sourcing fazem avaliações **sem escala padronizada** — critérios ad-hoc. **Solução:** generalizar `RubricEvaluationService` para aceitar rubrics por domínio e registrar rubrics específicas (policy compliance, sourcing quality, interview readiness) | | |
+|---|---|---|---|
+
+**Gap real:** BARS funciona completo no cv_screening. Evaluation, hiring_policy e sourcing fazem avaliações **sem escala padronizada** — critérios ad-hoc. **Solução:** generalizar `RubricEvaluationService` para aceitar rubrics por domínio e registrar rubrics específicas (policy compliance, sourcing quality, interview readiness)
+
 | P11.b | — | `few_shot_examples.py` com categorias: JOB_EXTRACTION, INTENT_CLASSIFICATION, SALARY_ANALYSIS | 60% |
-| | **Gap real:** 3 categorias existem. Faltam: CANDIDATE_EVALUATION (bom vs ruim parecer), SCHEDULING_NEGOTIATION (agendar com restrições), COMMUNICATION_TONE (formal vs informal), ANALYTICS_QUERY (como pedir dados), SOURCING_QUERY (busca com filtros complexos). **Solução:** 3-5 exemplos por categoria faltante, seguindo formato existente | | |
+|---|---|---|---|
+
+**Gap real:** 3 categorias existem. Faltam: CANDIDATE_EVALUATION (bom vs ruim parecer), SCHEDULING_NEGOTIATION (agendar com restrições), COMMUNICATION_TONE (formal vs informal), ANALYTICS_QUERY (como pedir dados), SOURCING_QUERY (busca com filtros complexos). **Solução:** 3-5 exemplos por categoria faltante, seguindo formato existente
+
 | P11.c | — | `ANTI_SYCOPHANCY_BLOCK`, `CHAIN_OF_THOUGHT_BLOCK`, `NEGATION_DETECTION_BLOCK`, `DEFENSIVE_BLOCK` em `interaction_patterns.py` | 80% |
-| | **Gap real:** Os blocos existem e funcionam. **Não são injetados automaticamente** — cada system_prompt importa manualmente. **Solução:** `ComplianceDomainPrompt` (P6/P7) injeta blocos obrigatórios (ANTI_SYCOPHANCY, DEFENSIVE) automaticamente ao montar o prompt; blocos opcionais (CoT) por configuração do domínio | | |
+|---|---|---|---|
+
+**Gap real:** Os blocos existem e funcionam. **Não são injetados automaticamente** — cada system_prompt importa manualmente. **Solução:** `ComplianceDomainPrompt` (P6/P7) injeta blocos obrigatórios (ANTI_SYCOPHANCY, DEFENSIVE) automaticamente ao montar o prompt; blocos opcionais (CoT) por configuração do domínio
+
 | P11.d | — | `PromptRegistry.compare_versions()` compara prompts lado a lado. Versionamento semântico (X.Y.Z) por prompt | 40% |
-| | **Gap real:** Infraestrutura de versionamento existe. **Não existe runner de split test** que direcione X% do tráfego para prompt v1.2 e Y% para v1.3, meça resultados (satisfação, accuracy, tempo de resposta) e declare vencedor. **Solução:** implementar `PromptExperiment` com seleção por session_id hash, logging no AuditService, e relatório de comparação | | |
+|---|---|---|---|
+
+**Gap real:** Infraestrutura de versionamento existe. **Não existe runner de split test** que direcione X% do tráfego para prompt v1.2 e Y% para v1.3, meça resultados (satisfação, accuracy, tempo de resposta) e declare vencedor. **Solução:** implementar `PromptExperiment` com seleção por session_id hash, logging no AuditService, e relatório de comparação
+
 | P11.e | v5 carrega prompts de strings Python, ignora os YAMLs | `PromptLoader` + 10 YAMLs completos (persona, scope_in, scope_out, behavioral_rules, system_prompt por domínio) | 90% |
-| | **Gap real:** Os YAMLs estão prontos e o loader funciona. É o gap mais fácil de fechar: em cada agente, trocar `SYSTEM_PROMPT = "..."` por `PromptLoader.load("domains/sourcing.yaml").system_prompt`. **Literalmente 1 linha por agente.** O bloqueio não é técnico — ninguém fez | | |
+|---|---|---|---|
+
+**Gap real:** Os YAMLs estão prontos e o loader funciona. É o gap mais fácil de fechar: em cada agente, trocar `SYSTEM_PROMPT = "..."` por `PromptLoader.load("domains/sourcing.yaml").system_prompt`. **Literalmente 1 linha por agente.** O bloqueio não é técnico — ninguém fez
+
 | P11.f | Prompts v5 não definem quem é a LIA — tom genérico de chatbot | `lia_persona.yaml` (identidade), `hr_vocabulary.yaml` (termos RH), `ethical_guidelines.yaml` (anti-bias) | 90% |
-| | **Gap real:** Mesmo caso de P11.e: YAMLs de persona existem, loader funciona, agentes v5 não carregam. **Solução idêntica:** `PromptLoader.load("shared/lia_persona.yaml")` na composição do prompt. Bônus: `hr_vocabulary.yaml` garante termos corretos de RH em PT-BR | | |
+|---|---|---|---|
+
+**Gap real:** Mesmo caso de P11.e: YAMLs de persona existem, loader funciona, agentes v5 não carregam. **Solução idêntica:** `PromptLoader.load("shared/lia_persona.yaml")` na composição do prompt. Bônus: `hr_vocabulary.yaml` garante termos corretos de RH em PT-BR
+
 | **P12** | `ToolRegistry` em `registry.py` + metadata YAML em `tool_registry_metadata.yaml` + conversor `tool_definition_to_langchain_tool` | Tools reais para Jobs (`job_wizard_tools.py`), Screening (`candidate_tools.py`), Communication (`communication_tools.py`), Analytics (`analytics_query_tools.py`) | 55% |
-| | **Gap real:** 4 domínios têm tools reais. 5 domínios têm tools parciais ou stubs: `messaging` (templates sem personalização), `insights` (sem aggregation cross-domain), `scheduling` (ações básicas, sem negociação), `automation` (triggers sem execução real), `ats_integration` (sync declarado, import parcial). **Solução:** implementar handlers faltantes domínio por domínio, seguindo padrão de `job_wizard_tools.py` | | |
+|---|---|---|---|
+
+**Gap real:** 4 domínios têm tools reais. 5 domínios têm tools parciais ou stubs: `messaging` (templates sem personalização), `insights` (sem aggregation cross-domain), `scheduling` (ações básicas, sem negociação), `automation` (triggers sem execução real), `ats_integration` (sync declarado, import parcial). **Solução:** implementar handlers faltantes domínio por domínio, seguindo padrão de `job_wizard_tools.py`
+
 | P12.a | Ações declaradas no YAML metadata sem handler Python correspondente | Tools reais com DB queries, validação, integração com serviços externos (Apify no Sourcing, SMTP no Communication) | 50% |
-| | **Gap real:** O YAML metadata declara ações como `enrich_candidate_profile`, `generate_diversity_report`, `auto_schedule_batch` que não têm handler implementado. O agente ReAct vê a tool, tenta chamar, recebe erro ou resposta vazia. **Solução:** implementar cada handler — pattern consistente: async function → `ToolExecutionContext` → query/operação → resultado tipado | | |
+|---|---|---|---|
+
+**Gap real:** O YAML metadata declara ações como `enrich_candidate_profile`, `generate_diversity_report`, `auto_schedule_batch` que não têm handler implementado. O agente ReAct vê a tool, tenta chamar, recebe erro ou resposta vazia. **Solução:** implementar cada handler — pattern consistente: async function → `ToolExecutionContext` → query/operação → resultado tipado
+
 | P12.b | Domínios Flat não expõem tools — lógica hardcoded no `execute_action` | Domínios ReAct têm `tool_registry.py` próprio (ex: `pipeline_tool_registry.py` com `move_candidate`, `analyze_cv`, `schedule_interview`) | 60% |
-| | **Gap real:** Quando um domínio migra Flat→ReAct (P8), **precisa** de `tool_registry.py`. Domínios sem: analytics (execute_action direto), interview_scheduling (hybrid), automation (triggers sem registry). **Solução:** extrair ações do `execute_action` e registrar como tools no formato `ToolDefinition` | | |
+|---|---|---|---|
+
+**Gap real:** Quando um domínio migra Flat→ReAct (P8), **precisa** de `tool_registry.py`. Domínios sem: analytics (execute_action direto), interview_scheduling (hybrid), automation (triggers sem registry). **Solução:** extrair ações do `execute_action` e registrar como tools no formato `ToolDefinition`
+
 | P12.c | Tools confinadas ao domínio — screening não acessa tools de sourcing, analytics não acessa tools de evaluation | `app/shared/tools/` tem `export_tools.py`, `predictive_tools.py`, `proactive_tools.py` compartilhadas | 40% |
-| | **Gap real:** Screening quer comparar candidatos usando WSI scores (evaluation) mas não tem acesso. Analytics quer dados de pipeline (screening) + vagas (jobs) mas só acessa suas tools. Shared tools existem mas são poucas. **Solução:** criar `GlobalToolRegistry` que expõe tools read-only cross-domain (screening pode **ler** scores de evaluation, não **alterar**). Write operations restritas ao domínio dono | | |
+|---|---|---|---|
+
+**Gap real:** Screening quer comparar candidatos usando WSI scores (evaluation) mas não tem acesso. Analytics quer dados de pipeline (screening) + vagas (jobs) mas só acessa suas tools. Shared tools existem mas são poucas. **Solução:** criar `GlobalToolRegistry` que expõe tools read-only cross-domain (screening pode **ler** scores de evaluation, não **alterar**). Write operations restritas ao domínio dono
+
 | **P13** | 1 item por vez — nenhuma API aceita lista | — | 0% |
-| | **Gap real:** Não existe nenhuma infraestrutura de batch no codebase. Cada operação (avaliar candidato, enviar mensagem, mover na pipeline) processa 1 item. "Avalie os 50 candidatos da vaga Dev Senior" = 50 repetições manuais. **Solução:** implementar `BatchService` com `asyncio.Semaphore` (5 simultâneos), fila de retry, progress tracking via WebSocket | | |
+|---|---|---|---|
+
+**Gap real:** Não existe nenhuma infraestrutura de batch no codebase. Cada operação (avaliar candidato, enviar mensagem, mover na pipeline) processa 1 item. "Avalie os 50 candidatos da vaga Dev Senior" = 50 repetições manuais. **Solução:** implementar `BatchService` com `asyncio.Semaphore` (5 simultâneos), fila de retry, progress tracking via WebSocket
+
 | P13.a | Processamento sequencial — 50 candidatos = 50×latência | — | 0% |
-| | **Gap real:** `for candidate in candidates: await process(candidate)`. **Solução:** `asyncio.gather` com Semaphore para limitar concorrência, wrapping com timeout e retry. O `TimedToolNode` já tem timeout por tool — expandir para batch | | |
+|---|---|---|---|
+
+**Gap real:** `for candidate in candidates: await process(candidate)`. **Solução:** `asyncio.gather` com Semaphore para limitar concorrência, wrapping com timeout e retry. O `TimedToolNode` já tem timeout por tool — expandir para batch
+
 | P13.b | Usuário precisa pedir N vezes pelo chat — nenhum endpoint aceita lista | — | 0% |
-| | **Gap real:** "Mova os candidatos aprovados para entrevista" deveria aceitar `candidate_ids: [1,2,3,...50]` mas hoje aceita só `candidate_id: 1`. **Solução:** criar variantes batch das tools existentes (ex: `move_candidates_batch`) e ensinar o agente ReAct a usá-las quando detectar intenção de operação em lote | | |
+|---|---|---|---|
+
+**Gap real:** "Mova os candidatos aprovados para entrevista" deveria aceitar `candidate_ids: [1,2,3,...50]` mas hoje aceita só `candidate_id: 1`. **Solução:** criar variantes batch das tools existentes (ex: `move_candidates_batch`) e ensinar o agente ReAct a usá-las quando detectar intenção de operação em lote
+
+
 
 #### Resumo de Aproveitamento
 

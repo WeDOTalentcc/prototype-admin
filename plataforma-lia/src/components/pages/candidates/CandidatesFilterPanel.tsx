@@ -26,12 +26,62 @@ import { badgeStyles, textStyles } from "@/lib/design-tokens"
 import { CheckableItem } from "./filters/CheckableItem"
 import { TagInput } from "./filters/TagInput"
 import { TriStateButtons } from "./filters/TriStateButtons"
-import type { TableFilters } from "./filters/types"
-export type { TableFilters } from "./filters/types"
-
 
 // ─── Types ───────────────────────────────────────────────────────────────────
-// TableFilters extracted to ./filters/types.ts
+
+export interface TableFilters {
+  statuses: string[]
+  tags: string[]
+  seniorityLevels: string[]
+  workModels: string[]
+  contractTypes: string[]
+  minExperience?: number
+  maxExperience?: number
+  minScore?: number
+  maxScore?: number
+  minSalary?: number
+  maxSalary?: number
+  locations: string[]
+  remoteOnly: boolean
+  hasEmail: boolean
+  hasPhone: boolean
+  hasLinkedin: boolean
+  sources: string[]
+  jobTitles: string[]
+  skills: string[]
+  companies: string[]
+  industries: string[]
+  companySizes: string[]
+  universities: string[]
+  degrees: string[]
+  fieldsOfStudy: string[]
+  languages: string[]
+  isOpenToWork: boolean
+  isDecisionMaker: boolean
+  isTopUniversities: boolean
+  isStartup: boolean
+  hasGithub: boolean
+  hasPortfolio: boolean
+  softSkills: string[]
+  certifications: string[]
+  willingToRelocate: boolean | null
+  mobility: boolean | null
+  updatedAtFrom?: string
+  updatedAtTo?: string
+  lastContactedFrom?: string
+  lastContactedTo?: string
+  availabilityWindow?: "immediate" | "15_days" | "30_days" | "60_days"
+  shortlistedDateFrom?: string
+  shortlistedDateTo?: string
+  shortlistedVacancyOrigin?: string
+  placementDateFrom?: string
+  placementDateTo?: string
+  placementVacancyDestination?: string
+  placementClientCompany?: string
+  specificVacancyId?: string
+  registrationDateFrom?: string
+  registrationDateTo?: string
+}
 
 export interface CandidatesFilterPanelProps {
   tableFilters: TableFilters
@@ -835,4 +885,135 @@ export function CandidatesFilterPanel({
                 <label className={`${textStyles.label} mb-1.5 block`}>Data Colocação</label>
                 <div className="grid grid-cols-2 gap-2">
                   <Input
-                    type=
+                    type="date"
+                    value={tableFilters.placementDateFrom ?? ""}
+                    onChange={(e) =>
+                      setTableFilters((prev) => ({
+                        ...prev,
+                        placementDateFrom: e.target.value || undefined,
+                      }))
+                    }
+                    className="h-8 text-xs"
+                  />
+                  <Input
+                    type="date"
+                    value={tableFilters.placementDateTo ?? ""}
+                    onChange={(e) =>
+                      setTableFilters((prev) => ({
+                        ...prev,
+                        placementDateTo: e.target.value || undefined,
+                      }))
+                    }
+                    className="h-8 text-xs"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className={`${textStyles.label} mb-1.5 block`}>Vaga Destino</label>
+                <Input
+                  type="text"
+                  value={tableFilters.placementVacancyDestination ?? ""}
+                  onChange={(e) =>
+                    setTableFilters((prev) => ({
+                      ...prev,
+                      placementVacancyDestination: e.target.value || undefined,
+                    }))
+                  }
+                  className="h-8 text-xs"
+                  placeholder="Nome ou ID da vaga"
+                />
+              </div>
+              <div>
+                <label className={`${textStyles.label} mb-1.5 block`}>Empresa Cliente</label>
+                <Input
+                  type="text"
+                  value={tableFilters.placementClientCompany ?? ""}
+                  onChange={(e) =>
+                    setTableFilters((prev) => ({
+                      ...prev,
+                      placementClientCompany: e.target.value || undefined,
+                    }))
+                  }
+                  className="h-8 text-xs"
+                  placeholder="Nome da empresa"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Vaga Específica */}
+          <div className="mb-5">
+            <h4
+              className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5"
+             
+            >
+              <Bookmark className="w-3 h-3" />
+              Vaga Específica
+            </h4>
+            <Input
+              type="text"
+              value={tableFilters.specificVacancyId ?? ""}
+              onChange={(e) =>
+                setTableFilters((prev) => ({
+                  ...prev,
+                  specificVacancyId: e.target.value || undefined,
+                }))
+              }
+              className="h-8 text-xs"
+              placeholder="Buscar vaga por ID ou nome..."
+            />
+          </div>
+
+          {/* Data de Cadastro */}
+          <div className="mb-5">
+            <h4
+              className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5"
+             
+            >
+              <Calendar className="w-3 h-3" />
+              Data de Cadastro
+            </h4>
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                type="date"
+                value={tableFilters.registrationDateFrom ?? ""}
+                onChange={(e) =>
+                  setTableFilters((prev) => ({
+                    ...prev,
+                    registrationDateFrom: e.target.value || undefined,
+                  }))
+                }
+                className="h-8 text-xs"
+                placeholder="De"
+              />
+              <Input
+                type="date"
+                value={tableFilters.registrationDateTo ?? ""}
+                onChange={(e) =>
+                  setTableFilters((prev) => ({
+                    ...prev,
+                    registrationDateTo: e.target.value || undefined,
+                  }))
+                }
+                className="h-8 text-xs"
+                placeholder="Até"
+              />
+            </div>
+          </div>
+
+          {/* Botões de ação */}
+          <div className="pt-4 border-t border-lia-border-subtle space-y-2">
+            <button
+              className="w-full h-9 text-xs rounded-md transition-colors motion-reduce:transition-none border border-lia-border-subtle"
+             
+              onClick={onClearAll}
+            >
+              Limpar Todos os Filtros
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
