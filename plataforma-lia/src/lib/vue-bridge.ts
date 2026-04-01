@@ -195,7 +195,35 @@ export const PINIA_READY_HOOKS = [
  * Hooks que requerem refatoração antes da migração Vue.
  * Razão documentada por hook.
  */
-export const HOOKS_NEEDING_REFACTOR = [] as const // All hooks refactored — 100% Pinia-ready
+export const HOOKS_NEEDING_REFACTOR = [
+  // -------------------------------------------------------------------------
+  // Hooks que contem JSX real -- precisam ter o JSX extraido para componentes
+  // separados antes da migracao Vue/Pinia. Nao converter para .ts ate resolver.
+  // -------------------------------------------------------------------------
+
+  // Categoria A: Funcoes que sao componentes React (nao hooks), na pasta errada
+  // Acao: Mover para fora de /hooks/ e tratar como componentes legitimos
+  "renderHighlightedText",    // buildHighlightedText() retorna <span> JSX -- componente em hooks/ incorretamente
+  "SearchScopeControls",      // componente React completo (189L, 30 jsx hits) em hooks/ incorretamente
+
+  // Categoria B: Hooks que retornam JSX inline (toast descriptions, modais, badges)
+  // Acao: Extrair o JSX dos retornos para componentes separados
+  "useRevealContact",              // JSX em description do toast() -- extrair ToastRevealDescription.tsx
+  "useAdvancedFiltersCore",        // 6 jsx hits inline -- extrair para componentes de filtro
+  "useSmartSearchCallbacks",       // 6 jsx hits inline -- extrair callbacks de renderizacao
+  "useSmartSearchCore",            // 10 jsx hits inline -- extrair SmartSearchResult.tsx
+  "useScreeningConfigManagerCore", // 12 jsx hits inline -- extrair ScreeningConfigDisplay.tsx
+  "useExpandedChatModalCore",      // 10 jsx hits inline -- extrair ExpandedChatPanels.tsx
+  "useCandidatesPageCore",         // 6 jsx hits em orquestrador -- revisar sub-hooks com JSX
+
+  // Categoria C: Hook que retorna React.FC como API publica (legítimo manter .tsx)
+  "use-edit-lock",                 // retorna EditButton e SaveCancelButtons como React.FC por design
+] as const
+// Hooks convertidos de .tsx -> .ts nesta sessao (falsos positivos -- so tinham tipos React):
+// useJobsPageCore.ts          (React.ChangeEvent/useState generics, sem JSX real)
+// useExpandedChatSubHooks.ts  (React.ChangeEvent<HTMLInputElement>, sem JSX real)
+// use-template-suggestions.ts (useState<T> generics, sem JSX real)
+// use-keyboard-shortcuts.ts   (innerHTML HTML strings, sem sintaxe JSX)
 
 /**
  * Mapeamento React Context -> Pinia Store
