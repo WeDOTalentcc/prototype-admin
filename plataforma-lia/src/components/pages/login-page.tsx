@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { WeDOLogo } from "@/components/wedo-logo"
-import { useAuth } from "@/components/auth-context"
+import { useAuth } from "@/contexts/auth-context"
 import {
   Eye,
   EyeOff,

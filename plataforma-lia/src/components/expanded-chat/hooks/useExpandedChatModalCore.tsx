@@ -24,7 +24,7 @@ import {
 import { cn } from "@/lib/utils"
 import { liaApi, CalibrationCandidate as ApiCalibrationCandidate, interpretMessage, getConversationalResponse, orchestrateWizardMessage, orchestratorProcess, type WizardOrchestratorResponse } from "@/services/lia-api"
 import { textStyles, cardStyles, badgeStyles } from "@/lib/design-tokens"
-import { useAuth } from "@/components/auth-context"
+import { useAuth } from "@/contexts/auth-context"
 import { LIASimpleProcessing, LIAFeedbackButtons, LIAProcessingCard, type LIATaskStep as LIATaskStepType } from "@/components/lia-processing-card"
 import { LiaVacancyQueriesGuide } from "@/components/ui/lia-vacancy-queries-guide"
 import { useJobWizard } from "@/hooks/use-lia-suggestions"

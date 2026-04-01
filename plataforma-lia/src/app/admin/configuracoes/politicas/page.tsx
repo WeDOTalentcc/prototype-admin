@@ -49,7 +49,7 @@ import {
   Loader2,
 } from "lucide-react"
 import { useGlobalPolicies, Policy, PolicyCategory, PolicyHistoryEntry } from "@/hooks/admin/useGlobalPolicies"
-import { useAuth } from "@/components/auth-context"
+import { useAuth } from "@/contexts/auth-context"
 
 const SECTOR_OPTIONS = [
   { value: "tech", label: "Tecnologia" },

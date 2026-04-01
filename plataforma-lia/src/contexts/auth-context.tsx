@@ -143,4 +143,21 @@ export function useJWTAuth() {
   return context
 }
 
+
+/**
+ * Alias de compatibilidade para componentes legados.
+ * Retorna um shape simplificado compatível com o wrapper anterior de components/auth-context.
+ * Para novos componentes, use useJWTAuth() diretamente.
+ */
+export function useAuth() {
+  const ctx = useJWTAuth()
+  return {
+    user: ctx.user ? { name: ctx.user.name || ctx.user.email, email: ctx.user.email, role: "admin", company: "WeDo" } : null,
+    login: ctx.login,
+    logout: ctx.logout,
+    isAuthenticated: ctx.isAuthenticated,
+    isLoading: ctx.isLoading,
+  }
+}
+
 export { AuthContext }

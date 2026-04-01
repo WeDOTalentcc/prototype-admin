@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/components/auth-context"
+import { useAuth } from "@/contexts/auth-context"
 import { useToast } from "@/hooks/use-toast"
 import { useShortList } from "@/hooks/use-short-list"
 import { useProactiveInsights } from "@/hooks/use-proactive-insights"

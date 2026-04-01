@@ -10,7 +10,7 @@ import {
   ChevronDown, ChevronUp, Clock, ArrowRight, Brain, Bell,
   AlertCircle, Target, Zap
 } from "lucide-react"
-import { useAuth } from "@/components/auth-context"
+import { useAuth } from "@/contexts/auth-context"
 import { useJWTAuth } from "@/contexts/auth-context"
 
 interface UrgentAction {

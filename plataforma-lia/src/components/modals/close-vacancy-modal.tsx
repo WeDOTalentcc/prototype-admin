@@ -39,7 +39,7 @@ import { textStyles, cardStyles, badgeStyles } from "@/lib/design-tokens"
 import { cn } from "@/lib/utils"
 import { useCommunicationTemplates, type CommunicationTemplate, type TemplateSituation } from "@/hooks/use-communication-templates"
 import { liaApi } from "@/services/lia-api"
-import { useAuth } from "@/components/auth-context"
+import { useAuth } from "@/contexts/auth-context"
 
 export interface CloseVacancyPayload {
   hired_candidate_id: string
