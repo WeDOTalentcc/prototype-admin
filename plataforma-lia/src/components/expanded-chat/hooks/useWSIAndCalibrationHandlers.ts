@@ -756,7 +756,7 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
       ctx.setMessages(prev => [...prev, assistantMessage])
       ctx.typeText(liaMessage, assistantMessage.id)
     }, 200)
-  }, [ctx.typeText, ctx.conversationMemory.conversationId, ctx.highlightField, ctx.currentStage, ctx.technicalSkills, ctx.behavioralCompetencies, ctx.setJobConfig, ctx.inputEvaluationStageCompletionShown])
+  }, [ctx])
 
   // Fast Track: Detect ctx.user intent from message
   const detectFastTrackIntent = (content: string): 'fast_track' | 'from_scratch' | 'confirm' | 'adjust' | 'select' | 'criteria' | null => {

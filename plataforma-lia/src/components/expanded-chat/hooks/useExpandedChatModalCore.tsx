@@ -658,7 +658,7 @@ import { useProceedToNextStage } from './useProceedToNextStage'
         }
       }
     }
-  }, [fastTrackHasSuggestions, fastTrackSuggestions, fastTrackMessageSent, mode, currentStage, analytics, fastTrackSuggestionsShownTracked, getFastTrackLiaMessage])
+  }, [fastTrackHasSuggestions, fastTrackSuggestions, fastTrackMessageSent, mode, currentStage, analytics, fastTrackSuggestionsShownTracked, getFastTrackLiaMessage, setFastTrackMessageSent, setFastTrackSuggestionsShownTracked])
   
   // Reset Fast Track message flag when starting new job creation
   useEffect(() => {
@@ -666,7 +666,7 @@ import { useProceedToNextStage } from './useProceedToNextStage'
       resetFastTrackConversationState()
       clearFastTrackSuggestions()
     }
-  }, [isOpen, mode, clearFastTrackSuggestions, resetFastTrackConversationState])
+  }, [isOpen, mode, clearFastTrackSuggestions, resetFastTrackConversationState, setAwaitingFastTrackSelection, setFastTrackMessageSent])
   
   // Clear awaiting state when suggestions disappear (centralized cleanup)
   useEffect(() => {
@@ -676,7 +676,7 @@ import { useProceedToNextStage } from './useProceedToNextStage'
       // Note: Don't clear awaitingSensitiveFieldsConfirmation here
       // as it's used after suggestions are applied (cleared)
     }
-  }, [fastTrackHasSuggestions])
+  }, [fastTrackHasSuggestions, setAwaitingFastTrackSelection, setFastTrackMessageSent])
   
   // Detect competency changes after Fast Track and prompt for WSI regeneration
 
@@ -794,7 +794,7 @@ import { useProceedToNextStage } from './useProceedToNextStage'
     if (currentStage === 'review-publish' && !jobDescription) {
       generateJobDescription()
     }
-  }, [currentStage])
+  }, [currentStage, generateJobDescription, jobDescription])
 
   useEffect(() => {
     if (isOpen && initialMessage && messages.length === 1 && !isTypingEffect) {
@@ -803,7 +803,7 @@ import { useProceedToNextStage } from './useProceedToNextStage'
         setInputValue("")
       }, 500)
     }
-  }, [isOpen, initialMessage, messages.length, isTypingEffect])
+  }, [isOpen, initialMessage, messages.length, isTypingEffect, handleSendMessage])
 
     return {
       activeInputTab,

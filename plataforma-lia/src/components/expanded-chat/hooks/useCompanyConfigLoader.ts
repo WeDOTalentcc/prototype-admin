@@ -265,7 +265,7 @@ export function useCompanyConfigLoader(ctx: UseCompanyConfigLoaderCtx) {
     }
 
     fetchCompanyConfig()
-  }, [isOpen, isInJobCreationMode, configLoaded, basicInfoFields.modeloTrabalho, basicInfoFields.localidade])
+  }, [isOpen, isInJobCreationMode, configLoaded, basicInfoFields.modeloTrabalho, basicInfoFields.localidade, basicInfoFields.area, setBasicInfoFields, setCompanyConfig, setCompanyMembersMap, setConfigLoaded, setDetectedCriteria, setFieldOrigins, setFieldsFromConfig, setJobConfig, setSalaryInfo, setTechnicalSkills, setWizardGreeting, setWizardGreetingLoaded])
 
   // Sync company screening questions from settings with companyDefaultQuestions state
   useEffect(() => {
@@ -279,7 +279,7 @@ export function useCompanyConfigLoader(ctx: UseCompanyConfigLoaderCtx) {
       }))
       setCompanyDefaultQuestions(mappedQuestions)
     }
-  }, [companyEligibilityQuestions, isLoadingEligibilityQuestions])
+  }, [companyEligibilityQuestions, isLoadingEligibilityQuestions, setCompanyDefaultQuestions])
 
   // Sync deadlines with SLAs from recruitment stages configuration
   useEffect(() => {
@@ -291,5 +291,5 @@ export function useCompanyConfigLoader(ctx: UseCompanyConfigLoaderCtx) {
         deadline: sla.calculateDeadline(sla.totalSLA)
       }))
     }
-  }, [isLoadingStages, sla])
+  }, [isLoadingStages, sla, setJobConfig])
 }

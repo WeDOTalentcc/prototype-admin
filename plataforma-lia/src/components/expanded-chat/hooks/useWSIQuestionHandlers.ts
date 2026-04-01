@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect } from "react"
+import React, { useCallback, useEffect } from "react"
 import { liaApi } from "@/services/lia-api"
 import {
   type TechnicalSkill,
@@ -39,7 +39,7 @@ export interface WSIQuestionHandlersContext {
 }
 
 export function useWSIQuestionHandlers(ctx: WSIQuestionHandlersContext) {
-  const generateWSIQuestions = async (count: number = 7, category: 'technical' | 'behavioral' = 'technical') => {
+  const generateWSIQuestions = useCallback(async (count: number = 7, category: 'technical' | 'behavioral' = 'technical') => {
     ctx.setIsGeneratingWSI(true)
     const newBatch = ctx.wsiGenerationBatch + 1
     ctx.setWsiGenerationBatch(newBatch)
@@ -122,7 +122,7 @@ export function useWSIQuestionHandlers(ctx: WSIQuestionHandlersContext) {
     } finally {
       ctx.setIsGeneratingWSI(false)
     }
-  }
+  }, [ctx])
 
   const toggleWSIQuestionSelection = (questionId: string) => {
     ctx.setWsiCandidates(prev => {
@@ -230,7 +230,7 @@ export function useWSIQuestionHandlers(ctx: WSIQuestionHandlersContext) {
         generateWSIQuestions(behavioralQuestionCount, 'behavioral')
       }, 1500) // Small delay to avoid race conditions
     }
-  }, [ctx.currentStage, ctx.wsiHasGenerated, ctx.isGeneratingWSI])
+  }, [ctx.currentStage, ctx.wsiHasGenerated, ctx.isGeneratingWSI, ctx.behavioralCompetencies, generateWSIQuestions])
 
 
   return {

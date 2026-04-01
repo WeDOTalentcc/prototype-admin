@@ -48,6 +48,7 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - **WRF Dynamic K Quality-Adaptive**: Enhances WRF with adaptive K computation based on match score distribution.
 - **LLM Job Classification Filter**: Post-vector-search filter using Gemini Flash LLM to validate candidate-job compatibility.
 - **FairnessGuard L3 Sector-Dependent**: Uses sector-specific rules for Layer 3 (LLM semantic) bias analysis.
+- **Vue/Vuetify Standardization Skill**: `.agents/skills/vue-vuetify-standardize/SKILL.md` — 10-step workflow for standardizing Vue 3 + Vuetify 3 + Nuxt 3 components against DS v4.2.1. Covers token setup, hex tokenization, residual color cleanup, monolith split, React-Vue bridge, design audit, code review, 14-dimension audit, multi-agent workflow, and final validation. Adapts 5 existing skills (design-standardize, vue-migration-prep, frontend-design, feature-audit, design-patterns) for the Vue/Vuetify ecosystem.
 - **Weekly Digest — Proactive Insights**: Aggregates data into a consolidated weekly report delivered via Teams, Chat, and Bell notifications.
 - **Production Readiness**: Includes a unified health endpoint, `RequestIdMiddleware` for distributed tracing, structured JSON logging, global exception handlers, auth protection, and rate limiting middleware.
 - **FairnessGuard in Agent Outputs**: Integrated `FairnessGuard.check()` and `check_implicit_bias()` across various agent outputs to prevent bias.

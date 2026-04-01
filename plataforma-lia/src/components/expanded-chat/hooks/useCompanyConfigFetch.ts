@@ -298,7 +298,7 @@ export function useCompanyConfigFetch(options: UseCompanyConfigFetchOptions): Us
     }
 
     fetchCompanyConfig()
-  }, [isOpen, isInJobCreationMode, configLoaded, basicInfoFields.modeloTrabalho, basicInfoFields.localidade])
+  }, [isOpen, isInJobCreationMode, configLoaded, basicInfoFields.modeloTrabalho, basicInfoFields.localidade, basicInfoFields.area, setBasicInfoFields, setCompanyMembersMap, setDetectedCriteria, setFieldOrigins, setJobConfig, setSalaryInfo, setTechnicalSkills])
 
   return {
     companyConfig,

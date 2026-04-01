@@ -136,7 +136,7 @@ Quer que eu avance para a etapa de **Competências**, ou prefere ajustar algo an
         salaryProactiveTimerRef.current = null
       }
     }
-  }, [currentStage, salaryInfo, salaryStageCompletionShown, isFieldRequiredForWizard, PROACTIVE_MESSAGE_DELAY])
+  }, [currentStage, salaryInfo, salaryStageCompletionShown, isFieldRequiredForWizard, PROACTIVE_MESSAGE_DELAY, salaryProactiveTimerRef, setAwaitingStageAdvanceConfirmation, setMessages, setSalaryStageCompletionShown])
 
   // Salary benchmark loading — moved from useExpandedChatEffects
   // Fetch salary benchmark when entering salary stage
@@ -173,7 +173,7 @@ Quer que eu avance para a etapa de **Competências**, ou prefere ajustar algo an
     }
     
     fetchBenchmark()
-  }, [currentStage, basicInfoFields.cargo])
+  }, [currentStage, basicInfoFields.cargo, basicInfoFields.area, basicInfoFields.localidade, detectedCriteria, salaryBenchmark, salaryInfo.maxSalary, salaryInfo.minSalary, setIsLoadingBenchmark, setSalaryBenchmark, setSalaryInfo])
 
   // Proactive input-evaluation stage completion detection - timer resets on each basicInfoFields change
   useEffect(() => {
@@ -224,7 +224,7 @@ Quer que eu avance para a etapa de **Enriquecimento da Vaga**, onde vou analisar
         inputEvaluationProactiveTimerRef.current = null
       }
     }
-  }, [currentStage, basicInfoFields, inputEvaluationStageCompletionShown, PROACTIVE_MESSAGE_DELAY])
+  }, [currentStage, basicInfoFields, inputEvaluationStageCompletionShown, PROACTIVE_MESSAGE_DELAY, inputEvaluationProactiveTimerRef, setAwaitingStageAdvanceConfirmation, setInputEvaluationStageCompletionShown, setMessages])
 
   // Proactive competencies stage completion detection - timer resets on each competencies change
   useEffect(() => {
@@ -273,7 +273,7 @@ Quer que eu avance para a etapa de **Perguntas WSI**, ou prefere ajustar algo an
         competenciesProactiveTimerRef.current = null
       }
     }
-  }, [currentStage, technicalSkills, behavioralCompetencies, competenciesStageCompletionShown, PROACTIVE_MESSAGE_DELAY])
+  }, [currentStage, technicalSkills, behavioralCompetencies, competenciesStageCompletionShown, PROACTIVE_MESSAGE_DELAY, competenciesProactiveTimerRef, setAwaitingStageAdvanceConfirmation, setCompetenciesStageCompletionShown, setMessages])
 
   // Proactive wsi-questions stage completion detection - timer resets on each wsiCandidates change
   useEffect(() => {
@@ -335,7 +335,7 @@ Quer que eu avance para a **Revisão Final**, ou prefere ajustar as perguntas?`,
         wsiQuestionsProactiveTimerRef.current = null
       }
     }
-  }, [currentStage, wsiCandidates, wsiQuestionsStageCompletionShown, PROACTIVE_MESSAGE_DELAY])
+  }, [currentStage, wsiCandidates, wsiQuestionsStageCompletionShown, PROACTIVE_MESSAGE_DELAY, setAwaitingStageAdvanceConfirmation, setMessages, setWsiQuestionsStageCompletionShown, wsiQuestionsProactiveTimerRef])
 
   // Proactive calibration stage completion detection - timer resets on each calibration data change
   useEffect(() => {
@@ -387,7 +387,7 @@ Quer **finalizar a calibração** e aplicar o modelo, ou prefere continuar avali
         calibrationProactiveTimerRef.current = null
       }
     }
-  }, [currentStage, approvedCandidates.length, rejectedCandidates.length, calibrationStageCompletionShown, calibrationComplete, PROACTIVE_MESSAGE_DELAY])
+  }, [currentStage, approvedCandidates.length, rejectedCandidates.length, calibrationStageCompletionShown, calibrationComplete, PROACTIVE_MESSAGE_DELAY, calibrationProactiveTimerRef, setAwaitingStageAdvanceConfirmation, setCalibrationStageCompletionShown, setMessages])
 
   // Reset all stage completion flags and confirmation state when stage changes
   useEffect(() => {
@@ -412,7 +412,7 @@ Quer **finalizar a calibração** e aplicar o modelo, ou prefere continuar avali
     }
     // Note: Timer refs are automatically reset by useEffect cleanup when stage changes
     // No need for manual timestamp tracking
-  }, [currentStage])
+  }, [currentStage, setAwaitingStageAdvanceConfirmation, setCalibrationStageCompletionShown, setCompetenciesStageCompletionShown, setInputEvaluationStageCompletionShown, setSalaryStageCompletionShown, setWsiQuestionsStageCompletionShown])
 
   // Panel resize handlers
   useEffect(() => {
@@ -446,6 +446,6 @@ Quer **finalizar a calibração** e aplicar o modelo, ou prefere continuar avali
       document.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseup', handleMouseUp)
     }
-  }, [isResizing])
+  }, [isResizing, resizeRef, setIsResizing, setPanelWidth])
 
 }

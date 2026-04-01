@@ -283,6 +283,7 @@ export function useConversationMemory(options: UseConversationMemoryOptions = {}
       handleError(err instanceof Error ? err : new Error(String(err)))
       return null
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- updateSummary is defined below; calling it with stale ref is safe since it reads from closure
   }, [conversationId, maxMessages, summaryThreshold, handleError])
 
   const updateSummary = useCallback(async (force = false): Promise<string | null> => {

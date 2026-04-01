@@ -156,7 +156,7 @@ export function useCalibrationAndFastTrackHandlers(ctx: CalibrationAndFastTrackC
       }
       ctx.setMessages(prev => [...prev, errorMessage])
     }
-  }
+  }, [ctx])
 
   // Handle candidate approval
   const handleApproveCandidate = () => {
