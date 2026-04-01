@@ -502,7 +502,7 @@ export function JobStatusModal({
     )
   }
 
-  const renderPauseOptionsStep = () => (
+=> (
     <div className="space-y-4">
       <div>
         <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
@@ -748,7 +748,7 @@ export function JobStatusModal({
     </div>
   )
 
-  const renderActivateOptionsStep = () => (
+=> (
     <div className="space-y-4">
       <div className="p-2.5 rounded-md border bg-gray-50 border-lia-border-subtle">
         <div className="flex items-center gap-2">
@@ -1060,7 +1060,46 @@ export function JobStatusModal({
         <div className="py-4">
           {getStepIndicator()}
           
-          {currentStep === 'options' && (isPauseMode ? renderPauseOptionsStep() : renderActivateOptionsStep())}
+          {currentStep === 'options' && (isPauseMode ? (
+            <PauseOptionsStep
+              jobs={jobs}
+              candidatesInProposal={candidatesInProposal}
+              hasProposalBlock={hasProposalBlock}
+              totalScreenings={totalScreenings}
+              totalInterviews={totalInterviews}
+              totalTests={totalTests}
+              pauseReason={pauseReason}
+              customReason={customReason}
+              cancelScreenings={cancelScreenings}
+              cancelInterviews={cancelInterviews}
+              cancelTests={cancelTests}
+              notifyRecruiters={notifyRecruiters}
+              recruiterChannel={recruiterChannel}
+              notifyApplicants={notifyApplicants}
+              onPauseReasonChange={setPauseReason}
+              onCustomReasonChange={setCustomReason}
+              onCancelScreeningsChange={setCancelScreenings}
+              onCancelInterviewsChange={setCancelInterviews}
+              onCancelTestsChange={setCancelTests}
+              onNotifyRecruitersChange={setNotifyRecruiters}
+              onRecruiterChannelChange={setRecruiterChannel}
+              onNotifyApplicantsChange={setNotifyApplicants}
+            />
+          ) : (
+            <ActivateOptionsStep
+              jobs={jobs}
+              resumeScreening={resumeScreening}
+              republish={republish}
+              updateDeadlines={updateDeadlines}
+              notifyRecruiters={notifyRecruiters}
+              notifyApplicants={notifyApplicants}
+              onResumeScreeningChange={setResumeScreening}
+              onRepublishChange={setRepublish}
+              onUpdateDeadlinesChange={setUpdateDeadlines}
+              onNotifyRecruitersChange={setNotifyRecruiters}
+              onNotifyApplicantsChange={setNotifyApplicants}
+            />
+          ))}
           {currentStep === 'communication' && renderCommunicationStep()}
           {currentStep === 'confirmation' && renderConfirmationStep()}
           {currentStep === 'complete' && renderCompleteStep()}

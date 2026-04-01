@@ -65,6 +65,8 @@ import {
   CreateCoverageInput,
   CreateClaimInput,
 } from "@/services/admin/insurance-service"
+import { ActivePolicyCard } from "./ActivePolicyCard"
+import { InsurancePoliciesTable, InsuranceClaimsTable } from "./InsurancePoliciesTable"
 
 const BCB_COVERAGE_TYPES = [
   { type: 'data_breach', name: 'Violação de Dados', article: 'Art. 3º, I', description: 'Cobertura para violação e vazamento de dados pessoais' },
@@ -532,86 +534,14 @@ export default function SeguroCiberneticoPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           {activePolicy && (
-            <Card className="lg:col-span-2" >
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Shield className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
-                    <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
-                      Dados da Apólice Ativa
-                    </CardTitle>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {getStatusBadge(activePolicy.status)}
-                    <Button variant="ghost" size="icon" onClick={() => openEditPolicy(activePolicy)}>
-                      <Edit2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-lia-bg-primary" >
-                      <Building2 className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary mt-0.5" />
-                      <div>
-                        <p className="text-xs lia-text-400 dark:lia-text-500" >Seguradora</p>
-                        <p className="font-medium lia-text-800 dark:text-lia-text-primary" >{activePolicy.insurer}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-lia-bg-primary" >
-                      <FileText className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary mt-0.5" />
-                      <div>
-                        <p className="text-xs lia-text-400 dark:lia-text-500" >Número da Apólice</p>
-                        <p className="font-mono font-medium lia-text-800 dark:text-lia-text-primary" >{activePolicy.policyNumber}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-lia-bg-primary" >
-                      <DollarSign className="w-5 h-5 text-status-success mt-0.5" />
-                      <div>
-                        <p className="text-xs lia-text-400 dark:lia-text-500" >Valor de Cobertura</p>
-                        <p className="font-medium text-status-success text-lg">{formatCurrency(activePolicy.coverage)}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-lia-bg-primary" >
-                      <DollarSign className="w-5 h-5 text-status-warning mt-0.5" />
-                      <div>
-                        <p className="text-xs lia-text-400 dark:lia-text-500" >Franquia</p>
-                        <p className="font-medium lia-text-800 dark:text-lia-text-primary" >{formatCurrency(activePolicy.deductible)}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3 p-3 rounded-md bg-gray-50 dark:bg-lia-bg-primary" >
-                      <Calendar className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary mt-0.5" />
-                      <div>
-                        <p className="text-xs lia-text-400 dark:lia-text-500" >Vigência</p>
-                        <p className="font-medium lia-text-800 dark:text-lia-text-primary" >
-                          {new Date(activePolicy.startDate).toLocaleDateString('pt-BR')} a {new Date(activePolicy.endDate).toLocaleDateString('pt-BR')}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="p-3 rounded-md bg-gray-50 dark:bg-lia-bg-primary" >
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <Clock className="w-4 h-4 lia-text-400 dark:lia-text-500"  />
-                          <span className="text-xs lia-text-400 dark:lia-text-500" >Tempo restante</span>
-                        </div>
-                        <span className={`text-sm font-medium ${isExpiringSoon ? 'text-status-warning' : isExpired ? 'text-status-error' : 'lia-text-800 dark:text-lia-text-primary'}`}>
-                          {isExpired ? 'Expirado' : `${daysRemaining} dias`}
-                        </span>
-                      </div>
-                      <Progress value={isExpired ? 100 : Math.min(100, (1 - daysRemaining / 365) * 100)} className="h-2" />
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <ActivePolicyCard
+              activePolicy={activePolicy}
+              daysRemaining={daysRemaining}
+              isExpiringSoon={isExpiringSoon}
+              isExpired={isExpired}
+              statusBadge={getStatusBadge(activePolicy.status)}
+              onEdit={openEditPolicy}
+            />
           )}
 
           <Card  className={activePolicy ? '' : 'lg:col-span-3'}>
@@ -799,63 +729,7 @@ export default function SeguroCiberneticoPage() {
             </div>
           </CardHeader>
           <CardContent>
-            {policies.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Número da Apólice</TableHead>
-                    <TableHead>Seguradora</TableHead>
-                    <TableHead>Cobertura</TableHead>
-                    <TableHead>Vigência</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="w-[100px]">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {policies.map((policy) => (
-                    <TableRow key={policy.id}>
-                      <TableCell>
-                        <Badge variant="outline" className="font-mono text-xs">
-                          {policy.policyNumber}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <span className="font-medium lia-text-800 dark:text-lia-text-primary" >
-                          {policy.insurer}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-sm text-status-success font-medium">
-                          {formatCurrency(policy.coverage)}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
-                          {new Date(policy.startDate).toLocaleDateString('pt-BR')} - {new Date(policy.endDate).toLocaleDateString('pt-BR')}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        {getStatusBadge(policy.status)}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditPolicy(policy)}>
-                            <Edit2 className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-status-error" onClick={() => handleDeletePolicy(policy.id)}>
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            ) : (
-              <div className="text-center py-8 text-sm lia-text-400 dark:lia-text-500" >
-                Nenhuma apólice cadastrada
-              </div>
-            )}
+            <InsurancePoliciesTable policies={policies} onEdit={openEditPolicy} onDelete={handleDeletePolicy} />
           </CardContent>
         </Card>
 
@@ -880,56 +754,7 @@ export default function SeguroCiberneticoPage() {
             </div>
           </CardHeader>
           <CardContent>
-            {claims.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Número</TableHead>
-                    <TableHead>Data do Incidente</TableHead>
-                    <TableHead>Descrição</TableHead>
-                    <TableHead>Valor</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {claims.map((claim) => (
-                    <TableRow key={claim.id}>
-                      <TableCell>
-                        <Badge variant="outline" className="font-mono text-xs">
-                          {claim.claimNumber}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
-                          {new Date(claim.incidentDate).toLocaleDateString('pt-BR')}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-sm lia-text-800 dark:text-lia-text-primary" >
-                          {claim.description.length > 50 ? `${claim.description.substring(0, 50)}...` : claim.description}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        {claim.claimAmount ? (
-                          <span className="text-sm text-status-warning font-medium">
-                            {formatCurrency(claim.claimAmount)}
-                          </span>
-                        ) : (
-                          <span className="text-sm lia-text-400 dark:lia-text-500" >-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {getClaimStatusBadge(claim.status)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            ) : (
-              <div className="text-center py-8 text-sm lia-text-400 dark:lia-text-500" >
-                Nenhum sinistro registrado
-              </div>
-            )}
+            <InsuranceClaimsTable claims={claims} />
           </CardContent>
         </Card>
       </div>

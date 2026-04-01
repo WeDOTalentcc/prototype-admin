@@ -6,15 +6,15 @@ import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
-  Home, Globe, CheckCircle, DollarSign, Brain, Eye,
-  Mail, Phone, Linkedin, Github, FileText, MapPin,
-  ChevronsLeftRight, Copy,
+  Eye, ChevronsLeftRight, MapPin,
 } from "lucide-react"
 import { SearchFeedbackButtons } from "@/components/search/SearchFeedbackButtons"
-import { ScoreBreakdownBadgeLazy } from "@/components/score/ScoreBreakdownBadge"
-import { getSourceDetails, isGlobalSource } from "@/lib/utils/source-detection"
-import { textStyles, badgeStyles } from "@/lib/design-tokens"
+import { textStyles } from "@/lib/design-tokens"
 import type { Candidate } from "@/components/pages/candidates/types"
+import { renderSourceCell } from "./cells/SourceCell"
+import { renderMatchScoreCell, renderLiaScoreCell } from "./cells/ScoreCells"
+import { renderEmailCell, renderPhoneCell, renderLinkedinCell, renderGithubCell, renderPortfolioCell } from "./cells/ContactCells"
+import { renderPearchInsightCell } from "./cells/PearchCells"
 
 // ---------------------------------------------------------------------------
 // Deps interface — todas as dependências que vêm do componente pai
@@ -134,124 +134,13 @@ export function createCellRenderer(deps: CellRendererDeps) {
         )
       }
 
-      // Fonte (Local vs Global) — com tooltips dinâmicos
-      case "source": {
-        const hasPearchId = !!candidate.pearch_profile_id
-        const sourceInfo = getSourceDetails(candidate.source, hasPearchId)
-        const isLocal = sourceInfo.isLocal
+      // Delegated to SourceCell
+      case "source":
+        return renderSourceCell(candidate)
 
-        return (
-          <div className="relative group flex items-center justify-center cursor-help">
-            {isLocal ? (
-              <div
-                className="w-6 h-6 rounded-full flex items-center justify-center transition-[width,height] hover:scale-110 bg-stone-400/20"
-              >
-                <Home className="w-3.5 h-3.5" style={{color: "var(--gray-500)"}} />
-              </div>
-            ) : (
-              <div className="w-6 h-6 rounded-full flex items-center justify-center transition-[width,height] hover:scale-110 bg-gray-100 dark:bg-lia-bg-elevated">
-                <Globe className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-secondary" />
-              </div>
-            )}
-            {/* Tooltip dinâmico com informações de créditos */}
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50 pointer-events-none">
-              <div className="px-3 py-2 rounded-md text-xs min-w-[180px] text-white bg-gray-900">
-                <div className="font-semibold mb-1 flex items-center gap-1.5">
-                  {isLocal ? (
-                    <Home className="w-3.5 h-3.5" style={{color: "var(--wedo-orange)"}} />
-                  ) : (
-                    <Globe className="w-3.5 h-3.5 text-lia-text-disabled" />
-                  )}
-                  {sourceInfo.label}
-                </div>
-                <div className="text-xs text-lia-text-tertiary mb-1">{sourceInfo.subtext}</div>
-                {isLocal ? (
-                  <div className="text-xs font-medium flex items-center gap-1 mt-1.5 pt-1.5 border-t border-gray-700 text-wedo-green-light">
-                    <CheckCircle className="w-3 h-3" />
-                    Sem consumo de créditos
-                  </div>
-                ) : (
-                  <div
-                    className="text-xs font-medium flex items-center gap-1 mt-1.5 pt-1.5 border-t border-gray-700 text-status-warning"
-                  >
-                    <DollarSign className="w-3 h-3" />
-                    {sourceInfo.credits || "5-7 créditos/candidato"}
-                  </div>
-                )}
-                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
-              </div>
-            </div>
-          </div>
-        )
-      }
-
-      // Match Score — Ring Progress
-      case "match_score": {
-        const matchScore = candidate.score || 0
-        const hasActiveSearch = searchQuery && searchQuery.length > 0
-
-        if (!hasActiveSearch || matchScore === 0) {
-          return (
-            <div className="flex items-center justify-center">
-              <span className={textStyles.label}>—</span>
-            </div>
-          )
-        }
-
-        const getMatchRingColor = (score: number) => {
-          if (score >= 85) return "var(--gray-600)"
-          if (score >= 70) return "var(--wedo-green-light)"
-          if (score >= 50) return "var(--wedo-orange)"
-          return "var(--gray-400)"
-        }
-
-        const ringColor = getMatchRingColor(matchScore)
-        const ringSize = 32
-        const strokeWidth = 3
-        const radius = (ringSize - strokeWidth) / 2
-        const circumference = radius * 2 * Math.PI
-        const strokeDashoffset = circumference - (matchScore / 100) * circumference
-
-        return (
-          <div className="flex items-center justify-center">
-            <div className="relative" style={{width: ringSize, height: ringSize}}>
-              {/* Background ring */}
-              <svg className="absolute" width={ringSize} height={ringSize}>
-                <circle
-                  cx={ringSize / 2}
-                  cy={ringSize / 2}
-                  r={radius}
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={strokeWidth}
-                  className="text-lia-text-tertiary dark:text-lia-text-tertiary"
-                />
-              </svg>
-              {/* Progress ring */}
-              <svg className="absolute -rotate-90" width={ringSize} height={ringSize}>
-                <circle
-                  cx={ringSize / 2}
-                  cy={ringSize / 2}
-                  r={radius}
-                  fill="none"
-                  stroke={ringColor}
-                  strokeWidth={strokeWidth}
-                  strokeDasharray={circumference}
-                  strokeDashoffset={strokeDashoffset}
-                  strokeLinecap="round"
-                  className="transition-colors motion-reduce:transition-none duration-300"
-                />
-              </svg>
-              {/* Percentage text */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className={`${textStyles.label} font-bold dark:text-lia-text-primary`}>
-                  {matchScore}
-                </span>
-              </div>
-            </div>
-          </div>
-        )
-      }
+      // Delegated to ScoreCells
+      case "match_score":
+        return renderMatchScoreCell(candidate, searchQuery)
 
       // Básico
       case "name": {
@@ -307,43 +196,9 @@ export function createCellRenderer(deps: CellRendererDeps) {
           </span>
         )
 
-      // IA
-      case "lia_score": {
-        const score = candidate.lia_score || 0
-        const hasBeenEvaluated = candidate.lia_score && candidate.lia_score > 0
-
-        if (!hasBeenEvaluated) {
-          return (
-            <div className="relative group cursor-help">
-              <span className="text-xs text-lia-text-primary">—</span>
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50">
-                <div className="bg-gray-900 dark:bg-lia-bg-elevated text-white px-3 py-2 rounded-md text-xs min-w-[180px]">
-                  <div className="font-semibold mb-1.5 flex items-center gap-1.5">
-                    <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-                    Sem avaliação
-                  </div>
-                  <div className="text-xs text-lia-text-tertiary">
-                    Este candidato ainda não participou de nenhum processo seletivo.
-                  </div>
-                  <div className="text-xs text-lia-text-primary mt-1.5">
-                    O Score LIA é calculado quando o candidato é avaliado para uma vaga específica.
-                  </div>
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
-                </div>
-              </div>
-            </div>
-          )
-        }
-
-        return (
-          <ScoreBreakdownBadgeLazy
-            score={score}
-            candidateId={candidate.id}
-            jobId={(candidate.additional_data?.job_id as string) ?? ""}
-            size="sm"
-          />
-        )
-      }
+      // IA — delegated to ScoreCells
+      case "lia_score":
+        return renderLiaScoreCell(candidate)
 
       case "lia_insights": {
         const insights = candidate.lia_insights
@@ -362,36 +217,9 @@ export function createCellRenderer(deps: CellRendererDeps) {
           </span>
         )
 
-      // Contato — com sistema de reveal para candidatos Pearch
-      case "email": {
-        const candidateEmail = revealedContacts[candidate.id]?.email || candidate.email
-        const canRevealEmail =
-          isGlobalSource(candidate.source, Boolean(candidate.pearch_profile_id)) &&
-          candidate.has_email !== false
-
-        if (candidateEmail) {
-          return <span className="text-xs text-lia-text-primary truncate">{candidateEmail}</span>
-        }
-
-        if (canRevealEmail) {
-          return (
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                onRevealContact(candidate, "email")
-              }}
-              className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-lia-text-secondary hover:bg-gray-200 dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none"
-              title="Clique para revelar email (2 créditos)"
-            >
-              <Mail className="w-3 h-3" />
-              <span>Revelar</span>
-              <span className="opacity-60">(2 cr)</span>
-            </button>
-          )
-        }
-
-        return <span className="text-xs text-lia-text-primary">-</span>
-      }
+      // Contato — delegated to ContactCells
+      case "email":
+        return renderEmailCell(candidate, revealedContacts, onRevealContact)
 
       case "secondary_email":
         return (
@@ -400,117 +228,23 @@ export function createCellRenderer(deps: CellRendererDeps) {
           </span>
         )
 
-      case "phone": {
-        const candidatePhone = revealedContacts[candidate.id]?.phone || candidate.phone
-        const canRevealPhone =
-          isGlobalSource(candidate.source, Boolean(candidate.pearch_profile_id)) &&
-          candidate.has_phone !== false
+      case "phone":
+        return renderPhoneCell(candidate, revealedContacts, onRevealContact, "phone")
 
-        if (candidatePhone) {
-          return <span className="text-xs text-lia-text-primary">{candidatePhone}</span>
-        }
-
-        if (canRevealPhone) {
-          return (
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                onRevealContact(candidate, "phone")
-              }}
-              className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full bg-status-success/10 text-status-success hover:bg-status-success/15 transition-colors motion-reduce:transition-none"
-              title="Clique para revelar telefone (14 créditos)"
-            >
-              <Phone className="w-3 h-3" />
-              <span>Revelar</span>
-              <span className="opacity-60">(14 cr)</span>
-            </button>
-          )
-        }
-
-        return <span className="text-xs text-lia-text-primary">-</span>
-      }
-
-      case "mobile_phone": {
-        const candidateMobile =
-          revealedContacts[candidate.id]?.phone || candidate.mobile_phone || candidate.phone
-        const canRevealMobile =
-          isGlobalSource(candidate.source, Boolean(candidate.pearch_profile_id)) &&
-          candidate.has_phone !== false
-
-        if (candidateMobile) {
-          return <span className="text-xs text-lia-text-primary">{candidateMobile}</span>
-        }
-
-        if (canRevealMobile) {
-          return (
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                onRevealContact(candidate, "phone")
-              }}
-              className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full bg-status-success/10 text-status-success hover:bg-status-success/15 transition-colors motion-reduce:transition-none"
-              title="Clique para revelar celular (14 créditos)"
-            >
-              <Phone className="w-3 h-3" />
-              <span>Revelar</span>
-              <span className="opacity-60">(14 cr)</span>
-            </button>
-          )
-        }
-
-        return <span className="text-xs text-lia-text-primary">-</span>
-      }
+      case "mobile_phone":
+        return renderPhoneCell(candidate, revealedContacts, onRevealContact, "mobile_phone")
 
       case "secondary_phone":
         return <span className="text-xs text-lia-text-primary">{candidate.secondary_phone || ""}</span>
 
       case "linkedin_url":
-        return candidate.linkedin_url ? (
-          <a
-            href={candidate.linkedin_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center w-6 h-6 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
-            title="Ver perfil no LinkedIn"
-          >
-            <Linkedin className="w-4 h-4 text-lia-text-secondary" />
-          </a>
-        ) : (
-          <span
-            className="inline-flex items-center justify-center w-6 h-6"
-            title="LinkedIn não informado"
-          >
-            <Linkedin className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-tertiary" />
-          </span>
-        )
+        return renderLinkedinCell(candidate)
 
       case "github_url":
-        return candidate.github_url ? (
-          <a
-            href={candidate.github_url}
-            target="_blank"
-            rel="noopener"
-            className="text-lia-text-primary hover:underline text-xs flex items-center gap-1"
-          >
-            <Github className="w-3 h-3" /> GitHub
-          </a>
-        ) : (
-          <span className="text-xs text-lia-text-primary">N/A</span>
-        )
+        return renderGithubCell(candidate)
 
       case "portfolio_url":
-        return candidate.portfolio_url ? (
-          <a
-            href={candidate.portfolio_url}
-            target="_blank"
-            rel="noopener"
-            className="text-wedo-purple hover:underline text-xs flex items-center gap-1"
-          >
-            <Globe className="w-3 h-3" /> Portfólio
-          </a>
-        ) : (
-          <span className="text-xs text-lia-text-primary">N/A</span>
-        )
+        return renderPortfolioCell(candidate)
 
       // Pessoal
       case "date_of_birth":
@@ -693,18 +427,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
         return (
           <Badge
             className="text-xs"
-            style={{backgroundColor:
-                workModel === "remoto"
-                  ? "var(--gray-200)"
-                  : workModel === "híbrido"
-                    ? "var(--gray-200)"
-                    : "var(--gray-200)",
-              color:
-                workModel === "remoto"
-                  ? "var(--gray-600)"
-                  : workModel === "híbrido"
-                    ? "var(--gray-600)"
-                    : "var(--gray-600)"}}
+            style={{backgroundColor: "var(--gray-200)", color: "var(--gray-600)"}}
           >
             {workModel === "remoto"
               ? "🏠 Remoto"
@@ -777,7 +500,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
             rel="noopener"
             className="text-lia-text-secondary dark:text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse hover:underline text-xs flex items-center gap-1"
           >
-            <FileText className="w-3 h-3" /> Currículo
+            Currículo
           </a>
         ) : (
           <span className="text-xs text-lia-text-primary">N/A</span>
@@ -812,249 +535,6 @@ export function createCellRenderer(deps: CellRendererDeps) {
             {candidate.pearch_profile_id || ""}
           </span>
         )
-
-      // Busca Global / Pearch
-      case "is_open_to_work": {
-        const isOpenToWork = candidate.is_opentowork || candidate.is_open_to_work
-        return isOpenToWork ? (
-          <Badge className="text-xs bg-status-success/15 text-status-success">Open to Work</Badge>
-        ) : (
-          <span className="text-xs text-lia-text-tertiary">—</span>
-        )
-      }
-      case "is_decision_maker":
-        return candidate.is_decision_maker ? (
-          <Badge className="text-xs bg-wedo-purple/15 text-wedo-purple">Decision Maker</Badge>
-        ) : (
-          <span className="text-xs text-lia-text-tertiary">—</span>
-        )
-      case "is_top_universities":
-        return candidate.is_top_universities ? (
-          <Badge className="text-xs bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary">
-            Top University
-          </Badge>
-        ) : (
-          <span className="text-xs text-lia-text-tertiary">—</span>
-        )
-      case "is_hiring":
-        return candidate.is_hiring ? (
-          <Badge className="text-xs bg-wedo-orange/15 text-wedo-orange">Contratando</Badge>
-        ) : (
-          <span className="text-xs text-lia-text-tertiary">—</span>
-        )
-      case "headline":
-        return <span className="text-xs text-lia-text-primary truncate">{candidate.headline || ""}</span>
-      case "expertise":
-        return (
-          <span className="text-xs text-lia-text-primary truncate">
-            {formatArray(candidate.expertise)}
-          </span>
-        )
-      case "linkedin_followers_count":
-        return candidate.linkedin_followers_count ? (
-          <span className="text-xs text-lia-text-primary">
-            {candidate.linkedin_followers_count.toLocaleString("pt-BR")}
-          </span>
-        ) : (
-          <span className="text-xs text-lia-text-tertiary">—</span>
-        )
-      case "linkedin_connections_count":
-        return candidate.linkedin_connections_count ? (
-          <span className="text-xs text-lia-text-primary">
-            {candidate.linkedin_connections_count.toLocaleString("pt-BR")}
-          </span>
-        ) : (
-          <span className="text-xs text-lia-text-tertiary">—</span>
-        )
-      case "outreach_message":
-        return candidate.outreach_message ? (
-          <div className="flex items-center gap-1">
-            <span className="text-xs text-lia-text-primary truncate max-w-sidebar-content">
-              {candidate.outreach_message.slice(0, 50)}...
-            </span>
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                navigator.clipboard.writeText(candidate.outreach_message!)
-              }}
-              className="p-0.5 hover:bg-gray-100 rounded-md"
-              title="Copiar mensagem"
-            >
-              <Copy className="w-3 h-3 text-lia-text-tertiary" />
-            </button>
-          </div>
-        ) : (
-          <span className="text-xs text-lia-text-tertiary">—</span>
-        )
-      case "pearch_insights":
-        return candidate.pearch_insights?.overall_summary ? (
-          <span className="text-xs text-lia-text-primary truncate">
-            {candidate.pearch_insights.overall_summary.slice(0, 50)}...
-          </span>
-        ) : (
-          <span className="text-xs text-lia-text-tertiary">—</span>
-        )
-      case "best_personal_email":
-        return candidate.best_personal_email ? (
-          <a
-            href={`mailto:${candidate.best_personal_email}`}
-            className="text-xs text-lia-text-secondary dark:text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse hover:underline truncate"
-          >
-            {candidate.best_personal_email}
-          </a>
-        ) : (
-          <span className="text-xs text-lia-text-tertiary">—</span>
-        )
-      case "phone_types": {
-        if (!candidate.phone_types || Object.keys(candidate.phone_types).length === 0) {
-          return <span className="text-xs text-lia-text-tertiary">—</span>
-        }
-        const activeTypes = Object.entries(candidate.phone_types)
-          .filter(([_, active]) => active)
-          .map(([type]) => type)
-        return (
-          <span className="text-xs text-lia-text-primary">{activeTypes.join(", ") || "—"}</span>
-        )
-      }
-      case "estimated_age":
-        return candidate.estimated_age ? (
-          <span className="text-xs text-lia-text-primary">{candidate.estimated_age} anos</span>
-        ) : (
-          <span className="text-xs text-lia-text-tertiary">—</span>
-        )
-      case "match_reasoning":
-        return candidate.pearch_insights?.match_reasoning ? (
-          <span
-            className="text-xs text-lia-text-primary truncate"
-            title={candidate.pearch_insights.match_reasoning}
-          >
-            {candidate.pearch_insights.match_reasoning.slice(0, 60)}...
-          </span>
-        ) : (
-          <span className="text-xs text-lia-text-tertiary">—</span>
-        )
-      case "overall_summary":
-        return candidate.pearch_insights?.overall_summary ? (
-          <span
-            className="text-xs text-lia-text-primary truncate"
-            title={candidate.pearch_insights.overall_summary}
-          >
-            {candidate.pearch_insights.overall_summary.slice(0, 60)}...
-          </span>
-        ) : (
-          <span className="text-xs text-lia-text-tertiary">—</span>
-        )
-      case "query_insights": {
-        const queryInsights = candidate.pearch_insights?.query_insights
-        if (!queryInsights || queryInsights.length === 0) {
-          return <span className="text-xs text-lia-text-tertiary">—</span>
-        }
-        return (
-          <div className="flex flex-col gap-0.5">
-            {queryInsights.slice(0, 2).map((insight, idx) => (
-              <div key={idx} className="flex items-center gap-1">
-                <Badge
-                  className={`text-micro px-1 py-0 ${
-                    insight.match_level === "Exceeds"
-                      ? "bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success"
-                      : insight.match_level === "Meets"
-                        ? "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary"
-                        : insight.match_level === "Partial"
-                          ? "bg-status-warning/15 dark:bg-status-warning/30 text-status-warning dark:text-status-warning"
-                          : "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-secondary"
-                  }`}
-                >
-                  {insight.match_level}
-                </Badge>
-                <span
-                  className={`${textStyles.caption} truncate max-w-[150px]`}
-                  title={insight.subquery}
-                >
-                  {insight.subquery?.slice(0, 25)}...
-                </span>
-              </div>
-            ))}
-            {queryInsights.length > 2 && (
-              <span className={textStyles.caption}>+{queryInsights.length - 2} mais</span>
-            )}
-          </div>
-        )
-      }
-      case "middle_name":
-        return candidate.middle_name ? (
-          <span className="text-xs text-lia-text-primary truncate">{candidate.middle_name}</span>
-        ) : (
-          <span className="text-xs text-lia-text-tertiary">—</span>
-        )
-      case "best_business_email":
-        return candidate.best_business_email ? (
-          <a
-            href={`mailto:${candidate.best_business_email}`}
-            className="text-xs text-lia-text-secondary dark:text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse hover:underline truncate"
-          >
-            {candidate.best_business_email}
-          </a>
-        ) : (
-          <span className="text-xs text-lia-text-tertiary">—</span>
-        )
-      case "personal_emails": {
-        const personalEmailsArr = candidate.personal_emails
-        if (!personalEmailsArr || personalEmailsArr.length === 0) {
-          return <span className="text-xs text-lia-text-tertiary">—</span>
-        }
-        return (
-          <span
-            className="text-xs text-lia-text-primary truncate"
-            title={personalEmailsArr.join(", ")}
-          >
-            {personalEmailsArr.length === 1
-              ? personalEmailsArr[0]
-              : `${personalEmailsArr[0]} (+${personalEmailsArr.length - 1})`}
-          </span>
-        )
-      }
-      case "business_emails": {
-        const businessEmailsArr = candidate.business_emails
-        if (!businessEmailsArr || businessEmailsArr.length === 0) {
-          return <span className="text-xs text-lia-text-tertiary">—</span>
-        }
-        return (
-          <span
-            className="text-xs text-lia-text-primary truncate"
-            title={businessEmailsArr.join(", ")}
-          >
-            {businessEmailsArr.length === 1
-              ? businessEmailsArr[0]
-              : `${businessEmailsArr[0]} (+${businessEmailsArr.length - 1})`}
-          </span>
-        )
-      }
-      case "company_followers_count":
-        return candidate.company_followers_count != null ? (
-          <span className="text-xs text-lia-text-primary">
-            {candidate.company_followers_count.toLocaleString("pt-BR")}
-          </span>
-        ) : (
-          <span className="text-xs text-lia-text-tertiary">—</span>
-        )
-      case "company_keywords": {
-        const companyKeywordsArr = candidate.company_keywords
-        if (!companyKeywordsArr || companyKeywordsArr.length === 0) {
-          return <span className="text-xs text-lia-text-tertiary">—</span>
-        }
-        return (
-          <div className="flex flex-wrap gap-1">
-            {companyKeywordsArr.slice(0, 3).map((keyword, idx) => (
-              <Badge key={idx} variant="outline" className={`${badgeStyles.default} px-1 py-0`}>
-                {keyword}
-              </Badge>
-            ))}
-            {companyKeywordsArr.length > 3 && (
-              <span className={textStyles.caption}>+{companyKeywordsArr.length - 3}</span>
-            )}
-          </div>
-        )
-      }
 
       // Status
       case "status": {
@@ -1165,8 +645,12 @@ export function createCellRenderer(deps: CellRendererDeps) {
           </span>
         )
 
-      default:
+      // Busca Global / Pearch — delegated to PearchCells
+      default: {
+        const pearchResult = renderPearchInsightCell(columnId, candidate)
+        if (pearchResult !== null) return pearchResult
         return <span className="text-xs text-lia-text-primary">N/A</span>
+      }
     }
   }
 }
