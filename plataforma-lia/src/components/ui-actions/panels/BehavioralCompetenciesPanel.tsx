@@ -204,7 +204,7 @@ function CompetencyCard({
                 className="flex-1 h-8 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none"
                 style={
                   level === competency.level
-                    ? { backgroundColor: 'var(--lia-btn-primary-bg)', color: 'var(--lia-btn-primary-text)', boxShadow: 'var(--lia-)' }
+                    ? { backgroundColor: 'var(--lia-btn-primary-bg)', color: 'var(--lia-btn-primary-text)', boxShadow: 'var(--lia-shadow-sm)' }
                     : level <= competency.level
                     ? { backgroundColor: 'var(--lia-bg-tertiary)', color: 'var(--lia-text-primary)' }
                     : { backgroundColor: 'var(--lia-bg-secondary)', color: 'var(--lia-text-tertiary)' }

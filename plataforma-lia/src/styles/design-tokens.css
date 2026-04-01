@@ -47,6 +47,7 @@
      ======================================== */
   
   /* Vermelho Coral - Identidade LIA (USO MÍNIMO!) */
+  --chat-cyan: var(--wedo-cyan, #60BED1);           /* Alias para componentes de chat */
   --lia-brand-primary: #C74446;        /* Vermelho coral principal */
   --lia-brand-primary-hover: #B23B3D;  /* Hover mais escuro */
   --lia-brand-primary-light: #FEF2F2; /* Background sutil */
@@ -380,6 +381,7 @@
   --gray-400: #9CA3AF;   /* text disabled, placeholder, border médio */
   --gray-500: #6B7280;   /* pipeline mid stages, icon muted */
   --gray-600: #4B5563;   /* text secondary, labels */
+  --gray-700: #374151;   /* text emphasis, stronger labels */
   --gray-800: #1F2937;   /* text primary forte, headings */
   --gray-950: #030712;   /* text máxima ênfase, botão primário bg */
 
