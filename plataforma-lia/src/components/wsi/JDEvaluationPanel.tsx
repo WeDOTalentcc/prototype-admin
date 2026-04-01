@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils"
 import { JDEvaluationHeader } from "./jd-evaluation/JDEvaluationHeader"
 import { JDArrayEditor } from "./jd-evaluation/JDArrayEditor"
 import { JDGenerationSection } from "./jd-evaluation/JDGenerationSection"
+import { FALLBACK_TECH_SKILLS, FALLBACK_BEHAV_COMPETENCIES } from "./jd-evaluation/jdFallbackConstants"
 
 interface JDIndicator {
   label: string
@@ -180,18 +181,6 @@ export function JDEvaluationPanel({
     }, 25)
     return () => clearInterval(interval)
   }, [jdDynamicMessage])
-
-  const FALLBACK_TECH_SKILLS = ["JavaScript", "TypeScript", "React", "Node.js", "Python", "SQL", "Git", "Docker", "AWS", "REST APIs"]
-  const FALLBACK_BEHAV_COMPETENCIES: {name: string, key: string}[] = [
-    {name: "Comunicação", key: "comunicacao"},
-    {name: "Trabalho em equipe", key: "trabalho_equipe"},
-    {name: "Resolução de problemas", key: "resolucao_problemas"},
-    {name: "Adaptabilidade", key: "adaptabilidade"},
-    {name: "Liderança", key: "lideranca"},
-    {name: "Pensamento crítico", key: "pensamento_critico"},
-    {name: "Proatividade", key: "proatividade"},
-    {name: "Organização", key: "organizacao"}
-  ]
 
   const fetchTechSuggestions = async () => {
     setIsLoadingTechSuggestions(true)

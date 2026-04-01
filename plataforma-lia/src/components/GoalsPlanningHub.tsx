@@ -17,52 +17,7 @@ import { SmartImportZone } from "./SmartImportZone"
 import { LiaFieldToggle, defaultLiaFieldExamples } from "./LiaFieldToggle"
 import { useCompanyLiaInstructions } from "@/hooks/use-company-lia-instructions"
 import { textStyles, cardStyles, badgeStyles, buttonStyles, tabStyles, actionButtonStyles } from '@/lib/design-tokens'
-
-interface AlertConfig {
-  id: string
-  name: string
-  description: string
-  enabled: boolean
-  channel: 'email' | 'teams' | 'both'
-}
-
-interface MonthlyPlanning {
-  jan: number
-  feb: number
-  mar: number
-  apr: number
-  may: number
-  jun: number
-  jul: number
-  aug: number
-  sep: number
-  oct: number
-  nov: number
-  dec: number
-}
-
-interface Position {
-  id: string
-  name: string
-  salary_min?: number
-  salary_max?: number
-  monthlyPlanned: MonthlyPlanning
-}
-
-interface DepartmentData {
-  id: string
-  name: string
-  positions: Position[]
-  expanded: boolean
-}
-
-interface WorkforceEntry {
-  month: string
-  department: string
-  planned: number
-  actual: number
-  aiSuggestion?: number
-}
+import { DEFAULT_ALERTS, MOCK_WORKFORCE, INITIAL_DEPARTMENTS, AlertConfig, WorkforceEntry, MonthlyPlanning, Position, DepartmentData } from "./settings/goalsPlanningConstants"
 
 interface HubUser {
   id: string
@@ -80,28 +35,9 @@ interface GoalsPlanningHubProps {
   activeSubsection?: string
 }
 
-const defaultAlerts: AlertConfig[] = [
-  { id: '1', name: 'SLA Próximo do Vencimento', description: 'Alerta quando um candidato está há 80% do SLA na mesma etapa', enabled: true, channel: 'both' },
-  { id: '2', name: 'Meta Mensal em Risco', description: 'Notifica quando a meta de contratações do mês pode não ser atingida', enabled: true, channel: 'email' },
-  { id: '3', name: 'Candidato Sem Interação', description: 'Alerta para candidatos sem contato há mais de 5 dias', enabled: true, channel: 'teams' },
-  { id: '4', name: 'Entrevista Não Confirmada', description: 'Lembrete 24h antes de entrevistas sem confirmação', enabled: true, channel: 'both' },
-  { id: '5', name: 'Feedback Pendente', description: 'Solicita feedback após 48h de entrevista realizada', enabled: false, channel: 'email' }
-]
+const defaultAlerts = DEFAULT_ALERTS
 
-const mockWorkforce: WorkforceEntry[] = [
-  { month: 'Jan', department: 'Tecnologia', planned: 5, actual: 4, aiSuggestion: 6 },
-  { month: 'Fev', department: 'Tecnologia', planned: 4, actual: 5 },
-  { month: 'Mar', department: 'Tecnologia', planned: 6, actual: 0, aiSuggestion: 5 },
-  { month: 'Jan', department: 'Comercial', planned: 3, actual: 3 },
-  { month: 'Fev', department: 'Comercial', planned: 2, actual: 2 },
-  { month: 'Mar', department: 'Comercial', planned: 4, actual: 0, aiSuggestion: 3 },
-  { month: 'Jan', department: 'RH', planned: 1, actual: 1 },
-  { month: 'Fev', department: 'RH', planned: 1, actual: 0 },
-  { month: 'Mar', department: 'RH', planned: 2, actual: 0, aiSuggestion: 1 }
-]
-
-const departments = ['Tecnologia', 'Comercial', 'RH', 'Financeiro', 'Marketing']
-const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+const mockWorkforce = MOCK_WORKFORCE
 
 export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }: GoalsPlanningHubProps) {
   const [activeTab, setActiveTab] = useState(activeSubsection || 'workforce')
@@ -109,24 +45,11 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
   const [workforce, setWorkforce] = useState<WorkforceEntry[]>(mockWorkforce)
   const [briefingFrequency, setBriefingFrequency] = useState<'twice_daily' | 'daily' | 'weekly' | 'monthly'>('daily')
   const [selectedYear, setSelectedYear] = useState(2024)
-  const emptyMonthlyPlanning: MonthlyPlanning = { jan: 0, feb: 0, mar: 0, apr: 0, may: 0, jun: 0, jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0 }
   
   const { config, instructions: liaInstructions, toggles: liaToggles, refetch: refetchLiaConfig } = useCompanyLiaInstructions()
   
   const [departments, setDepartments] = useState<DepartmentData[]>([
-    { id: '1', name: 'Tecnologia', positions: [
-      { id: '1a', name: 'Backend Developer', salary_min: 8000, salary_max: 15000, monthlyPlanned: { jan: 1, feb: 1, mar: 0, apr: 1, may: 0, jun: 1, jul: 0, aug: 0, sep: 1, oct: 0, nov: 0, dec: 0 } },
-      { id: '1b', name: 'Frontend Developer', salary_min: 7000, salary_max: 14000, monthlyPlanned: { jan: 0, feb: 1, mar: 0, apr: 0, may: 1, jun: 0, jul: 0, aug: 1, sep: 0, oct: 0, nov: 0, dec: 0 } }
-    ], expanded: true },
-    { id: '2', name: 'Comercial', positions: [
-      { id: '2a', name: 'Account Executive', salary_min: 6000, salary_max: 12000, monthlyPlanned: { jan: 1, feb: 0, mar: 1, apr: 0, may: 0, jun: 1, jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0 } }
-    ], expanded: true },
-    { id: '3', name: 'RH', positions: [
-      { id: '3a', name: 'Recrutador', salary_min: 4000, salary_max: 8000, monthlyPlanned: { jan: 0, feb: 0, mar: 1, apr: 0, may: 0, jun: 0, jul: 0, aug: 0, sep: 1, oct: 0, nov: 0, dec: 0 } }
-    ], expanded: false },
-    { id: '4', name: 'Financeiro', positions: [
-      { id: '4a', name: 'Controller', salary_min: 12000, salary_max: 20000, monthlyPlanned: { jan: 0, feb: 0, mar: 0, apr: 0, may: 1, jun: 0, jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0 } }
-    ], expanded: false }
+    ...INITIAL_DEPARTMENTS
   ])
   
   const [loading, setLoading] = useState(true)

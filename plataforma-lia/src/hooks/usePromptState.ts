@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react"
-import { useCreditEstimator, getCostLevel, getCostColor } from "@/hooks/useCreditEstimator"
+import { useCreditEstimator } from "@/hooks/useCreditEstimator"
 import { useGlobalSearchSettings } from "@/hooks/useGlobalSearchSettings"
 import { useToast } from "@/hooks/use-toast"
 import type { SearchFilters } from "@/components/search/advanced-filters-modal"
@@ -9,7 +9,7 @@ import type { FileAnalysisResult } from "@/components/ui/file-upload-button"
 import {
   MapPin, Briefcase, Clock, Building2, Code
 } from "lucide-react"
-import { extractCriteriaFromText, getTagColors, mapEntitiesToCriteria, extractTagsFromArchetypeCriteria } from "./promptStateCriteriaUtils"
+import { extractCriteriaFromText, getTagColors, mapEntitiesToCriteria, extractTagsFromArchetypeCriteria, extractKeywordsFromFileAnalysis, buildSearchSpecFromParsed, generateArchetypeNameFromEntities, hasParsedEntitiesData } from "./promptStateCriteriaUtils"
 
 export interface SearchAnalysis {
   completeness_score: number
@@ -373,16 +373,7 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
 
   const handleFileAnalyzed = useCallback((file: File, analysis: FileAnalysisResult) => {
     if (analysis.success) {
-      const keywords: string[] = []
-      if (analysis.keywords && analysis.keywords.length > 0) {
-        keywords.push(...analysis.keywords.slice(0, 5))
-      }
-      if (analysis.entities) {
-        if (analysis.entities.skills) keywords.push(...analysis.entities.skills.slice(0, 3))
-        if (analysis.entities.job_titles) keywords.push(...analysis.entities.job_titles.slice(0, 2))
-        if (analysis.entities.locations) keywords.push(...analysis.entities.locations.slice(0, 2))
-      }
-      const uniqueKeywords = [...new Set(keywords)]
+      const uniqueKeywords = extractKeywordsFromFileAnalysis(analysis)
       if (uniqueKeywords.length > 0) {
         const searchText = uniqueKeywords.join(', ')
         setNaturalSearchValue(prev => prev ? `${prev}, ${searchText}` : searchText)
@@ -513,44 +504,20 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
     }
   }, [])
 
-  const hasParsedEntities = useCallback(() => {
-    return !!(
-      parsedEntities.job_title || parsedEntities.location || parsedEntities.seniority ||
-      parsedEntities.industry || parsedEntities.company || parsedEntities.years_experience ||
-      (parsedEntities.skills && parsedEntities.skills.length > 0)
-    )
-  }, [parsedEntities])
+  const hasParsedEntities = useCallback(
+    () => hasParsedEntitiesData(parsedEntities),
+    [parsedEntities]
+  )
 
-  const buildSearchSpec = useCallback(() => {
-    const spec: Record<string, unknown> = {}
-    if (parsedEntities.job_title) spec.job_title = parsedEntities.job_title
-    if (parsedEntities.location) spec.location = parsedEntities.location
-    if (parsedEntities.seniority) spec.seniority = parsedEntities.seniority
-    if (parsedEntities.industry) spec.industry = parsedEntities.industry
-    if (parsedEntities.company) spec.company = parsedEntities.company
-    if (parsedEntities.years_experience) spec.years_experience = parsedEntities.years_experience
-    if (parsedEntities.skills && parsedEntities.skills.length > 0) spec.skills = parsedEntities.skills
-    const filtersRec = advancedFilters as Record<string, Record<string, unknown>>
-    if (filtersRec.locations?.locations && Array.isArray(filtersRec.locations.locations) && (filtersRec.locations.locations as unknown[]).length > 0) spec.locations = filtersRec.locations.locations as string[]
-    if (advancedFilters.job?.titles && advancedFilters.job.titles.length > 0) spec.job_titles = advancedFilters.job.titles
-    if (advancedFilters.job?.levels && advancedFilters.job.levels.length > 0) spec.seniority_levels = advancedFilters.job.levels
-    if (advancedFilters.skills?.skillItems && advancedFilters.skills.skillItems.length > 0) spec.required_skills = advancedFilters.skills.skillItems.map(s => s.name)
-    if (advancedFilters.languages?.languages && advancedFilters.languages.languages.length > 0) spec.languages = advancedFilters.languages.languages
-    if (advancedFilters.general?.minExperience) spec.years_experience_min = advancedFilters.general.minExperience
-    if (advancedFilters.general?.maxExperience) spec.years_experience_max = advancedFilters.general.maxExperience
-    return spec
-  }, [parsedEntities, advancedFilters])
+  const buildSearchSpec = useCallback(
+    () => buildSearchSpecFromParsed(parsedEntities, advancedFilters),
+    [parsedEntities, advancedFilters]
+  )
 
-  const generateArchetypeName = useCallback(() => {
-    const nameParts: string[] = []
-    if (parsedEntities.job_title) nameParts.push(parsedEntities.job_title)
-    if (parsedEntities.seniority) nameParts.push(parsedEntities.seniority)
-    if (parsedEntities.location) nameParts.push(parsedEntities.location)
-    if (parsedEntities.skills && parsedEntities.skills.length > 0) {
-      nameParts.push(parsedEntities.skills.slice(0, 2).join('/'))
-    }
-    return nameParts.length > 0 ? nameParts.slice(0, 3).join(' - ') : undefined
-  }, [parsedEntities])
+  const generateArchetypeName = useCallback(
+    () => generateArchetypeNameFromEntities(parsedEntities),
+    [parsedEntities]
+  )
 
   const createArchetypeFromActiveSearch = useCallback(async () => {
     if (!hasParsedEntities()) {
@@ -614,25 +581,19 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
 
   const openEditArchetype = useCallback((arch: ArchetypeData, e: React.MouseEvent) => {
     e.stopPropagation()
+    const archExt = arch as ArchetypeData & { query?: string; emoji?: string }
     setEditingArchetype(arch)
     setEditArchetypeName(arch.name || "")
-    const query = (arch as ArchetypeData & { query?: string }).query || arch.criteria?.query || ""
-    setEditArchetypeQuery(query as string)
+    setEditArchetypeQuery(String(archExt.query || arch.criteria?.query || ""))
     setEditArchetypeDescription(arch.description || "")
-    const emoji = (arch as ArchetypeData & { emoji?: string }).emoji || arch.criteria?.emoji || "🎯"
-    setEditArchetypeEmoji(String(emoji))
+    setEditArchetypeEmoji(String(archExt.emoji || arch.criteria?.emoji || "🎯"))
     setEditArchetypeTags(extractTagsFromArchetypeCriteria(arch.criteria || {}))
     setNewTagInput("")
   }, [])
 
   const closeEditArchetype = useCallback(() => {
-    setEditingArchetype(null)
-    setEditArchetypeName("")
-    setEditArchetypeQuery("")
-    setEditArchetypeDescription("")
-    setEditArchetypeEmoji("")
-    setEditArchetypeTags([])
-    setNewTagInput("")
+    setEditingArchetype(null); setEditArchetypeName(""); setEditArchetypeQuery("")
+    setEditArchetypeDescription(""); setEditArchetypeEmoji(""); setEditArchetypeTags([]); setNewTagInput("")
   }, [])
 
   const saveArchetype = useCallback(async () => {
@@ -694,26 +655,15 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
   }, [archetypeToDelete, toast])
 
   const addSimilarProfile = useCallback((url: string, type: 'linkedin' | 'cv' = 'linkedin', filename?: string) => {
-    if (similarProfiles.length >= 3) return
-    if (similarProfiles.some(p => p.url === url)) return
+    if (similarProfiles.length >= 3 || similarProfiles.some(p => p.url === url)) return
     setSimilarProfiles(prev => [...prev, { url, type, filename }])
   }, [similarProfiles])
 
-  const removeSimilarProfile = useCallback((url: string) => {
-    setSimilarProfiles(prev => prev.filter(p => p.url !== url))
-  }, [])
+  const removeSimilarProfile = useCallback((url: string) => { setSimilarProfiles(prev => prev.filter(p => p.url !== url)) }, [])
 
-  const addSimilarUrl = useCallback(() => {
-    if (similarUrls.length < MAX_SIMILAR_URLS) {
-      setSimilarUrls(prev => [...prev, ""])
-    }
-  }, [similarUrls.length])
+  const addSimilarUrl = useCallback(() => { if (similarUrls.length < MAX_SIMILAR_URLS) setSimilarUrls(prev => [...prev, ""]) }, [similarUrls.length])
 
-  const removeSimilarUrl = useCallback((index: number) => {
-    setSimilarUrls(prev => prev.filter((_, i) => i !== index))
-    setCombinedSuggestions([])
-    setShowCombinedSuggestions(false)
-  }, [])
+  const removeSimilarUrl = useCallback((index: number) => { setSimilarUrls(prev => prev.filter((_, i) => i !== index)); setCombinedSuggestions([]); setShowCombinedSuggestions(false) }, [])
 
   const updateSimilarUrl = useCallback((index: number, value: string) => {
     setSimilarUrls(prev => {
@@ -730,15 +680,9 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
     setSimilarCvFiles(prev => [...prev, ...newFiles].slice(0, MAX_CV_FILES))
   }, [similarCvFiles.length])
 
-  const removeCvFile = useCallback((index: number) => {
-    setSimilarCvFiles(prev => prev.filter((_, i) => i !== index))
-    setCombinedSuggestions([])
-    setShowCombinedSuggestions(false)
-  }, [])
+  const removeCvFile = useCallback((index: number) => { setSimilarCvFiles(prev => prev.filter((_, i) => i !== index)); setCombinedSuggestions([]); setShowCombinedSuggestions(false) }, [])
 
-  const removeSuggestion = useCallback((keyword: string) => {
-    setCombinedSuggestions(prev => prev.filter(k => k !== keyword))
-  }, [])
+  const removeSuggestion = useCallback((keyword: string) => { setCombinedSuggestions(prev => prev.filter(k => k !== keyword)) }, [])
 
   const hasMultipleSources = useCallback(() => {
     const validUrls = similarUrls.filter(url => url.trim().length > 0)
@@ -902,18 +846,14 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
     }
   }, [buildSearchQueryFromCriteria, onCommand])
 
-  const buildSearchSpecFromEntities = useMemo(() => {
-    if (!parsedEntities || Object.keys(parsedEntities).length === 0) return null
-    return {
-      job_title: parsedEntities.job_title,
-      location: parsedEntities.location,
-      years_experience: parsedEntities.years_experience,
-      industry: parsedEntities.industry,
-      skills: parsedEntities.skills,
-      seniority: parsedEntities.seniority,
-      company: parsedEntities.company,
-    }
-  }, [parsedEntities])
+  const buildSearchSpecFromEntities = useMemo(
+    () => Object.keys(parsedEntities).length === 0 ? null : {
+      job_title: parsedEntities.job_title, location: parsedEntities.location,
+      years_experience: parsedEntities.years_experience, industry: parsedEntities.industry,
+      skills: parsedEntities.skills, seniority: parsedEntities.seniority, company: parsedEntities.company,
+    },
+    [parsedEntities]
+  )
 
   const canSaveAsArchetype = useMemo(() => {
     return naturalSearchValue.trim().length > 3 ||

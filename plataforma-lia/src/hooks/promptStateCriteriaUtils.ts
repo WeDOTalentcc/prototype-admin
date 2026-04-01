@@ -181,3 +181,80 @@ export function extractTagsFromArchetypeCriteria(criteria: Record<string, unknow
   if (criteria.skills && Array.isArray(criteria.skills)) tags.push(...(criteria.skills as string[]))
   return tags
 }
+
+import type { FileAnalysisResult } from "@/components/ui/file-upload-button"
+
+/**
+ * Extracts unique search keywords from a file analysis result.
+ * Pure function extracted from usePromptState.handleFileAnalyzed.
+ */
+export function extractKeywordsFromFileAnalysis(analysis: FileAnalysisResult): string[] {
+  if (!analysis.success) return []
+  const keywords: string[] = []
+  if (analysis.keywords && analysis.keywords.length > 0) {
+    keywords.push(...analysis.keywords.slice(0, 5))
+  }
+  if (analysis.entities) {
+    if (analysis.entities.skills) keywords.push(...analysis.entities.skills.slice(0, 3))
+    if (analysis.entities.job_titles) keywords.push(...analysis.entities.job_titles.slice(0, 2))
+    if (analysis.entities.locations) keywords.push(...analysis.entities.locations.slice(0, 2))
+  }
+  return [...new Set(keywords)]
+}
+
+import type { SearchFilters } from "@/components/search/advanced-filters-modal"
+
+/**
+ * Builds a backend search spec object from parsed entities and advanced filters.
+ * Pure function extracted from usePromptState.buildSearchSpec.
+ */
+export function buildSearchSpecFromParsed(
+  parsedEntities: BackendEntities,
+  advancedFilters: SearchFilters
+): Record<string, unknown> {
+  const spec: Record<string, unknown> = {}
+  if (parsedEntities.job_title) spec.job_title = parsedEntities.job_title
+  if (parsedEntities.location) spec.location = parsedEntities.location
+  if (parsedEntities.seniority) spec.seniority = parsedEntities.seniority
+  if (parsedEntities.industry) spec.industry = parsedEntities.industry
+  if (parsedEntities.company) spec.company = parsedEntities.company
+  if (parsedEntities.years_experience) spec.years_experience = parsedEntities.years_experience
+  if (parsedEntities.skills && parsedEntities.skills.length > 0) spec.skills = parsedEntities.skills
+  const filtersRec = advancedFilters as Record<string, Record<string, unknown>>
+  if (filtersRec.locations?.locations && Array.isArray(filtersRec.locations.locations) && (filtersRec.locations.locations as unknown[]).length > 0) {
+    spec.locations = filtersRec.locations.locations as string[]
+  }
+  if (advancedFilters.job?.titles && advancedFilters.job.titles.length > 0) spec.job_titles = advancedFilters.job.titles
+  if (advancedFilters.job?.levels && advancedFilters.job.levels.length > 0) spec.seniority_levels = advancedFilters.job.levels
+  if (advancedFilters.skills?.skillItems && advancedFilters.skills.skillItems.length > 0) {
+    spec.required_skills = advancedFilters.skills.skillItems.map((s: { name: string }) => s.name)
+  }
+  if (advancedFilters.languages?.languages && advancedFilters.languages.languages.length > 0) spec.languages = advancedFilters.languages.languages
+  if (advancedFilters.general?.minExperience) spec.years_experience_min = advancedFilters.general.minExperience
+  if (advancedFilters.general?.maxExperience) spec.years_experience_max = advancedFilters.general.maxExperience
+  return spec
+}
+
+/**
+ * Generates a human-readable archetype name from parsed entities.
+ * Pure function extracted from usePromptState.generateArchetypeName.
+ */
+export function generateArchetypeNameFromEntities(parsedEntities: BackendEntities): string | undefined {
+  const nameParts: string[] = []
+  if (parsedEntities.job_title) nameParts.push(parsedEntities.job_title)
+  if (parsedEntities.seniority) nameParts.push(parsedEntities.seniority)
+  if (parsedEntities.location) nameParts.push(parsedEntities.location)
+  if (parsedEntities.skills && parsedEntities.skills.length > 0) {
+    nameParts.push(parsedEntities.skills.slice(0, 2).join("/"))
+  }
+  return nameParts.length > 0 ? nameParts.slice(0, 3).join(" - ") : undefined
+}
+
+/** Returns true if the entity set has at least one field populated. */
+export function hasParsedEntitiesData(parsedEntities: BackendEntities): boolean {
+  return !!(
+    parsedEntities.job_title || parsedEntities.location || parsedEntities.seniority ||
+    parsedEntities.industry || parsedEntities.company || parsedEntities.years_experience ||
+    (parsedEntities.skills && parsedEntities.skills.length > 0)
+  )
+}

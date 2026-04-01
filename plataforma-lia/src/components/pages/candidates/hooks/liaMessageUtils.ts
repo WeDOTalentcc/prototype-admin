@@ -30,16 +30,16 @@ export function isGenericQuestion(text: string): boolean {
   ]
 
   const searchKeywords = [
-    desenvolvedor, developer, programador, engenheiro, analista,
-    gerente, manager, coordenador, diretor, especialista,
-    junior, pleno, sênior, senior, trainee, estagiário,
-    python, java, javascript, react, node, angular, vue,
-    backend, frontend, fullstack, devops, data, machine learning,
-    são paulo, rio de janeiro, belo horizonte, remoto, híbrido,
-    anos de experiência, experiência em, conhecimento em,
-    product manager, product owner, scrum master, ux, ui,
-    designer, marketing, vendas, sales, rh, recursos humanos,
-    b2b, saas, fintech, startup,
+    "desenvolvedor", "developer", "programador", "engenheiro", "analista",
+    "gerente", "manager", "coordenador", "diretor", "especialista",
+    "junior", "pleno", "sênior", "senior", "trainee", "estagiário",
+    "python", "java", "javascript", "react", "node", "angular", "vue",
+    "backend", "frontend", "fullstack", "devops", "data", "machine learning",
+    "são paulo", "rio de janeiro", "belo horizonte", "remoto", "híbrido",
+    "anos de experiência", "experiência em", "conhecimento em",
+    "product manager", "product owner", "scrum master", "ux", "ui",
+    "designer", "marketing", "vendas", "sales", "rh", "recursos humanos",
+    "b2b", "saas", "fintech", "startup",
   ]
 
   const hasSearchKeywords = searchKeywords.some(keyword =>
