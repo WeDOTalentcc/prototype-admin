@@ -205,7 +205,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
   }
 
   return (
-    <div className="overflow-auto h-full">
+    <div className="overflow-auto h-full border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
       <table className="w-full table-fixed">
         <thead className="sticky top-0 z-10 bg-white dark:bg-lia-bg-primary">
           <tr className="">
