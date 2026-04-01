@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from "react"
+import React from "react"
 import { textStyles, cardStyles, badgeStyles, formatScorePercent } from '@/lib/design-tokens'
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -11,15 +11,11 @@ import {
   Eye, Video, Target, Briefcase, ThumbsUp, ThumbsDown
 } from "lucide-react"
 import { ScreeningQuestion, TranscriptionSegment } from "@/components/modals/screening-media-modal"
-import { getDemoActivities, Activity as ActivityData } from "@/data/demo-activities"
-import { ActivityFilters, type ActivityFilterType, type ActivityViewType, type PeriodFilterType } from "./activities/ActivityFilters"
-import { ActivityTimeline } from "./activities/ActivityTimeline"
-import { ActivityExpandedDetails } from "./activities/ActivityExpandedDetails"
+import { Activity as ActivityData } from "@/data/demo-activities"
 
-interface CandidateActivitiesTabProps {
+interface ActivityExpandedDetailsProps {
+  activity: ActivityData & { details: NonNullable<ActivityData['details']> }
   candidate: Record<string, unknown>
-  jobId?: string
-  onShowLiaModal: () => void
   onOpenTriagemDetails?: (candidate: Record<string, unknown>) => void
   onSetScreeningModalData: (data: {
     type: 'audio' | 'video'
@@ -40,22 +36,9 @@ interface CandidateActivitiesTabProps {
   onSetShowPreview: (show: boolean) => void
 }
 
-const colorToBg: Record<string, string> = {
-  'var(--gray-600)': 'var(--gray-600-bg-10)',
-  'var(--gray-400)': 'var(--gray-bg-10)',
-  'var(--status-success)': 'var(--status-success-bg)',
-  'var(--status-error)': 'var(--status-error-bg)',
-  'var(--status-warning)': 'var(--status-warning-bg)',
-  'var(--wedo-purple)': 'var(--wedo-purple-bg-10)',
-  'var(--wedo-orange)': 'var(--wedo-orange-bg-15)',
-  'var(--wedo-cyan)': 'var(--wedo-cyan-bg-10)',
-}
-const getBgColor = (color: string) => colorToBg[color] || 'var(--gray-bg-10)'
-
-export function CandidateActivitiesTab({
+export function ActivityExpandedDetails({
+  activity,
   candidate,
-  jobId,
-  onShowLiaModal,
   onOpenTriagemDetails,
   onSetScreeningModalData,
   onSetScreeningModalOpen,
@@ -66,40 +49,8 @@ export function CandidateActivitiesTab({
   onSetSelectedFile,
   onSetPreviewType,
   onSetShowPreview,
-}: CandidateActivitiesTabProps) {
-  const [expandedActivity, setExpandedActivity] = useState<string | null>(null)
-  const [activityFilter, setActivityFilter] = useState<ActivityFilterType>('all')
-  const [activityView, setActivityView] = useState<ActivityViewType>('timeline')
-  const [periodFilter, setPeriodFilter] = useState<PeriodFilterType>('all')
-
-  const useDemoData = process.env.NEXT_PUBLIC_USE_DEMO_DATA !== 'false'
-  const activities: ActivityData[] = useDemoData ? getDemoActivities() : []
-
-  const filterByPeriod = (activity: ActivityData) => {
-    if (periodFilter === 'all') return true
-    const now = new Date()
-    const activityDate = new Date(activity.timestamp)
-    const daysDiff = Math.floor((now.getTime() - activityDate.getTime()) / (1000 * 60 * 60 * 24))
-    if (periodFilter === '7days') return daysDiff <= 7
-    if (periodFilter === '30days') return daysDiff <= 30
-    if (periodFilter === '3months') return daysDiff <= 90
-    return true
-  }
-
-  const filteredActivities = activities.filter(activity => {
-    const typeFilter = activityFilter === 'all' ||
-      (activityFilter === 'emails' && activity.type.includes('email')) ||
-      (activityFilter === 'interviews' && (activity.type.includes('interview') || activity.type === 'video-interview')) ||
-      (activityFilter === 'lia' && (activity.type.includes('lia') || activity.type === 'assessment')) ||
-      (activityFilter === 'applications' && activity.type === 'job-application') ||
-      (activityFilter === 'tests' && activity.type.includes('test')) ||
-      (activityFilter === 'offers' && (activity.type === 'offer-sent' || activity.type === 'onboarding')) ||
-      (activityFilter === 'evaluations' && (activity.type === 'rubric_evaluation' || activity.type.includes('evaluation')))
-    return typeFilter && filterByPeriod(activity)
-  })
-
-
-  const renderActivityCard = (activity: ActivityData, isTimeline: boolean) => {
+}: ActivityExpandedDetailsProps) {
+  return (
     const ActivityIcon = activity.icon
     const isExpanded = expandedActivity === activity.id
 
@@ -273,5 +224,7 @@ export function CandidateActivitiesTab({
         />
       </div>
     </div>
+  )
+}
   )
 }

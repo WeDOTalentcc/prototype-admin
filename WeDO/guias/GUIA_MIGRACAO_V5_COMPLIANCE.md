@@ -1,7 +1,7 @@
 # Guia de Migração v5 → Compliance Compartilhada
 
 > **Plataforma LIA — WeDO Talent**
-> Versão: 1.2 | Data: 2026-03-31
+> Versão: 1.3 | Data: 2026-04-01
 > Fonte: `WeDO/analises/diagnostico_arquitetura_codigo_lia_vs_v5.md` (8070 linhas)
 > Caminho recomendado: **Caminho 2 — ComplianceDomainPrompt** (~23.5h, 3 sprints)
 
@@ -9,7 +9,7 @@
 
 ## Diagnóstico: O Que Está Errado Hoje no v5
 
-Antes de explicar a solução, é preciso entender o problema. Abaixo estão os **7 problemas estruturais** que este guia resolve, listados do mais grave ao menos grave.
+Antes de explicar a solução, é preciso entender o problema. Abaixo estão os **11 problemas estruturais** identificados — 7 de compliance (P1-P7) e 4 de qualidade de resposta (P8-P11).
 
 ---
 
@@ -116,7 +116,118 @@ O Python não avisa. Os testes não falham. O domínio funciona — apenas sem n
 
 ---
 
-### Resumo dos 7 Problemas
+### P8. Domínios Flat usam keyword matching — incapazes de encadear ações
+
+Os domínios `jobs`, `messaging` e `insights` usam o padrão Flat: a query do recrutador passa por keyword matching, que mapeia para **uma única ação**. Se nenhum keyword bate, cai no LLM para classificar em uma action_id fixa.
+
+O problema: o sistema é **incapaz de encadear múltiplas ações** em uma única resposta.
+
+| Query do recrutador | O que o Flat faz | O que ReAct faria (LIA) |
+|---------------------|------------------|-------------------------|
+| "Liste vagas abertas e mostre quantos candidatos cada uma tem" | Keyword "vagas" → `list_jobs` → retorna lista SEM candidatos | Tool 1: `list_jobs` → Tool 2: `get_candidates_count` por vaga → monta resposta cruzada |
+| "Compare o funil dos últimos 3 meses com o anterior" | Keyword "funil" → `show_funnel` → mostra funil atual APENAS | Tool 1: `get_funnel(3m)` → Tool 2: `get_funnel(anterior)` → calcula diferenças → narra |
+| "Envie rejeição para todos os reprovados da vaga de Java" | Keyword "email" → `send_email` → pede destinatário manualmente | Tool 1: `list_rejected(job=Java)` → itera → Tool 2: `send_email(template=rejection)` |
+| "Crie vaga de Java pleno SP, CLT, 12k, híbrido, benefícios flex" | Keyword "crie" → `create_job` → extrai params manualmente | LLM entende TODOS os params de uma vez; se faltar algo, pergunta dinamicamente |
+
+Na LIA, os equivalentes usam ReAct:
+- `jobs` → `WizardReActAgent` (queries abertas) + `JobWizardGraph` (criação guiada)
+- `messaging` → `CommunicationReActAgent`
+- `insights` → `AnalyticsReActAgent`
+
+O `applies` do v5 é evidência deste problema: começou Flat, mas o desenvolvedor percebeu que precisava de ReAct e adicionou `react_agent.py` com LangGraph completo (`MAX_ITERATIONS=12`) — sem reorganizar a arquitetura. Os dois padrões coexistem no mesmo domínio.
+
+---
+
+### P9. Keyword/regex matching é frágil
+
+O `process_intent` dos domínios Flat usa keyword matching com lógica de confiança baseada no tamanho do keyword:
+
+```python
+for keyword, action_id in _KEYWORD_ACTION_MAP.items():
+    if keyword in query_lower:
+        confidence = min(0.95, 0.6 + len(keyword) * 0.02)
+```
+
+Problemas documentados:
+
+| Situação | O que acontece | Por quê |
+|----------|---------------|---------|
+| "Vou ter que deixar para outro dia" | Não reconhece como cancelamento | Regex procura "cancelar" ou "desmarcar" — linguagem natural não bate |
+| "NÃO mude o salário da vaga" | Detecta "mude" + "salário" → `edit_job` | Keyword matching não entende negação |
+| "Mostra o pipeline dessa vaga" | Pode ir para `show_pipeline` ou `show_funnel` | Keyword collision — "pipeline" e "funil" mapeiam para ações diferentes |
+| "Aquela vaga que falamos ontem" | Não resolve referência temporal | Sem MemoryResolver, "aquela" e "ontem" são ignorados |
+| "Enviar feedback" vs "Enviar email" | "enviar" bate nos dois | Primeiro keyword que match vence — depende da ordem no dicionário |
+
+O scheduling é o domínio com mais regex: `_CANCEL_PATTERN`, `_RESCHEDULE_PATTERN`, `_LIST_PATTERN`, `_DAILY_AGENDA_PATTERN`, `_AVAILABILITY_PATTERN`, `_SCHEDULE_INTENT_PATTERN`. Cada variação de linguagem natural que não bate num pattern cai no LLM fallback — que então é limitado a escolher UMA action_id de uma lista fixa.
+
+---
+
+### P10. Contexto pobre — chat flutuante/Teams sem memória de sessão
+
+Na LIA, 4 serviços constroem contexto ANTES da query chegar ao LLM:
+
+| Serviço LIA | O que faz | Existe no v5? |
+|-------------|-----------|---------------|
+| **MemoryResolver** | Resolve pronomes e referências: "ele" → "candidato João Silva (ID: 123)", "a terceira" → "vaga #3 da lista anterior" | **Não** |
+| **ContextAggregator** | Monta bloco: empresa, departamento, vagas ativas, histórico de ações | **Parcial** (cada domínio faz do seu jeito) |
+| **TenantContext** | Injeta dados da empresa: setor, plano, nível de autonomia | **Não** |
+| **StageContext** | Injeta onde o recrutador está: qual vaga, qual etapa do funil, quais candidatos visíveis | **Parcial** (só nos domínios LangGraph com state) |
+
+No v5, os domínios Flat são **stateless** — cada mensagem é tratada como se fosse a primeira. Exemplo real do problema:
+
+```
+Recrutador no chat flutuante (Teams):
+  1. "Mostre vagas abertas"              → jobs entende ✅
+  2. "Quantos candidatos na primeira?"   → ???
+     - "primeira" refere a qual vaga? Flat é stateless
+     - Sem MemoryResolver, "primeira" não se resolve
+     - LLM recebe a query sem contexto da conversa anterior
+     - Resultado: pede para o recrutador especificar de novo
+
+Recrutador dentro de uma vaga:
+  3. "Mostre o funil"                    → context de vaga? Depende do domínio
+     - Se acessou via frontend com job_id → funciona
+     - Se acessou via chat flutuante → sem job_id no context
+     - Resultado: "Qual vaga?" — apesar de ter acabado de falar dela
+
+Recrutador no funil de talentos (prompt expandido):
+  4. "Mova os 3 melhores para entrevista" → ???
+     - "3 melhores" de qual critério? De qual etapa?
+     - Sem StageContext, o LLM não sabe em qual etapa do funil o recrutador está
+     - Resultado: resposta genérica ou pedido de esclarecimento
+```
+
+Os domínios LangGraph (evaluation, scheduling) têm `MemorySaver` + typed state — por isso funcionam melhor em conversas multi-turno. Os Flat não têm nenhum mecanismo de memória entre mensagens.
+
+---
+
+### P11. Prompts estáticos — sem composição dinâmica, tom robótico
+
+Os prompts do v5 são strings relativamente estáticas dentro do `get_system_prompt()` de cada domínio. Na LIA, a infraestrutura de prompts é significativamente mais sofisticada:
+
+| Capacidade | LIA | v5 |
+|-----------|-----|-----|
+| **PromptRegistry** com versionamento | Sim — cada prompt tem versão, histórico de mudanças | Não — strings hardcoded em `domain.py` |
+| **Prompts em YAML** | Sim — `app/prompts/domains/*.yaml` com placeholders Jinja2 | Não — Python strings |
+| **A/B testing de prompts** | Sim — PromptRegistry suporta variantes por % de tráfego | Não |
+| **Blocos composíveis** | Sim — `ANTI_SYCOPHANCY_BLOCK`, `CHAIN_OF_THOUGHT_BLOCK`, `INCLUSION_BLOCK`, `BARS_BLOCK` | Não — cada domínio escreve seu prompt inteiro |
+| **Few-shot examples** | Sim — `intent_few_shot_examples.py` co-criados com profissionais de RH (exemplos "Clear" vs "Ambiguous") | Não — depende só do system prompt genérico |
+| **Scoring BARS** | Sim — Behaviorally Anchored Rating Scale com 4 níveis (EXCEEDS/MEETS/PARTIAL/MISSING) e pesos (Hard Skills 70% + Soft Skills 30%) | Não — scoring ad-hoc por domínio |
+
+Impacto concreto:
+
+| Sintoma observável | Causa | Exemplo |
+|-------------------|-------|---------|
+| **Tom robótico** | Prompts sem blocos de personalidade ou anti-sycophancy | "A vaga foi criada com sucesso." vs LIA: "Pronto! Criei a vaga de Java Pleno em SP. Quer que eu já inicie a busca por candidatos?" |
+| **Respostas genéricas** | Sem few-shot examples, LLM não sabe o tom esperado de RH | Respostas que parecem ChatGPT genérico, não assistente de recrutamento |
+| **Avaliações inconsistentes** | Sem BARS, cada avaliação usa critérios diferentes | Candidato A avaliado por "experiência" e B por "fit cultural" — sem escala comparável |
+| **Sem evolução mensurável** | Sem A/B testing, impossível medir se um prompt melhor gera melhores resultados | Muda prompt → torce para funcionar → não tem métricas de antes/depois |
+
+---
+
+### Resumo dos 11 Problemas
+
+**Problemas de Compliance (P1-P7):**
 
 | # | Problema | Gravidade | Regulação afetada |
 |---|----------|-----------|-------------------|
@@ -128,8 +239,17 @@ O Python não avisa. Os testes não falham. O domínio funciona — apenas sem n
 | P6 | Sem camada intermediária (herança direta) | **Crítica** | Todas |
 | P7 | Novos domínios não herdam nada | **Crítica** | Todas |
 
+**Problemas de Qualidade de Resposta (P8-P11):**
+
+| # | Problema | Gravidade | Impacto no produto |
+|---|----------|-----------|-------------------|
+| P8 | Domínios Flat incapazes de encadear ações | **Crítica** | Respostas limitadas — "preciso pedir uma coisa de cada vez" |
+| P9 | Keyword/regex matching frágil | Alta | Respostas equivocadas — entende errado e faz a coisa errada |
+| P10 | Contexto pobre (sem memória de sessão) | **Crítica** | Sistema "amnésico" — cada mensagem tratada como primeira |
+| P11 | Prompts estáticos sem composição dinâmica | Alta | Tom robótico — respostas genéricas sem personalidade |
+
 **O Caminho 2 resolve P2, P3, P4, P5, P6 e P7 em 3 sprints (~23.5h).**
-**O Caminho 3 resolve P1 (unificação arquitetural) em 2027.**
+**O Caminho 3 resolve P1 (unificação arquitetural), P8 (Flat→ReAct), P9 (elimina regex), P10 (MemoryResolver+ContextAggregator) e P11 (PromptRegistry+blocos composíveis).**
 
 ---
 
@@ -139,6 +259,9 @@ O Python não avisa. Os testes não falham. O domínio funciona — apenas sem n
    - 0.1–0.9: Arquiteturas, ComplianceDomainPrompt, contrato, duplicados, fluxos, domínios, agentes
    - 0.10: [O Que São "Tools" no Contexto de Agentes IA](#010-o-que-são-tools-no-contexto-de-agentes-ia)
    - 0.11: [Onde Cada Controle Atua no Pipeline](#011-onde-cada-controle-atua-no-pipeline)
+   - 0.12: [Avaliação Arquitetural: v5 vs LIA](#012-avaliação-arquitetural-v5-vs-lia)
+   - 0.13: [Por Que as Respostas São Limitadas, Equivocadas ou Robóticas](#013-por-que-as-respostas-são-limitadas-equivocadas-ou-robóticas)
+   - 0.14: [Capacidades da LIA que o v5 Precisa Implementar](#014-capacidades-da-lia-que-o-v5-precisa-implementar)
 1. [Contexto Rápido](#1-contexto-rápido)
 2. [Pré-Requisitos: 9 Controles de Compliance](#2-pré-requisitos-9-controles-de-compliance)
 3. [ComplianceDomainPrompt — Classe Completa](#3-compliancedomainprompt--classe-completa)
@@ -695,6 +818,231 @@ HiringPolicy (por tenant, configurável)
 No Caminho 2, `HiringPolicy` é resolvido parcialmente — o `ComplianceDomainPrompt` pode injetar policies via `context`, mas sem feature flags granulares. No Caminho 3, vira um mixin separado com configuração completa por tenant.
 
 O `PolicyMiddleware` na LIA (`app/shared/policy_middleware.py`, 100L) é a referência de implementação — ele intercepta chamadas e aplica regras do tenant antes da execução.
+
+---
+
+### 0.12 Avaliação Arquitetural: v5 vs LIA
+
+O v5 e a LIA resolvem o mesmo problema (assistente de recrutamento com IA) usando abordagens arquiteturais fundamentalmente diferentes. Esta seção mapeia cada domínio v5 ao padrão equivalente na LIA.
+
+#### Comparação por Domínio
+
+| Domínio v5 | Padrão v5 | Equivalente LIA | Padrão LIA | Nível de divergência |
+|------------|-----------|------------------|------------|---------------------|
+| `jobs` | Flat (keyword → action) | `WizardReActAgent` + `JobWizardGraph` | ReAct + deterministic graph | **Alta** — Flat não encadeia |
+| `messaging` | Flat (keyword → action) | `CommunicationReActAgent` | ReAct | **Alta** — mesma limitação |
+| `insights` | Flat (keyword → action) | `AnalyticsReActAgent` | ReAct | **Alta** — mesma limitação |
+| `scheduling` | LangGraph (StateGraph) | `SchedulingReActAgent` | ReAct | **Média** — LangGraph funciona, mas scheduling é simples demais para grafo |
+| `evaluation` | LangGraph (StateGraph) | `ScreeningAgent` + `EvaluationGraph` | ReAct + deterministic graph | **Baixa** — ambos usam grafos; LIA adiciona BARS |
+| `applies` | Flat + `react_agent.py` (híbrido) | `PipelineReActAgent` | ReAct | **Média** — react_agent.py já converge para ReAct |
+| `sourced_profile_sourcing` | LangGraph + BaseAgent ABC | `SourcingReActAgent` | ReAct multi-tool | **Média** — BaseAgent ≈ proto-ReAct |
+| `autonomous` | Multi-Agent (UniversalReActAgent) | `AutonomousAgent` | ReAct com todas as tools | **Baixa** — ambos são ReAct, mesma ideia |
+
+#### ReAct É um LangGraph de 2 Nós
+
+Uma confusão comum: "ReAct e LangGraph são alternativas — preciso escolher um ou outro." Na realidade, **ReAct é implementado COMO um LangGraph** — é um grafo de 2 nós com loop:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│          ReAct = LangGraph de 2 nós                     │
+│                                                          │
+│    ┌──────────┐     tool_calls?      ┌──────────────┐   │
+│    │   LLM    │ ─── sim ──────────► │  Tool Exec   │   │
+│    │  (think) │ ◄── resultado ───── │  (act)       │   │
+│    │          │                      │              │   │
+│    │          │ ─── não (final) ──► SAÍDA           │   │
+│    └──────────┘                      └──────────────┘   │
+│                                                          │
+│    Loop: think → act → think → act → ... → resposta     │
+│    Controle: MAX_ITERATIONS (v5=12, LIA=15)             │
+└─────────────────────────────────────────────────────────┘
+```
+
+Um grafo **determinístico** (como `EvaluationGraph`) tem nós fixos com edges definidos em código:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│          Grafo Determinístico (evaluation)               │
+│                                                          │
+│    Parse ──► Enrich ──► Score ──► Calibrate ──► Report  │
+│                            │                     │      │
+│                            ├── BARS (se eval)    │      │
+│                            └── FactCheck ────────┘      │
+│                                                          │
+│    Nós são funções Python, não LLM. Ordem é fixa.       │
+└─────────────────────────────────────────────────────────┘
+```
+
+A LIA usa **3 padrões**, todos sobre LangGraph:
+
+| Padrão | Quando usar | Exemplo LIA |
+|--------|------------|-------------|
+| **A. ReAct** (2 nós + loop) | Queries abertas, exploratórias | `SourcingReActAgent`, `PipelineReActAgent` |
+| **B. Deterministic Graph** (N nós fixos) | Processos com passos obrigatórios | `EvaluationGraph`, `JobWizardGraph` |
+| **C. ReAct + Graph** (híbrido) | Query aberta que pode acionar processo formal | `ScreeningAgent` → detecta `evaluate` → chama `EvaluationGraph` |
+
+#### Regra de Decisão para Migração (Caminho 3)
+
+```
+Domínio usa keyword matching? ──► SIM ──► Migrar para ReAct (Padrão A)
+                              └► NÃO
+                                  │
+Domínio tem passos obrigatórios? ──► SIM ──► Manter grafo + adicionar ReAct entry (Padrão C)
+                                 └► NÃO ──► Avaliar: se ReAct puro resolve, usar Padrão A
+```
+
+---
+
+### 0.13 Por Que as Respostas São Limitadas, Equivocadas ou Robóticas
+
+As respostas do v5 sofrem de 4 camadas de problemas, cada uma contribuindo para um tipo de falha diferente:
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│          4 CAMADAS DE PROBLEMAS NAS RESPOSTAS DO v5                │
+│                                                                     │
+│  CAMADA 4: ARQUITETURA (P8)                                        │
+│  └─ Flat não encadeia ações → respostas parciais                   │
+│                                                                     │
+│  CAMADA 3: INTERPRETAÇÃO (P9)                                      │
+│  └─ Regex/keyword não entende linguagem natural → ação errada      │
+│                                                                     │
+│  CAMADA 2: CONTEXTO (P10)                                          │
+│  └─ Sem memória/state → não sabe do que se trata → genérico        │
+│                                                                     │
+│  CAMADA 1: PROMPT (P11)                                            │
+│  └─ Prompt estático sem blocos/few-shot → tom robótico             │
+│                                                                     │
+│  ───────────────────────────────────────────────────────────────    │
+│  Resolver SÓ a camada 1 (prompt) não adianta se as camadas         │
+│  2, 3 e 4 continuam falhando. A correção é de baixo para cima.     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+#### Exemplos Reais por Contexto de Uso
+
+**1. Chat no Microsoft Teams (sem contexto de página):**
+
+```
+Recrutador: "Como está o pipeline?"
+  → CAMADA 3 falha: keyword "pipeline" match → show_pipeline
+  → CAMADA 2 falha: qual vaga? Qual pipeline? Chat Teams não tem job_id
+  → Resultado: "Por favor, especifique a vaga." ❌
+
+Na LIA:
+  → MemoryResolver: última vaga mencionada = "Java Pleno SP"
+  → ContextAggregator: empresa = Acme, 3 vagas ativas
+  → ReAct: Tool 1 get_pipeline(job=Java Pleno SP) → monta visão
+  → Resultado: "O pipeline da vaga Java Pleno SP tem 42 candidatos..." ✅
+```
+
+**2. Chat flutuante dentro da plataforma (sem vaga selecionada):**
+
+```
+Recrutador: "Mostre os candidatos que avancei ontem"
+  → CAMADA 3 falha: "avancei" não está no keyword map de nenhum domínio
+  → CAMADA 2 falha: "ontem" é referência temporal — Flat não resolve datas
+  → CAMADA 4 falha: precisaria cross-domain (applies → scheduling → evaluation)
+  → Resultado: LLM fallback → resposta genérica sem dados ❌
+
+Na LIA:
+  → MemoryResolver: resolve "ontem" → 2026-03-31
+  → Router: detecta intent cross-domain → AutonomousAgent
+  → ReAct: Tool 1 list_stage_changes(date=2026-03-31, action=advance)
+         → Tool 2 get_candidate_details(ids=[...])
+  → Resultado: "Ontem você avançou 3 candidatos: Maria (para entrevista técnica)..." ✅
+```
+
+**3. Dentro de uma vaga específica (context de job_id existe):**
+
+```
+Recrutador: "Avalie os 5 finalistas"
+  → CAMADA 3 ok: keyword "avalie" → evaluation ✅
+  → CAMADA 4 falha: Flat faz 1 avaliação por vez, não 5 em batch
+  → CAMADA 1 falha: sem BARS, avaliação usa critérios ad-hoc
+  → Resultado: 5 avaliações inconsistentes sem escala comparável ❌
+
+Na LIA:
+  → ReAct: itera → Tool evaluate_candidate × 5
+  → BARS: cada avaliação usa mesma escala (EXCEEDS/MEETS/PARTIAL/MISSING)
+  → Resultado: 5 avaliações comparáveis com scores normalizados ✅
+```
+
+**4. Criação de vaga complexa:**
+
+```
+Recrutador: "Cria uma vaga de tech lead, remoto, 25k, preciso de alguém
+             com 8+ anos, que manje de AWS e lidere time de 5"
+  → CAMADA 3 ok: keyword "cria" → create_job ✅
+  → CAMADA 4 falha: Flat extrai params por regex — perde "manje de AWS" (gíria)
+  → CAMADA 1 falha: prompt não tem instrução para extrair requisitos informais
+  → Resultado: vaga criada com título e salário, sem requisitos detalhados ❌
+
+Na LIA:
+  → JobWizardGraph: grafo determinístico com nós Extract → Validate → Enrich
+  → LLM entende linguagem informal → extrai todos os campos
+  → Se faltar algo, pergunta dinamicamente (guided wizard)
+  → Resultado: vaga completa com requisitos, seniority, stack, modelo de trabalho ✅
+```
+
+#### Relação entre Camadas e Problemas
+
+| Camada | Problema | Resolve com | Quando |
+|--------|----------|-------------|--------|
+| 4. Arquitetura | P8 (Flat→ReAct) | Migrar domínios Flat para ReAct | Caminho 3, Fase 1 |
+| 3. Interpretação | P9 (regex→LLM) | Eliminar keyword matching, LLM classifica intent | Caminho 3, junto com ReAct |
+| 2. Contexto | P10 (sem memória) | MemoryResolver + ContextAggregator + StageContext | Caminho 3, Fase 2 |
+| 1. Prompt | P11 (estático) | PromptRegistry + blocos + few-shot + BARS | Caminho 3, Fase 2-3 |
+
+---
+
+### 0.14 Capacidades da LIA que o v5 Precisa Implementar
+
+Esta seção lista as capacidades da LIA que não existem no v5, organizadas por prioridade de implementação no Caminho 3.
+
+#### Prioridade 1 — Infraestrutura de Prompts
+
+| Capacidade | Arquivo LIA de referência | O que faz | Esforço |
+|-----------|--------------------------|-----------|---------|
+| **PromptRegistry** | `app/shared/prompts/prompt_registry.py` | Registry centralizado com versionamento. Cada prompt tem `name`, `version`, `template`, `variables`. Carrega de YAML, suporta variantes | ~20h |
+| **Prompts em YAML** | `app/prompts/domains/*.yaml` | Templates Jinja2 com placeholders: `{{ company_name }}`, `{{ candidate_name }}`, `{{ job_title }}`. Separação entre lógica e conteúdo | ~10h |
+| **Blocos composíveis** | `app/shared/prompts/blocks/` | `ANTI_SYCOPHANCY_BLOCK`, `CHAIN_OF_THOUGHT_BLOCK`, `INCLUSION_BLOCK`, `BARS_BLOCK`. Cada domínio compõe seu prompt a partir de blocos reutilizáveis | ~15h |
+| **Few-shot examples** | `app/shared/prompts/intent_few_shot_examples.py` | Exemplos "Clear" vs "Ambiguous" co-criados com profissionais de RH. Melhoram a classificação de intent sem fine-tuning | ~8h |
+
+#### Prioridade 2 — Contexto e Memória
+
+| Capacidade | Arquivo LIA de referência | O que faz | Esforço |
+|-----------|--------------------------|-----------|---------|
+| **MemoryResolver** | `app/orchestrator/memory_resolver.py` | Resolve pronomes e referências anafóricas: "ele" → candidato, "a vaga" → última vaga mencionada, "ontem" → data. Usa histórico de chat + LLM | ~25h |
+| **ContextAggregator** | `app/services/context_aggregator_service.py` | Monta bloco de contexto pré-LLM: empresa, departamento, vagas ativas, histórico de ações recentes, configurações do tenant | ~20h |
+| **TenantContext** | `app/shared/tenant_context.py` | Injeta dados da empresa: setor (tech/finance/retail), plano (starter/pro/enterprise), nível de autonomia do agente, idioma preferido | ~10h |
+| **StageContext** | `app/shared/stage_context.py` | Injeta onde o recrutador está no fluxo: vaga selecionada, etapa do funil, candidatos visíveis, ação em progresso | ~10h |
+
+#### Prioridade 3 — Qualidade de Avaliação
+
+| Capacidade | Arquivo LIA de referência | O que faz | Esforço |
+|-----------|--------------------------|-----------|---------|
+| **BARS (Behaviorally Anchored Rating Scale)** | `app/shared/prompts/blocks/bars_block.py` | Escala de 4 níveis (EXCEEDS/MEETS/PARTIAL/MISSING) com pesos configuráveis. Hard Skills 70% + Soft Skills 30% por padrão. Garante avaliações comparáveis | ~20h |
+| **A/B Testing de prompts** | `app/shared/prompts/prompt_registry.py` (variantes) | Suporta múltiplas variantes de um prompt com distribuição por % de tráfego. Métricas de qualidade por variante (confidence médio, satisfação, tempo de resposta) | ~15h |
+
+#### Prioridade 4 — Arquitetura (dependente do Caminho 3)
+
+| Capacidade | O que faz | Esforço |
+|-----------|-----------|---------|
+| **Migração Flat→ReAct** | Converter `jobs`, `messaging`, `insights` de keyword matching para ReAct (LangGraph 2 nós). Elimina regex, habilita encadeamento de ações | ~40h (3 domínios) |
+| **Base unificada parametrizada** | Todos os domínios herdam de uma base única. Diferença é configuração (tools, prompt, max_iterations), não estrutura | ~30h |
+
+#### Estimativa Total do Caminho 3 Expandido
+
+```
+Prioridade 1 (Prompts):     ~53h  → Sprint 1-2 do Caminho 3
+Prioridade 2 (Contexto):    ~65h  → Sprint 2-4 do Caminho 3
+Prioridade 3 (Avaliação):   ~35h  → Sprint 3-4 do Caminho 3
+Prioridade 4 (Arquitetura): ~70h  → Sprint 5-8 do Caminho 3
+──────────────────────────────────────────────────────────
+TOTAL:                      ~223h  → 16-20 semanas
+Início recomendado: Q2 2027 (após 6+ meses de Caminho 2 em produção)
+```
 
 ---
 
@@ -1973,20 +2321,87 @@ class FairnessMixin:
 | Auditoria | Log centralizado | Log por concern separado |
 | Complexidade | Baixa | Média-Alta |
 
+### 8.6 Mapeamento Domínio → Padrão Alvo (Caminho 3)
+
+Cada domínio v5 deve convergir para um dos 3 padrões LIA. A tabela abaixo define o padrão alvo e a justificativa:
+
+| Domínio v5 | Padrão Atual | Padrão Alvo | Justificativa |
+|------------|-------------|-------------|---------------|
+| `jobs` | Flat | **A (ReAct)** + **B (Deterministic Graph)** para criação | Queries abertas precisam de encadeamento; criação de vaga é processo guiado (JobWizardGraph) |
+| `messaging` | Flat | **A (ReAct)** | Envio de emails em batch, personalização, templates — tudo requer encadeamento |
+| `insights` | Flat | **A (ReAct)** | Queries analíticas precisam de múltiplas consultas + agregação + narração |
+| `scheduling` | LangGraph (StateGraph) | **A (ReAct)** | Simplificar: grafo é over-engineering para check-availability → book → notify |
+| `evaluation` | LangGraph (StateGraph) | **C (ReAct + Graph)** | Manter grafo determinístico para avaliação BARS; ReAct para queries exploratórias |
+| `applies` | Flat + react_agent.py | **A (ReAct)** | `react_agent.py` já é ReAct; eliminar o wrapper Flat |
+| `sourced_profile_sourcing` | LangGraph + BaseAgent | **A (ReAct)** | BaseAgent ABC → ReAct com tools equivalentes |
+| `autonomous` | Multi-Agent (ReAct) | **A (ReAct)** com todas as tools | Já é ReAct; apenas unificar base |
+
+```
+RESULTADO FINAL — Caminho 3:
+
+Padrão A (ReAct): jobs*, messaging, insights, scheduling, applies,
+                  sourced_profile, autonomous
+                  → 7 domínios no mesmo padrão
+
+Padrão B (Graph): JobWizardGraph (sub-componente de jobs),
+                  EvaluationGraph (sub-componente de evaluation)
+                  → 2 grafos determinísticos como sub-componentes
+
+Padrão C (Híbrido): evaluation (ReAct entry → EvaluationGraph quando detecta "avaliar")
+                    → 1 domínio com entry ReAct + grafo interno
+
+* jobs usa ReAct para queries e Graph para criação guiada
+```
+
+### 8.7 Roadmap de Capacidades (Prompt, Contexto, Avaliação)
+
+Além da migração de compliance (Seção 8.1-8.5) e unificação arquitetural (8.6), o Caminho 3 inclui a implementação de capacidades da LIA que resolvem P8-P11:
+
+| Sprint | Capacidade | Resolve | Dependência |
+|--------|-----------|---------|-------------|
+| **S1** | PromptRegistry + YAML templates | P11 parcial | Nenhuma (pode começar imediato) |
+| **S1** | Blocos composíveis (anti-sycophancy, inclusion, CoT) | P11 parcial | PromptRegistry |
+| **S2** | Few-shot examples para intent classification | P9 parcial | PromptRegistry |
+| **S2** | MemoryResolver | P10 | Nenhuma (pode paralelizar com S1) |
+| **S3** | ContextAggregator + TenantContext + StageContext | P10 | MemoryResolver |
+| **S3** | BARS (Behaviorally Anchored Rating Scale) | P11 (avaliação) | Blocos composíveis |
+| **S4** | Migração jobs Flat→ReAct | P8 | PromptRegistry + MemoryResolver |
+| **S5** | Migração messaging + insights Flat→ReAct | P8 | jobs como piloto validado |
+| **S5** | Migração scheduling StateGraph→ReAct | P8 | jobs como piloto validado |
+| **S6** | Unificação applies (eliminar wrapper Flat) | P8 | react_agent.py já funciona |
+| **S7** | A/B testing de prompts | P11 completo | PromptRegistry maduro + métricas |
+| **S8** | Base unificada parametrizada | P1 completo | Todos os domínios em ReAct |
+
+```
+TIMELINE CAMINHO 3 EXPANDIDO:
+
+Compliance (mixins):        S1 ─────── S4 (16 semanas, ~125h)  ← Seção 8.1-8.5
+Prompts (registry+blocos):  S1 ── S3 (12 semanas, ~53h)        ← Seção 0.14 P1
+Contexto (memory+context):  S2 ──── S3 (8 semanas, ~65h)       ← Seção 0.14 P2
+Avaliação (BARS+A/B):       S3 ── S7 (espalhado, ~35h)         ← Seção 0.14 P3
+Arquitetura (Flat→ReAct):   S4 ──────── S8 (20 semanas, ~70h)  ← Seção 0.14 P4
+────────────────────────────────────────────────────────────────
+TOTAL INTEGRADO:            ~348h em 8 sprints (~32 semanas)
+```
+
 ---
 
 ## 9. Matriz de Decisão: Caminho 1 vs 2 vs 3
 
-| Critério | Caminho 1 (Patch) | **Caminho 2 (ComplianceDomainPrompt)** | Caminho 3 (Mixins) |
-|----------|-------------------|-----------------------------------------|---------------------|
-| **Custo (horas)** | ~120h | **~23.5h** | ~125h |
-| **Prazo** | 7 semanas | **3 semanas** | 16 semanas |
-| **Domínios futuros protegidos** | Nao | **Sim** | Sim |
+| Critério | Caminho 1 (Patch) | **Caminho 2 (ComplianceDomainPrompt)** | Caminho 3 (Mixins + Capacidades) |
+|----------|-------------------|-----------------------------------------|----------------------------------|
+| **Custo (horas)** | ~120h | **~23.5h** | ~348h (125h mixins + 223h capacidades) |
+| **Prazo** | 7 semanas | **3 semanas** | ~32 semanas (8 sprints) |
+| **Domínios futuros protegidos** | Não | **Sim** | Sim |
 | **Concerns CRITICOS resolvidos** | C01-C08 (com esforço) | **C01-C11** | C01-C23 |
+| **Problemas P1-P11 resolvidos** | P2-P7 parcial | **P2-P7** | **P1-P11 (todos)** |
 | **Risco de regressão** | Alto | **Baixo** | Médio |
 | **Compatível com código atual** | Sim | **Sim** | Parcial |
-| **Feature flags por concern** | Nao | Nao | Sim |
-| **Testabilidade isolada** | Nao | Parcial | Sim |
+| **Feature flags por concern** | Não | Não | Sim |
+| **Testabilidade isolada** | Não | Parcial | Sim |
+| **PromptRegistry + BARS** | Não | Não | Sim |
+| **MemoryResolver + Context** | Não | Não | Sim |
+| **Flat→ReAct (elimina regex)** | Não | Não | Sim |
 | **Recomendação** | Emergência apenas | **Solução principal (agora)** | Objetivo Q2 2027 |
 
 ### Veredicto
@@ -2087,9 +2502,13 @@ Pendente para Caminho 3:       C22 completo (feature flags)
 | AuditCallback (LIA) | `lia-agent-system/libs/audit/lia_audit/audit_callback.py` | 263 |
 | PolicyMiddleware (LIA) | `lia-agent-system/app/shared/policy_middleware.py` | 100 |
 | DomainPrompt base (v5) | `src/domains/base.py` | 173 |
+| PromptRegistry (LIA) | `lia-agent-system/app/shared/prompts/prompt_registry.py` | — |
+| MemoryResolver (LIA) | `lia-agent-system/app/orchestrator/memory_resolver.py` | — |
+| ContextAggregator (LIA) | `lia-agent-system/app/services/context_aggregator_service.py` | — |
 
 ---
 
 > **Este guia foi gerado a partir de leitura direta de todos os arquivos fonte listados acima.**
 > Todos os excertos de código são literais do filesystem verificado em 2026-03-31.
+> v1.3 (2026-04-01): Adicionados P8-P11 (qualidade de resposta), seções 0.12-0.14 (avaliação arquitetural, diagnóstico de respostas, capacidades LIA), seções 8.6-8.7 (domínio→padrão alvo, roadmap de capacidades).
 > Para dúvidas ou atualizações, consultar o diagnóstico completo em `WeDO/analises/`.

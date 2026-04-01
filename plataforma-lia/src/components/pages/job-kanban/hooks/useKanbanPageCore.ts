@@ -43,6 +43,7 @@ import { useKanbanTableView } from "@/components/pages/job-kanban/hooks/useKanba
 import { useKanbanCandidateLoader } from "@/components/pages/job-kanban/hooks/useKanbanCandidateLoader"
 import { useKanbanLIASuggestions } from "@/components/pages/job-kanban/hooks/useKanbanLIASuggestions"
 import { useKanbanTransitions } from "@/components/pages/job-kanban/hooks/useKanbanTransitions"
+import { useKanbanFilters } from "@/components/pages/job-kanban/hooks/useKanbanFilters"
 
 const jobData = mockJobData
 
@@ -317,8 +318,6 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null)
   const pendingNavigationRef = useRef<{ nav: { candidateId?: string; candidateName?: string; jobId?: string; jobTitle?: string; currentStage?: string; action?: string; openTransitionModal?: boolean }; prompt: string | null } | null>(null)
 
-  const [selectedCandidates, setSelectedCandidates] = useState<Set<string>>(new Set())
-
   const allTableCandidates = useMemo(() => {
     return dynamicStages.reduce((acc: Record<string, unknown>[], stage) => {
       const stageCandidates = candidatesData[stage.id] || []
@@ -373,8 +372,26 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   const { isLoadingCandidates, hasMounted, isClient } = candidateLoader.state
   const { setIsLoadingCandidates, setHasMounted, setIsClient } = candidateLoader.actions
 
-  // Estado para busca
-  const [searchQuery, setSearchQuery] = useState("")
+  // ── Filtros, seleção e favoritos — extraído para useKanbanFilters ──
+  const kanbanFilters = useKanbanFilters({
+    talentFunnel,
+    shortLists,
+    createShortList: _createSL,
+    addCandidateToShortList: _addToSL,
+    removeCandidateFromShortList: _removeFromSL,
+    jobId: _jobIdForSL,
+    jobTitle: job?.title as string | undefined,
+  })
+  const {
+    searchQuery, setSearchQuery,
+    filterCandidates,
+    selectedCandidates, setSelectedCandidates,
+    favoriteCandidates, setFavoriteCandidates,
+    handleToggleFavorite,
+    shortListedCandidateIds, setShortListedCandidateIds,
+    activeShortListId, setActiveShortListId,
+    handleToggleShortList,
+  } = kanbanFilters
 
   // ── Modais e UI — extraído para useKanbanUIModals ──
   const uiModals = useKanbanUIModals({ job, toast: toast as unknown as Parameters<typeof useKanbanUIModals>[0]["toast"] })
@@ -462,17 +479,6 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     setShowShareGestorModal,
     setCandidatesData: setCandidatesData as unknown as Parameters<typeof useKanbanBulkActions>[0]["setCandidatesData"],
   })
-
-  // Favorites State
-  const [favoriteCandidates, setFavoriteCandidates] = useState<Set<string>>(new Set())
-  const [shortListedCandidateIds, setShortListedCandidateIds] = useState<Set<string>>(new Set())
-  const [activeShortListId, setActiveShortListId] = useState<string | null>(null)
-
-  // Sync favorites from useTalentFunnel hook
-  useEffect(() => {
-    const favoriteIds = talentFunnel.getFavoriteIds()
-    setFavoriteCandidates(favoriteIds)
-  }, [talentFunnel.favorites])
 
   // Detectar ação pendente de comunicação (despublicação com notificação)
   useEffect(() => {
@@ -865,27 +871,6 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     return recruitmentStage?.displayName || stageId
   }
 
-  // Função para filtrar candidatos baseado na busca
-  const filterCandidates = (candidates: Record<string, unknown>[]) => {
-    if (!searchQuery) return candidates
-
-    const query = searchQuery.toLowerCase()
-    return candidates.filter(candidate => {
-      const name = candidate.name as string | undefined
-      const role = candidate.role as string | undefined
-      const company = candidate.company as string | undefined
-      const location = candidate.location as string | undefined
-      const currentCompany = candidate.currentCompany as string | undefined
-      return (
-        (name?.toLowerCase() ?? '').includes(query) ||
-        (role?.toLowerCase() ?? '').includes(query) ||
-        (company?.toLowerCase() ?? '').includes(query) ||
-        (location?.toLowerCase() ?? '').includes(query) ||
-        (currentCompany?.toLowerCase() ?? '').includes(query)
-      )
-    })
-  }
-
   // Function to mark candidate as viewed
   const markCandidateAsViewed = async (candidateId: string) => {
     try {
@@ -952,31 +937,6 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   const handleTogglePreviewMaximize = () => {
     setIsPreviewMaximized(!isPreviewMaximized)
   }
-
-  const handleToggleFavorite = (candidateId: string) => {
-    talentFunnel.toggleFavoriteCandidate(candidateId)
-    // Local state will be synced via the useEffect above
-  }
-
-  const handleToggleShortList = useCallback(async (candidateId: string) => {
-    const isInList = shortListedCandidateIds.has(candidateId)
-    let listId: string | null = activeShortListId || shortLists[0]?.id || null
-
-    if (!listId) {
-      const newList = await _createSL(_jobIdForSL || '', `Short List — ${job?.title || 'Vaga'}`)
-      if (!newList) return
-      listId = newList.id
-      setActiveShortListId(newList.id)
-    }
-
-    if (isInList) {
-      const ok = await _removeFromSL(listId, candidateId)
-      if (ok) setShortListedCandidateIds(prev => { const next = new Set(prev); next.delete(candidateId); return next })
-    } else {
-      const ok = await _addToSL(listId, candidateId)
-      if (ok) setShortListedCandidateIds(prev => new Set([...prev, candidateId]))
-    }
-  }, [shortListedCandidateIds, activeShortListId, shortLists, _createSL, _addToSL, _removeFromSL, _jobIdForSL, job?.title])
 
   // Handler for interactive sub-status change (from InteractiveSubStatusCell)
   const handleInteractiveStatusChange = async (

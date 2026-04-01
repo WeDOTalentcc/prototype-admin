@@ -9,6 +9,7 @@ import type { FileAnalysisResult } from "@/components/ui/file-upload-button"
 import {
   MapPin, Briefcase, Clock, Building2, Code
 } from "lucide-react"
+import { extractCriteriaFromText } from "./promptStateCriteriaUtils"
 
 export interface SearchAnalysis {
   completeness_score: number
@@ -927,76 +928,7 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
       const queryLower = query.toLowerCase().trim()
       if (queryLower === lastQueryRef.current) return
       lastQueryRef.current = queryLower
-      setExtractedCriteria(prev => {
-        const manuallyModified = prev.filter(c => !c.active)
-        const newlyExtracted: SearchCriterion[] = []
-        const locations = ['são paulo', 'rio de janeiro', 'belo horizonte', 'curitiba', 'porto alegre', 'brasília', 'sp', 'rj']
-        for (const loc of locations) {
-          if (queryLower.includes(loc)) {
-            const id = `loc-${loc.replace(/\s/g, '-')}`
-            const existing = prev.find(c => c.id === id)
-            if (!existing) {
-              newlyExtracted.push({ id, type: 'location', label: 'Localização', value: loc.charAt(0).toUpperCase() + loc.slice(1), active: true })
-            }
-            break
-          }
-        }
-        const expMatch = queryLower.match(/(\d+)\+?\s*anos?|(\d+)\+?\s*years?/)
-        if (expMatch) {
-          const years = expMatch[1] || expMatch[2]
-          const id = `exp-${years}`
-          const existing = prev.find(c => c.id === id)
-          if (!existing) {
-            newlyExtracted.push({ id, type: 'experience', label: 'Experiência', value: `${years}+ anos`, active: true })
-          }
-        }
-        const skills = ['python', 'react', 'node', 'java', 'typescript', 'javascript', 'aws', 'docker', 'kubernetes', 'sql', 'figma', 'ux', 'ui', 'angular', 'vue', 'spring', 'django', 'flask', 'fastapi']
-        for (const skill of skills) {
-          if (queryLower.includes(skill)) {
-            const id = `skill-${skill}`
-            const existing = prev.find(c => c.id === id)
-            if (!existing) {
-              newlyExtracted.push({ id, type: 'skills', label: 'Skills', value: skill.charAt(0).toUpperCase() + skill.slice(1), active: true })
-            }
-          }
-        }
-        const languages = ['inglês', 'espanhol', 'francês', 'alemão', 'english', 'spanish', 'fluente', 'avançado']
-        for (const lang of languages) {
-          if (queryLower.includes(lang)) {
-            const id = `lang-${lang}`
-            const existing = prev.find(c => c.id === id)
-            if (!existing) {
-              newlyExtracted.push({ id, type: 'language', label: 'Idioma', value: lang.charAt(0).toUpperCase() + lang.slice(1), active: true })
-            }
-            break
-          }
-        }
-        const seniorities: Record<string, string> = {
-          'sênior': 'Sênior', 'senior': 'Sênior',
-          'pleno': 'Pleno',
-          'júnior': 'Júnior', 'junior': 'Júnior',
-          'lead': 'Tech Lead', 'tech lead': 'Tech Lead',
-          'especialista': 'Especialista', 'staff': 'Staff'
-        }
-        for (const [key, value] of Object.entries(seniorities)) {
-          if (queryLower.includes(key)) {
-            const id = `seniority-${key.replace(/\s/g, '-')}`
-            const existing = prev.find(c => c.id === id)
-            if (!existing) {
-              newlyExtracted.push({ id, type: 'job_title', label: 'Senioridade', value, active: true })
-            }
-            break
-          }
-        }
-        const existingActive = prev.filter(c => c.active)
-        const merged = [...existingActive, ...manuallyModified]
-        for (const newCrit of newlyExtracted) {
-          if (!merged.find(c => c.id === newCrit.id)) {
-            merged.push(newCrit)
-          }
-        }
-        return merged
-      })
+      setExtractedCriteria(prev => extractCriteriaFromText(query, prev))
     }, 300)
   }, [])
 
