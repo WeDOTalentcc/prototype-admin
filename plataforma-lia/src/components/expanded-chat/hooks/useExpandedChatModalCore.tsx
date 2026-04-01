@@ -81,6 +81,7 @@ import { useFastTrack, type FastTrackSuggestion, type FastTrackJobData } from '@
 import { FastTrackSuggestions } from '../../job-wizard/FastTrackSuggestions'
 import { extractCriteriaFromText as _extractCriteria } from "./expandedChatCriteriaExtractor"
 import { useProactiveHandlers, useGroupedPanelChangeHandler, useCheckForExistingDraftSync, useExtractCriteria } from "./useExpandedChatCallbacks"
+import { useWizardStageConstants } from './useWizardStageConstants'
 import { useExpandedChatEffects } from "./useExpandedChatEffects"
 import { useExpandedChatSubHooks } from "./useExpandedChatSubHooks"
 import { FastTrackReviewPanel } from '../../job-wizard/FastTrackReviewPanel'
@@ -305,22 +306,8 @@ import { ClearDraftConfirmModal, EditCriteriaModal, AddTechnicalSkillModal, AddC
     return `draft-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
   })
   
-  // Unified stage name mapping used by both sync check and useEffect
-  const STAGE_DISPLAY_NAMES: Record<string, string> = useMemo(() => ({
-    'assessment': 'Avaliação',
-    'input-evaluation': 'Avaliação',
-    'jd-enrichment': 'Enriquecimento',
-    'salary': 'Remuneração',
-    'competencies': 'Competências',
-    'wsi-questions': 'Triagem WSI',
-    'review': 'Revisão',
-    'review-publish': 'Revisão',
-    'search': 'Busca',
-    'search-calibration': 'Busca'
-  }), [])
-  
-  // Initial stages that don't count as meaningful progress
-  const INITIAL_STAGES = useMemo(() => ['assessment', 'input-evaluation'], [])
+  // Stage constants and draft-check helper (extracted to useWizardStageConstants)
+  const { STAGE_DISPLAY_NAMES, INITIAL_STAGES } = useWizardStageConstants()
   
   // Helper function to check for existing draft synchronously (before showing initial message)
   // Returns both draft info and the parsed draft data for restoration
