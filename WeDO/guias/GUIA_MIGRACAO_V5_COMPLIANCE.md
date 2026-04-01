@@ -755,7 +755,7 @@ Problemas concretos:
 
 ### 3.2 Inventário Real por Domínio: O Que Cada Domínio v5 TEM e NÃO TEM
 
-A tabela abaixo mostra, para cada um dos 8 domínios v5 (lidos diretamente dos arquivos `domain.py` em `lia-agent-system/app/domains/`), quais capacidades existem no código do domínio vs o que a infraestrutura LIA (CascadedRouter, PromptRegistry, ReAct agents) adiciona.
+A tabela abaixo mostra, para cada um dos 8 domínios v5 (lidos diretamente dos arquivos `domain.py` em `WeDOTalent/recruiter_agent_v5/src/domains/`), quais capacidades existem no código v5 vs o que a infraestrutura LIA (CascadedRouter, PromptRegistry, ReAct agents — em `lia-agent-system`) adicionaria se migrada.
 
 **Legenda:** ✅ = implementado no domínio | ⚠️ = parcial/limitado | ❌ = ausente no domínio | 🔧 = existe na infra LIA mas domínio não usa
 
@@ -785,7 +785,7 @@ A tabela abaixo mostra, para cada um dos 8 domínios v5 (lidos diretamente dos a
 
 **Leitura da tabela:**
 
-1. **🔧 (existe na infra LIA mas domínio não usa):** Os arquivos YAML existem em `app/prompts/domains/` com persona, scope, rules e few-shot examples. Mas o código dos domínios v5 (os `domain.py`) não carrega esses YAMLs na execução — usa prompts inline ou o `PromptLoader` da infra LIA. A migração precisa conectar os dois.
+1. **🔧 (existe na infra LIA mas v5 não usa):** Os arquivos YAML existem em `lia-agent-system/app/prompts/domains/` com persona, scope, rules e few-shot examples. O código dos domínios v5 (`src/domains/*/domain.py`) **não tem acesso** a esses YAMLs — usa prompts inline (strings hardcoded em `prompts.py` de cada domínio). A migração precisa: ou portar os YAMLs para v5, ou implementar `ComplianceDomainPrompt` que carregue prompts estruturados.
 
 2. **Todos os domínios têm keyword matching**, com entre 5 e 30 keywords. A fórmula de confiança é idêntica: `min(0.95, 0.6 + len(keyword) * 0.02)`. Nenhum domínio usa regex com word boundaries (exceto `applies` que tem padrões `\b`).
 
@@ -1027,10 +1027,10 @@ PROBLEMAS APLICÁVEIS: P8 ✅ | P9 ❌ | P10 ⚠️ | P11 ✅ — Flat + sem com
 
 O prompt que o LLM recebe determina o tom, a profundidade e a consistência da resposta. No v5, os prompts são strings Python estáticas dentro dos `domain.py`. Na LIA, são YAML estruturados com 6 seções e blocos composíveis.
 
-**Estrutura de um prompt v5 (exemplo real de `pipeline/domain.py`):**
+**Estrutura de um prompt v5 (exemplo real de `src/domains/applies/domain.py`):**
 
 ```python
-# Em app/domains/pipeline/domain.py — prompt inline
+# v5: src/domains/applies/domain.py — prompt inline
 SYSTEM_PROMPT = """Você é LIA, assistente de recrutamento especializada em
 gerenciar o pipeline de candidatos. Você pode mover candidatos entre etapas,
 interpretar contextos de transição, predizer sub-status e sugerir próximas
