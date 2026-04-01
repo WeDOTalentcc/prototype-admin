@@ -14,6 +14,6 @@ export async function generateMetadata({
   }
 }
 
-export default function JobPage({ params }: { params: Promise<{ id: string }> }) {
-  return <JobDetailClient params={params} />
+export default function JobPage() {
+  return <JobDetailClient />
 }
