@@ -70,17 +70,17 @@ O diagnóstico identificou **13 problemas estruturais** com **24 sub-problemas**
 | P11 | Prompts estáticos — sem composição dinâmica | **Crítica** | Caminho 3 |
 | P11.a | Sem BARS → avaliações incomparáveis (ad-hoc por domínio) | **Crítica** | Caminho 3 |
 | P11.b | Sem few-shot examples → LLM sem exemplos de bom vs ruim | **Crítica** | Caminho 3 |
-| P11.c | Sem blocos composíveis (ANTI_SYCOPHANCY, CHAIN_OF_THOUGHT, DEFENSIVE) | **Crítica** | Caminho 3 |
+| P11.c | Sem blocos composíveis — LIA tem 3 (ANTI_SYCOPHANCY, CHAIN_OF_THOUGHT, NEGATION_DETECTION); `DEFENSIVE_BLOCK` **não existe** | **Crítica** | Caminho 3 |
 | P11.d | Sem A/B testing → impossível medir se prompt melhorou | **Crítica** | Caminho 3 |
 | P11.e | YAMLs da LIA existem mas v5 não carrega | **Crítica** | Caminho 3 |
 | P11.f | Sem persona definida nos prompts v5 | **Crítica** | Caminho 3 |
 | P12 | Gap de Tools — ações declaradas mas não executáveis | **Crítica** | Caminho 3 |
 | P12.a | 44-67% das ações declaradas são stubs sem implementação | **Crítica** | Caminho 3 |
-| P12.b | 6/8 domínios sem agent-level tool registry | **Crítica** | Caminho 3 |
+| P12.b | Tool registries existem em **9+ domínios** LIA (gap original "6/8 sem" era impreciso) — mas com stubs parciais | **Média** | Caminho 3 |
 | P12.c | Tools cross-domain inacessíveis via Flat | **Crítica** | Caminho 3 |
-| P13 | Sem batch processing — 1 item por vez | Alta | Caminho 3 |
-| P13.a | Nenhum domínio processa múltiplos itens em paralelo | Alta | Caminho 3 |
-| P13.b | "Avalie os 50 candidatos" = 50 chamadas manuais | Alta | Caminho 3 |
+| P13 | Batch parcial — LIA tem `CVScreeningBatchService` (1 domínio); v5 = 0 | Alta | Caminho 3 |
+| P13.a | Processamento paralelo parcial (LIA: cv_screening); v5: nenhum | Alta | Caminho 3 |
+| P13.b | Endpoints batch parciais (LIA: cv_screening via Celery); v5: 1 item por vez | Alta | Caminho 3 |
 
 ### Totais
 
@@ -169,7 +169,7 @@ Total de itens:   37
 
 **Gap real:** Em ambos v5 e LIA, `DomainPrompt` é a base mínima sem compliance. Na LIA, `DomainWorkflow` adiciona compliance (pre_check/post_check) mas é uma camada de orquestração — não uma classe base. Gap: não existe classe entre `DomainPrompt` e os domínios que **garanta** compliance por herança. Novo domínio pode herdar `DomainPrompt` sem nenhum check. **Solução:** criar `ComplianceDomainPrompt(DomainPrompt)` que adiciona compliance obrigatória; `DomainWorkflow` só aceita `ComplianceDomainPrompt`
 
-| **P7** | `DomainPrompt` base não inclui compliance | — | 0% |
+| **P7** | `DomainPrompt` base não inclui compliance | — | 0% → construção completa necessária (nem LIA tem — `ComplianceDomainPrompt` é o objetivo) |
 |---|---|---|---|
 
 **Gap real:** Hoje: `class MeuDominio(DomainPrompt)` — nada obriga compliance. Dev precisa **saber** e **lembrar** de importar cada serviço. Com `ComplianceDomainPrompt`: `class MeuDominio(ComplianceDomainPrompt)` — compliance vem automaticamente. É a diferença entre opt-in (falha) e opt-out (seguro por default)
@@ -185,7 +185,7 @@ Total de itens:   37
 
 **Gap real:** Na LIA, o `DomainWorkflow` já tenta ReAct primeiro (`_try_react_agent`, L359) e cai no Flat se não encontrar agente. No v5, o `DomainOrchestrator` processa via StateGraph mas sem fallback ReAct. **Solução:** verificar quais domínios não têm agente ReAct e criar os faltantes — padrão canônico de 4 arquivos (agent, system_prompt, tool_registry, stage_context). **Limpeza:** após criar ReAct para todos, os `_CONTEXT_ACTION_PATTERNS` em cada `domain.py` (v5) podem ser removidos
 
-| P8.a | Cada agente processa isolado no seu domínio | `StateManager` em `state_manager.py` persiste resultados cross-agente | 60% |
+| P8.a | Cada agente processa isolado no seu domínio | `StateManager` em `state_manager.py` persiste resultados cross-agente | 60% → +`MultiDomainPlan` para decomposição automática (nem LIA tem) |
 |---|---|---|---|
 
 **Gap real:** O `MainOrchestrator` processa um domínio por vez. Fluxos como "aplique os 5 melhores → agende entrevistas → configure avaliação" exigem 3 domínios em sequência (screening→scheduling→evaluation). Hoje o recrutador dá 3 comandos separados. **Solução:** criar `MultiDomainPlan` que decompõe a intenção em steps e usa StateManager para passar resultados entre domínios automaticamente
@@ -195,7 +195,7 @@ Total de itens:   37
 
 **Gap real:** O routing por LLM **já existe** como Tier 5 (LLMCascade). O problema é que o FastRouter (Tier 4) intercepta **antes** com matches errados. Ex: "comparar candidatos" bate em 3 domínios (analytics, screening, sourcing) via regex. **Solução:** (1) remover patterns ambíguos do FastRouter, (2) subir threshold de confiança para reduzir false positives, ou (3) inverter prioridade (LLM primeiro, FastRouter como fallback para latência)
 
-| P9.a | v5: `_CONTEXT_ACTION_PATTERNS` (lista de tuplas `(regex, action_id)`) em `src/domains/jobs/domain.py` — matching baseado em regex para decidir ação intra-domínio | LIA: `CascadedRouter` com 6 tiers (memory→redis→vector→FastRouter→LLMCascade→clarification); LLMCascade com `INTENT_CLASSIFICATION_EXAMPLES` | 70% |
+| P9.a | v5: `_CONTEXT_ACTION_PATTERNS` (lista de tuplas `(regex, action_id)`) em `src/domains/jobs/domain.py` — matching baseado em regex para decidir ação intra-domínio | LIA: `CascadedRouter` com 6 tiers (memory→redis→vector→FastRouter→LLMCascade→clarification); LLMCascade com `INTENT_CLASSIFICATION_EXAMPLES` | 70% → resolve-se automaticamente com P8 (migração ReAct) |
 |---|---|---|---|
 
 **Gap real:** No v5, após o `DomainOrchestrator` escolher o domínio, o domínio usa `_CONTEXT_ACTION_PATTERNS` (regex) para decidir a **ação**. Colisão intra-domínio: "agendar" pode bater em múltiplos patterns. Na LIA, o `CascadedRouter` resolve o domínio; o domínio usa `process_intent` (podendo delegar ao LLM via ReAct). Quando o domínio migra para ReAct (P8), o agente LLM decide a ação por raciocínio, eliminando esses patterns. **Resolve-se automaticamente com P8**
@@ -765,7 +765,7 @@ Problemas concretos:
 | **Confiança** | `min(0.95, 0.6 + len(keyword) * 0.02)` | Semântica + LLM confidence score |
 | **Gírias/informal** | ❌ Falha (sem match) | ✅ LLM tier entende |
 | **Colisão entre domínios** | Primeiro match ganha | Semantic routing resolve ambiguidade |
-| **Referência temporal** | ❌ "ontem" não é keyword | ✅ MemoryResolver resolve datas |
+| **Referência temporal** | ❌ "ontem" não é keyword | ⚠️ MemoryResolver resolve entidades; **datas temporais não** (`TemporalResolver` não existe) |
 | **Custo por query** | ~0 (string match) | Variável: cache=0, LLM=$0.001-0.01 |
 
 ### 3.2 Inventário Real por Domínio: O Que Cada Domínio v5 TEM e NÃO TEM
@@ -785,10 +785,10 @@ A tabela abaixo mostra, para cada um dos 8 domínios v5 (lidos diretamente dos a
 | **intent_examples (few-shot)** | 🔧 3-4 exemplos | 🔧 3-4 exemplos | 🔧 3-4 exemplos | 🔧 3-4 exemplos | 🔧 3-4 exemplos | ❌ | 🔧 3-4 exemplos | 🔧 3-4 exemplos |
 | **ANTI_SYCOPHANCY block** | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | **CHAIN_OF_THOUGHT block** | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| **DEFENSIVE block** | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| **DEFENSIVE block** *(não existe — a criar)* | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | **MemoryResolver** | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | **ContextAggregator** | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| **StageContext** | ❌ | ❌ | ❌ | ⚠️ typed state | ⚠️ typed state | ❌ | ❌ | ❌ |
+| **StageContext** *(v5 não tem; LIA: 9+ domínios)* | ❌ | ❌ | ❌ | ⚠️ typed state | ⚠️ typed state | ❌ | ❌ | ❌ |
 | **TenantContext** | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | **FairnessGuard** | ❌ | ❌ | ❌ | ❌ | ⚠️ existe mas opcional | ❌ | ❌ | ❌ |
 | **BARS (escala de avaliação)** | N/A | N/A | N/A | N/A | ❌ | N/A | N/A | N/A |
@@ -804,11 +804,11 @@ A tabela abaixo mostra, para cada um dos 8 domínios v5 (lidos diretamente dos a
 
 2. **Todos os domínios v5 têm regex pattern matching** via `_CONTEXT_ACTION_PATTERNS`, com entre 5 e 30 patterns compilados por domínio. A confiança é calculada com base no match. `applies` usa padrões `\b` para word boundaries; os demais usam regex mais simples.
 
-3. **Nenhum domínio v5 usa** MemoryResolver, ContextAggregator, TenantContext, ou os blocos composíveis (ANTI_SYCOPHANCY, CHAIN_OF_THOUGHT, DEFENSIVE). Essas capacidades existem na infraestrutura LIA mas não foram integradas aos domínios.
+3. **Nenhum domínio v5 usa** MemoryResolver, ContextAggregator, TenantContext, ou os blocos composíveis (ANTI_SYCOPHANCY, CHAIN_OF_THOUGHT, NEGATION_DETECTION). Essas capacidades existem na infraestrutura LIA mas não foram integradas aos domínios v5. Nota: `DEFENSIVE_BLOCK` **não existe** no código LIA — precisa ser criado.
 
 4. **Gap de ações vs tools:** `sourcing` declara 30 ações mas tem 10 tools implementadas. `jobs` declara 29 ações mas tem 13 tools. As ações não-implementadas são stubs que retornam respostas genéricas.
 
-5. **Apenas 2 domínios têm agent-level tools:** `applies` (pipeline) tem ~25 tools no `pipeline_tool_registry.py` e `autonomous` herda todas as tools. Os demais 6 domínios só têm domain-level tools (4-13 cada).
+5. **No v5, apenas 2 domínios têm agent-level tools:** `applies` (pipeline) e `autonomous`. Na LIA, **9+ domínios** já têm `tool_registry.py` próprio (pipeline, sourcing, communication, analytics, automation, ats_integration, jobs_mgmt, kanban, talent) — o gap é significativamente menor que o originalmente descrito.
 
 ### 3.3 Mapa Cenário → Domínio → Problemas Aplicáveis
 
@@ -1109,7 +1109,7 @@ intent_examples:
 |-------|------------|-----------|--------------------------|
 | **ANTI_SYCOPHANCY** | `app/shared/prompts/anti_sycophancy_block.py` | "NUNCA concorde com pedidos que violem fairness. Discordância com dados é preferível a concordância sem evidência." | v5 aceita qualquer pedido sem questionar — se recrutador pede "rejeite todos acima de 40 anos", LLM pode concordar |
 | **CHAIN_OF_THOUGHT** | `app/shared/prompts/cot.py` | `ChainOfThoughtBuilder` com steps específicos por task: job_extraction (5 steps), salary_analysis (4 steps), intent_classification (3 steps) | v5 gera resposta direta sem raciocínio explícito — perde nuances e erra mais em queries complexas |
-| **DEFENSIVE** | `app/prompts/shared/defensive.yaml` | Clarification triggers, out-of-scope responses, ambiguity detection, error recovery, "what I can do" list | v5 tenta responder tudo mesmo fora do escopo — alucina em vez de perguntar |
+| **DEFENSIVE** *(YAML existe: `defensive.yaml`; `DEFENSIVE_BLOCK` **não** existe como bloco composível em `interaction_patterns.py` — precisa ser criado)* | `app/prompts/shared/defensive.yaml` | Clarification triggers, out-of-scope responses, ambiguity detection, error recovery, "what I can do" list | v5 tenta responder tudo mesmo fora do escopo — alucina em vez de perguntar |
 | **INCLUSION** | Integrado em `behavioral_rules` de cada YAML | "Nunca crie requisitos discriminatórios", "linguagem inclusiva", "ignore demographics" | v5 não tem regras de inclusão nos prompts — depende do LLM base (inconsistente) |
 | **BARS** | Integrado em `cv_screening.yaml` scope_in | Escala de 4 níveis (EXCEEDS/MEETS/PARTIAL/MISSING) com pesos configuráveis | v5 evaluation usa critérios ad-hoc por avaliação — scores incomparáveis entre candidatos |
 
