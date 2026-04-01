@@ -4,9 +4,8 @@
 import React, { useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
 import {
-  Users, X, Building, Target, List, ArrowLeft,
+  Users, X, Target, List,
   Brain, Send, Maximize2, ArrowUpDown, CheckCircle,
   ChevronsLeftRight, Search, Check, Globe, ChevronRight,
   ChevronDown, Loader2
@@ -23,9 +22,8 @@ import type { TableCandidate } from "@/components/tables"
 import type { Candidate } from "./types"
 import type { TableFilters } from "@/hooks/use-candidate-filters"
 import type { SearchFilters } from "@/components/search/advanced-filters-modal"
-import type { ParsedEntities, SearchMode, SearchMetadata } from "@/components/search/smart-search-input"
-import type { SearchAnalytics } from "@/components/proactive-insight-card"
-import type { CalibrationCandidate } from "@/components/calibration-card"
+import type { ParsedEntities } from "@/components/search/smart-search-input"
+import type { SearchTab, ChatMessage, TableColumn } from "./CandidateSearchResultsView.types"
 import dynamic from "next/dynamic"
 
 const CandidatePreview = dynamic(
@@ -33,7 +31,6 @@ const CandidatePreview = dynamic(
   { ssr: false }
 )
 
-import type { SearchTab, ChatMessage, TableColumn } from "./CandidateSearchResultsView.types"
 
 export interface CandidateSearchResultsViewProps {
   // Search query state
@@ -969,42 +966,4 @@ export function CandidateSearchResultsView({
                 <div className="absolute inset-0 -left-1 -right-1"></div>
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-gray-300 dark:bg-lia-bg-elevated group-hover:bg-gray-400 dark:group-hover:bg-gray-500 rounded-full transition-colors motion-reduce:transition-none"></div>
               </div>
-              <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
-                <CandidatePreview
-                  candidate={previewCandidate}
-                  isOpen={showCandidatePreview}
-                  onClose={onCloseCandidatePreview}
-                  isMaximized={isPreviewMaximized}
-                  onToggleMaximize={onTogglePreviewMaximize}
-                  candidates={sortedCandidates}
-                  currentIndex={sortedCandidates.findIndex(c => c.id === previewCandidate.id)}
-                  onNavigateCandidate={(index) => {
-                    if (sortedCandidates[index]) {
-                      setPreviewCandidate(sortedCandidates[index])
-                    }
-                  }}
-                  onOpenFullPage={onCandidatePageOpen}
-                  onScheduleInterview={(candidate) => {
-                    setSelectedCandidateForAction(candidate)
-                    setShowScheduleModal(true)
-                  }}
-                  onAddToVacancy={(candidate) => {
-                    setSelectedCandidatesForBatch(new Set([candidate.id]))
-                    setShowAddToVacancyModal(true)
-                  }}
-                  onToggleFavorite={(candidateId) => onToggleFavorite(candidateId)}
-                  onWSIScreening={(candidate) => onStartWSITextScreening(candidate)}
-                  isFavorite={favorites.has(previewCandidate.id)}
-                  onSendEmail={(candidate) => onSendEmail(candidate)}
-                  onSendWhatsApp={(candidate) => onSendWhatsApp(candidate)}
-                  onSendTriagem={(candidate) => onSendTriagem(candidate)}
-                  onSendAgendamento={(candidate) => onSendAgendamento(candidate)}
-                  onSendFeedback={(candidate) => onSendFeedback(candidate)}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-    </div>
-  )
-}
+              <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtl

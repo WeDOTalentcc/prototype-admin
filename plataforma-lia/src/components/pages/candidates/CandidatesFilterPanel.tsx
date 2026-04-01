@@ -26,7 +26,7 @@ import { badgeStyles, textStyles } from "@/lib/design-tokens"
 import { CheckableItem } from "./filters/CheckableItem"
 import { TagInput } from "./filters/TagInput"
 import { TriStateButtons } from "./filters/TriStateButtons"
-import type { TableFilters } from "./filters/types"
+export type { TableFilters } from "./filters/types"
 
 
 // ─── Types ───────────────────────────────────────────────────────────────────
