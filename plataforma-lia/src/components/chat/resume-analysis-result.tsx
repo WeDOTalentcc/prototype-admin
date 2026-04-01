@@ -47,10 +47,10 @@ export function ResumeAnalysisResult({
             </div>
             <div>
               <p className="font-medium lia-text-900">{result.candidate_name || 'Nome não identificado'}</p>
-              {/* @ts-ignore TODO: fix type */}
+
               <div className="flex items-center gap-2 text-xs lia-text-500 mt-0.5">
                 {(result.contact_info?.email as any) && (
-                  {/* @ts-ignore TODO: fix type */}
+
                   <span className="flex items-center gap-1">
                     <Mail className="h-3 w-3" />
                     {(result.contact_info.email as React.ReactNode)}
@@ -92,7 +92,7 @@ export function ResumeAnalysisResult({
               <CardTitle className="text-lg">
                 {result.candidate_name || 'Nome não identificado'}
               </CardTitle>
-              {/* @ts-ignore TODO: fix type */}
+
               <div className="flex flex-wrap items-center gap-3 text-sm lia-text-600 mt-1">
                 {(result.contact_info?.email as any) && (
                   <span className="flex items-center gap-1">

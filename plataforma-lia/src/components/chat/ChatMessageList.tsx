@@ -142,10 +142,10 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                     />
                   )}
 
-                {/* @ts-ignore TODO: fix type */}
+
                 {message.sender === "lia" &&
                   (message.data as Record<string, any>)
-                    {/* @ts-ignore TODO: fix type */}
+
                     ?.action_result && (
                     <div className="mt-3">
                       <ActionResultCard
@@ -165,13 +165,13 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                     </div>
                   )}
 
-                {/* @ts-ignore TODO: fix type */}
+
                 {/* Global Search Expansion Card */}
                 {message.sender === "lia" &&
                   (message.data as Record<string, any>)?.workflow_data &&
                   ((message.data as Record<string, any>)
                     ?.workflow_data as Record<string, any>)
-                    {/* @ts-ignore TODO: fix type */}
+
                     ?.search_results && (
                     <Card className="border border-gray-900 dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary mt-4">
                       <CardContent className="p-4">
@@ -181,7 +181,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                             <h4 className="font-semibold text-sm mb-1 text-wedo-cyan-dark dark:text-wedo-cyan-dark">
                               Expandir para Banco de Dados Global
                             </h4>
-                            {/* @ts-ignore TODO: fix type */}
+
                             <p className="text-xs text-wedo-cyan-dark dark:text-lia-text-secondary mb-3">
                               {(
                                 (
@@ -189,7 +189,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                                     ?.workflow_data as Record<string, any>
                                 )?.search_results as Record<string, any>
                               )?.local_count > 0
-                                {/* @ts-ignore TODO: fix type */}
+
                                 ? `Encontramos ${
                                     (
                                       (
