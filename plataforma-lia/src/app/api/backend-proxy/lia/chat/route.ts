@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthHeaders } from '@/lib/api/auth-headers'
@@ -12,15 +11,16 @@ export async function POST(request: NextRequest) {
   try {
     const body = _bodySchema.parse(await request.json())
     
-    const { message, context } = body
+    const message = body.message as string
+    const context = body.context as Record<string, unknown> | undefined
     
-    const chatPayload = {
+    const chatPayload: { content: string; conversation_id: string | null } = {
       content: message,
-      conversation_id: context?.conversation_id || null
+      conversation_id: (context?.conversation_id as string) || null
     }
     
     if (context?.candidate_id || context?.candidate_name) {
-      chatPayload.content = `[Contexto: Candidato ${context.candidate_name || ''} (ID: ${context.candidate_id || 'N/A'})]\n\n${message}`
+      chatPayload.content = `[Contexto: Candidato ${context.candidate_name as string || ''} (ID: ${context.candidate_id as string || 'N/A'})]\n\n${message}`
     }
     
     const backendUrl = `${BACKEND_URL}/api/v1/chat`

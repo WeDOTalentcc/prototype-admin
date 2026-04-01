@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server';
 import { jiraService, JiraSyncResult } from '@/lib/api/jira-service';
@@ -97,7 +96,7 @@ export async function GET(request: NextRequest) {
   } catch (error: unknown) {
     return NextResponse.json({ 
       success: false, 
-      error: error.message || 'Jira API error' 
+      error: (error as Error).message || 'Jira API error' 
     }, { status: 500 });
   }
 }
@@ -135,7 +134,13 @@ export async function POST(request: NextRequest) {
     }
     
     if (action === 'create') {
-      const { projectKey, summary, description, issueType, labels, priority, epicKey } = body;
+      const projectKey = body.projectKey as string;
+      const summary = body.summary as string;
+      const description = body.description as string | undefined;
+      const issueType = body.issueType as string;
+      const labels = body.labels as string[] | undefined;
+      const priority = body.priority as string | undefined;
+      const epicKey = body.epicKey as string | undefined;
       
       if (!projectKey || !summary || !issueType) {
         return NextResponse.json({ 
@@ -210,7 +215,7 @@ export async function POST(request: NextRequest) {
   } catch (error: unknown) {
     return NextResponse.json({ 
       success: false, 
-      error: error.message || 'Jira API error' 
+      error: (error as Error).message || 'Jira API error' 
     }, { status: 500 });
   }
 }

@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -13,7 +12,8 @@ export async function POST(
 ) {
   try {
     const { jobId } = await params
-    const body = _bodySchema.parse(await request.json()).catch(() => ({}))
+    let body: Record<string, unknown> = {}
+    try { body = _bodySchema.parse(await request.json()) } catch { body = {} }
     
     const response = await fetch(`${BACKEND_URL}/api/v1/search/archetypes/from-job`, {
       method: 'POST',

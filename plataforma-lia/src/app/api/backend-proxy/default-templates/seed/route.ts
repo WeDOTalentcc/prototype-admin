@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -18,7 +17,8 @@ const _bodySchema = z.record(z.string(), z.unknown())
 
 export async function POST(request: NextRequest) {
   try {
-    const body = _bodySchema.parse(await request.json()).catch(() => ({}))
+    let body: Record<string, unknown> = {}
+    try { body = _bodySchema.parse(await request.json()) } catch { body = {} }
     
     const backendUrl = `${BACKEND_URL}/api/v1/default-templates/seed`
     

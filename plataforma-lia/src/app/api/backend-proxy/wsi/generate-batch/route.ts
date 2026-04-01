@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -29,7 +28,7 @@ export async function POST(request: NextRequest) {
       job_title: body.job_title,
       technical_skills: body.technical_skills || [],
       behavioral_competencies: body.behavioral_competencies || [],
-      seniority: normalizeSeniority(body.seniority),
+      seniority: normalizeSeniority(body.seniority as string | null | undefined),
       job_description: body.description || null,
       format: body.mode || 'full',
       include_company_questions: true,

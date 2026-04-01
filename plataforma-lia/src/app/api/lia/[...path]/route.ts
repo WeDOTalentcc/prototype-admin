@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const dynamic = "force-dynamic"
 /**
  * LIA Backend API Proxy
@@ -63,7 +62,7 @@ async function proxyRequest(
 
     if (!response.ok) {
       return NextResponse.json(
-        { error: data.detail || data || 'Backend request failed' },
+        { error: (data as Record<string, unknown>)?.detail || data || 'Backend request failed' },
         { status: response.status }
       )
     }

@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -10,7 +9,7 @@ const _bodySchema = z.record(z.string(), z.unknown())
 export async function POST(request: NextRequest) {
   try {
     const body = _bodySchema.parse(await request.json())
-    const companyId = request.headers.get('X-Company-ID') || body.company_id || 'default'
+    const companyId = request.headers.get('X-Company-ID') || (body.company_id as string | undefined) || 'default'
     
     const backendUrl = `${BACKEND_URL}/api/v1/communication/send-email`
     

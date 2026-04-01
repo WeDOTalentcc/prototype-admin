@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -48,9 +47,9 @@ export async function GET(req: NextRequest) {
       workosProfile: {
         id: profile.id,
         email: profile.email,
-        firstName: profile.firstName,
-        lastName: profile.lastName,
-        organizationId: profile.organizationId,
+        firstName: profile.firstName ?? null,
+        lastName: profile.lastName ?? null,
+        organizationId: profile.organizationId ?? null,
         connectionId: profile.connectionId,
         connectionType: profile.connectionType,
         idpId: profile.idpId,

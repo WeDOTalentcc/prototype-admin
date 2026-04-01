@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthHeaders } from '@/lib/api/auth-headers'
@@ -55,7 +54,7 @@ export async function GET(request: NextRequest) {
     
     const byCandidate: Record<string, unknown> = {}
     for (const req of allRequests) {
-      const cid = req.candidate_id || req.candidateId
+      const cid = (req.candidate_id || req.candidateId) as string | undefined
       if (!cid) continue
       
       const mapped = {
@@ -83,15 +82,15 @@ export async function GET(request: NextRequest) {
       if (!byCandidate[cid]) {
         byCandidate[cid] = mapped
       } else {
-        const existing = byCandidate[cid]
+        const existing = byCandidate[cid] as typeof mapped
         const existingActive = existing.status === 'pending' || existing.status === 'partial'
         const newActive = mapped.status === 'pending' || mapped.status === 'partial'
         
         if (newActive && !existingActive) {
           byCandidate[cid] = mapped
         } else if (existingActive === newActive) {
-          const existingDate = new Date(existing.createdAt).getTime()
-          const newDate = new Date(mapped.createdAt).getTime()
+          const existingDate = new Date(existing.createdAt as string).getTime()
+          const newDate = new Date(mapped.createdAt as string).getTime()
           if (newDate > existingDate) {
             byCandidate[cid] = mapped
           }

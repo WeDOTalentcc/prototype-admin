@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -89,7 +88,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'Screening question created (fallback)',
-      data: body
     })
   }
 }
@@ -130,7 +128,6 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'Screening questions updated (fallback)',
-      data: body
     })
   }
 }

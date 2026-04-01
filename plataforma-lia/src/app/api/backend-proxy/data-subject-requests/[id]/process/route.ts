@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -22,7 +21,8 @@ export async function PUT(
 ) {
   try {
     const { id } = await params
-    const body = _bodySchema.parse(await request.json()).catch(() => ({}))
+    let body: Record<string, unknown> = {}
+    try { body = _bodySchema.parse(await request.json()) } catch { body = {} }
     
     const response = await fetch(`${BACKEND_URL}/api/v1/data-subject-requests/${id}/process`, {
       method: 'PUT',

@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthHeaders } from '@/lib/api/auth-headers'
@@ -14,7 +13,8 @@ export async function POST(
 ) {
   try {
     const { id } = await params
-    const body = _bodySchema.parse(await request.json()).catch(() => ({}))
+    let body: Record<string, unknown> = {}
+    try { body = _bodySchema.parse(await request.json()) } catch { body = {} }
     
     const backendUrl = `${BACKEND_URL}/api/v1/shared-searches/${id}/resend`
     
