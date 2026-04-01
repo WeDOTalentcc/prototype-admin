@@ -1,5 +1,21 @@
 /* Fontes oficiais da LIA para onboarding (DS v4.1 - Open Sans + Inter apenas) */
 
+/**
+ * ESCOPO: Tokens locais exclusivos do Onboarding LIA
+ *
+ * Os tokens --lia-* definidos neste arquivo (--lia-coral, --lia-blue, --lia-yellow,
+ * --lia-salmon, --lia-lavender, --lia-cream, --lia-mint, --lia-black, --lia-white,
+ * --lia-gray-*) sao intencionalmente locais a este modulo.
+ *
+ * Auditoria (2026-04-01): confirmado que esses tokens NAO vazam para outros componentes
+ * alem de onboarding-controller.tsx. Nao foram migrados para design-tokens.css porque
+ * sao especificos da identidade visual do fluxo de onboarding (paleta de marca LIA),
+ * distinta do sistema de design geral da plataforma (gray scale + tokens semanticos).
+ *
+ * Se algum desses tokens precisar ser reutilizado fora do onboarding, migrar para
+ * src/styles/design-tokens.css antes de usar.
+ */
+
 /* Variáveis CSS para onboarding LIA */
 :root {
   /* Fontes Oficiais LIA (DS v4.1) */
