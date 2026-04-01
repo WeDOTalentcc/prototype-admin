@@ -390,7 +390,6 @@ export function KanbanCardStatusBadges({
     <StatusBadge stageId={stageId} subStatus={candidate.sub_status} />
   )}
 </div>
-            </div>
     </>
   )
 }
