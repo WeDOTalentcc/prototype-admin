@@ -281,6 +281,14 @@
     --lia-input-border-focus: #F9FAFB;
     --lia-input-text: #F9FAFB;
     --lia-input-placeholder: #6B7280;
+    
+    /* Tokens adicionais - cobertura dark mode completa */
+    --lia-brand-primary-rgb: 239, 68, 68;            /* Corresponds to #EF4444 dark brand */
+    --lia-destructive-bg: var(--lia-brand-primary);  /* Vermelho da marca no dark */
+    --lia-destructive-text: #FFFFFF;                 /* Texto branco em destrutivo */
+    --lia-destructive-border: var(--lia-brand-primary);
+    --lia-input-focus-ring: rgba(249, 250, 251, 0.2); /* Focus ring claro no dark */
+    --lia-text-inverted: var(--lia-text-inverse);    /* Alias retroativo */
   /* === Aliases: shadcn/ui → LIA Design System (dark) === */
   --background: var(--lia-bg-primary);
   --card: var(--lia-bg-elevated);

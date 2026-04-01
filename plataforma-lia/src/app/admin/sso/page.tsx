@@ -69,7 +69,7 @@ export default function SSOAdminPage() {
 
   if (statusError) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-content-lg">
         <Card className="p-6">
           <div className="flex items-center gap-3 text-status-error">
             <AlertCircle className="h-6 w-6" />

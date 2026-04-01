@@ -151,7 +151,7 @@ export function DataBlockingModal({
               <span className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-secondary">Campos Pendentes</span>
               <span className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">{pendingFields.length} campos</span>
             </div>
-            <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md divide-y divide-gray-200 dark:divide-gray-700 max-h-[200px] overflow-y-auto">
+            <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md divide-y divide-gray-200 dark:divide-gray-700 max-h-chart-sm overflow-y-auto">
               {pendingFields.map((field) => (
                 <div
                   key={field.id}

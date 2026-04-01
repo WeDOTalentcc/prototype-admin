@@ -433,7 +433,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
               )}
             </div>
             {savedSearches.length > 0 ? (
-              <div className="space-y-1.5 max-h-[180px] overflow-y-auto">
+              <div className="space-y-1.5 max-h-card-lg overflow-y-auto">
                 {savedSearches.map((search) => (
                   <div
                     key={search.id}

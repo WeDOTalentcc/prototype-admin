@@ -199,7 +199,7 @@ export function InterviewSchedulingModal({
                       className="h-9 text-xs font-medium border-lia-border-subtle focus:ring-gray-400 focus:border-gray-400 bg-gray-50 lia-text-strong"
                     />
                     <div
-                      className="p-3 rounded-md border border-lia-border-subtle text-xs overflow-y-auto max-h-[200px] bg-gray-50 lia-text-base"
+                      className="p-3 rounded-md border border-lia-border-subtle text-xs overflow-y-auto max-h-chart-sm bg-gray-50 lia-text-base"
                       dangerouslySetInnerHTML={{ __html: sanitizeHtml(emailTemplate.body) }}
                     />
                   </div>

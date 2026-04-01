@@ -420,14 +420,14 @@ export function AddToJobModal({
             />
           </div>
 
-          <ScrollArea className="flex-1 border border-lia-border-subtle rounded-md min-h-[180px] max-h-[220px]">
+          <ScrollArea className="flex-1 border border-lia-border-subtle rounded-md min-h-card-lg max-h-[220px]">
             {isLoading ? (
-              <div className="flex flex-col items-center justify-center h-[180px] text-lia-text-secondary" role="status" aria-live="polite" aria-label="Carregando...">
+              <div className="flex flex-col items-center justify-center h-card-lg text-lia-text-secondary" role="status" aria-live="polite" aria-label="Carregando...">
                 <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none text-lia-text-tertiary mb-2" />
                 <p className={textStyles.bodySmall}>Carregando...</p>
               </div>
             ) : filteredJobs.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-[180px] text-lia-text-secondary">
+              <div className="flex flex-col items-center justify-center h-card-lg text-lia-text-secondary">
                 <Briefcase className="w-8 h-8 mb-2 opacity-50" />
                 <p className={textStyles.bodySmall} aria-live="polite" aria-atomic="true">Nenhuma vaga encontrada</p>
                 {searchTerm && (

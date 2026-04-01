@@ -399,7 +399,7 @@ export function InterviewNoteCard({
               )}
             </button>
             {isTranscriptionOpen && (
-              <div className="bg-gray-50 rounded-md p-4 max-h-[300px] overflow-y-auto">
+              <div className="bg-gray-50 rounded-md p-4 max-h-content-md overflow-y-auto">
                 <p className="text-sm text-lia-text-primary dark:text-lia-text-primary whitespace-pre-wrap">
                   {note.transcription}
                 </p>

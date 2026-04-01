@@ -437,7 +437,7 @@ export function SearchModeArchetypes({
                 />
                 {onSearchSourceChange && (
                   <div
-                    className="absolute right-3 bottom-2.5 flex flex-col items-end gap-1 z-[10]"
+                    className="absolute right-3 bottom-2.5 flex flex-col items-end gap-1 z-raised"
                   >
                     <ScopeButtons
                       searchSource={searchSource}
@@ -565,7 +565,7 @@ export function SearchModeArchetypes({
               </div>
 
               {jobSearchQuery.trim() && (
-                <div className="max-h-[200px] overflow-y-auto space-y-1.5 rounded-md border border-lia-border-subtle" role="status" aria-live="polite" aria-label="Carregando...">
+                <div className="max-h-chart-sm overflow-y-auto space-y-1.5 rounded-md border border-lia-border-subtle" role="status" aria-live="polite" aria-label="Carregando...">
                   {isSearchingJobs ? (
                     <div className="flex items-center justify-center py-4" role="status" aria-live="polite" aria-label="Carregando...">
                       <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-700" />

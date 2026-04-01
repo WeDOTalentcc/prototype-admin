@@ -205,7 +205,7 @@ export default function ClientTestesPage({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]" role="status" aria-live="polite" aria-label="Carregando...">
+      <div className="flex items-center justify-center min-h-content-lg" role="status" aria-live="polite" aria-label="Carregando...">
         <div className="text-center" role="status" aria-live="polite" aria-label="Carregando...">
           <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none mx-auto mb-4 lia-text-600 dark:text-lia-text-tertiary" />
           <p className="text-sm lia-text-400 dark:lia-text-500">
@@ -218,7 +218,7 @@ export default function ClientTestesPage({
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-content-lg">
         <div className="text-center">
           <AlertCircle className="w-12 h-12 mx-auto mb-4 text-status-error" />
           <p className="text-sm mb-4 lia-text-400 dark:lia-text-500">

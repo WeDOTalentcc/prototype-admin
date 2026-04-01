@@ -321,7 +321,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
           </div>
 
           {/* Suggestions List */}
-          <div className="p-3 space-y-2 overflow-y-auto max-h-[400px]">
+          <div className="p-3 space-y-2 overflow-y-auto max-h-content-lg">
             {DASHBOARD_SUGGESTIONS.map((suggestion) => {
               const Icon = suggestion.icon
               const colors = CATEGORY_COLORS[suggestion.category]

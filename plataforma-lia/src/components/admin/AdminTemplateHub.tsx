@@ -775,7 +775,7 @@ export function AdminTemplateHub() {
                           <label className="block text-xs font-medium lia-text-secondary uppercase tracking-wide mb-2">
                             Novo Conteúdo
                           </label>
-                          <div className="p-3 bg-gray-50 rounded-md text-xs lia-text-strong whitespace-pre-wrap max-h-[300px] overflow-y-auto">
+                          <div className="p-3 bg-gray-50 rounded-md text-xs lia-text-strong whitespace-pre-wrap max-h-content-md overflow-y-auto">
                             {aiResultModal.newBody}
                           </div>
                         </div>

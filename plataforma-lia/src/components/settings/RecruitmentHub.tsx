@@ -648,7 +648,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                   Selecione perguntas pré-definidas organizadas por categoria
                 </p>
               </CardHeader>
-              <CardContent className="pt-0 space-y-2 max-h-[400px] overflow-y-auto">
+              <CardContent className="pt-0 space-y-2 max-h-content-lg overflow-y-auto">
                 {(Object.keys(QUESTION_CATEGORIES) as QuestionCategory[]).filter(cat => cat !== 'general').map(category => {
                   const categoryQuestions = getQuestionsByCategory(category)
                   if (categoryQuestions.length === 0) return null

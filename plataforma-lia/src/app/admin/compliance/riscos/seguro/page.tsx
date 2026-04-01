@@ -371,7 +371,7 @@ export default function SeguroCiberneticoPage() {
 
   if (loading) {
     return (
-      <div className="p-6 flex items-center justify-center min-h-[400px]" role="status" aria-live="polite" aria-label="Carregando...">
+      <div className="p-6 flex items-center justify-center min-h-content-lg" role="status" aria-live="polite" aria-label="Carregando...">
         <div className="flex items-center gap-3" role="status" aria-live="polite" aria-label="Carregando...">
           <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
           <span className="lia-text-500 dark:text-lia-text-tertiary" >Carregando dados do seguro...</span>

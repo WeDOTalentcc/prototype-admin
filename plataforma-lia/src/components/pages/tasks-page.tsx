@@ -278,7 +278,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                     </TabsContent>
                     
                     <TabsContent value="historico" className="mt-0">
-                      <ActivityFeed limit={15} className="max-h-[400px] overflow-y-auto" />
+                      <ActivityFeed limit={15} className="max-h-content-lg overflow-y-auto" />
                     </TabsContent>
                   </Tabs>
                 </CardContent>

@@ -329,7 +329,7 @@ export function FinalReviewPanel({
       </CardHeader>
 
       <CardContent className="space-y-4">
-        <ScrollArea className="max-h-[400px] pr-2">
+        <ScrollArea className="max-h-content-lg pr-2">
           {missing_critical.length > 0 && (
             <Collapsible
               open={expandedSections.critical}

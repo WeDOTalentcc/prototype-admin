@@ -410,7 +410,7 @@ export function DepartmentsTab({
                     </Button>
                   </div>
 
-                  <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                  <div className="space-y-2 max-h-chart-sm overflow-y-auto">
                     {departmentMembers.length === 0 ? (
                       <p className="text-micro lia-text-500 text-center py-3">
                         Nenhum colaborador cadastrado

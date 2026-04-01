@@ -21,7 +21,7 @@ export default function Error({ error, reset }: ErrorProps) {
   }, [error])
 
   return (
-    <div className="min-h-[400px] flex items-center justify-center">
+    <div className="min-h-content-lg flex items-center justify-center">
       <div className="text-center space-y-6 max-w-md px-6">
         <div className="flex justify-center">
           <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-950/20 flex items-center justify-center">

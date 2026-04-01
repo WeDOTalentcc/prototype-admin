@@ -158,7 +158,7 @@ export function TemplatesTab({
           </Card>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 h-[calc(100vh-280px)] min-h-[400px]">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 h-[calc(100vh-280px)] min-h-content-lg">
           <div className="space-y-3 overflow-y-auto pr-2 pb-8" style={{maxHeight: 'calc(100vh - 280px)'}}>
             {filteredTemplates.length === 0 ? (
               <Card className="border border-dashed border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
@@ -320,7 +320,7 @@ export function TemplatesTab({
                           </div>
                         </div>
                       ) : (
-                        <div className="text-xs lia-text-950 dark:lia-text-50 bg-gray-50 rounded-md px-3 py-2.5 whitespace-pre-wrap max-h-[300px] overflow-y-auto">
+                        <div className="text-xs lia-text-950 dark:lia-text-50 bg-gray-50 rounded-md px-3 py-2.5 whitespace-pre-wrap max-h-content-md overflow-y-auto">
                           {stripHtmlTags(selectedTemplate.body)}
                         </div>
                       )}
@@ -427,7 +427,7 @@ export function TemplatesTab({
                         )}
                         <div>
                           <label className="block text-xs font-medium lia-text-500 dark:text-lia-text-tertiary uppercase tracking-wide mb-2">Novo Conteúdo</label>
-                          <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md text-xs lia-text-900 dark:text-lia-text-primary whitespace-pre-wrap max-h-[300px] overflow-y-auto font-mono">
+                          <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md text-xs lia-text-900 dark:text-lia-text-primary whitespace-pre-wrap max-h-content-md overflow-y-auto font-mono">
                             {aiResultModal.newBody}
                           </div>
                         </div>

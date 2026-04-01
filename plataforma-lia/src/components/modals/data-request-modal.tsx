@@ -182,7 +182,7 @@ export function DataRequestModal({
               <Label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Campos a Solicitar</Label>
               <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">{selectedFields.size} selecionados</span>
             </div>
-            <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-2 space-y-1 max-h-[200px] overflow-y-auto">
+            <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-2 space-y-1 max-h-chart-sm overflow-y-auto">
               {displayedFields.map((field) => (
                 <label
                   key={field.id}

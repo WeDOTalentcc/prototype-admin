@@ -211,7 +211,7 @@ export function ArchetypesList({
         )}
 
         {/* Cards */}
-        <div className="space-y-2 max-h-[200px] overflow-y-auto">
+        <div className="space-y-2 max-h-chart-sm overflow-y-auto">
           {filteredArchetypes.length === 0 ? (
             <div className="text-center py-6 lia-text-500">
               <Target className="w-8 h-8 mx-auto mb-2 opacity-30" />

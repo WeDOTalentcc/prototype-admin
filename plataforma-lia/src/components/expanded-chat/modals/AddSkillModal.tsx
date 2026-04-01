@@ -205,7 +205,7 @@ function SkillsTabContent({ skills, selectedSkills, onAddSkill, tabLabel }: TabC
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[400px] overflow-y-auto pr-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-content-lg overflow-y-auto pr-2">
           {filteredSkills.map((skill) => (
             <SkillCard
               key={skill.id}

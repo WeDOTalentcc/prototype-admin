@@ -294,7 +294,7 @@ export function EditArchetypeModal({
                   <ChevronDown className="w-3 h-3" style={{color: "var(--gray-400)"}} />
                 </button>
                 {isIndustryDropdownOpen && (
-                  <div className="absolute z-10 mt-1 w-full bg-lia-bg-primary rounded-md border border-lia-border-subtle max-h-[200px] overflow-hidden">
+                  <div className="absolute z-10 mt-1 w-full bg-lia-bg-primary rounded-md border border-lia-border-subtle max-h-chart-sm overflow-hidden">
                     <div className="p-2 border-b border-lia-border-subtle sticky top-0 bg-lia-bg-primary">
                       <input
                         type="text"

@@ -237,7 +237,7 @@ const EditCriteriaPopup: React.FC<{
           </button>
         </div>
 
-        <div className="space-y-2 mb-6 max-h-[300px] overflow-y-auto">
+        <div className="space-y-2 mb-6 max-h-content-md overflow-y-auto">
           {localCriteria.map((criterion, index) => (
             <div
               key={criterion.id}

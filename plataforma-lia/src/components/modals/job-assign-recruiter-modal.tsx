@@ -246,7 +246,7 @@ export function JobAssignRecruiterModal({
                 />
               </div>
 
-              <div className="space-y-1.5 max-h-[200px] overflow-y-auto border border-lia-border-subtle rounded-md p-2">
+              <div className="space-y-1.5 max-h-chart-sm overflow-y-auto border border-lia-border-subtle rounded-md p-2">
                 {filteredRecruiters.length === 0 ? (
                   <div className="text-center py-4 text-xs text-lia-text-tertiary">
                     Nenhum recrutador encontrado

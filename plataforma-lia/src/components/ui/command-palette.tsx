@@ -121,7 +121,7 @@ export function CommandPalette({
           </kbd>
         </div>
 
-        <div className="max-h-[400px] overflow-y-auto">
+        <div className="max-h-content-lg overflow-y-auto">
           {Object.entries(groupedCommands).map(([category, items]) => (
             <div key={category}>
               <div className="px-4 py-2 text-xs font-semibold text-lia-text-disabled">

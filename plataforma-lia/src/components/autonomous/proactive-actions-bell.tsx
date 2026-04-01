@@ -311,7 +311,7 @@ export function ProactiveActionsBell({
           </div>
         </div>
 
-        <div className="max-h-[400px] overflow-y-auto" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="max-h-content-lg overflow-y-auto" role="status" aria-live="polite" aria-label="Carregando...">
           {loading ? (
             <div className="flex items-center justify-center py-8" role="status" aria-live="polite" aria-label="Carregando...">
               <Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />

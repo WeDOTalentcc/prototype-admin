@@ -266,7 +266,7 @@ export function ReviewPublishStage({
             </div>
           ) : (
             <div
-              className="text-xs lia-text-strong leading-relaxed whitespace-pre-line bg-gray-50 rounded-md p-2.5 max-h-[180px] overflow-y-auto"
+              className="text-xs lia-text-strong leading-relaxed whitespace-pre-line bg-gray-50 rounded-md p-2.5 max-h-card-lg overflow-y-auto"
              
             >
               {jobDescription || 'Descrição será gerada automaticamente...'}

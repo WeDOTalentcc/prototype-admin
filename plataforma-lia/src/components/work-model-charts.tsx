@@ -404,7 +404,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
         </CardHeader>
 
         <CardContent>
-          <div className="min-h-[300px]">
+          <div className="min-h-content-md">
             {selectedChart === 'donut' && <DonutChart />}
             {selectedChart === 'bar' && <BarChart />}
             {selectedChart === 'trend' && <TrendChart />}

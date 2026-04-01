@@ -189,7 +189,7 @@ export function KanbanLIASidebar({
               )}
             </button>
             {showLiaSuggestionsPanel && (
-              <div className="space-y-1.5 mt-2 max-h-[200px] overflow-y-auto">
+              <div className="space-y-1.5 mt-2 max-h-chart-sm overflow-y-auto">
                 {computedSuggestions.map((suggestion, idx) => {
                   const borderColor = suggestion.type === 'stale_candidate' ? 'border-l-status-warning' : suggestion.type === 'high_score' ? 'border-l-status-success' : 'border-l-status-error'
                   const IconComponent = suggestion.type === 'stale_candidate' ? Clock : suggestion.type === 'high_score' ? TrendingUp : AlertTriangle

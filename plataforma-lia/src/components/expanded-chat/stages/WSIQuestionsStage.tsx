@@ -305,7 +305,7 @@ export function WSIQuestionsStage({
       )}
 
       {wsiCandidates.length > 0 && (
-        <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
+        <div className="space-y-3 max-h-content-lg overflow-y-auto pr-1">
           {technicalQuestions.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-md">

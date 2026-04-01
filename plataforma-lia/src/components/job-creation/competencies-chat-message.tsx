@@ -238,7 +238,7 @@ export function CompetenciesChatMessage({
                   {technicalSkills.length}
                 </Badge>
               </div>
-              <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
+              <div className="space-y-2 max-h-chart-sm overflow-y-auto pr-1">
                 {technicalSkills.map((skill, index) => (
                   <TechnicalSkillCard key={`tech-${index}`} skill={skill} />
                 ))}
@@ -255,7 +255,7 @@ export function CompetenciesChatMessage({
                   {behavioralCompetencies.length}
                 </Badge>
               </div>
-              <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
+              <div className="space-y-2 max-h-chart-sm overflow-y-auto pr-1">
                 {behavioralCompetencies.map((competency, index) => (
                   <BehavioralCompetencyCard key={`behavioral-${index}`} competency={competency} />
                 ))}

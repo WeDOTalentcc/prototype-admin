@@ -215,7 +215,7 @@ export function VacancySearchResults({
             Encontrei <span className="font-semibold text-lia-text-primary">{vacancies.length}</span> vaga{vacancies.length > 1 ? 's' : ''} que pode{vacancies.length > 1 ? 'm' : ''} servir como base:
           </p>
 
-          <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
+          <div className="space-y-2 max-h-content-lg overflow-y-auto pr-1">
             {vacancies.map((vacancy, index) => (
               <VacancyCard 
                 key={vacancy.id} 

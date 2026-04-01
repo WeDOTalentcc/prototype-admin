@@ -257,7 +257,7 @@ export function BulkActionModal({
               </Badge>
             </div>
             
-            <ScrollArea className="border rounded-md p-2 max-h-[180px]">
+            <ScrollArea className="border rounded-md p-2 max-h-card-lg">
               <div className="space-y-1.5">
                 {displayedCandidates.map((candidate) => {
                   const result = progress.results.find(r => r.candidateId === candidate.id)

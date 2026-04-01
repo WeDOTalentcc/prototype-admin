@@ -471,7 +471,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Script para ligação..."
-                  className="min-h-[180px] text-xs focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 resize-none border-lia-border-subtle"
+                  className="min-h-card-lg text-xs focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 resize-none border-lia-border-subtle"
                 />
               </div>
             )}
@@ -573,7 +573,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
               </button>
               
               {showQuestions && (
-                <div className="p-3 space-y-2 max-h-[200px] overflow-y-auto">
+                <div className="p-3 space-y-2 max-h-chart-sm overflow-y-auto">
                   {screeningQuestions.map((q, idx) => (
                     <div 
                       key={q.id} 

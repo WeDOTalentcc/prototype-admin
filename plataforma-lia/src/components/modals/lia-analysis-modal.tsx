@@ -269,7 +269,7 @@ export function LiaAnalysisModal({
             ))}
           </div>
 
-          <div className="min-h-[200px] max-h-[320px] overflow-y-auto p-4 bg-lia-bg-primary">
+          <div className="min-h-chart-sm max-h-[320px] overflow-y-auto p-4 bg-lia-bg-primary">
             {renderAnalysisContent(activeTab)}
           </div>
 

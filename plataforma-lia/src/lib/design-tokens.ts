@@ -421,8 +421,8 @@ export const tailwindToVuetify = {
     'text-sm font-normal':        'class="text-body-2"',
     'text-sm font-medium':        'class="text-body-2 font-weight-medium"',
     // Legado — manter como referência durante migração
-    'text-[13px] font-semibold':  'class="text-subtitle-2 font-weight-bold"',
-    'text-[11px] font-normal':    'class="text-caption"',
+    'text-sm font-semibold':  'class="text-subtitle-2 font-weight-bold"',
+    'text-xs font-normal':    'class="text-caption"',
     'text-[10px] font-normal':    'class="text-overline"',
   },
   

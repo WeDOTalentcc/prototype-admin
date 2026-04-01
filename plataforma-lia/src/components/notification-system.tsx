@@ -228,7 +228,7 @@ export function NotificationSystem({
   const panelContent = isOpen ? (
     <div
       ref={panelRef}
-      className="fixed z-[9999]"
+      className="fixed z-modal"
       style={{ top: portalPosition.top, right: portalPosition.right }}
     >
       <Card className="w-[340px] max-h-[480px] overflow-hidden border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl shadow-lg">

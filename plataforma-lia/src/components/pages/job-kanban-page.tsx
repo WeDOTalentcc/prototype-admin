@@ -751,7 +751,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                       ))}
                       <div className="flex-shrink-0 w-[280px]">
                         <div 
-                          className="h-full min-h-[200px] rounded-md border-2 border-dashed border-lia-border-default hover:border-gray-400 flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors motion-reduce:transition-none hover:bg-gray-50/50 group"
+                          className="h-full min-h-chart-sm rounded-md border-2 border-dashed border-lia-border-default hover:border-gray-400 flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors motion-reduce:transition-none hover:bg-gray-50/50 group"
                           onClick={() => setShowAddColumnPopover(true)}
                         >
                           <div className="w-10 h-10 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors motion-reduce:transition-none">

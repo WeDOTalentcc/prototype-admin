@@ -815,7 +815,7 @@ export default function ConsentimentosPage() {
                   placeholder="<p>Digite aqui o conteúdo completo do termo de consentimento...</p>"
                   value={newVersionForm.content}
                   onChange={(e) => setNewVersionForm(prev => ({ ...prev, content: e.target.value }))}
-                  className="min-h-[200px] font-mono text-sm"
+                  className="min-h-chart-sm font-mono text-sm"
                 />
               </div>
               

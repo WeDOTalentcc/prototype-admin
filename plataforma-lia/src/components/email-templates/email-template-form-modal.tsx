@@ -296,7 +296,7 @@ export function EmailTemplateFormModal({
                     value={formData.body_html}
                     onChange={(e) => handleInputChange("body_html", e.target.value)}
                     placeholder="<div>...</div>"
-                    className="font-mono text-sm min-h-[300px]"
+                    className="font-mono text-sm min-h-content-md"
                     rows={15}
                   />
                 </div>

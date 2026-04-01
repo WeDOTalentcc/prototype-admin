@@ -315,7 +315,7 @@ export function CalibrationProfileModal({
             </div>
 
             {/* LIA Insights Box */}
-            <div className="shrink-0 px-4 max-h-[180px] overflow-y-auto">
+            <div className="shrink-0 px-4 max-h-card-lg overflow-y-auto">
               <div className="p-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle space-y-3">
                 {candidate.matchCriteria.map((match) => (
                   <div key={match.id} className="space-y-1">

@@ -121,7 +121,7 @@ export const JDGenerationSection = React.memo(function JDGenerationSection({
       </div>
 
       <div
-        className="bg-white rounded-md border border-lia-border-subtle dark:border-lia-border-subtle dark:bg-lia-bg-primary overflow-hidden min-h-[200px]"
+        className="bg-white rounded-md border border-lia-border-subtle dark:border-lia-border-subtle dark:bg-lia-bg-primary overflow-hidden min-h-chart-sm"
         role="status"
         aria-live="polite"
         aria-label="Carregando..."
@@ -158,7 +158,7 @@ export const JDGenerationSection = React.memo(function JDGenerationSection({
 
         {/* Generated content */}
         {generatedJD && !isGeneratingJD && (
-          <div className="max-h-[400px] overflow-y-auto p-4">
+          <div className="max-h-content-lg overflow-y-auto p-4">
             {formatJDText(generatedJD.full_description)}
 
             {generatedJD.tags.length > 0 && (

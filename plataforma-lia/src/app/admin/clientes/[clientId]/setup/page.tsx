@@ -149,7 +149,7 @@ export default function ClientSetupPage({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]" role="status" aria-live="polite" aria-label="Carregando...">
+      <div className="flex items-center justify-center min-h-content-lg" role="status" aria-live="polite" aria-label="Carregando...">
         <div className="flex flex-col items-center gap-3" role="status" aria-live="polite" aria-label="Carregando...">
           <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
           <p className="text-sm lia-text-400 dark:lia-text-500">
@@ -162,7 +162,7 @@ export default function ClientSetupPage({
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-content-lg">
         <Card className="border-status-error/30 bg-status-error/10/50 dark:border-status-error/30 dark:bg-status-error/20 max-w-md">
           <CardContent className="p-6 text-center">
             <p className="text-sm font-medium text-status-error dark:text-status-error mb-2">
