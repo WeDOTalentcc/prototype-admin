@@ -11,17 +11,17 @@ import { MessageSquare, Calendar, Search, AlertTriangle, AlertCircle, CheckCircl
 
 export const getTaskPriorityStyle = (priority: 'high' | 'medium' | 'low') => {
   switch (priority) {
-    case 'high': return { backgroundColor: 'var(--lia-brand-primary-light)', color: 'var(--lia-text-primary)' }
-    case 'medium': return { backgroundColor: 'var(--wedo-amber-light, #fefce8)', color: 'var(--lia-text-primary)' }
-    case 'low': return { backgroundColor: 'var(--lia-info-light, #eff6ff)', color: 'var(--lia-text-primary)' }
+    case 'high': return 'bg-lia-brand-primary-light text-lia-text-primary'
+    case 'medium': return 'bg-wedo-amber-light text-lia-text-primary'
+    case 'low': return 'bg-lia-info-light text-lia-text-primary'
   }
 }
 
 export const getAlertSeverityStyle = (severity: 'high' | 'medium' | 'low') => {
   switch (severity) {
-    case 'high': return { backgroundColor: 'var(--lia-brand-primary-light)', color: 'var(--lia-text-primary)' }
-    case 'medium': return { backgroundColor: 'var(--wedo-amber-light, #fefce8)', color: 'var(--lia-text-primary)' }
-    case 'low': return { backgroundColor: 'var(--lia-info-light, #eff6ff)', color: 'var(--lia-text-primary)' }
+    case 'high': return 'bg-lia-brand-primary-light text-lia-text-primary'
+    case 'medium': return 'bg-wedo-amber-light text-lia-text-primary'
+    case 'low': return 'bg-lia-info-light text-lia-text-primary'
   }
 }
 
@@ -53,25 +53,25 @@ export const getAlertIcon = (type: string) => {
   switch (type) {
     case 'urgent': return <AlertTriangle className="w-4 h-4 text-lia-text-disabled dark:text-lia-text-tertiary" />
     case 'warning': return <AlertCircle className="w-4 h-4 text-lia-text-disabled dark:text-lia-text-tertiary" />
-    case 'success': return <CheckCircle className="w-4 h-4" style={{color: 'var(--lia-text-primary)'}} />
+    case 'success': return <CheckCircle className="w-4 h-4 text-lia-text-primary" />
     default: return <Info className="w-4 h-4 text-lia-text-disabled dark:text-lia-text-tertiary" />
   }
 }
 
 export const getAlertStyle = (type: string) => {
   switch (type) {
-    case 'urgent': return { backgroundColor: 'var(--lia-brand-primary-light)', color: 'var(--lia-text-primary)' }
-    case 'warning': return { backgroundColor: 'var(--wedo-amber-light, #fefce8)', color: 'var(--lia-text-primary)' }
-    case 'success': return { backgroundColor: 'var(--wedo-green-light, #f0fdf4)', color: 'var(--lia-text-primary)' }
-    default: return { backgroundColor: 'var(--wedo-amber-light, #fefce8)', color: 'var(--lia-text-secondary)' }
+    case 'urgent': return 'bg-lia-brand-primary-light text-lia-text-primary'
+    case 'warning': return 'bg-wedo-amber-light text-lia-text-primary'
+    case 'success': return 'bg-wedo-green-light text-lia-text-primary'
+    default: return 'bg-wedo-amber-light text-lia-text-secondary'
   }
 }
 
 export const getUrgencyBadge = (urgency: string, daysOpen: number) => {
-  if (urgency === 'critical') return <Badge className="border-0 text-xs font-medium" style={{backgroundColor: 'var(--lia-brand-primary-light)', color: 'var(--lia-text-primary)'}}>🔴 Crítico</Badge>
-  if (urgency === 'urgent') return <Badge className="border-0 text-xs font-semibold" style={{backgroundColor: 'var(--wedo-amber-light, #fefce8)', color: 'var(--lia-text-primary)'}}>⚠ Urgente</Badge>
-  if (daysOpen > 30) return <Badge className="border-0 text-xs font-medium" style={{backgroundColor: 'var(--lia-info-light, #eff6ff)', color: 'var(--lia-text-primary)'}}>⏰ Atenção</Badge>
-  return <Badge className="border-0 text-xs" style={{backgroundColor: 'var(--wedo-green-light, #f0fdf4)', color: 'var(--lia-text-primary)'}}>✓ Normal</Badge>
+  if (urgency === 'critical') return <Badge className="bg-lia-brand-primary-light text-lia-text-primary border-0 text-xs font-medium">🔴 Crítico</Badge>
+  if (urgency === 'urgent') return <Badge className="bg-wedo-amber-light text-lia-text-primary border-0 text-xs font-semibold">⚠ Urgente</Badge>
+  if (daysOpen > 30) return <Badge className="bg-lia-info-light text-lia-text-primary border-0 text-xs font-medium">⏰ Atenção</Badge>
+  return <Badge className="bg-wedo-green-light text-lia-text-primary border-0 text-xs">✓ Normal</Badge>
 }
 
 export const getConversionRate = (from: number, to: number) => {
@@ -80,29 +80,29 @@ export const getConversionRate = (from: number, to: number) => {
 }
 
 export const getConversionStyle = (rate: number) => {
-  return { color: 'var(--lia-text-primary)' }
+  return 'text-lia-text-primary'
 }
 
 export const getRequestStatusBadge = (status: string) => {
   switch (status) {
-    case 'draft': return { label: 'Rascunho', color: 'border-0', style: { backgroundColor: 'var(--wedo-amber-light, #fefce8)', color: 'var(--lia-text-secondary)' }, icon: '📝' }
-    case 'pending_approval': return { label: 'Aguardando Aprovação', color: 'border-0 font-medium', style: { backgroundColor: 'var(--wedo-amber-light, #fefce8)', color: 'var(--lia-text-primary)' }, icon: '⏳' }
-    case 'in_review': return { label: 'Em Revisão', color: 'border-0 font-medium', style: { backgroundColor: 'var(--lia-info-light, #eff6ff)', color: 'var(--lia-text-primary)' }, icon: '👁️' }
-    case 'requires_changes': return { label: 'Requer Alterações', color: 'border-0 font-semibold', style: { backgroundColor: 'var(--wedo-amber-light, #fefce8)', color: 'var(--lia-text-primary)' }, icon: '✏️' }
-    case 'approved': return { label: 'Aprovado', color: 'border-0 font-semibold', style: { backgroundColor: 'var(--wedo-green-light, #f0fdf4)', color: 'var(--lia-text-primary)' }, icon: '✅' }
-    case 'rejected': return { label: 'Rejeitado', color: 'border-0 font-semibold', style: { backgroundColor: 'var(--lia-brand-primary-light)', color: 'var(--lia-text-primary)' }, icon: '❌' }
-    case 'published': return { label: 'Publicado', color: 'border-0 font-medium', style: { backgroundColor: 'var(--lia-btn-primary-bg)', color: 'var(--lia-text-inverted, #F9FAFB)' }, icon: '🚀' }
-    default: return { label: status, color: 'border-0', style: { backgroundColor: 'var(--wedo-amber-light, #fefce8)', color: 'var(--lia-text-secondary)' }, icon: '•' }
+    case 'draft': return { label: 'Rascunho', color: 'border-0', className: 'bg-wedo-amber-light text-lia-text-secondary', icon: '📝' }
+    case 'pending_approval': return { label: 'Aguardando Aprovação', color: 'border-0 font-medium', className: 'bg-wedo-amber-light text-lia-text-primary', icon: '⏳' }
+    case 'in_review': return { label: 'Em Revisão', color: 'border-0 font-medium', className: 'bg-lia-info-light text-lia-text-primary', icon: '👁️' }
+    case 'requires_changes': return { label: 'Requer Alterações', color: 'border-0 font-semibold', className: 'bg-wedo-amber-light text-lia-text-primary', icon: '✏️' }
+    case 'approved': return { label: 'Aprovado', color: 'border-0 font-semibold', className: 'bg-wedo-green-light text-lia-text-primary', icon: '✅' }
+    case 'rejected': return { label: 'Rejeitado', color: 'border-0 font-semibold', className: 'bg-lia-brand-primary-light text-lia-text-primary', icon: '❌' }
+    case 'published': return { label: 'Publicado', color: 'border-0 font-medium', className: 'bg-lia-btn-primary-bg text-lia-text-inverse', icon: '🚀' }
+    default: return { label: status, color: 'border-0', className: 'bg-wedo-amber-light text-lia-text-secondary', icon: '•' }
   }
 }
 
 export const getRequestPriorityBadge = (priority: string) => {
   switch (priority) {
-    case 'critical': return { label: 'Crítico', color: 'border-0 font-medium', style: { backgroundColor: 'var(--lia-brand-primary-light)', color: 'var(--lia-text-primary)' }, icon: '🔴' }
-    case 'high': return { label: 'Alta', color: 'border-0 font-semibold', style: { backgroundColor: 'var(--wedo-amber-light, #fefce8)', color: 'var(--lia-text-primary)' }, icon: '🟠' }
-    case 'medium': return { label: 'Média', color: 'border-0 font-medium', style: { backgroundColor: 'var(--lia-info-light, #eff6ff)', color: 'var(--lia-text-primary)' }, icon: '🟡' }
-    case 'low': return { label: 'Baixa', color: 'border-0', style: { backgroundColor: 'var(--wedo-green-light, #f0fdf4)', color: 'var(--lia-text-primary)' }, icon: '🟢' }
-    default: return { label: priority, color: 'border-0', style: { backgroundColor: 'var(--wedo-amber-light, #fefce8)', color: 'var(--lia-text-secondary)' }, icon: '•' }
+    case 'critical': return { label: 'Crítico', color: 'border-0 font-medium', className: 'bg-lia-brand-primary-light text-lia-text-primary', icon: '🔴' }
+    case 'high': return { label: 'Alta', color: 'border-0 font-semibold', className: 'bg-wedo-amber-light text-lia-text-primary', icon: '🟠' }
+    case 'medium': return { label: 'Média', color: 'border-0 font-medium', className: 'bg-lia-info-light text-lia-text-primary', icon: '🟡' }
+    case 'low': return { label: 'Baixa', color: 'border-0', className: 'bg-wedo-green-light text-lia-text-primary', icon: '🟢' }
+    default: return { label: priority, color: 'border-0', className: 'bg-wedo-amber-light text-lia-text-secondary', icon: '•' }
   }
 }
 
