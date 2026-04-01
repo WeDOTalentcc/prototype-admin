@@ -761,7 +761,7 @@ A tabela abaixo mostra, para cada um dos 8 domínios v5 (lidos diretamente dos a
 
 | Capacidade | `jobs` | `messaging` | `insights` | `scheduling` | `evaluation` | `applies` | `sourcing` | `autonomous` |
 |-----------|--------|------------|-----------|-------------|-------------|---------|-----------|-------------|
-| **Keyword matching** | ✅ 29 keywords | ✅ 20 keywords | ✅ 18 keywords | ✅ 20 keywords | ✅ 24 keywords | ✅ 5 keywords | ✅ 30 keywords | ✅ 20 keywords |
+| **Regex patterns** | ✅ 29 patterns | ✅ 20 patterns | ✅ 18 patterns | ✅ 20 patterns | ✅ 24 patterns | ✅ 5 patterns | ✅ 30 patterns | ✅ 20 patterns |
 | **LLM fallback** | ⚠️ confidence=0.3 | ⚠️ confidence=0.3 | ⚠️ confidence=0.3 | ⚠️ confidence=0.3 | ⚠️ confidence=0.3 | ⚠️ confidence=0.4 | ⚠️ confidence=0.3 | ⚠️ confidence=0.3 |
 | **YAML prompt** | 🔧 `job_management.yaml` | 🔧 `communication.yaml` | 🔧 `analytics.yaml` | 🔧 `interview_scheduling.yaml` | 🔧 `cv_screening.yaml` | ⚠️ inline em domain.py | 🔧 `sourcing.yaml` | 🔧 `automation.yaml` |
 | **Persona definida** | 🔧 no YAML | 🔧 no YAML | 🔧 no YAML | 🔧 no YAML | 🔧 no YAML | ❌ | 🔧 no YAML | 🔧 no YAML |
@@ -787,7 +787,7 @@ A tabela abaixo mostra, para cada um dos 8 domínios v5 (lidos diretamente dos a
 
 1. **🔧 (existe na infra LIA mas v5 não usa):** Os arquivos YAML existem em `lia-agent-system/app/prompts/domains/` com persona, scope, rules e few-shot examples. O código dos domínios v5 (`src/domains/*/domain.py`) **não tem acesso** a esses YAMLs — usa prompts inline (strings hardcoded em `prompts.py` de cada domínio). A migração precisa: ou portar os YAMLs para v5, ou implementar `ComplianceDomainPrompt` que carregue prompts estruturados.
 
-2. **Todos os domínios têm keyword matching**, com entre 5 e 30 keywords. A fórmula de confiança é idêntica: `min(0.95, 0.6 + len(keyword) * 0.02)`. Nenhum domínio usa regex com word boundaries (exceto `applies` que tem padrões `\b`).
+2. **Todos os domínios v5 têm regex pattern matching** via `_CONTEXT_ACTION_PATTERNS`, com entre 5 e 30 patterns compilados por domínio. A confiança é calculada com base no match. `applies` usa padrões `\b` para word boundaries; os demais usam regex mais simples.
 
 3. **Nenhum domínio v5 usa** MemoryResolver, ContextAggregator, TenantContext, ou os blocos composíveis (ANTI_SYCOPHANCY, CHAIN_OF_THOUGHT, DEFENSIVE). Essas capacidades existem na infraestrutura LIA mas não foram integradas aos domínios.
 
