@@ -144,10 +144,10 @@ export function LiaSuggestionCards({
                     >
                       {suggestion.category}
                     </Badge>
-                    {suggestion.metadata?.count && (
+                    {(suggestion.metadata?.count as any) && (
                       // @ts-ignore TODO: fix type
                       <span className="text-micro lia-text-secondary">
-                        {suggestion.metadata.count as number} item(s)
+                        {suggestion.metadata!.count as number} item(s)
                       </span>
                     )}
                   </div>

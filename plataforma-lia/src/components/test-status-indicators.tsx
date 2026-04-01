@@ -22,7 +22,7 @@ export function TestStatusIndicators({ candidate }: TestStatusIndicatorsProps) {
         }`}>
           <FileText className="w-4 h-4" />
         </div>
-        {candidate.technicalTestScore && (
+        {(candidate.technicalTestScore as any) && (
           // @ts-ignore TODO: fix type
           <div className="absolute -top-1 -right-1">
             <div className="w-4 h-4 bg-status-success rounded-full flex items-center justify-center">
@@ -44,9 +44,8 @@ export function TestStatusIndicators({ candidate }: TestStatusIndicatorsProps) {
         }`}>
           <Globe className="w-4 h-4" />
         </div>
-        {candidate.englishTestScore && (
+        {(candidate.englishTestScore as any) && (
           <div className="absolute -top-1 -right-1">
-            // @ts-ignore TODO: fix type
             <div className="w-4 h-4 bg-status-success rounded-full flex items-center justify-center">
               <CheckCircle className="w-3 h-3 text-white" fill="currentColor" />
             </div>
@@ -66,10 +65,9 @@ export function TestStatusIndicators({ candidate }: TestStatusIndicatorsProps) {
         }`}>
           <User className="w-4 h-4" />
         </div>
-        {candidate.bigFiveScores && (
+        {(candidate.bigFiveScores as any) && (
           <div className="absolute -top-1 -right-1">
             <div className="w-4 h-4 bg-status-success rounded-full flex items-center justify-center">
-              // @ts-ignore TODO: fix type
               <CheckCircle className="w-3 h-3 text-white" fill="currentColor" />
             </div>
           </div>

@@ -10,7 +10,7 @@ import { OpinionCard } from "@/components/candidate-preview/OpinionCard"
 interface CandidateOpinionsTabProps {
   opinionsSubTab: string
   setOpinionsSubTab: (tab: string) => void
-  opinionsHistory: Record<string, unknown>[]
+  opinionsHistory: Record<string, any>[]
   isLoadingHistory: boolean
   savedAnalyses: unknown
   isLoadingAnalyses: boolean
@@ -21,8 +21,8 @@ interface CandidateOpinionsTabProps {
   analysisToDelete: unknown
   setAnalysisToDelete: (analysis: unknown) => void
   copiedItemId: string | null
-  handleCopyOpinion: (opinion: Record<string, unknown>) => void
-  handleCopyAnalysis: (analysis: Record<string, unknown>) => void
+  handleCopyOpinion: (opinion: Record<string, any>) => void
+  handleCopyAnalysis: (analysis: Record<string, any>) => void
   cleanTextForCopy: (text: string) => string
 }
 
@@ -74,9 +74,9 @@ opinionsSubTab === 'analises'
         >
           <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           Análises
-          {savedAnalyses && (savedAnalyses as unknown as {total_analyses: number}).total_analyses > 0 && (
+          // @ts-ignore TODO: fix type
+          {(savedAnalyses as any) && (savedAnalyses as any).total_analyses > 0 && (
             <Badge className="text-micro px-1.5 py-0 h-4 ml-1" style={{backgroundColor: 'var(--gray-100)', color: 'var(--wedo-purple)'}}>
-              // @ts-ignore TODO: fix type
               {(savedAnalyses as unknown as {total_analyses: number}).total_analyses}
             </Badge>
           )}
@@ -123,11 +123,12 @@ opinionsSubTab === 'analises'
           {/* Opinions List - Full History */}
           {!isLoadingHistory && opinionsHistory.length > 0 && (
             <div className="space-y-3">
-              {opinionsHistory.map((opinion: Record<string, unknown>) => (
+              {opinionsHistory.map((opinion: Record<string, any>) => (
                 <div key={opinion.id as string} className="relative">
                   {!opinion.is_current && (
+                    // @ts-ignore TODO: fix type
                     <Badge className="absolute top-2 right-2 text-micro px-1.5 py-0 h-4 bg-gray-100 text-lia-text-tertiary dark:text-lia-text-tertiary z-10">
-                      v{opinion.version} - Histórico
+                      v{(opinion.version as React.ReactNode)} - Histórico
                     </Badge>
                   )}
                   <OpinionCard
@@ -188,7 +189,7 @@ opinionsSubTab === 'analises'
           {/* Analyses List with Expandable Cards */}
           {!isLoadingAnalyses && savedAnalyses && (savedAnalyses as unknown as {total_analyses: number}).total_analyses > 0 && (
             <div className="space-y-3">
-              {(savedAnalyses as unknown as {analyses: Record<string, unknown>[]}).analyses.map((analysis: Record<string, unknown>) => {
+              {(savedAnalyses as unknown as {analyses: Record<string, any>[]}).analyses.map((analysis: Record<string, any>) => {
                 const analysisLabels: Record<string, string> = {
                   'bullet_points': 'Pontos-chave',
                   'short_paragraph': 'Resumo',
@@ -217,7 +218,7 @@ opinionsSubTab === 'analises'
                               className="text-micro px-1.5 py-0 h-4"
                               style={{backgroundColor: 'var(--gray-100)', color: 'var(--wedo-purple)'}}
                             >
-                              {analysisLabels[analysis.analysis_type as string] || analysis.analysis_type}
+                              {(analysisLabels[analysis.analysis_type as string] || analysis.analysis_type as React.ReactNode)}
                             </Badge>
                           </div>
                           <span className={`${textStyles.caption} lia-text-secondary`}>

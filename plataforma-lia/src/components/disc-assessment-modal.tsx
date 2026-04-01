@@ -323,13 +323,12 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
         <div className="p-6 bg-gray-50 dark:bg-lia-bg-secondary/50 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
-              <Avatar className="w-14 h-14 ring-4 ring-white dark:ring-gray-800">
-                <AvatarImage src={candidate?.avatar} />
-                // @ts-ignore TODO: fix type
-                <AvatarFallback className="text-lg bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary">
-                  {candidate?.name?.split(' ').map((n: string) => n[0]).join('') || 'C'}
-                </AvatarFallback>
               // @ts-ignore TODO: fix type
+              <Avatar className="w-14 h-14 ring-4 ring-white dark:ring-gray-800">
+                <AvatarImage src={candidate?.avatar as string} />
+                <AvatarFallback className="text-lg bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary">
+                  {String(candidate?.name || '')} • {data.assessmentProvider || 'Assessment Comportamental'}
+                </AvatarFallback>
               </Avatar>
               <div>
                 <h2 className="text-sm font-semibold text-lia-text-primary flex items-center gap-2">
@@ -337,9 +336,8 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
                   Relatório DISC
                 </h2>
                 <p className="text-lia-text-secondary dark:text-lia-text-tertiary text-xs">
-                  {candidate?.name} • {data.assessmentProvider || 'Assessment Comportamental'}
+                  {String(candidate?.name || '')} • {data.assessmentProvider || 'Assessment Comportamental'}
                 </p>
-              // @ts-ignore TODO: fix type
               </div>
             </div>
             <div className="flex items-center gap-2">

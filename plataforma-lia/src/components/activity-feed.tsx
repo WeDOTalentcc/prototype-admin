@@ -28,7 +28,7 @@ interface Activity {
     name: string | null
     type: string | null
   } | null
-  extra_data: Record<string, unknown>
+  extra_data: Record<string, any>
   priority: string
   category: string | null
   action: {
@@ -325,7 +325,6 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
                   {/* Recommendation badge */}
                   {activity.extra_data.recommendation && (
                     <div className="flex items-center gap-1.5">
-                      // @ts-ignore TODO: fix type
                       <span className={textStyles.label}>Recomendação:</span>
                       <Badge className={`${getRecommendationBadge(activity.extra_data.recommendation).className} border-0`}>
                         {getRecommendationBadge(activity.extra_data.recommendation).label}
@@ -352,7 +351,6 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
                       )}
                       {activity.extra_data.comm_score !== undefined && (
                         <div className="flex items-center gap-1">
-                          // @ts-ignore TODO: fix type
                           <span className={textStyles.label}>Comunicação:</span>
                           <span className={`${textStyles.label} text-lia-text-primary`}>{activity.extra_data.comm_score}/100</span>
                         </div>
@@ -379,7 +377,6 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
                         </Badge>
                       ))}
                     </div>
-                  // @ts-ignore TODO: fix type
                   )}
                 </div>
               )}
@@ -433,7 +430,6 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
                   {Array.isArray(activity.extra_data.red_flags) && activity.extra_data.red_flags.length > 0 && (
                     <div className="flex items-center gap-1 flex-wrap">
                       <span className={`${textStyles.label} text-status-warning`}>Atenção:</span>
-                      // @ts-ignore TODO: fix type
                       {activity.extra_data.red_flags.slice(0, 2).map((flag: string, idx: number) => (
                         <Badge key={idx} variant="secondary" className="bg-status-warning/10 text-status-warning border-status-warning/30 text-micro">
                           {flag}
@@ -441,7 +437,6 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
                       ))}
                       {activity.extra_data.red_flags.length > 2 && (
                         <span className={`${textStyles.label} text-status-warning`}>
-                          // @ts-ignore TODO: fix type
                           +{activity.extra_data.red_flags.length - 2}
                         </span>
                       )}

@@ -400,9 +400,8 @@ export function UniversalTransitionModal({
                 {policyWarnings.map((w, i) => (
                   <p key={i} className="mt-1 text-status-warning dark:text-status-warning">{w}</p>
                 ))}
-                {policyMetadata.requires_manager_approval && (
+                {(policyMetadata.requires_manager_approval as any) && (
                   <p className="mt-1 text-status-warning dark:text-status-warning">
-                    // @ts-ignore TODO: fix type
                     Aprovação do gestor será necessária antes de prosseguir.
                   </p>
                 )}

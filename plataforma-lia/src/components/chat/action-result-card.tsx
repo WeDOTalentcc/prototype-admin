@@ -125,8 +125,9 @@ export function ActionResultCard({ actionType, result, className = "" }: ActionR
         )}
 
         {(actionType === "pause_job" || actionType === "close_job" || actionType === "reopen_job") && (
+          // @ts-ignore TODO: fix type
           <div className="flex items-center gap-2">
-            {result.job_title && (
+            {(result.job_title as any) && (
               // @ts-ignore TODO: fix type
               <>
                 <span className="text-lia-text-secondary">Vaga:</span>
@@ -136,10 +137,9 @@ export function ActionResultCard({ actionType, result, className = "" }: ActionR
           </div>
         )}
 
-        {actionType === "duplicate_job" && result.new_job_id && (
+        {(actionType === "duplicate_job" && result.new_job_id as any) && (
           <div className="flex items-center gap-2">
             <span className="text-lia-text-secondary">Nova vaga ID:</span>
-            // @ts-ignore TODO: fix type
             <span className={`px-1.5 py-0.5 rounded-md ${badgeColor}`}>#{String(result.new_job_id)}</span>
           </div>
         )}

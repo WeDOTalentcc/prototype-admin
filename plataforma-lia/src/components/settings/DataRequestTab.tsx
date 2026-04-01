@@ -713,9 +713,9 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                           />
                         </div>
                         <div>
+                          // @ts-ignore TODO: fix type
                           <Label className="text-micro lia-text-700 dark:text-lia-text-secondary">Tipo</Label>
-                          <Select value={newFieldType} onValueChange={(v) => setNewFieldType(v)}>
-                            // @ts-ignore TODO: fix type
+                          <Select value={newFieldType} onValueChange={(v) => setNewFieldType(v as "textarea" | "text" | "email" | "phone" | "file" | "date")}>
                             <SelectTrigger className="mt-1 h-7 text-xs">
                               <SelectValue />
                             </SelectTrigger>

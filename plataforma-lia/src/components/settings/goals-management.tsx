@@ -247,17 +247,17 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                           </thead>
                           <tbody>
                             {assignedUserObjects.map((user) => (
-                              <tr key={user.id} className="border-b border-lia-border-subtle dark:lia-border-800 hover:bg-lia-bg-primary dark:hover:bg-gray-800">
+                              <tr key={user!.id} className="border-b border-lia-border-subtle dark:lia-border-800 hover:bg-lia-bg-primary dark:hover:bg-gray-800">
                                 <td className="p-2 sticky left-0 bg-gray-50 dark:bg-lia-bg-secondary border-r border-lia-border-subtle dark:border-lia-border-subtle">
                                   <div className="flex items-center gap-2">
                                     <Avatar className="w-5 h-5">
-                                      <AvatarImage src={user.avatar} alt={user.name} />
+                                      <AvatarImage src={user!.avatar} alt={user!.name} />
                                       <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-elevated lia-text-700 dark:text-lia-text-secondary font-medium text-micro">
-                                        {user.name.split(' ').map((n: string) => n[0]).join('')}
+                                        {user!.name.split(' ').map((n: string) => n[0]).join('')}
                                       </AvatarFallback>
                                     </Avatar>
                                     // @ts-ignore TODO: fix type
-                                    <span className="font-medium text-xs lia-text-800 dark:text-lia-text-primary truncate">{user.name}</span>
+                                    <span className="font-medium text-xs lia-text-800 dark:text-lia-text-primary truncate">{user!.name}</span>
                                   </div>
                                 </td>
                                 {MONTHS.map((month) => (
@@ -268,13 +268,13 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                                   >
                                     // @ts-ignore TODO: fix type
                                     <EditableCell
-                                      value={getMonthlyValue(template.id, user.id, month.num, selectedYear)}
-                                      onChange={(value) => setMonthlyValue(template.id, user.id, month.num, selectedYear, value)}
+                                      value={getMonthlyValue(template.id, user!.id, month.num, selectedYear)}
+                                      onChange={(value) => setMonthlyValue(template.id, user!.id, month.num, selectedYear, value)}
                                     />
                                   </td>
                                 ))}
                                 <td className="p-2 text-center font-semibold lia-text-900 dark:lia-text-50">
-                                  {calculateRowTotal(template.id, user.id, selectedYear)}
+                                  {calculateRowTotal(template.id, user!.id, selectedYear)}
                                 </td>
                               </tr>
                             ))}

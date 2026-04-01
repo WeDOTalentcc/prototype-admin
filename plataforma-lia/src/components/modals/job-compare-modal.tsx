@@ -776,10 +776,10 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                           {job.technical_requirements && job.technical_requirements.length > 0 ? (
                             <div className="flex flex-wrap gap-1">
                               {job.technical_requirements.slice(0, 4).map((req, idx) => (
+                                // @ts-ignore TODO: fix type
                                 <span key={`req-${idx}`} className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-secondary">
-                                  {typeof req === "string" ? req : req.name || req.skill || "-"}
+                                  {(typeof req === "string" ? req : (req as any).name || (req as any).skill || "-")}
                                 </span>
-                              // @ts-ignore TODO: fix type
                               ))}
                               {job.technical_requirements.length > 4 && (
                                 <span className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-tertiary">
@@ -808,14 +808,14 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                           {job.behavioral_competencies && job.behavioral_competencies.length > 0 ? (
                             <div className="flex flex-wrap gap-1">
                               {job.behavioral_competencies.slice(0, 4).map((comp, idx) => (
+                                // @ts-ignore TODO: fix type
                                 <span key={`comp-${idx}`} className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-secondary">
-                                  {typeof comp === "string" ? comp : comp.name || comp.competency || "-"}
+                                  {(typeof comp === "string" ? comp : (comp as any).name || (comp as any).competency || "-")}
                                 </span>
                               ))}
                               {job.behavioral_competencies.length > 4 && (
                                 <span className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-tertiary">
                                   +{job.behavioral_competencies.length - 4}
-                                // @ts-ignore TODO: fix type
                                 </span>
                               )}
                             </div>

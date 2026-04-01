@@ -116,9 +116,8 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
                   {isWsiOpinion ? `WSI: ${displayScore.toFixed(1)}/5` : `Score: ${Math.round(displayScore)}/100`}
                 </span>
               )}
-              {opinion.archetype && (
+              {(opinion.archetype as any) && (
                 <>
-                  // @ts-ignore TODO: fix type
                   <span className="lia-text-muted">•</span>
                   <span className={textStyles.caption}>{String(opinion.archetype)}</span>
                 </>
@@ -127,11 +126,11 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
             </div>
           </div>
         </div>
+        // @ts-ignore TODO: fix type
         <div className="flex items-center gap-2">
-          {opinion.created_at && (
+          {(opinion.created_at as any) && (
             <span className="text-micro text-lia-text-disabled">{formatOpinionDate(String(opinion.created_at))}</span>
           )}
-          // @ts-ignore TODO: fix type
           <Tooltip>
             <TooltipTrigger asChild>
               <button
@@ -159,24 +158,23 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
       </div>
 
       {isExpanded && (
+        // @ts-ignore TODO: fix type
         <div className="px-3 pb-3 pt-0 border-t border-lia-border-subtle dark:border-lia-border-subtle space-y-3">
-          {opinion.summary && (
+          {(opinion.summary as any) && (
             <div className="pt-3">
               <p className="text-xs text-lia-text-primary dark:text-lia-text-primary leading-relaxed">
                 {String(opinion.summary)}
               </p>
-            // @ts-ignore TODO: fix type
             </div>
           )}
 
-          {opinion.score_breakdown && Object.keys(opinion.score_breakdown as Record<string, unknown>).length > 0 && (
+          {(opinion.score_breakdown && Object.keys(opinion.score_breakdown as Record<string, unknown>).length > 0 as any) && (
             <div>
               <h5 className={`${textStyles.label} mb-1.5 flex items-center gap-1`}>
                 <BarChart3 className="w-3 h-3" />
                 Score Breakdown
               </h5>
               <div className="grid grid-cols-2 gap-1.5">
-                // @ts-ignore TODO: fix type
                 {Object.entries(opinion.score_breakdown as Record<string, unknown>).map(([key, value]) => (
                   value !== null && value !== undefined && (
                     <div key={key} className="flex items-center justify-between text-micro bg-gray-50 dark:bg-lia-bg-secondary rounded-full px-2 py-1">
@@ -269,7 +267,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
             </div>
           )}
 
-          {opinion.next_steps && (
+          {(opinion.next_steps as any) && (
             <div>
               <h5 className={`${textStyles.label} mb-1 flex items-center gap-1`}>
                 <TrendingUp className="w-3 h-3" />
@@ -277,10 +275,9 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
               </h5>
               <p className={`${textStyles.caption} lia-text-base`}>{String(opinion.next_steps)}</p>
             </div>
-          // @ts-ignore TODO: fix type
           )}
 
-          {opinion.recruiter_notes && (
+          {(opinion.recruiter_notes as any) && (
             <div className="bg-status-warning/10 rounded-md p-2 border border-status-warning/30">
               <h5 className={`${textStyles.label} text-status-warning mb-1 flex items-center gap-1`}>
                 <Edit className="w-3 h-3" />
@@ -289,19 +286,17 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
               <p className={`${textStyles.caption} text-status-warning`}>{String(opinion.recruiter_notes)}</p>
             </div>
           )}
- // @ts-ignore TODO: fix type
 
-          {opinion.recruiter_override && (
+          {(opinion.recruiter_override as any) && (
             <div className="bg-wedo-purple/10 rounded-md p-2 border border-wedo-purple/30">
               <div className="flex items-center gap-2 mb-1">
                 <h5 className={`${textStyles.label} text-wedo-purple`}>Override do Recrutador</h5>
                 {getRecommendationBadge(opinion.recruiter_override as string)}
               </div>
-              {opinion.recruiter_override_reason && (
+              {(opinion.recruiter_override_reason as any) && (
                 <p className={`${textStyles.caption} text-wedo-purple`}>{String(opinion.recruiter_override_reason)}</p>
               )}
             </div>
-          // @ts-ignore TODO: fix type
           )}
         </div>
       )}

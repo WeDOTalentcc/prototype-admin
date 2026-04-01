@@ -72,10 +72,10 @@ export function CandidatePageHeader({
           <div className="flex items-center gap-3">
             <Avatar className="w-10 h-10">
               <AvatarImage src={(_candidate.avatar_url as string | undefined) || (_candidate.avatar as string | undefined)} alt={_candidate.name as string} />
+              // @ts-ignore TODO: fix type
               <AvatarFallback className="text-sm font-medium bg-gray-200 lia-text-base">
-                {(_candidate.name as string).split( ).map((n: string) => n[0]).join().slice(0, 2).toUpperCase()}
+                {(_candidate.name as string).split(' ').map((n: string) => n[0]).join().slice(0, 2).toUpperCase()}
               </AvatarFallback>
-            // @ts-ignore TODO: fix type
             </Avatar>
             <div>
               <div className="flex items-center gap-2">

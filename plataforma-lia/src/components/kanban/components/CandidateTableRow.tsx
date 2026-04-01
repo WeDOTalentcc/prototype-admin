@@ -87,9 +87,8 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
 
       <td className="px-4 py-2">
         <div className="text-xs font-mono lia-text-600 dark:text-lia-text-tertiary">
-          {candidate.candidateCode || candidate.id?.substring(0, 6).toUpperCase()}
+          {(candidate as any).candidateCode || (candidate as any).id?.substring(0, 6).toUpperCase()}
         </div>
-      // @ts-ignore TODO: fix type
       </td>
 
       <td className="px-3 py-2">
@@ -117,7 +116,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
 
       <td className="px-2 py-2">
         <div className="flex items-center gap-1 justify-center">
-          {(candidate.liaScore !== null && candidate.liaScore !== undefined) || (candidate.score !== null && candidate.score !== undefined) ? (
+          {((candidate as any).liaScore !== null && (candidate as any).liaScore !== undefined) || ((candidate as any).score !== null && (candidate as any).score !== undefined) ? (
             <>
               <BrainCircuit className="w-3 h-3 lia-text-950 dark:lia-text-50" />
               <Badge 
@@ -126,7 +125,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
                 // @ts-ignore TODO: fix type
                 style={{backgroundColor: 'var(--gray-300)'}}
               >
-                {formatScorePercent(candidate.liaScore ?? candidate.score, 0)}
+                {formatScorePercent((candidate as any).liaScore ?? (candidate as any).score, 0)}
               </Badge>
             </>
           ) : (
@@ -144,28 +143,28 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
             className="text-xs px-2 py-0.5 font-semibold border-0 lia-text-950 dark:lia-text-50"
             style={{backgroundColor: 'var(--gray-400)'}}
           >
-            {formatScorePercent(candidate.skillsMatch || candidate.fitScore || 0, 0)}
+            {formatScorePercent((candidate as any).skillsMatch || (candidate as any).fitScore || 0, 0)}
           </Badge>
         </div>
       </td>
 
       <td className="px-2 py-2">
-        {candidate.technicalTestScore !== null && candidate.technicalTestScore !== undefined ? (
+        {(candidate as any).technicalTestScore !== null && (candidate as any).technicalTestScore !== undefined ? (
           <div className="flex items-center gap-1 justify-center group">
             <Badge
               variant="secondary"
               className="text-xs px-2 py-0.5 font-semibold border-0 cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none lia-text-950 dark:lia-text-50"
-              style={{backgroundColor: candidate.technicalTestScore >= 80 ? 'var(--status-success)' :
+              style={{backgroundColor: (candidate as any).technicalTestScore >= 80 ? 'var(--status-success)' :
                                  // @ts-ignore TODO: fix type
-                                 candidate.technicalTestScore >= 60 ? 'var(--status-warning)' :
-                                 candidate.technicalTestScore >= 40 ? 'var(--gray-400)' :
+                                 (candidate as any).technicalTestScore >= 60 ? 'var(--status-warning)' :
+                                 (candidate as any).technicalTestScore >= 40 ? 'var(--gray-400)' :
                                  'var(--gray-600)'}}
               onClick={(e) => {
                 e.stopPropagation()
               }}
               title="Clique para ver detalhes"
             >
-              {formatScorePercent(candidate.technicalTestScore, 0)}
+              {formatScorePercent((candidate as any).technicalTestScore, 0)}
             </Badge>
             // @ts-ignore TODO: fix type
             <Eye className="w-3 h-3 lia-text-600 dark:lia-text-500 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none" />
@@ -176,14 +175,14 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
       </td>
 
       <td className="px-2 py-2">
-        {candidate.englishTestScore !== null && candidate.englishTestScore !== undefined ? (
+        {(candidate as any).englishTestScore !== null && (candidate as any).englishTestScore !== undefined ? (
           <div className="flex items-center gap-1 justify-center group">
             <Badge
               variant="secondary"
               className="text-xs px-2 py-0.5 font-semibold border-0 cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none lia-text-950 dark:lia-text-50"
-              style={{backgroundColor: candidate.englishTestScore >= 80 ? 'var(--status-success)' :
-                                 candidate.englishTestScore >= 60 ? 'var(--status-warning)' :
-                                 candidate.englishTestScore >= 40 ? 'var(--gray-400)' :
+              style={{backgroundColor: (candidate as any).englishTestScore >= 80 ? 'var(--status-success)' :
+                                 (candidate as any).englishTestScore >= 60 ? 'var(--status-warning)' :
+                                 (candidate as any).englishTestScore >= 40 ? 'var(--gray-400)' :
                                  'var(--gray-600)'}}
               onClick={(e) => {
                 e.stopPropagation()
@@ -191,7 +190,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
               // @ts-ignore TODO: fix type
               title="Clique para ver detalhes"
             >
-              {formatScorePercent(candidate.englishTestScore, 0)}
+              {formatScorePercent((candidate as any).englishTestScore, 0)}
             </Badge>
             <Eye className="w-3 h-3 lia-text-600 dark:lia-text-500 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none" />
           </div>
@@ -201,7 +200,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
       </td>
 
       <td className="px-3 py-2">
-        {candidate.bigFive || candidate.bigFiveScores ? (
+        {(candidate as any).bigFive || (candidate as any).bigFiveScores ? (
           <div 
             // @ts-ignore TODO: fix type
             className="flex gap-1 justify-center cursor-pointer group"
@@ -295,7 +294,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
 
       <td className="px-4 py-2">
         <div className="text-xs lia-text-950 dark:lia-text-50">
-          {candidate.role || candidate.position || 'UX Designer'}
+          {candidate.role || (candidate as any).position || 'UX Designer'}
         </div>
       </td>
 
