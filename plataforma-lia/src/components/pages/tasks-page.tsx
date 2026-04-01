@@ -29,6 +29,8 @@ import {
   getTaskTypeIcon, getAlertIcon, getAlertStyle, getUrgencyBadge, getConversionRate,
   getConversionStyle, getRequestStatusBadge, getRequestPriorityBadge, getWorkModelLabel
 } from "./task-helpers"
+import { TaskCard } from "./tasks/TaskCard"
+import { ActiveAlertsCard } from "./tasks/ActiveAlertsCard"
 
 interface TasksPageProps {
   onNavigate?: (page: string) => void
@@ -223,138 +225,14 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                 <span className="text-xs font-open-sans text-lia-text-primary dark:text-lia-text-tertiary">{morningTasks.length} atividades</span>
                               </div>
                               <div className="space-y-1.5">
-                                {morningTasks.map((task) => (
-                                  <div
-                                    key={task.id}
-                                    className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-2.5 transition-colors motion-reduce:transition-none bg-white dark:bg-lia-bg-primary"
-                                  >
-                                    <div className="flex items-start justify-between gap-2">
-                                      <div className="flex items-start gap-2 flex-1">
-                                        <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 bg-gray-100 dark:bg-lia-bg-secondary">
-                                          {getTaskTypeIcon(task.type)}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                          <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-                                            <span className="text-xs font-inter font-medium text-lia-text-primary dark:text-lia-text-primary">
-                                              {task.dueDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                                            </span>
-                                            <h4 className="text-xs font-inter font-semibold text-lia-text-primary dark:text-lia-text-primary">
-                                              {task.title}
-                                            </h4>
-                                            <Badge 
-                                              className="border-0 text-xs py-0 px-1.5 font-medium"
-                                              style={getTaskPriorityStyle(task.priority)}
-                                            >
-                                              {getPriorityLabel(task.priority)}
-                                            </Badge>
-                                          </div>
-                                          <p className="text-xs font-open-sans text-lia-text-primary dark:text-lia-text-tertiary mb-1 line-clamp-1">
-                                            {task.description}
-                                          </p>
-                                          <div className="flex items-center gap-2 text-xs text-lia-text-primary dark:text-lia-text-tertiary">
-                                            {task.candidateName && (
-                                              <span className="flex items-center gap-0.5">
-                                                <User className="w-2.5 h-2.5" />
-                                                {task.candidateName}
-                                              </span>
-                                            )}
-                                            {task.relatedJob && (
-                                              <span className="flex items-center gap-0.5">
-                                                <Briefcase className="w-2.5 h-2.5" />
-                                                {task.relatedJob}
-                                              </span>
-                                            )}
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div className="flex flex-col gap-1 flex-shrink-0">
-                                        {task.type === 'feedback' && (
-                                          <div className="flex items-center gap-1">
-                                            <Button
-                                              size="sm"
-                                              onClick={() => handleConfirmTask(task)}
-                                              className="h-5 px-2 text-xs gap-1 border-0"
-                                              style={{backgroundColor: 'var(--wedo-green-light, #f0fdf4)', color: 'var(--lia-text-primary)'}}
-                                            >
-                                              <MessageSquare className="w-2.5 h-2.5" />
-                                              Avaliar
-                                            </Button>
-                                            <Button
-                                              size="sm"
-                                              variant="outline"
-                                              className="h-5 px-2 text-xs gap-1"
-                                            >
-                                              <FileText className="w-2.5 h-2.5" />
-                                              Ver CV
-                                            </Button>
-                                          </div>
-                                        )}
-                                        {task.type === 'entrevista' && (
-                                          <div className="flex items-center gap-1">
-                                            <Button
-                                              size="sm"
-                                              onClick={() => handleConfirmTask(task)}
-                                              className="h-5 px-2 text-xs gap-1 border-0"
-                                              style={{backgroundColor: 'var(--wedo-green-light, #f0fdf4)', color: 'var(--lia-text-primary)'}}
-                                            >
-                                              <Play className="w-2.5 h-2.5" />
-                                              Iniciar
-                                            </Button>
-                                            <Button
-                                              size="sm"
-                                              variant="outline"
-                                              className="h-5 px-2 text-xs gap-1"
-                                            >
-                                              <FileText className="w-2.5 h-2.5" />
-                                              Ver CV
-                                            </Button>
-                                          </div>
-                                        )}
-                                        {task.type === 'sourcing' && (
-                                          <div className="flex items-center gap-1">
-                                            <Button
-                                              size="sm"
-                                              onClick={() => handleConfirmTask(task)}
-                                              className="h-5 px-2 text-xs gap-1 border-0"
-                                              style={{backgroundColor: 'var(--wedo-green-light, #f0fdf4)', color: 'var(--lia-text-primary)'}}
-                                            >
-                                              <Search className="w-2.5 h-2.5" />
-                                              Buscar
-                                            </Button>
-                                            <Button
-                                              size="sm"
-                                              variant="outline"
-                                              className="h-5 px-2 text-xs gap-1"
-                                            >
-                                              <Users className="w-2.5 h-2.5" />
-                                              Ver Perfis
-                                            </Button>
-                                          </div>
-                                        )}
-                                        <div className="flex items-center gap-1">
-                                          <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            onClick={() => handleConfirmTask(task)}
-                                            className="h-5 px-1.5 text-xs gap-0.5"
-                                          >
-                                            <CheckCircle className="w-2.5 h-2.5" />
-                                            Confirmar
-                                          </Button>
-                                          <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            onClick={() => handleRejectTask(task)}
-                                            className="h-5 px-1.5 text-xs gap-0.5 text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-tertiary dark:hover:text-lia-text-inverse"
-                                          >
-                                            <XCircle className="w-2.5 h-2.5" />
-                                            Rejeitar
-                                          </Button>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))}
+                                 {morningTasks.map((task) => (
+                                   <TaskCard
+                                     key={task.id}
+                                     task={task}
+                                     onConfirm={handleConfirmTask}
+                                     onReject={handleRejectTask}
+                                   />
+                                 ))}
                               </div>
                             </div>
                           )
@@ -372,143 +250,20 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                 <span className="text-xs font-open-sans text-lia-text-primary dark:text-lia-text-tertiary">{afternoonTasks.length} atividades</span>
                               </div>
                               <div className="space-y-1.5">
-                                {afternoonTasks.map((task) => (
-                                  <div
-                                    key={task.id}
-                                    className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-2.5 transition-colors motion-reduce:transition-none bg-white dark:bg-lia-bg-primary"
-                                  >
-                                    <div className="flex items-start justify-between gap-2">
-                                      <div className="flex items-start gap-2 flex-1">
-                                        <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 bg-gray-100 dark:bg-lia-bg-secondary">
-                                          {getTaskTypeIcon(task.type)}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                          <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-                                            <span className="text-xs font-inter font-medium text-lia-text-primary dark:text-lia-text-primary">
-                                              {task.dueDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                                            </span>
-                                            <h4 className="text-xs font-inter font-semibold text-lia-text-primary dark:text-lia-text-primary">
-                                              {task.title}
-                                            </h4>
-                                            <Badge 
-                                              className="border-0 text-xs py-0 px-1.5 font-medium"
-                                              style={getTaskPriorityStyle(task.priority)}
-                                            >
-                                              {getPriorityLabel(task.priority)}
-                                            </Badge>
-                                          </div>
-                                          <p className="text-xs font-open-sans text-lia-text-primary dark:text-lia-text-tertiary mb-1 line-clamp-1">
-                                            {task.description}
-                                          </p>
-                                          <div className="flex items-center gap-2 text-xs text-lia-text-primary dark:text-lia-text-tertiary">
-                                            {task.candidateName && (
-                                              <span className="flex items-center gap-0.5">
-                                                <User className="w-2.5 h-2.5" />
-                                                {task.candidateName}
-                                              </span>
-                                            )}
-                                            {task.relatedJob && (
-                                              <span className="flex items-center gap-0.5">
-                                                <Briefcase className="w-2.5 h-2.5" />
-                                                {task.relatedJob}
-                                              </span>
-                                            )}
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div className="flex flex-col gap-1 flex-shrink-0">
-                                        {task.type === 'feedback' && (
-                                          <div className="flex items-center gap-1">
-                                            <Button
-                                              size="sm"
-                                              onClick={() => handleConfirmTask(task)}
-                                              className="h-5 px-2 text-xs gap-1 border-0"
-                                              style={{backgroundColor: 'var(--wedo-green-light, #f0fdf4)', color: 'var(--lia-text-primary)'}}
-                                            >
-                                              <MessageSquare className="w-2.5 h-2.5" />
-                                              Avaliar
-                                            </Button>
-                                            <Button
-                                              size="sm"
-                                              variant="outline"
-                                              className="h-5 px-2 text-xs gap-1"
-                                            >
-                                              <FileText className="w-2.5 h-2.5" />
-                                              Ver CV
-                                            </Button>
-                                          </div>
-                                        )}
-                                        {task.type === 'entrevista' && (
-                                          <div className="flex items-center gap-1">
-                                            <Button
-                                              size="sm"
-                                              onClick={() => handleConfirmTask(task)}
-                                              className="h-5 px-2 text-xs gap-1 border-0"
-                                              style={{backgroundColor: 'var(--wedo-green-light, #f0fdf4)', color: 'var(--lia-text-primary)'}}
-                                            >
-                                              <Play className="w-2.5 h-2.5" />
-                                              Iniciar
-                                            </Button>
-                                            <Button
-                                              size="sm"
-                                              variant="outline"
-                                              className="h-5 px-2 text-xs gap-1"
-                                            >
-                                              <FileText className="w-2.5 h-2.5" />
-                                              Ver CV
-                                            </Button>
-                                          </div>
-                                        )}
-                                        {task.type === 'sourcing' && (
-                                          <div className="flex items-center gap-1">
-                                            <Button
-                                              size="sm"
-                                              onClick={() => handleConfirmTask(task)}
-                                              className="h-5 px-2 text-xs gap-1 border-0"
-                                              style={{backgroundColor: 'var(--wedo-green-light, #f0fdf4)', color: 'var(--lia-text-primary)'}}
-                                            >
-                                              <Search className="w-2.5 h-2.5" />
-                                              Buscar
-                                            </Button>
-                                            <Button
-                                              size="sm"
-                                              variant="outline"
-                                              className="h-5 px-2 text-xs gap-1"
-                                            >
-                                              <Users className="w-2.5 h-2.5" />
-                                              Ver Perfis
-                                            </Button>
-                                          </div>
-                                        )}
-                                        <div className="flex items-center gap-1">
-                                          <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            onClick={() => handleConfirmTask(task)}
-                                            className="h-5 px-1.5 text-xs gap-0.5"
-                                          >
-                                            <CheckCircle className="w-2.5 h-2.5" />
-                                            Confirmar
-                                          </Button>
-                                          <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            onClick={() => handleRejectTask(task)}
-                                            className="h-5 px-1.5 text-xs gap-0.5 text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-tertiary dark:hover:text-lia-text-inverse"
-                                          >
-                                            <XCircle className="w-2.5 h-2.5" />
-                                            Rejeitar
-                                          </Button>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )
-                        })()}
+                                 {afternoonTasks.map((task) => (
+                                   <TaskCard
+                                     key={task.id}
+                                     task={task}
+                                     onConfirm={handleConfirmTask}
+                                     onReject={handleRejectTask}
+                                   />
+                                 ))}
                         
+                               </div>
+                             </div>
+                           )
+                         })()}
+
                         {filteredPendingTasks.length === 0 && (
                           <div className="text-center py-8">
                             <CheckCircle2 className="w-12 h-12 mx-auto text-lia-text-disabled dark:text-lia-text-tertiary mb-3" />
@@ -526,111 +281,13 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                 </CardContent>
               </Card>
 
+
               {/* Card: Alertas Ativos */}
-              <Card className="border-lia-border-subtle dark:border-lia-border-subtle">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Bell className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
-                      <CardTitle className={`${textStyles.label} font-semibold wedo-text-black`}>Alertas Ativos</CardTitle>
-                      <Badge variant="outline" className="text-xs font-inter">
-                        {activeAlerts.length}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <Badge 
-                        className="border-0 text-xs font-medium"
-                        style={{backgroundColor: 'var(--lia-brand-primary-light)', color: 'var(--lia-text-primary)'}}
-                      >
-                        {activeAlerts.filter(a => a.severity === 'high').length} Alto
-                      </Badge>
-                      <Badge 
-                        className="border-0 text-xs font-medium"
-                        style={{backgroundColor: 'var(--wedo-amber-light, #fefce8)', color: 'var(--lia-text-primary)'}}
-                      >
-                        {activeAlerts.filter(a => a.severity === 'medium').length} Médio
-                      </Badge>
-                      <Badge 
-                        className="border-0 text-xs font-medium"
-                        style={{backgroundColor: 'var(--lia-info-light, #eff6ff)', color: 'var(--lia-text-primary)'}}
-                      >
-                        {activeAlerts.filter(a => a.severity === 'low').length} Baixo
-                      </Badge>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0 pb-2 max-h-[280px] overflow-y-auto">
-                  <div className="space-y-2">
-                    {activeAlerts.map((alert) => (
-                      <div
-                        key={alert.id}
-                        className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-2.5 transition-colors motion-reduce:transition-none"
-                        style={{backgroundColor: getAlertSeverityStyle(alert.severity).backgroundColor + '40'}}
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-start gap-2 flex-1">
-                            {/* Ícone de severidade */}
-                            <div 
-                              className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
-                              style={getAlertSeverityStyle(alert.severity)}
-                            >
-                              {alert.severity === 'high' && <AlertTriangle className="w-3.5 h-3.5" />}
-                              {alert.severity === 'medium' && <AlertCircle className="w-3.5 h-3.5" />}
-                              {alert.severity === 'low' && <Info className="w-3.5 h-3.5" />}
-                            </div>
-                            
-                            {/* Conteúdo */}
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-                                <h4 className="text-xs font-inter font-semibold text-lia-text-primary dark:text-lia-text-primary">
-                                  {alert.title}
-                                </h4>
-                                <Badge 
-                                  className="border-0 text-xs py-0 px-1.5 font-medium"
-                                  style={getAlertSeverityStyle(alert.severity)}
-                                >
-                                  {getSeverityLabel(alert.severity)}
-                                </Badge>
-                              </div>
-                              <p className="text-xs font-open-sans text-lia-text-primary dark:text-lia-text-tertiary mb-1 line-clamp-1">
-                                {alert.description}
-                              </p>
-                              <div className="flex items-center gap-2 text-xs text-lia-text-primary dark:text-lia-text-tertiary">
-                                <span className="flex items-center gap-0.5">
-                                  <Briefcase className="w-2.5 h-2.5" />
-                                  {alert.jobTitle}
-                                </span>
-                                <span className="flex items-center gap-0.5">
-                                  <Clock className="w-2.5 h-2.5" />
-                                  {alert.createdAt.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {/* Botão de ação com LIA */}
-                          <Button
-                            size="sm"
-                            onClick={() => handleAlertAction(alert)}
-                            className="h-6 px-2 text-xs gap-1 flex-shrink-0"
-                          >
-                            <Brain className="w-3 h-3 text-wedo-cyan" />
-                            {alert.action}
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                    
-                    {activeAlerts.length === 0 && (
-                      <div className="text-center py-8">
-                        <Bell className="w-12 h-12 mx-auto text-lia-text-disabled dark:text-lia-text-tertiary mb-3" />
-                        <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-1">Nenhum alerta ativo</p>
-                        <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">Sem alertas no momento</p>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+              <ActiveAlertsCard
+                activeAlerts={activeAlerts}
+                onAlertAction={handleAlertAction}
+                textStyles={textStyles}
+              />
             </div>
 
             {/* Tabela de Vagas Ativas - COM BUSCA E FILTROS */}

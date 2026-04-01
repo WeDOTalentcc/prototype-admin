@@ -4,14 +4,20 @@ import React, { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import {
-  FileText, ChevronUp, ChevronDown, Brain,
-  CheckCircle, AlertTriangle, XCircle,
-  ClipboardList, Code, Heart, Briefcase,
-  Loader2, Pencil, Plus,
+  FileText,
+  Brain,
+  CheckCircle, XCircle,
+  Code, Users,
+  Loader2,
+  CheckCircle2,
+  Plus,
   Check, Copy, ArrowRight, Save, X,
-  ListChecks, Users, CheckCircle2
+  ListChecks,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { JDEvaluationHeader } from "./jd-evaluation/JDEvaluationHeader"
+import { JDArrayEditor } from "./jd-evaluation/JDArrayEditor"
+import { JDGenerationSection } from "./jd-evaluation/JDGenerationSection"
 
 interface JDIndicator {
   label: string
@@ -74,60 +80,6 @@ interface JDEvaluationPanelProps {
   companyIndustry?: string
   benefits?: string[]
   interviewStages?: string[]
-}
-
-function formatJDText(text: string): React.ReactNode {
-  const lines = text.split('\n')
-  const elements: React.ReactNode[] = []
-  let i = 0
-  
-  while (i < lines.length) {
-    const line = lines[i].trim()
-    
-    if (!line) {
-      elements.push(<div key={i} className="h-2" />)
-      i++
-      continue
-    }
-    
-    if (line.startsWith('### ')) {
-      elements.push(
-        <h4 key={i} className="text-xs font-bold text-lia-text-primary dark:text-lia-text-primary mt-3 mb-1">
-          {line.replace('### ', '')}
-        </h4>
-      )
-    } else if (line.startsWith('## ')) {
-      elements.push(
-        <h3 key={i} className="text-base-ui font-bold text-lia-text-primary dark:text-lia-text-primary mt-4 mb-1.5">
-          {line.replace('## ', '')}
-        </h3>
-      )
-    } else if (line.startsWith('# ')) {
-      elements.push(
-        <h2 key={i} className="text-sm font-bold text-lia-text-primary dark:text-lia-text-primary mb-2">
-          {line.replace('# ', '')}
-        </h2>
-      )
-    } else if (line.startsWith('- ')) {
-      elements.push(
-        <div key={i} className="flex items-start gap-2 ml-1 mb-0.5">
-          <span className="text-micro lia-text-secondary mt-1">•</span>
-          <span className="text-xs text-lia-text-secondary dark:text-lia-text-secondary leading-relaxed">
-            {line.replace('- ', '')}
-          </span>
-        </div>
-      )
-    } else {
-      elements.push(
-        <p key={i} className="text-xs text-lia-text-secondary dark:text-lia-text-secondary leading-relaxed mb-1">
-          {line}
-        </p>
-      )
-    }
-    i++
-  }
-  
-  return elements
 }
 
 export function JDEvaluationPanel({
@@ -317,16 +269,16 @@ export function JDEvaluationPanel({
     setIsGeneratingJD(true)
     setJdGenerationStep(1)
     setJdDynamicMessage('Analisando dados da vaga e competências mapeadas...')
-    
+
     try {
       await new Promise(r => setTimeout(r, 1500))
       setJdGenerationStep(2)
       setJdDynamicMessage('Estruturando seções da descrição do cargo...')
-      
+
       await new Promise(r => setTimeout(r, 1200))
       setJdGenerationStep(3)
       setJdDynamicMessage('Gerando descrição com base na metodologia WSI...')
-      
+
       const response = await fetch("/api/backend-proxy/jd/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -375,7 +327,6 @@ export function JDEvaluationPanel({
     }
   }
 
-
   const fetchEvaluation = async (overrides?: {
     responsibilities?: string[]
     technicalSkills?: string[]
@@ -418,12 +369,10 @@ export function JDEvaluationPanel({
       else if (respCount >= 1) { score += 15; indicators.push({ label: "Responsabilidades", count: respCount, status: "partial", minimum: 3 }) }
       else { indicators.push({ label: "Responsabilidades", count: 0, status: "insufficient", minimum: 3 }) }
 
-      // D3: mínimo ideal = 9 skills técnicas (spec WSI F8)
       if (techCount >= 9) { score += 30; indicators.push({ label: "Comp. Técnicas", count: techCount, status: "sufficient", minimum: 9 }) }
       else if (techCount >= 3) { score += 15; indicators.push({ label: "Comp. Técnicas", count: techCount, status: "partial", minimum: 9 }) }
       else { indicators.push({ label: "Comp. Técnicas", count: 0, status: "insufficient", minimum: 9 }) }
 
-      // D4: mínimo ideal = 5 competências comportamentais (spec WSI F8)
       if (behavCount >= 5) { score += 30; indicators.push({ label: "Comp. Comportamentais", count: behavCount, status: "sufficient", minimum: 5 }) }
       else if (behavCount >= 2) { score += 15; indicators.push({ label: "Comp. Comportamentais", count: behavCount, status: "partial", minimum: 5 }) }
       else { indicators.push({ label: "Comp. Comportamentais", count: 0, status: "insufficient", minimum: 5 }) }
@@ -448,31 +397,6 @@ export function JDEvaluationPanel({
     } finally {
       setIsLoading(false)
     }
-  }
-
-  const getStatusDotColor = (status: string) => {
-    switch (status) {
-      case "sufficient": return "bg-status-success"
-      case "partial": return "bg-status-warning"
-      case "insufficient": return "bg-status-error"
-      default: return "bg-gray-400"
-    }
-  }
-
-  const getIndicatorIcon = (label: string) => {
-    if (label.includes("Responsab")) return <ClipboardList className="h-3 w-3 lia-text-secondary" />
-    if (label.includes("Técnica")) return <Code className="h-3 w-3 lia-text-secondary" />
-    if (label.includes("Comportam")) return <Heart className="h-3 w-3 lia-text-secondary" />
-    if (label.includes("Senior")) return <Briefcase className="h-3 w-3 lia-text-secondary" />
-    return <FileText className="h-3 w-3 lia-text-secondary" />
-  }
-
-  const getScoreColor = (score: number) => {
-    if (score >= 90) return { text: "text-status-success", bg: "bg-status-success/10", border: "border-status-success/30" }
-    if (score >= 70) return { text: "text-status-success", bg: "bg-status-success/10", border: "border-status-success/30" }
-    if (score >= 50) return { text: "text-status-warning", bg: "bg-status-warning/10", border: "border-status-warning/30" }
-    if (score >= 30) return { text: "text-wedo-orange", bg: "bg-wedo-orange/10", border: "border-wedo-orange/30" }
-    return { text: "text-status-error", bg: "bg-status-error/10", border: "border-status-error/30" }
   }
 
   const handleSaveRascunho = async () => {
@@ -608,47 +532,29 @@ export function JDEvaluationPanel({
 
   const score = evaluation?.score ?? 0
 
+  // Collapsed state
   if (!isExpanded) {
     return (
       <div className={cn("mx-5 mt-4", className)}>
         <div className="border border-lia-border-subtle rounded-md overflow-hidden dark:border-lia-border-subtle">
-          <div
-            className="flex items-center justify-between px-4 py-3 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none dark:bg-lia-bg-secondary dark:hover:bg-gray-700"
-            onClick={() => setIsExpanded(true)}
-          >
-            <div className="flex items-center gap-2">
-              <FileText className="h-4 w-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
-              <span className="text-base-ui font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
-                Descrição do Cargo
-              </span>
-              <span className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
-                — {jobTitle}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              {(onSaveJDInline || onEditJD) && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 text-xs px-3 border-lia-border-default text-lia-text-secondary hover:bg-gray-100 dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-700"
-                  style={{minWidth: '160px'}}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    if (onSaveJDInline) {
-                      setIsExpanded(true)
-                      setIsEditing(true)
-                    } else if (onEditJD) {
-                      onEditJD()
-                    }
-                  }}
-                >
-                  <Pencil className="h-3 w-3 mr-1.5" />
-                  Editar Descrição
-                </Button>
-              )}
-              <ChevronDown className="h-4 w-4 text-lia-text-tertiary dark:text-lia-text-tertiary" />
-            </div>
-          </div>
+          <JDEvaluationHeader
+            jobTitle={jobTitle}
+            hasQuestions={hasQuestions}
+            isExpanded={false}
+            isEditing={isEditing}
+            evaluation={evaluation}
+            onToggleExpand={() => setIsExpanded(true)}
+            onStartEdit={() => {
+              setIsExpanded(true)
+              setIsEditing(true)
+            }}
+            onEditJD={onEditJD}
+            canEdit={!!(onSaveJDInline || onEditJD)}
+            responsibilities={responsibilities}
+            technicalSkills={technicalSkills}
+            behavioralCompetencies={behavioralCompetencies}
+            description={description}
+          />
           <div className="px-4 py-2.5 border-t border-lia-border-subtle bg-white dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-lia-border-subtle bg-gray-50 text-micro text-lia-text-secondary dark:border-lia-border-default dark:bg-lia-bg-elevated dark:text-lia-text-secondary">
@@ -677,38 +583,21 @@ export function JDEvaluationPanel({
   return (
     <div className={cn("mx-5 mt-4", className)}>
       <div className="border border-lia-border-subtle rounded-md overflow-hidden dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-        <div
-          className="flex items-center justify-between px-4 py-3 bg-white dark:bg-lia-bg-secondary cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none"
-          onClick={() => hasQuestions && setIsExpanded(false)}
-        >
-          <div className="flex items-center gap-2">
-            <FileText className="h-4 w-4 lia-text-base" />
-            <span className="text-base-ui font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">Descrição do Cargo</span>
-            <span className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">— {jobTitle}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            {!isEditing && (onSaveJDInline || onEditJD) && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-7 text-xs px-3 border-lia-border-default text-lia-text-secondary hover:bg-gray-100 dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-700"
-                style={{minWidth: '160px'}}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  if (onSaveJDInline) {
-                    setIsEditing(true)
-                  } else if (onEditJD) {
-                    onEditJD()
-                  }
-                }}
-              >
-                <Pencil className="h-3 w-3 mr-1.5" />
-                Editar Descrição
-              </Button>
-            )}
-            {hasQuestions && <ChevronUp className="h-4 w-4 lia-text-secondary" />}
-          </div>
-        </div>
+        <JDEvaluationHeader
+          jobTitle={jobTitle}
+          hasQuestions={hasQuestions}
+          isExpanded={true}
+          isEditing={isEditing}
+          evaluation={null}
+          onToggleExpand={() => hasQuestions && setIsExpanded(false)}
+          onStartEdit={() => setIsEditing(true)}
+          onEditJD={onEditJD}
+          canEdit={!!(onSaveJDInline || onEditJD)}
+          responsibilities={responsibilities}
+          technicalSkills={technicalSkills}
+          behavioralCompetencies={behavioralCompetencies}
+          description={description}
+        />
 
         <div className="p-3" role="status" aria-live="polite" aria-label="Carregando...">
           {isLoading ? (
@@ -718,6 +607,8 @@ export function JDEvaluationPanel({
             </div>
           ) : evaluation ? (
             <div className="space-y-3">
+              {/* Score + indicators rendered inline (already inside JDEvaluationHeader when expanded) */}
+              {/* Re-render evaluation inline here since header only shows them in collapsed mode */}
               {/* BAND BADGE + SCORE ROW */}
               {(() => {
                 const band = evaluation.band || (evaluation.score >= 90 ? 'excelente' : evaluation.score >= 70 ? 'bom' : evaluation.score >= 50 ? 'adequado' : evaluation.score >= 30 ? 'insuficiente' : 'critico')
@@ -753,7 +644,7 @@ export function JDEvaluationPanel({
                 <div className="grid grid-cols-3 gap-1.5 pb-2 border-b border-lia-border-subtle dark:border-lia-border-subtle">
                   {evaluation.indicators.map((indicator) => (
                     <div key={indicator.label} className={cn(
- "flex items-center gap-1.5 px-2 py-1.5 rounded-md border text-micro",
+                      "flex items-center gap-1.5 px-2 py-1.5 rounded-md border text-micro",
                       indicator.status === 'sufficient' ? 'bg-status-success/10 border-status-success/30 dark:bg-status-success/10 dark:border-status-success/30' :
                       indicator.status === 'partial' ? 'bg-status-warning/10 border-status-warning/30 dark:bg-status-warning/10 dark:border-status-warning/30' :
                       'bg-status-error/10 border-status-error/30 dark:bg-status-error/10 dark:border-status-error/30'
@@ -761,14 +652,14 @@ export function JDEvaluationPanel({
                       {indicator.status === 'sufficient' ? (
                         <CheckCircle className="w-3 h-3 text-status-success shrink-0" />
                       ) : indicator.status === 'partial' ? (
-                        <AlertTriangle className="w-3 h-3 text-status-warning shrink-0" />
+                        <Brain className="w-3 h-3 text-status-warning shrink-0" />
                       ) : (
                         <XCircle className="w-3 h-3 text-status-error shrink-0" />
                       )}
                       <div className="flex-1 min-w-0">
                         <span className="text-micro font-semibold lia-text-secondary uppercase tracking-wide block">{indicator.dimension}</span>
                         <span className={cn(
- "truncate block font-medium",
+                          "truncate block font-medium",
                           indicator.status === 'sufficient' ? 'text-status-success dark:text-status-success' :
                           indicator.status === 'partial' ? 'text-status-warning dark:text-status-warning' :
                           'text-status-error dark:text-status-error'
@@ -782,15 +673,18 @@ export function JDEvaluationPanel({
                 </div>
               )}
 
-              {/* COMPACT ROW (fallback for old-format indicators without dimension) */}
+              {/* COMPACT ROW (fallback) */}
               {!evaluation.indicators.some(i => i.dimension) && (
                 <div className="flex items-center gap-3 pb-2 border-b border-lia-border-subtle dark:border-lia-border-subtle flex-wrap">
                   {evaluation.indicators.map((indicator) => (
                     <div key={indicator.label} className="flex items-center gap-1.5">
-                      {getIndicatorIcon(indicator.label)}
+                      <FileText className="h-3 w-3 lia-text-secondary" />
                       <span className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary">{indicator.label}:</span>
                       <span className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">{indicator.count ?? 0}</span>
-                      <span className={cn("w-1.5 h-1.5 rounded-full", getStatusDotColor(indicator.status))} />
+                      <span className={cn("w-1.5 h-1.5 rounded-full",
+                        indicator.status === 'sufficient' ? 'bg-status-success' :
+                        indicator.status === 'partial' ? 'bg-status-warning' : 'bg-status-error'
+                      )} />
                     </div>
                   ))}
                 </div>
@@ -799,7 +693,7 @@ export function JDEvaluationPanel({
               {/* SUGGESTION */}
               {evaluation.lia_suggestion && (
                 <div className={cn(
- "text-micro px-2.5 py-2 rounded-md border leading-relaxed",
+                  "text-micro px-2.5 py-2 rounded-md border leading-relaxed",
                   evaluation.can_generate
                     ? "bg-gray-50 border-lia-border-subtle text-lia-text-secondary dark:bg-lia-bg-secondary/50 dark:border-lia-border-subtle dark:text-lia-text-tertiary"
                     : "bg-status-error/10 border-status-error/30 text-status-error dark:bg-status-error/10 dark:border-status-error/30 dark:text-status-error"
@@ -808,8 +702,7 @@ export function JDEvaluationPanel({
                 </div>
               )}
 
-
-              {/* 2.5. READ-ONLY 2-COLUMN PREVIEW */}
+              {/* READ-ONLY 2-COLUMN PREVIEW */}
               {!isEditing && (
                 <div className="grid grid-cols-2 gap-4 pt-2">
                   <div className="space-y-3">
@@ -820,10 +713,9 @@ export function JDEvaluationPanel({
                       <div>
                         <p
                           className={cn(
- "text-xs text-lia-text-secondary dark:text-lia-text-secondary leading-relaxed",
+                            "text-xs text-lia-text-secondary dark:text-lia-text-secondary leading-relaxed",
                             !showFullDescription && "line-clamp-4"
                           )}
-                          
                         >
                           {description}
                         </p>
@@ -831,7 +723,6 @@ export function JDEvaluationPanel({
                           <button
                             onClick={() => setShowFullDescription(!showFullDescription)}
                             className="text-micro text-lia-text-tertiary hover:text-lia-text-secondary dark:text-lia-text-tertiary dark:hover:text-lia-text-inverse mt-1 underline"
-                            
                           >
                             {showFullDescription ? "ver menos" : "ver mais"}
                           </button>
@@ -846,7 +737,7 @@ export function JDEvaluationPanel({
                           {responsibilities.map((item, idx) => (
                             <li key={`resp-${idx}`} className="flex items-start gap-1.5">
                               <span className="text-xs lia-text-secondary mt-0.5 shrink-0">•</span>
-                              <span className="text-xs text-lia-text-secondary dark:text-lia-text-secondary leading-relaxed" >{item}</span>
+                              <span className="text-xs text-lia-text-secondary dark:text-lia-text-secondary leading-relaxed">{item}</span>
                             </li>
                           ))}
                         </ul>
@@ -858,7 +749,7 @@ export function JDEvaluationPanel({
                         <span className="text-micro font-semibold text-lia-text-primary uppercase tracking-wide block mb-1">Competências Técnicas</span>
                         <div className="flex flex-wrap gap-1.5">
                           {technicalSkills.map((skill) => (
-                            <span key={skill} className="px-2.5 py-0.5 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary" >
+                            <span key={skill} className="px-2.5 py-0.5 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary">
                               {skill}
                             </span>
                           ))}
@@ -871,7 +762,7 @@ export function JDEvaluationPanel({
                         <span className="text-micro font-semibold text-lia-text-primary uppercase tracking-wide block mb-1">Competências Comportamentais</span>
                         <div className="flex flex-wrap gap-1.5">
                           {behavioralCompetencies.map((comp) => (
-                            <span key={comp} className="px-2.5 py-0.5 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary" >
+                            <span key={comp} className="px-2.5 py-0.5 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary">
                               {comp}
                             </span>
                           ))}
@@ -887,12 +778,12 @@ export function JDEvaluationPanel({
 
                     {enrichedJd && (enrichedJd.generated_jd_text || enrichedJd.description) ? (
                       <div className="border rounded-md p-3 space-y-3 dark:bg-lia-bg-secondary/30 border-wedo-cyan/20 bg-wedo-cyan/[.02]">
-                        <p className="text-xs text-lia-text-secondary dark:text-lia-text-secondary leading-relaxed whitespace-pre-wrap" >
+                        <p className="text-xs text-lia-text-secondary dark:text-lia-text-secondary leading-relaxed whitespace-pre-wrap">
                           {enrichedJd.generated_jd_text || enrichedJd.description}
                         </p>
 
                         {enrichedJd.updated_at && (
-                          <span className="inline-block px-2.5 py-0.5 text-micro rounded-full bg-wedo-cyan/[.08]" >
+                          <span className="inline-block px-2.5 py-0.5 text-micro rounded-full bg-wedo-cyan/[.08]">
                             Gerado em {new Date(enrichedJd.updated_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}
                           </span>
                         )}
@@ -904,7 +795,7 @@ export function JDEvaluationPanel({
                               {enrichedJd.responsibilities.map((item, idx) => (
                                 <li key={`resp-${idx}`} className="flex items-start gap-1.5">
                                   <span className="text-xs mt-0.5 shrink-0 lia-text-base">•</span>
-                                  <span className="text-xs text-lia-text-secondary dark:text-lia-text-secondary leading-relaxed" >{item}</span>
+                                  <span className="text-xs text-lia-text-secondary dark:text-lia-text-secondary leading-relaxed">{item}</span>
                                 </li>
                               ))}
                             </ul>
@@ -916,7 +807,7 @@ export function JDEvaluationPanel({
                             <span className="text-micro font-semibold uppercase tracking-wide block mb-1">Competências Técnicas</span>
                             <div className="flex flex-wrap gap-1.5">
                               {enrichedJd.technical_skills.map((skill) => (
-                                <span key={skill} className="px-2.5 py-0.5 text-xs rounded-full dark:text-lia-text-secondary bg-wedo-cyan/10" >
+                                <span key={skill} className="px-2.5 py-0.5 text-xs rounded-full dark:text-lia-text-secondary bg-wedo-cyan/10">
                                   {skill}
                                 </span>
                               ))}
@@ -929,7 +820,7 @@ export function JDEvaluationPanel({
                             <span className="text-micro font-semibold uppercase tracking-wide block mb-1">Competências Comportamentais</span>
                             <div className="flex flex-wrap gap-1.5">
                               {enrichedJd.behavioral_competencies.map((comp) => (
-                                <span key={comp} className="px-2.5 py-0.5 text-xs rounded-full dark:text-lia-text-secondary bg-wedo-cyan/10" >
+                                <span key={comp} className="px-2.5 py-0.5 text-xs rounded-full dark:text-lia-text-secondary bg-wedo-cyan/10">
                                   {comp}
                                 </span>
                               ))}
@@ -941,7 +832,7 @@ export function JDEvaluationPanel({
                       <div className="border rounded-md p-3 dark:bg-lia-bg-secondary/30 border-wedo-cyan/15 bg-wedo-cyan/[.02]">
                         <div className="flex flex-col items-center justify-center py-6">
                           <Brain className="h-8 w-8 mb-2 text-wedo-cyan opacity-40" />
-                          <p className="text-xs text-lia-text-disabled text-center leading-relaxed" >
+                          <p className="text-xs text-lia-text-disabled text-center leading-relaxed">
                             Nenhum JD enriquecido gerado ainda.<br />
                             Clique em Editar Descrição para gerar.
                           </p>
@@ -952,13 +843,13 @@ export function JDEvaluationPanel({
                 </div>
               )}
 
-              {/* 3. EDITING SECTION */}
+              {/* EDITING SECTION */}
               {isEditing && (
                 <div className="space-y-0">
                   <div className="grid grid-cols-2 gap-4">
                     {/* LEFT COLUMN */}
                     <div className="space-y-4">
-                      {/* Section 1 - Descrição / Sumário */}
+                      {/* Description textarea */}
                       <div>
                         <label className="text-xs font-semibold text-lia-text-primary uppercase tracking-wide mb-2 block dark:text-lia-text-primary">Descrição / Sumário</label>
                         <div className="bg-white rounded-md border border-lia-border-subtle dark:border-lia-border-subtle dark:bg-lia-bg-primary p-3">
@@ -967,273 +858,92 @@ export function JDEvaluationPanel({
                             onChange={(e) => setEditDescription(e.target.value)}
                             className="w-full h-40 text-xs text-lia-text-primary dark:text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-2.5 resize-none focus:outline-none focus:ring-1 focus:ring-gray-900/20 focus:border-gray-400 bg-gray-50 dark:bg-lia-bg-secondary"
                             placeholder="Forneça uma visão geral da vaga, incluindo propósito e como contribui para a organização..."
-                            
                           />
                         </div>
                       </div>
 
-                      {/* Section 2 - Responsabilidades */}
-                      <div>
-                        <label className="text-xs font-semibold text-lia-text-primary uppercase tracking-wide mb-2 block dark:text-lia-text-primary">Responsabilidades</label>
-                        <div className="bg-white rounded-md border border-lia-border-subtle dark:border-lia-border-subtle dark:bg-lia-bg-primary p-3">
-                          <div className="space-y-0.5">
-                            {editResponsibilities.map((item, idx) => (
-                              <div key={`edit-resp-${idx}`} className="group flex items-start gap-2 py-1 px-1 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800">
-                                <span className="text-xs lia-text-secondary mt-0.5 shrink-0">•</span>
-                                <span className="text-xs text-lia-text-secondary dark:text-lia-text-secondary flex-1 leading-relaxed" >{item}</span>
-                                <button
-                                  onClick={() => setEditResponsibilities(prev => prev.filter((_, i) => i !== idx))}
-                                  className="opacity-0 group-hover:opacity-100 lia-text-secondary hover:text-status-error shrink-0 transition-opacity motion-reduce:transition-none"
-                                >
-                                  <X className="h-3 w-3" />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                          {editingField === 'responsibilities' ? (
-                            <div className="flex gap-1.5 mt-2">
-                              <input
-                                value={newItem}
-                                onChange={(e) => setNewItem(e.target.value)}
-                                onKeyDown={(e) => { if (e.key === 'Enter' && newItem.trim()) { setEditResponsibilities(prev => [...prev, newItem.trim()]); setNewItem(''); }}}
-                                className="flex-1 h-7 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md px-2.5 focus:outline-none focus:ring-1 focus:ring-gray-900/20 bg-gray-50 dark:bg-lia-bg-secondary dark:text-lia-text-primary"
-                                placeholder="Adicionar responsabilidade..."
-                                autoFocus
-                                
-                              />
-                              <button onClick={() => { if (newItem.trim()) { setEditResponsibilities(prev => [...prev, newItem.trim()]); setNewItem(''); } setEditingField(null); }} className="text-xs lia-text-base hover:lia-text-strong px-2">OK</button>
-                            </div>
-                          ) : (
-                            <button onClick={() => { setNewItem(''); setEditingField('responsibilities') }} className="text-xs lia-text-secondary hover:lia-text-base flex items-center gap-1 mt-2">
-                              <Plus className="h-3 w-3" /> Adicionar
-                            </button>
-                          )}
-                        </div>
-                      </div>
+                      {/* Responsibilities */}
+                      <JDArrayEditor
+                        label="Responsabilidades"
+                        items={editResponsibilities}
+                        onChange={setEditResponsibilities}
+                        variant="list"
+                        placeholder="Adicionar responsabilidade..."
+                        fieldKey="responsibilities"
+                        editingField={editingField}
+                        newItemValue={newItem}
+                        onNewItemChange={setNewItem}
+                        onStartEditing={setEditingField}
+                        onStopEditing={() => setEditingField(null)}
+                      />
 
-                      {/* Section 3 - Competências Técnicas */}
-                      <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <label className="text-xs font-semibold text-lia-text-primary uppercase tracking-wide dark:text-lia-text-primary">Competências Técnicas</label>
-                          <button
-                            onClick={fetchTechSuggestions}
-                            disabled={isLoadingTechSuggestions}
-                            className="flex items-center gap-1 text-micro px-2 py-0.5 rounded-full border border-wedo-cyan/40 bg-wedo-cyan/[.06] transition-colors motion-reduce:transition-none hover:opacity-80 disabled:opacity-50"
-                          >
-                            {isLoadingTechSuggestions ? <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none" /> : <Brain className="h-3 w-3 text-wedo-cyan" />}
-                            Sugerir com IA
-                          </button>
-                        </div>
-                        <div className="bg-white rounded-md border border-lia-border-subtle dark:border-lia-border-subtle dark:bg-lia-bg-primary p-3">
-                          <div className="flex flex-wrap gap-1.5 mb-2">
-                            {editTechSkills.map((item, idx) => (
-                              <span key={`tech-${idx}-${item}`} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-gray-100 lia-text-base rounded-full border border-lia-border-subtle dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-subtle">
-                                {item}
-                                <button onClick={() => setEditTechSkills(prev => prev.filter((_, i) => i !== idx))} className="lia-text-secondary hover:text-status-error">
-                                  <XCircle className="h-3 w-3" />
-                                </button>
-                              </span>
-                            ))}
-                            {aiTechSuggestions.map((s) => (
-                              <button
-                                key={s.skill}
-                                onClick={() => {
-                                  if (!editTechSkills.includes(s.skill)) {
-                                    setEditTechSkills(prev => [...prev, s.skill])
-                                  }
-                                  setAiTechSuggestions(prev => prev.filter(x => x.skill !== s.skill))
-                                }}
-                                className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-colors motion-reduce:transition-none hover:opacity-80 border-wedo-cyan/40 text-wedo-cyan-dark bg-wedo-cyan/[0.08]"
-                              >
-                                <Plus className="h-3 w-3 lia-text-base" />
-                                {s.skill}
-                              </button>
-                            ))}
-                          </div>
-                          {editingField === 'techSkills' ? (
-                            <div className="flex gap-1.5">
-                              <input
-                                value={newItem}
-                                onChange={(e) => setNewItem(e.target.value)}
-                                onKeyDown={(e) => { if (e.key === 'Enter' && newItem.trim()) { setEditTechSkills(prev => [...prev, newItem.trim()]); setNewItem(''); }}}
-                                className="flex-1 h-7 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md px-2.5 focus:outline-none focus:ring-1 focus:ring-gray-900/20 bg-gray-50 dark:bg-lia-bg-secondary dark:text-lia-text-primary"
-                                placeholder="Adicionar competência técnica..."
-                                autoFocus
-                                
-                              />
-                              <button onClick={() => { if (newItem.trim()) { setEditTechSkills(prev => [...prev, newItem.trim()]); setNewItem(''); } setEditingField(null); }} className="text-xs lia-text-base hover:lia-text-strong px-2">OK</button>
-                            </div>
-                          ) : (
-                            <button onClick={() => { setNewItem(''); setEditingField('techSkills') }} className="text-xs lia-text-secondary hover:lia-text-base flex items-center gap-1">
-                              <Plus className="h-3 w-3" /> Adicionar
-                            </button>
-                          )}
-                        </div>
-                      </div>
+                      {/* Technical Skills */}
+                      <JDArrayEditor
+                        label="Competências Técnicas"
+                        items={editTechSkills}
+                        onChange={setEditTechSkills}
+                        variant="tags"
+                        placeholder="Adicionar competência técnica..."
+                        fieldKey="techSkills"
+                        editingField={editingField}
+                        newItemValue={newItem}
+                        onNewItemChange={setNewItem}
+                        onStartEditing={setEditingField}
+                        onStopEditing={() => setEditingField(null)}
+                        aiSuggestions={aiTechSuggestions.map(s => ({ label: s.skill, key: s.skill }))}
+                        isLoadingAI={isLoadingTechSuggestions}
+                        onFetchAI={fetchTechSuggestions}
+                        onAcceptSuggestion={(key) => {
+                          if (!editTechSkills.includes(key)) {
+                            setEditTechSkills(prev => [...prev, key])
+                          }
+                          setAiTechSuggestions(prev => prev.filter(x => x.skill !== key))
+                        }}
+                      />
 
-                      {/* Section 4 - Competências Comportamentais */}
-                      <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <label className="text-xs font-semibold text-lia-text-primary uppercase tracking-wide dark:text-lia-text-primary">Competências Comportamentais</label>
-                          <button
-                            onClick={fetchBehavSuggestions}
-                            disabled={isLoadingBehavSuggestions}
-                            className="flex items-center gap-1 text-micro px-2 py-0.5 rounded-full border border-wedo-cyan/40 bg-wedo-cyan/[.06] transition-colors motion-reduce:transition-none hover:opacity-80 disabled:opacity-50"
-                          >
-                            {isLoadingBehavSuggestions ? <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none" /> : <Brain className="h-3 w-3 text-wedo-cyan" />}
-                            Sugerir com IA
-                          </button>
-                        </div>
-                        <div className="bg-white rounded-md border border-lia-border-subtle dark:border-lia-border-subtle dark:bg-lia-bg-primary p-3">
-                          <div className="flex flex-wrap gap-1.5 mb-2">
-                            {editBehavCompetencies.map((item, idx) => (
-                              <span key={`behav-${idx}-${item}`} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-gray-100 lia-text-base rounded-full border border-lia-border-subtle dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-subtle">
-                                {item}
-                                <button onClick={() => setEditBehavCompetencies(prev => prev.filter((_, i) => i !== idx))} className="lia-text-secondary hover:text-status-error">
-                                  <XCircle className="h-3 w-3" />
-                                </button>
-                              </span>
-                            ))}
-                            {aiBehavSuggestions.map((c) => (
-                              <button
-                                key={c.key}
-                                onClick={() => {
-                                  if (!editBehavCompetencies.includes(c.name)) {
-                                    setEditBehavCompetencies(prev => [...prev, c.name])
-                                  }
-                                  setAiBehavSuggestions(prev => prev.filter(x => x.key !== c.key))
-                                }}
-                                className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-colors motion-reduce:transition-none hover:opacity-80 border-wedo-cyan/40 text-wedo-cyan-dark bg-wedo-cyan/[0.08]"
-                              >
-                                <Plus className="h-3 w-3 lia-text-base" />
-                                {c.name}
-                              </button>
-                            ))}
-                          </div>
-                          {editingField === 'behavCompetencies' ? (
-                            <div className="flex gap-1.5">
-                              <input
-                                value={newItem}
-                                onChange={(e) => setNewItem(e.target.value)}
-                                onKeyDown={(e) => { if (e.key === 'Enter' && newItem.trim()) { setEditBehavCompetencies(prev => [...prev, newItem.trim()]); setNewItem(''); }}}
-                                className="flex-1 h-7 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md px-2.5 focus:outline-none focus:ring-1 focus:ring-gray-900/20 bg-gray-50 dark:bg-lia-bg-secondary dark:text-lia-text-primary"
-                                placeholder="Adicionar competência comportamental..."
-                                autoFocus
-                                
-                              />
-                              <button onClick={() => { if (newItem.trim()) { setEditBehavCompetencies(prev => [...prev, newItem.trim()]); setNewItem(''); } setEditingField(null); }} className="text-xs lia-text-base hover:lia-text-strong px-2">OK</button>
-                            </div>
-                          ) : (
-                            <button onClick={() => { setNewItem(''); setEditingField('behavCompetencies') }} className="text-xs lia-text-secondary hover:lia-text-base flex items-center gap-1">
-                              <Plus className="h-3 w-3" /> Adicionar
-                            </button>
-                          )}
-                        </div>
-                      </div>
+                      {/* Behavioural Competencies */}
+                      <JDArrayEditor
+                        label="Competências Comportamentais"
+                        items={editBehavCompetencies}
+                        onChange={setEditBehavCompetencies}
+                        variant="tags"
+                        placeholder="Adicionar competência comportamental..."
+                        fieldKey="behavCompetencies"
+                        editingField={editingField}
+                        newItemValue={newItem}
+                        onNewItemChange={setNewItem}
+                        onStartEditing={setEditingField}
+                        onStopEditing={() => setEditingField(null)}
+                        aiSuggestions={aiBehavSuggestions.map(c => ({ label: c.name, key: c.key }))}
+                        isLoadingAI={isLoadingBehavSuggestions}
+                        onFetchAI={fetchBehavSuggestions}
+                        onAcceptSuggestion={(key) => {
+                          const found = aiBehavSuggestions.find(c => c.key === key)
+                          if (found && !editBehavCompetencies.includes(found.name)) {
+                            setEditBehavCompetencies(prev => [...prev, found.name])
+                          }
+                          setAiBehavSuggestions(prev => prev.filter(x => x.key !== key))
+                        }}
+                      />
                     </div>
 
-                    {/* 4. RIGHT COLUMN - empty state or generated JD */}
-                    <div className="sticky top-0 self-start">
-                      <div className="flex items-center justify-between mb-2">
-                        <label className="text-xs font-semibold text-lia-text-primary uppercase tracking-wide dark:text-lia-text-primary">Descrição Gerada pela LIA</label>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className={cn(
- "h-7 text-xs px-3 transition-colors",
-                            isGeneratingJD 
-                              ? "bg-gray-900 text-white border-gray-900" 
-                              : "bg-gray-900 text-white border-gray-900 hover:bg-gray-800 dark:border-lia-border-subtle"
-                          )}
-                          onClick={generateJD}
-                          disabled={isGeneratingJD}
-                        >
-                          {isGeneratingJD ? (
-                            <Loader2 className="h-3 w-3 mr-1.5 animate-spin motion-reduce:animate-none" />
-                          ) : (
-                            <Brain className="h-3 w-3 mr-1.5 text-wedo-cyan" />
-                          )}
-                          {isGeneratingJD ? 'Gerando...' : 'Gerar Descrição'}
-                        </Button>
-                      </div>
-                      <div className="bg-white rounded-md border border-lia-border-subtle dark:border-lia-border-subtle dark:bg-lia-bg-primary overflow-hidden min-h-[200px]" role="status" aria-live="polite" aria-label="Carregando...">
-                        {isGeneratingJD && (
-                          <div className="p-4 space-y-3" role="status" aria-live="polite" aria-label="Carregando...">
-                            <div className="flex items-center gap-3" role="status" aria-live="polite" aria-label="Carregando...">
-                              <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-gray-100 dark:bg-lia-bg-secondary" role="status" aria-live="polite" aria-label="Carregando...">
-                                <Loader2 className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">
-                                  Gerando Descrição do Cargo...
-                                </p>
-                                <p className="text-micro lia-text-secondary mt-0.5">
-                                  Etapa {jdGenerationStep} de 4
-                                </p>
-                              </div>
-                            </div>
-                            {jdTypedMessage && (
-                              <div className="flex items-center gap-2 pl-1">
-                                <div className="w-1.5 h-1.5 rounded-full bg-gray-900 animate-pulse motion-reduce:animate-none" />
-                                <p className="text-xs text-lia-text-secondary dark:text-lia-text-secondary">
-                                  {jdTypedMessage}
-                                  {jdTypedMessage.length < jdDynamicMessage.length && (
-                                    <span className="inline-block w-[2px] h-[13px] bg-gray-900 ml-0.5 align-middle animate-pulse motion-reduce:animate-none" />
-                                  )}
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {generatedJD && !isGeneratingJD && (
-                          <div className="max-h-[400px] overflow-y-auto p-4">
-                            {formatJDText(generatedJD.full_description)}
-
-                            {generatedJD.tags.length > 0 && (
-                              <div className="flex flex-wrap gap-1.5 pt-4 mt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
-                                {generatedJD.tags.map((tag) => (
-                                  <span key={tag} className="text-micro px-2 py-0.5 bg-gray-100 text-lia-text-secondary rounded-full dark:bg-lia-bg-secondary dark:text-lia-text-tertiary">
-                                    {tag}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-
-                            <div className="pt-3">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="w-full h-7 text-xs border-lia-border-subtle text-lia-text-secondary dark:border-lia-border-default dark:text-lia-text-secondary"
-                                onClick={handleCopyJD}
-                              >
-                                {copiedJD ? (
-                                  <>
-                                    <Check className="h-3 w-3 mr-1" />
-                                    Copiado!
-                                  </>
-                                ) : (
-                                  <>
-                                    <Copy className="h-3 w-3 mr-1" />
-                                    Copiar Descrição
-                                  </>
-                                )}
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-
-                        {!generatedJD && !isGeneratingJD && (
-                          <div className="flex flex-col items-center justify-center py-16 px-4">
-                            <Brain className="h-6 w-6 mb-2 text-wedo-cyan" />
-                            <p className="text-xs text-lia-text-disabled text-center" >Descrição gerada pela LIA aparecerá aqui</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                    {/* RIGHT COLUMN — JD Generation */}
+                    <JDGenerationSection
+                      generatedJD={generatedJD}
+                      isGeneratingJD={isGeneratingJD}
+                      jdGenerationStep={jdGenerationStep}
+                      jdTypedMessage={jdTypedMessage}
+                      jdDynamicMessage={jdDynamicMessage}
+                      copiedJD={copiedJD}
+                      isSavingWithJD={isSavingWithJD}
+                      onGenerate={generateJD}
+                      onCopy={handleCopyJD}
+                      onSaveAndUpdateJD={handleSaveAndUpdateJD}
+                      showSaveAndUpdate={!!(generatedJD && onUpdateJobDescription)}
+                    />
                   </div>
 
-                  {/* 5. BOTTOM ACTION BAR */}
+                  {/* BOTTOM ACTION BAR */}
                   <div className="flex items-center justify-between pt-4 mt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                     <Button
                       variant="outline"
@@ -1263,17 +973,6 @@ export function JDEvaluationPanel({
                         {isSavingDefinitive ? <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none mr-1" /> : <CheckCircle className="h-3 w-3 mr-1" />}
                         Salvar Versão Definitiva
                       </Button>
-                      {generatedJD && onUpdateJobDescription && (
-                        <Button
-                          size="sm"
-                          className="h-7 text-micro px-4 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
-                          onClick={handleSaveAndUpdateJD}
-                          disabled={isSavingWithJD}
-                        >
-                          {isSavingWithJD ? <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none mr-1" /> : <FileText className="h-3 w-3 mr-1" />}
-                          Salvar e Atualizar JD
-                        </Button>
-                      )}
                     </div>
                   </div>
 
