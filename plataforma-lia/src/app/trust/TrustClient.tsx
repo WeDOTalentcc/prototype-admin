@@ -128,7 +128,7 @@ export default function PublicTrustCenterPage() {
   const activeCompliance = complianceFrameworks.filter(c => c.status === 'compliant').length
   
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <header className="bg-lia-bg-primary border-b border-lia-border-subtle">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">

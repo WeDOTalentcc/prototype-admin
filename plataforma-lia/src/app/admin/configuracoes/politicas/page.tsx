@@ -257,7 +257,7 @@ export default function GlobalPoliciesPage() {
 
   if (isLoading && policies.length === 0) {
     return (
-      <div role="status" aria-live="polite" aria-busy={true} className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary flex items-center justify-center">
+      <div role="status" aria-live="polite" aria-busy={true} className="min-h-screen bg-white dark:bg-lia-bg-primary flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary mx-auto mb-4" />
           <p className="lia-text-500">Carregando políticas...</p>
@@ -268,7 +268,7 @@ export default function GlobalPoliciesPage() {
 
   if (error && policies.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-lia-bg-primary flex items-center justify-center">
         <div className="text-center">
           <AlertTriangle className="w-12 h-12 text-status-warning mx-auto mb-4" />
           <h3 className="text-lg font-medium lia-text-950 dark:lia-text-50 mb-2">
@@ -285,7 +285,7 @@ export default function GlobalPoliciesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary">
+    <div className="min-h-screen bg-white dark:bg-lia-bg-primary">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div className="flex items-center gap-4">

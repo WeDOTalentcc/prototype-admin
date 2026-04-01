@@ -136,7 +136,7 @@ export function WorkModelAnalyticsPage() {
   }
 
   return (
-    <div className="h-screen bg-gray-50 dark:bg-lia-bg-primary overflow-hidden">
+    <div className="h-screen bg-white dark:bg-lia-bg-primary overflow-hidden">
       <div className="flex flex-col h-full">
 
         {/* Header */}

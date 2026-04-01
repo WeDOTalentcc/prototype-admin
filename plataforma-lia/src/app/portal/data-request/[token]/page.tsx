@@ -543,7 +543,7 @@ export default function CandidatePortalPage() {
 
   if (step === "loading") {
     return (
-      <div className="min-h-screen bg-gray-50 dark:lia-bg-900 flex items-center justify-center p-4" role="status" aria-live="polite" aria-label="Carregando...">
+      <div className="min-h-screen bg-white dark:lia-bg-900 flex items-center justify-center p-4" role="status" aria-live="polite" aria-label="Carregando...">
         <div className="text-center" role="status" aria-live="polite" aria-label="Carregando...">
           <Loader2 className="w-12 h-12 animate-spin motion-reduce:animate-none lia-text-400 dark:lia-text-500 mx-auto mb-4" />
           <p className="lia-text-500 dark:lia-text-400">Carregando...</p>
@@ -554,7 +554,7 @@ export default function CandidatePortalPage() {
 
   if (step === "error") {
     return (
-      <div className="min-h-screen bg-gray-50 dark:lia-bg-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-white dark:lia-bg-900 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center">
             <AlertCircle className="w-16 h-16 text-status-error mx-auto mb-4" />
@@ -568,7 +568,7 @@ export default function CandidatePortalPage() {
 
   if (step === "expired") {
     return (
-      <div className="min-h-screen bg-gray-50 dark:lia-bg-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-white dark:lia-bg-900 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center">
             <AlertCircle className="w-16 h-16 text-status-warning mx-auto mb-4" />
@@ -585,7 +585,7 @@ export default function CandidatePortalPage() {
 
   if (step === "otp") {
     return (
-      <div className="min-h-screen bg-gray-50 dark:lia-bg-900 flex flex-col">
+      <div className="min-h-screen bg-white dark:lia-bg-900 flex flex-col">
         {portalData?.branding.logo_url && (
           <div className="p-4 flex justify-center">
             <img
@@ -722,7 +722,7 @@ export default function CandidatePortalPage() {
 
   if (step === "completed") {
     return (
-      <div className="min-h-screen bg-gray-50 dark:lia-bg-900 flex flex-col">
+      <div className="min-h-screen bg-white dark:lia-bg-900 flex flex-col">
         {portalData?.branding.logo_url && (
           <div className="p-4 flex justify-center">
             <img
@@ -772,7 +772,7 @@ export default function CandidatePortalPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:lia-bg-900 flex flex-col">
+    <div className="min-h-screen bg-white dark:lia-bg-900 flex flex-col">
       {portalData?.branding.logo_url && (
         <div className="p-4 flex justify-center bg-white dark:lia-bg-800 border-b dark:lia-border-700">
           <img

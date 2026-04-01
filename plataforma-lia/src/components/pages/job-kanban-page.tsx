@@ -360,7 +360,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
   // Renderização apenas no cliente para evitar erros de hidratação SSR
   if (!isClient) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50" role="status" aria-live="polite" aria-label="Carregando...">
+      <div className="flex items-center justify-center h-screen bg-white" role="status" aria-live="polite" aria-label="Carregando...">
         <div className="flex flex-col items-center gap-4" role="status" aria-live="polite" aria-label="Carregando...">
           <div className="animate-spin motion-reduce:animate-none rounded-full h-8 w-8 border-b-2 border-gray-600" role="status" aria-live="polite" aria-label="Carregando..."></div>
           <span className="text-sm text-lia-text-tertiary font-['Open_Sans']">Carregando...</span>
@@ -403,7 +403,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
         }
       `}</style>
 
-    <div className="h-screen bg-gray-50 dark:bg-lia-bg-primary flex flex-col overflow-hidden">
+    <div className="h-screen bg-white dark:bg-lia-bg-primary flex flex-col overflow-hidden">
       {/* Header Principal */}
       <KanbanJobHeader
         onBack={onBack}

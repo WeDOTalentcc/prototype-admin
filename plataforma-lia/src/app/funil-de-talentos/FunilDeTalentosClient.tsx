@@ -139,7 +139,7 @@ export default function FunilDeTalentosPage() {
   const SENIORITY_OPTIONS = ["Júnior", "Pleno", "Sênior", "Especialista"]
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:lia-bg-950">
+    <div className="min-h-screen bg-white dark:lia-bg-950">
       {/* Bulk selection bar — fixa no topo quando há seleção */}
       {selectedCount > 0 && (
         <BulkSelectionBar

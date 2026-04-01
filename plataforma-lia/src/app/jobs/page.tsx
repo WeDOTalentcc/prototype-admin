@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 function LoadingSkeleton() {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary p-6">
+    <div className="min-h-screen bg-white dark:bg-lia-bg-primary p-6">
       <div className="animate-pulse motion-reduce:animate-none">
         <div className="h-8 w-48 bg-gray-200 dark:bg-lia-bg-elevated rounded-md mb-4" />
         <div className="h-4 w-96 bg-gray-200 dark:bg-lia-bg-elevated rounded-md mb-8" />

@@ -46,7 +46,7 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary flex items-center justify-center p-6">
+    <div className="min-h-screen bg-white dark:bg-lia-bg-primary flex items-center justify-center p-6">
       <div className="max-w-4xl w-full">
         {/* Main Upsell Card */}
         <Card className="">

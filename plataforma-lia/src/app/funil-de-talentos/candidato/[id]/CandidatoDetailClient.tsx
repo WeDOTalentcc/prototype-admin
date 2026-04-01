@@ -59,7 +59,7 @@ export default function CandidateProfilePage() {
   // ── Loading ──────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-lia-bg-primary" role="status" aria-live="polite">
+      <div className="flex items-center justify-center min-h-screen bg-white dark:bg-lia-bg-primary" role="status" aria-live="polite">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none text-lia-text-secondary mx-auto mb-3" />
           <p className="text-sm text-lia-text-secondary">Carregando perfil...</p>
@@ -71,7 +71,7 @@ export default function CandidateProfilePage() {
   // ── Error ────────────────────────────────────────────────────────────────
   if (error || !candidate) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-lia-bg-primary" role="alert" aria-live="assertive">
+      <div className="flex items-center justify-center min-h-screen bg-white dark:bg-lia-bg-primary" role="alert" aria-live="assertive">
         <div className="text-center">
           <p className="text-sm text-status-error mb-4">{error || "Candidato não encontrado"}</p>
           <Button variant="outline" onClick={() => router.back()}>
@@ -86,7 +86,7 @@ export default function CandidateProfilePage() {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary">
+      <div className="min-h-screen bg-white dark:bg-lia-bg-primary">
         <div className="max-w-7xl mx-auto py-6 px-4">
           <Button variant="ghost" size="sm" onClick={() => router.back()} className="mb-4">
             <ArrowLeft className="w-4 h-4 mr-2" />Voltar

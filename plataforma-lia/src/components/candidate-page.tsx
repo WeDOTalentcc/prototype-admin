@@ -202,7 +202,7 @@ export function CandidatePage({
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-lia-bg-primary">
+      <div className="flex-1 overflow-y-auto bg-white dark:bg-lia-bg-primary">
         <div className="max-w-7xl mx-auto p-6">
           {activeTab === 'profile' && (
             <CandidatePageProfileTab

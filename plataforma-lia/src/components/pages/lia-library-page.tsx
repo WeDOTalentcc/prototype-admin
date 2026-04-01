@@ -210,7 +210,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary">
+    <div className="min-h-screen bg-white dark:bg-lia-bg-primary">
       <div className="p-2.5 max-w-full">
 
         {/* Header Simplificado */}

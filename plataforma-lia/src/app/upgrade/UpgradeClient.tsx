@@ -54,7 +54,7 @@ const PLANS = [
 
 export default function UpgradePage() {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary flex flex-col items-center justify-center px-4 py-16">
+    <div className="min-h-screen bg-white dark:bg-lia-bg-primary flex flex-col items-center justify-center px-4 py-16">
       <div className="flex items-center gap-2 mb-6">
         <Brain className="h-7 w-7 text-wedo-cyan" />
         <span className="text-xl font-semibold lia-text-900 dark:text-lia-text-primary">LIA by WeDOTalent</span>

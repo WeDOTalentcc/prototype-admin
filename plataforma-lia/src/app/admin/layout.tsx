@@ -352,7 +352,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-lia-bg-primary" >
+    <div className="flex h-screen bg-white dark:bg-lia-bg-primary" >
       <AdminSidebar 
         sidebarCollapsed={sidebarCollapsed}
         setSidebarCollapsed={setSidebarCollapsed}

@@ -185,7 +185,7 @@ export function JobTemplatesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary">
+    <div className="min-h-screen bg-white dark:bg-lia-bg-primary">
       <div className="max-w-full mx-auto px-6 py-6">
         {/* Header */}
         <div className="mb-6">

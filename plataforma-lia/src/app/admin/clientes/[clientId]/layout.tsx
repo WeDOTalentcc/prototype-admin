@@ -122,7 +122,7 @@ export default function ClientLayout({
   const status = client?.status ? (statusConfig[client.status] || statusConfig.pending_setup) : statusConfig.pending_setup
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary">
+    <div className="min-h-screen bg-white dark:bg-lia-bg-primary">
       <div 
         className="border-b bg-white dark:lia-bg-950 border-lia-border-subtle dark:border-lia-border-subtle"
       >

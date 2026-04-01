@@ -88,7 +88,7 @@ export default function AdminClientesPage() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary">
+      <div className="min-h-screen bg-white dark:bg-lia-bg-primary">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="animate-pulse motion-reduce:animate-none">
             <div className="h-8 bg-gray-200 rounded-md w-1/3 mb-4"></div>
@@ -105,7 +105,7 @@ export default function AdminClientesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-lia-bg-primary">
+    <div className="min-h-screen bg-white dark:bg-lia-bg-primary">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
