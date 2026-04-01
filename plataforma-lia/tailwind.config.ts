@@ -1,4 +1,3 @@
-// @ts-nocheck
 import type { Config } from "tailwindcss";
 
 export default {
@@ -13,6 +12,10 @@ export default {
       boxShadow: {
         'lia-focus': '0 0 0 2px rgba(0,0,0,0.1)',
         'lia-focus-primary': '0 0 0 2px var(--wedo-coral)',
+        'lia-sm':      'var(--lia-shadow-sm)',
+        'lia-default': 'var(--lia-shadow-default)',
+        'lia-md':      'var(--lia-shadow-md)',
+        'lia-lg':      'var(--lia-shadow-lg)',
       },
       fontSize: {
         'xs':       ['var(--font-size-xs)',      { lineHeight: 'var(--line-height-normal)' }],
@@ -123,12 +126,14 @@ export default {
         // Gradualmente substituir por status-* ou gray-*
         // ──────────────────────────────────────────────
         'wedo-green': '#5DA47A',
-        'wedo-green-light': '#7BC29A',
+        'wedo-green-light': 'var(--wedo-green-light)',
         'wedo-green-pastel': '#A8D5B7',  // [OPT-010] Verde pastel suave — usado em badges de status positivo e indicadores de qualidade (Big Five, screening)
         'wedo-green-bright': '#60D186',
         'wedo-orange': '#D19960',
         'wedo-purple': '#9860D1',
         'wedo-magenta': '#D160AB',
+        'wedo-amber':       'var(--wedo-amber)',       // bg-wedo-amber, suporta /opacity
+        'wedo-amber-light': 'var(--wedo-amber-light)',  // bg-wedo-amber-light → status amber/warning
         'wedo-coral': '#E87575', /* coral suave — atualizado 2026-03-29, era #E16162 */
         // ──────────────────────────────────────────────
         // TERCEIROS — cores de marca de integrações
@@ -233,15 +238,9 @@ export default {
       },
       },
       // ──────────────────────────────────────────────
-      // LIA SHADOW TOKENS — Fase 5
-      // Uso: shadow-lia-sm, shadow-lia-default, shadow-lia-md, shadow-lia-lg
+      // LIA SHADOW TOKENS — Fase 5 (merged em boxShadow acima)
+      // shadow-lia-sm, shadow-lia-default, shadow-lia-md, shadow-lia-lg
       // ──────────────────────────────────────────────
-      boxShadow: {
-        'lia-sm':      'var(--lia-shadow-sm)',
-        'lia-default': 'var(--lia-shadow-default)',
-        'lia-md':      'var(--lia-shadow-md)',
-        'lia-lg':      'var(--lia-shadow-lg)',
-      },
       // ──────────────────────────────────────────────
       // LAYOUT TOKENS — Sprint 5A (Design System v4.2.1)
       // Substituem valores arbitrários w-[Npx] / h-[Npx]
