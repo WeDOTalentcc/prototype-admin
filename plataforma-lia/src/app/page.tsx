@@ -1,8 +1,12 @@
-"use client"
-
+import type { Metadata } from "next"
 import { Suspense } from "react"
 import { DashboardApp } from "@/components/dashboard-app"
 import { OnboardingController } from "@/components/onboarding/onboarding-controller"
+
+export const metadata: Metadata = {
+  title: "Dashboard | LIA — WeDo Talent",
+  description: "Plataforma de recrutamento inteligente com IA — gerencie vagas, candidatos e pipelines de seleção em um só lugar.",
+}
 
 function LoadingScreen() {
   return (
