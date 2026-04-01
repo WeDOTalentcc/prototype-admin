@@ -15,6 +15,7 @@ import { SearchResultsHeader } from "./SearchResultsHeader"
 import { CrossTabFilterBanner } from "./CrossTabFilterBanner"
 import { ViewingListBanner } from "./ViewingListBanner"
 import { ColumnConfigSidebar } from "./ColumnConfigSidebar"
+import { CandidatesLoadMoreFooter } from "./CandidatesLoadMoreFooter"
 import { ContextualActionsBanner } from "@/components/contextual-actions-banner"
 import { LIASearchSidebar } from "./LIASearchSidebar"
 import { CandidatesFilterPanel } from "./CandidatesFilterPanel"
@@ -915,34 +916,14 @@ export function CandidateSearchResultsView({
               </div>
             )}
           </div>
-          {/* Load More - Fase 1 Funil de Talentos (FORA do scroll container, sempre visível) */}
-          {showSearchResults && displayedResultsCount < sortedCandidates.length && (
-            <div className="flex-shrink-0 bg-white dark:bg-lia-bg-primary border-t border-lia-border-subtle dark:border-lia-border-subtle py-3 px-4">
-              <div className="flex flex-col items-center gap-1.5">
-                <Button
-                  variant="outline"
-                  className="w-full max-w-md h-10 gap-2 text-sm font-medium"
-                  onClick={onLoadMore}
-                  disabled={isLoadingMore}
-                >
-                  {isLoadingMore ? (
-                    <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4" />
-                  )}
-                  {isLoadingMore ? 'Carregando...' : 'Carregar mais 10 candidatos'}
-                </Button>
-                <span className="text-xs text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
-                  {Math.min(displayedResultsCount, sortedCandidates.length)} de {sortedCandidates.length} candidatos
-                </span>
-              </div>
-            </div>
-          )}
-          {showSearchResults && displayedResultsCount >= sortedCandidates.length && sortedCandidates.length > 10 && (
-            <p className="flex-shrink-0 text-center text-sm text-lia-text-tertiary py-3" aria-live="polite" aria-atomic="true">
-              Todos os {sortedCandidates.length} candidatos carregados
-            </p>
-          )}
+          {/* Load More - extracted to CandidatesLoadMoreFooter */}
+          <CandidatesLoadMoreFooter
+            showSearchResults={showSearchResults}
+            displayedResultsCount={displayedResultsCount}
+            sortedCandidatesLength={sortedCandidates.length}
+            isLoadingMore={isLoadingMore}
+            onLoadMore={onLoadMore}
+          />
         </div>
           )}
         </div>
