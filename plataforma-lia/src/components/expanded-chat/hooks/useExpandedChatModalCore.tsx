@@ -84,6 +84,7 @@ import { useProactiveHandlers, useGroupedPanelChangeHandler, useCheckForExisting
 import { useWizardStageConstants } from './useWizardStageConstants'
 import { useExpandedChatEffects } from "./useExpandedChatEffects"
 import { useExpandedChatSubHooks } from "./useExpandedChatSubHooks"
+import { useExpandedChatPanelState } from "./useExpandedChatPanelState"
 import { FastTrackReviewPanel } from '../../job-wizard/FastTrackReviewPanel'
 import { useWizardAnalytics } from './useWizardAnalytics'
 import { useContextSwitching, type WizardSnapshot, type GeneralChatSnapshot } from './useContextSwitching'
@@ -226,12 +227,6 @@ import { ClearDraftConfirmModal, EditCriteriaModal, AddTechnicalSkillModal, AddC
   const calibrationProactiveTimerRef = useRef<NodeJS.Timeout | null>(null)
   const [showMoreIdeas, setShowMoreIdeas] = useState(false)
   
-  // Panel resize state
-  const [panelWidth, setPanelWidth] = useState(42) // percentage
-  const [isResizing, setIsResizing] = useState(false)
-  const resizeRef = useRef<HTMLDivElement>(null)
-  const [isPanelOpen, setIsPanelOpen] = useState(true) // Controls right panel visibility
-  const [stageTransition, setStageTransition] = useState<'idle' | 'loading' | 'waiting-response'>('idle') // Controls panel loading state during stage transitions
   const [activeInputTab, setActiveInputTab] = useState<'ia-natural' | 'job-description' | 'templates'>('ia-natural')
   const [internalJobCreationMode, setInternalJobCreationMode] = useState(false)
   const [generatedJobDescription, setGeneratedJobDescription] = useState<string>('')
@@ -239,21 +234,17 @@ import { ClearDraftConfirmModal, EditCriteriaModal, AddTechnicalSkillModal, AddC
   // Fast Track state (from useFastTrackState — Sprint 4.2)
   const { wizardMode, fastTrackState, fastTrackSearchResults, fastTrackSelectedVacancy, fastTrackAdjustments, fastTrackSearchCriteria, isSearchingVacancies, wizardFastTrackSourceJobId } = fastTrackHookState
   const { setWizardMode, setFastTrackState, setFastTrackSearchResults, setFastTrackSelectedVacancy, setFastTrackAdjustments, setFastTrackSearchCriteria, setIsSearchingVacancies, setWizardFastTrackSourceJobId } = fastTrackActions
-  const [isFullscreen, setIsFullscreen] = useState(false)
-  
-  // Control panel visibility based on wizard mode
-  useEffect(() => {
-    if (isJobCreationMode) {
-      // Hide panel for pre_wizard, fast_track, and general modes
-      // Show panel only for create_from_scratch mode
-      if (wizardMode === 'pre_wizard' || wizardMode === 'fast_track' || wizardMode === 'general') {
-        setIsPanelOpen(false)
-      } else if (wizardMode === 'create_from_scratch') {
-        setIsPanelOpen(true)
-      }
-    }
-  }, [isJobCreationMode, wizardMode])
-  
+
+  // ── Panel & fullscreen state (extracted to useExpandedChatPanelState) ─────────
+  const {
+    panelWidth, setPanelWidth,
+    isResizing, setIsResizing,
+    resizeRef,
+    isPanelOpen, setIsPanelOpen,
+    stageTransition, setStageTransition,
+    isFullscreen, setIsFullscreen,
+  } = useExpandedChatPanelState({ isJobCreationMode, wizardMode })
+
   // Job Wizard hook - integrates with backend LIA agent
   const jobWizard = useJobWizard()
   
