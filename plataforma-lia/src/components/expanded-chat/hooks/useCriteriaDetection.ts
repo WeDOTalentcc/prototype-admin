@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useCallback } from "react"
@@ -452,7 +451,9 @@ export function useCriteriaDetection(): UseCriteriaDetectionReturn {
         } else if (fullMatch.includes('básico') || fullMatch.includes('basico')) {
           level = 'Básico'
         }
-        if (!newCriteria.idiomas.some(i => i.name === name)) {
+        // @ts-ignore TODO: fix type - idiomas runtime shape differs
+        if (!newCriteria.idiomas.some((i: any) => i.name === name)) {
+          // @ts-ignore TODO: fix type
           newCriteria.idiomas = [...newCriteria.idiomas, { name, level }]
         }
       }

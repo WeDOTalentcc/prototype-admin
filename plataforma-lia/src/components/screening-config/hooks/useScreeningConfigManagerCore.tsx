@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 "use client"
@@ -157,6 +156,7 @@ export const SCREENING_SECTIONS = [
 
 
 export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, _externalActiveSection, _hideOwnSidebar }: ScreeningConfigManagerProps & { _externalActiveSection?: string; _hideOwnSidebar?: boolean }) {
+  // @ts-ignore TODO: fix type
   const { config: screeningConfig, updateConfig: updateScreeningConfig } = useScreeningConfig(job?.backendId || job?.jobId || null)
 
   const [blockPromptOpen, setBlockPromptOpen] = useState<string | null>(null)
@@ -193,6 +193,7 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         const items: Array<Record<string, unknown>> = data?.items ?? (Array.isArray(data) ? data : [])
+        // @ts-ignore TODO: fix type
         setCompanyQuestions(items.map((q: Record<string, unknown>) => ({
           id: q.id,
           question: q.question_text || q.question,
@@ -205,6 +206,7 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
 
   // Load opt-out list from job
   useEffect(() => {
+    // @ts-ignore TODO: fix type
     const ids: string[] = job?.disabled_eligibility_question_ids || []
     setDisabledCompanyQIds(new Set(ids))
   }, [job?.id])
@@ -329,11 +331,16 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
     setWsiGenerationCompleted(false)
     setWsiSummaryExpanded(false)
 
+    // @ts-ignore TODO: fix type
     const techSkills = (job.technicalRequirements || []).map((r: Record<string, unknown>) => r.technology || r.skill || r).filter(Boolean)
+    // @ts-ignore TODO: fix type
     const behavComp = (job.behavioralCompetencies || []).map((c: Record<string, unknown>) => c.competency || c.name || c).filter(Boolean)
+    // @ts-ignore TODO: fix type
     const responsibilities = (job.requirements || []).map((r: Record<string, unknown>) => typeof r === 'string' ? r : r.requirement || r.text || r.name || r).filter(Boolean)
     setWsiGenerationContext({
+      // @ts-ignore TODO: fix type
       title: job.title || '',
+      // @ts-ignore TODO: fix type
       seniority: job.level || (job as Record<string, unknown>).seniority || null,
       responsibilities: responsibilities.slice(0, 5),
       technicalSkills: techSkills.slice(0, 6),
@@ -382,7 +389,9 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
         const grouped: Record<number, any[]> = {}
         data.questions.forEach((q: Record<string, unknown>) => {
           const bid = q.block_id || 2
+          // @ts-ignore TODO: fix type
           if (!grouped[bid]) grouped[bid] = []
+          // @ts-ignore TODO: fix type
           grouped[bid].push({ ...q, id: q.id || `q_gen_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, generated: true })
         })
         setGeneratedQuestions(grouped)
@@ -401,6 +410,7 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
           breakdown[Number(bid)] = (questions as Array<Record<string, unknown>>).length
           ;(questions as Array<Record<string, unknown>>).forEach((q: Record<string, unknown>) => {
             const fw = q.framework || (q.category === 'behavioral' ? 'BigFive' : 'CBI')
+            // @ts-ignore TODO: fix type
             methodBreakdown[fw] = (methodBreakdown[fw] || 0) + 1
             if (q.source === 'company_standard' || q.is_company_standard) hasCompanyStandard = true
           })
@@ -539,8 +549,11 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
     setWsiGenerationContext(null)
   }
 
+  // @ts-ignore TODO: fix type
   const configDone = !!(screeningConfig && (screeningConfig.channels || screeningConfig.settings || screeningConfig.scheduling)) || !!(job.screeningConfig && (job.screeningConfig.channels || job.screeningConfig.settings || job.screeningConfig.scheduling))
+  // @ts-ignore TODO: fix type
   const jdDone = !!(job.description && job.description.trim().length > 0)
+  // @ts-ignore TODO: fix type
   const questionsDone = (job.screeningQuestions && job.screeningQuestions.length > 0) || (isEditingScreening && acceptedQuestions.size > 0)
   const progressCount = [configDone, jdDone, questionsDone].filter(Boolean).length
 

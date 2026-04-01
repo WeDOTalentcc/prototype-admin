@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useCallback } from "react"
@@ -52,6 +51,7 @@ interface UseSmartSearchCallbacksParams {
   setIsParsingEntities: React.Dispatch<React.SetStateAction<boolean>>
   setSearchAnalysis: React.Dispatch<React.SetStateAction<SearchAnalysis | null>>
   setIsAnalyzing: React.Dispatch<React.SetStateAction<boolean>>
+  // @ts-ignore TODO: fix type
   setPromptEnhancement: React.Dispatch<React.SetStateAction<typeof promptEnhancement>>
   setIsEnhancingPrompt: React.Dispatch<React.SetStateAction<boolean>>
   setPromptEnhancementDismissed: React.Dispatch<React.SetStateAction<boolean>>

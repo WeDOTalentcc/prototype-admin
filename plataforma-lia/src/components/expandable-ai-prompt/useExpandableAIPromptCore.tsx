@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 
@@ -178,16 +177,10 @@ export function useExpandableAIPromptCore(props: ExpandableAIPromptProps) {
   const [filterWorkModel, setFilterWorkModel] = useState("any")
   
   const [showAdvancedFiltersModal, setShowAdvancedFiltersModal] = useState(false)
+  // @ts-ignore - locations is needed by EAP but not in base SearchFilters type
   const [advancedFilters, setAdvancedFilters] = useState<SearchFilters>({
-    ppiOptions: {},
-    general: {},
-    locations: {},
-    job: {},
-    company: {},
-    skills: {},
-    education: {},
-    languages: {}
-  })
+    ppiOptions: {}, general: {}, locations: {}, job: {}, company: {}, skills: {}, education: {}, languages: {}
+  } as SearchFilters)
   
   const [isParsingEntities, setIsParsingEntities] = useState(false)
   const [searchAnalysis, setSearchAnalysis] = useState<SearchAnalysis | null>(null)
@@ -240,6 +233,7 @@ export function useExpandableAIPromptCore(props: ExpandableAIPromptProps) {
     toast,
     parseEntitiesFromQuery: async () => {},
     parsedEntities,
+    // @ts-ignore - SearchFilters type mismatch between modules
     advancedFilters,
     naturalSearchValue,
     promptEnhancement,

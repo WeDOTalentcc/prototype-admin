@@ -1,8 +1,7 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useCallback, useRef, useEffect } from "react"
-import type {
+import type { TriagemMessageType,
   TriagemSession,
   TriagemConfig,
   TriagemMessage,
@@ -45,7 +44,7 @@ function mapBackendMessage(raw: Record<string, unknown>): TriagemMessage {
     role: (raw.sender as string) === "lia" || (raw.sender as string) === "candidate"
       ? (raw.sender as "lia" | "candidate")
       : (raw.role as "lia" | "candidate") ?? "lia",
-    type: (raw.message_type as string) ?? (raw.type as string) ?? "text",
+    type: ((raw.message_type as string) ?? (raw.type as string) ?? "text") as TriagemMessageType,
     content: String(raw.content ?? ""),
     options: (raw.options as TriagemMessage["options"]) ?? null,
     selectedOption: (raw.selected_option as string) ?? (raw.selectedOption as string) ?? null,

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
   
@@ -609,6 +608,7 @@ import { useProceedToNextStage } from './useProceedToNextStage'
   useAnalyticsSession({ analytics, isOpen, mode })
 
   // Conversation memory initialization (extracted to useConversationMemoryInit)
+  // @ts-ignore TODO: fix UseConversationMemoryReturn type mismatch
   useConversationMemoryInit({ conversationMemory, isOpen, mode, user, wizardDraftId })
 
   // Fetch learning suggestions when job title changes

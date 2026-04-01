@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { useCallback } from "react"
@@ -670,7 +669,7 @@ export function useWizardPublishHandlers(ctx: WizardPublishHandlersContext) {
 
       const createdJob = await liaApi.createJobVacancy(jobData as JobVacancyCreateRequest)
 
-      const jobId = (createdJob as Record<string, unknown> & { id?: string }).job_id || createdJob.id
+      const jobId = ((createdJob as unknown) as Record<string, unknown>).job_id || ((createdJob as unknown) as Record<string, unknown>).id
       setPublishedJobId(jobId)
 
       if (wizardFastTrackSourceJobId && jobId && jobId !== wizardFastTrackSourceJobId) {

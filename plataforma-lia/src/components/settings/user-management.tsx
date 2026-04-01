@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
@@ -79,16 +78,19 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
         department: 'Talent Acquisition',
         position: u.role,
         status: u.status === 'active' ? 'ativo' : u.status === 'inactive' ? 'inativo' : 'pendente',
+        // @ts-ignore TODO: fix type
         permissions: u.permissions && u.permissions.length > 0 ? u.permissions : 
           (u.role === 'admin' ? ['admin', 'recruitment', 'candidates', 'interviews', 'reports', 'settings', 'users', 'analytics'] : ['recruitment', 'candidates']),
         emailSignature: '',
         location: '',
+        // @ts-ignore TODO: fix type
         hireDate: u.created_at?.split('T')[0] || '',
         isManager: u.role === 'admin',
         createdAt: u.created_at,
         updatedAt: u.updated_at,
         isScimManaged: u.is_scim_managed || false
       }))
+      // @ts-ignore TODO: fix type
       setUsers(mappedUsers)
     } catch (err) {
       setError('Erro ao carregar usuários')

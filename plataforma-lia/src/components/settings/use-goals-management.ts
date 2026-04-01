@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 // Camada 1 (hooks): Estado e ações centralizadas do GoalsManagement
@@ -564,7 +563,7 @@ export function useGoalsManagement(users: GoalsUser[], onGoalUpdate: (userId: st
     setIsSaving(true)
     setError(null)
     try {
-      const targetUsers = isApplyToAll ? users : [users.find(u => u.id === targetUserId)].filter(Boolean)
+      const targetUsers = isApplyToAll ? users : users.filter(u => u.id === targetUserId)
       for (const user of targetUsers) {
         await createGoalInBackend({ userId: user.id, templateId: '', name: customGoalForm.name, description: customGoalForm.description, target: customGoalForm.target, current: 0, unit: customGoalForm.unit, period: customGoalForm.period, startDate: customGoalForm.startDate || new Date().toISOString().split('T')[0], endDate: customGoalForm.endDate || calculateEndDate(customGoalForm.period), category: customGoalForm.category, isCustom: true })
         await fetchUserGoals(user.id)

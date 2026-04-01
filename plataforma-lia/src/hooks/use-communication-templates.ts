@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useEffect, useCallback } from 'react'
@@ -475,6 +474,7 @@ export function useCommunicationTemplates(options: UseCommunicationTemplatesOpti
           name: t.name,
           category: t.category || 'followup',
           subject: t.subject || '',
+          // @ts-ignore TODO: fix type
           body: t.body || t.body_text || (t.body_html ? stripHtmlTags(t.body_html) : ''),
           variables: t.variables || [],
           isActive: t.is_active ?? true,

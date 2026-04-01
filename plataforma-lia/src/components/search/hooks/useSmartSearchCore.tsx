@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 
@@ -597,6 +596,7 @@ export function useSmartSearchCore(props: SmartSearchInputProps) {
 
   useEffect(() => {
     if (selectedArchetype) {
+      // @ts-ignore TODO: fix type
       const prompt = buildArchetypePrompt(selectedArchetype)
       setArchetypeSearchPrompt(prompt)
     } else {
