@@ -943,7 +943,7 @@ export function useSendMessageHandlers(ctx: SendMessageHandlersContext) {
       }, 100)
       return () => clearTimeout(timer)
     }
-  }, [isOpen])
+  }, [isOpen, inputRef])
 
   const handleQuickSuggestion = (suggestion: string) => {
     if (suggestion === "Anexar JD") {

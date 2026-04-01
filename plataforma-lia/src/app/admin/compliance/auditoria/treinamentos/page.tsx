@@ -14,9 +14,7 @@ import {
   Plus,
   ArrowRight,
   Play,
-  Info,
-  RefreshCw,
-} from "lucide-react"
+  RefreshCw } from "lucide-react"
 
 interface Training {
   id: number
@@ -106,7 +104,7 @@ const getProgressColor = (completion: number) => {
 }
 
 export default function TreinamentosPage() {
-  const totalTrained = trainings.reduce((acc, t) => acc + t.trained, 0)
+  const _totalTrained = trainings.reduce((acc, t) => acc + t.trained, 0)
   const totalPending = trainings.reduce((acc, t) => acc + t.pending, 0)
   const averageCompletion = Math.round(trainings.reduce((acc, t) => acc + t.completion, 0) / trainings.length)
   const completedTrainings = trainings.filter(t => t.completion === 100).length
@@ -115,8 +113,7 @@ export default function TreinamentosPage() {
     return new Date(dateStr).toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: 'short',
-      year: 'numeric',
-    })
+      year: 'numeric' })
   }
 
   return (

@@ -1,7 +1,7 @@
 "use client"
 
 import React, { use, useState, useEffect, useCallback } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -12,7 +12,6 @@ import {
   Clock,
   Settings,
   RefreshCw,
-  ExternalLink,
   Loader2
 } from "lucide-react"
 

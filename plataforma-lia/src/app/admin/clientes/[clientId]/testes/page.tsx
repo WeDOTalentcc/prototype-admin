@@ -1,13 +1,13 @@
 "use client"
 
-import React, { use, useState, useEffect } from "react"
+import React, { use, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   FileCode,
   Brain,
@@ -18,7 +18,6 @@ import {
   Settings,
   Filter,
   Code2,
-  Calculator,
   FileSpreadsheet,
   Users,
   MoreHorizontal,
@@ -38,8 +37,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+  DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useTechnicalTests, ClientTest } from "@/hooks/admin/useTechnicalTests"
 import { toast } from "sonner"
 
@@ -98,8 +96,7 @@ function mapClientTestToDisplay(clientTest: ClientTest): DisplayTest {
     testsTaken: clientTest.testsTaken,
     avgScore: clientTest.avgScore,
     completionRate: clientTest.completionRate,
-    lastUsed: clientTest.lastUsed,
-  }
+    lastUsed: clientTest.lastUsed }
 }
 
 export default function ClientTestesPage({

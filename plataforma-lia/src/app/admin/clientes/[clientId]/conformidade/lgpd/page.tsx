@@ -22,7 +22,6 @@ import {
   Clock,
   Mail,
   UserCheck,
-  UserX,
   Download,
   Trash2
 } from "lucide-react"
@@ -45,29 +44,25 @@ const dsrTypeIcons: Record<string, React.ComponentType<{ className?: string }>> 
   access: FileText,
   deletion: Trash2,
   portability: Download,
-  rectification: UserCheck,
-}
+  rectification: UserCheck }
 
 const dsrTypeLabels: Record<string, string> = {
   access: 'Acesso',
   deletion: 'Exclusão',
   portability: 'Portabilidade',
-  rectification: 'Retificação',
-}
+  rectification: 'Retificação' }
 
 const dsrStatusColors: Record<string, string> = {
   pending: 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning',
   in_progress: 'bg-gray-100 lia-text-900 dark:bg-lia-bg-secondary dark:lia-text-50',
   completed: 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success',
-  overdue: 'bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error',
-}
+  overdue: 'bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error' }
 
 const dsrStatusLabels: Record<string, string> = {
   pending: 'Pendente',
   in_progress: 'Em Andamento',
   completed: 'Concluído',
-  overdue: 'Atrasado',
-}
+  overdue: 'Atrasado' }
 
 function LoadingSpinner({ size = 'sm' }: { size?: 'sm' | 'md' | 'lg' }) {
   const sizeClass = size === 'lg' ? 'w-8 h-8' : size === 'md' ? 'w-6 h-6' : 'w-4 h-4'
@@ -79,7 +74,7 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
   const pathname = usePathname()
   const basePath = `/admin/clientes/${clientId}/conformidade`
   
-  const { stats, dpo, breaches, decisions, totalBreaches, totalDecisions, isLoading, error, refetch } = useLGPDCompliance(clientId)
+  const { stats, dpo, breaches, decisions, totalBreaches, isLoading, error, refetch } = useLGPDCompliance(clientId)
 
   const formatDate = (dateStr: string | undefined | null) => {
     if (!dateStr) return '-'

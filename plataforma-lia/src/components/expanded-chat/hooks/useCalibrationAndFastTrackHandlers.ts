@@ -102,10 +102,10 @@ export function useCalibrationAndFastTrackHandlers(ctx: CalibrationAndFastTrackC
     })
     
     ctx.setCalibrationCriteria(criteria)
-  }, [ctx.technicalSkills, ctx.behavioralCompetencies])
+  }, [ctx])
 
   // Generate calibration candidates from real API
-  const generateCalibrationCandidates = async () => {
+  const generateCalibrationCandidates = useCallback(async () => {
     ctx.setIsLoadingCalibration(true)
     
     try {
@@ -386,7 +386,7 @@ export function useCalibrationAndFastTrackHandlers(ctx: CalibrationAndFastTrackC
       initializeCalibrationCriteria()
       generateCalibrationCandidates()
     }
-  }, [ctx.currentStage, ctx.calibrationCandidates.length, ctx.isLoadingCalibration, ctx.hasAttemptedCalibrationGeneration, initializeCalibrationCriteria])
+  }, [ctx.currentStage, ctx.calibrationCandidates.length, ctx.isLoadingCalibration, ctx.hasAttemptedCalibrationGeneration, initializeCalibrationCriteria, ctx, generateCalibrationCandidates])
 
   // Fast Track: Handle vacancy selection
   const handleFastTrackVacancySelect = async (vacancyId: string) => {

@@ -91,7 +91,7 @@ export function useExpandedChatEffects(ctx) {
       }
       setMessages(prev => [...prev, wsiRegenMessage])
     }
-  }, [technicalSkills, behavioralCompetencies, fastTrackOriginalCompetencies, wsiRegenerationPrompted, awaitingWSIRegenerationConfirmation, currentStage])
+  }, [technicalSkills, behavioralCompetencies, fastTrackOriginalCompetencies, wsiRegenerationPrompted, awaitingWSIRegenerationConfirmation, currentStage, setAwaitingWSIRegenerationConfirmation, setMessages, setWsiRegenerationPrompted])
   
   // Reset message sent flag when suggestions change (new set of suggestions = new prompt)
   const suggestionsKey = fastTrack.suggestions.map(s => s.job_id).join(',')
@@ -101,7 +101,7 @@ export function useExpandedChatEffects(ctx) {
       setFastTrackMessageSent(false)
       prevSuggestionsKeyRef.current = suggestionsKey
     }
-  }, [suggestionsKey])
+  }, [suggestionsKey, setFastTrackMessageSent])
   
   // State to track if learning suggestions have been applied
   const [learningSuggestionsApplied, setLearningSuggestionsApplied] = useState(false)
@@ -159,7 +159,7 @@ export function useExpandedChatEffects(ctx) {
     }
     
     setLearningSuggestionsApplied(true)
-  }, [learning.suggestions, learningSuggestionsApplied, salaryInfo.minSalary, salaryInfo.maxSalary, technicalSkills.length, behavioralCompetencies.length])
+  }, [learning.suggestions, learningSuggestionsApplied, salaryInfo.minSalary, salaryInfo.maxSalary, technicalSkills.length, behavioralCompetencies.length, analytics, setBehavioralCompetencies, setSalaryInfo, setTechnicalSkills])
   
   // Reset learning suggestions when job title changes
   useEffect(() => {
@@ -197,7 +197,7 @@ export function useExpandedChatEffects(ctx) {
         }
       }
     }
-  }, [wizardGreeting, isFieldRequiredForWizard])
+  }, [wizardGreeting, isFieldRequiredForWizard, setCompetenciesPanelExpanded, setSalaryPanelExpanded, setShowAutoFilledNotification])
   
   // Publishing state — company members, languages (from usePublishingState — Sprint 4.2)
   const { companyMembersMap, languagesUserEdited } = publishingState
@@ -240,7 +240,7 @@ export function useExpandedChatEffects(ctx) {
     if (detectedLanguages.length > 0) {
       setJobConfig(prev => ({ ...prev, languages: detectedLanguages }))
     }
-  }, [messages, languagesUserEdited, jobConfig.languages.length])
+  }, [messages, languagesUserEdited, jobConfig.languages.length, setJobConfig])
   
   // Check if we have any config data
   const hasConfigData = companyConfig && (
@@ -343,7 +343,7 @@ export function useExpandedChatEffects(ctx) {
       clearTimeout(timer)
       clearInterval(interval)
     }
-  }, [user, proactiveActionIds])
+  }, [user, proactiveActionIds, setMessages, setProactiveActionIds])
 
   // Detect draft and show choice message instead of auto-restoring
   // NOTE: The synchronous check in checkForExistingDraftSync() handles immediate UI feedback
@@ -390,7 +390,7 @@ export function useExpandedChatEffects(ctx) {
       // This handles new sessions without any saved draft
       setHasAppliedRestoredDraft(true)
     }
-  }, [hasRestoredDraft, loadedDraft, hasAppliedRestoredDraft, isJobCreationMode, hasAttemptedRestore, awaitingDraftChoice, INITIAL_STAGES, STAGE_DISPLAY_NAMES, pendingDraftData])
+  }, [hasRestoredDraft, loadedDraft, hasAppliedRestoredDraft, isJobCreationMode, hasAttemptedRestore, awaitingDraftChoice, INITIAL_STAGES, STAGE_DISPLAY_NAMES, pendingDraftData, setMessages])
   
   // Helper function to apply pending draft data
   const applyPendingDraft = useCallback(() => {
@@ -443,7 +443,7 @@ export function useExpandedChatEffects(ctx) {
     setPendingDraftData(null)
     setAwaitingDraftChoice(false)
     setHasAppliedRestoredDraft(true)
-  }, [pendingDraftData])
+  }, [pendingDraftData, setBasicInfoFields, setBehavioralCompetencies, setCurrentStage, setGeneratedJobDescription, setSalaryInfo, setTechnicalSkills, setWsiCandidates])
   
   // Update basic info fields when criteria are detected
   useEffect(() => {
@@ -576,7 +576,7 @@ export function useExpandedChatEffects(ctx) {
         }
       }
     }
-  }, [detectedCriteria, basicInfoFields.area, detectedCriteria.cargo])
+  }, [detectedCriteria, basicInfoFields.area, basicInfoFields.cargo, basicInfoFields.gestor, basicInfoFields.localidade, basicInfoFields.modeloTrabalho, basicInfoFields.tipoContrato, setBasicInfoFields, setTechnicalSkills])
 
   const quickSuggestions = [
     "Anexar JD",
@@ -608,7 +608,7 @@ export function useExpandedChatEffects(ctx) {
     }
 
     typeNextChar()
-  }, [])
+  }, [setDisplayedText, setIsTypingEffect, setMessages, typingTimeoutRef])
 
   useEffect(() => {
     if (isOpen && messages.length === 0) {
@@ -642,17 +642,17 @@ export function useExpandedChatEffects(ctx) {
         return () => clearTimeout(initTimer)
       }
     }
-  }, [isOpen, messages.length, typeText, initialLiaMessage, initialMessages, isJobCreationMode])
+  }, [isOpen, messages.length, typeText, initialLiaMessage, initialMessages, isJobCreationMode, setDisplayedText, setMessages])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, displayedText])
+  }, [messages, displayedText, messagesEndRef])
 
   useEffect(() => {
     if (isOpen && !isTypingEffect) {
       inputRef.current?.focus()
     }
-  }, [isOpen, isTypingEffect])
+  }, [isOpen, isTypingEffect, inputRef])
 
   // Sync messages back to parent component for persistence across fullscreen transitions
   // Use ref to avoid infinite loop caused by callback changing on every render
@@ -693,7 +693,7 @@ export function useExpandedChatEffects(ctx) {
         clearTimeout(typingTimeoutRef.current)
       }
     }
-  }, [])
+  }, [typingTimeoutRef])
 
 
 

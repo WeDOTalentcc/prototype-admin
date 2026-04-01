@@ -2,7 +2,7 @@
 "use client"
 
 import React, { useState, useEffect, useCallback } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,15 +13,13 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+  SelectValue } from "@/components/ui/select"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog"
+  DialogFooter } from "@/components/ui/dialog"
 import {
   Shield,
   Plus,
@@ -31,8 +29,7 @@ import {
   RefreshCw,
   Loader2,
   AlertTriangle,
-  CheckCircle2,
-} from "lucide-react"
+  CheckCircle2 } from "lucide-react"
 import { toast } from "sonner"
 
 interface Guardrail {
@@ -61,8 +58,7 @@ const DOMAINS = [
 
 const LEVEL_LABEL: Record<string, string> = {
   primary: "Primário",
-  secondary: "Secundário",
-}
+  secondary: "Secundário" }
 
 const DOMAIN_LABEL: Record<string, string> = Object.fromEntries(
   DOMAINS.filter(d => d.value).map(d => [d.value, d.label])
@@ -83,8 +79,7 @@ export default function GuardrailsPage() {
     domain: "",
     tool: "",
     rule: "",
-    blocking_message: "",
-  })
+    blocking_message: "" })
 
   const fetchGuardrails = useCallback(async () => {
     setLoading(true)
@@ -109,8 +104,7 @@ export default function GuardrailsPage() {
   const handleToggle = async (guardrail: Guardrail) => {
     try {
       const res = await fetch(`/api/backend-proxy/guardrails/${guardrail.id}/toggle`, {
-        method: "PATCH",
-      })
+        method: "PATCH" })
       if (!res.ok) throw new Error()
       const updated: Guardrail = await res.json()
       setGuardrails(prev => prev.map(g => g.id === updated.id ? updated : g))
@@ -133,8 +127,7 @@ export default function GuardrailsPage() {
       domain: g.domain ?? "",
       tool: g.tool ?? "",
       rule: g.rule,
-      blocking_message: g.blocking_message,
-    })
+      blocking_message: g.blocking_message })
     setDialogOpen(true)
   }
 
@@ -152,22 +145,19 @@ export default function GuardrailsPage() {
         tool: form.tool || null,
         rule: form.rule,
         blocking_message: form.blocking_message,
-        updated_by: "admin",
-      }
+        updated_by: "admin" }
 
       let res: Response
       if (editingGuardrail) {
         res = await fetch(`/api/backend-proxy/guardrails/${editingGuardrail.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        })
+          body: JSON.stringify(payload) })
       } else {
         res = await fetch("/api/backend-proxy/guardrails", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        })
+          body: JSON.stringify(payload) })
       }
 
       if (!res.ok) throw new Error()

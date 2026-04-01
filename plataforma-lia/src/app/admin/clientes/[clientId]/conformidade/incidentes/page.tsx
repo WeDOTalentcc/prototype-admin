@@ -13,7 +13,6 @@ import {
   Lock,
   AlertTriangle,
   CheckCircle2,
-  XCircle,
   AlertCircle,
   RefreshCw,
   Loader2,
@@ -21,9 +20,7 @@ import {
   Activity,
   Server,
   Wifi,
-  WifiOff,
-  Filter
-} from "lucide-react"
+  WifiOff } from "lucide-react"
 import { useLGPDCompliance } from '@/hooks/admin/useLGPDCompliance'
 
 interface TabLink {
@@ -63,20 +60,17 @@ const severityColors: Record<string, string> = {
   critical: 'bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error',
   high: 'bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/30 dark:text-wedo-orange',
   medium: 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning',
-  low: 'bg-gray-100 lia-text-900 dark:bg-lia-bg-secondary dark:lia-text-50',
-}
+  low: 'bg-gray-100 lia-text-900 dark:bg-lia-bg-secondary dark:lia-text-50' }
 
 const statusColors: Record<string, string> = {
   open: 'bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error',
   investigating: 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning',
-  resolved: 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success',
-}
+  resolved: 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success' }
 
 const statusLabels: Record<string, string> = {
   open: 'Aberto',
   investigating: 'Investigando',
-  resolved: 'Resolvido',
-}
+  resolved: 'Resolvido' }
 
 function LoadingSpinner({ size = 'sm' }: { size?: 'sm' | 'md' | 'lg' }) {
   const sizeClass = size === 'lg' ? 'w-8 h-8' : size === 'md' ? 'w-6 h-6' : 'w-4 h-4'
@@ -150,8 +144,7 @@ export default function IncidentesPage({ params }: { params: Promise<{ clientId:
     startedAt: b.detectedAt,
     resolvedAt: b.resolvedAt,
     // @ts-ignore TODO: fix type
-    affectedServices: b.affectedSystems || [],
-  }))
+    affectedServices: b.affectedSystems || [] }))
 
   const filteredIncidents = filterStatus === 'all' 
     ? allIncidents 

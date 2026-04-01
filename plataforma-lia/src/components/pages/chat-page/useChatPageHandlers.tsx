@@ -193,7 +193,7 @@ export function useChatPageHandlers(ctx: ChatPageHandlersContext) {
     } finally {
       setIsLoading(false)
     }
-  }, [searchFlow, activeSearchFilters])
+  }, [searchFlow, activeSearchFilters, setContextData, setHasSearchResults, setIsLoading, setIsPanelOpen, setIsSmartSearchMode, setMessages, setSearchPreviewData, setSmartSearchQuery])
 
   const handleSendMessage = useCallback(async (customContent?: string) => {
     const userMessageContent = customContent || input
@@ -510,7 +510,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
         setIsLoading(false)
       }
     }
-  }, [input, isLoading, messages.length, wsIsConnected, wsSendMessage, wsClearTokens])
+  }, [input, isLoading, messages.length, wsIsConnected, wsSendMessage, wsClearTokens, attachedFiles, audioBlob, fileAnalysisContext, searchFlow, setAttachedFiles, setAudioBlob, setChatTitle, setContextData, setFileAnalysisContext, setInput, setIsLoading, setIsPanelOpen, setIsSmartSearchMode, setMessages, setSmartSearchQuery, wsStreamingModeRef])
 
   const handlePipelineAction = useCallback(async (candidateId: string, actionId: string, candidateName: string) => {
     try {
@@ -565,7 +565,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
       }
       setMessages(prev => [...prev, errorMessage])
     }
-  }, [messages.length, contextData])
+  }, [messages.length, contextData, setContextData, setIsSchedulingModalOpen, setMessages, setSelectedCandidateForScheduling])
 
 
   return {

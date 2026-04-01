@@ -13,14 +13,12 @@ import {
   Lock,
   AlertTriangle,
   CheckCircle2,
-  XCircle,
   TrendingUp,
   Calendar,
   AlertCircle,
   RefreshCw,
   ChevronRight,
   Loader2,
-  FileText,
   Users,
   Activity
 } from "lucide-react"
@@ -82,7 +80,7 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
   // @ts-ignore TODO: fix type
   const pendingControls = dashboard?.totalNotStarted ?? 0
   // @ts-ignore TODO: fix type
-  const inProgressControls = dashboard?.totalInProgress ?? 0
+  const _inProgressControls = dashboard?.totalInProgress ?? 0
   const upcomingReviews = dashboard?.upcomingReviews ?? 0
   const overdueReviews = dashboard?.overdueReviews ?? 0
   

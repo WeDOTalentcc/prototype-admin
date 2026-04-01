@@ -20,7 +20,6 @@ import {
   Brain,
   CreditCard,
   BarChart3,
-  Loader2,
   AlertCircle,
   RefreshCw,
   Shield,
@@ -43,8 +42,7 @@ const statusConfig: Record<string, { label: string, variant: 'success' | 'warnin
   trial: { label: 'Trial', variant: 'info' },
   suspended: { label: 'Suspenso', variant: 'warning' },
   churned: { label: 'Churned', variant: 'destructive' },
-  pending_setup: { label: 'Pendente Setup', variant: 'default' },
-}
+  pending_setup: { label: 'Pendente Setup', variant: 'default' } }
 
 const navigationTabs = [
   { name: 'Visão Geral', href: '', icon: Home },

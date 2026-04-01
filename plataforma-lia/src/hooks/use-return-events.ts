@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useToast } from '@/hooks/use-toast'
 
 interface ReturnEvent {
@@ -68,7 +68,7 @@ export function useReturnEvents({
   const lastPollTimestamp = useRef<string>(new Date().toISOString())
   const { toast } = useToast()
 
-  const slaConfig: SLAConfig = { ...DEFAULT_SLA_DAYS, ...customSlaConfig }
+  const slaConfig: SLAConfig = useMemo(() => ({ ...DEFAULT_SLA_DAYS, ...customSlaConfig }), [customSlaConfig])
 
   const processEvent = useCallback((event: ReturnEvent) => {
     const toastVariant = event.notification_type === 'warning' ? 'destructive' as const : 'default' as const

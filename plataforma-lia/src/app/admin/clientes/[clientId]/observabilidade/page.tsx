@@ -26,7 +26,6 @@ import {
   RefreshCw,
   ChevronRight,
   Filter,
-  ArrowUpRight,
   ArrowDownRight,
   Loader2
 } from "lucide-react"
@@ -89,8 +88,7 @@ const statusColors = {
   in_progress: 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning',
   not_started: 'bg-gray-100 lia-text-800 dark:bg-lia-bg-primary/30 dark:text-lia-text-primary',
   verified: 'bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary',
-  not_applicable: 'bg-gray-100 lia-text-500 dark:bg-lia-bg-primary/30 dark:lia-text-500',
-}
+  not_applicable: 'bg-gray-100 lia-text-500 dark:bg-lia-bg-primary/30 dark:lia-text-500' }
 
 const statusLabels: Record<string, string> = {
   implemented: 'Implementado',
@@ -99,8 +97,7 @@ const statusLabels: Record<string, string> = {
   in_progress: 'Em Progresso',
   not_started: 'Não Iniciado',
   verified: 'Verificado',
-  not_applicable: 'N/A',
-}
+  not_applicable: 'N/A' }
 
 function LoadingSpinner({ size = 'sm' }: { size?: 'sm' | 'md' | 'lg' }) {
   const sizeClass = size === 'lg' ? 'w-8 h-8' : size === 'md' ? 'w-6 h-6' : 'w-4 h-4'
@@ -129,8 +126,7 @@ function ComplianceTab({ clientId }: { clientId: string }) {
         controlsPartial: stats.inProgress,
         controlsNotImplemented: stats.notStarted,
         totalControls: stats.totalControls,
-        nextReview: undefined,
-      }))
+        nextReview: undefined }))
     : []
 
   const displayControls: ComplianceControl[] = controls.map((c) => ({
@@ -140,8 +136,7 @@ function ComplianceTab({ clientId }: { clientId: string }) {
     framework: c.control?.framework || '-',
     status: c.status === 'implemented' || c.status === 'verified' ? 'implemented' : c.status === 'in_progress' ? 'partial' : 'not_implemented',
     lastChecked: c.lastReviewedAt || c.updatedAt || '',
-    owner: c.ownerName,
-  }))
+    owner: c.ownerName }))
 
   if (isLoading) {
     return (
@@ -314,7 +309,7 @@ function ComplianceTab({ clientId }: { clientId: string }) {
 }
 
 function AIGovernanceTab({ clientId }: { clientId: string }) {
-  const { summary, latestAudit, audits, isLoading, error, refetch } = useBiasAudits(clientId)
+  const { summary, latestAudit, audits: _audits, isLoading, error: _biasError, refetch: _biasRefetch } = useBiasAudits(clientId)
   const { decisions, totalDecisions, isLoading: lgpdLoading } = useLGPDCompliance(clientId)
 
   const formatDateTime = (dateStr: string | undefined | null) => {
@@ -333,8 +328,7 @@ function AIGovernanceTab({ clientId }: { clientId: string }) {
         description: result.details || `${key} analysis`,
         severity: result.status === 'concern' ? 'high' : result.status === 'consider' ? 'medium' : 'low',
         detectedAt: latestAudit.auditDate,
-        resolved: result.status === 'clear',
-      }))
+        resolved: result.status === 'clear' }))
     : []
 
   const displayDecisions: AIDecision[] = decisions.map((d) => ({
@@ -347,8 +341,7 @@ function AIGovernanceTab({ clientId }: { clientId: string }) {
     outcome: d.decision,
     overridden: d.humanReviewRequested,
     explainability: !!d.explanation,
-    confidence: d.confidence,
-  }))
+    confidence: d.confidence }))
 
   const totalDecisionsCount = totalDecisions || displayDecisions.length
   const overriddenCount = displayDecisions.filter(d => d.overridden).length

@@ -22,15 +22,12 @@ import {
   AlertCircle,
   Loader2,
   RefreshCw,
-  Calendar,
   FileText,
   Settings,
   Mail,
   Phone,
   ExternalLink,
-  TrendingUp,
-  TrendingDown
-} from "lucide-react"
+  TrendingUp } from "lucide-react"
 
 interface ClientData {
   id: string
@@ -78,8 +75,7 @@ const statusConfig: Record<string, { label: string, variant: 'success' | 'warnin
   trial: { label: 'Trial', variant: 'info' },
   suspended: { label: 'Suspenso', variant: 'warning' },
   churned: { label: 'Churned', variant: 'destructive' },
-  pending_setup: { label: 'Pendente Setup', variant: 'default' },
-}
+  pending_setup: { label: 'Pendente Setup', variant: 'default' } }
 
 const activityIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   user_added: Users,
@@ -200,8 +196,7 @@ export default function ClientOverviewPage({
       return new Date(dateStr).toLocaleDateString('pt-BR', {
         day: '2-digit',
         month: 'short',
-        year: 'numeric',
-      })
+        year: 'numeric' })
     } catch {
       return dateStr
     }

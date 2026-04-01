@@ -35,16 +35,13 @@ import {
   AlertCircle,
   UserX,
   Filter,
-  Info,
-  ExternalLink
-} from "lucide-react"
+  Info } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+  DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 interface User {
   id: string
@@ -246,7 +243,7 @@ export default function ClientUsuariosPage({
     }
   }
 
-  const handleUpdateRole = async (userId: string, newRole: User['role']) => {
+  const _handleUpdateRole = async (userId: string, newRole: User['role']) => {
     try {
       const response = await fetch(`/api/backend-proxy/clients/${clientId}/users/${userId}`, {
         method: 'PUT',

@@ -7,10 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
-  Users,
   Calendar,
   TrendingUp,
-  TrendingDown,
   Target,
   AlertTriangle,
   CheckCircle2,
@@ -20,7 +18,6 @@ import {
   Brain,
   Download,
   RefreshCw,
-  Loader2,
   AlertCircle,
   DollarSign,
   Building2

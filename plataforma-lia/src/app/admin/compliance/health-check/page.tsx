@@ -15,23 +15,20 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+  TableRow } from "@/components/ui/table"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+  SelectValue } from "@/components/ui/select"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+  DialogTitle } from "@/components/ui/dialog"
 import {
   ShieldCheck,
   RefreshCw,
@@ -39,7 +36,6 @@ import {
   Search,
   Filter,
   CheckCircle2,
-  Clock,
   AlertCircle,
   XCircle,
   Download,
@@ -130,8 +126,7 @@ const FRAMEWORK_ICONS: Record<string, React.ReactNode> = {
   'LGPD': <FileCheck className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />,
   'BCB498': <Building2 className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />,
   'EUAI': <ShieldCheck className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />,
-  'NYC144': <ClipboardCheck className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />,
-}
+  'NYC144': <ClipboardCheck className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" /> }
 
 const FRAMEWORK_NAMES: Record<string, string> = {
   'SOX': 'SOX',
@@ -140,8 +135,7 @@ const FRAMEWORK_NAMES: Record<string, string> = {
   'LGPD': 'LGPD',
   'BCB498': 'BCB 498',
   'EUAI': 'EU AI Act',
-  'NYC144': 'NYC LL144',
-}
+  'NYC144': 'NYC LL144' }
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'Todos os Status' },
@@ -422,8 +416,7 @@ export default function HealthCheckPage() {
       const response = await fetch(`${API_BASE}${selectedItem.reqId}/check/`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
-        },
+          'Content-Type': 'application/json' },
         redirect: 'follow',
         body: JSON.stringify({
           comment: verifyComment,

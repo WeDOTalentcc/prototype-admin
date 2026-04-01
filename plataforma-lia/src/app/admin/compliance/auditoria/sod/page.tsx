@@ -10,10 +10,8 @@ import {
   AlertTriangle,
   ShieldCheck,
   Info,
-  XCircle,
   FileText,
-  Clock,
-} from "lucide-react"
+  Clock } from "lucide-react"
 
 interface ConflictMatrix {
   functionA: string
@@ -57,8 +55,7 @@ const detectedConflicts: DetectedConflict[] = [
     mitigation: 'Revisão trimestral por comitê', 
     status: 'mitigated',
     detectedAt: '2024-10-15',
-    reviewedAt: '2024-10-20',
-  },
+    reviewedAt: '2024-10-20' },
   { 
     id: 2, 
     user: 'Maria RH', 
@@ -69,8 +66,7 @@ const detectedConflicts: DetectedConflict[] = [
     mitigation: 'Logs de acesso monitorados', 
     status: 'ok',
     detectedAt: '2024-11-01',
-    reviewedAt: '2024-11-05',
-  },
+    reviewedAt: '2024-11-05' },
   { 
     id: 3, 
     user: 'João Financeiro', 
@@ -80,8 +76,7 @@ const detectedConflicts: DetectedConflict[] = [
     type: 'Alto Risco', 
     mitigation: 'Aguardando revisão', 
     status: 'pending',
-    detectedAt: '2024-12-10',
-  },
+    detectedAt: '2024-12-10' },
   { 
     id: 4, 
     user: 'Ana TI', 
@@ -92,8 +87,7 @@ const detectedConflicts: DetectedConflict[] = [
     mitigation: 'Segregação parcial implementada', 
     status: 'mitigated',
     detectedAt: '2024-09-20',
-    reviewedAt: '2024-09-25',
-  },
+    reviewedAt: '2024-09-25' },
 ]
 
 const getStatusBadge = (status: 'mitigated' | 'pending' | 'ok') => {
@@ -129,8 +123,7 @@ export default function SoDPage() {
     return new Date(dateStr).toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: 'short',
-      year: 'numeric',
-    })
+      year: 'numeric' })
   }
 
   return (
@@ -278,7 +271,7 @@ export default function SoDPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:lia-divide-700">
-                  {conflictMatrix.map((item, index) => (
+                  {conflictMatrix.map((item, _index) => (
                     <tr key={`${item.functionA}-${item.functionB}`} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors motion-reduce:transition-none">
                       <td className="px-6 py-4">
                         <span className="text-sm font-medium lia-text-950 dark:lia-text-50">{item.functionA}</span>
