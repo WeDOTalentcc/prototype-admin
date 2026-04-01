@@ -294,29 +294,29 @@
 }
 
 .scrollbar-thin::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--lia-bg-tertiary);
   border-radius: 4px;
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: #94a3b8;
+  background: var(--lia-text-tertiary);
   border-radius: 4px;
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: var(--lia-text-secondary);
 }
 
 .dark .scrollbar-thin::-webkit-scrollbar-track {
-  background: #1e293b;
+  background: var(--lia-bg-primary);
 }
 
 .dark .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: #475569;
+  background: var(--lia-text-secondary);
 }
 
 .dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: var(--lia-text-secondary);
 }
 
 /* Search Processing Animation - Sonar Effect */
@@ -482,7 +482,7 @@
 
 /* Tooltip dark */
 .lia-tooltip {
-  background-color: #1F1F1F;
+  background-color: var(--lia-text-primary);
   color: white;
   border-radius: 0.5rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
