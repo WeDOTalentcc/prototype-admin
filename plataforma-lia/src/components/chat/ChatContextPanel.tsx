@@ -28,7 +28,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
   if (!contextData || !isPanelOpen) return null
 
   return (
-    <div className="w-2/5 p-4 flex transition-colors motion-reduce:transition-none duration-300 overflow-hidden bg-gray-50 dark:bg-lia-bg-primary">
+    <div className="w-2/5 p-4 flex transition-colors motion-reduce:transition-none duration-300 overflow-hidden bg-white dark:bg-lia-bg-primary">
       <Card className="w-full border-0 rounded-md overflow-hidden flex flex-col bg-white dark:lia-bg-950">
         <CardHeader className="p-6 border-0 bg-white dark:lia-bg-950">
           <div className="flex items-center justify-between">

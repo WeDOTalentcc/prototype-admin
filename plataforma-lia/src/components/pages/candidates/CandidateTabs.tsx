@@ -2,13 +2,6 @@
 
 import { memo } from 'react'
 
-/**
- * CandidateTabs — barra de navegação de abas do Funil de Talentos.
- *
- * Sprint F5 — extração de componente de candidates-page.tsx.
- * Portabilidade Vue: props → defineProps; onTabChange → emit('tab-change', id).
- */
-
 interface Tab {
   id: string
   label: string
@@ -24,33 +17,28 @@ interface CandidateTabsProps {
 const CandidateTabs = memo(function CandidateTabs({ tabs, activeTab, onTabChange }: CandidateTabsProps) {
   return (
     <div className="mb-0">
-      <div className="border-b border-lia-border-subtle dark:border-lia-border-subtle">
-        <nav className="-mb-px flex items-center space-x-6 nav-tabs" aria-label="Tabs" role="tablist">
-          {/* TODO Sprint 3: migrar para <Tabs> shadcn */}
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => onTabChange(tab.id)}
-              role="tab"
-              className={`group inline-flex items-center gap-2 py-2 px-1 border-b-2 tab-button ${
-                activeTab === tab.id
-                  ? 'border-gray-950 text-lia-text-primary dark:border-lia-border-medium dark:text-lia-text-primary'
-                  : 'border-transparent text-lia-text-primary hover:text-lia-text-primary hover:border-lia-border-default dark:text-lia-text-tertiary dark:hover:text-lia-text-disabled'
-              }`}
-            >
-              <span>{tab.label}</span>
-              {tab.comingSoon && (
-                <span
-                  className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
-                  style={{backgroundColor: 'var(--gray-100)', color: 'var(--gray-700)'}}
-                >
-                  Em Breve
-                </span>
-              )}
-            </button>
-          ))}
-        </nav>
-      </div>
+      <nav className="flex items-center gap-1 nav-tabs" aria-label="Tabs" role="tablist">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => onTabChange(tab.id)}
+            role="tab"
+            aria-selected={activeTab === tab.id}
+            className={`inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors tab-button ${
+              activeTab === tab.id
+                ? 'bg-gray-100 text-gray-900 dark:bg-lia-bg-elevated dark:text-lia-text-primary'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-lia-text-tertiary dark:hover:text-lia-text-secondary dark:hover:bg-lia-bg-secondary'
+            }`}
+          >
+            <span>{tab.label}</span>
+            {tab.comingSoon && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-gray-200 text-gray-600 dark:bg-lia-bg-secondary dark:text-lia-text-tertiary">
+                Em Breve
+              </span>
+            )}
+          </button>
+        ))}
+      </nav>
     </div>
   )
 })

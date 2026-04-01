@@ -229,7 +229,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
                 </div>
               </div>
 
-              <div className="w-[45%] flex flex-col bg-gray-50">
+              <div className="w-[45%] flex flex-col bg-white">
                 <div className="px-4 py-3 border-b border-lia-border-subtle">
                   <p className="text-xs font-medium lia-text-base uppercase tracking-wider mb-2">
                     Preview

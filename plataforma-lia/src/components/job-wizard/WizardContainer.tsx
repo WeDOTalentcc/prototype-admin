@@ -94,7 +94,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
 
   return (
     <div className={cn(
- "flex flex-col bg-gray-50 h-full",
+ "flex flex-col bg-white h-full",
       inline ? "rounded-md border border-lia-border-subtle" : "fixed inset-0 z-50"
     )}>
       {/* Header with phase navigation */}

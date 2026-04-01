@@ -129,7 +129,7 @@ function AceitarConviteContent() {
 
   if (pageState === "loading") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50" role="status" aria-live="polite" aria-label="Carregando...">
+      <div className="min-h-screen flex items-center justify-center bg-white" role="status" aria-live="polite" aria-label="Carregando...">
         <Card className="w-full max-w-md mx-4 border-0">
           <CardContent className="p-8 text-center">
             <Loader2 className="w-10 h-10 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary mx-auto mb-4" />
@@ -142,7 +142,7 @@ function AceitarConviteContent() {
 
   if (pageState === "expired") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-white p-4">
         <Card className="w-full max-w-md border-0">
           <CardContent className="p-8">
             <div className="text-center">
@@ -182,7 +182,7 @@ function AceitarConviteContent() {
 
   if (pageState === "error") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-white p-4">
         <Card className="w-full max-w-md border-0">
           <CardContent className="p-8">
             <div className="text-center">
@@ -222,7 +222,7 @@ function AceitarConviteContent() {
 
   if (pageState === "accepted") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-white p-4">
         <Card className="w-full max-w-md border-0">
           <CardContent className="p-8">
             <div className="text-center">
@@ -262,7 +262,7 @@ function AceitarConviteContent() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-white p-4">
       <Card className="w-full max-w-md border-0">
         <CardContent className="p-8">
           <div className="text-center mb-6">
@@ -375,7 +375,7 @@ export default function AceitarConvitePage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-gray-50" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="min-h-screen flex items-center justify-center bg-white" role="status" aria-live="polite" aria-label="Carregando...">
           <Card className="w-full max-w-md mx-4 border-0">
             <CardContent className="p-8 text-center">
               <Loader2 className="w-10 h-10 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary mx-auto mb-4" />

@@ -92,7 +92,7 @@ function AcceptInvitationContent() {
 
   if (isLoadingInfo) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 font-open-sans" role="status" aria-live="polite" aria-label="Carregando...">
+      <div className="min-h-screen flex items-center justify-center bg-white font-open-sans" role="status" aria-live="polite" aria-label="Carregando...">
         <div className="text-center" role="status" aria-live="polite" aria-label="Carregando...">
           <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-600 mx-auto mb-4" />
           <p className="lia-text-600">Carregando informações do convite...</p>
@@ -103,7 +103,7 @@ function AcceptInvitationContent() {
 
   if (!token || (!invitationInfo && !isLoadingInfo)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 font-open-sans p-4">
+      <div className="min-h-screen flex items-center justify-center bg-white font-open-sans p-4">
         <div className="w-full max-w-md bg-lia-bg-primary rounded-xl p-10 text-center">
           <div className="w-16 h-16 bg-status-error/15 rounded-full flex items-center justify-center mx-auto mb-6">
             <AlertCircle className="w-8 h-8 text-status-error" />
@@ -124,7 +124,7 @@ function AcceptInvitationContent() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 font-open-sans p-4">
+      <div className="min-h-screen flex items-center justify-center bg-white font-open-sans p-4">
         <div className="w-full max-w-md bg-lia-bg-primary rounded-xl p-10 text-center">
           <div className="w-16 h-16 bg-status-success/15 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-8 h-8 text-status-success" />
@@ -144,7 +144,7 @@ function AcceptInvitationContent() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 font-open-sans p-4">
+    <div className="min-h-screen flex items-center justify-center bg-white font-open-sans p-4">
       <div className="w-full max-w-md">
         <div className="bg-lia-bg-primary rounded-xl p-10">
           <div className="flex items-center justify-center mb-6">
@@ -251,7 +251,7 @@ function AcceptInvitationContent() {
 export default function AcceptInvitationPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 font-open-sans" role="status" aria-live="polite" aria-label="Carregando...">
+      <div className="min-h-screen flex items-center justify-center bg-white font-open-sans" role="status" aria-live="polite" aria-label="Carregando...">
         <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-600" />
       </div>
     }>

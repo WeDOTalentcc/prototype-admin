@@ -573,7 +573,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
           />
 
           {/* Container Principal com LIA Sidebar Unificada */}
-          <div className="flex-1 flex gap-2 overflow-hidden bg-gray-50 dark:bg-lia-bg-primary min-w-0">
+          <div className="flex-1 flex gap-2 overflow-hidden bg-white dark:bg-lia-bg-primary min-w-0">
             {/* Super Chat Expandido - Ocupa a maior parte da tela, deixando apenas uma coluna visível */}
             {showSuperChat && (
               <>

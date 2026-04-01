@@ -223,47 +223,40 @@ export function JobsPage(props: JobsPageProps) {
             </div>
           </div>
 
-        {/* Sistema de Abas - Padrão Funil de Talentos */}
+        {/* Sistema de Abas - Pill style (padrão ElevenLabs) */}
         <div className="mb-0">
-          <div className="border-b border-lia-border-subtle dark:border-lia-border-subtle">
-            <nav className="-mb-px flex items-center space-x-6 nav-tabs" aria-label="Tabs" role="tablist">
-              {/* TODO Sprint 3: migrar para <Tabs> shadcn */}
-              {navigationFilters.map((filter) => (
-                <button
-                  key={filter.id}
-                  onClick={() => {
-                    setActiveFilter(filter.id)
-                  }}
-                  role="tab"
-                  className={`group inline-flex items-center py-2 px-1 border-b-2 tab-button ${
+          <nav className="flex items-center gap-1 nav-tabs" aria-label="Tabs" role="tablist">
+            {navigationFilters.map((filter) => (
+              <button
+                key={filter.id}
+                onClick={() => {
+                  setActiveFilter(filter.id)
+                }}
+                role="tab"
+                aria-selected={activeFilter === filter.id}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors tab-button ${
+                  activeFilter === filter.id
+                    ? 'bg-gray-100 text-gray-900 dark:bg-lia-bg-elevated dark:text-lia-text-primary'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-lia-text-tertiary dark:hover:text-lia-text-secondary dark:hover:bg-lia-bg-secondary'
+                }`}
+              >
+                <span>{filter.label}</span>
+                {!filter.isDashboard && (
+                  <span className={`text-[10px] font-semibold ${
                     activeFilter === filter.id
-                      ?'border-gray-900 text-lia-text-primary dark:border-lia-border-subtle dark:text-lia-text-primary font-semibold'
-                      :'border-transparent text-lia-text-primary hover:text-lia-text-primary hover:border-lia-border-default dark:text-lia-text-primary dark:hover:text-lia-text-secondary'
-                  }`}
-                >
-                  <span>{filter.label}</span>
-                  {!filter.isDashboard && (
-                    <Badge
-                      variant="secondary"
-                      className={`ml-2 text-xs ${
-                        activeFilter === filter.id
-                          ?'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-elevated dark:text-lia-text-primary font-semibold'
-                          :'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary'
-                      }`}
-                    >
-                      {isLoadingJobs ? (
-                        <span className="inline-block w-4 h-3 bg-gray-300 dark:bg-lia-bg-elevated rounded-md animate-pulse motion-reduce:animate-none" />
-                      ) : (
-                        filter.count
-                      )}
-                    </Badge>
-                  )}
-
-                </button>
-              ))}
-            </nav>
-          </div>
-
+                      ? 'text-gray-500 dark:text-lia-text-tertiary'
+                      : 'text-gray-400 dark:text-lia-text-tertiary'
+                  }`}>
+                    {isLoadingJobs ? (
+                      <span className="inline-block w-4 h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded animate-pulse motion-reduce:animate-none" />
+                    ) : (
+                      filter.count
+                    )}
+                  </span>
+                )}
+              </button>
+            ))}
+          </nav>
         </div>
       </div>
 

@@ -116,7 +116,7 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      <div className="w-full lg:w-1/2 bg-gray-50 flex flex-col">
+      <div className="w-full lg:w-1/2 bg-white flex flex-col">
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-lia-bg-primary rounded-xl p-10">
             <div className="text-center mb-6">
