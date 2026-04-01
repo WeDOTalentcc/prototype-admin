@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { useState } from "react"
@@ -96,6 +95,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
     return benefits.map((b: string | { name?: string; category?: string; value_type?: string }) => {
       if (typeof b === 'string') return toCompanyBenefit(b)
       if (b.category && b.value_type) return b as CompanyBenefit
+      // @ts-ignore TODO: fix type — Argument of type '{ name?: string | undefined; category?: string | undefined; va
       return toCompanyBenefit(b)
     })
   }, [benefits])
@@ -374,19 +374,19 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
         <div className="grid grid-cols-2 gap-2">
           <div>
             <span className="text-micro lia-text-500">Score Minimo</span>
-            <p className="text-micro font-medium lia-text-800">{screeningConfig?.scheduling?.minScore || 'Recomendado'}</p>
+            <p className="text-micro font-medium lia-text-800">{(screeningConfig?.scheduling as any).minScore || 'Recomendado'}</p>
           </div>
           <div>
             <span className="text-micro lia-text-500">Calendario</span>
-            <p className="text-micro font-medium lia-text-800">{screeningConfig?.scheduling?.calendar || 'Outlook'}</p>
+            <p className="text-micro font-medium lia-text-800">{(screeningConfig?.scheduling as any).calendar || 'Outlook'}</p>
           </div>
           <div>
             <span className="text-micro lia-text-500">Horarios</span>
-            <p className="text-micro font-medium lia-text-800">{screeningConfig?.scheduling?.hours || '9h-18h'}</p>
+            <p className="text-micro font-medium lia-text-800">{(screeningConfig?.scheduling as any).hours || '9h-18h'}</p>
           </div>
           <div>
             <span className="text-micro lia-text-500">Duracao</span>
-            <p className="text-micro font-medium lia-text-800">{screeningConfig?.scheduling?.duration || '45min'}</p>
+            <p className="text-micro font-medium lia-text-800">{(screeningConfig?.scheduling as any).duration || '45min'}</p>
           </div>
         </div>
       </div>
@@ -412,19 +412,19 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
         <div className="grid grid-cols-2 gap-2">
           <div>
             <span className="text-micro lia-text-500">Score Minimo Aprovacao</span>
-            <p className="text-micro font-medium lia-text-800">{screeningConfig?.minApprovalScore || 'Recomendado'}</p>
+            <p className="text-micro font-medium lia-text-800">{(screeningConfig as any)?.minApprovalScore || 'Recomendado'}</p>
           </div>
           <div>
             <span className="text-micro lia-text-500">Timeout Resposta</span>
-            <p className="text-micro font-medium lia-text-800">{screeningConfig?.timeout || '24h'}</p>
+            <p className="text-micro font-medium lia-text-800">{(screeningConfig as any)?.timeout || '24h'}</p>
           </div>
           <div>
             <span className="text-micro lia-text-500">Re-tentativas</span>
-            <p className="text-micro font-medium lia-text-800">{screeningConfig?.retries || '2x'}</p>
+            <p className="text-micro font-medium lia-text-800">{(screeningConfig as any)?.retries || '2x'}</p>
           </div>
           <div>
             <span className="text-micro lia-text-500">Fallback</span>
-            <p className="text-micro font-medium lia-text-800">{screeningConfig?.fallback || 'Revisao Manual'}</p>
+            <p className="text-micro font-medium lia-text-800">{(screeningConfig as any)?.fallback || 'Revisao Manual'}</p>
           </div>
         </div>
       </div>

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { useEffect } from "react"
@@ -50,6 +49,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
             aiPrompt={hub.aiPrompt}
             setAiPrompt={hub.setAiPrompt}
             aiResultModal={hub.aiResultModal}
+            // @ts-ignore TODO: fix type — Type 'RefObject<HTMLTextAreaElement | null>' is not assignable to type 'RefObjec
             bodyTextareaRef={hub.bodyTextareaRef}
             isGenerating={hub.isGenerating}
             handleChannelFilterChange={hub.handleChannelFilterChange}

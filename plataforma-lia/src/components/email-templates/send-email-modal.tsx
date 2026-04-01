@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useEffect, useMemo, useCallback } from "react"
@@ -96,6 +95,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
   }, [])
 
   const handleTemplateSelect = useCallback((template: Record<string, unknown>) => {
+    // @ts-ignore TODO: fix type — Argument of type 'unknown' is not assignable to parameter of type 'SetStateActio
     setSelectedTemplateId(template.id)
   }, [])
 
@@ -219,6 +219,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
                     initialMessage={editedBody}
                     onSubjectChange={handleSubjectChange}
                     onMessageChange={handleMessageChange}
+                    // @ts-ignore TODO: fix type — Type '(template: Record<string, unknown>) => void' is not assignable to type '(t
                     onTemplateSelect={handleTemplateSelect}
                     showTemplateSelector={true}
                     showLiaAdjust={true}

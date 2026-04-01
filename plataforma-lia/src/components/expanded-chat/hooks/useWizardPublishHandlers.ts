@@ -688,7 +688,6 @@ export function useWizardPublishHandlers(ctx: WizardPublishHandlersContext) {
           was_published: true
         }).catch(() => {})
         setWizardFastTrackSourceJobId(null)
-      // @ts-ignore TODO: fix type
       }
 
       // @ts-ignore TODO: fix type

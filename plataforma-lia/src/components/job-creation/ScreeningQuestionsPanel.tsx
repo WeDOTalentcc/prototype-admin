@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { useState, useEffect, useMemo, useRef } from "react"
@@ -720,6 +719,7 @@ export function ScreeningQuestionsPanel({
   }
 
   if (isLoading && !hasGenerated) {
+    // @ts-ignore TODO: fix type
     return (
       <Card className={cn("w-full", className)}>
         <CardContent className="flex items-center justify-center py-12">

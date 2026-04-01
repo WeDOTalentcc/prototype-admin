@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useMemo } from "react"
@@ -780,6 +779,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                                 <span key={`req-${idx}`} className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-secondary">
                                   {typeof req === "string" ? req : req.name || req.skill || "-"}
                                 </span>
+                              // @ts-ignore TODO: fix type
                               ))}
                               {job.technical_requirements.length > 4 && (
                                 <span className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-tertiary">
@@ -815,6 +815,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
                               {job.behavioral_competencies.length > 4 && (
                                 <span className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-tertiary">
                                   +{job.behavioral_competencies.length - 4}
+                                // @ts-ignore TODO: fix type
                                 </span>
                               )}
                             </div>

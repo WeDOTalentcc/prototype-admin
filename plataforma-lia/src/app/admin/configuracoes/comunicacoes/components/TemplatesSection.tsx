@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client'
 
 import { useState } from 'react'
@@ -65,7 +64,7 @@ export function TemplatesSection({
       <div className="flex items-center justify-between">
         <div className="flex gap-2">
           <Button
-            variant={templateChannelFilter === 'email' ? 'default' : 'outline'}
+            variant={(templateChannelFilter === 'email' ? 'default' : 'outline') as any}
             size="sm"
             onClick={() => setTemplateChannelFilter('email')}
             className={templateChannelFilter === 'email' ? 'bg-gray-900 dark:lia-bg-50 hover:bg-gray-800 dark:hover:bg-gray-200 text-white dark:lia-text-900' : ''}
@@ -74,7 +73,7 @@ export function TemplatesSection({
             Email
           </Button>
           <Button
-            variant={templateChannelFilter === 'whatsapp' ? 'default' : 'outline'}
+            variant={(templateChannelFilter === 'whatsapp' ? 'default' : 'outline') as any}
             size="sm"
             onClick={() => setTemplateChannelFilter('whatsapp')}
             className={templateChannelFilter === 'whatsapp' ? 'bg-status-success hover:bg-status-success' : ''}
@@ -85,7 +84,7 @@ export function TemplatesSection({
             WhatsApp
           </Button>
           <Button
-            variant={templateChannelFilter === 'bell' ? 'default' : 'outline'}
+            variant={(templateChannelFilter === 'bell' ? 'default' : 'outline') as any}
             size="sm"
             onClick={() => setTemplateChannelFilter('bell')}
             className={templateChannelFilter === 'bell' ? 'bg-status-warning hover:bg-status-warning text-white' : ''}
@@ -94,7 +93,7 @@ export function TemplatesSection({
             Notificações
           </Button>
           <Button
-            variant={templateChannelFilter === 'teams' ? 'default' : 'outline'}
+            variant={(templateChannelFilter === 'teams' ? 'default' : 'outline') as any}
             size="sm"
             onClick={() => setTemplateChannelFilter('teams')}
             className={templateChannelFilter === 'teams' ? 'bg-wedo-purple hover:bg-wedo-purple text-white' : ''}
@@ -103,7 +102,7 @@ export function TemplatesSection({
             Teams
           </Button>
           <Button
-            variant={templateChannelFilter === 'chat_lia' ? 'default' : 'outline'}
+            variant={(templateChannelFilter === 'chat_lia' ? 'default' : 'outline') as any}
             size="sm"
             onClick={() => setTemplateChannelFilter('chat_lia')}
             className={templateChannelFilter === 'chat_lia' ? 'bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200' : ''}
@@ -112,7 +111,7 @@ export function TemplatesSection({
             Chat LIA
           </Button>
           <Button
-            variant={templateChannelFilter === 'report' ? 'default' : 'outline'}
+            variant={(templateChannelFilter === 'report' ? 'default' : 'outline') as any}
             size="sm"
             onClick={() => setTemplateChannelFilter('report')}
             className={templateChannelFilter === 'report' ? 'bg-slate-600 hover:bg-slate-700 text-white' : ''}
@@ -121,7 +120,7 @@ export function TemplatesSection({
             Relatórios
           </Button>
           <Button
-            variant={templateChannelFilter === 'briefing' ? 'default' : 'outline'}
+            variant={(templateChannelFilter === 'briefing' ? 'default' : 'outline') as any}
             size="sm"
             onClick={() => setTemplateChannelFilter('briefing')}
             className={templateChannelFilter === 'briefing' ? 'bg-status-warning hover:bg-status-warning/80 text-white' : ''}
@@ -130,7 +129,7 @@ export function TemplatesSection({
             Briefings
           </Button>
           <Button
-            variant={templateChannelFilter === 'parecer' ? 'default' : 'outline'}
+            variant={(templateChannelFilter === 'parecer' ? 'default' : 'outline') as any}
             size="sm"
             onClick={() => setTemplateChannelFilter('parecer')}
             className={templateChannelFilter === 'parecer' ? 'bg-wedo-purple hover:bg-wedo-purple text-white' : ''}

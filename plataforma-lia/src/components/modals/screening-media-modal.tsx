@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useRef, useEffect } from "react"
@@ -209,6 +208,7 @@ export function ScreeningMediaModal({
                 <div className="flex items-center gap-3">
                   <Button
                     size="sm"
+                    // @ts-ignore TODO: fix type — Type '"default"' is not assignable to type '"link" | "primary" | "destructive" |
                     variant="default"
                     onClick={togglePlay}
                     className="w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-900 p-0"

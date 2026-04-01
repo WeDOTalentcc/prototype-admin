@@ -315,8 +315,7 @@ export function ChatPage() {
         <div className="p-6 flex-shrink-0 bg-gray-50">
           <div className={inputContainerClass}>
             {/* Context Pills */}
-            // @ts-ignore TODO: fix type
-            {contextData && contextData.data?.totalCount > 0 && (
+            {contextData && (contextData.data as any)?.totalCount > 0 && (
               <div className="mb-4">
                 <ContextPill
                   icon={<MapPin className="w-3.5 h-3.5" />}
@@ -350,11 +349,9 @@ export function ChatPage() {
               <div className="rounded-md p-5 space-y-4 bg-lia-bg-primary">
                 
                 {/* Sugestões Rápidas */}
-                {(getQuickSuggestions().length > 0 || (hasSearchResults && contextData && getQuickActions().length > 0)) && !isLoading && searchFlow.flowState !== "collecting_profile" && (
+                {(getQuickSuggestions().length > 0 || (hasSearchResults && contextData && getQuickActions().length > 0)) && !isLoading && (searchFlow.flowState as string) !== "collecting_profile" && (
                   <div className="space-y-3">
-                    // @ts-ignore TODO: fix type
-                    {getQuickSuggestions().length > 0 && searchFlow.flowState !== "collecting_profile" && (
-                      // @ts-ignore TODO: fix type
+                    {getQuickSuggestions().length > 0 && (searchFlow.flowState as string) !== "collecting_profile" && (
                       <div className="flex flex-wrap gap-2">
                         {getQuickSuggestions().map((suggestion, index) => (
                           <Button
@@ -368,10 +365,7 @@ export function ChatPage() {
                         ))}
                       </div>
                     )}
-                    
-                    // @ts-ignore TODO: fix type
-                    {hasSearchResults && contextData && contextData.data?.totalCount > 0 && getQuickActions().length > 0 && (
-                      // @ts-ignore TODO: fix type
+                    {hasSearchResults && contextData && (contextData.data as any)?.totalCount > 0 && getQuickActions().length > 0 && (
                       <QuickActionChips actions={getQuickActions()} />
                     )}
                   </div>

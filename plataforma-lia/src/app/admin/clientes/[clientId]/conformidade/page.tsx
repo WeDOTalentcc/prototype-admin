@@ -433,9 +433,7 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
               <div className="p-4 rounded-md bg-gray-50 dark:bg-lia-bg-primary">
                 <div className="flex items-center gap-3">
                   <CheckCircle2 className="w-5 h-5 text-status-success" />
-                  <div>
-                    // @ts-ignore TODO: fix type
-                    <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">{biasSummary.passedAudits || 0}</p>
+                  <div>                    <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">{(biasSummary as any).passedAudits || 0}</p>
                     <p className="text-xs lia-text-400 dark:lia-text-500">Aprovadas</p>
                   </div>
                 </div>
@@ -443,9 +441,7 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
               <div className="p-4 rounded-md bg-gray-50 dark:bg-lia-bg-primary">
                 <div className="flex items-center gap-3">
                   <AlertTriangle className="w-5 h-5 text-status-warning" />
-                  <div>
-                    // @ts-ignore TODO: fix type
-                    <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">{biasSummary.concernAudits || 0}</p>
+                  <div>                    <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">{(biasSummary as any).concernAudits || 0}</p>
                     <p className="text-xs lia-text-400 dark:lia-text-500">Com Alertas</p>
                   </div>
                 </div>

@@ -287,7 +287,7 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
                     <span className="text-sm lia-text-500 dark:text-lia-text-tertiary">{(dpo as any).email}</span>
                   </div>
                   {(dpo as any).phone && (
-                    // @ts-ignore TODO: fix type
+                    // @ts-ignore TODO: fix type — Property 'phone' does not exist on type 'DPORegistry'.
                     <span className="text-sm lia-text-400 dark:lia-text-500">{dpo.phone}</span>
                   )}
                 </div>
@@ -378,15 +378,10 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
                   <p className="text-lg font-semibold text-status-error dark:text-status-error">{(stats as any)?.dataExceedingRetention || 0}</p>
                   <p className="text-xs text-status-error dark:text-status-error">Prazo excedido</p>
                 </div>
-              </div>
-
-              // @ts-ignore TODO: fix type
-              {stats?.nextRetentionReview && (
+              </div>              {(stats as any)?.nextRetentionReview && (
                 <div className="flex items-center gap-2 pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                   <Calendar className="w-4 h-4 lia-text-400 dark:lia-text-500" />
-                  <span className="text-sm lia-text-400 dark:lia-text-500">
-                    // @ts-ignore TODO: fix type
-                    Próxima revisão: {formatDate((stats as any).nextRetentionReview)}
+                  <span className="text-sm lia-text-400 dark:lia-text-500">                    Próxima revisão: {formatDate((stats as any).nextRetentionReview)}
                   </span>
                 </div>
               )}
@@ -400,7 +395,6 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
               Incidentes de Dados
-            // @ts-ignore TODO: fix type
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -437,7 +431,6 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
           </CardContent>
         </Card>
       )}
-    // @ts-ignore TODO: fix type
     </div>
   )
 }

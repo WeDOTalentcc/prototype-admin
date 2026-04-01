@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useEffect } from "react"
@@ -392,6 +391,7 @@ export function LIAActivityFeed() {
                           {activity.actions.map((action, actionIndex) => (
                             <Button
                               key={actionIndex}
+                              // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
                               variant={action.variant === 'primary' ? 'default' : 'outline'}
                               size="sm"
                               onClick={action.action}

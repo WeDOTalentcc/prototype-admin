@@ -828,7 +828,7 @@ export function CandidateSearchResultsView({
                   setSortOrder(config.direction)
                 }}
                 onTogglePin={(candidateId) => onTogglePin(candidateId)}
-                onToggleFavorite={(candidateId) => onToggleFavorite(candidateId)}
+                onToggleFavorite={(candidateId: any) => onToggleFavorite(candidateId)}
                 renderCustomCell={(candidate, columnId) => renderCellValue(candidate as unknown as Candidate, columnId)}
               />
             )}
@@ -963,46 +963,44 @@ export function CandidateSearchResultsView({
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-gray-300 dark:bg-lia-bg-elevated group-hover:bg-gray-400 dark:group-hover:bg-gray-500 rounded-full transition-colors motion-reduce:transition-none"></div>
               </div>
               <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
-                // @ts-ignore TODO: fix type
                 <CandidatePreview
-                  // @ts-ignore TODO: fix type
-                  candidate={previewCandidate}
+                  candidate={previewCandidate as any}
                   isOpen={showCandidatePreview}
                   onClose={onCloseCandidatePreview}
                   isMaximized={isPreviewMaximized}
                   onToggleMaximize={onTogglePreviewMaximize}
-                  candidates={sortedCandidates}
+                  candidates={sortedCandidates as any}
                   currentIndex={sortedCandidates.findIndex(c => c.id === previewCandidate.id)}
                   onNavigateCandidate={(index) => {
                     if (sortedCandidates[index]) {
                       setPreviewCandidate(sortedCandidates[index])
                     }
                   }}
-                  onOpenFullPage={onCandidatePageOpen}
-                  onScheduleInterview={(candidate) => {
+                  onOpenFullPage={onCandidatePageOpen as any}
+                  onScheduleInterview={(candidate: any) => {
                     // @ts-ignore TODO: fix type
                     setSelectedCandidateForAction(candidate)
                     setShowScheduleModal(true)
                   }}
-                  onAddToVacancy={(candidate) => {
+                  onAddToVacancy={(candidate: any) => {
                     // @ts-ignore TODO: fix type
                     setSelectedCandidatesForBatch(new Set([candidate.id]))
                     setShowAddToVacancyModal(true)
                   }}
-                  onToggleFavorite={(candidateId) => onToggleFavorite(candidateId)}
+                  onToggleFavorite={(candidateId: any) => onToggleFavorite(candidateId)}
                   // @ts-ignore TODO: fix type
-                  onWSIScreening={(candidate) => onStartWSITextScreening(candidate)}
+                  onWSIScreening={(candidate: any) => onStartWSITextScreening(candidate)}
                   isFavorite={favorites.has(previewCandidate.id)}
                   // @ts-ignore TODO: fix type
-                  onSendEmail={(candidate) => onSendEmail(candidate)}
+                  onSendEmail={(candidate: any) => onSendEmail(candidate)}
                   // @ts-ignore TODO: fix type
-                  onSendWhatsApp={(candidate) => onSendWhatsApp(candidate)}
+                  onSendWhatsApp={(candidate: any) => onSendWhatsApp(candidate)}
                   // @ts-ignore TODO: fix type
-                  onSendTriagem={(candidate) => onSendTriagem(candidate)}
+                  onSendTriagem={(candidate: any) => onSendTriagem(candidate)}
                   // @ts-ignore TODO: fix type
-                  onSendAgendamento={(candidate) => onSendAgendamento(candidate)}
+                  onSendAgendamento={(candidate: any) => onSendAgendamento(candidate)}
                   // @ts-ignore TODO: fix type
-                  onSendFeedback={(candidate) => onSendFeedback(candidate)}
+                  onSendFeedback={(candidate: any) => onSendFeedback(candidate)}
                 />
               </div>
             </div>

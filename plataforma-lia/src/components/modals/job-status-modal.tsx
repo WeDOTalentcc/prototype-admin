@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react"
@@ -271,6 +270,7 @@ export function JobStatusModal({
               const candidatesData = data.candidates || data.items || data || []
               
               if (Array.isArray(candidatesData)) {
+                // @ts-ignore TODO: fix type — Argument of type '{ id: unknown; name: {}; email: unknown; phone: unknown; stage
                 allFetched.push(...candidatesData.map((c: Record<string, unknown>) => ({
                   id: c.id || c.candidate_id,
                   name: c.name || c.full_name || 'Candidato',
@@ -522,6 +522,7 @@ export function JobStatusModal({
             <Button
               key={channel}
               type="button"
+              // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
               variant={notificationChannel === channel ? 'default' : 'outline'}
               size="sm"
               onClick={() => setNotificationChannel(channel)}

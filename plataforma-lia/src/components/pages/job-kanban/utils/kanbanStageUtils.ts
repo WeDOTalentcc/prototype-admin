@@ -145,7 +145,7 @@ export const mapInterviewStagesToKanban = (
     // @ts-ignore // TODO: fix type
     // @ts-ignore // TODO: fix type
     { id: 'hired', name: 'hired', displayName: 'Contratado', order: 900, stageType: 'final', isFinal: true, isHired: true, actionBehavior: 'conclusion_hired' },
-    // @ts-ignore // TODO: fix type
+    // @ts-ignore TODO: fix type — Property 'color' is missing in type '{ id: string; name: string; displayName: st
     { id: 'rejected', name: 'rejected', displayName: 'Reprovado', order: 901, stageType: 'final', isFinal: true, isRejection: true, actionBehavior: 'conclusion_rejected' },
     // @ts-ignore // TODO: fix type
     { id: 'offer_declined', name: 'offer_declined', displayName: 'Proposta Recusada', order: 902, stageType: 'final', isFinal: true, actionBehavior: 'conclusion_declined' }

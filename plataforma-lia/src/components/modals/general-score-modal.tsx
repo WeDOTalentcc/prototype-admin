@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { X, Gauge, TrendingUp, FileText, Brain, Code, Globe } from "lucide-react"
@@ -153,6 +152,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
                 </span>
                 <span 
                   className="text-sm text-lia-text-tertiary"
+                  // @ts-ignore TODO: fix type
                  
                 >
                   / 100
@@ -176,6 +176,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
               className="text-xs font-semibold mb-3 text-lia-text-primary dark:text-lia-text-primary"
              
             >
+              // @ts-ignore TODO: fix type
               Composição do Score (Média Ponderada)
             </p>
 

@@ -277,9 +277,7 @@ export function KanbanLIASidebar({
                             return line ? <p key={i}>{line}</p> : null
                           })}
                         </div>
-                        // @ts-ignore TODO: fix type
-                        {(msg as { metadata?: { action_executed?: boolean; action_result?: unknown; action_type?: string; is_fallback?: boolean; ui_action?: string; ui_action_params?: Record<string, unknown> } }).metadata?.action_executed && (msg as { metadata?: { action_executed?: boolean; action_result?: unknown; action_type?: string; is_fallback?: boolean; ui_action?: string; ui_action_params?: Record<string, unknown> } }).metadata?.action_result && (
-                          // @ts-ignore TODO: fix type
+                        {(msg as any).metadata?.action_executed && (msg as any).metadata?.action_result && (
                           <ActionResultCard
                             // @ts-ignore TODO: fix type
                             actionType={(msg as { metadata?: { action_executed?: boolean; action_result?: unknown; action_type?: string; is_fallback?: boolean; ui_action?: string; ui_action_params?: Record<string, unknown> } }).metadata.action_type || 'move_candidate'}

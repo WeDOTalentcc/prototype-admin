@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React from "react"
@@ -128,6 +127,7 @@ export function ActionResultCard({ actionType, result, className = "" }: ActionR
         {(actionType === "pause_job" || actionType === "close_job" || actionType === "reopen_job") && (
           <div className="flex items-center gap-2">
             {result.job_title && (
+              // @ts-ignore TODO: fix type
               <>
                 <span className="text-lia-text-secondary">Vaga:</span>
                 <span className="text-lia-text-disabled font-medium">{String(result.job_title)}</span>
@@ -139,6 +139,7 @@ export function ActionResultCard({ actionType, result, className = "" }: ActionR
         {actionType === "duplicate_job" && result.new_job_id && (
           <div className="flex items-center gap-2">
             <span className="text-lia-text-secondary">Nova vaga ID:</span>
+            // @ts-ignore TODO: fix type
             <span className={`px-1.5 py-0.5 rounded-md ${badgeColor}`}>#{String(result.new_job_id)}</span>
           </div>
         )}

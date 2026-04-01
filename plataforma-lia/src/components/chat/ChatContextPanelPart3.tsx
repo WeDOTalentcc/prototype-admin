@@ -42,9 +42,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
                 <div className="p-4 rounded-md bg-status-error/10 dark:bg-status-error/20">
                   <h4 className="font-medium mb-2 lia-text-800 dark:text-lia-text-primary">Base de Análise</h4>
                   <div className="grid grid-cols-2 gap-4 text-sm">
-                    // @ts-ignore // TODO: fix type
                     <div><span className="text-wedo-cyan-dark dark:text-lia-text-secondary">Processos Históricos:</span><p className="font-semibold">{data.analysis_base.historical_processes}</p></div>
-                    // @ts-ignore // TODO: fix type
                     <div><span className="text-wedo-cyan-dark dark:text-lia-text-secondary">Pontos de Dados:</span><p className="font-semibold">{data.analysis_base.data_points.toLocaleString()}</p></div>
                   </div>
                 </div>
@@ -104,11 +102,8 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
             <CardContent className="p-6">
               <div className="space-y-6 font-open-sans">
                 <div className="p-4 rounded-md bg-stone-50 dark:bg-stone-900/20">
-                  // @ts-ignore // TODO: fix type
                   <h4 className="font-medium mb-3 lia-text-800 dark:text-lia-text-primary">Candidato</h4>
-                  // @ts-ignore // TODO: fix type
                   <div className="grid grid-cols-2 gap-3 text-sm">
-                    // @ts-ignore // TODO: fix type
                     <div><span className="lia-text-500 dark:text-lia-text-tertiary">Nome:</span><p className="font-medium lia-text-800 dark:text-lia-text-primary">{data.candidate_info.name}</p></div>
                     <div><span className="lia-text-500 dark:text-lia-text-tertiary">Email:</span><p className="font-medium lia-text-800 dark:text-lia-text-primary">{data.candidate_info.email}</p></div>
                     <div><span className="lia-text-500 dark:text-lia-text-tertiary">Telefone:</span><p className="font-medium lia-text-800 dark:text-lia-text-primary">{data.candidate_info.phone}</p></div>

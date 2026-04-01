@@ -332,15 +332,13 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                   <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-gray-300 dark:bg-lia-bg-elevated group-hover:bg-gray-400 dark:group-hover:bg-gray-500 rounded-full transition-colors motion-reduce:transition-none"></div>
                 </div>
                 <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
-                  // @ts-ignore TODO: fix type
                   <CandidatePreview
-                    // @ts-ignore TODO: fix type
-                    candidate={previewCandidate as unknown as never}
+                    candidate={previewCandidate as any}
                     isOpen={showCandidatePreview}
                     onClose={handleCloseCandidatePreview}
                     isMaximized={isPreviewMaximized}
                     onToggleMaximize={handleTogglePreviewMaximize}
-                    candidates={candidates.filter(c => pinnedCandidates.has(c.id) || favorites.has(c.id))}
+                    candidates={candidates.filter(c => pinnedCandidates.has(c.id) || favorites.has(c.id)) as any}
                     currentIndex={candidates.filter(c => pinnedCandidates.has(c.id) || favorites.has(c.id)).findIndex(c => c.id === previewCandidate.id)}
                     onNavigateCandidate={(index) => {
                       const favoriteCandidates = candidates.filter(c => pinnedCandidates.has(c.id) || favorites.has(c.id))
@@ -348,23 +346,23 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                         setPreviewCandidate(favoriteCandidates[index])
                       }
                     }}
-                    onOpenFullPage={handleCandidatePageOpen}
-                    onScheduleInterview={(candidate) => {
+                    onOpenFullPage={handleCandidatePageOpen as any}
+                    onScheduleInterview={(candidate: any) => {
                       setSelectedCandidateForAction(candidate as unknown as Parameters<typeof setSelectedCandidateForAction>[0])
                       setShowScheduleModal(true)
                     }}
-                    onAddToVacancy={(candidate) => {
+                    onAddToVacancy={(candidate: any) => {
                       setSelectedCandidatesForBatch(new Set([candidate.id]) as unknown as Parameters<typeof setSelectedCandidatesForBatch>[0])
                       setShowAddToVacancyModal(true)
                     }}
-                    onToggleFavorite={(candidateId) => handleToggleFavorite(candidateId)}
-                    onWSIScreening={(candidate) => handleStartWSITextScreening(candidate as unknown as Parameters<typeof handleStartWSITextScreening>[0])}
+                    onToggleFavorite={(candidateId: any) => handleToggleFavorite(candidateId)}
+                    onWSIScreening={(candidate: any) => handleStartWSITextScreening(candidate as unknown as Parameters<typeof handleStartWSITextScreening>[0])}
                     isFavorite={favorites.has(previewCandidate.id)}
-                    onSendEmail={(candidate) => handleSendEmail(candidate as unknown as Parameters<typeof handleSendEmail>[0])}
-                    onSendWhatsApp={(candidate) => handleSendWhatsApp(candidate as unknown as Parameters<typeof handleSendWhatsApp>[0])}
-                    onSendTriagem={(candidate) => handleSendTriagem(candidate as unknown as Parameters<typeof handleSendTriagem>[0])}
-                    onSendAgendamento={(candidate) => handleSendAgendamento(candidate as unknown as Parameters<typeof handleSendAgendamento>[0])}
-                    onSendFeedback={(candidate) => handleSendFeedback(candidate as unknown as Parameters<typeof handleSendFeedback>[0])}
+                    onSendEmail={(candidate: any) => handleSendEmail(candidate as unknown as Parameters<typeof handleSendEmail>[0])}
+                    onSendWhatsApp={(candidate: any) => handleSendWhatsApp(candidate as unknown as Parameters<typeof handleSendWhatsApp>[0])}
+                    onSendTriagem={(candidate: any) => handleSendTriagem(candidate as unknown as Parameters<typeof handleSendTriagem>[0])}
+                    onSendAgendamento={(candidate: any) => handleSendAgendamento(candidate as unknown as Parameters<typeof handleSendAgendamento>[0])}
+                    onSendFeedback={(candidate: any) => handleSendFeedback(candidate as unknown as Parameters<typeof handleSendFeedback>[0])}
                   />
                 </div>
               </div>

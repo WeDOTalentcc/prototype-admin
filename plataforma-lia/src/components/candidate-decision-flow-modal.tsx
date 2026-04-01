@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 import NextImage from "next/image"
 
@@ -304,7 +303,9 @@ Equipe de Recrutamento`
   }
 
   const contactChannels = []
+  // @ts-ignore TODO: fix type — Argument of type '"WhatsApp"' is not assignable to parameter of type 'never'.
   if (candidate.hasWhatsApp || candidate.phone) contactChannels.push('WhatsApp')
+  // @ts-ignore TODO: fix type — Argument of type '"Email"' is not assignable to parameter of type 'never'.
   if (candidate.email) contactChannels.push('Email')
 
   return (

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, Suspense, useEffect } from "react"
@@ -113,6 +112,7 @@ export function DashboardApp({ initialPage = "Funil de Talentos" }: DashboardApp
       case "Funil de Talentos":
         return <CandidatesPage onAddRecentItem={addRecentItem} pendingCandidateOpen={pendingCandidateOpen} onCandidateOpened={() => setPendingCandidateOpen(null)} />
       case "Vagas":
+        // @ts-ignore TODO: fix type — Type '{ mode: "general" | "job-creation"; } | null' is not assignable to type '{
         return <JobsPage onNavigate={handleNavigate} onAddRecentItem={addRecentItem} pendingChatOpen={pendingChatOpen} onChatOpened={() => setPendingChatOpen(null)} pendingJobOpen={pendingJobOpen} onJobOpened={() => setPendingJobOpen(null)} />
       case "Indicadores":
         return <IndicatorsPage />

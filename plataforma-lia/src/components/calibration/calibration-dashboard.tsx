@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useEffect } from "react"
@@ -566,7 +565,7 @@ export function CalibrationDashboard() {
                   <div className="flex flex-wrap gap-2">
                     {selectedSuggestion.supporting_evidence.map((evidence, idx) => (
                       <Badge key={idx} variant="outline">
-                        {evidence.metric}: {evidence.value}
+                        {evidence.metric}: {(evidence.value as React.ReactNode)}
                       </Badge>
                     ))}
                   </div>

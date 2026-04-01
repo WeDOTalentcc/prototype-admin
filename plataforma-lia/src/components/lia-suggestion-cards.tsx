@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React from "react"
@@ -146,6 +145,7 @@ export function LiaSuggestionCards({
                       {suggestion.category}
                     </Badge>
                     {suggestion.metadata?.count && (
+                      // @ts-ignore TODO: fix type
                       <span className="text-micro lia-text-secondary">
                         {suggestion.metadata.count as number} item(s)
                       </span>

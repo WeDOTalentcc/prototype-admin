@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { Badge } from "@/components/ui/badge"
@@ -373,6 +372,7 @@ export function CandidateProfileTab({
             languagesData.map((lang, index) => {
               const levelInfo = getLanguageLevel(lang.level)
               return (
+                // @ts-ignore TODO: fix type
                 <div key={`lang-${lang.language || lang.name || index}`} className="space-y-1">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">{lang.language}</span>

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { SearchModeArchetypes } from "./SearchModeArchetypes"
@@ -80,7 +79,9 @@ export function SSIModeContent(props: SSIModeContentProps) {
           showCombinedSuggestions={showCombinedSuggestions} analyzeProfiles={analyzeProfiles}
           isAnalyzingProfiles={isAnalyzingProfiles || false} combinedSuggestions={combinedSuggestions}
           removeSuggestion={removeSuggestion} similarSearchPrompt={similarSearchPrompt}
+          // @ts-ignore TODO: fix type — Type '((source: SearchSource) => void) | undefined' is not assignable to type '(
           setSimilarSearchPrompt={setSimilarSearchPrompt} onSearchSourceChange={onSearchSourceChange}
+          // @ts-ignore TODO: fix type — Type '(newSource: SearchSource) => void' is not assignable to type '(source: str
           searchSource={searchSource || "local"} handleSourceChange={handleSourceChange}
           showGlobalSearchOptions={showGlobalSearchOptions} onRequireEmailsChange={onRequireEmailsChange}
           onRequirePhoneNumbersChange={onRequirePhoneNumbersChange} requireEmails={requireEmails || false}
@@ -163,8 +164,10 @@ export function SSIModeContent(props: SSIModeContentProps) {
           isDeletingArchetype={isDeletingArchetype}
           archetypeSearchPrompt={archetypeSearchPrompt}
           onArchetypeSearchPromptChange={setArchetypeSearchPrompt}
+          // @ts-ignore TODO: fix type — Type '(arch: Record<string, unknown>, e: React.MouseEvent) => void' is not assig
           onOpenEditArchetype={openEditArchetype}
           onDeleteArchetype={deleteArchetype}
+          // @ts-ignore TODO: fix type — Type '(arch: Record<string, unknown>) => string' is not assignable to type '(arc
           buildArchetypePrompt={buildArchetypePrompt}
           onSubmit={handleSubmit}
           isLoading={isLoading}
@@ -181,6 +184,7 @@ export function SSIModeContent(props: SSIModeContentProps) {
           jobSearchQuery={jobSearchQuery}
           onJobSearchQueryChange={setJobSearchQuery}
           isSearchingJobs={isSearchingJobs}
+          // @ts-ignore TODO: fix type — Type '{ id: string; title: string; department: string | null; seniority_level: s
           jobSearchResults={jobSearchResults}
           onOpenArchetypeFromJob={openArchetypeFromJob}
           archetypeDescription={archetypeDescription}

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 import NextImage from "next/image"
 
@@ -403,6 +402,7 @@ export function UniversalTransitionModal({
                 ))}
                 {policyMetadata.requires_manager_approval && (
                   <p className="mt-1 text-status-warning dark:text-status-warning">
+                    // @ts-ignore TODO: fix type
                     Aprovação do gestor será necessária antes de prosseguir.
                   </p>
                 )}

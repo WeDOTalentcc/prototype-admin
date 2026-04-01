@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { useState, useMemo, useEffect, useCallback } from "react"
@@ -11,9 +10,13 @@ import {
   Brain, Settings, Mail, MessageSquare, Zap, Download,
   ChevronDown, ChevronUp, Eye, RefreshCw, Loader2
 } from "lucide-react"
+// @ts-ignore TODO: fix type — Cannot find module './goals-management' or its corresponding type declarations.
 import { GoalsManagement } from "./goals-management"
+// @ts-ignore TODO: fix type — Cannot find module './use-goals-management' or its corresponding type declaratio
 import type { UserGoal } from "./use-goals-management"
+// @ts-ignore TODO: fix type — Cannot find module './SmartImportZone' or its corresponding type declarations.
 import { SmartImportZone } from "./SmartImportZone"
+// @ts-ignore TODO: fix type — Cannot find module './LiaFieldToggle' or its corresponding type declarations.
 import { LiaFieldToggle, defaultLiaFieldExamples } from "./LiaFieldToggle"
 import { useCompanyLiaInstructions } from "@/hooks/use-company-lia-instructions"
 import { textStyles, cardStyles, badgeStyles, buttonStyles, tabStyles, actionButtonStyles } from '@/lib/design-tokens'
@@ -401,6 +404,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
     const newDept: DepartmentData = {
       id: tempId,
       name: newName,
+      // @ts-ignore TODO: fix type — Cannot find name 'emptyMonthlyPlanning'.
       positions: [{ id: `${tempId}-0`, name: 'Nova Posição', salary_min: undefined, salary_max: undefined, monthlyPlanned: { ...emptyMonthlyPlanning } }],
       expanded: true
     }
@@ -421,6 +425,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
   const addPositionToDepartment = (deptId: string) => {
     setDepartments(prev => prev.map(d => 
       d.id === deptId 
+        // @ts-ignore TODO: fix type — Cannot find name 'emptyMonthlyPlanning'.
         ? { ...d, positions: [...d.positions, { id: Date.now().toString(), name: 'Nova Posição', salary_min: undefined, salary_max: undefined, monthlyPlanned: { ...emptyMonthlyPlanning } }] }
         : d
     ))

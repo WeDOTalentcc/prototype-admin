@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
@@ -183,6 +182,7 @@ export function EmailTemplateFormModal({
           subject: formData.subject,
           body_html: formData.body_html,
           body_text: formData.body_text || undefined,
+          // @ts-ignore TODO: fix type — Type 'string | undefined' is not assignable to type '"interview" | "rejection" |
           category: formData.category || undefined,
           variables,
         }
@@ -193,6 +193,7 @@ export function EmailTemplateFormModal({
           subject: formData.subject,
           body_html: formData.body_html,
           body_text: formData.body_text || undefined,
+          // @ts-ignore TODO: fix type — Type 'string | undefined' is not assignable to type '"interview" | "rejection" |
           category: formData.category || undefined,
           variables,
         }

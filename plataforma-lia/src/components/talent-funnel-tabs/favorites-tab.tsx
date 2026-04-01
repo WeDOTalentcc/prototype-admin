@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useMemo, useCallback } from "react"
@@ -321,6 +320,7 @@ export function FavoritesTab({
 
           <div className="flex items-center gap-1 bg-gray-100 dark:bg-lia-bg-secondary rounded-md p-1">
             <Button
+              // @ts-ignore TODO: fix type — Type '"default" | "ghost"' is not assignable to type '"link" | "primary" | "dest
               variant={filterType === 'all' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setFilterType('all')}
@@ -329,6 +329,7 @@ export function FavoritesTab({
               Todos ({candidates.length})
             </Button>
             <Button
+              // @ts-ignore TODO: fix type — Type '"default" | "ghost"' is not assignable to type '"link" | "primary" | "dest
               variant={filterType === 'pinned' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setFilterType('pinned')}
@@ -338,6 +339,7 @@ export function FavoritesTab({
               Fixados
             </Button>
             <Button
+              // @ts-ignore TODO: fix type — Type '"default" | "ghost"' is not assignable to type '"link" | "primary" | "dest
               variant={filterType === 'starred' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setFilterType('starred')}

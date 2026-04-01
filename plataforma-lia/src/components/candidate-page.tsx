@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { textStyles as designTextStyles, buttonStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
@@ -245,6 +244,7 @@ export function CandidatePage({
               isDragging={isDragging}
               setIsDragging={setIsDragging}
               setSelectedFile={setSelectedFile}
+              // @ts-ignore TODO: fix type — Type 'Dispatch<SetStateAction<"audio" | "video" | "image" | "pdf" | null>>' is n
               setPreviewType={setPreviewType}
               setShowPreview={setShowPreview}
               setShowVideoModal={setShowVideoModal}

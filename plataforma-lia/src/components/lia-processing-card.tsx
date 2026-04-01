@@ -1,11 +1,12 @@
-// @ts-nocheck
 "use client"
 
 import React, { useState } from 'react'
 import { 
+  // @ts-ignore TODO: fix type — Duplicate identifier 'Brain'.
   Brain, 
   Search, 
   FileText, 
+  // @ts-ignore TODO: fix type — Duplicate identifier 'Brain'.
   Brain, 
   Check, 
   ChevronDown, 

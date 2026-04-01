@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client'
 
 import React, { useState, useMemo } from 'react'
@@ -159,6 +158,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
       {/* Quick Filters */}
       <div className="flex flex-wrap items-center gap-2">
         <Button
+          // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
           variant={filters.favorites ? "default" : "outline"}
           size="sm"
           onClick={() => updateFilter('favorites', !filters.favorites)}
@@ -169,6 +169,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
         </Button>
 
         <Button
+          // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
           variant={filters.priority === 'high' ? "default" : "outline"}
           size="sm"
           onClick={() => updateFilter('priority', filters.priority === 'high' ? 'all' : 'high')}
@@ -178,6 +179,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
         </Button>
 
         <Button
+          // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
           variant={filters.dateRange === 'today' ? "default" : "outline"}
           size="sm"
           onClick={() => updateFilter('dateRange', filters.dateRange === 'today' ? 'all' : 'today')}

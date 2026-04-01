@@ -1,4 +1,3 @@
-// @ts-nocheck
 export function escapeHtml(str: string): string {
   const map: Record<string, string> = {
     '&': '&amp;',
@@ -19,6 +18,7 @@ export function cleanAgentResponse(raw: string): string {
   const rawJsonRe = /\{\s*"thought"\s*:[\s\S]*?"response"\s*:\s*(?:null|"[^"]*")\s*\}/g
   text = text.replace(rawJsonRe, '')
 
+  // @ts-ignore TODO: fix type — This regular expression flag is only available when targeting 'es2018' or later.
   const responseMatch = text.match(/"response"\s*:\s*"((?:[^"\\]|\\.)*)"/s)
   if (responseMatch && text.trim().startsWith('{')) {
     try {

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState } from "react"
@@ -154,6 +153,7 @@ const CandidateCard = ({
             <Button
               key={action.id}
               size="sm"
+              // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
               variant={isDestructive ? "outline" : "default"}
               className={`h-8 text-xs ${
  isDestructive 

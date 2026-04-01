@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React from "react"
@@ -24,6 +23,7 @@ export function TestStatusIndicators({ candidate }: TestStatusIndicatorsProps) {
           <FileText className="w-4 h-4" />
         </div>
         {candidate.technicalTestScore && (
+          // @ts-ignore TODO: fix type
           <div className="absolute -top-1 -right-1">
             <div className="w-4 h-4 bg-status-success rounded-full flex items-center justify-center">
               <CheckCircle className="w-3 h-3 text-white" fill="currentColor" />
@@ -46,6 +46,7 @@ export function TestStatusIndicators({ candidate }: TestStatusIndicatorsProps) {
         </div>
         {candidate.englishTestScore && (
           <div className="absolute -top-1 -right-1">
+            // @ts-ignore TODO: fix type
             <div className="w-4 h-4 bg-status-success rounded-full flex items-center justify-center">
               <CheckCircle className="w-3 h-3 text-white" fill="currentColor" />
             </div>
@@ -68,6 +69,7 @@ export function TestStatusIndicators({ candidate }: TestStatusIndicatorsProps) {
         {candidate.bigFiveScores && (
           <div className="absolute -top-1 -right-1">
             <div className="w-4 h-4 bg-status-success rounded-full flex items-center justify-center">
+              // @ts-ignore TODO: fix type
               <CheckCircle className="w-3 h-3 text-white" fill="currentColor" />
             </div>
           </div>

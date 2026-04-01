@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
   import React from "react"
@@ -206,6 +205,7 @@
                 isTypingEffect={isTypingEffect}
                 displayedText={displayedText}
                 conversationId={conversationId}
+                // @ts-ignore TODO: fix type — Type 'RefObject<HTMLInputElement | null>' is not assignable to type 'RefObject<H
                 inputRef={inputRef}
                 isSearchingVacancies={isSearchingVacancies}
                 onSetInputValue={setInputValue}
@@ -442,12 +442,14 @@
               onExpandEditSalary={() => setSalaryPanelExpanded(!salaryPanelExpanded)}
               onShowAddBenefitModal={() => setShowAddBenefitModal(true)}
               wsiCandidates={wsiCandidates}
+              // @ts-ignore TODO: fix type — Type 'Record<string, unknown>[]' is not assignable to type 'CompanyDefaultQuesti
               companyDefaultQuestions={companyDefaultQuestions as Array<Record<string, unknown>>}
               isGeneratingWSI={isGeneratingWSI}
               showCustomQuestionForm={showCustomQuestionForm}
               customQuestionText={customQuestionText}
               customQuestionType={customQuestionType}
               customQuestionRequired={customQuestionRequired}
+              // @ts-ignore TODO: fix type — Type '(questions: Record<string, unknown>[]) => void' is not assignable to type 
               onSetCompanyDefaultQuestions={setCompanyDefaultQuestions as (questions: Array<Record<string, unknown>>) => void}
               onToggleQuestionSelection={toggleWSIQuestionSelection}
               onDeleteQuestion={deleteWSIQuestion}

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { useState, useEffect } from "react"
@@ -163,6 +162,7 @@ export function ProactiveActions({
                 <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary truncate">
                   {typeof action.suggested_action === 'string' 
                     ? action.suggested_action 
+                    // @ts-ignore TODO: fix type
                     : action.suggested_action?.label || action.suggested_action?.action || 'Ver detalhes'}
                 </p>
               </div>
@@ -262,6 +262,7 @@ export function ProactiveActions({
                       </span>
                     </div>
 
+                    // @ts-ignore TODO: fix type
                     <div className="flex items-center justify-end gap-2 pt-2">
                       <Button
                         variant="ghost"

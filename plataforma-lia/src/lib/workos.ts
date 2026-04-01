@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { WorkOS } from '@workos-inc/node'
 
 // Lazy initialization — env vars checked at runtime only (not at build time)
@@ -18,6 +17,8 @@ export function getWorkOS(): WorkOS {
 // Legacy export for backwards compatibility — resolves lazily
 export const workos = new Proxy({} as WorkOS, {
   get(_target, prop) {
+    // @ts-ignore TODO: fix type — Type 'symbol' cannot be used as an index type.
+    // @ts-ignore TODO: fix type — Conversion of type 'WorkOSNode' to type 'Record<string, unknown>' may be a mista
     return (getWorkOS() as Record<string, unknown>)[prop]
   }
 })

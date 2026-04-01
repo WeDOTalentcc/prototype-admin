@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
@@ -180,6 +179,8 @@ const validationRules: {[section: string]: ValidationRule[]} = {
     {
       field: 'session_timeout',
       type: 'custom',
+      // @ts-ignore TODO: fix type — 'value' is of type 'unknown'.
+      // @ts-ignore TODO: fix type — 'value' is of type 'unknown'.
       validator: (value) => value > 0 && value <= 480, // max 8 hours
       message: 'Timeout de sessão deve ser entre 1 e 480 minutos',
       severity: 'warning',
@@ -282,6 +283,7 @@ export function ValidationSystem({ data, section, onValidationChange, onAutoCorr
             break
 
           case 'email':
+            // @ts-ignore TODO: fix type — Argument of type 'unknown' is not assignable to parameter of type 'string'.
             isValid = validators.email(value)
             if (!isValid && value) {
               suggestions.push('Verifique se o email contém @ e um domínio válido')
@@ -289,8 +291,10 @@ export function ValidationSystem({ data, section, onValidationChange, onAutoCorr
             break
 
           case 'cnpj':
+            // @ts-ignore TODO: fix type — Argument of type 'unknown' is not assignable to parameter of type 'string'.
             isValid = validators.cnpj(value)
             if (!isValid && value && autoCorrectEnabled) {
+              // @ts-ignore TODO: fix type — Argument of type '{}' is not assignable to parameter of type 'string'.
               correctedValue = autoCorrections.cnpj(value)
               if (validators.cnpj(correctedValue)) {
                 isValid = true
@@ -300,8 +304,10 @@ export function ValidationSystem({ data, section, onValidationChange, onAutoCorr
             break
 
           case 'url':
+            // @ts-ignore TODO: fix type — Argument of type 'unknown' is not assignable to parameter of type 'string'.
             isValid = validators.url(value)
             if (!isValid && value && autoCorrectEnabled) {
+              // @ts-ignore TODO: fix type — Argument of type '{}' is not assignable to parameter of type 'string'.
               correctedValue = autoCorrections.website(value)
               if (validators.url(correctedValue)) {
                 isValid = true
@@ -311,8 +317,10 @@ export function ValidationSystem({ data, section, onValidationChange, onAutoCorr
             break
 
           case 'phone':
+            // @ts-ignore TODO: fix type — Argument of type 'unknown' is not assignable to parameter of type 'string'.
             isValid = validators.phone(value)
             if (!isValid && value && autoCorrectEnabled) {
+              // @ts-ignore TODO: fix type — Argument of type '{}' is not assignable to parameter of type 'string'.
               correctedValue = autoCorrections.phone(value)
               if (validators.phone(correctedValue)) {
                 isValid = true
@@ -338,6 +346,7 @@ export function ValidationSystem({ data, section, onValidationChange, onAutoCorr
           case 'pattern':
             if (rule.pattern && value) {
               const regex = new RegExp(rule.pattern)
+              // @ts-ignore TODO: fix type — Argument of type '{}' is not assignable to parameter of type 'string'.
               isValid = regex.test(value)
             }
             break

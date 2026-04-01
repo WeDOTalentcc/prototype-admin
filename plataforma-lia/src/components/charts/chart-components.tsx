@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { ReactNode } from "react"
@@ -35,6 +34,7 @@ export function BarChart({ data, maxValue }: BarChartProps) {
   return (
     <div className="space-y-3">
       {data.map((item) => (
+        // @ts-ignore TODO: fix type — Property 'name' does not exist on type '{ label: string; value: number; color?: 
         <div key={item.label || item.name} className="flex items-center gap-3">
           <div className="w-20 text-xs text-lia-text-secondary font-medium">
             {item.label}
@@ -164,6 +164,7 @@ export function DonutChart({ data, centerText }: DonutChartProps) {
 
       <div className="space-y-2">
         {data.map((item) => (
+          // @ts-ignore TODO: fix type — Property 'name' does not exist on type '{ label: string; value: number; color: s
           <div key={item.label || item.name} className="flex items-center gap-2">
             <div
               className="w-3 h-3 rounded-full"
@@ -225,6 +226,8 @@ export function LineChart({ data, color = "var(--gray-500)" }: LineChartProps) {
       </svg>
       <div className="flex justify-between mt-2">
         {data.map((item) => (
+          // @ts-ignore TODO: fix type — Property 'name' does not exist on type '{ label: string; value: number; }'.
+          // @ts-ignore TODO: fix type — Property 'month' does not exist on type '{ label: string; value: number; }'.
           <div key={item.label || item.month || item.name} className="text-center">
             <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
               {item.label}

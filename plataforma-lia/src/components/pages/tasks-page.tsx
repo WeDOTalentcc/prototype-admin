@@ -219,7 +219,6 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           return (
                             <div>
                               <div className="flex items-center gap-1.5 mb-1.5">
-                                // @ts-ignore TODO: fix type
                                 <div className="w-1.5 h-1.5 rounded-full"></div>
                                 <h3 className="text-xs font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary">Sessão Manhã</h3>
                                 <span className="text-xs font-open-sans text-lia-text-primary dark:text-lia-text-tertiary">{morningTasks.length} atividades</span>
@@ -247,7 +246,6 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           return (
                             <div>
                               <div className="flex items-center gap-1.5 mb-1.5">
-                                // @ts-ignore TODO: fix type
                                 <div className="w-1.5 h-1.5 rounded-full"></div>
                                 <h3 className="text-xs font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary">Sessão Tarde</h3>
                                 <span className="text-xs font-open-sans text-lia-text-primary dark:text-lia-text-tertiary">{afternoonTasks.length} atividades</span>
@@ -605,8 +603,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                             <div className="flex items-center gap-3 text-xs text-lia-text-primary dark:text-lia-text-tertiary flex-wrap">
                               <div className="flex items-center gap-1">
                                 <Clock className="w-3 h-3" />
-                                // @ts-ignore TODO: fix type
-                                <span className={`font-medium ${getUrgencyColor(job.urgencyLevel)}`}>{job.daysOpen}d</span>
+                                <span className={`font-medium ${""}`}>{job.daysOpen}d</span>
                               </div>
                               <span className="text-lia-text-tertiary dark:text-lia-text-tertiary">•</span>
                               <div className="flex items-center gap-1">
@@ -690,8 +687,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                               <span className="text-xs text-lia-text-primary dark:text-lia-text-tertiary uppercase">Novos</span>
                             </div>
                             <div className="flex flex-col items-center">
-                              // @ts-ignore TODO: fix type
-                              <span className={`text-xs font-medium ${getConversionRate(getConversionRate(job.stages.new, job.stages.uncontacted))}`}>
+                              <span className={`text-xs font-medium ${getConversionRate(job.stages.new, job.stages.uncontacted)}`}>
                                 {getConversionRate(job.stages.new, job.stages.uncontacted)}%
                               </span>
                               <span className="text-xs text-lia-text-primary dark:text-lia-text-tertiary">→</span>
@@ -703,8 +699,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                               <span className="text-xs text-lia-text-primary dark:text-lia-text-tertiary uppercase">Triag</span>
                             </div>
                             <div className="flex flex-col items-center">
-                              // @ts-ignore TODO: fix type
-                              <span className={`text-xs font-medium ${getConversionRate(getConversionRate(job.stages.uncontacted, job.stages.contacted))}`}>
+                              <span className={`text-xs font-medium ${getConversionRate(job.stages.uncontacted, job.stages.contacted)}`}>
                                 {getConversionRate(job.stages.uncontacted, job.stages.contacted)}%
                               </span>
                               <span className="text-xs text-lia-text-primary dark:text-lia-text-tertiary">→</span>
@@ -716,8 +711,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                               <span className="text-xs text-lia-text-primary dark:text-lia-text-tertiary uppercase">Cont</span>
                             </div>
                             <div className="flex flex-col items-center">
-                              // @ts-ignore TODO: fix type
-                              <span className={`text-xs font-medium ${getConversionRate(getConversionRate(job.stages.contacted, job.stages.replied))}`}>
+                              <span className={`text-xs font-medium ${getConversionRate(job.stages.contacted, job.stages.replied)}`}>
                                 {getConversionRate(job.stages.contacted, job.stages.replied)}%
                               </span>
                               <span className="text-xs text-lia-text-primary dark:text-lia-text-tertiary">→</span>
@@ -729,8 +723,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                               <span className="text-xs text-lia-text-primary dark:text-lia-text-tertiary uppercase">Resp</span>
                             </div>
                             <div className="flex flex-col items-center">
-                              // @ts-ignore TODO: fix type
-                              <span className={`text-xs font-medium ${getConversionRate(getConversionRate(job.stages.replied, job.stages.phoneScreen))}`}>
+                              <span className={`text-xs font-medium ${getConversionRate(job.stages.replied, job.stages.phoneScreen)}`}>
                                 {getConversionRate(job.stages.replied, job.stages.phoneScreen)}%
                               </span>
                               <span className="text-xs text-lia-text-primary dark:text-lia-text-tertiary">→</span>
@@ -742,8 +735,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                               <span className="text-xs text-lia-text-primary dark:text-lia-text-tertiary uppercase">Tel</span>
                             </div>
                             <div className="flex flex-col items-center">
-                              // @ts-ignore TODO: fix type
-                              <span className={`text-xs font-medium ${getConversionRate(getConversionRate(job.stages.phoneScreen, job.stages.onsite))}`}>
+                              <span className={`text-xs font-medium ${getConversionRate(job.stages.phoneScreen, job.stages.onsite)}`}>
                                 {getConversionRate(job.stages.phoneScreen, job.stages.onsite)}%
                               </span>
                               <span className="text-xs text-lia-text-primary dark:text-lia-text-tertiary">→</span>
@@ -755,8 +747,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                               <span className="text-xs text-lia-text-primary dark:text-lia-text-tertiary uppercase">Entrev</span>
                             </div>
                             <div className="flex flex-col items-center">
-                              // @ts-ignore TODO: fix type
-                              <span className={`text-xs font-medium ${getConversionRate(getConversionRate(job.stages.onsite, job.stages.makeOffer))}`}>
+                              <span className={`text-xs font-medium ${getConversionRate(job.stages.onsite, job.stages.makeOffer)}`}>
                                 {getConversionRate(job.stages.onsite, job.stages.makeOffer)}%
                               </span>
                               <span className="text-xs text-lia-text-primary dark:text-lia-text-tertiary">→</span>
@@ -768,8 +759,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                               <span className="text-xs text-lia-text-primary dark:text-lia-text-tertiary uppercase">Ofert</span>
                             </div>
                             <div className="flex flex-col items-center">
-                              // @ts-ignore TODO: fix type
-                              <span className={`text-xs font-medium ${getConversionRate(getConversionRate(job.stages.makeOffer, job.stages.hired))}`}>
+                              <span className={`text-xs font-medium ${getConversionRate(job.stages.makeOffer, job.stages.hired)}`}>
                                 {getConversionRate(job.stages.makeOffer, job.stages.hired)}%
                               </span>
                               <span className="text-xs text-lia-text-primary dark:text-lia-text-tertiary">→</span>

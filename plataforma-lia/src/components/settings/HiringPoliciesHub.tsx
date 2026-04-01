@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { useState } from "react"
@@ -349,6 +348,7 @@ export function HiringPoliciesHub() {
                     <div className="space-y-1">
                       {block.fields.map((field) => {
                         const value = blockData[field]
+                        // @ts-ignore TODO: fix type
                         const isEditing = editingField?.block === block.key && editingField?.field === field
                         const isUpdated = recentlyUpdated.has(field)
 

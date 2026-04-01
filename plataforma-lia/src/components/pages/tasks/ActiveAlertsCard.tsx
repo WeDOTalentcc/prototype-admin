@@ -89,7 +89,6 @@ export const ActiveAlertsCard = React.memo(function ActiveAlertsCard({
                       <h4 className="text-xs font-inter font-semibold text-lia-text-primary dark:text-lia-text-primary">
                         {alert.title}
                       </h4>
-                      // @ts-ignore // TODO: fix type
                       <Badge
                         className="border-0 text-xs py-0 px-1.5 font-medium"
                         // @ts-ignore // TODO: fix type

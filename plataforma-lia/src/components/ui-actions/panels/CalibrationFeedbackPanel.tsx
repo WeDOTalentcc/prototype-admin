@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { useState } from "react"
@@ -336,6 +335,7 @@ function CandidateCard({
 
             <div className="flex gap-2 mt-4">
               <Button
+                // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
                 variant={status === "approved" ? "default" : "outline"}
                 size="sm"
                 className={status === "approved"
@@ -352,6 +352,7 @@ function CandidateCard({
                 Aprovar
               </Button>
               <Button
+                // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
                 variant={status === "maybe" ? "default" : "outline"}
                 size="sm"
                 className={status === "maybe"
@@ -368,6 +369,7 @@ function CandidateCard({
                 Talvez
               </Button>
               <Button
+                // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
                 variant={status === "rejected" ? "default" : "outline"}
                 size="sm"
                 className={status === "rejected"

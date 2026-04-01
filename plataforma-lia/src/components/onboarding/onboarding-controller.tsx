@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useEffect } from "react"
@@ -209,6 +208,7 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
     return (
       <FirstAccessManager
         token={accessToken}
+        // @ts-ignore TODO: fix type — Type '(newUserData: UserData) => void' is not assignable to type '(userData: Rec
         onAccessGranted={handleAccessGranted}
         onAccessDenied={handleAccessDenied}
       />

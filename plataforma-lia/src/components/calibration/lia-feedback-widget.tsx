@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState } from "react"
@@ -123,6 +122,7 @@ export function LIAFeedbackWidget({
               <div className="flex gap-2">
                 <Button
                   size="sm"
+                  // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
                   variant={feedbackState === "agree" ? "default" : "outline"}
                   className={cn(
  "flex-1 gap-1",
@@ -136,6 +136,7 @@ export function LIAFeedbackWidget({
                 </Button>
                 <Button
                   size="sm"
+                  // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
                   variant={feedbackState === "disagree" ? "default" : "outline"}
                   className={cn(
  "flex-1 gap-1",

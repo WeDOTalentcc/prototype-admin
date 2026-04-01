@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import type { SearchFilters } from './advancedFiltersTypes'
@@ -8,7 +7,9 @@ export function convertToPearchFilters(filters: SearchFilters): {
   apiOptions: Record<string, unknown>
   hideViewedOptions?: {
     enabled: boolean
+    // @ts-ignore TODO: fix type — Cannot find name 'HideViewedScope'.
     scope: HideViewedScope
+    // @ts-ignore TODO: fix type — Cannot find name 'HideViewedPeriod'.
     period: HideViewedPeriod
   }
 } {
@@ -198,6 +199,7 @@ export function normalizeFiltersFromServer(filters: SearchFilters & Record<strin
   }
   
   if (normalized.company_funding_stages && !normalized.company.fundingStages) {
+    // @ts-ignore TODO: fix type — Type '{}' is missing the following properties from type 'string[]': length, pop,
     normalized.company.fundingStages = normalized.company_funding_stages
   }
   
@@ -211,26 +213,32 @@ export function normalizeFiltersFromServer(filters: SearchFilters & Record<strin
   }
   
   if (normalized.company_hq_locations && !normalized.company.companyHQLocations) {
+    // @ts-ignore TODO: fix type — Type '{}' is missing the following properties from type 'string[]': length, pop,
     normalized.company.companyHQLocations = normalized.company_hq_locations
   }
   
   if (normalized.company_sizes && !normalized.company.companySizes) {
+    // @ts-ignore TODO: fix type — Type '{}' is missing the following properties from type 'string[]': length, pop,
     normalized.company.companySizes = normalized.company_sizes
   }
   
   if (normalized.industries && !normalized.company.industries) {
+    // @ts-ignore TODO: fix type — Type '{}' is missing the following properties from type 'string[]': length, pop,
     normalized.company.industries = normalized.industries
   }
   
   if (normalized.industry_time_filter && !normalized.company.industryTimeFilter) {
+    // @ts-ignore TODO: fix type — Type '{}' is not assignable to type 'IndustryTimeFilter | undefined'.
     normalized.company.industryTimeFilter = normalized.industry_time_filter
   }
   
   if (normalized.company_tags_time_filter && !normalized.company.companyTagsTimeFilter) {
+    // @ts-ignore TODO: fix type — Type '{}' is not assignable to type 'CompanyTagsTimeFilter | undefined'.
     normalized.company.companyTagsTimeFilter = normalized.company_tags_time_filter
   }
   
   if (normalized.company_hq_time_filter && !normalized.company.companyHQTimeFilter) {
+    // @ts-ignore TODO: fix type — Type '{}' is not assignable to type 'CompanyHQTimeFilter | undefined'.
     normalized.company.companyHQTimeFilter = normalized.company_hq_time_filter
   }
   

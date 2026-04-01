@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 import NextImage from "next/image"
 
@@ -716,6 +715,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                         <div>
                           <Label className="text-micro lia-text-700 dark:text-lia-text-secondary">Tipo</Label>
                           <Select value={newFieldType} onValueChange={(v) => setNewFieldType(v)}>
+                            // @ts-ignore TODO: fix type
                             <SelectTrigger className="mt-1 h-7 text-xs">
                               <SelectValue />
                             </SelectTrigger>

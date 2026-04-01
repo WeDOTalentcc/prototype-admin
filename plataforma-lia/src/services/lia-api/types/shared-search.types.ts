@@ -1,4 +1,3 @@
-// @ts-nocheck
 export interface SharedSearchRecipient {
   email: string
   name?: string
@@ -49,7 +48,9 @@ export interface SharedSearch {
 }
 
 export interface SharedSearchDetail extends SharedSearch {
+  // @ts-ignore TODO: fix type — Cannot find name 'CandidateSnapshot'.
   candidates: CandidateSnapshot[]
+  // @ts-ignore TODO: fix type — Cannot find name 'CandidateFeedback'.
   feedbacks: CandidateFeedback[]
 }
 

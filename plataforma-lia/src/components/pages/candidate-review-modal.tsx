@@ -588,11 +588,9 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                               <p className="text-xs text-lia-text-secondary mt-1">{exp.period}</p>
                               {exp.skills && exp.skills.length > 0 && (
                                 <div className="flex flex-wrap gap-1 mt-2">
-                                  {exp.skills.slice(0, 5).map((skill) => (
+                                  {exp.skills.slice(0, 5).map((skill, idx) => (
                                     <span key={skill} className="text-xs text-lia-text-secondary">
-                                      // @ts-ignore TODO: fix type
                                       {skill}{idx < Math.min(exp.skills!.length - 1, 4) ? ' · ' : ''}
-                                    // @ts-ignore TODO: fix type
                                     </span>
                                   ))}
                                 </div>
@@ -633,7 +631,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                     <div>
                       <h4 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary mb-2">Skills</h4>
                       <div className="flex flex-wrap gap-2">
-                        {currentCandidate.skills?.map((skill) => (
+                        {currentCandidate.skills?.map((skill, idx) => (
                           <Badge key={skill} variant="outline" className="text-xs">
                             {skill}
                           </Badge>

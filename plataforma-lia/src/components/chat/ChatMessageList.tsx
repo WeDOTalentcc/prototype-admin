@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { memo } from "react"
@@ -145,6 +144,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
 
                 {message.sender === "lia" &&
                   (message.data as Record<string, unknown>)
+                    // @ts-ignore TODO: fix type
                     ?.action_result && (
                     <div className="mt-3">
                       <ActionResultCard
@@ -169,6 +169,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                   (message.data as Record<string, unknown>)?.workflow_data &&
                   ((message.data as Record<string, unknown>)
                     ?.workflow_data as Record<string, unknown>)
+                    // @ts-ignore TODO: fix type
                     ?.search_results && (
                     <Card className="border border-gray-900 dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary mt-4">
                       <CardContent className="p-4">
@@ -185,6 +186,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                                     ?.workflow_data as Record<string, unknown>
                                 )?.search_results as Record<string, unknown>
                               )?.local_count > 0
+                                // @ts-ignore TODO: fix type
                                 ? `Encontramos ${
                                     (
                                       (

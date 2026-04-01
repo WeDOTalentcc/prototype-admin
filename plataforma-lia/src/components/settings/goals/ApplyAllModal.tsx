@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Button } from "@/components/ui/button"
 import { Save, X } from "lucide-react"
 import { textStyles } from "@/lib/design-tokens"

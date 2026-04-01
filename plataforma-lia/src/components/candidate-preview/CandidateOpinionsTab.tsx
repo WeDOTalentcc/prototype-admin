@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React from "react"
@@ -77,6 +76,7 @@ opinionsSubTab === 'analises'
           Análises
           {savedAnalyses && (savedAnalyses as unknown as {total_analyses: number}).total_analyses > 0 && (
             <Badge className="text-micro px-1.5 py-0 h-4 ml-1" style={{backgroundColor: 'var(--gray-100)', color: 'var(--wedo-purple)'}}>
+              // @ts-ignore TODO: fix type
               {(savedAnalyses as unknown as {total_analyses: number}).total_analyses}
             </Badge>
           )}
@@ -132,6 +132,7 @@ opinionsSubTab === 'analises'
                   )}
                   <OpinionCard
                     opinion={opinion}
+                    // @ts-ignore TODO: fix type
                     isExpanded={expandedOpinionId === opinion.id}
                     onToggle={() => setExpandedOpinionId(
                       expandedOpinionId === opinion.id ? null : opinion.id

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useRef, useEffect } from "react"
@@ -127,6 +126,7 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
 
     if ('days' in preset) {
       start = new Date(today)
+      // @ts-ignore TODO: fix type — 'preset.days' is possibly 'undefined'.
       start.setDate(start.getDate() - preset.days)
     } else if (preset.type === 'this_month') {
       start = new Date(today.getFullYear(), today.getMonth(), 1)

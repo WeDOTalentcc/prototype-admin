@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Button } from "@/components/ui/button"
 import { Trash2, Loader2 } from "lucide-react"
 import { getCategoryIcon } from "../goals"

@@ -130,7 +130,6 @@ export function KanbanCardInterviewButtons({
               >
                 <Video className="w-3 h-3 text-lia-text-secondary" />
                 <span>
-                  // @ts-ignore // TODO: fix type
                   {candidate.interviewDate ||
                     // @ts-ignore // TODO: fix type
                     new Date(candidate.agendada).toLocaleDateString("pt-BR", {

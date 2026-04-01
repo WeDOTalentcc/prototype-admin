@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useEffect } from "react"
@@ -455,6 +454,8 @@ export function SuccessPredictionAnalytics() {
               </thead>
               <tbody>
                 {historicalAnalysis.departmentMetrics.map((dept) => (
+                  // @ts-ignore TODO: fix type — Property 'id' does not exist on type '{ department: string; hires: number; succe
+                  // @ts-ignore TODO: fix type — Property 'name' does not exist on type '{ department: string; hires: number; suc
                   <tr key={dept.department || dept.name || dept.id} className="border-b border-lia-border-subtle">
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">

@@ -36,9 +36,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
             <CardContent className="p-6">
               <div className="space-y-6">
                 <div className="grid grid-cols-4 gap-3">
-                  // @ts-ignore // TODO: fix type
                   <div className="text-center p-4 rounded-md bg-stone-50 dark:bg-stone-900/20"><p className="text-lg font-bold lia-text-800 dark:text-lia-text-primary">{data.realtime_metrics.applications_received}</p><p className="text-xs mt-1 lia-text-500 dark:text-lia-text-tertiary">Aplicações</p></div>
-                  // @ts-ignore // TODO: fix type
                   <div className="text-center p-4 rounded-md bg-status-success/10 dark:bg-status-success/20"><p className="text-lg font-bold lia-text-800 dark:text-lia-text-primary">{data.realtime_metrics.active_sourcing_reached}</p><p className="text-xs mt-1 lia-text-500 dark:text-lia-text-tertiary">Sourcing Ativo</p></div>
                   <div className="text-center p-4 rounded-md bg-status-error/10 dark:bg-status-error/20"><p className="text-lg font-bold lia-text-800 dark:text-lia-text-primary">{data.realtime_metrics.response_rate}</p><p className="text-xs mt-1 lia-text-500 dark:text-lia-text-tertiary">Taxa Resposta</p></div>
                   <div className="text-center p-4 rounded-md bg-wedo-cyan/15 dark:bg-wedo-cyan/20"><p className="text-lg font-bold lia-text-800 dark:text-lia-text-primary">{data.realtime_metrics.avg_candidate_score}</p><p className="text-xs mt-1 lia-text-500 dark:text-lia-text-tertiary">Score Médio</p></div>
@@ -261,12 +259,9 @@ export function ChatContextPanelPart2({ contextData }: Props) {
                 <div className="p-4 rounded-md bg-wedo-cyan/15 dark:bg-wedo-cyan/20">
                   <h3 className="text-base font-semibold mb-3 lia-text-800 dark:text-lia-text-primary">Sumário Executivo</h3>
                   <div className="grid grid-cols-2 gap-4">
-                    // @ts-ignore // TODO: fix type
                     <div><p className="text-xs lia-text-600 mb-1">Posição:</p><p className="font-medium">{data.executive_summary.position}</p></div>
                     <div><p className="text-xs lia-text-600 mb-1">ROI Projetado:</p><p className="font-semibold lia-text-800 dark:text-lia-text-primary">{data.executive_summary.roi_projection}</p></div>
-                    // @ts-ignore // TODO: fix type
                     <div><p className="text-xs lia-text-600 mb-1">Investimento Total:</p><p className="font-medium">{data.executive_summary.total_investment}</p></div>
-                    // @ts-ignore // TODO: fix type
                     <div><p className="text-xs lia-text-600 mb-1">Probabilidade Sucesso:</p><p className="font-semibold lia-text-800 dark:text-lia-text-primary">{data.executive_summary.success_probability}</p></div>
                   </div>
                 </div>

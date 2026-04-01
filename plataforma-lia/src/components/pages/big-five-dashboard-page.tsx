@@ -516,8 +516,7 @@ export function BigFiveDashboardPage() {
           </CardHeader>
           <CardContent>
             <div style={{height: '300px'}}>
-              // @ts-ignore TODO: fix type
-              <Pie data={pieChartData} options={pieOptions} />
+              <Pie data={pieChartData} options={pieOptions as any} />
             </div>
           </CardContent>
         </Card>

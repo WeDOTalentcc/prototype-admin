@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { useState } from "react"
@@ -191,7 +190,7 @@ export default function PrivacidadePage() {
 
         <div className="flex gap-2 mb-6 justify-center">
           <Button
-            variant={activeTab === 'request' ? 'default' : 'outline'}
+            variant={(activeTab === 'request' ? 'default' : 'outline') as any}
             onClick={() => setActiveTab('request')}
             className={activeTab === 'request' ? 'bg-gray-900 text-white dark:lia-bg-50 dark:lia-text-900 hover:bg-gray-800 dark:hover:bg-gray-200' : ''}
           >
@@ -199,7 +198,7 @@ export default function PrivacidadePage() {
             Nova Solicitação
           </Button>
           <Button
-            variant={activeTab === 'track' ? 'default' : 'outline'}
+            variant={(activeTab === 'track' ? 'default' : 'outline') as any}
             onClick={() => setActiveTab('track')}
             className={activeTab === 'track' ? 'bg-gray-900 text-white dark:lia-bg-50 dark:lia-text-900 hover:bg-gray-800 dark:hover:bg-gray-200' : ''}
           >
@@ -456,6 +455,7 @@ export default function PrivacidadePage() {
                       <CardDescription>Código: {trackingResult.id}</CardDescription>
                     </div>
                     {(() => {
+                      // @ts-ignore TODO: fix type
                       const status = getStatusDisplay(trackingResult.status)
                       const Icon = status.icon
                       const colorClasses: Record<string, string> = {
@@ -486,7 +486,7 @@ export default function PrivacidadePage() {
                       <div>
                         <p className="text-xs lia-text-500 mb-1">Data da Solicitação</p>
                         <p className="font-medium">
-                          {new Date(trackingResult.created_at).toLocaleDateString('pt-BR')}
+                          {new Date(trackingResult.created_at as string).toLocaleDateString('pt-BR')}
                         </p>
                       </div>
                     </div>
@@ -494,7 +494,7 @@ export default function PrivacidadePage() {
                       <div>
                         <p className="text-xs lia-text-500 mb-1">Prazo para Resposta</p>
                         <p className="font-medium">
-                          {new Date(trackingResult.deadline_at).toLocaleDateString('pt-BR')}
+                          {new Date(trackingResult.deadline_at as string).toLocaleDateString('pt-BR')}
                         </p>
                       </div>
                       {trackingResult.completed_at && (

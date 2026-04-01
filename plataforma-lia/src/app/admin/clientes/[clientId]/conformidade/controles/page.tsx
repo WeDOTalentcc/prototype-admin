@@ -319,7 +319,6 @@ export default function ControlesPage({ params }: { params: Promise<{ clientId: 
                       <td className="py-3 px-2 text-sm lia-text-400 dark:lia-text-500">{formatDate((sox as any).lastTestedAt)}</td>
                     </tr>
                   ))}
-                // @ts-ignore TODO: fix type
                 </tbody>
               </table>
             </div>

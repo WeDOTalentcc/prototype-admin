@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React from "react"
@@ -32,6 +31,7 @@ const CATEGORY_COLORS: Record<string, {
   textColor: string
   badgeVariant: 'default' | 'secondary' | 'outline'
 }> = {
+  // @ts-ignore TODO: fix type — Property 'borderColor' is missing in type '{ backgroundColor: string; iconBg: st
   vagas: {
     backgroundColor: 'var(--gray-50)',
     iconBg: 'var(--gray-100)',

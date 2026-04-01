@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react"
@@ -110,7 +109,9 @@ function mapApiVacancyToDisplay(vacancy: JobVacancy): VacancyDisplay {
     department: vacancy.department,
     location: vacancy.location,
     status: vacancy.status,
+    // @ts-ignore TODO: fix type — Conversion of type 'JobVacancy' to type 'Record<string, unknown>' may be a mista
     priority: (vacancy as Record<string, unknown>).priority as string | undefined,
+    // @ts-ignore TODO: fix type — Conversion of type 'JobVacancy' to type 'Record<string, unknown>' may be a mista
     candidates_count: (vacancy as Record<string, unknown>).candidates_count as number | undefined,
     recruiter_name: vacancy.recruiter,
     recruiter_email: vacancy.recruiter_email

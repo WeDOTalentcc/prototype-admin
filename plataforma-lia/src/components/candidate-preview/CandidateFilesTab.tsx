@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
@@ -610,6 +609,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                 {(candidate.avatar_url || candidate.avatar) && (
                   <div className="mt-2">
                     <img
+                      // @ts-ignore TODO: fix type
                       src={candidate.avatar_url || candidate.avatar}
                       alt="Preview"
                       className="w-12 h-12 rounded-md object-cover cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none"

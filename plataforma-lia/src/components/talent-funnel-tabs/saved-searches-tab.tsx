@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState } from "react"
@@ -497,6 +496,7 @@ export function SavedSearchesTab({
                     return (
                       <Button
                         key={mode}
+                        // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
                         variant={newSearchMode === mode ? 'default' : 'outline'}
                         size="sm"
                         className={`h-7 text-xs ${newSearchMode === mode ? 'bg-gray-900 hover:bg-gray-800 text-white' : ''}`}
@@ -520,6 +520,7 @@ export function SavedSearchesTab({
                     return (
                       <Button
                         key={source}
+                        // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
                         variant={newSearchSource === source ? 'default' : 'outline'}
                         size="sm"
                         className={`h-7 text-xs ${newSearchSource === source ? 'bg-gray-900 hover:bg-gray-800 text-white' : ''}`}

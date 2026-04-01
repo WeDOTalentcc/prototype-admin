@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useMemo } from "react"
@@ -386,6 +385,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
                     <div className="mt-4">
                       <div className="flex rounded-full overflow-hidden h-3 bg-gray-200 dark:bg-lia-bg-elevated">
                         <div
+                          // @ts-ignore TODO: fix type
                           className="bg-status-success"
                           style={{width: `${percentages.remoto}%`}}
                           title={`Remoto: ${item.remoto} (${percentages.remoto.toFixed(1)}%)`}
@@ -396,6 +396,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
                           title={`Híbrido: ${item.hibrido} (${percentages.hibrido.toFixed(1)}%)`}
                         />
                         <div
+                          // @ts-ignore TODO: fix type
                           className="bg-gray-500"
                           style={{width: `${percentages.presencial}%`}}
                           title={`Presencial: ${item.presencial} (${percentages.presencial.toFixed(1)}%)`}

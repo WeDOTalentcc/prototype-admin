@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useMemo, useEffect, useCallback } from "react"
@@ -257,14 +256,17 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                                         {user.name.split(' ').map((n: string) => n[0]).join('')}
                                       </AvatarFallback>
                                     </Avatar>
+                                    // @ts-ignore TODO: fix type
                                     <span className="font-medium text-xs lia-text-800 dark:text-lia-text-primary truncate">{user.name}</span>
                                   </div>
                                 </td>
                                 {MONTHS.map((month) => (
+                                  // @ts-ignore TODO: fix type
                                   <td 
                                     key={month.num} 
                                     className="p-1 text-center"
                                   >
+                                    // @ts-ignore TODO: fix type
                                     <EditableCell
                                       value={getMonthlyValue(template.id, user.id, month.num, selectedYear)}
                                       onChange={(value) => setMonthlyValue(template.id, user.id, month.num, selectedYear, value)}
@@ -283,6 +285,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                               {MONTHS.map((month) => (
                                 <td 
                                   key={month.num} 
+                                  // @ts-ignore TODO: fix type
                                   className="p-2 text-center font-semibold lia-text-800 dark:text-lia-text-primary"
                                 >
                                   {calculateColumnTotal(template.id, month.num, selectedYear, template.assignedUsers)}

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useRef } from "react"
@@ -357,6 +356,7 @@ export function InteractiveChart({
                 {(['monthly', 'quarterly', 'yearly'] as const).map((p) => (
                   <Button
                     key={p}
+                    // @ts-ignore TODO: fix type — Type '"default" | "ghost"' is not assignable to type '"link" | "primary" | "dest
                     variant={period === p ? "default" : "ghost"}
                     size="sm"
                     onClick={() => onPeriodChange?.(p)}
@@ -479,6 +479,7 @@ export function RecruiterPerformanceChart() {
         {metrics.map(metric => (
           <Button
             key={metric.key}
+            // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
             variant={selectedMetric === metric.key ? "default" : "outline"}
             size="sm"
             onClick={() => setSelectedMetric(metric.key)}
@@ -529,6 +530,7 @@ export function WorkModelDistributionChart() {
       {/* View Toggle */}
       <div className="flex gap-2">
         <Button
+          // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
           variant={viewType === 'distribution' ? "default" : "outline"}
           size="sm"
           onClick={() => setViewType('distribution')}
@@ -538,6 +540,7 @@ export function WorkModelDistributionChart() {
           Distribuição
         </Button>
         <Button
+          // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
           variant={viewType === 'trends' ? "default" : "outline"}
           size="sm"
           onClick={() => setViewType('trends')}
@@ -599,6 +602,7 @@ export function PredictiveAnalyticsChart() {
           {[80, 85, 90, 95].map(level => (
             <Button
               key={level}
+              // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
               variant={confidenceLevel === level ? "default" : "outline"}
               size="sm"
               onClick={() => setConfidenceLevel(level)}

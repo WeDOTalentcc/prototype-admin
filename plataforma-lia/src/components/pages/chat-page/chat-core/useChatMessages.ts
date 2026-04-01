@@ -118,7 +118,7 @@ export function useChatMessages({
           actions: [            // @ts-ignore // TODO: fix type
             { label: "Analisar CV", icon: FileText as unknown as React.ReactNode, variant: "default" },            // @ts-ignore // TODO: fix type
             { label: "Extrair dados", icon: Database as unknown as React.ReactNode, variant: "outline" },
-            // @ts-ignore // TODO: fix type
+            // @ts-ignore TODO: fix type — Type 'ReactNode' is not assignable to type 'ElementType<any, keyof IntrinsicElem
             { label: "Comparar perfis", icon: Users as unknown as React.ReactNode, variant: "outline" },
           ],
         }

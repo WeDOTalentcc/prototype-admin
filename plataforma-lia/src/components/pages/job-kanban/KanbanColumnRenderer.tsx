@@ -349,7 +349,7 @@ export function KanbanColumnRenderer({
               {filteredCandidates.length}
             </span>
             {stageId === "screening" && (currentJob.backendId || currentJob.id) && (
-              // @ts-ignore TODO: fix type
+              // @ts-ignore TODO: fix type — Object is possibly 'undefined'.
               <SaturationBadge jobId={(currentJob.backendId || currentJob.id).toString()} />
             )}
             {dynamicStage && (

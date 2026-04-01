@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -44,11 +43,15 @@ export function CompanyTeamHub({
   const renderCompanyData = () => {
     return (
       <CompanyDataSection
+        // @ts-ignore TODO: fix type — Type 'import("/home/runner/workspace/plataforma-lia/src/components/settings/comp
         companyData={companyState.companyData}
+        // @ts-ignore TODO: fix type — Type 'Dispatch<SetStateAction<CompanyData>>' is not assignable to type '(fn: (pr
         setCompanyData={companyActions.setCompanyData}
         isEditingCompanyData={companyState.isEditingCompanyData}
         setIsEditingCompanyData={companyActions.setIsEditingCompanyData}
+        // @ts-ignore TODO: fix type — Type 'CompanyData | null' is not assignable to type 'CompanyData'.
         companyDataBackup={companyState.companyDataBackup}
+        // @ts-ignore TODO: fix type — Type '(backup: CompanyData | null) => void' is not assignable to type '(data: Co
         setCompanyDataBackup={companyActions.setCompanyDataBackup}
         saveCompanyData={companyActions.saveCompanyData}
         saving={companyState.saving}
@@ -67,6 +70,7 @@ export function CompanyTeamHub({
         setExpandedCategories={companyActions.setExpandedCategories}
         addTechToCategory={companyActions.addTechToCategory}
         removeTechFromCategory={companyActions.removeTechFromCategory}
+        // @ts-ignore TODO: fix type — Type 'readonly [{ readonly key: "backend"; readonly label: "Backend"; readonly i
         TECH_STACK_CATEGORIES={TECH_STACK_CATEGORIES}
       />
     );
@@ -144,6 +148,7 @@ export function CompanyTeamHub({
     />
   );
 
+  // @ts-ignore TODO: fix type — Type '((user: Record<string, unknown>) => void) | undefined' is not assignable t
   const renderUsers = () => <UserManagement onUserUpdate={onUserUpdate} />;
 
   const renderContent = () => {

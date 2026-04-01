@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { useState, useMemo, useEffect, useRef } from "react"
@@ -209,6 +208,7 @@ export function AdminTemplateHub() {
             name: t.name,
             category: t.category || 'system',
             subject: t.subject || '',
+            // @ts-ignore TODO: fix type — Argument of type '{}' is not assignable to parameter of type 'string'.
             body: t.body || t.body_text || (t.body_html ? stripHtmlTags(t.body_html) : ''),
             variables: t.variables || [],
             isActive: t.is_active ?? true,

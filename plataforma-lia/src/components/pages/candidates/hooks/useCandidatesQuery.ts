@@ -189,7 +189,6 @@ export function useCandidatesQuery(options: UseCandidatesQueryOptions = {}): Use
       setError(err instanceof Error ? err : new Error("Global search failed"))
     } finally {
       setIsLoading(false)
-    // @ts-ignore // TODO: fix type
     }
   }, [initialPageSize, transformCandidate])
 

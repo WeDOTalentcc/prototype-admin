@@ -140,7 +140,6 @@ export function PeopleAnalyticsPlaceholder() {
             <Brain className="w-3 h-3 mr-1.5 text-wedo-cyan" />
             Big Five
           </Button>
-          // @ts-ignore // TODO: fix type
           <Button
             // @ts-ignore // TODO: fix type
             variant={activeSubDashboard === 'diversidade' ? 'default' : 'outline'}
@@ -150,7 +149,6 @@ export function PeopleAnalyticsPlaceholder() {
           >
             <Heart className="w-3 h-3 mr-1.5" />
             Diversidade
-          // @ts-ignore // TODO: fix type
           </Button>
           <Button
             // @ts-ignore // TODO: fix type

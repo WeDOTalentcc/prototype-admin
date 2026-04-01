@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { Badge } from "@/components/ui/badge"
@@ -76,6 +75,7 @@ export function CandidatePageHeader({
               <AvatarFallback className="text-sm font-medium bg-gray-200 lia-text-base">
                 {(_candidate.name as string).split( ).map((n: string) => n[0]).join().slice(0, 2).toUpperCase()}
               </AvatarFallback>
+            // @ts-ignore TODO: fix type
             </Avatar>
             <div>
               <div className="flex items-center gap-2">

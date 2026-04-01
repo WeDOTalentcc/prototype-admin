@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { useState, useEffect } from "react"
@@ -194,11 +193,15 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
 
   const handleTemplateSelect = (template: { id?: string; subject?: string; message?: string }) => {
     if (activeTab === 'email') {
+      // @ts-ignore TODO: fix type — Argument of type 'string | undefined' is not assignable to parameter of type 'Se
       setSubject(template.subject)
+      // @ts-ignore TODO: fix type — Argument of type 'string | undefined' is not assignable to parameter of type 'Se
       setMessage(template.message)
     } else {
+      // @ts-ignore TODO: fix type — Argument of type 'string | undefined' is not assignable to parameter of type 'Se
       setMessage(template.message)
     }
+    // @ts-ignore TODO: fix type — Argument of type 'string | undefined' is not assignable to parameter of type 'Se
     setTemplateType(template.id)
   }
 
@@ -293,12 +296,16 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
 
   const applyLiaSuggestion = (suggestion: { content?: { subject?: string; message?: string } }) => {
     if (activeTab === 'email') {
+      // @ts-ignore TODO: fix type — 'suggestion.content' is possibly 'undefined'.
       setSubject(suggestion.content.subject || '')
+      // @ts-ignore TODO: fix type — 'suggestion.content' is possibly 'undefined'.
       setMessage(suggestion.content.message || '')
     } else {
+      // @ts-ignore TODO: fix type — 'suggestion.content' is possibly 'undefined'.
       setMessage(suggestion.content.message || '')
     }
     setShowLiaSuggestions(false)
+    // @ts-ignore TODO: fix type — Property 'id' does not exist on type '{ content?: { subject?: string | undefined
     setTemplateType(`lia-${suggestion.id}`)
   }
 

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { useState, useRef, useEffect, useCallback } from "react"
@@ -188,6 +187,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
             </div>
             <div className="flex items-center gap-2 print:hidden">
               <Button
+                // @ts-ignore TODO: fix type
                 variant="secondary"
                 size="sm"
                 onClick={shareReport}
@@ -270,6 +270,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
             {/* Resumo Executivo - Grid 4 colunas compacto */}
             {selectedSections.overview && (
               <div className="space-y-2">
+                // @ts-ignore TODO: fix type
                 <h3 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1">
                   <Briefcase className="w-3 h-3 lia-text-base" />
                   Resumo Executivo

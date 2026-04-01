@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { useState, useEffect } from "react"
@@ -426,6 +425,7 @@ export function DailyBriefingCard({
                       size="sm"
                       variant="outline"
                       className="ml-3 h-7 text-xs shrink-0 font-semibold border-lia-border-default"
+                      // @ts-ignore TODO: fix type — Argument of type 'UrgentAction' is not assignable to parameter of type 'Record<s
                       onClick={() => handleActionClick(action.action_type, action)}
                     >
                       {action.action_label}
@@ -449,6 +449,7 @@ export function DailyBriefingCard({
                     key={item.id}
                     className="flex items-center gap-2 p-2 rounded-md border shrink-0 cursor-pointer transition-colors motion-reduce:transition-none"
                     style={{backgroundColor: 'var(--gray-50)', borderColor: 'var(--gray-200)'}}
+                    // @ts-ignore TODO: fix type — Argument of type 'ScheduleItem' is not assignable to parameter of type 'Record<s
                     onClick={() => handleActionClick('view_interview', item)}
                   >
                     <div 
@@ -500,6 +501,7 @@ export function DailyBriefingCard({
                             size="sm"
                             variant="link"
                             className="h-auto p-0 mt-1 text-xs"
+                            // @ts-ignore TODO: fix type — Argument of type 'Insight' is not assignable to parameter of type 'Record<string
                             onClick={() => handleActionClick(insight.action_type || 'view', insight)}
                           >
                             {insight.action} <ArrowRight className="w-3 h-3 ml-1" />

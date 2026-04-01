@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React from "react"
@@ -128,6 +127,7 @@ export function EAPModals({
     <>
       {/* Toast de Sugestão de Template */}
       <TemplateSuggestionToast
+        // @ts-ignore TODO: fix type — Type 'unknown' is not assignable to type 'TemplateSuggestion | null'.
         suggestion={suggestionQueue.currentSuggestion}
         onCreateTemplate={(suggestion) => {
           const templateData = {

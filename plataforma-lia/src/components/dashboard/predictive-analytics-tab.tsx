@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useEffect } from "react"
@@ -325,6 +324,7 @@ export function PredictiveAnalyticsTab() {
 
       <div className="flex gap-2 mb-4">
         <Button
+          // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
           variant={selectedView === "overview" ? "default" : "outline"}
           size="sm"
           onClick={() => setSelectedView("overview")}
@@ -332,6 +332,7 @@ export function PredictiveAnalyticsTab() {
           Visão Geral
         </Button>
         <Button
+          // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
           variant={selectedView === "risks" ? "default" : "outline"}
           size="sm"
           onClick={() => setSelectedView("risks")}
@@ -339,6 +340,7 @@ export function PredictiveAnalyticsTab() {
           Riscos
         </Button>
         <Button
+          // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
           variant={selectedView === "opportunities" ? "default" : "outline"}
           size="sm"
           onClick={() => setSelectedView("opportunities")}

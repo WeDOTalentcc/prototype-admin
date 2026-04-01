@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 /**
@@ -465,6 +464,7 @@ export function WizardRightPanel({
             onSetTechnicalSkills={onSetTechnicalSkills}
             onSetBehavioralCompetencies={onSetBehavioralCompetencies}
             basicInfoFields={basicInfoFields}
+            // @ts-ignore TODO: fix type — Type 'import("/home/runner/workspace/plataforma-lia/src/components/expanded-chat
             detectedCriteria={detectedCriteria}
             companyConfig={companyConfig}
             inferSkillWeight={inferSkillWeight}

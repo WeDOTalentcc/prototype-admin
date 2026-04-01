@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Command Parser for Natural Language Navigation and Edit Commands
  * 
@@ -268,6 +267,7 @@ export function isLocalCommand(message: string): boolean {
  * Get stage label in Portuguese for display
  */
 export function getStageLabel(stage: WizardStage): string {
+  // @ts-ignore TODO: fix type — Property '"jd-enrichment"' is missing in type '{ 'input-evaluation': string; sal
   const labels: Record<WizardStage, string> = {
     'input-evaluation': 'Avaliação',
     'salary': 'Remuneração',
@@ -283,6 +283,7 @@ export function getStageLabel(stage: WizardStage): string {
  * Get all valid stage aliases for documentation/help
  */
 export function getStageAliases(): Record<WizardStage, string[]> {
+  // @ts-ignore TODO: fix type — Property '"jd-enrichment"' is missing in type '{ 'input-evaluation': never[]; sa
   const aliasesByStage: Record<WizardStage, string[]> = {
     'input-evaluation': [],
     'salary': [],

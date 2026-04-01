@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
@@ -141,7 +140,9 @@ export function WSIVoiceScreeningStatus({
         case 'completed':
           setStatus('completed')
           if (statusResponse.result) {
+            // @ts-ignore TODO: fix type — Argument of type 'CalculateWSIResponse' is not assignable to parameter of type '
             setResult(statusResponse.result)
+            // @ts-ignore TODO: fix type — Argument of type 'CalculateWSIResponse' is not assignable to parameter of type '
             onComplete?.(statusResponse.result)
           }
           break

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React from "react"
@@ -98,6 +97,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
       <div className="flex items-center gap-1">
         {/* Contato Realizado */}
         {candidate.contactStatus !== 'não contatado' && (
+          // @ts-ignore TODO: fix type
           <div
  className="w-6 h-6 rounded-md bg-gray-100 flex items-center justify-center"
             title="Contato realizado pela LIA"

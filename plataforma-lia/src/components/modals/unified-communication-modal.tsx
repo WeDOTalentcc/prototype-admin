@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { useState, useEffect, useCallback } from "react"
@@ -415,6 +414,7 @@ export function UnifiedCommunicationModal({
           subject: (channel === 'email' || channel === 'both') ? subject : undefined,
           message_content: message,
           sent_by: 'recruiter',
+          // @ts-ignore TODO: fix type — Type 'InterviewSettings | undefined' is not assignable to type 'Record<string, u
           metadata: type === 'agendamento' ? interviewSettings : undefined
         })
 

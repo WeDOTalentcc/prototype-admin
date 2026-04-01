@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 "use client"
@@ -325,6 +324,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       {job.title}
                     </p>
                   </div>
+                // @ts-ignore TODO: fix type
                 </div>
                 <div className="rounded-md p-3 mb-4 border border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary/50">
                   <div className="flex items-start gap-2.5">

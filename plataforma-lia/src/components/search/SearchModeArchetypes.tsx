@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import {
@@ -274,11 +273,11 @@ export function SearchModeArchetypes({
                           </div>
                         )}
 
-                        {arch.filters?.skills && arch.filters.skills.length > 0 && (
+                        {(arch.filters as any)?.skills && (arch.filters as any).skills.length > 0 && (
                           <div className="space-y-1">
                             <span className="text-micro font-medium lia-text-400">Skills</span>
                             <div className="flex flex-wrap gap-1">
-                              {arch.filters.skills.map((skill: string) => (
+                              {(arch.filters as any).skills.map((skill: string) => (
                                 <span
                                   key={skill}
                                   className="text-micro px-1.5 py-0.5 rounded-full bg-gray-100"
@@ -311,27 +310,27 @@ export function SearchModeArchetypes({
                             <div className="flex items-center gap-1">
                               <span className="lia-text-400">Experiência:</span>
                               <span className="font-medium lia-text-700">
-                                {arch.filters.experience_years_min}+ anos
+                                {(arch.filters as any).experience_years_min}+ anos
                               </span>
                             </div>
                           )}
                           {arch.filters?.location && (
                             <div className="flex items-center gap-1">
                               <span className="lia-text-400">Localização:</span>
-                              <span className="font-medium lia-text-700">{arch.filters.location}</span>
+                              <span className="font-medium lia-text-700">{(arch.filters as any).location}</span>
                             </div>
                           )}
                           {arch.filters?.work_model && (
                             <div className="flex items-center gap-1">
                               <span className="lia-text-400">Modelo:</span>
                               <span className="font-medium lia-text-700">
-                                {arch.filters.work_model === "remote"
+                                {(arch.filters as any).work_model === "remote"
                                   ? "Remoto"
-                                  : arch.filters.work_model === "hybrid"
+                                  : (arch.filters as any).work_model === "hybrid"
                                   ? "Híbrido"
-                                  : arch.filters.work_model === "onsite"
+                                  : (arch.filters as any).work_model === "onsite"
                                   ? "Presencial"
-                                  : arch.filters.work_model}
+                                  : (arch.filters as any).work_model}
                               </span>
                             </div>
                           )}
@@ -339,27 +338,27 @@ export function SearchModeArchetypes({
                             <div className="flex items-center gap-1">
                               <span className="lia-text-400">Contrato:</span>
                               <span className="font-medium lia-text-700">
-                                {arch.filters.employment_type === "clt"
+                                {(arch.filters as any).employment_type === "clt"
                                   ? "CLT"
-                                  : arch.filters.employment_type === "pj"
+                                  : (arch.filters as any).employment_type === "pj"
                                   ? "PJ"
-                                  : arch.filters.employment_type === "intern"
+                                  : (arch.filters as any).employment_type === "intern"
                                   ? "Estágio"
-                                  : arch.filters.employment_type === "temporary"
+                                  : (arch.filters as any).employment_type === "temporary"
                                   ? "Temporário"
-                                  : arch.filters.employment_type === "freelancer"
+                                  : (arch.filters as any).employment_type === "freelancer"
                                   ? "Freelancer"
-                                  : arch.filters.employment_type}
+                                  : (arch.filters as any).employment_type}
                               </span>
                             </div>
                           )}
                         </div>
 
-                        {arch.filters?.languages && arch.filters.languages.length > 0 && (
+                        {(arch.filters as any)?.languages && (arch.filters as any).languages.length > 0 && (
                           <div className="space-y-1">
                             <span className="text-micro font-medium lia-text-400">Idiomas</span>
                             <div className="flex flex-wrap gap-1">
-                              {arch.filters.languages.map((lang: string) => (
+                              {(arch.filters as any).languages.map((lang: string) => (
                                 <span
                                   key={lang}
                                   className="px-1.5 py-0.5 rounded-full text-micro bg-gray-100"

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * candidate-transforms.ts — Sprint G4.
  *
@@ -284,8 +283,11 @@ export function mapCandidateLocalToCandidate(c: CandidateLocal, index: number): 
     avatar: c.avatar_url,
     liaAnalysis: {
       score: c.lia_score || 75,
+      // @ts-ignore TODO: fix type — Type '{}' is missing the following properties from type 'string[]': length, pop,
       strengths: c.lia_insights?.strengths || ['Perfil técnico sólido'],
+      // @ts-ignore TODO: fix type — Type '{}' is missing the following properties from type 'string[]': length, pop,
       concerns: c.lia_insights?.concerns || [],
+      // @ts-ignore TODO: fix type — Type '{}' is not assignable to type 'string'.
       recommendation: c.lia_insights?.recommendation || 'Avaliar com atenção',
     },
     has_email: Boolean(c.email),

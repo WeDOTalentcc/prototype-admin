@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client"
 
 import React, { useState, useRef, useEffect } from "react"
@@ -245,6 +244,7 @@ export function QuestionAdjustmentChat({
           placeholder={disabled ? "Edições bloqueadas" : "Descreva o ajuste desejado..."}
           disabled={disabled || isLoading}
           className="w-full h-16 pl-3 pr-10 py-2 text-xs border border-lia-border-subtle rounded-md resize-none focus:outline-none focus:ring-2 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+          // @ts-ignore TODO: fix type — Object literal may only specify known properties, and 'focusRingColor' does not 
           style={{focusRingColor: "var(--wedo-cyan-border)"}}
         />
         <Button
