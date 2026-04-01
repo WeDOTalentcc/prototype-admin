@@ -23,6 +23,15 @@ import {
   Brain, Github, Globe, Building, Layers,
 } from "lucide-react"
 import { badgeStyles, textStyles } from "@/lib/design-tokens"
+import { CheckableItem } from "./filters/CheckableItem"
+import { TagInput } from "./filters/TagInput"
+import { TriStateButtons } from "./filters/TriStateButtons"
+import { CheckableItem } from "./filters/CheckableItem"
+import { TagInput } from "./filters/TagInput"
+import { TriStateButtons } from "./filters/TriStateButtons"
+import { CheckableItem } from "./filters/CheckableItem"
+import { TagInput } from "./filters/TagInput"
+import { TriStateButtons } from "./filters/TriStateButtons"
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -1014,99 +1023,3 @@ export function CandidatesFilterPanel({
   )
 }
 
-// ─── Internal helpers (não exportados — uso exclusivo deste componente) ───────
-
-interface CheckableItemProps {
-  label: string
-  checked: boolean
-  onClick: () => void
-}
-
-function CheckableItem({ label, checked, onClick }: CheckableItemProps) {
-  return (
-    <div
-      onClick={onClick}
-      className={`flex items-center gap-2.5 p-2 rounded-md cursor-pointer transition-colors motion-reduce:transition-none hover:bg-gray-50 ${checked ? "bg-wedo-cyan/[0.08] border border-wedo-cyan/20" : "bg-transparent border border-transparent"}`}
-    >
-      <div
-        className="w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-colors motion-reduce:transition-none"
-        style={{backgroundColor: checked ? "var(--gray-950)" : "transparent",
-          border: checked ? "none" : "2px solid var(--gray-300)"}}
-      >
-        {checked && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
-      </div>
-      <span
-        className="text-xs"
-        style={{color: checked ? "var(--gray-800)" : "var(--gray-500)"}}
-      >
-        {label}
-      </span>
-    </div>
-  )
-}
-
-interface TagInputProps {
-  placeholder: string
-  tags: string[]
-  onAdd: (value: string) => void
-  onRemove: (value: string) => void
-}
-
-function TagInput({ placeholder, tags, onAdd, onRemove }: TagInputProps) {
-  return (
-    <div className="space-y-2">
-      <Input
-        placeholder={placeholder}
-        className="h-8 text-xs"
-        onKeyDown={(e) => {
-          const value = (e.target as HTMLInputElement).value.trim()
-          if (e.key === "Enter" && value && !tags.includes(value)) {
-            onAdd(value)
-            ;(e.target as HTMLInputElement).value = ""
-          }
-        }}
-      />
-      {tags.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {tags.map((tag) => (
-            <Badge key={tag} variant="secondary" className="text-micro px-2 py-0.5 flex items-center gap-1">
-              {tag}
-              <button onClick={() => onRemove(tag)}>
-                <X className="w-2.5 h-2.5" />
-              </button>
-            </Badge>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
-interface TriStateButtonsProps {
-  value: boolean | null
-  onChange: (value: boolean | null) => void
-}
-
-function TriStateButtons({ value, onChange }: TriStateButtonsProps) {
-  const options = [
-    { value: null, label: "Todos" },
-    { value: true, label: "Sim" },
-    { value: false, label: "Não" },
-  ]
-  return (
-    <div className="flex gap-1.5">
-      {options.map((opt) => (
-        <button
-          key={String(opt.value)}
-          onClick={() => onChange(opt.value)}
-          className="flex-1 px-2 py-1.5 text-micro rounded-md transition-colors motion-reduce:transition-none"
-          style={{backgroundColor: value === opt.value ? "var(--gray-950)" : "var(--gray-50)",
-            color: value === opt.value ? "white" : "var(--gray-500)",
-            border: value === opt.value ? "none" : "1px solid var(--gray-200)"}}
-        >
-          {opt.label}
-        </button>
-      ))}
-    </div>
-  )
-}
