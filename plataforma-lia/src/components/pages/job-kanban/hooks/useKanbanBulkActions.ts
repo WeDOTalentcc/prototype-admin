@@ -2,7 +2,7 @@
 
 import { useCallback } from "react"
 import { liaApi } from "@/services/lia-api"
-import { type BulkActionType } from "@/components/ui/bulk-selection-bar"
+import { type BulkActionType } from "@/components/ui/bulk-actions-bar"
 import { type BulkActionResult, type BulkActionExecuteData } from "@/components/modals/bulk-action-modal"
 import { type CommunicationType } from "@/components/modals/unified-communication-modal"
 import { type KanbanCandidate } from "@/components/kanban"

@@ -4,6 +4,7 @@ import React from "react"
 import { X, Loader2, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
 interface BulkActionItem {
@@ -28,11 +29,14 @@ interface BulkActionsBarProps {
   onSelectAll?: () => void
   onDeselectAll: () => void
   actions: BulkActionItem[]
+  layout?: 'inline' | 'fixed'
   className?: string
 }
 
-const BUTTON_CLASS = "h-8 px-3 text-xs gap-2 bg-white hover:bg-gray-50 border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600"
-const DESTRUCTIVE_BUTTON_CLASS = "h-8 px-3 text-xs gap-2 border-status-error/30 text-status-error hover:bg-status-error/10 dark:text-status-error dark:bg-lia-bg-elevated dark:hover:bg-status-error/20"
+const INLINE_BUTTON = "h-8 px-3 text-xs gap-2 bg-white hover:bg-gray-50 border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600"
+const INLINE_DESTRUCTIVE = "h-8 px-3 text-xs gap-2 border-status-error/30 text-status-error hover:bg-status-error/10 dark:text-status-error dark:bg-lia-bg-elevated dark:hover:bg-status-error/20"
+const FIXED_BUTTON = "h-8 px-3 text-xs gap-2 border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
+const FIXED_DESTRUCTIVE = "h-8 px-3 text-xs gap-2 bg-status-error text-white hover:bg-status-error/90"
 
 export const BulkActionsBar = React.memo(function BulkActionsBar({
   selectedCount,
@@ -44,10 +48,12 @@ export const BulkActionsBar = React.memo(function BulkActionsBar({
   onSelectAll,
   onDeselectAll,
   actions,
+  layout = 'inline',
   className,
 }: BulkActionsBarProps) {
   if (selectedCount === 0) return null
 
+  const isFixed = layout === 'fixed'
   const label = entityLabel || 'candidato'
   const plural = selectedCount > 1
   const displayLabel = label === 'candidato'
@@ -58,81 +64,125 @@ export const BulkActionsBar = React.memo(function BulkActionsBar({
 
   const visibleActions = actions.filter(a => !a.hidden)
 
+  const containerClass = isFixed
+    ? "fixed top-0 left-0 right-0 z-50 bg-gray-900 border-b border-gray-800 animate-in slide-in-from-top duration-200"
+    : "p-3 rounded-md bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle"
+
   return (
-    <div
-      className={cn(
-        "p-3 rounded-md bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle",
-        className
-      )}
-    >
-      <div className="flex items-center justify-between flex-wrap gap-3">
+    <div className={cn(containerClass, className)}>
+      <div className={cn(
+        "flex items-center justify-between flex-wrap",
+        isFixed ? "max-w-screen-2xl mx-auto px-4 py-3 gap-4" : "gap-3"
+      )}>
         <div className="flex items-center gap-3">
           {showSelectAll && onSelectAll && (
             <div className="flex items-center gap-2">
               <Checkbox
                 checked={isAllSelected}
                 onCheckedChange={onSelectAll}
-                className="data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900 dark:data-[state=checked]:bg-gray-100 dark:data-[state=checked]:border-lia-border-subtle"
+                className={cn(
+                  isFixed
+                    ? "border-gray-600 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+                    : "data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900 dark:data-[state=checked]:bg-gray-100 dark:data-[state=checked]:border-lia-border-subtle"
+                )}
               />
-              <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+              <span className={cn(
+                "text-xs",
+                isFixed ? "text-gray-400" : "text-lia-text-secondary dark:text-lia-text-tertiary"
+              )}>
                 Selecionar todos
               </span>
             </div>
           )}
+
+          {isFixed && showSelectAll && <div className="h-4 w-px bg-gray-700" />}
+
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-lia-bg-elevated flex items-center justify-center flex-shrink-0">
-              {entityIcon || <Users className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />}
-            </div>
-            <span className="text-sm font-semibold text-lia-text-primary" aria-live="polite" aria-atomic="true">
+            {isFixed ? (
+              <Badge className="bg-gray-200 text-lia-text-secondary border-lia-border-default hover:bg-gray-300 dark:bg-lia-bg-elevated dark:text-lia-text-secondary dark:border-lia-border-default">
+                {entityIcon || <Users className="w-3 h-3 mr-1" />}
+                {selectedCount}
+              </Badge>
+            ) : (
+              <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-lia-bg-elevated flex items-center justify-center flex-shrink-0">
+                {entityIcon || <Users className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />}
+              </div>
+            )}
+            <span className={cn(
+              "text-sm",
+              isFixed ? "text-gray-300" : "font-semibold text-lia-text-primary"
+            )} aria-live="polite" aria-atomic="true">
               {displayLabel}
             </span>
             {totalCount !== undefined && totalCount > 0 && (
-              <span className="text-xs text-lia-text-tertiary">
+              <span className={cn("text-xs", isFixed ? "text-gray-500" : "text-lia-text-tertiary")}>
                 de {totalCount}
               </span>
             )}
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          {visibleActions.map((action) => {
-            const isDestructive = action.variant === 'destructive'
+        <div className="flex items-center gap-2">
+          <div className="flex flex-wrap gap-2">
+            {visibleActions.map((action) => {
+              const isDestructive = action.variant === 'destructive'
+              const btnClass = isFixed
+                ? (isDestructive ? FIXED_DESTRUCTIVE : FIXED_BUTTON)
+                : (isDestructive ? INLINE_DESTRUCTIVE : INLINE_BUTTON)
 
-            return (
-              <Button
-                key={action.id}
-                variant="outline"
-                size="sm"
-                onClick={action.onClick}
-                disabled={action.disabled || action.loading}
-                className={isDestructive ? DESTRUCTIVE_BUTTON_CLASS : BUTTON_CLASS}
-                title={action.label}
-              >
-                {action.loading ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
-                ) : (
-                  action.icon
-                )}
-                <span>{action.loading && action.loadingLabel ? action.loadingLabel : action.label}</span>
-              </Button>
-            )
-          })}
+              return (
+                <Button
+                  key={action.id}
+                  variant="outline"
+                  size="sm"
+                  onClick={action.onClick}
+                  disabled={action.disabled || action.loading}
+                  className={btnClass}
+                  title={action.label}
+                >
+                  {action.loading ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
+                  ) : (
+                    action.icon
+                  )}
+                  <span>{action.loading && action.loadingLabel ? action.loadingLabel : action.label}</span>
+                </Button>
+              )
+            })}
+          </div>
+
+          {isFixed && <div className="h-4 w-px bg-gray-700 mx-1" />}
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onDeselectAll}
+            className={cn(
+              "h-8 px-2 text-xs",
+              isFixed
+                ? "text-gray-400 hover:text-gray-200 hover:bg-gray-800"
+                : "text-lia-text-primary hover:text-lia-text-primary dark:text-lia-text-primary dark:hover:text-lia-text-inverse"
+            )}
+            title="Limpar seleção"
+          >
+            <X className="w-3 h-3" />
+          </Button>
         </div>
-
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onDeselectAll}
-          className="h-8 px-2 text-xs text-lia-text-primary hover:text-lia-text-primary dark:text-lia-text-primary dark:hover:text-lia-text-inverse"
-          title="Limpar seleção"
-        >
-          <X className="w-3 h-3" />
-        </Button>
       </div>
     </div>
   )
 })
 
 BulkActionsBar.displayName = 'BulkActionsBar'
+
+export type BulkActionType =
+  | 'move_stage'
+  | 'request_data'
+  | 'send_message'
+  | 'reject'
+  | 'export'
+  | 'add_to_list'
+  | 'share_search'
+  | 'favorites'
 
 export type { BulkActionItem, BulkActionsBarProps }

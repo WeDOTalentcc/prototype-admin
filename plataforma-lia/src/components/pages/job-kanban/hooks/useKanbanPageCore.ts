@@ -17,7 +17,7 @@ import {
   RECRUITMENT_STAGES,
   getCompanyPipelineStages,
 } from "@/lib/recruitment-stages"
-import { type BulkActionType } from "@/components/ui/bulk-selection-bar"
+import { type BulkActionType } from "@/components/ui/bulk-actions-bar"
 import { mockJobData } from "@/components/kanban/mock/candidates"
 import { useCompanyDefaults } from "@/hooks/use-company-defaults"
 import { usePipelineInheritance } from "@/hooks/use-pipeline-inheritance"

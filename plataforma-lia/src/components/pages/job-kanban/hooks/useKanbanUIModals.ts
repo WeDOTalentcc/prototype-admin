@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { type CommunicationType } from "@/components/modals/unified-communication-modal"
-import { type BulkActionType } from "@/components/ui/bulk-selection-bar"
+import { type BulkActionType } from "@/components/ui/bulk-actions-bar"
 import { toast } from "sonner"
 
 export function useKanbanUIModals({ job }: {

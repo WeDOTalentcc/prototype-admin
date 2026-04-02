@@ -25,10 +25,9 @@ import {
   Trophy, XCircle, ThumbsUp, Target, MessageSquareText, MessageSquare, Building, BarChart3, DollarSign, Activity,
   ArrowUp, ArrowDown, TrendingDown, Award, Pin, Edit, Pencil, Trash2, RefreshCw, Wand2, Library, BookOpen, Folder,
   History, Gauge, UserCheck, Timer, RotateCcw, SortAsc, SortDesc, Columns, Table as TableIcon, Bell, Maximize2, ThumbsDown, ArrowUpDown, EyeOff, GripVertical, Lightbulb, Bookmark, Paperclip, ChevronsLeftRight, Copy, Fingerprint, Loader2, Save, Link2, PauseCircle, PlayCircle,
-  List, ArrowRight, FileText
+  List
 } from "lucide-react"
-import { type BulkActionType } from "@/components/ui/bulk-selection-bar"
-import { BulkActionsBar } from "@/components/ui/bulk-actions-bar"
+import { BulkActionsBar, type BulkActionType } from "@/components/ui/bulk-actions-bar"
 import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/ui/empty-state"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"

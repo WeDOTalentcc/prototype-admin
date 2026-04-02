@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { BulkSelectionBar } from "@/components/ui/bulk-selection-bar"
+import { BulkActionsBar } from "@/components/ui/bulk-actions-bar"
 import { CandidatesTable } from "@/components/pages/candidates/CandidatesTable"
 import { ShareSearchModal } from "@/components/modals/share-search-modal"
 import { FavoritesTab } from "@/components/talent-funnel-tabs/favorites-tab"
@@ -142,17 +142,18 @@ export default function FunilDeTalentosPage() {
     <div className="min-h-screen bg-white dark:lia-bg-950">
       {/* Bulk selection bar — fixa no topo quando há seleção */}
       {selectedCount > 0 && (
-        <BulkSelectionBar
+        <BulkActionsBar
           selectedCount={selectedCount}
           totalCount={total}
+          layout="fixed"
+          showSelectAll
           isAllSelected={selectedCount === candidates.length && candidates.length > 0}
           onSelectAll={handleSelectAll}
-          onClearSelection={clearSelection}
-          onAction={handleBulkAction}
+          onDeselectAll={clearSelection}
           actions={[
-            { id: "move_stage", label: "Mover Etapa", icon: <Users className="w-4 h-4" /> },
-            { id: "send_message", label: "Mensagem", icon: <Share2 className="w-4 h-4" /> },
-            { id: "share_search", label: "Compartilhar Seleção", icon: <Share2 className="w-4 h-4" /> },
+            { id: "move_stage", label: "Mover Etapa", icon: <Users className="w-3.5 h-3.5" />, onClick: () => handleBulkAction("move_stage") },
+            { id: "send_message", label: "Mensagem", icon: <Share2 className="w-3.5 h-3.5" />, onClick: () => handleBulkAction("send_message") },
+            { id: "share_search", label: "Compartilhar Seleção", icon: <Share2 className="w-3.5 h-3.5" />, onClick: () => handleBulkAction("share_search") },
           ]}
         />
       )}

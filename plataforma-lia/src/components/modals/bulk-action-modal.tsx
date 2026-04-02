@@ -26,7 +26,7 @@ import {
 import { cn } from '@/lib/utils'
 import { RECRUITMENT_STAGES, REJECTION_REASONS, type RecruitmentStage } from '@/lib/recruitment-stages'
 // REJECTION_REASONS kept as fallback for when DB sub-statuses are unavailable
-import type { BulkActionType } from '@/components/ui/bulk-selection-bar'
+import type { BulkActionType } from '@/components/ui/bulk-actions-bar'
 
 export interface BulkActionCandidate {
   id: string
