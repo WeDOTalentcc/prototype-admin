@@ -467,8 +467,8 @@ export function SourceBadge({ source, isApplication, className }: SourceBadgePro
 
       title={isApplication ? `Inscrito via ${sourceLabels[source.toLowerCase()] || source}` : `Origem: ${sourceLabels[source.toLowerCase()] || source}`}
     >
-      <Icon className="w-2 h-2 flex-shrink-0 text-lia-text-tertiary dark:text-lia-text-tertiary" />
-      <span className="text-micro text-lia-text-secondary dark:text-lia-text-secondary font-medium">
+      <Icon className="w-2 h-2 flex-shrink-0 text-lia-text-tertiary" />
+      <span className="text-micro text-lia-text-secondary font-medium">
         {label}
       </span>
     </div>

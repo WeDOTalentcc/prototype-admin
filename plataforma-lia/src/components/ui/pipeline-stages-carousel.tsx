@@ -135,7 +135,7 @@ export function PipelineStagesCarousel({
                         : 'border-lia-border-subtle hover:border-lia-border-default'
                     )}
                   >
-                    <div className="text-micro font-medium text-lia-text-tertiary dark:text-lia-text-tertiary mb-0.5 whitespace-nowrap">
+                    <div className="text-micro font-medium text-lia-text-tertiary mb-0.5 whitespace-nowrap">
                       {displayName}
                     </div>
 

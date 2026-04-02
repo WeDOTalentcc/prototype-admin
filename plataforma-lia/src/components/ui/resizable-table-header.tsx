@@ -60,7 +60,7 @@ export const ResizableTableHeader = React.memo(function ResizableTableHeader({
   return (
     <th
       className={cn(
- "relative py-1.5 px-3 font-medium text-lia-text-primary dark:text-lia-text-primary text-xs uppercase tracking-wide select-none transition-colors",
+ "relative py-1.5 px-3 font-medium text-lia-text-primary text-xs uppercase tracking-wide select-none transition-colors",
         alignClass,
         isDragging && !isFixed && "opacity-50 bg-lia-bg-tertiary dark:bg-lia-bg-secondary",
         isDragOver && !isFixed && "bg-lia-bg-tertiary dark:bg-lia-bg-secondary border-l-2 border-lia-border-medium",
@@ -97,8 +97,8 @@ export const ResizableTableHeader = React.memo(function ResizableTableHeader({
             </span>
             {sortable && isSorted ? (
               sortDirection === "asc" 
-                ? <ArrowUp className="w-3 h-3 flex-shrink-0 text-lia-text-secondary dark:text-lia-text-secondary" />
-                : <ArrowDown className="w-3 h-3 flex-shrink-0 text-lia-text-secondary dark:text-lia-text-secondary" />
+                ? <ArrowUp className="w-3 h-3 flex-shrink-0 text-lia-text-secondary" />
+                : <ArrowDown className="w-3 h-3 flex-shrink-0 text-lia-text-secondary" />
             ) : sortable && (
               <ChevronsUpDown className="w-3 h-3 flex-shrink-0 opacity-0 group-hover:opacity-50 transition-opacity motion-reduce:transition-none" />
             )}

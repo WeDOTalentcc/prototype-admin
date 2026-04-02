@@ -106,7 +106,7 @@ export function CommandPalette({
       <DialogContent 
         className="max-w-2xl p-0 gap-0 overflow-hidden bg-lia-bg-secondary"
       >
-        <div className="flex items-center px-4 py-3 border-b border-lia-border-default dark:border-lia-border-default">
+        <div className="flex items-center px-4 py-3 border-b border-lia-border-default">
           <Search className="w-4 h-4 mr-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
           <Input
             ref={inputRef}
@@ -147,7 +147,7 @@ export function CommandPalette({
                     <div className="flex-1 min-w-0">
                       <div className="font-medium">{cmd.label}</div>
                       {cmd.description && (
-                        <div className="text-sm text-lia-text-tertiary dark:text-lia-text-tertiary">
+                        <div className="text-sm text-lia-text-tertiary">
                           {cmd.description}
                         </div>
                       )}

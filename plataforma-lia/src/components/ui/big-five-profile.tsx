@@ -216,7 +216,7 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
               <div key={dimension.key} className="space-y-1">
                 {/* Header compacto com nome e percentual */}
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
+                  <span className="text-xs font-medium text-lia-text-primary">
                     {dimension.shortName}
                   </span>
                   <span className="text-xs font-bold" style={{color: dimension.color}}>
@@ -272,7 +272,7 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
 
             {/* Fit para funções super compacto */}
             <div className="flex flex-wrap gap-1">
-              <span className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">Fit:</span>
+              <span className="text-xs text-lia-text-tertiary">Fit:</span>
               {scores.conscientiousness > 70 && (
                 <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 text-status-success" style={{borderColor: 'var(--lia-border-subtle)'}}>
                   Gestão

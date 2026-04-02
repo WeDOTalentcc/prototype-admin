@@ -63,7 +63,7 @@ export const ScoreIconButton = React.memo(function ScoreIconButton({
         style={{color: isClickable ? activeColor : inactiveColor}}
       />
       {hasScore && displayValue && (
-        <span className="text-xs font-bold text-lia-text-secondary dark:text-lia-text-secondary">
+        <span className="text-xs font-bold text-lia-text-secondary">
           {displayValue}
         </span>
       )}

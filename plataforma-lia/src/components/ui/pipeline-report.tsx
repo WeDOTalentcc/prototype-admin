@@ -184,7 +184,7 @@ const JobGroup = ({
   const [isExpanded, setIsExpanded] = useState(defaultExpanded)
   
   return (
-    <div className="border rounded-md overflow-hidden border-lia-border-subtle dark:border-lia-border-subtle">
+    <div className="border rounded-md overflow-hidden border-lia-border-subtle">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full flex items-center justify-between p-4 hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none bg-lia-bg-tertiary dark:bg-lia-bg-secondary"
@@ -195,7 +195,7 @@ const JobGroup = ({
             <h3 className="font-medium text-lia-text-primary">
               {group.job_title}
             </h3>
-            <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">
+            <p className="text-sm text-lia-text-primary">
               {group.job_department} • {group.candidates.length} candidato{group.candidates.length !== 1 ? 's' : ''}
             </p>
           </div>
@@ -213,7 +213,7 @@ const JobGroup = ({
       </button>
       
       {isExpanded && (
-        <div className="p-4 space-y-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="p-4 space-y-3 border-t border-lia-border-subtle">
           {group.candidates.map((candidate) => (
             <CandidateCard
               key={candidate.id}
@@ -248,7 +248,7 @@ export function PipelineReport({ data, onAction, onClose }: PipelineReportProps)
             Relatório de Pipeline
           </span>
         </div>
-        <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">
+        <p className="text-sm text-lia-text-primary">
           {data.summary.message}
         </p>
         <div className="flex gap-4 mt-3 text-sm">
@@ -283,7 +283,7 @@ export function PipelineReport({ data, onAction, onClose }: PipelineReportProps)
           <h3 className="font-medium text-lia-text-primary mb-1">
             Pipeline em dia!
           </h3>
-          <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">
+          <p className="text-sm text-lia-text-primary">
             Todos os candidatos estão sendo acompanhados ativamente.
           </p>
         </div>

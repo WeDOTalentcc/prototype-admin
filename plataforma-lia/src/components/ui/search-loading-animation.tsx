@@ -56,7 +56,7 @@ export const SearchLoadingAnimation = React.memo(function SearchLoadingAnimation
           <div 
             className="pulse-animation relative w-10 h-10 rounded-full flex items-center justify-center z-10 bg-wedo-cyan/20"
           >
-            <Search className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-secondary" />
+            <Search className="w-5 h-5 text-lia-text-secondary" />
           </div>
         </div>
         <div className="text-left">

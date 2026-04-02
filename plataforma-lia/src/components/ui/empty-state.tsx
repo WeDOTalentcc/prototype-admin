@@ -35,11 +35,11 @@ export const EmptyState = React.memo(function EmptyState({
           {icon}
         </div>
       )}
-      <p className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-secondary mb-1">
+      <p className="text-sm font-medium text-lia-text-secondary mb-1">
         {title}
       </p>
       {description && (
-        <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary max-w-xs mb-4">
+        <p className="text-xs text-lia-text-tertiary max-w-xs mb-4">
           {description}
         </p>
       )}

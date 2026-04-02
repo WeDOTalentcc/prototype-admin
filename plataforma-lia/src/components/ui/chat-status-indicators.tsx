@@ -107,7 +107,7 @@ export const ProgressSteps = ({ steps, currentStep }: {
                   )}
                 </div>
                 {step.details && (
-                  <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mt-1">
+                  <p className="text-xs text-lia-text-primary mt-1">
                     {step.details}
                   </p>
                 )}
@@ -156,7 +156,7 @@ export const CommandExecution = ({
       {status === "executing" && (
         <div className="flex items-center gap-2 mt-2" role="status" aria-live="polite" aria-label="Carregando...">
           <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
-          <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">Processando...</span>
+          <span className="text-xs text-lia-text-primary">Processando...</span>
         </div>
       )}
     </div>
@@ -181,7 +181,7 @@ export const FileCreationIndicator = ({
         {status === "creating" ? (
           <Loader2 className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
         ) : (
-          <CheckCircle className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
+          <CheckCircle className="w-4 h-4 text-lia-text-primary" />
         )}
       </div>
       <div className="flex-1">
@@ -231,7 +231,7 @@ export const CompletionMessage = ({
     >
       {/* Completion Message */}
       <div className="flex items-start gap-3 p-4 bg-lia-bg-tertiary rounded-md border border-lia-border-subtle">
-        <CheckCircle className="w-5 h-5 text-lia-text-primary dark:text-lia-text-primary mt-0.5" />
+        <CheckCircle className="w-5 h-5 text-lia-text-primary mt-0.5" />
         <div className="flex-1">
           <p className="text-sm font-medium text-lia-text-primary">
             ✅ {message}
@@ -278,7 +278,7 @@ export const CompletionMessage = ({
                   className="w-full flex items-center gap-3 p-3 text-left hover:bg-lia-interactive-hover rounded-md transition-colors motion-reduce:transition-none group"
                 >
                   <Icon className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary group-hover:text-lia-text-secondary dark:group-hover:text-lia-text-disabled" />
-                  <span className="text-sm text-lia-text-primary dark:text-lia-text-primary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-inverse">
+                  <span className="text-sm text-lia-text-primary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-inverse">
                     {action.label}
                   </span>
                   <ArrowRight className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary group-hover:text-lia-text-secondary dark:group-hover:text-lia-text-disabled ml-auto" />
@@ -320,7 +320,7 @@ export const ProgressiveDisclosure = ({
         <div
           className="overflow-hidden animate-slide-in-up"
         >
-          <div className="p-4 border-l-2 border-lia-border-default dark:border-lia-border-default ml-6 mt-2">
+          <div className="p-4 border-l-2 border-lia-border-default ml-6 mt-2">
             {children}
           </div>
         </div>

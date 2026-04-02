@@ -442,7 +442,7 @@ export function LiaChatMessage({ type, content, timestamp, messageId, sessionId 
           )}
         </div>
         <div className="flex-shrink-0 w-7 h-7 rounded-full bg-lia-interactive-active dark:bg-lia-bg-elevated flex items-center justify-center mt-0.5">
-          <User className="w-3.5 h-3.5 text-lia-text-tertiary dark:text-lia-text-tertiary" />
+          <User className="w-3.5 h-3.5 text-lia-text-tertiary" />
         </div>
       </div>
     )
@@ -456,7 +456,7 @@ export function LiaChatMessage({ type, content, timestamp, messageId, sessionId 
       </div>
       <div className="flex-1 flex flex-col gap-1">
         <div className="flex items-center gap-1.5 px-1">
-          <span className="text-xs font-bold text-lia-text-primary dark:text-lia-text-primary" >
+          <span className="text-xs font-bold text-lia-text-primary" >
             LIA
           </span>
         </div>
@@ -495,7 +495,7 @@ export function LiaLoadingIndicator() {
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-1.5 mb-1 px-1">
-          <span className="text-xs font-bold text-lia-text-primary dark:text-lia-text-primary" >
+          <span className="text-xs font-bold text-lia-text-primary" >
             LIA
           </span>
         </div>

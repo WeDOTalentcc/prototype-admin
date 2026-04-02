@@ -176,7 +176,7 @@ export function InterviewSchedulingModal({
             <>
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <Label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
+                  <Label className="text-xs font-medium text-lia-text-primary">
                     Email de Convite
                   </Label>
                   <Badge className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border-0">
@@ -209,7 +209,7 @@ export function InterviewSchedulingModal({
               </div>
 
               <div className="space-y-3">
-                <Label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
+                <Label className="text-xs font-medium text-lia-text-primary">
                   Quando agendar?
                 </Label>
                 <Input
@@ -246,7 +246,7 @@ export function InterviewSchedulingModal({
                 </div>
               )}
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-lia-border-subtle">
                 <Button
                   variant="outline"
                   onClick={() => onOpenChange(false)}

@@ -136,7 +136,7 @@ export const DataRequestIndicator = React.memo(function DataRequestIndicator({
         </TooltipTrigger>
         <TooltipContent 
           side="top" 
-          className="w-64 p-0 bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle"
+          className="w-64 p-0 bg-white dark:bg-lia-bg-primary border border-lia-border-subtle"
         >
           <div className="p-3 space-y-3">
             <div className="flex items-center justify-between">
@@ -148,7 +148,7 @@ export const DataRequestIndicator = React.memo(function DataRequestIndicator({
                 >
                   {effectiveConfig.icon}
                 </span>
-                <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
+                <span className="text-xs font-medium text-lia-text-primary">
                   {effectiveConfig.label}
                 </span>
               </div>
@@ -162,7 +162,7 @@ export const DataRequestIndicator = React.memo(function DataRequestIndicator({
             </div>
 
             <div className="space-y-1.5">
-              <p className="text-micro font-medium text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wide">
+              <p className="text-micro font-medium text-lia-text-tertiary uppercase tracking-wide">
                 Campos Solicitados
               </p>
               <div className="space-y-1 max-h-32 overflow-y-auto">

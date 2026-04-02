@@ -144,12 +144,12 @@ export function CandidateCard({
   }
 
   return (
-    <Card className="border border-lia-border-subtle dark:border-lia-border-subtle hover:transition-shadow rounded-md bg-white dark:bg-lia-bg-primary">
+    <Card className="border border-lia-border-subtle hover:transition-shadow rounded-md bg-white dark:bg-lia-bg-primary">
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2">
-              <h4 className="font-semibold text-base truncate text-lia-text-primary dark:text-lia-text-primary">
+              <h4 className="font-semibold text-base truncate text-lia-text-primary">
                 {name}
               </h4>
               <Badge variant="secondary" className={`text-xs shrink-0 border-0 lia-text-secondary ${source_badge.includes("Banco Proprietário") ? 'bg-stone-50' : 'bg-wedo-cyan/10'}`}>
@@ -158,7 +158,7 @@ export function CandidateCard({
             </div>
             
             {title && (
-              <div className="flex items-center gap-1.5 text-sm mb-1 text-lia-text-tertiary dark:text-lia-text-tertiary">
+              <div className="flex items-center gap-1.5 text-sm mb-1 text-lia-text-tertiary">
                 <Building className="w-3.5 h-3.5 shrink-0" />
                 <span className="truncate">{title} {company && `• ${company}`}</span>
               </div>
@@ -242,11 +242,11 @@ export function CandidateCard({
             </div>
 
             {candidateId && (
-              <div className="mt-3 pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
+              <div className="mt-3 pt-3 border-t border-lia-border-subtle">
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="w-full h-8 text-xs justify-between px-2 text-lia-text-tertiary dark:text-lia-text-tertiary"
+                  className="w-full h-8 text-xs justify-between px-2 text-lia-text-tertiary"
                   onClick={handleToggleHistory}
                 >
                   <span className="flex items-center gap-1.5">
@@ -287,7 +287,7 @@ export function CandidateCard({
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5 mb-0.5">
-                                <span className="text-xs font-medium truncate text-lia-text-primary dark:text-lia-text-primary">
+                                <span className="text-xs font-medium truncate text-lia-text-primary">
                                   {comm.subject || comm.message_preview?.slice(0, 50) || 'Mensagem'}
                                 </span>
                               </div>

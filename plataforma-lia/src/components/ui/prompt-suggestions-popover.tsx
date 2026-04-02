@@ -248,11 +248,11 @@ export function PromptSuggestionsPopover({
         align="start"
         sideOffset={8}
       >
-        <div className="p-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="p-3 border-b border-lia-border-subtle">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Brain className="w-4 h-4 text-wedo-cyan" />
-              <h3 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">
+              <h3 className="text-xs font-semibold text-lia-text-primary">
                 Ações Sugeridas
               </h3>
             </div>
@@ -294,7 +294,7 @@ export function PromptSuggestionsPopover({
           {displaySuggestions.length === 0 ? (
             <div className="py-6 text-center">
               <Lightbulb className="w-8 h-8 mx-auto mb-2 lia-text-muted" />
-              <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+              <p className="text-xs text-lia-text-primary">
                 Selecione candidatos ou uma vaga para ver sugestões contextuais
               </p>
             </div>
@@ -315,12 +315,12 @@ export function PromptSuggestionsPopover({
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 mb-0.5">
-                        <h4 className="text-xs font-medium truncate text-lia-text-primary dark:text-lia-text-primary">
+                        <h4 className="text-xs font-medium truncate text-lia-text-primary">
                           {suggestion.title}
                         </h4>
                         <ChevronRight className="w-3 h-3 lia-text-base opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none" />
                       </div>
-                      <p className="text-xs text-lia-text-primary dark:text-lia-text-primary line-clamp-1">
+                      <p className="text-xs text-lia-text-primary line-clamp-1">
                         {suggestion.description}
                       </p>
                     </div>
@@ -337,7 +337,7 @@ export function PromptSuggestionsPopover({
           )}
         </div>
 
-        <div className="p-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="p-2 border-t border-lia-border-subtle">
           <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary text-center">
             Dica: Selecione candidatos ou abra uma vaga para mais ações
           </p>
