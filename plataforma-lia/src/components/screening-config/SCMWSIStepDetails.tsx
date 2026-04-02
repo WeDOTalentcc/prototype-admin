@@ -36,7 +36,7 @@ export function SCMWSIStepDetails({
     <div className="px-5 pb-4 pt-1 space-y-3 border-t border-lia-border-subtle">
       {wsiGenerationStep >= 1 && wsiGenerationContext && (
         <div className="pt-2">
-          <p className="text-micro font-semibold lia-text-secondary uppercase tracking-wider mb-0.5">Cargo analisado</p>
+          <p className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wider mb-0.5">Cargo analisado</p>
           <p className="text-xs text-lia-text-primary">
             {wsiGenerationContext.title}{wsiGenerationContext.seniority ? <span className="text-lia-text-secondary"> · {wsiGenerationContext.seniority}</span> : ''}
           </p>
@@ -47,7 +47,7 @@ export function SCMWSIStepDetails({
         <div className="space-y-2">
           {wsiGenerationContext.responsibilities.length > 0 && (
             <div>
-              <p className="text-micro font-semibold lia-text-secondary uppercase tracking-wider mb-1">Responsabilidades Chave</p>
+              <p className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wider mb-1">Responsabilidades Chave</p>
               <div className="flex flex-wrap gap-1">
                 {wsiGenerationContext.responsibilities.map((resp: string, i: number) => (
                   <span key={`resp-${i}`} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle rounded-full">
@@ -59,7 +59,7 @@ export function SCMWSIStepDetails({
           )}
           {wsiGenerationContext.technicalSkills.length > 0 && (
             <div>
-              <p className="text-micro font-semibold lia-text-secondary uppercase tracking-wider mb-1">Competências Técnicas</p>
+              <p className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wider mb-1">Competências Técnicas</p>
               <div className="flex flex-wrap gap-1">
                 {wsiGenerationContext.technicalSkills.map((skill: string, i: number) => (
                   <span key={`tech-${i}`} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle rounded-full">{skill}</span>
@@ -82,7 +82,7 @@ export function SCMWSIStepDetails({
 
       {wsiGenerationStep >= 3 && (
         <div>
-          <p className="text-micro font-semibold lia-text-secondary uppercase tracking-wider mb-1">Metodologias Utilizadas para Gerar Perguntas</p>
+          <p className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wider mb-1">Metodologias Utilizadas para Gerar Perguntas</p>
           {wsiGenerationStep >= 4 && wsiGenerationContext?.methodologyBreakdown && Object.keys(wsiGenerationContext.methodologyBreakdown).length > 0 ? (
             <p className="text-xs text-lia-text-secondary">
               {Object.entries(wsiGenerationContext.methodologyBreakdown)

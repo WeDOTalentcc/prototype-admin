@@ -164,7 +164,7 @@ const getStatusConfig = (status: string) => {
 const getTreatmentConfig = (treatment: string) => {
   switch (treatment) {
     case 'mitigate':
-      return { icon: ShieldCheck, color: 'lia-text-600 dark:text-lia-text-tertiary', bg: 'bg-lia-bg-secondary dark:bg-lia-bg-secondary/50', label: 'Mitigar' }
+      return { icon: ShieldCheck, color: 'text-lia-text-secondary dark:text-lia-text-tertiary', bg: 'bg-lia-bg-secondary dark:bg-lia-bg-secondary/50', label: 'Mitigar' }
     case 'accept':
       return { icon: CheckCircle2, color: 'text-status-success', bg: 'bg-status-success/10', label: 'Aceitar' }
     case 'transfer':

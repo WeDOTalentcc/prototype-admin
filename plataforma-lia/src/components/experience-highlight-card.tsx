@@ -178,7 +178,7 @@ export function ExperienceHighlightCard({ candidate, companyId = "demo_company" 
   if (error && !highlight) {
     return (
       <Card className="bg-lia-bg-primary border border-lia-border-subtle p-4 mb-4">
-        <div className="flex items-center gap-3 lia-text-secondary">
+        <div className="flex items-center gap-3 text-lia-text-secondary">
           <AlertCircle className="h-5 w-5 flex-shrink-0 text-status-warning" />
           <span className="text-sm">{error}</span>
           <Button
@@ -219,7 +219,7 @@ export function ExperienceHighlightCard({ candidate, companyId = "demo_company" 
         </p>
       </div>
       <div className="flex items-center justify-between mt-2">
-        <p className="text-micro lia-text-secondary">
+        <p className="text-micro text-lia-text-secondary">
           Gerado pela LIA em {formatGeneratedDate(highlight.generated_at)}
         </p>
         <TooltipProvider>
@@ -230,7 +230,7 @@ export function ExperienceHighlightCard({ candidate, companyId = "demo_company" 
                 size="sm"
                 onClick={handleRegenerate}
                 disabled={isRegenerating}
-                className="h-5 w-5 p-0 lia-text-secondary hover:text-lia-text-primary"
+                className="h-5 w-5 p-0 text-lia-text-secondary hover:text-lia-text-primary"
               >
                 <RefreshCw className={`h-3 w-3 ${isRegenerating ? 'animate-spin motion-reduce:animate-none' : ''}`} />
               </Button>

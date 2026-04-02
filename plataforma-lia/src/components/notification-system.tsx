@@ -97,7 +97,7 @@ const NotificationItem = React.memo(({
               variant="ghost"
               size="sm"
               onClick={handleRemove}
-              className="h-5 w-5 p-0 text-lia-text-secondary hover:text-lia-text-secondary dark:hover:lia-text-muted opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none -mt-0.5 -mr-1"
+              className="h-5 w-5 p-0 text-lia-text-secondary hover:text-lia-text-secondary dark:hover:text-lia-text-tertiary opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none -mt-0.5 -mr-1"
             >
               <X className="w-3 h-3" />
             </Button>
@@ -261,7 +261,7 @@ export function NotificationSystem({
                   variant="ghost"
                   size="sm"
                   onClick={toggleOpen}
-                  className="h-6 w-6 p-0 text-lia-text-secondary hover:text-lia-text-secondary dark:hover:lia-text-muted"
+                  className="h-6 w-6 p-0 text-lia-text-secondary hover:text-lia-text-secondary dark:hover:text-lia-text-tertiary"
                   aria-label="Fechar notificações"
                 >
                   <X className="w-3.5 h-3.5" />

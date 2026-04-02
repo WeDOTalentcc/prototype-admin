@@ -49,7 +49,7 @@ export function AddCompetencyModal({
 
         {companySuggestions.length > 0 && (
           <div className="mb-4">
-            <label className="text-xs font-medium lia-text-secondary mb-2 block">Sugestões da Empresa</label>
+            <label className="text-xs font-medium text-lia-text-secondary mb-2 block">Sugestões da Empresa</label>
             <div className="flex flex-wrap gap-2">
               {companySuggestions.map((comp, idx) => (
                 <button
@@ -60,7 +60,7 @@ export function AddCompetencyModal({
  "px-3 py-1.5 text-xs rounded-md border transition-colors",
                     competencyName === comp.competency
                       ? "bg-lia-bg-tertiary border-lia-btn-primary-bg text-lia-text-secondary"
-                      : "bg-lia-bg-secondary border-lia-border-subtle lia-text-secondary hover:border-lia-btn-primary-bg hover:text-lia-text-primary"
+                      : "bg-lia-bg-secondary border-lia-border-subtle text-lia-text-secondary hover:border-lia-btn-primary-bg hover:text-lia-text-primary"
                   )}
                 >
                   {comp.competency}

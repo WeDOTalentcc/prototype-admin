@@ -239,11 +239,11 @@ export function MessageComposer({
             {templatesLoading ? (
               <div className="flex items-center justify-center py-4" role="status" aria-live="polite" aria-label="Carregando...">
                 <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
-                <span className="text-xs lia-text-secondary ml-2">Carregando templates...</span>
+                <span className="text-xs text-lia-text-secondary ml-2">Carregando templates...</span>
               </div>
             ) : filteredTemplates.length === 0 ? (
               <div className="py-3 text-center">
-                <span className="text-xs lia-text-secondary">Nenhum template disponível</span>
+                <span className="text-xs text-lia-text-secondary">Nenhum template disponível</span>
               </div>
             ) : (
               filteredTemplates.slice(0, 5).map((template) => (
@@ -260,7 +260,7 @@ export function MessageComposer({
                     {template.name}
                   </div>
                   {template.subject && channel === 'email' && (
-                    <div className="text-micro lia-text-secondary mt-0.5 truncate">
+                    <div className="text-micro text-lia-text-secondary mt-0.5 truncate">
                       Assunto: {template.subject}
                     </div>
                   )}
@@ -348,7 +348,7 @@ export function MessageComposer({
                 <span className="text-base-ui font-semibold text-lia-text-primary">
                   Ajustar com a LIA
                 </span>
-                <p className="text-xs lia-text-secondary">
+                <p className="text-xs text-lia-text-secondary">
                   Ajustes são aplicados apenas neste envio
                 </p>
               </div>
@@ -422,7 +422,7 @@ export function MessageComposer({
                     <h3 className="text-sm font-semibold text-lia-text-primary">
                       Ajustes da LIA
                     </h3>
-                    <p className="text-xs lia-text-secondary">
+                    <p className="text-xs text-lia-text-secondary">
                       Revise as alterações sugeridas
                     </p>
                   </div>
@@ -434,7 +434,7 @@ export function MessageComposer({
             </div>
             <CardContent className="p-4 space-y-4 overflow-y-auto" style={{maxHeight: 'calc(90vh - 180px)'}}>
               <div>
-                <label className="block text-xs font-medium lia-text-secondary uppercase tracking-wide mb-2">
+                <label className="block text-xs font-medium text-lia-text-secondary uppercase tracking-wide mb-2">
                   Alterações Realizadas
                 </label>
                 <div className="flex flex-wrap gap-1.5">
@@ -449,7 +449,7 @@ export function MessageComposer({
               
               {channel === 'email' && aiResultModal.newSubject && (
                 <div>
-                  <label className="block text-xs font-medium lia-text-secondary uppercase tracking-wide mb-2">
+                  <label className="block text-xs font-medium text-lia-text-secondary uppercase tracking-wide mb-2">
                     Novo Assunto
                   </label>
                   <div className="p-3 bg-lia-bg-secondary rounded-md text-xs text-lia-text-primary">
@@ -459,7 +459,7 @@ export function MessageComposer({
               )}
 
               <div>
-                <label className="block text-xs font-medium lia-text-secondary uppercase tracking-wide mb-2">
+                <label className="block text-xs font-medium text-lia-text-secondary uppercase tracking-wide mb-2">
                   Nova Mensagem
                 </label>
                 <div className="p-3 bg-lia-bg-secondary rounded-md text-xs text-lia-text-primary whitespace-pre-wrap max-h-content-md overflow-y-auto">

@@ -31,10 +31,10 @@ export function ClearDraftConfirmModal({ open, onClose, onConfirm }: ClearDraftC
                 </h3>
               </div>
             </div>
-            <p className="text-sm lia-text-secondary mb-4">
+            <p className="text-sm text-lia-text-secondary mb-4">
               Isso irá <strong>apagar todo o rascunho</strong> da vaga atual, incluindo todas as informações preenchidas até agora.
             </p>
-            <p className="text-xs lia-text-secondary mb-4">
+            <p className="text-xs text-lia-text-secondary mb-4">
               Esta ação não pode ser desfeita.
             </p>
             <div className="flex gap-3">

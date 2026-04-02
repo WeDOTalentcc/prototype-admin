@@ -19,14 +19,14 @@ export function ReactThinkingStream({ steps, isThinking }: ReactThinkingStreamPr
   if (!isThinking && steps.length === 0) return null;
 
   return (
-    <div className="bg-lia-bg-secondary border border-lia-border-subtle rounded-md text-xs lia-text-secondary my-2">
+    <div className="bg-lia-bg-secondary border border-lia-border-subtle rounded-md text-xs text-lia-text-secondary my-2">
       <button
         className="flex items-center gap-2 w-full px-3 py-2 hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none rounded-md"
         onClick={() => setExpanded(!expanded)}
         aria-expanded={expanded}
       >
         {isThinking ? (
-          <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none lia-text-secondary" />
+          <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
         ) : (
           <span className="h-3 w-3 rounded-full bg-status-success inline-block" />
         )}

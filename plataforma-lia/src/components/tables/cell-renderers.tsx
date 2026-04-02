@@ -630,8 +630,8 @@ export function InteractiveStageCell({
               <span className="px-3 py-1.5 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-full text-lia-text-secondary text-xs font-medium">
                 {stageDisplayName}
               </span>
-              <ArrowRight className="w-4 h-4 lia-text-secondary" />
- <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${selectedStage ? 'dark:text-lia-text-tertiary border border-lia-border-default dark:border-lia-border-default' : 'bg-lia-bg-tertiary lia-text-secondary'}`}>
+              <ArrowRight className="w-4 h-4 text-lia-text-secondary" />
+ <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${selectedStage ? 'dark:text-lia-text-tertiary border border-lia-border-default dark:border-lia-border-default' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
                 {selectedStage ? (RECRUITMENT_STAGES.find(s => s.name === selectedStage)?.displayName || selectedStage) : 'Selecione'}
               </span>
             </div>
@@ -645,13 +645,13 @@ export function InteractiveStageCell({
                   <SelectValue placeholder="Selecione a etapa" />
                 </SelectTrigger>
                 <SelectContent className="max-h-60 z-modal">
-                  <div className="px-2 py-1 text-xs font-semibold lia-text-secondary">Etapas Ativas</div>
+                  <div className="px-2 py-1 text-xs font-semibold text-lia-text-secondary">Etapas Ativas</div>
                   {activeStages.map(stage => (
                     <SelectItem key={stage.name} value={stage.name} disabled={stage.name === currentStage}>
                       {stage.displayName}
                     </SelectItem>
                   ))}
-                  <div className="px-2 py-1 text-xs font-semibold lia-text-secondary mt-2">Etapas Finais</div>
+                  <div className="px-2 py-1 text-xs font-semibold text-lia-text-secondary mt-2">Etapas Finais</div>
                   {finalStages.map(stageName => {
                     const stage = RECRUITMENT_STAGES.find(s => s.name === stageName)
                     return (

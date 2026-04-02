@@ -169,7 +169,7 @@ export function TeamsAnalysisPanel({
     return (
       <Card className="w-full rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
         <CardContent className="flex items-center justify-center py-8">
-          <Loader2 className="h-6 w-6 animate-spin motion-reduce:animate-none lia-text-secondary" />
+          <Loader2 className="h-6 w-6 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
           <span className="ml-2 text-sm text-lia-text-tertiary">Carregando status...</span>
         </CardContent>
       </Card>
@@ -212,7 +212,7 @@ export function TeamsAnalysisPanel({
       <CardContent className="space-y-4">
         {!status && (
           <div className="text-center py-6 bg-lia-bg-secondary rounded-md">
-            <Video className="h-8 w-8 lia-text-secondary mx-auto mb-2" />
+            <Video className="h-8 w-8 text-lia-text-secondary mx-auto mb-2" />
             <p className="text-sm text-lia-text-tertiary">
               Nenhuma análise disponível para esta entrevista.
             </p>
@@ -228,11 +228,11 @@ export function TeamsAnalysisPanel({
 
         {status?.status === "awaiting_transcript" && (
           <div className="text-center py-6 bg-lia-bg-secondary rounded-md">
-            <Clock className="h-8 w-8 lia-text-secondary mx-auto mb-2" />
+            <Clock className="h-8 w-8 text-lia-text-secondary mx-auto mb-2" />
             <p className="text-sm text-lia-text-secondary mb-1">
               Aguardando transcrição da entrevista Teams
             </p>
-            <p className="text-xs lia-text-secondary">
+            <p className="text-xs text-lia-text-secondary">
               A transcrição será processada automaticamente quando disponível.
             </p>
           </div>

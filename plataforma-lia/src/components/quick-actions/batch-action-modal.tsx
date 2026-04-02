@@ -103,7 +103,7 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
             <h3 className="text-lg font-semibold text-lia-text-primary">
               Ações em Lote
             </h3>
-            <p className="text-sm lia-text-secondary">
+            <p className="text-sm text-lia-text-secondary">
               {selectedCandidates.length} candidatos selecionados
             </p>
           </div>
@@ -152,7 +152,7 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
                 >
                   <actionItem.icon className="w-5 h-5 mb-2" />
                   <div className="text-sm font-medium">{actionItem.name}</div>
-                  <div className="text-xs lia-text-secondary">{actionItem.description}</div>
+                  <div className="text-xs text-lia-text-secondary">{actionItem.description}</div>
                 </button>
               ))}
             </div>

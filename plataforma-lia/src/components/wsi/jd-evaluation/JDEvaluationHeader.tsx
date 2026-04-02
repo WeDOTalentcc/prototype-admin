@@ -74,11 +74,11 @@ function getStatusDotColor(status: string) {
 }
 
 function getIndicatorIcon(label: string) {
-  if (label.includes("Responsab")) return <ClipboardList className="h-3 w-3 lia-text-secondary" />
-  if (label.includes("Técnica")) return <Code className="h-3 w-3 lia-text-secondary" />
-  if (label.includes("Comportam")) return <Heart className="h-3 w-3 lia-text-secondary" />
-  if (label.includes("Senior")) return <Briefcase className="h-3 w-3 lia-text-secondary" />
-  return <FileText className="h-3 w-3 lia-text-secondary" />
+  if (label.includes("Responsab")) return <ClipboardList className="h-3 w-3 text-lia-text-secondary" />
+  if (label.includes("Técnica")) return <Code className="h-3 w-3 text-lia-text-secondary" />
+  if (label.includes("Comportam")) return <Heart className="h-3 w-3 text-lia-text-secondary" />
+  if (label.includes("Senior")) return <Briefcase className="h-3 w-3 text-lia-text-secondary" />
+  return <FileText className="h-3 w-3 text-lia-text-secondary" />
 }
 
 export const JDEvaluationHeader = React.memo(function JDEvaluationHeader({
@@ -161,7 +161,7 @@ export const JDEvaluationHeader = React.memo(function JDEvaluationHeader({
               Editar Descrição
             </Button>
           )}
-          {hasQuestions && <ChevronUp className="h-4 w-4 lia-text-secondary" />}
+          {hasQuestions && <ChevronUp className="h-4 w-4 text-lia-text-secondary" />}
         </div>
       </div>
 
@@ -183,7 +183,7 @@ export const JDEvaluationHeader = React.memo(function JDEvaluationHeader({
               <div className="flex items-center gap-3 pb-2 border-b border-lia-border-subtle px-3 pt-3">
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs font-semibold text-lia-text-primary">{evaluation.score}</span>
-                  <span className="text-micro lia-text-secondary">/100</span>
+                  <span className="text-micro text-lia-text-secondary">/100</span>
                 </div>
                 <span className={cn("text-micro font-semibold px-2 py-0.5 rounded-full border", bandColors[band] || bandColors.adequado)}>
                   {bandLabel}
@@ -216,7 +216,7 @@ export const JDEvaluationHeader = React.memo(function JDEvaluationHeader({
                     <XCircle className="w-3 h-3 text-status-error shrink-0" />
                   )}
                   <div className="flex-1 min-w-0">
-                    <span className="text-micro font-semibold lia-text-secondary uppercase tracking-wide block">{indicator.dimension}</span>
+                    <span className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wide block">{indicator.dimension}</span>
                     <span className={cn(
                       "truncate block font-medium",
                       indicator.status === 'sufficient' ? 'text-status-success' :

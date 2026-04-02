@@ -116,7 +116,7 @@ export function CommandPalette({
             className="border-0 focus-visible:ring-0 text-base bg-transparent text-lia-text-primary"
             autoFocus
           />
-          <kbd className="ml-2 px-2 py-1 text-xs rounded-md bg-lia-bg-primary lia-text-secondary border border-lia-border-default">
+          <kbd className="ml-2 px-2 py-1 text-xs rounded-md bg-lia-bg-primary text-lia-text-secondary border border-lia-border-default">
             ESC
           </kbd>
         </div>
@@ -153,7 +153,7 @@ export function CommandPalette({
                       )}
                     </div>
                     {cmd.shortcut && (
-                      <kbd className="px-2 py-1 text-xs rounded-md flex-shrink-0 bg-lia-bg-primary lia-text-secondary border border-lia-border-default">
+                      <kbd className="px-2 py-1 text-xs rounded-md flex-shrink-0 bg-lia-bg-primary text-lia-text-secondary border border-lia-border-default">
                         {cmd.shortcut}
                       </kbd>
                     )}
@@ -170,7 +170,7 @@ export function CommandPalette({
           )}
         </div>
 
-        <div className="px-4 py-2 border-t border-lia-border-default text-xs flex items-center justify-between lia-text-secondary">
+        <div className="px-4 py-2 border-t border-lia-border-default text-xs flex items-center justify-between text-lia-text-secondary">
           <span>Use ↑↓ para navegar, Enter para selecionar</span>
           <span>ESC para fechar</span>
         </div>

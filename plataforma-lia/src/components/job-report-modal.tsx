@@ -264,7 +264,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                   </span>
                 </div>
               </div>
-              <div className="text-right text-micro lia-text-secondary">
+              <div className="text-right text-micro text-lia-text-secondary">
                 <p>Gerado: {reportData.generatedDate}</p>
                 <p>às {reportData.generatedTime}</p>
               </div>
@@ -333,7 +333,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                           <div className={`h-full ${item.color}`} style={{width: `${item.percentage}%`}}></div>
                         </div>
                         <span className="w-8 text-micro font-medium text-right">{item.value}</span>
-                        <span className="w-8 text-micro lia-text-secondary text-right">{item.percentage}%</span>
+                        <span className="w-8 text-micro text-lia-text-secondary text-right">{item.percentage}%</span>
                       </div>
                     ))}
                   </div>
@@ -348,7 +348,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                         {[1,2,3,4].map((star) => (
                           <Star key={star} className="w-2.5 h-2.5 fill-yellow-400 text-status-warning" />
                         ))}
-                        <Star className="w-2.5 h-2.5 lia-text-muted" />
+                        <Star className="w-2.5 h-2.5 text-lia-text-tertiary" />
                       </div>
                     </div>
                   </div>
@@ -392,7 +392,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                               </span>
                             </td>
                             <td className="text-center py-1 px-1">
-                              <span className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-micro font-medium ${channel.hired > 0 ? 'bg-status-success/15 text-status-success' : 'bg-lia-bg-tertiary lia-text-secondary'}`}>
+                              <span className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-micro font-medium ${channel.hired > 0 ? 'bg-status-success/15 text-status-success' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
                                 {channel.hired}
                               </span>
                             </td>
@@ -427,7 +427,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                           </div>
                           <div>
                             <p className="text-micro font-medium text-lia-text-primary">{candidate.name}</p>
-                            <p className="text-micro lia-text-secondary">Score: {candidate.score}% • Fit: {candidate.fit}%</p>
+                            <p className="text-micro text-lia-text-secondary">Score: {candidate.score}% • Fit: {candidate.fit}%</p>
                           </div>
                         </div>
                         <span className={`text-micro px-1.5 py-0.5 rounded-full font-medium
@@ -463,7 +463,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
  <span className={event.status === 'completed' ? 'text-lia-text-primary' : event.status === 'in-progress' ? 'font-medium' : 'text-lia-text-tertiary'}>
                               {event.event}
                             </span>
-                            <span className="text-micro lia-text-secondary">{event.date}</span>
+                            <span className="text-micro text-lia-text-secondary">{event.date}</span>
                           </div>
                         </div>
                       ))}
@@ -499,7 +499,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                     <div key={item.category} className="p-1.5 bg-lia-bg-secondary rounded-md border border-lia-border-subtle text-center">
                       <p className="text-micro text-lia-text-secondary truncate">{item.category}</p>
                       <p className="text-micro font-semibold text-lia-text-primary">R$ {item.amount.toLocaleString('pt-BR')}</p>
-                      <p className="text-micro lia-text-secondary">{Math.round((item.amount / reportData.budget.spent) * 100)}%</p>
+                      <p className="text-micro text-lia-text-secondary">{Math.round((item.amount / reportData.budget.spent) * 100)}%</p>
                     </div>
                   ))}
                 </div>
@@ -544,7 +544,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
             )}
 
             {/* Footer */}
-            <div className="pt-3 mt-3 border-t border-lia-border-subtle flex items-center justify-between text-micro lia-text-secondary">
+            <div className="pt-3 mt-3 border-t border-lia-border-subtle flex items-center justify-between text-micro text-lia-text-secondary">
               <div>
                 <p>Relatório gerado automaticamente pela plataforma WeDoTalent</p>
                 <p>© 2025 Sodexo - Todos os direitos reservados</p>

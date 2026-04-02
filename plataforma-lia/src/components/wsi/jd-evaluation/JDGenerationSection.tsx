@@ -61,7 +61,7 @@ function formatJDText(text: string): React.ReactNode {
     } else if (line.startsWith('- ')) {
       elements.push(
         <div key={i} className="flex items-start gap-2 ml-1 mb-0.5">
-          <span className="text-micro lia-text-secondary mt-1">•</span>
+          <span className="text-micro text-lia-text-secondary mt-1">•</span>
           <span className="text-xs text-lia-text-secondary leading-relaxed">
             {line.replace('- ', '')}
           </span>
@@ -137,7 +137,7 @@ export const JDGenerationSection = React.memo(function JDGenerationSection({
                 <p className="text-xs font-semibold text-lia-text-primary">
                   Gerando Descrição do Cargo...
                 </p>
-                <p className="text-micro lia-text-secondary mt-0.5">
+                <p className="text-micro text-lia-text-secondary mt-0.5">
                   Etapa {jdGenerationStep} de 4
                 </p>
               </div>

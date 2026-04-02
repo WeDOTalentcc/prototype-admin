@@ -156,7 +156,7 @@ export function CandidatoFilesTab({
                   ) : (
                     <>
                       <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors motion-reduce:transition-none ${isDragging ? "bg-lia-interactive-active" : "bg-lia-bg-tertiary group-hover:bg-lia-interactive-active"}`}>
-                        <Upload className={`w-6 h-6 ${isDragging ? "text-lia-text-primary" : "text-lia-text-secondary group-hover:lia-text-700"}`} />
+                        <Upload className={`w-6 h-6 ${isDragging ? "text-lia-text-primary" : "text-lia-text-secondary group-hover:text-lia-text-primary"}`} />
                       </div>
                       <p className="text-sm text-lia-text-primary mb-1">
                         {isDragging ? "Solte os arquivos aqui" : "Arraste arquivos ou clique para selecionar"}

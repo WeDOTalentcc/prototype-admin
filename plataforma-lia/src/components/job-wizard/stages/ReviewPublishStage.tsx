@@ -185,7 +185,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
           {isGeneratingDescription ? (
             <div className="flex items-center justify-center py-8 gap-2" role="status" aria-live="polite" aria-label="Carregando...">
               <Loader2 className="w-5 h-5 text-lia-text-secondary animate-spin motion-reduce:animate-none" />
-              <span className="text-sm lia-text-secondary">Gerando descrição...</span>
+              <span className="text-sm text-lia-text-secondary">Gerando descrição...</span>
             </div>
           ) : jobDescription ? (
             <div className="prose prose-sm max-w-none">
@@ -209,32 +209,32 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
       <SectionCard id="basic" title="Informações Básicas" icon={Briefcase}>
         <div className="grid grid-cols-2 gap-2 text-xs">
           <div className="flex items-center gap-1.5">
-            <Briefcase className="w-3 h-3 lia-text-secondary" />
+            <Briefcase className="w-3 h-3 text-lia-text-secondary" />
             <span className="lia-text-secondary">Cargo:</span>
             <span className="font-medium text-lia-text-primary">{basicInfoFields.cargo || '-'}</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Building className="w-3 h-3 lia-text-secondary" />
+            <Building className="w-3 h-3 text-lia-text-secondary" />
             <span className="lia-text-secondary">Área:</span>
             <span className="font-medium text-lia-text-primary">{basicInfoFields.area || '-'}</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <MapPin className="w-3 h-3 lia-text-secondary" />
+            <MapPin className="w-3 h-3 text-lia-text-secondary" />
             <span className="lia-text-secondary">Local:</span>
             <span className="font-medium text-lia-text-primary">{basicInfoFields.localidade || '-'}</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Globe className="w-3 h-3 lia-text-secondary" />
+            <Globe className="w-3 h-3 text-lia-text-secondary" />
             <span className="lia-text-secondary">Modelo:</span>
             <span className="font-medium text-lia-text-primary">{basicInfoFields.modeloTrabalho || '-'}</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Clock className="w-3 h-3 lia-text-secondary" />
+            <Clock className="w-3 h-3 text-lia-text-secondary" />
             <span className="lia-text-secondary">Contrato:</span>
             <span className="font-medium text-lia-text-primary">{basicInfoFields.tipoContrato || '-'}</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Users className="w-3 h-3 lia-text-secondary" />
+            <Users className="w-3 h-3 text-lia-text-secondary" />
             <span className="lia-text-secondary">Gestor:</span>
             <span className="font-medium text-lia-text-primary">{basicInfoFields.gestor || '-'}</span>
           </div>
@@ -245,7 +245,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
       <SectionCard id="competencies" title="Competências" icon={Code} count={technicalSkills.length + enabledBehavioral.length}>
         <div className="space-y-2">
           <div>
-            <span className="text-micro font-semibold lia-text-secondary uppercase">Técnicas ({technicalSkills.length})</span>
+            <span className="text-micro font-semibold text-lia-text-secondary uppercase">Técnicas ({technicalSkills.length})</span>
             <div className="flex flex-wrap gap-1 mt-1">
               {technicalSkills.slice(0, 8).map(s => (
                 <span key={s.id} className="px-1.5 py-0.5 bg-wedo-cyan/10 text-wedo-cyan-dark text-micro rounded-full">
@@ -253,14 +253,14 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
                 </span>
               ))}
               {technicalSkills.length > 8 && (
-                <span className="px-1.5 py-0.5 bg-lia-bg-tertiary lia-text-secondary text-micro rounded-full">
+                <span className="px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary text-micro rounded-full">
                   +{technicalSkills.length - 8} mais
                 </span>
               )}
             </div>
           </div>
           <div>
-            <span className="text-micro font-semibold lia-text-secondary uppercase">Comportamentais ({enabledBehavioral.length})</span>
+            <span className="text-micro font-semibold text-lia-text-secondary uppercase">Comportamentais ({enabledBehavioral.length})</span>
             <div className="flex flex-wrap gap-1 mt-1">
               {enabledBehavioral.map(c => (
                 <span key={c.id} className="px-1.5 py-0.5 bg-wedo-purple/10 text-wedo-purple text-micro rounded-full">
@@ -345,7 +345,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
               </button>
             ))}
           </div>
-          <p className="text-micro lia-text-secondary mt-2">
+          <p className="text-micro text-lia-text-secondary mt-2">
             {enabledPlatforms.length} plataforma(s) selecionada(s)
           </p>
         </div>

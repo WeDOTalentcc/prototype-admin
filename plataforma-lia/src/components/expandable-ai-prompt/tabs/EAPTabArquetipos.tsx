@@ -121,7 +121,7 @@ export const EAPTabArquetipos = React.memo(function EAPTabArquetipos(props: EAPT
         {naturalSearchValue && hasParsedEntities() && (
           <div className="flex items-center gap-2">
             <div className="flex-1 h-px bg-lia-interactive-active" />
-            <span className="text-micro lia-text-secondary">ou crie do zero com LIA</span>
+            <span className="text-micro text-lia-text-secondary">ou crie do zero com LIA</span>
             <div className="flex-1 h-px bg-lia-interactive-active" />
           </div>
         )}
@@ -159,7 +159,7 @@ export const EAPTabArquetipos = React.memo(function EAPTabArquetipos(props: EAPT
       {/* Divisor */}
       <div className="flex items-center gap-2">
         <div className="flex-1 h-px bg-lia-interactive-active" />
-        <span className="text-xs lia-text-secondary">ou selecione um existente</span>
+        <span className="text-xs text-lia-text-secondary">ou selecione um existente</span>
         <div className="flex-1 h-px bg-lia-interactive-active" />
       </div>
 
@@ -175,7 +175,7 @@ export const EAPTabArquetipos = React.memo(function EAPTabArquetipos(props: EAPT
         {/* Campo de busca */}
         {archetypes.length > 3 && (
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 lia-text-secondary" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-secondary" />
             <input
               type="text"
               value={archetypeSearchFilter}
@@ -189,10 +189,10 @@ export const EAPTabArquetipos = React.memo(function EAPTabArquetipos(props: EAPT
         {/* Cards de Arquétipos */}
         <div className="space-y-2 max-h-chart-sm overflow-y-auto">
           {filteredArchetypes.length === 0 ? (
-            <div className="text-center py-6 lia-text-secondary">
+            <div className="text-center py-6 text-lia-text-secondary">
               <Target className="w-8 h-8 mx-auto mb-2 opacity-30" />
               <p className="text-xs" aria-live="polite" aria-atomic="true">Nenhum arquétipo encontrado</p>
-              <p className="text-micro lia-text-secondary mt-1">Crie um novo acima para começar</p>
+              <p className="text-micro text-lia-text-secondary mt-1">Crie um novo acima para começar</p>
             </div>
           ) : (
             filteredArchetypes.map((arch) => (
@@ -214,7 +214,7 @@ export const EAPTabArquetipos = React.memo(function EAPTabArquetipos(props: EAPT
                     className="p-1 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
                     title="Editar arquétipo"
                   >
-                    <Pencil className="w-3.5 h-3.5 lia-text-secondary hover:text-lia-text-secondary" />
+                    <Pencil className="w-3.5 h-3.5 text-lia-text-secondary hover:text-lia-text-secondary" />
                   </button>
                   <button
                     onClick={(e) => openDeleteArchetypeDialog(arch, e)}
@@ -223,9 +223,9 @@ export const EAPTabArquetipos = React.memo(function EAPTabArquetipos(props: EAPT
                     title="Excluir arquétipo"
                   >
                     {isDeletingArchetype === arch.id ? (
-                      <Loader2 className="w-3.5 h-3.5 lia-text-secondary animate-spin motion-reduce:animate-none" />
+                      <Loader2 className="w-3.5 h-3.5 text-lia-text-secondary animate-spin motion-reduce:animate-none" />
                     ) : (
-                      <Trash2 className="w-3.5 h-3.5 lia-text-secondary hover:text-status-error" />
+                      <Trash2 className="w-3.5 h-3.5 text-lia-text-secondary hover:text-status-error" />
                     )}
                   </button>
                 </div>
@@ -239,7 +239,7 @@ export const EAPTabArquetipos = React.memo(function EAPTabArquetipos(props: EAPT
                       {arch.name}
                     </div>
                     {arch.description && (
-                      <p className="text-xs lia-text-secondary mt-0.5 line-clamp-2">
+                      <p className="text-xs text-lia-text-secondary mt-0.5 line-clamp-2">
                         {arch.description}
                       </p>
                     )}

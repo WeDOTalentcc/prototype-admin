@@ -185,7 +185,7 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
         </span>
         {value?.start_date && (
           <X 
-            className="w-4 h-4 ml-auto lia-text-secondary hover:text-lia-text-secondary" 
+            className="w-4 h-4 ml-auto text-lia-text-secondary hover:text-lia-text-secondary" 
             onClick={(e) => {
               e.stopPropagation()
               handleClear()
@@ -218,7 +218,7 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
 
               <div className="grid grid-cols-7 gap-1 mb-2">
                 {DAYS_PT.map(day => (
-                  <div key={day} className="text-center text-xs lia-text-secondary font-['Open_Sans'] py-1">
+                  <div key={day} className="text-center text-xs text-lia-text-secondary font-['Open_Sans'] py-1">
                     {day}
                   </div>
                 ))}
@@ -276,7 +276,7 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
             </div>
 
             <div className="border-l pl-4 w-40">
-              <p className="text-xs font-medium lia-text-secondary mb-2 font-['Open_Sans']">Atalhos</p>
+              <p className="text-xs font-medium text-lia-text-secondary mb-2 font-['Open_Sans']">Atalhos</p>
               <div className="space-y-1">
                 {PRESET_RANGES.map((preset) => (
                   <button

@@ -136,13 +136,13 @@ export function ScoreBreakdownBadgeLazy({
 
           {loading && (
             <div className="flex items-center justify-center py-4" role="status" aria-live="polite" aria-label="Carregando...">
-              <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none lia-text-secondary" />
-              <span className="ml-2 text-xs lia-text-secondary">Carregando...</span>
+              <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
+              <span className="ml-2 text-xs text-lia-text-secondary">Carregando...</span>
             </div>
           )}
 
           {error && !loading && (
-            <div className="flex items-center gap-1.5 py-2 text-xs lia-text-secondary">
+            <div className="flex items-center gap-1.5 py-2 text-xs text-lia-text-secondary">
               <AlertCircle className="h-3.5 w-3.5 text-status-warning" />
               <span>{error}</span>
             </div>

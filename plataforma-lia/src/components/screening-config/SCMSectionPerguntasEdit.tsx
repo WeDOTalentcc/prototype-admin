@@ -159,10 +159,10 @@ export function SCMSectionPerguntasEdit({
               <div className="flex items-center gap-1.5 shrink-0">
                 {wsiGenerationStep >= 4 && (
                   <button onClick={(e) => { e.stopPropagation(); setWsiGenerationCompleted(false); setWsiGenerationStep(0); setWsiDynamicMessage(''); setWsiGenerationContext(null) }} className="p-1 hover:bg-lia-interactive-hover rounded-md transition-colors motion-reduce:transition-none">
-                    <X className="w-3.5 h-3.5 lia-text-secondary" />
+                    <X className="w-3.5 h-3.5 text-lia-text-secondary" />
                   </button>
                 )}
-                {wsiProgressCollapsed ? <ChevronDown className="w-4 h-4 lia-text-secondary" /> : <ChevronUp className="w-4 h-4 lia-text-secondary" />}
+                {wsiProgressCollapsed ? <ChevronDown className="w-4 h-4 text-lia-text-secondary" /> : <ChevronUp className="w-4 h-4 text-lia-text-secondary" />}
               </div>
             </div>
 
@@ -188,7 +188,7 @@ export function SCMSectionPerguntasEdit({
                         ) : wsiGenerationStep === step.num ? (
                           <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none text-wedo-cyan" />
                         ) : (
-                          <span className="text-micro font-semibold lia-text-secondary">{step.num}</span>
+                          <span className="text-micro font-semibold text-lia-text-secondary">{step.num}</span>
                         )}
                       </div>
                       <span className={`text-micro mt-1.5 font-medium whitespace-nowrap transition-colors motion-reduce:transition-none duration-300 ${wsiGenerationStep >= step.num ? 'text-wedo-cyan-dark' : 'lia-text-secondary'}`}>
@@ -221,7 +221,7 @@ export function SCMSectionPerguntasEdit({
               <div className="px-5 pb-4 pt-1 space-y-3 border-t border-lia-border-subtle">
                 {wsiGenerationStep >= 1 && wsiGenerationContext && (
                   <div className="pt-2">
-                    <p className="text-micro font-semibold lia-text-secondary uppercase tracking-wider mb-0.5">Cargo analisado</p>
+                    <p className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wider mb-0.5">Cargo analisado</p>
                     <p className="text-xs text-lia-text-primary">
                       {wsiGenerationContext.title}{wsiGenerationContext.seniority ? <span className="text-lia-text-secondary"> · {wsiGenerationContext.seniority}</span> : ''}
                     </p>
@@ -231,7 +231,7 @@ export function SCMSectionPerguntasEdit({
                   <div className="space-y-2">
                     {wsiGenerationContext.responsibilities.length > 0 && (
                       <div>
-                        <p className="text-micro font-semibold lia-text-secondary uppercase tracking-wider mb-1">Responsabilidades Chave</p>
+                        <p className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wider mb-1">Responsabilidades Chave</p>
                         <div className="flex flex-wrap gap-1">
                           {wsiGenerationContext.responsibilities.map((resp: string, i: number) => (
                             <span key={`resp-${i}`} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle rounded-full">
@@ -243,7 +243,7 @@ export function SCMSectionPerguntasEdit({
                     )}
                     {wsiGenerationContext.technicalSkills.length > 0 && (
                       <div>
-                        <p className="text-micro font-semibold lia-text-secondary uppercase tracking-wider mb-1">Competências Técnicas</p>
+                        <p className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wider mb-1">Competências Técnicas</p>
                         <div className="flex flex-wrap gap-1">
                           {wsiGenerationContext.technicalSkills.map((skill: string, i: number) => (
                             <span key={`tech-${i}`} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle rounded-full">{skill}</span>
@@ -265,7 +265,7 @@ export function SCMSectionPerguntasEdit({
                 )}
                 {wsiGenerationStep >= 3 && (
                   <div>
-                    <p className="text-micro font-semibold lia-text-secondary uppercase tracking-wider mb-1">Metodologias Utilizadas para Gerar Perguntas</p>
+                    <p className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wider mb-1">Metodologias Utilizadas para Gerar Perguntas</p>
                     {wsiGenerationStep >= 4 && wsiGenerationContext?.methodologyBreakdown && Object.keys(wsiGenerationContext.methodologyBreakdown).length > 0 ? (
                       <p className="text-xs text-lia-text-secondary">
                         {Object.entries(wsiGenerationContext.methodologyBreakdown)
@@ -454,7 +454,7 @@ export function SCMSectionPerguntasEdit({
                         )}
                         {blockQuestions.length === 0 && blockGenerated.length === 0 && block.id !== 2 ? (
                           <div className="p-4 bg-lia-bg-secondary/50 border border-lia-border-subtle border-dashed rounded-md text-center">
-                            <p className="text-xs lia-text-secondary">Nenhuma pergunta neste bloco</p>
+                            <p className="text-xs text-lia-text-secondary">Nenhuma pergunta neste bloco</p>
                           </div>
                         ) : block.id !== 2 || blockQuestions.length > 0 || blockGenerated.length > 0 ? (
                           <>
@@ -512,7 +512,7 @@ export function SCMSectionPerguntasEdit({
                                     />
                                     <div className="flex items-center gap-1.5 shrink-0">
                                       {isAccepted ? (
-                                        <button className="border border-lia-border-subtle lia-text-secondary text-micro px-2 py-1 rounded-full hover:bg-status-error/10 transition-colors motion-reduce:transition-none" onClick={() => {
+                                        <button className="border border-lia-border-subtle text-lia-text-secondary text-micro px-2 py-1 rounded-full hover:bg-status-error/10 transition-colors motion-reduce:transition-none" onClick={() => {
                                           if (confirm('Remover pergunta aceita?')) {
                                             setAcceptedQuestions(prev => { const next = new Set(prev); next.delete(item.id); return next })
                                             setGeneratedQuestions(prev => ({ ...prev, [block.id]: (prev[block.id] || []).filter((q: ScreeningQuestionItem) => q.id !== item.id) }))
@@ -521,7 +521,7 @@ export function SCMSectionPerguntasEdit({
                                       ) : (
                                         <>
                                           <button className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-micro px-2 py-1 rounded-full hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none" onClick={() => setAcceptedQuestions(prev => new Set(prev).add(item.id))}>Aceitar</button>
-                                          <button className="border border-lia-border-subtle lia-text-secondary text-micro px-2 py-1 rounded-full hover:bg-status-error/10 transition-colors motion-reduce:transition-none" onClick={() => setGeneratedQuestions(prev => ({ ...prev, [block.id]: (prev[block.id] || []).filter((q: ScreeningQuestionItem) => q.id !== item.id) }))}>Descartar</button>
+                                          <button className="border border-lia-border-subtle text-lia-text-secondary text-micro px-2 py-1 rounded-full hover:bg-status-error/10 transition-colors motion-reduce:transition-none" onClick={() => setGeneratedQuestions(prev => ({ ...prev, [block.id]: (prev[block.id] || []).filter((q: ScreeningQuestionItem) => q.id !== item.id) }))}>Descartar</button>
                                         </>
                                       )}
                                     </div>

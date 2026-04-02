@@ -486,7 +486,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                         <XCircle className="w-4 h-4" style={{color: 'var(--status-error)'}} />
                       )}
                       {activity.status === 'pending' && (
-                        <Clock className="w-4 h-4 lia-text-secondary" />
+                        <Clock className="w-4 h-4 text-lia-text-secondary" />
                       )}
                     </div>
                   </div>

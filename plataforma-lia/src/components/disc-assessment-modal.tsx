@@ -384,7 +384,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
               <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 lia-text-secondary" />
+                    <Users className="w-4 h-4 text-lia-text-secondary" />
                     <span className="text-xs font-medium text-lia-text-secondary">Fit Cultural</span>
                   </div>
                   <div className="text-xl font-bold text-lia-text-primary">
@@ -419,7 +419,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
                         </div>
                         <div>
                           <div className="font-semibold text-lia-text-primary">{dim.name}</div>
-                          <div className="text-xs lia-text-secondary">{levelData.label}</div>
+                          <div className="text-xs text-lia-text-secondary">{levelData.label}</div>
                         </div>
                       </div>
                       <div className="text-2xl font-bold" style={{color: dim.bgColor}}>
@@ -521,19 +521,19 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
                 {data.teamworkScore && (
                   <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle text-center">
                     <p className="text-lg font-bold text-lia-text-primary">{data.teamworkScore}%</p>
-                    <p className="text-micro lia-text-secondary">Trabalho em Equipe</p>
+                    <p className="text-micro text-lia-text-secondary">Trabalho em Equipe</p>
                   </div>
                 )}
                 {data.adaptabilityScore && (
                   <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle text-center">
                     <p className="text-lg font-bold text-lia-text-primary">{data.adaptabilityScore}%</p>
-                    <p className="text-micro lia-text-secondary">Adaptabilidade</p>
+                    <p className="text-micro text-lia-text-secondary">Adaptabilidade</p>
                   </div>
                 )}
                 {data.stressResilienceScore && (
                   <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle text-center">
                     <p className="text-lg font-bold text-lia-text-primary">{data.stressResilienceScore}%</p>
-                    <p className="text-micro lia-text-secondary">Resiliência</p>
+                    <p className="text-micro text-lia-text-secondary">Resiliência</p>
                   </div>
                 )}
               </div>
@@ -542,7 +542,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
         </div>
 
         <div className="p-4 bg-lia-bg-secondary dark:bg-lia-bg-primary border-t border-lia-border-subtle dark:border-lia-border-subtle flex justify-between items-center">
-          <p className="text-xs lia-text-secondary">
+          <p className="text-xs text-lia-text-secondary">
             {data.completedAt && `Realizado em ${data.completedAt}`}
             {data.duration && ` • Duração: ${data.duration}`}
           </p>

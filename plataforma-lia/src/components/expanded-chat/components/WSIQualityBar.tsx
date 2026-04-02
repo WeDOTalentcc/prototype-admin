@@ -96,7 +96,7 @@ export function WSIQualityBar({
  'w-5 h-5 rounded-full flex items-center justify-center transition-[width,height]',
                       field.isMet 
                         ? 'bg-status-success/15 text-status-success' 
-                        : 'bg-lia-bg-tertiary lia-text-secondary'
+                        : 'bg-lia-bg-tertiary text-lia-text-secondary'
                     )}
                   >
                     {field.isMet ? (

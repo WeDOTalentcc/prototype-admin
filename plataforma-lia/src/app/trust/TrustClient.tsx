@@ -143,7 +143,7 @@ export default function PublicTrustCenterPage() {
           <nav className="flex items-center gap-4">
             <Link 
               href="/privacidade" 
-              className="text-sm text-lia-text-secondary hover:lia-text-900 transition-colors motion-reduce:transition-none"
+              className="text-sm text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none"
             >
               Portal LGPD
             </Link>
@@ -519,8 +519,8 @@ export default function PublicTrustCenterPage() {
         <div className="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between text-sm text-lia-text-secondary">
           <p>&copy; {new Date().getFullYear()} WeDo Talent. Todos os direitos reservados.</p>
           <div className="flex items-center gap-4">
-            <Link href="/privacidade" className="hover:lia-text-900">Privacidade</Link>
-            <Link href="/" className="hover:lia-text-900">Termos</Link>
+            <Link href="/privacidade" className="hover:text-lia-text-primary">Privacidade</Link>
+            <Link href="/" className="hover:text-lia-text-primary">Termos</Link>
           </div>
         </div>
       </footer>

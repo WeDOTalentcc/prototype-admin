@@ -93,7 +93,7 @@ export function ReviewPublishStage({
               <h3 className="text-base font-semibold text-lia-text-primary">
                 {basicInfoFields.cargo || 'Cargo não definido'}
               </h3>
-              <div className="flex items-center gap-2 mt-1 text-xs lia-text-secondary">
+              <div className="flex items-center gap-2 mt-1 text-xs text-lia-text-secondary">
                 <MapPin className="w-3 h-3" />
                 <span>{basicInfoFields.localidade || 'Local não definido'}</span>
                 <span className="lia-text-muted">|</span>
@@ -108,10 +108,10 @@ export function ReviewPublishStage({
             </button>
           </div>
           <div className="flex flex-wrap gap-1.5 mt-2">
-            <span className="px-1.5 py-0.5 bg-lia-bg-secondary rounded-full text-micro lia-text-secondary">{basicInfoFields.area}</span>
-            <span className="px-1.5 py-0.5 bg-lia-bg-secondary rounded-full text-micro lia-text-secondary">{basicInfoFields.tipoContrato}</span>
+            <span className="px-1.5 py-0.5 bg-lia-bg-secondary rounded-full text-micro text-lia-text-secondary">{basicInfoFields.area}</span>
+            <span className="px-1.5 py-0.5 bg-lia-bg-secondary rounded-full text-micro text-lia-text-secondary">{basicInfoFields.tipoContrato}</span>
             {basicInfoFields.gestor && (
-              <span className="px-1.5 py-0.5 bg-lia-bg-secondary rounded-full text-micro lia-text-secondary">Gestor: {basicInfoFields.gestor}</span>
+              <span className="px-1.5 py-0.5 bg-lia-bg-secondary rounded-full text-micro text-lia-text-secondary">Gestor: {basicInfoFields.gestor}</span>
             )}
           </div>
         </div>
@@ -140,14 +140,14 @@ export function ReviewPublishStage({
  "px-1.5 py-0.5 rounded-full text-micro",
                   skill.required
                     ? "bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-default"
-                    : "bg-lia-bg-secondary lia-text-secondary"
+                    : "bg-lia-bg-secondary text-lia-text-secondary"
                 )}
               >
                 {skill.name}
               </span>
             ))}
             {technicalSkills.length > 8 && (
-              <span className="px-1.5 py-0.5 bg-lia-bg-secondary rounded-full text-micro lia-text-secondary">
+              <span className="px-1.5 py-0.5 bg-lia-bg-secondary rounded-full text-micro text-lia-text-secondary">
                 +{technicalSkills.length - 8} mais
               </span>
             )}
@@ -174,7 +174,7 @@ export function ReviewPublishStage({
             {behavioralCompetencies.filter(c => c.enabled).map((comp) => (
               <span
                 key={comp.id}
-                className="px-1.5 py-0.5 bg-lia-bg-secondary rounded-full text-micro lia-text-secondary flex items-center gap-1"
+                className="px-1.5 py-0.5 bg-lia-bg-secondary rounded-full text-micro text-lia-text-secondary flex items-center gap-1"
               >
                 {comp.name}
                 <span className="text-lia-text-secondary">({comp.weight}/5)</span>
@@ -209,7 +209,7 @@ export function ReviewPublishStage({
               <span className="lia-text-secondary ml-2">+ Bônus R$ {salaryInfo.minBonus} - R$ {salaryInfo.maxBonus}</span>
             )}
           </div>
-          <div className="text-micro lia-text-secondary mt-1">
+          <div className="text-micro text-lia-text-secondary mt-1">
             {salaryInfo.benefits.filter(b => b.enabled).length} benefícios inclusos
           </div>
         </div>
@@ -218,7 +218,7 @@ export function ReviewPublishStage({
         <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <MessageCircle className="w-3.5 h-3.5 lia-text-secondary" />
+              <MessageCircle className="w-3.5 h-3.5 text-lia-text-secondary" />
               <span className="text-xs font-medium text-lia-text-primary">
                 Triagem WSI
               </span>
@@ -230,7 +230,7 @@ export function ReviewPublishStage({
               <Edit2 className="w-3 h-3" />
             </button>
           </div>
-          <div className="text-xs lia-text-secondary">
+          <div className="text-xs text-lia-text-secondary">
             {wsiQuestions.length} perguntas configuradas via WhatsApp
           </div>
         </div>
@@ -239,7 +239,7 @@ export function ReviewPublishStage({
         <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <FileText className="w-3.5 h-3.5 lia-text-secondary" />
+              <FileText className="w-3.5 h-3.5 text-lia-text-secondary" />
               <span className="text-xs font-medium text-lia-text-primary">
                 Descrição do Anúncio
               </span>
@@ -262,7 +262,7 @@ export function ReviewPublishStage({
           {isGeneratingDescription ? (
             <div className="flex items-center gap-2 py-4" role="status" aria-live="polite" aria-label="Carregando...">
               <Loader2 className="w-4 h-4 text-lia-text-secondary animate-spin motion-reduce:animate-none" />
-              <span className="text-xs lia-text-secondary">Gerando descrição...</span>
+              <span className="text-xs text-lia-text-secondary">Gerando descrição...</span>
             </div>
           ) : (
             <div
@@ -273,7 +273,7 @@ export function ReviewPublishStage({
             </div>
           )}
 
-          <p className="text-micro lia-text-secondary mt-2 flex items-center gap-1">
+          <p className="text-micro text-lia-text-secondary mt-2 flex items-center gap-1">
             <Brain className="w-3 h-3 text-chat-cyan" />
             Texto gerado por IA baseado nas informações da vaga
           </p>
@@ -289,7 +289,7 @@ export function ReviewPublishStage({
               <h4 className="text-xs font-medium text-lia-text-primary">
                 Pronto para escolher plataformas!
               </h4>
-              <p className="text-micro lia-text-secondary">
+              <p className="text-micro text-lia-text-secondary">
                 Clique em "Escolher Plataformas" para definir onde publicar
               </p>
             </div>
@@ -310,7 +310,7 @@ export function ReviewPublishStage({
                 <h3 className="text-xs font-semibold text-lia-text-primary">
                   Onde publicar esta vaga?
                 </h3>
-                <p className="text-micro lia-text-secondary">
+                <p className="text-micro text-lia-text-secondary">
                   Selecione as plataformas para divulgação
                 </p>
               </div>
@@ -319,7 +319,7 @@ export function ReviewPublishStage({
 
           {/* ATS Section */}
           <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
-            <h4 className="text-micro font-semibold lia-text-secondary uppercase tracking-wide mb-2">
+            <h4 className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
               ATS - Sistema de Vagas
             </h4>
             <div className="space-y-2">
@@ -351,7 +351,7 @@ export function ReviewPublishStage({
 
           {/* Job Boards Section */}
           <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
-            <h4 className="text-micro font-semibold lia-text-secondary uppercase tracking-wide mb-2">
+            <h4 className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
               Job Boards
             </h4>
             <div className="space-y-2">
@@ -390,7 +390,7 @@ export function ReviewPublishStage({
 
           {/* Company Website Section */}
           <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
-            <h4 className="text-micro font-semibold lia-text-secondary uppercase tracking-wide mb-2">
+            <h4 className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
               Website da Empresa
             </h4>
             <div className="space-y-2">
@@ -422,7 +422,7 @@ export function ReviewPublishStage({
 
           {/* Job Configuration Section */}
           <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
-            <h4 className="text-micro font-semibold lia-text-secondary uppercase tracking-wide mb-2">
+            <h4 className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
               Configurações da Vaga
             </h4>
             <div className="space-y-3">
@@ -441,7 +441,7 @@ export function ReviewPublishStage({
                             ? level <= 2 ? "bg-wedo-green text-white"
                               : level === 3 ? "bg-status-warning text-white"
                               : "bg-status-error text-white"
-                            : "bg-lia-bg-secondary lia-text-secondary hover:bg-lia-interactive-active"
+                            : "bg-lia-bg-secondary text-lia-text-secondary hover:bg-lia-interactive-active"
                         )}
                       >
                         {level}
@@ -449,7 +449,7 @@ export function ReviewPublishStage({
                     ))}
                   </div>
                 </div>
-                <p className="text-micro lia-text-secondary">
+                <p className="text-micro text-lia-text-secondary">
                   {jobConfig.urgencyLevel <= 2
                     ? "Baixa: Construção de pipeline - sem pressa"
                     : jobConfig.urgencyLevel === 3
@@ -479,7 +479,7 @@ export function ReviewPublishStage({
  "px-2 py-1 rounded-md text-micro font-medium transition-colors",
                           jobConfig.visibility === opt.value
                             ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
-                            : "bg-lia-bg-secondary lia-text-secondary hover:bg-lia-interactive-active"
+                            : "bg-lia-bg-secondary text-lia-text-secondary hover:bg-lia-interactive-active"
                         )}
                       >
                         {opt.label}
@@ -487,7 +487,7 @@ export function ReviewPublishStage({
                     ))}
                   </div>
                 </div>
-                <p className="text-micro lia-text-secondary" aria-live="polite" aria-atomic="true">
+                <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                   {jobConfig.visibility === 'public'
                     ? "Visível em job boards, LinkedIn e site de carreiras"
                     : jobConfig.visibility === 'internal'
@@ -501,7 +501,7 @@ export function ReviewPublishStage({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1">
                     <span className="text-xs text-lia-text-primary" aria-live="polite" aria-atomic="true">Vaga Afirmativa</span>
-                    <Info className="w-3 h-3 lia-text-secondary" />
+                    <Info className="w-3 h-3 text-lia-text-secondary" />
                   </div>
                   <button
                     onClick={() => onSetJobConfig(prev => ({ ...prev, isAffirmative: !prev.isAffirmative }))}
@@ -516,7 +516,7 @@ export function ReviewPublishStage({
                     )} />
                   </button>
                 </div>
-                <p className="text-micro lia-text-secondary" aria-live="polite" aria-atomic="true">
+                <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                   Vagas afirmativas priorizam grupos historicamente sub-representados (PcD, mulheres, LGBTQIA+, pessoas negras). Sua empresa deve estar preparada para acolher esses profissionais.
                 </p>
 
@@ -565,7 +565,7 @@ export function ReviewPublishStage({
                       </select>
                     </div>
 
-                    <p className="text-micro lia-text-secondary flex items-center gap-1">
+                    <p className="text-micro text-lia-text-secondary flex items-center gap-1">
                       <Heart className="w-3 h-3 text-lia-text-secondary" />
                       Candidatos elegíveis terão 24h para enviar documentação comprobatória
                     </p>
@@ -577,7 +577,7 @@ export function ReviewPublishStage({
 
           {/* Deadlines Section */}
           <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
-            <h4 className="text-micro font-semibold lia-text-secondary uppercase tracking-wide mb-2 flex items-center gap-1">
+            <h4 className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 flex items-center gap-1">
               <Calendar className="w-3 h-3" />
               Prazos do Processo
             </h4>
@@ -614,7 +614,7 @@ export function ReviewPublishStage({
 
           {/* Languages Section */}
           <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
-            <h4 className="text-micro font-semibold lia-text-secondary uppercase tracking-wide mb-2 flex items-center gap-1">
+            <h4 className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 flex items-center gap-1">
               <Globe className="w-3 h-3" />
               Idiomas {jobConfig.languages.length > 0 && <span className="text-lia-text-secondary">({jobConfig.languages.length})</span>}
             </h4>
@@ -661,7 +661,7 @@ export function ReviewPublishStage({
                         const newLanguages = jobConfig.languages.filter((_, i) => i !== idx)
                         onUpdateLanguages(newLanguages)
                       }}
-                      className="w-5 h-5 flex items-center justify-center lia-text-secondary hover:text-status-error hover:bg-status-error/10 rounded-md transition-colors motion-reduce:transition-none"
+                      className="w-5 h-5 flex items-center justify-center text-lia-text-secondary hover:text-status-error hover:bg-status-error/10 rounded-md transition-colors motion-reduce:transition-none"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -669,7 +669,7 @@ export function ReviewPublishStage({
                 ))}
               </div>
             ) : (
-              <p className="text-xs lia-text-secondary">Nenhum idioma adicionado</p>
+              <p className="text-xs text-lia-text-secondary">Nenhum idioma adicionado</p>
             )}
             <button
               onClick={() => onUpdateLanguages([...jobConfig.languages, { name: 'Inglês', level: 'Intermediário' }])}
@@ -689,7 +689,7 @@ export function ReviewPublishStage({
                 <h4 className="text-xs font-medium text-lia-text-primary">
                   {publishingPlatforms.filter(p => p.enabled).length} plataforma(s) selecionada(s)
                 </h4>
-                <p className="text-micro lia-text-secondary" aria-live="polite" aria-atomic="true">
+                <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                   Clique em "Publicar Vaga" para ativar o recrutamento
                 </p>
               </div>

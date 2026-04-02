@@ -519,7 +519,7 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
                         {template.type}
                       </Badge>
                       {template.lastUsed && (
-                        <span className="text-xs lia-text-secondary">
+                        <span className="text-xs text-lia-text-secondary">
                           Usado em {new Date(template.lastUsed).toLocaleDateString('pt-BR')}
                         </span>
                       )}
@@ -641,7 +641,7 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
                   placeholder={selectedTemplate.subject}
                   className="w-full px-3 py-2 border border-lia-border-default rounded-md"
                 />
-                <p className="text-xs lia-text-secondary mt-1">
+                <p className="text-xs text-lia-text-secondary mt-1">
                   Pré-visualização: {processedSubject}
                 </p>
               </div>

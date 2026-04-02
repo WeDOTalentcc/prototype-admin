@@ -198,7 +198,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
       case 'missing':
         return <X className="w-3 h-3 text-status-error" />
       default:
-        return <AlertCircle className="w-3 h-3 lia-text-secondary" />
+        return <AlertCircle className="w-3 h-3 text-lia-text-secondary" />
     }
   }
 

@@ -161,7 +161,7 @@ export function RubricEvaluationModal({
       case 'missing':
         return <X className="w-3.5 h-3.5 text-wedo-coral" />
       default:
-        return <AlertCircle className="w-3.5 h-3.5 lia-text-secondary" />
+        return <AlertCircle className="w-3.5 h-3.5 text-lia-text-secondary" />
     }
   }
 
@@ -346,11 +346,11 @@ export function RubricEvaluationModal({
               </h2>
               <div className="flex items-center gap-2 text-xs">
                 <span className="flex items-center gap-1 text-lia-text-primary">
-                  <User className="w-3 h-3 lia-text-secondary" />
+                  <User className="w-3 h-3 text-lia-text-secondary" />
                   {displayName}
                 </span>
                 <span className="text-lia-text-tertiary">|</span>
-                <span className="flex items-center gap-1 lia-text-secondary">
+                <span className="flex items-center gap-1 text-lia-text-secondary">
                   <Briefcase className="w-3 h-3" />
                   {jobTitle}
                 </span>
@@ -359,7 +359,7 @@ export function RubricEvaluationModal({
           </div>
           <button 
             onClick={onClose}
-            className="h-7 w-7 p-0 flex items-center justify-center transition-colors motion-reduce:transition-none hover:bg-lia-bg-tertiary rounded-full lia-text-secondary"
+            className="h-7 w-7 p-0 flex items-center justify-center transition-colors motion-reduce:transition-none hover:bg-lia-bg-tertiary rounded-full text-lia-text-secondary"
           >
             <X className="w-4 h-4" />
           </button>
@@ -429,19 +429,19 @@ export function RubricEvaluationModal({
                 {/* Category Breakdown */}
                 <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-t-lia-border-subtle">
                   <div className="text-center">
-                    <div className="text-micro mb-1 lia-text-secondary">Essenciais</div>
+                    <div className="text-micro mb-1 text-lia-text-secondary">Essenciais</div>
                     <div className="text-base-ui font-semibold" style={{color: essentialMet === essentialReqs.length ? 'var(--lia-btn-primary-bg)' : 'var(--status-warning)'}}>
                       {essentialMet}/{essentialReqs.length}
                     </div>
                   </div>
                   <div className="text-center border-l border-l-lia-border-subtle border-r border-r-lia-border-subtle">
-                    <div className="text-micro mb-1 lia-text-secondary">Importantes</div>
+                    <div className="text-micro mb-1 text-lia-text-secondary">Importantes</div>
                     <div className="text-base-ui font-semibold">
                       {importantMet}/{importantReqs.length}
                     </div>
                   </div>
                   <div className="text-center">
-                    <div className="text-micro mb-1 lia-text-secondary">Desejáveis</div>
+                    <div className="text-micro mb-1 text-lia-text-secondary">Desejáveis</div>
                     <div className="text-base-ui font-semibold">
                       {desirableMet}/{desirableReqs.length}
                     </div>
@@ -458,7 +458,7 @@ export function RubricEvaluationModal({
                 
                 {/* 1. Contexto e Fit */}
                 <div className="mb-3">
-                  <div className="text-micro font-semibold mb-1.5 flex items-center gap-1 lia-text-secondary">
+                  <div className="text-micro font-semibold mb-1.5 flex items-center gap-1 text-lia-text-secondary">
                     <span className="w-4 h-4 rounded-full flex items-center justify-center text-micro font-bold bg-wedo-cyan/[.12]">1</span>
                     Contexto e Fit
                   </div>
@@ -470,7 +470,7 @@ export function RubricEvaluationModal({
                 {/* 2. Pontos Fortes com Impacto */}
                 {mockParecer.pontos_fortes_impacto && mockParecer.pontos_fortes_impacto.length > 0 && (
                   <div className="mb-3">
-                    <div className="text-micro font-semibold mb-1.5 flex items-center gap-1 lia-text-secondary">
+                    <div className="text-micro font-semibold mb-1.5 flex items-center gap-1 text-lia-text-secondary">
                       <span className="w-4 h-4 rounded-full flex items-center justify-center text-micro font-bold bg-wedo-cyan/[.12]">2</span>
                       Pontos Fortes e Impacto
                     </div>
@@ -486,7 +486,7 @@ export function RubricEvaluationModal({
                               <span className="text-xs font-medium text-lia-text-primary">
                                 {pf.ponto}
                               </span>
-                              <p className="text-micro mt-0.5 lia-text-secondary">
+                              <p className="text-micro mt-0.5 text-lia-text-secondary">
                                 {pf.evidencia}
                               </p>
                               <p className="text-micro mt-0.5 flex items-center gap-1">
@@ -504,7 +504,7 @@ export function RubricEvaluationModal({
                 {/* 3. Riscos e Mitigações */}
                 {mockParecer.riscos_mitigacoes && mockParecer.riscos_mitigacoes.length > 0 && (
                   <div className="mb-3">
-                    <div className="text-micro font-semibold mb-1.5 flex items-center gap-1 lia-text-secondary">
+                    <div className="text-micro font-semibold mb-1.5 flex items-center gap-1 text-lia-text-secondary">
                       <span className="w-4 h-4 rounded-full flex items-center justify-center text-micro font-bold bg-status-warning/[.12] text-status-warning">3</span>
                       Riscos e Mitigações
                     </div>
@@ -523,7 +523,7 @@ export function RubricEvaluationModal({
                                 <span className="text-xs font-medium text-lia-text-primary">
                                   {rm.risco}
                                 </span>
-                                <p className="text-micro mt-0.5 lia-text-secondary">
+                                <p className="text-micro mt-0.5 text-lia-text-secondary">
                                   <span className="font-medium">Mitigação:</span> {rm.mitigacao}
                                 </p>
                               </div>
@@ -535,7 +535,7 @@ export function RubricEvaluationModal({
                                   Risco {rm.nivel === 'alto' ? 'Alto' : rm.nivel === 'medio' ? 'Médio' : 'Baixo'}
                                 </span>
                                 {rm.tempo_estimado && (
-                                  <span className="text-micro flex items-center gap-0.5 lia-text-secondary">
+                                  <span className="text-micro flex items-center gap-0.5 text-lia-text-secondary">
                                     <Clock className="w-3 h-3" />
                                     {rm.tempo_estimado}
                                   </span>
@@ -552,7 +552,7 @@ export function RubricEvaluationModal({
                 {/* 4. Recomendação Final */}
                 {mockParecer.recomendacao_final && (
                   <div>
-                    <div className="text-micro font-semibold mb-1.5 flex items-center gap-1 lia-text-secondary">
+                    <div className="text-micro font-semibold mb-1.5 flex items-center gap-1 text-lia-text-secondary">
                       <span className="w-4 h-4 rounded-full flex items-center justify-center text-micro font-bold" style={{backgroundColor: decisionBadge ? decisionBadge.bg : 'var(--wedo-cyan-bg-12)', color: decisionBadge ? decisionBadge.color : 'var(--lia-text-secondary)'}}>4</span>
                       Recomendação Final
                     </div>
@@ -562,7 +562,7 @@ export function RubricEvaluationModal({
                       </p>
                       {mockParecer.recomendacao_final.proximos_passos && mockParecer.recomendacao_final.proximos_passos.length > 0 && (
                         <div>
-                          <span className="text-micro font-medium lia-text-secondary">Próximos Passos:</span>
+                          <span className="text-micro font-medium text-lia-text-secondary">Próximos Passos:</span>
                           <ul className="mt-1 space-y-0.5">
                             {mockParecer.recomendacao_final.proximos_passos.map((ps, idx) => (
                               <li key={`ps-${idx}`} className="text-micro flex items-start gap-1.5 text-lia-text-primary">
@@ -649,14 +649,14 @@ export function RubricEvaluationModal({
                               {req.evidence && (
                                 <>
                                   <span className="text-lia-text-tertiary">•</span>
-                                  <span className="text-micro lia-text-secondary">
+                                  <span className="text-micro text-lia-text-secondary">
                                     {req.evidence}
                                   </span>
                                 </>
                               )}
                             </div>
                             {req.narrative && (
-                              <p className="text-micro mt-1 lia-text-secondary">
+                              <p className="text-micro mt-1 text-lia-text-secondary">
                                 {req.narrative}
                               </p>
                             )}
@@ -666,7 +666,7 @@ export function RubricEvaluationModal({
                     )
                   })}
                   {sortedRequirements.length === 0 && (
-                    <div className="text-center py-4 text-xs lia-text-secondary">
+                    <div className="text-center py-4 text-xs text-lia-text-secondary">
                       Nenhum requisito avaliado disponível.
                     </div>
                   )}
@@ -693,7 +693,7 @@ export function RubricEvaluationModal({
                         </span>
                         <div className="flex items-center gap-1.5">
                           {flag.detail && (
-                            <span className="text-micro lia-text-secondary">
+                            <span className="text-micro text-lia-text-secondary">
                               {flag.detail}
                             </span>
                           )}
@@ -713,13 +713,13 @@ export function RubricEvaluationModal({
                  
                 >
                   <span className="flex items-center gap-2">
-                    <BarChart3 className="w-4 h-4 lia-text-secondary" />
+                    <BarChart3 className="w-4 h-4 text-lia-text-secondary" />
                     Métricas de Auditoria
                   </span>
                   {showAudit ? (
-                    <ChevronDown className="w-4 h-4 lia-text-secondary" />
+                    <ChevronDown className="w-4 h-4 text-lia-text-secondary" />
                   ) : (
-                    <ChevronRight className="w-4 h-4 lia-text-secondary" />
+                    <ChevronRight className="w-4 h-4 text-lia-text-secondary" />
                   )}
                 </button>
                 
@@ -727,25 +727,25 @@ export function RubricEvaluationModal({
                   <div className="mt-3 pt-3 border-t border-t-lia-border-subtle">
                     <div className="grid grid-cols-2 gap-2 mb-3">
                       <div className="p-2 rounded-md bg-lia-bg-secondary">
-                        <div className="text-micro lia-text-secondary">Total Requisitos</div>
+                        <div className="text-micro text-lia-text-secondary">Total Requisitos</div>
                         <div className="text-sm font-bold text-lia-text-primary">
                           {requirements.length}
                         </div>
                       </div>
                       <div className="p-2 rounded-md bg-lia-bg-secondary">
-                        <div className="text-micro lia-text-secondary">Red Flags</div>
+                        <div className="text-micro text-lia-text-secondary">Red Flags</div>
                         <div className="text-sm font-bold" style={{color: mockRedFlags.filter(f => f.status !== 'ok').length > 0 ? 'var(--status-warning)' : 'var(--lia-text-secondary)'}}>
                           {mockRedFlags.filter(f => f.status !== 'ok').length}
                         </div>
                       </div>
                       <div className="p-2 rounded-md bg-lia-bg-secondary">
-                        <div className="text-micro lia-text-secondary">Taxa Essenciais</div>
+                        <div className="text-micro text-lia-text-secondary">Taxa Essenciais</div>
                         <div className="text-sm font-bold" style={{color: essentialMet === essentialReqs.length ? 'var(--lia-btn-primary-bg)' : 'var(--status-warning)'}}>
                           {essentialReqs.length > 0 ? Math.round((essentialMet / essentialReqs.length) * 100) : 100}%
                         </div>
                       </div>
                       <div className="p-2 rounded-md bg-lia-bg-secondary">
-                        <div className="text-micro lia-text-secondary">Tempo Análise</div>
+                        <div className="text-micro text-lia-text-secondary">Tempo Análise</div>
                         <div className="text-sm font-bold text-lia-text-primary">
                           {evaluation.audit_metrics?.analysis_time || '2.3'}s
                         </div>
@@ -753,7 +753,7 @@ export function RubricEvaluationModal({
                     </div>
                     
                     {/* Legenda */}
-                    <div className="text-micro font-medium mb-1.5 lia-text-secondary">Legenda de Níveis</div>
+                    <div className="text-micro font-medium mb-1.5 text-lia-text-secondary">Legenda de Níveis</div>
                     <div className="grid grid-cols-4 gap-1">
                       {[
                         { code: 'E+', label: 'Excede', color: undefined, bgColor: undefined },
@@ -768,7 +768,7 @@ export function RubricEvaluationModal({
                           >
                             {item.code}
                           </span>
-                          <span className="text-micro lia-text-secondary">{item.label}</span>
+                          <span className="text-micro text-lia-text-secondary">{item.label}</span>
                         </div>
                       ))}
                     </div>
@@ -780,7 +780,7 @@ export function RubricEvaluationModal({
                         { label: 'Data/Hora', value: new Date().toLocaleString('pt-BR') },
                       ].map((item, idx) => (
                         <div key={`just-${idx}`} className="flex items-center justify-between">
-                          <span className="text-micro lia-text-secondary">{item.label}</span>
+                          <span className="text-micro text-lia-text-secondary">{item.label}</span>
                           <span className="text-micro font-medium text-lia-text-primary">{item.value}</span>
                         </div>
                       ))}
@@ -797,7 +797,7 @@ export function RubricEvaluationModal({
           className="flex-shrink-0 px-4 py-3 flex items-center justify-between border-t border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-primary dark:border-lia-border-subtle"
         >
           <div className="flex items-center gap-2">
-            <span className="text-micro lia-text-secondary">
+            <span className="text-micro text-lia-text-secondary">
               Decisão do Recrutador
             </span>
           </div>

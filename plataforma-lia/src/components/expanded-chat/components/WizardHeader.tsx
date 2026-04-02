@@ -58,7 +58,7 @@ export function WizardHeader({
                   ? "bg-status-success/10 text-status-success"
                   : catalogStatus.maturity_level === 'partial'
                   ? "bg-status-warning/10 text-status-warning"
-                  : "bg-lia-bg-tertiary lia-text-secondary"
+                  : "bg-lia-bg-tertiary text-lia-text-secondary"
               )}
              
             >
@@ -107,7 +107,7 @@ export function WizardHeader({
               title="Começar do zero"
               aria-label="Limpar rascunho e começar do zero"
             >
-              <RefreshCw className="w-3.5 h-3.5 lia-text-secondary group-hover:text-status-error transition-colors motion-reduce:transition-none" />
+              <RefreshCw className="w-3.5 h-3.5 text-lia-text-secondary group-hover:text-status-error transition-colors motion-reduce:transition-none" />
             </button>
           )}
           <button
@@ -117,8 +117,8 @@ export function WizardHeader({
             aria-label={isFullscreen ? "Reduzir chat" : "Expandir para tela cheia"}
           >
             {isFullscreen 
-              ? <Minimize2 className="w-3.5 h-3.5 lia-text-secondary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-tertiary transition-colors motion-reduce:transition-none" />
-              : <Maximize2 className="w-3.5 h-3.5 lia-text-secondary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-tertiary transition-colors motion-reduce:transition-none" />
+              ? <Minimize2 className="w-3.5 h-3.5 text-lia-text-secondary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-tertiary transition-colors motion-reduce:transition-none" />
+              : <Maximize2 className="w-3.5 h-3.5 text-lia-text-secondary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-tertiary transition-colors motion-reduce:transition-none" />
             }
           </button>
           <button 
@@ -127,7 +127,7 @@ export function WizardHeader({
             title="Fechar painel"
             aria-label="Fechar painel de etapas"
           >
-            <X className="w-4 h-4 lia-text-secondary" />
+            <X className="w-4 h-4 text-lia-text-secondary" />
           </button>
         </div>
       </div>

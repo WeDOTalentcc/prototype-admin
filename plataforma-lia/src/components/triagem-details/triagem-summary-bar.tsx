@@ -36,15 +36,15 @@ export function TriagemSummaryBar({
             <div className="flex items-center gap-2">
               <Brain className="w-4 h-4 text-wedo-cyan" />
               <div>
-                <p className="text-micro lia-text-secondary">Score WSI</p>
+                <p className="text-micro text-lia-text-secondary">Score WSI</p>
                 <p className={`text-base font-bold ${getScoreColor(scores.overall_wsi)}`}>{scores.overall_wsi.toFixed(1)}<span className="lia-text-secondary font-normal">/5.0</span></p>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <Trophy className="w-4 h-4 lia-text-secondary" />
+              <Trophy className="w-4 h-4 text-lia-text-secondary" />
               <div>
-                <p className="text-micro lia-text-secondary">Ranking</p>
+                <p className="text-micro text-lia-text-secondary">Ranking</p>
                 <p className="text-sm font-bold text-lia-text-primary">
                   {ranking?.ranked ? `#${ranking.rank} de ${ranking.total}` : 'N/A'}
                 </p>
@@ -52,9 +52,9 @@ export function TriagemSummaryBar({
             </div>
 
             <div className="flex items-center gap-2">
-              <Award className="w-4 h-4 lia-text-secondary" />
+              <Award className="w-4 h-4 text-lia-text-secondary" />
               <div>
-                <p className="text-micro lia-text-secondary">Classificação</p>
+                <p className="text-micro text-lia-text-secondary">Classificação</p>
                 <span className="inline-flex items-center px-1.5 py-0.5 text-micro font-medium rounded-full" style={{backgroundColor: classColors.bg, color: classColors.text}}>
                   {getClassificationLabel(scores.classification)}
                 </span>
@@ -63,9 +63,9 @@ export function TriagemSummaryBar({
 
             {sessionInfo.duration_minutes && (
               <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 lia-text-secondary" />
+                <Clock className="w-4 h-4 text-lia-text-secondary" />
                 <div>
-                  <p className="text-micro lia-text-secondary">Duração</p>
+                  <p className="text-micro text-lia-text-secondary">Duração</p>
                   <p className="text-xs font-medium text-lia-text-primary">{sessionInfo.duration_minutes} min</p>
                 </div>
               </div>
@@ -91,7 +91,7 @@ export function TriagemSummaryBar({
             <button
               key={tab.key}
               onClick={() => onTabChange(tab.key)}
-              className={cn("px-3 py-1.5 text-xs font-medium transition-colors motion-reduce:transition-none flex items-center gap-1.5 rounded-full", activeTab === tab.key ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" : "bg-transparent lia-text-secondary hover:bg-lia-interactive-hover")}
+              className={cn("px-3 py-1.5 text-xs font-medium transition-colors motion-reduce:transition-none flex items-center gap-1.5 rounded-full", activeTab === tab.key ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" : "bg-transparent text-lia-text-secondary hover:bg-lia-interactive-hover")}
             >
               <tab.icon className="w-3 h-3" />
               {tab.label}

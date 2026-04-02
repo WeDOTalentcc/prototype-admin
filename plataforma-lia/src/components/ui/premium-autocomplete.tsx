@@ -199,11 +199,11 @@ export function PremiumAutocomplete({
                   )}
                 >
                   <div className="flex items-center gap-2">
-                    <Search className="h-3.5 w-3.5 lia-text-secondary" />
+                    <Search className="h-3.5 w-3.5 text-lia-text-secondary" />
                     <span>{suggestion.text}</span>
                   </div>
                   {suggestion.count && (
-                    <span className="text-xs lia-text-secondary">
+                    <span className="text-xs text-lia-text-secondary">
                       {suggestion.count}x
                     </span>
                   )}

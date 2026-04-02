@@ -39,7 +39,7 @@ export function ClientFilters({
     <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle p-4 mb-6">
       <div className="flex flex-col lg:flex-row gap-4">
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 lia-text-secondary" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
           <Input
             placeholder="Buscar por nome, CNPJ ou email..."
             value={search}

@@ -591,8 +591,8 @@ export function JDEvaluationPanel({
         <div className="p-3" role="status" aria-live="polite" aria-label="Carregando...">
           {isLoading ? (
             <div className="flex items-center justify-center py-4" role="status" aria-live="polite" aria-label="Carregando...">
-              <Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none lia-text-secondary" />
-              <span className="ml-2 text-xs lia-text-secondary">Avaliando Descrição do Cargo...</span>
+              <Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
+              <span className="ml-2 text-xs text-lia-text-secondary">Avaliando Descrição do Cargo...</span>
             </div>
           ) : evaluation ? (
             <div className="space-y-3">
@@ -613,7 +613,7 @@ export function JDEvaluationPanel({
                   <div className="flex items-center gap-3 pb-2 border-b border-lia-border-subtle">
                     <div className="flex items-center gap-1.5">
                       <span className="text-xs font-semibold text-lia-text-primary">{evaluation.score}</span>
-                      <span className="text-micro lia-text-secondary">/100</span>
+                      <span className="text-micro text-lia-text-secondary">/100</span>
                     </div>
                     <span className={cn("text-micro font-semibold px-2 py-0.5 rounded-full border", bandColors[band] || bandColors.adequado)}>
                       {bandLabel}
@@ -646,7 +646,7 @@ export function JDEvaluationPanel({
                         <XCircle className="w-3 h-3 text-status-error shrink-0" />
                       )}
                       <div className="flex-1 min-w-0">
-                        <span className="text-micro font-semibold lia-text-secondary uppercase tracking-wide block">{indicator.dimension}</span>
+                        <span className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wide block">{indicator.dimension}</span>
                         <span className={cn(
                           "truncate block font-medium",
                           indicator.status === 'sufficient' ? 'text-status-success' :
@@ -667,7 +667,7 @@ export function JDEvaluationPanel({
                 <div className="flex items-center gap-3 pb-2 border-b border-lia-border-subtle flex-wrap">
                   {evaluation.indicators.map((indicator) => (
                     <div key={indicator.label} className="flex items-center gap-1.5">
-                      <FileText className="h-3 w-3 lia-text-secondary" />
+                      <FileText className="h-3 w-3 text-lia-text-secondary" />
                       <span className="text-micro text-lia-text-secondary">{indicator.label}:</span>
                       <span className="text-xs font-semibold text-lia-text-primary">{indicator.count ?? 0}</span>
                       <span className={cn("w-1.5 h-1.5 rounded-full",
@@ -725,7 +725,7 @@ export function JDEvaluationPanel({
                         <ul className="space-y-0.5">
                           {responsibilities.map((item, idx) => (
                             <li key={`resp-${idx}`} className="flex items-start gap-1.5">
-                              <span className="text-xs lia-text-secondary mt-0.5 shrink-0">•</span>
+                              <span className="text-xs text-lia-text-secondary mt-0.5 shrink-0">•</span>
                               <span className="text-xs text-lia-text-secondary leading-relaxed">{item}</span>
                             </li>
                           ))}
@@ -973,7 +973,7 @@ export function JDEvaluationPanel({
             </div>
           ) : (
             <div className="text-center py-6">
-              <p className="text-xs lia-text-secondary">Não foi possível avaliar o JD.</p>
+              <p className="text-xs text-lia-text-secondary">Não foi possível avaliar o JD.</p>
               <Button
                 variant="outline"
                 size="sm"

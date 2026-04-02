@@ -324,7 +324,7 @@ export default function WelcomePage() {
                     </div>
                     <span 
                       className={`text-sm transition-colors motion-reduce:transition-none duration-200 ${
-                        dontShowAgain ? 'lia-text-800 dark:text-lia-text-primary' : 'lia-text-500 group-hover:lia-text-600'
+                        dontShowAgain ? 'text-lia-text-primary dark:text-lia-text-primary' : 'text-lia-text-secondary group-hover:text-lia-text-secondary'
                       }`}
                       onClick={() => setDontShowAgain(!dontShowAgain)}
                     >

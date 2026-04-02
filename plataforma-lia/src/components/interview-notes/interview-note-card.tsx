@@ -104,7 +104,7 @@ function QuestionItem({
               {categoryLabels[question.category]}
             </span>
             {question.source && (
-              <span className="text-micro lia-text-secondary">
+              <span className="text-micro text-lia-text-secondary">
                 Fonte: {question.source}
               </span>
             )}
@@ -350,7 +350,7 @@ export function InterviewNoteCard({
             <h3 className="text-sm font-semibold text-lia-text-primary">
               Perguntas da Entrevista
             </h3>
-            <span className="text-xs lia-text-secondary">
+            <span className="text-xs text-lia-text-secondary">
               ({note.questions.length} perguntas)
             </span>
           </div>
@@ -393,7 +393,7 @@ export function InterviewNoteCard({
               )}
               Transcrição da Entrevista
               {note.transcriptionSource && (
-                <span className="text-micro font-normal lia-text-secondary">
+                <span className="text-micro font-normal text-lia-text-secondary">
                   (via {note.transcriptionSource})
                 </span>
               )}
@@ -425,8 +425,8 @@ export function InterviewNoteCard({
             />
           ) : (
             <div className="bg-lia-bg-secondary border border-lia-border-subtle rounded-md p-6 text-center">
-              <Bot className="h-8 w-8 lia-text-secondary mx-auto mb-2" />
-              <p className="text-sm lia-text-secondary">
+              <Bot className="h-8 w-8 text-lia-text-secondary mx-auto mb-2" />
+              <p className="text-sm text-lia-text-secondary">
                 Clique em &quot;Gerar Parecer com LIA&quot; para obter uma
                 análise automática da entrevista.
               </p>

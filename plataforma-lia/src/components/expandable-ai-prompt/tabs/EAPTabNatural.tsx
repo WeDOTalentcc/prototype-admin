@@ -105,7 +105,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
               </TooltipTrigger>
               <TooltipContent side="bottom">
                 <p className="text-xs font-medium">Base Local</p>
-                <p className="text-micro lia-text-secondary">Gratuito</p>
+                <p className="text-micro text-lia-text-secondary">Gratuito</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -128,7 +128,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
                   <p className="text-xs font-medium">Híbrido (Local + Global)</p>
-                  <p className="text-micro lia-text-secondary" aria-live="polite" aria-atomic="true">1 crédito/candidato</p>
+                  <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">1 crédito/candidato</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -152,7 +152,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
                   <p className="text-xs font-medium">Base Global</p>
-                  <p className="text-micro lia-text-secondary" aria-live="polite" aria-atomic="true">1 crédito/candidato</p>
+                  <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">1 crédito/candidato</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -179,7 +179,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
               </TooltipTrigger>
               <TooltipContent side="bottom">
                 <p className="text-xs font-medium">Apenas com Email</p>
-                <p className="text-micro lia-text-secondary">{requireEmails ? 'Ativo' : '+1 crédito se ativo'}</p>
+                <p className="text-micro text-lia-text-secondary">{requireEmails ? 'Ativo' : '+1 crédito se ativo'}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -201,7 +201,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
               </TooltipTrigger>
               <TooltipContent side="bottom">
                 <p className="text-xs font-medium">Apenas com Telefone</p>
-                <p className="text-micro lia-text-secondary">{requirePhoneNumbers ? 'Ativo' : '+1 crédito se ativo'}</p>
+                <p className="text-micro text-lia-text-secondary">{requirePhoneNumbers ? 'Ativo' : '+1 crédito se ativo'}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -240,10 +240,10 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                 }`}
               >
                 <span style={{color: 'var(--lia-btn-primary-bg)'}}>{suggestion.text}</span>
-                <span className="text-xs lia-text-secondary">{suggestion.category}</span>
+                <span className="text-xs text-lia-text-secondary">{suggestion.category}</span>
               </button>
             ))}
-            <div className="px-3 py-1.5 text-xs flex items-center justify-between lia-text-secondary" style={{borderTop: '1px solid var(--overlay-05)'}}>
+            <div className="px-3 py-1.5 text-xs flex items-center justify-between text-lia-text-secondary" style={{borderTop: '1px solid var(--overlay-05)'}}>
               <span>Use ↑↓ para navegar, Tab para selecionar</span>
               <span>Esc para fechar</span>
             </div>
@@ -275,7 +275,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
               </div>
               <p className="text-sm text-lia-text-primary mb-2">{promptEnhancement.enhanced_query}</p>
               {promptEnhancement.explanation && (
-                <p className="text-xs lia-text-secondary mb-2">{promptEnhancement.explanation}</p>
+                <p className="text-xs text-lia-text-secondary mb-2">{promptEnhancement.explanation}</p>
               )}
               <div className="flex items-center gap-2">
                 <button
@@ -287,7 +287,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                 </button>
                 <button
                   onClick={handleDismissEnhancement}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium text-lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
                 >
                   <X className="w-3 h-3" />
                   Ignorar
@@ -309,7 +309,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
             <Home className="w-3 h-3" />
             <span>Base Local</span>
           </div>
-          <span className="text-xs lia-text-secondary">
+          <span className="text-xs text-lia-text-secondary">
             Busca apenas na sua base de dados
           </span>
         </div>
@@ -347,7 +347,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
         })}
 
         {isParsingEntities && (
-          <div className="flex items-center gap-1 px-2.5 py-1.5 text-xs lia-text-secondary" role="status" aria-live="polite" aria-label="Carregando...">
+          <div className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-lia-text-secondary" role="status" aria-live="polite" aria-label="Carregando...">
             <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin motion-reduce:animate-none" />
             Analisando...
           </div>
@@ -363,7 +363,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                   "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-[width,height] hover:opacity-90",
                   autocompleteEnabled
                     ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
-                    : "bg-lia-bg-tertiary lia-text-secondary"
+                    : "bg-lia-bg-tertiary text-lia-text-secondary"
                 )}
               >
                 <Brain className={`w-3.5 h-3.5 ${autocompleteEnabled ? 'text-wedo-cyan' : 'lia-text-secondary'}`} />
@@ -431,7 +431,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
               </TooltipTrigger>
               <TooltipContent side="bottom" className="!animate-none !duration-0">
                 <p className="text-xs font-medium">Salvar busca como arquétipo</p>
-                <p className="text-xs lia-text-muted">Reutilize esta busca no futuro</p>
+                <p className="text-xs text-lia-text-tertiary">Reutilize esta busca no futuro</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

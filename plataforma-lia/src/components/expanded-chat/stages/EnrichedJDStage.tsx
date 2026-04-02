@@ -181,7 +181,7 @@ export function EnrichedJDStage({
       <div className="p-4 bg-lia-bg-secondary/50 rounded-md border border-lia-border-subtle">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-lia-interactive-active flex items-center justify-center">
-            <FileText className="w-4 h-4 lia-text-secondary" />
+            <FileText className="w-4 h-4 text-lia-text-secondary" />
           </div>
           <div>
             <p className={cn(textStyles.body, "text-lia-text-secondary")}>
@@ -292,9 +292,9 @@ export function EnrichedJDStage({
                 )}
               </div>
               {isExpanded ? (
-                <ChevronUp className="w-4 h-4 lia-text-secondary" />
+                <ChevronUp className="w-4 h-4 text-lia-text-secondary" />
               ) : (
-                <ChevronDown className="w-4 h-4 lia-text-secondary" />
+                <ChevronDown className="w-4 h-4 text-lia-text-secondary" />
               )}
             </button>
 
@@ -363,12 +363,12 @@ export function EnrichedJDStage({
                               {suggestion.metrics && Object.keys(suggestion.metrics).length > 0 && (
                                 <div className="mt-1.5 flex flex-wrap gap-2">
                                   {suggestion.metrics.market_percentage && (
-                                    <span className="text-micro lia-text-secondary bg-lia-bg-tertiary px-1.5 py-0.5 rounded-full">
+                                    <span className="text-micro text-lia-text-secondary bg-lia-bg-tertiary px-1.5 py-0.5 rounded-full">
                                       {suggestion.metrics.market_percentage}% do mercado
                                     </span>
                                   )}
                                   {suggestion.metrics.company_history_percentage && (
-                                    <span className="text-micro lia-text-secondary bg-lia-bg-tertiary px-1.5 py-0.5 rounded-full">
+                                    <span className="text-micro text-lia-text-secondary bg-lia-bg-tertiary px-1.5 py-0.5 rounded-full">
                                       {suggestion.metrics.company_history_percentage}% das suas vagas
                                     </span>
                                   )}
@@ -392,7 +392,7 @@ export function EnrichedJDStage({
                                   title="Rejeitar sugestão"
                                   aria-label="Rejeitar sugestão"
                                 >
-                                  <X className="w-3.5 h-3.5 lia-text-secondary" />
+                                  <X className="w-3.5 h-3.5 text-lia-text-secondary" />
                                 </button>
                               </div>
                             )}
@@ -443,13 +443,13 @@ export function EnrichedJDStage({
           {enrichedData.compensation.marketRange && enrichedData.compensation.currentRange && (
             <div className="space-y-2">
               <div className="flex justify-between items-center p-2 bg-lia-bg-secondary/50 rounded-md">
-                <span className="text-sm lia-text-secondary">Sua proposta:</span>
+                <span className="text-sm text-lia-text-secondary">Sua proposta:</span>
                 <span className="text-sm font-medium text-lia-text-primary">
                   R$ {enrichedData.compensation.currentRange.min.toLocaleString()} - R$ {enrichedData.compensation.currentRange.max.toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between items-center p-2 bg-lia-bg-tertiary rounded-md">
-                <span className="text-sm lia-text-secondary">Benchmark:</span>
+                <span className="text-sm text-lia-text-secondary">Benchmark:</span>
                 <span className="text-sm font-medium text-lia-text-secondary">
                   R$ {enrichedData.compensation.marketRange.min.toLocaleString()} - R$ {enrichedData.compensation.marketRange.max.toLocaleString()}
                 </span>

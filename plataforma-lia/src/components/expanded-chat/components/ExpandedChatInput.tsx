@@ -146,7 +146,7 @@ export function ExpandedChatInput({
                   className="hidden"
                 />
                 <button
-                  className="p-1.5 lia-text-secondary hover:text-lia-text-secondary dark:hover:lia-text-muted transition-colors motion-reduce:transition-none rounded-full"
+                  className="p-1.5 text-lia-text-secondary hover:text-lia-text-secondary dark:hover:text-lia-text-tertiary transition-colors motion-reduce:transition-none rounded-full"
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   title="Anexar arquivo para análise"
@@ -181,7 +181,7 @@ export function ExpandedChatInput({
  "w-8 h-8 rounded-full flex items-center justify-center transition-[width,height] duration-200 ml-1",
                   inputValue.trim() && !isLoading && !isTypingEffect
                     ? "bg-chat-cyan text-white hover:opacity-90"
-                    : "bg-lia-interactive-active lia-text-secondary cursor-not-allowed"
+                    : "bg-lia-interactive-active text-lia-text-secondary cursor-not-allowed"
                 )}
                 type="button"
               >
@@ -335,8 +335,8 @@ export function ExpandedChatInput({
               />
               <div className="flex items-center justify-between mt-2">
                 <div className="flex items-center gap-1">
-                  <Paperclip className="w-3 h-3 lia-text-secondary" />
-                  <span className="text-micro lia-text-secondary">PDF, Word, TXT</span>
+                  <Paperclip className="w-3 h-3 text-lia-text-secondary" />
+                  <span className="text-micro text-lia-text-secondary">PDF, Word, TXT</span>
                 </div>
                 <Button
                   size="sm"
@@ -419,7 +419,7 @@ export function ExpandedChatInput({
                   Copie uma vaga já criada e faça ajustes
                 </p>
                 <div className="relative">
-                  <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 lia-text-secondary" />
+                  <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-lia-text-secondary" />
                   <input
                     type="text"
                     placeholder="Buscar vaga por título ou ID..."

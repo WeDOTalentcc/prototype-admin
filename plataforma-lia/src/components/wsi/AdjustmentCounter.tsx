@@ -43,7 +43,7 @@ export function AdjustmentCounter({
         </p>
       )}
       {isAtLimit && (
-        <p className="text-micro lia-text-secondary">
+        <p className="text-micro text-lia-text-secondary">
           Você atingiu o limite de ajustes. Para recomeçar, gere novas perguntas.
         </p>
       )}

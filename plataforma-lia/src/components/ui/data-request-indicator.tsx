@@ -184,7 +184,7 @@ export const DataRequestIndicator = React.memo(function DataRequestIndicator({
                   </div>
                 ))}
                 {allFields.length === 0 && (
-                  <span className="text-xs lia-text-secondary">Nenhum campo solicitado</span>
+                  <span className="text-xs text-lia-text-secondary">Nenhum campo solicitado</span>
                 )}
               </div>
             </div>

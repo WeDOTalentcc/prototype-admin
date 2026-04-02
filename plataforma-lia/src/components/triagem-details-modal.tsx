@@ -269,7 +269,7 @@ export function TriagemDetailsModal({
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-lia-overlay" role="status" aria-live="polite" aria-label="Carregando...">
         <div className="w-full max-w-3xl p-8 flex flex-col items-center gap-3 rounded-md bg-lia-bg-primary"  role="status" aria-live="polite" aria-label="Carregando...">
           <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none text-wedo-cyan" />
-          <p className="text-sm lia-text-secondary">Carregando dados da triagem...</p>
+          <p className="text-sm text-lia-text-secondary">Carregando dados da triagem...</p>
         </div>
       </div>
     )
@@ -279,8 +279,8 @@ export function TriagemDetailsModal({
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-lia-overlay">
         <div className="w-full max-w-3xl p-8 flex flex-col items-center gap-3 rounded-md bg-lia-bg-primary" >
-          <AlertCircle className="w-8 h-8 lia-text-secondary" />
-          <p className="text-sm lia-text-secondary">{error || 'Dados não disponíveis.'}</p>
+          <AlertCircle className="w-8 h-8 text-lia-text-secondary" />
+          <p className="text-sm text-lia-text-secondary">{error || 'Dados não disponíveis.'}</p>
           <button onClick={onClose} className="mt-2 px-4 py-2 text-sm rounded-md bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover">Fechar</button>
         </div>
       </div>
@@ -304,7 +304,7 @@ export function TriagemDetailsModal({
               <h2 className="text-base-ui font-semibold text-lia-text-primary">
                 Detalhes da Triagem WSI - {candidate.name}
               </h2>
-              <p className="text-xs lia-text-secondary">
+              <p className="text-xs text-lia-text-secondary">
                 {candidate.role || candidate.current_title} {candidate.location ? `• ${candidate.location}` : ''}
               </p>
             </div>
@@ -355,7 +355,7 @@ export function TriagemDetailsModal({
               <Download className="w-3 h-3" />
               Exportar
             </button>
-            <button onClick={onClose} className="h-7 w-7 p-0 flex items-center justify-center transition-colors motion-reduce:transition-none hover:bg-lia-interactive-hover rounded-full lia-text-secondary">
+            <button onClick={onClose} className="h-7 w-7 p-0 flex items-center justify-center transition-colors motion-reduce:transition-none hover:bg-lia-interactive-hover rounded-full text-lia-text-secondary">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -390,7 +390,7 @@ export function TriagemDetailsModal({
                     <MessageSquare className="w-4 h-4 text-lia-text-secondary" />
                     Respostas por Competência ({responses.length})
                   </h3>
-                  {expandedSections.has('responses') ? <ChevronUp className="w-4 h-4 lia-text-secondary" /> : <ChevronDown className="w-4 h-4 lia-text-secondary" />}
+                  {expandedSections.has('responses') ? <ChevronUp className="w-4 h-4 text-lia-text-secondary" /> : <ChevronDown className="w-4 h-4 text-lia-text-secondary" />}
                 </div>
                 {expandedSections.has('responses') && (() => {
                   const f11Analyses = f11Report?.response_analyses || []
@@ -424,7 +424,7 @@ export function TriagemDetailsModal({
                           >
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-sm font-medium text-lia-text-primary">{resp.competency}</span>
-                              <span className="text-micro bg-lia-bg-tertiary lia-text-secondary px-2 py-0.5 rounded-full">{getFrameworkLabel(resp.question?.framework || f11.framework || '')}</span>
+                              <span className="text-micro bg-lia-bg-tertiary text-lia-text-secondary px-2 py-0.5 rounded-full">{getFrameworkLabel(resp.question?.framework || f11.framework || '')}</span>
                               {isCritical && (
                                 <span className="flex items-center gap-0.5 text-micro font-bold text-status-error bg-status-error/10 border border-status-error/30 px-1.5 py-0.5 rounded-full">
                                   <ShieldAlert className="w-2.5 h-2.5" /> Crítica
@@ -435,7 +435,7 @@ export function TriagemDetailsModal({
                               <span className={`text-sm font-bold ${getScoreColor3Tier(finalScore)}`}>
                                 {finalScore.toFixed(1)}/5.0
                               </span>
-                              {isOpen ? <ChevronUp className="w-4 h-4 lia-text-secondary" /> : <ChevronDown className="w-4 h-4 lia-text-secondary" />}
+                              {isOpen ? <ChevronUp className="w-4 h-4 text-lia-text-secondary" /> : <ChevronDown className="w-4 h-4 text-lia-text-secondary" />}
                             </div>
                           </button>
 
@@ -443,17 +443,17 @@ export function TriagemDetailsModal({
                             <div className="px-4 pb-4 space-y-4 bg-lia-bg-secondary/50">
                               <div className="space-y-2">
                                 <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-lg p-3">
-                                  <p className="text-micro lia-text-secondary uppercase tracking-wide mb-1">Pergunta</p>
+                                  <p className="text-micro text-lia-text-secondary uppercase tracking-wide mb-1">Pergunta</p>
                                   <p className="text-xs text-lia-text-secondary leading-relaxed">{resp.question?.text || f11.question_text}</p>
                                 </div>
                                 <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-lg p-3">
-                                  <p className="text-micro lia-text-secondary uppercase tracking-wide mb-1" aria-live="polite" aria-atomic="true">Resposta do Candidato</p>
+                                  <p className="text-micro text-lia-text-secondary uppercase tracking-wide mb-1" aria-live="polite" aria-atomic="true">Resposta do Candidato</p>
                                   <p className="text-xs text-lia-text-primary leading-relaxed">{resp.response_text}</p>
                                 </div>
                               </div>
 
                               <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-lg p-3">
-                                <p className="text-micro lia-text-secondary uppercase tracking-wide mb-2">Qualidade da resposta (STAR)</p>
+                                <p className="text-micro text-lia-text-secondary uppercase tracking-wide mb-2">Qualidade da resposta (STAR)</p>
                                 <div className="flex items-center gap-2 flex-wrap">
                                   {starComponents.map(({ key, label, desc }) => {
                                     const present = starData[key]
@@ -464,12 +464,12 @@ export function TriagemDetailsModal({
                                         className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border ${
  present
                                             ? "bg-status-success/10 border-status-success/30 text-status-success"
-                                            : "bg-lia-bg-tertiary border-lia-border-subtle lia-text-secondary"
+                                            : "bg-lia-bg-tertiary border-lia-border-subtle text-lia-text-secondary"
                                         }`}
                                       >
                                         {present
                                           ? <CheckCircle className="w-3 h-3" />
-                                          : <span className="w-3 h-3 flex items-center justify-center lia-text-muted font-bold text-micro">–</span>
+                                          : <span className="w-3 h-3 flex items-center justify-center text-lia-text-tertiary font-bold text-micro">–</span>
                                         }
                                         <span>{label}</span>
                                       </div>
@@ -491,7 +491,7 @@ export function TriagemDetailsModal({
                                   { label: "Dreyfus", value: dreyfusLabel(demonstrated_dreyfus), sub: `Nível ${demonstrated_dreyfus}` },
                                 ].map((s) => (
                                   <div key={s.label} className="bg-lia-bg-primary border border-lia-border-subtle rounded-lg p-2 text-center">
-                                    <p className="text-micro lia-text-secondary mb-1">{s.label}</p>
+                                    <p className="text-micro text-lia-text-secondary mb-1">{s.label}</p>
                                     <p className="text-sm font-bold text-lia-text-primary">{s.value}</p>
                                   </div>
                                 ))}
@@ -504,11 +504,11 @@ export function TriagemDetailsModal({
                                 </div>
                                 <div className="flex items-center gap-4 text-xs">
                                   <div className="text-right">
-                                    <p className="text-micro lia-text-secondary">Bloom</p>
+                                    <p className="text-micro text-lia-text-secondary">Bloom</p>
                                     <p className={`font-semibold ${gap.color}`}>{bloomLabel(bloomExpected)}</p>
                                   </div>
                                   <div className="text-right">
-                                    <p className="text-micro lia-text-secondary">Dreyfus</p>
+                                    <p className="text-micro text-lia-text-secondary">Dreyfus</p>
                                     <p className={`font-semibold ${gap.color}`}>{dreyfusLabel(dreyfusExpected)}</p>
                                   </div>
                                   <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${gap.bg} ${gap.color} border ${gap.border}`}>
@@ -519,7 +519,7 @@ export function TriagemDetailsModal({
 
                               {resp.evidences && resp.evidences.length > 0 && (
                                 <div>
-                                  <p className="text-micro lia-text-secondary uppercase tracking-wide mb-2">Evidências</p>
+                                  <p className="text-micro text-lia-text-secondary uppercase tracking-wide mb-2">Evidências</p>
                                   <div className="flex flex-wrap gap-2">
                                     {resp.evidences.map((ev, i) => (
                                       <span key={`ev-${i}`} className="flex items-center gap-1 text-xs bg-lia-bg-primary border border-lia-border-subtle text-lia-text-secondary px-2 py-1 rounded-full">
@@ -527,7 +527,7 @@ export function TriagemDetailsModal({
                                       </span>
                                     ))}
                                   </div>
-                                  <p className="text-xs lia-text-secondary italic mt-2">{resp.justification || f11.justification}</p>
+                                  <p className="text-xs text-lia-text-secondary italic mt-2">{resp.justification || f11.justification}</p>
                                 </div>
                               )}
                             </div>
@@ -610,10 +610,10 @@ export function TriagemDetailsModal({
                       )}
                       {(report.technical_analysis as any).evidencias && (
                         <div>
-                          <p className="text-micro font-medium lia-text-secondary mb-1">Evidências:</p>
+                          <p className="text-micro font-medium text-lia-text-secondary mb-1">Evidências:</p>
                           {(report.technical_analysis as any).evidencias.map((e: string, i: number) => (
                             <div key={`ev-${i}`} className="flex items-start gap-1.5 mb-1">
-                              <Zap className="w-3 h-3 mt-0.5 flex-shrink-0 lia-text-secondary" />
+                              <Zap className="w-3 h-3 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
                               <p className="text-xs text-lia-text-secondary">{e}</p>
                             </div>
                           ))}
@@ -655,7 +655,7 @@ export function TriagemDetailsModal({
                                   <span className="text-xs font-bold">{val.score?.toFixed(1)}/5.0</span>
                                 </div>
                                 <Progress value={((val.score || 0) / 5) * 100} className="h-1.5 mb-1" />
-                                <p className="text-micro lia-text-secondary">{val.descricao}</p>
+                                <p className="text-micro text-lia-text-secondary">{val.descricao}</p>
                               </div>
                             ))}
                           </div>
@@ -670,11 +670,11 @@ export function TriagemDetailsModal({
                             <User className="w-4 h-4 text-lia-text-secondary" />
                             Perfil de Personalidade
                           </h3>
-                          <p className="text-micro lia-text-secondary mt-0.5">
+                          <p className="text-micro text-lia-text-secondary mt-0.5">
                             Dimensões <span className="text-wedo-purple font-medium">críticas</span> determinam fit de performance e cultura.
                           </p>
                         </div>
-                        <div className="flex items-center gap-4 text-micro lia-text-secondary">
+                        <div className="flex items-center gap-4 text-micro text-lia-text-secondary">
                           <span className="flex items-center gap-1"><span className="w-3 h-1.5 bg-lia-btn-primary-bg rounded-sm inline-block" /> Candidato</span>
                           <span className="flex items-center gap-1"><span className="w-3 h-1.5 bg-lia-interactive-active rounded-sm inline-block border border-lia-border-default" /> Esperado</span>
                         </div>
@@ -700,18 +700,18 @@ export function TriagemDetailsModal({
                                   {status === "ok"    && <span className="text-micro font-bold text-status-success bg-status-success/10 px-1.5 py-0.5 rounded-full border border-status-success/30">✓ Alinhado</span>}
                                   {hint && (
                                     <button className="ml-auto" onClick={() => setBigFiveHint(showHint ? null : key)}>
-                                      <Info className="w-3 h-3 lia-text-muted hover:lia-text-secondary transition-colors motion-reduce:transition-none" />
+                                      <Info className="w-3 h-3 text-lia-text-tertiary hover:text-lia-text-secondary transition-colors motion-reduce:transition-none" />
                                     </button>
                                   )}
                                 </div>
                                 {showHint && hint && (
-                                  <p className="text-xs lia-text-secondary bg-lia-bg-secondary border border-lia-border-subtle rounded-md px-2.5 py-1.5">{hint}</p>
+                                  <p className="text-xs text-lia-text-secondary bg-lia-bg-secondary border border-lia-border-subtle rounded-md px-2.5 py-1.5">{hint}</p>
                                 )}
                                 <div className="relative h-3">
                                   <div className="absolute inset-y-0 left-0 h-1.5 top-0.5 rounded-full bg-lia-interactive-active border border-lia-border-default" style={{width: `${vagaEsperado}%`}} />
                                   <div className={`absolute inset-y-0 left-0 h-1.5 top-0.5 rounded-full ${status === "gap" ? "bg-status-warning" : status === "acima" ? "bg-wedo-cyan" : "bg-lia-btn-primary-bg"}`} style={{width: `${candidato}%`}} />
                                 </div>
-                                <div className="flex items-center justify-between text-micro lia-text-secondary">
+                                <div className="flex items-center justify-between text-micro text-lia-text-secondary">
                                   <span>Candidato: <span className="font-semibold text-lia-text-secondary" aria-live="polite" aria-atomic="true">{candidato}%</span></span>
                                   <span>Vaga espera: <span className="font-semibold text-lia-text-secondary" aria-live="polite" aria-atomic="true">{vagaEsperado}%</span></span>
                                 </div>
@@ -720,7 +720,7 @@ export function TriagemDetailsModal({
                             )
                           })}
                         </div>
-                        <p className="text-micro lia-text-secondary pt-1 border-t border-lia-border-subtle">
+                        <p className="text-micro text-lia-text-secondary pt-1 border-t border-lia-border-subtle">
                           Clique em <Info className="w-2.5 h-2.5 inline" /> para entender o que cada dimensão mede.
                         </p>
                       </div>
@@ -742,7 +742,7 @@ export function TriagemDetailsModal({
                       {(report.recommendation as any).proximos_passos && (
                         <div>
         
-                          <p className="text-micro font-medium lia-text-secondary mb-1">Próximos Passos:</p>
+                          <p className="text-micro font-medium text-lia-text-secondary mb-1">Próximos Passos:</p>
                           {(report.recommendation as any).proximos_passos.map((step: string, i: number) => (
                             <div key={`step-${i}`} className="flex items-center gap-1.5 mb-1">
                               <span className="w-4 h-4 rounded-full bg-lia-interactive-active flex items-center justify-center text-micro font-bold text-lia-text-secondary">{i + 1}</span>
@@ -761,9 +761,9 @@ export function TriagemDetailsModal({
                 <div className="p-3 border border-lia-border-subtle space-y-3 bg-lia-bg-secondary rounded-lg">
                   <div>
                     <h3 className="text-xs font-semibold flex items-center gap-2 text-lia-text-primary">
-                      <Mic2 className="w-4 h-4 lia-text-secondary" /> Perguntas sugeridas para a entrevista
+                      <Mic2 className="w-4 h-4 text-lia-text-secondary" /> Perguntas sugeridas para a entrevista
                     </h3>
-                    <p className="text-micro lia-text-secondary mt-0.5">
+                    <p className="text-micro text-lia-text-secondary mt-0.5">
                       Geradas com base nos gaps identificados — use na entrevista presencial
                     </p>
                   </div>
@@ -773,7 +773,7 @@ export function TriagemDetailsModal({
                       <div key={`cbi-${i}`} className={`border rounded-lg p-4 space-y-2 ${sev.bg} ${sev.border}`}>
                         <p className="text-xs text-lia-text-primary leading-relaxed">"{q.question || q.texto}"</p>
                         <div className="flex items-center gap-2">
-                          <span className="text-micro lia-text-secondary">Foco:</span>
+                          <span className="text-micro text-lia-text-secondary">Foco:</span>
                           <span className="text-micro text-lia-text-secondary font-medium bg-lia-bg-primary border border-lia-border-subtle px-2 py-0.5 rounded-full">{q.focus || q.foco || "Competência comportamental"}</span>
                           <span className={`text-micro font-bold ${sev.color}`}>Gap {sev.label}</span>
                         </div>
@@ -786,8 +786,8 @@ export function TriagemDetailsModal({
               {isPendingDecision && !!details && (
                 <div className="p-3 border border-lia-border-subtle space-y-3 bg-lia-bg-secondary rounded-lg">
                   <h3 className="text-xs font-semibold flex items-center gap-2 text-lia-text-primary"><BookOpen className="w-4 h-4 text-wedo-cyan-dark" /> Feedback para o Candidato</h3>
-                  <p className="text-xs lia-text-secondary italic" aria-live="polite" aria-atomic="true">Aguardando decisão do recrutador para liberar feedback ao candidato.</p>
-                  <div className="bg-lia-bg-secondary border border-lia-border-subtle rounded-lg p-3"><p className="text-micro lia-text-secondary font-medium mb-0.5">Prévia do feedback (rascunho)</p><p className="text-xs text-lia-text-secondary">Agradecemos sua participação na triagem. Suas respostas foram analisadas e entraremos em contato em breve com o próximo passo do processo.</p></div>
+                  <p className="text-xs text-lia-text-secondary italic" aria-live="polite" aria-atomic="true">Aguardando decisão do recrutador para liberar feedback ao candidato.</p>
+                  <div className="bg-lia-bg-secondary border border-lia-border-subtle rounded-lg p-3"><p className="text-micro text-lia-text-secondary font-medium mb-0.5">Prévia do feedback (rascunho)</p><p className="text-xs text-lia-text-secondary">Agradecemos sua participação na triagem. Suas respostas foram analisadas e entraremos em contato em breve com o próximo passo do processo.</p></div>
                 </div>
               )}
 
@@ -815,7 +815,7 @@ export function TriagemDetailsModal({
                   <button
                     onClick={handleSendFeedback}
                     disabled={sendingFeedback || feedbackAlreadySent}
-                    className={cn("flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-md transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed", feedbackAlreadySent ? "bg-lia-interactive-active lia-text-secondary" : "bg-lia-btn-primary-bg text-lia-btn-primary-text")}
+                    className={cn("flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-md transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed", feedbackAlreadySent ? "bg-lia-interactive-active text-lia-text-secondary" : "bg-lia-btn-primary-bg text-lia-btn-primary-text")}
                   >
                     {sendingFeedback ? (
                       <><Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" /> Enviando...</>
@@ -854,7 +854,7 @@ export function TriagemDetailsModal({
                         setCopiedFeedback(true)
                         setTimeout(() => setCopiedFeedback(false), 2000)
                       }}
-                      className="flex items-center gap-1 px-2 py-1 text-micro font-medium lia-text-secondary hover:text-lia-text-secondary border border-lia-border-subtle rounded-md hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
+                      className="flex items-center gap-1 px-2 py-1 text-micro font-medium text-lia-text-secondary hover:text-lia-text-secondary border border-lia-border-subtle rounded-md hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
                      
                     >
                       {copiedFeedback ? <CheckCircle className="w-3 h-3 text-status-success" /> : <Copy className="w-3 h-3" />}
@@ -877,7 +877,7 @@ export function TriagemDetailsModal({
 
                   {feedback?.technical_strengths && feedback.technical_strengths.length > 0 && (
                     <div className="mb-2">
-                      <p className="text-micro font-medium lia-text-secondary mb-1">Pontos Fortes Técnicos:</p>
+                      <p className="text-micro font-medium text-lia-text-secondary mb-1">Pontos Fortes Técnicos:</p>
                       {feedback.technical_strengths.map((s: string, i: number) => (
                         <div key={`ts-${i}`} className="flex items-start gap-1.5 mb-0.5">
                           <CheckCircle className="w-3 h-3 mt-0.5 flex-shrink-0 text-status-success" />
@@ -889,10 +889,10 @@ export function TriagemDetailsModal({
 
                   {feedback?.behavioral_strengths && feedback.behavioral_strengths.length > 0 && (
                     <div className="mb-2">
-                      <p className="text-micro font-medium lia-text-secondary mb-1">Pontos Fortes Comportamentais:</p>
+                      <p className="text-micro font-medium text-lia-text-secondary mb-1">Pontos Fortes Comportamentais:</p>
                       {feedback.behavioral_strengths.map((s: string, i: number) => (
                         <div key={`bs-${i}`} className="flex items-start gap-1.5 mb-0.5">
-                          <Star className="w-3 h-3 mt-0.5 flex-shrink-0 lia-text-secondary" />
+                          <Star className="w-3 h-3 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
                           <p className="text-xs text-lia-text-secondary">{s}</p>
                         </div>
                       ))}
@@ -901,7 +901,7 @@ export function TriagemDetailsModal({
 
                   {feedback?.development_opportunities && feedback.development_opportunities.length > 0 && (
                     <div className="mb-2">
-                      <p className="text-micro font-medium lia-text-secondary mb-1">Oportunidades de Desenvolvimento:</p>
+                      <p className="text-micro font-medium text-lia-text-secondary mb-1">Oportunidades de Desenvolvimento:</p>
                       {feedback.development_opportunities.map((d: string, i: number) => (
                         <div key={`dev-${i}`} className="flex items-start gap-1.5 mb-0.5">
                           <BookOpen className="w-3 h-3 mt-0.5 flex-shrink-0 text-wedo-cyan-dark" />
@@ -920,7 +920,7 @@ export function TriagemDetailsModal({
 
                   {feedback?.next_steps && (
                     <div className="mt-2 p-2 rounded-lg bg-lia-bg-tertiary">
-                      <p className="text-micro font-medium lia-text-secondary mb-0.5">Próximos Passos:</p>
+                      <p className="text-micro font-medium text-lia-text-secondary mb-0.5">Próximos Passos:</p>
                       <p className="text-xs text-lia-text-secondary">{feedback.next_steps}</p>
                     </div>
                   )}
@@ -941,7 +941,7 @@ export function TriagemDetailsModal({
 
         <div className="flex-shrink-0 px-4 py-3 flex items-center justify-between border-t border-lia-border-subtle bg-lia-bg-secondary">
           <div className="flex items-center gap-2">
-            <span className="text-micro lia-text-secondary">Decisão do Recrutador</span>
+            <span className="text-micro text-lia-text-secondary">Decisão do Recrutador</span>
           </div>
           <div className="flex items-center gap-2">
             {confirmReject ? (

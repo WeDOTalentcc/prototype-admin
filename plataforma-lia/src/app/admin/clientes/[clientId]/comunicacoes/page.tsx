@@ -92,7 +92,7 @@ const channelFilters = [
   { id: 'bell', label: 'Bell', icon: Bell, color: 'bg-status-warning', hoverColor: 'hover:bg-status-warning' },
   { id: 'teams', label: 'Teams', icon: Grid3X3, color: 'bg-wedo-purple', hoverColor: 'hover:bg-wedo-purple' },
   { id: 'chat_lia', label: 'Chat LIA', icon: Bot, color: 'bg-lia-btn-primary-bg dark:bg-lia-bg-secondary', hoverColor: 'hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active' },
-  { id: 'report', label: 'Relatórios', icon: BarChart3, color: 'bg-slate-600', hoverColor: 'hover:bg-slate-700' },
+  { id: 'report', label: 'Relatórios', icon: BarChart3, color: 'bg-lia-bg-inverse', hoverColor: 'hover:bg-lia-bg-inverse' },
   { id: 'briefing', label: 'Briefings', icon: Sun, color: 'bg-status-warning', hoverColor: 'hover:bg-status-warning/10' },
   { id: 'parecer', label: 'Pareceres', icon: ClipboardCheck, color: 'bg-wedo-purple', hoverColor: 'hover:bg-wedo-purple' }
 ]

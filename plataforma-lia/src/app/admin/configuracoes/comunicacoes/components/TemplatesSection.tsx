@@ -114,7 +114,7 @@ export function TemplatesSection({
             variant={(templateChannelFilter === 'report' ? 'default' : 'outline') as any}
             size="sm"
             onClick={() => setTemplateChannelFilter('report')}
-            className={templateChannelFilter === 'report' ? 'bg-slate-600 hover:bg-slate-700 text-white' : ''}
+            className={templateChannelFilter === 'report' ? 'bg-lia-bg-inverse hover:bg-lia-bg-inverse text-white' : ''}
           >
             <BarChart3 className="w-4 h-4 mr-2" />
             Relatórios

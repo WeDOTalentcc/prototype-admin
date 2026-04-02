@@ -175,7 +175,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 lia-text-secondary" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-lia-text-secondary" />
           <Input
             placeholder="Buscar jobs..."
             value={searchTerm}
@@ -206,7 +206,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <div className="w-12 h-12 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center mb-4">
-              <Calendar className="h-6 w-6 lia-text-secondary" />
+              <Calendar className="h-6 w-6 text-lia-text-secondary" />
             </div>
             <h3 className="text-sm font-medium text-lia-text-primary mb-1">
               Nenhum job encontrado
@@ -266,7 +266,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
                 <CardContent className="space-y-3">
                   {job.status === 'running' && job.progress !== undefined && (
                     <div className="space-y-1">
-                      <div className="flex justify-between text-micro lia-text-secondary">
+                      <div className="flex justify-between text-micro text-lia-text-secondary">
                         <span>Progresso</span>
                         <span>{Math.round(job.progress)}%</span>
                       </div>
@@ -287,7 +287,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
                   )}
 
                   <div className="flex items-center justify-between pt-2 border-t border-lia-border-subtle">
-                    <span className="text-micro lia-text-secondary">
+                    <span className="text-micro text-lia-text-secondary">
                       {formatDate(job.created_at)}
                     </span>
                     <div className="flex items-center gap-1">

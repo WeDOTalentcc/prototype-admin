@@ -446,9 +446,9 @@ export function FinalReviewPanel({
                   </span>
                 </div>
                 {expandedSections.toggled_off ? (
-                  <ChevronDown className="h-4 w-4 lia-text-secondary" />
+                  <ChevronDown className="h-4 w-4 text-lia-text-secondary" />
                 ) : (
-                  <ChevronRight className="h-4 w-4 lia-text-secondary" />
+                  <ChevronRight className="h-4 w-4 text-lia-text-secondary" />
                 )}
               </CollapsibleTrigger>
               <CollapsibleContent className="mt-2">

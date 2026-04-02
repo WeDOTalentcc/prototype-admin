@@ -260,20 +260,20 @@ export function CompetenciesStage() {
             onClick={() => toggleSkillRequired(skill.id)}
             className={cn(
  "px-1.5 py-0.5 text-micro rounded-full transition-[width,height]",
-              skill.required ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" : "bg-lia-interactive-active lia-text-secondary"
+              skill.required ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" : "bg-lia-interactive-active text-lia-text-secondary"
             )}
           >
             {skill.required ? 'Obrig.' : 'Desej.'}
           </button>
           <button 
             onClick={() => removeTechnicalSkill(skill.id)}
-            className="p-0.5 lia-text-secondary hover:text-status-error transition-colors motion-reduce:transition-none"
+            className="p-0.5 text-lia-text-secondary hover:text-status-error transition-colors motion-reduce:transition-none"
           >
             <Trash2 className="w-3 h-3" />
           </button>
         </div>
         <div className="flex items-center gap-1 ml-0.5">
-          <span className="text-micro lia-text-secondary mr-1">Peso:</span>
+          <span className="text-micro text-lia-text-secondary mr-1">Peso:</span>
           {[1, 2, 3, 4, 5].map((w) => (
             <button key={w} onClick={() => updateSkillWeight(skill.id, w)} className="transition-colors motion-reduce:transition-none">
               <Star className={cn(
@@ -328,9 +328,9 @@ export function CompetenciesStage() {
       </div>
       {comp.enabled && (
         <>
-          <p className="text-micro lia-text-secondary ml-6">{comp.justification}</p>
+          <p className="text-micro text-lia-text-secondary ml-6">{comp.justification}</p>
           <div className="flex items-center gap-1 ml-6">
-            <span className="text-micro lia-text-secondary mr-1">Peso:</span>
+            <span className="text-micro text-lia-text-secondary mr-1">Peso:</span>
             {[1, 2, 3, 4, 5].map((w) => (
               <button key={w} onClick={() => updateBehavioralWeight(comp.id, w)} className="transition-colors motion-reduce:transition-none">
                 <Star className={cn(
@@ -353,7 +353,7 @@ export function CompetenciesStage() {
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
               <Code className="w-3.5 h-3.5 text-lia-text-secondary" />
-              <span className="text-micro lia-text-secondary">Técnicas:</span>
+              <span className="text-micro text-lia-text-secondary">Técnicas:</span>
               <span className={`text-xs font-medium ${technicalSkills.length >= 3 ? 'text-status-success' : 'text-status-warning'}`}>
                 {technicalSkills.length}/3
               </span>
@@ -362,7 +362,7 @@ export function CompetenciesStage() {
             <div className="w-px h-4 bg-lia-interactive-active" />
             <div className="flex items-center gap-1.5">
               <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-              <span className="text-micro lia-text-secondary">Comportamentais:</span>
+              <span className="text-micro text-lia-text-secondary">Comportamentais:</span>
               <span className={`text-xs font-medium ${enabledBehavioralCount >= 3 ? 'text-status-success' : 'text-status-warning'}`}>
                 {enabledBehavioralCount}/3
               </span>
@@ -378,7 +378,7 @@ export function CompetenciesStage() {
           onClick={() => setCompetenciesTab('technical')}
           className={cn(
  "flex-1 py-2 px-3 rounded-md text-xs font-medium transition-colors flex items-center justify-center gap-1.5",
-            competenciesTab === 'technical' ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" : "border border-lia-border-subtle lia-text-secondary"
+            competenciesTab === 'technical' ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" : "border border-lia-border-subtle text-lia-text-secondary"
           )}
         >
           <Code className="w-3.5 h-3.5" />
@@ -388,7 +388,7 @@ export function CompetenciesStage() {
           onClick={() => setCompetenciesTab('behavioral')}
           className={cn(
  "flex-1 py-2 px-3 rounded-md text-xs font-medium transition-colors flex items-center justify-center gap-1.5",
-            competenciesTab === 'behavioral' ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" : "border border-lia-border-subtle lia-text-secondary"
+            competenciesTab === 'behavioral' ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" : "border border-lia-border-subtle text-lia-text-secondary"
           )}
         >
           <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -434,7 +434,7 @@ export function CompetenciesStage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => setShowAddSkillModal(false)}
-                  className="flex-1 py-1.5 px-3 rounded-md border border-lia-border-subtle text-xs lia-text-secondary"
+                  className="flex-1 py-1.5 px-3 rounded-md border border-lia-border-subtle text-xs text-lia-text-secondary"
                 >
                   Cancelar
                 </button>

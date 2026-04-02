@@ -96,7 +96,7 @@ export function WSIQuestionsStage({
     >
       <button
         onClick={() => onDeleteQuestion(q.id)}
-        className="absolute top-2 right-2 lia-text-secondary hover:text-status-error transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-lia-border-default rounded-md"
+        className="absolute top-2 right-2 text-lia-text-secondary hover:text-status-error transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-lia-border-default rounded-md"
         title="Remover pergunta"
         aria-label="Remover pergunta de triagem"
       >
@@ -145,7 +145,7 @@ export function WSIQuestionsStage({
 
           {q.selected && (
             <div className="mt-3 pt-3 border-t border-lia-border-subtle">
-              <label className="text-xs font-semibold lia-text-secondary uppercase tracking-wide">
+              <label className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide">
                 Resposta esperada:
               </label>
               {q.type === 'yes-no' ? (
@@ -156,7 +156,7 @@ export function WSIQuestionsStage({
  "flex-1 py-1.5 text-xs rounded-md transition-colors",
                       q.expectedAnswer === true
                         ? "bg-status-success text-white"
-                        : "bg-lia-bg-secondary lia-text-secondary hover:bg-lia-interactive-active"
+                        : "bg-lia-bg-secondary text-lia-text-secondary hover:bg-lia-interactive-active"
                     )}
                   >
                     Sim
@@ -167,7 +167,7 @@ export function WSIQuestionsStage({
  "flex-1 py-1.5 text-xs rounded-md transition-colors",
                       q.expectedAnswer === false
                         ? "bg-status-error text-white"
-                        : "bg-lia-bg-secondary lia-text-secondary hover:bg-lia-interactive-active"
+                        : "bg-lia-bg-secondary text-lia-text-secondary hover:bg-lia-interactive-active"
                     )}
                   >
                     Não
@@ -191,7 +191,7 @@ export function WSIQuestionsStage({
  "px-2 py-1 text-xs rounded-md transition-colors",
                         q.correctOptionIndex === idx
                           ? "bg-status-success text-white"
-                          : "bg-lia-bg-secondary lia-text-secondary hover:bg-lia-interactive-active"
+                          : "bg-lia-bg-secondary text-lia-text-secondary hover:bg-lia-interactive-active"
                       )}
                     >
                       {opt}
@@ -219,7 +219,7 @@ export function WSIQuestionsStage({
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
           <Phone className="w-3.5 h-3.5 text-status-success" />
-          <span className={`${textStyles.label} lia-text-secondary uppercase tracking-wide`}>
+          <span className={`${textStyles.label} text-lia-text-secondary uppercase tracking-wide`}>
             Perguntas de Triagem WSI
           </span>
         </div>
@@ -230,7 +230,7 @@ export function WSIQuestionsStage({
           )}>
             {selectedCount}
           </span>
-          <span className="text-micro lia-text-secondary">/ 5 selecionadas</span>
+          <span className="text-micro text-lia-text-secondary">/ 5 selecionadas</span>
         </div>
       </div>
 
@@ -239,10 +239,10 @@ export function WSIQuestionsStage({
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Settings className="w-3.5 h-3.5 text-lia-text-secondary" />
-              <span className="text-xs font-semibold lia-text-secondary uppercase tracking-wide">
+              <span className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide">
                 Perguntas Padrão da Empresa
               </span>
-              <span className="text-micro lia-text-secondary">({companyDefaultQuestions.filter(q => q.enabled).length}/{companyDefaultQuestions.length} ativas)</span>
+              <span className="text-micro text-lia-text-secondary">({companyDefaultQuestions.filter(q => q.enabled).length}/{companyDefaultQuestions.length} ativas)</span>
             </div>
             <button
               onClick={() => onSetCompanyDefaultQuestions(companyDefaultQuestions.map(q => ({ ...q, enabled: false })))}
@@ -281,7 +281,7 @@ export function WSIQuestionsStage({
               </div>
             ))}
           </div>
-          <p className="text-micro lia-text-secondary mt-2 flex items-center gap-1">
+          <p className="text-micro text-lia-text-secondary mt-2 flex items-center gap-1">
             <Settings className="w-3 h-3" />
             Configure perguntas padrão em Configurações &gt; Triagem
           </p>
@@ -310,10 +310,10 @@ export function WSIQuestionsStage({
             <div className="space-y-2">
               <div className="flex items-center gap-2 bg-lia-bg-secondary px-3 py-1.5 rounded-md">
                 <Code className="w-3.5 h-3.5 text-lia-text-secondary" />
-                <span className="text-xs font-semibold lia-text-secondary uppercase tracking-wide">
+                <span className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide">
                   Validação Técnica
                 </span>
-                <span className="text-micro lia-text-secondary">({technicalQuestions.length})</span>
+                <span className="text-micro text-lia-text-secondary">({technicalQuestions.length})</span>
               </div>
               {technicalQuestions.map(renderQuestionCard)}
             </div>
@@ -323,10 +323,10 @@ export function WSIQuestionsStage({
             <div className="space-y-2">
               <div className="flex items-center gap-2 bg-lia-bg-secondary px-3 py-1.5 rounded-md">
                 <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-                <span className="text-xs font-semibold lia-text-secondary uppercase tracking-wide">
+                <span className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide">
                   Fit Comportamental
                 </span>
-                <span className="text-micro lia-text-secondary">({behavioralQuestions.length})</span>
+                <span className="text-micro text-lia-text-secondary">({behavioralQuestions.length})</span>
               </div>
               {behavioralQuestions.map(renderQuestionCard)}
             </div>
@@ -337,7 +337,7 @@ export function WSIQuestionsStage({
       {isGeneratingWSI && (
         <div className="flex items-center justify-center py-4 bg-lia-bg-secondary rounded-md border border-lia-border-subtle" role="status" aria-live="polite" aria-label="Carregando...">
           <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
-          <span className="ml-2 text-xs lia-text-secondary">Gerando perguntas com metodologia WSI...</span>
+          <span className="ml-2 text-xs text-lia-text-secondary">Gerando perguntas com metodologia WSI...</span>
         </div>
       )}
 
@@ -363,7 +363,7 @@ export function WSIQuestionsStage({
       {showCustomQuestionForm ? (
         <div className="p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold lia-text-secondary uppercase tracking-wide">
+            <span className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide">
               Adicionar Pergunta Customizada
             </span>
             <button
@@ -373,7 +373,7 @@ export function WSIQuestionsStage({
                 onSetCustomQuestionType('open')
                 onSetCustomQuestionRequired(false)
               }}
-              className="lia-text-secondary hover:lia-text-secondary focus-visible:ring-2 focus-visible:ring-lia-border-default rounded-md"
+              className="lia-text-secondary hover:text-lia-text-secondary focus-visible:ring-2 focus-visible:ring-lia-border-default rounded-md"
               aria-label="Fechar formulário de pergunta customizada"
             >
               <X className="w-4 h-4" />
@@ -388,7 +388,7 @@ export function WSIQuestionsStage({
           />
           <div className="flex items-center gap-3">
             <div className="flex-1">
-              <label className="text-micro lia-text-secondary mb-1 block">Tipo de resposta:</label>
+              <label className="text-micro text-lia-text-secondary mb-1 block">Tipo de resposta:</label>
               <select
                 value={customQuestionType}
                 onChange={(e) => onSetCustomQuestionType(e.target.value as 'open' | 'yes-no' | 'numeric' | 'multiple-choice')}
@@ -412,7 +412,7 @@ export function WSIQuestionsStage({
               >
                 {customQuestionRequired && <Check className="w-2.5 h-2.5" />}
               </button>
-              <span className="text-micro lia-text-secondary">Eliminatória</span>
+              <span className="text-micro text-lia-text-secondary">Eliminatória</span>
             </div>
           </div>
           <button
@@ -422,7 +422,7 @@ export function WSIQuestionsStage({
  "w-full py-2 rounded-md text-xs font-medium transition-colors flex items-center justify-center gap-2",
               customQuestionText.trim()
                 ? "bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
-                : "bg-lia-interactive-active lia-text-secondary cursor-not-allowed"
+                : "bg-lia-interactive-active text-lia-text-secondary cursor-not-allowed"
             )}
           >
             <Plus className="w-3.5 h-3.5" /> Adicionar Pergunta
@@ -431,7 +431,7 @@ export function WSIQuestionsStage({
       ) : (
         <button
           onClick={() => onSetShowCustomQuestionForm(true)}
-          className="w-full py-2 border border-dashed border-lia-border-subtle rounded-md text-xs lia-text-secondary hover:border-lia-btn-primary-bg hover:text-lia-text-primary hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
+          className="w-full py-2 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg hover:text-lia-text-primary hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
           aria-label="Adicionar pergunta de triagem customizada"
         >
           <Plus className="w-3.5 h-3.5" /> Adicionar pergunta customizada
@@ -450,7 +450,7 @@ export function WSIQuestionsStage({
           ) : (
             <AlertCircle className="w-3.5 h-3.5 text-lia-text-secondary" />
           )}
-          <span className="text-micro lia-text-secondary">
+          <span className="text-micro text-lia-text-secondary">
             {selectedCount === 5
               ? "Triagem completa! Revise as respostas esperadas acima."
               : `Selecione mais ${5 - selectedCount} pergunta(s) para completar.`}

@@ -293,7 +293,7 @@ export function PromptSuggestionsPopover({
         <div className="max-h-[280px] overflow-y-auto p-2 space-y-1">
           {displaySuggestions.length === 0 ? (
             <div className="py-6 text-center">
-              <Lightbulb className="w-8 h-8 mx-auto mb-2 lia-text-muted" />
+              <Lightbulb className="w-8 h-8 mx-auto mb-2 text-lia-text-tertiary" />
               <p className="text-xs text-lia-text-primary">
                 Selecione candidatos ou uma vaga para ver sugestões contextuais
               </p>

@@ -151,7 +151,7 @@ export function LiaQueriesGuide({
             style={{backgroundColor: 'var(--lia-bg-tertiary)',
               border: '1px solid var(--lia-border-subtle)'}}
           >
-            <Search className="w-3.5 h-3.5 lia-text-secondary flex-shrink-0" />
+            <Search className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
             <input
               type="text"
               placeholder="Buscar consulta..."
@@ -167,7 +167,7 @@ export function LiaQueriesGuide({
                 className="p-0.5 rounded-full hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none"
                 aria-label="Limpar busca"
               >
-                <X className="w-3 h-3 lia-text-secondary" />
+                <X className="w-3 h-3 text-lia-text-secondary" />
               </button>
             )}
           </div>
@@ -181,7 +181,7 @@ export function LiaQueriesGuide({
  "px-2 py-1 rounded-full text-micro font-medium transition-[width,height] whitespace-nowrap",
               !activeCategory 
                 ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" 
-                : "bg-lia-bg-tertiary lia-text-secondary hover:bg-lia-interactive-active border border-lia-border-subtle"
+                : "bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active border border-lia-border-subtle"
             )}
            
           >
@@ -195,7 +195,7 @@ export function LiaQueriesGuide({
  "inline-flex items-center gap-1 px-2 py-1 rounded-full text-micro font-medium transition-[width,height] whitespace-nowrap",
                 activeCategory === key 
                   ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" 
-                  : "bg-lia-bg-tertiary lia-text-secondary hover:bg-lia-interactive-active border border-lia-border-subtle"
+                  : "bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active border border-lia-border-subtle"
               )}
              
             >
@@ -234,7 +234,7 @@ export function LiaQueriesGuide({
                   className="w-8 h-8 mx-auto mb-2 rounded-full flex items-center justify-center"
                   style={{backgroundColor: 'var(--lia-bg-secondary)'}}
                 >
-                  <Search className="w-3.5 h-3.5 lia-text-muted" />
+                  <Search className="w-3.5 h-3.5 text-lia-text-tertiary" />
                 </div>
                 <p
                   className="text-xs"

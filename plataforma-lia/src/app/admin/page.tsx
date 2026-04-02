@@ -254,7 +254,7 @@ export default function AdminDashboard() {
                   className="flex items-center justify-between p-3 rounded-md border border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-default hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none group"
                 >
                   <div>
-                    <p className="font-medium text-lia-text-primary dark:text-lia-text-primary group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors motion-reduce:transition-none">
+                    <p className="font-medium text-lia-text-primary dark:text-lia-text-primary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-primary transition-colors motion-reduce:transition-none">
                       {client.name}
                     </p>
                     <p className="text-xs text-lia-text-secondary">
@@ -265,7 +265,7 @@ export default function AdminDashboard() {
                     <span className={`text-xs px-2 py-0.5 rounded-full ${getPlanBadgeColor(client.plan)}`}>
                       {client.plan}
                     </span>
-                    <ExternalLink className="w-4 h-4 text-lia-text-tertiary group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors motion-reduce:transition-none" />
+                    <ExternalLink className="w-4 h-4 text-lia-text-tertiary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-primary transition-colors motion-reduce:transition-none" />
                   </div>
                 </Link>
               ))}
@@ -301,7 +301,7 @@ export default function AdminDashboard() {
                   className="flex items-center justify-between p-3 rounded-md border border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-default hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none group"
                 >
                   <div>
-                    <p className="font-medium text-lia-text-primary dark:text-lia-text-primary group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors motion-reduce:transition-none">
+                    <p className="font-medium text-lia-text-primary dark:text-lia-text-primary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-primary transition-colors motion-reduce:transition-none">
                       {client.name}
                     </p>
                     <p className="text-xs text-lia-text-secondary">
@@ -312,7 +312,7 @@ export default function AdminDashboard() {
                     <span className={`text-sm font-semibold ${getDaysRemainingColor(client.daysRemaining)}`}>
                       {client.daysRemaining} dias
                     </span>
-                    <ExternalLink className="w-4 h-4 text-lia-text-tertiary group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors motion-reduce:transition-none" />
+                    <ExternalLink className="w-4 h-4 text-lia-text-tertiary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-primary transition-colors motion-reduce:transition-none" />
                   </div>
                 </Link>
               ))}

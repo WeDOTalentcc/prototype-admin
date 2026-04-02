@@ -216,7 +216,7 @@ export function AgentExplainabilityPanel({
                         className={cn(
  "flex h-6 w-6 items-center justify-center rounded-full text-micro font-bold",
                           isLast
-                            ? "bg-wedo-cyan text-zinc-900"
+                            ? "bg-wedo-cyan text-lia-text-primary"
                             : "bg-lia-bg-tertiary text-lia-text-disabled"
                         )}
                       >

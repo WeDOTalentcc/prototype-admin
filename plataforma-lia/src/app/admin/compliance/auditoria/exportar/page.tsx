@@ -287,7 +287,7 @@ export default function ExportarPage() {
                             />
                             <div className="flex-1">
                               <div className="flex items-center gap-2">
-                                <Icon className={`w-4 h-4 ${evidence.selected ? 'lia-text-600 dark:text-lia-text-tertiary' : 'text-lia-text-tertiary'}`} />
+                                <Icon className={`w-4 h-4 ${evidence.selected ? 'text-lia-text-secondary dark:text-lia-text-tertiary' : 'text-lia-text-tertiary'}`} />
                                 <span className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                                   {evidence.name}
                                 </span>

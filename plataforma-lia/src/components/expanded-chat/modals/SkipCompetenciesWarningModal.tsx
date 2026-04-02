@@ -43,13 +43,13 @@ export function SkipCompetenciesWarningModal({
           </div>
         </div>
         <p
-          className="text-sm lia-text-secondary mb-4"
+          className="text-sm text-lia-text-secondary mb-4"
          
         >
           Recomendamos pelo menos <strong>3 competências técnicas</strong> e <strong>3 comportamentais</strong> para que a LIA encontre candidatos de forma mais assertiva.
         </p>
         <p
-          className="text-xs lia-text-secondary mb-4"
+          className="text-xs text-lia-text-secondary mb-4"
          
         >
           Atualmente você tem: {technicalSkillsCount} técnicas e {behavioralCompetenciesCount} comportamentais.

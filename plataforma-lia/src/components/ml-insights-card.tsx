@@ -87,12 +87,12 @@ export function MLInsightsCard({ companyId, jobData, className = "" }: MLInsight
        
       >
         <span className="flex items-center gap-1.5">
-          <TrendingUp className="w-3.5 h-3.5 lia-text-secondary" />
+          <TrendingUp className="w-3.5 h-3.5 text-lia-text-secondary" />
           Previsões IA
         </span>
         <span className="flex items-center gap-1">
-          {loading && <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none lia-text-secondary" />}
-          {isOpen ? <ChevronUp className="w-3.5 h-3.5 lia-text-secondary" /> : <ChevronDown className="w-3.5 h-3.5 lia-text-secondary" />}
+          {loading && <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none text-lia-text-secondary" />}
+          {isOpen ? <ChevronUp className="w-3.5 h-3.5 text-lia-text-secondary" /> : <ChevronDown className="w-3.5 h-3.5 text-lia-text-secondary" />}
         </span>
       </button>
 
@@ -105,7 +105,7 @@ export function MLInsightsCard({ companyId, jobData, className = "" }: MLInsight
               <span>{error}</span>
               <button
                 onClick={handleRefresh}
-                className="ml-auto lia-text-secondary hover:text-lia-text-secondary dark:hover:lia-text-muted"
+                className="ml-auto text-lia-text-secondary hover:text-lia-text-secondary dark:hover:text-lia-text-tertiary"
                 title="Tentar novamente"
               >
                 <RefreshCw className="w-3 h-3" />
@@ -115,8 +115,8 @@ export function MLInsightsCard({ companyId, jobData, className = "" }: MLInsight
 
           {loading && !timeToFill && !salary && (
             <div className="flex items-center justify-center py-3" role="status" aria-live="polite" aria-label="Carregando...">
-              <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-secondary" />
-              <span className="ml-2 text-xs lia-text-secondary">
+              <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
+              <span className="ml-2 text-xs text-lia-text-secondary">
                 Calculando previsões...
               </span>
             </div>
@@ -125,14 +125,14 @@ export function MLInsightsCard({ companyId, jobData, className = "" }: MLInsight
           {/* Time to Fill */}
           {timeToFill && (
             <div className="flex items-start gap-2">
-              <Clock className="w-3.5 h-3.5 lia-text-secondary flex-shrink-0 mt-0.5" />
+              <Clock className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-lia-text-tertiary">
                   Tempo estimado de preenchimento
                 </p>
                 <p className="text-sm font-semibold text-lia-text-primary" >
                   {timeToFill.predicted_days} dias
-                  <span className="text-micro font-normal lia-text-secondary ml-1">
+                  <span className="text-micro font-normal text-lia-text-secondary ml-1">
                     ({timeToFill.range_min}–{timeToFill.range_max})
                   </span>
                 </p>
@@ -146,7 +146,7 @@ export function MLInsightsCard({ companyId, jobData, className = "" }: MLInsight
           {/* Salary Range */}
           {salary && (
             <div className="flex items-start gap-2">
-              <DollarSign className="w-3.5 h-3.5 lia-text-secondary flex-shrink-0 mt-0.5" />
+              <DollarSign className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-lia-text-tertiary">
                   Faixa salarial sugerida
@@ -166,7 +166,7 @@ export function MLInsightsCard({ companyId, jobData, className = "" }: MLInsight
             <div className="flex justify-end pt-0.5">
               <button
                 onClick={handleRefresh}
-                className="flex items-center gap-1 text-micro lia-text-secondary hover:text-lia-text-secondary dark:hover:lia-text-muted transition-colors motion-reduce:transition-none"
+                className="flex items-center gap-1 text-micro text-lia-text-secondary hover:text-lia-text-secondary dark:hover:text-lia-text-tertiary transition-colors motion-reduce:transition-none"
                
               >
                 <RefreshCw className="w-2.5 h-2.5" />

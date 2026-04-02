@@ -37,7 +37,7 @@ export function EditCriteriaModal({ open, criteria, onClose, onAddCriterion, onR
                 onClick={onClose}
                 className="p-2 rounded-md hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
               >
-                <X className="w-5 h-5 lia-text-secondary" />
+                <X className="w-5 h-5 text-lia-text-secondary" />
               </button>
             </div>
 
@@ -47,12 +47,12 @@ export function EditCriteriaModal({ open, criteria, onClose, onAddCriterion, onR
                   key={criterion.id}
                   className="flex items-center gap-3 p-3 bg-lia-bg-secondary rounded-md group"
                 >
-                  <div className="cursor-move lia-text-muted hover:lia-text-secondary">
+                  <div className="cursor-move text-lia-text-tertiary hover:text-lia-text-secondary">
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
                     </svg>
                   </div>
-                  <span className="text-sm font-medium lia-text-secondary w-6">①</span>
+                  <span className="text-sm font-medium text-lia-text-secondary w-6">①</span>
                   <span className="flex-1 text-sm text-lia-text-primary">{criterion.text}</span>
                   <span className={cn(
  "text-xs px-2 py-0.5 rounded-md",
@@ -62,7 +62,7 @@ export function EditCriteriaModal({ open, criteria, onClose, onAddCriterion, onR
                   </span>
                   <button
                     onClick={() => onRemoveCriterion(criterion.id)}
-                    className="p-1.5 rounded-md lia-text-muted hover:text-status-error hover:bg-status-error/10 transition-colors motion-reduce:transition-none opacity-0 group-hover:opacity-100"
+                    className="p-1.5 rounded-md text-lia-text-tertiary hover:text-status-error hover:bg-status-error/10 transition-colors motion-reduce:transition-none opacity-0 group-hover:opacity-100"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -72,11 +72,11 @@ export function EditCriteriaModal({ open, criteria, onClose, onAddCriterion, onR
 
             <div className="px-6 py-4 border-t border-lia-border-subtle space-y-3">
               <div className="flex gap-2">
-                <button className="flex items-center gap-2 px-4 py-2 text-sm lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none">
+                <button className="flex items-center gap-2 px-4 py-2 text-sm text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none">
                   <FileText className="w-4 h-4" />
                   Selecionar Preset
                 </button>
-                <button className="flex items-center gap-2 px-4 py-2 text-sm lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none">
+                <button className="flex items-center gap-2 px-4 py-2 text-sm text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none">
                   <Upload className="w-4 h-4" />
                   Salvar Preset
                 </button>
@@ -87,7 +87,7 @@ export function EditCriteriaModal({ open, criteria, onClose, onAddCriterion, onR
                     const text = prompt('Digite o novo critério:')
                     if (text) onAddCriterion(text)
                   }}
-                  className="flex-1 py-2.5 px-4 border border-lia-border-subtle rounded-md text-sm font-medium lia-text-secondary hover:border-lia-btn-primary-bg hover:text-lia-text-primary transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
+                  className="flex-1 py-2.5 px-4 border border-lia-border-subtle rounded-md text-sm font-medium text-lia-text-secondary hover:border-lia-btn-primary-bg hover:text-lia-text-primary transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
                 >
                   <Plus className="w-4 h-4" />
                   Adicionar Critério

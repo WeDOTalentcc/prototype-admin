@@ -15,11 +15,11 @@ export function TriagemComparativoTab({ vacancyRanking, ranking, candidate }: Tr
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-4">
         <div className="w-12 h-12 rounded-full bg-lia-bg-tertiary flex items-center justify-center">
-          <BarChart3 className="w-6 h-6 lia-text-secondary" />
+          <BarChart3 className="w-6 h-6 text-lia-text-secondary" />
         </div>
         <div className="text-center max-w-xs">
           <p className="text-sm font-semibold text-lia-text-secondary">Ranking e Comparativo</p>
-          <p className="text-xs lia-text-secondary mt-1" aria-live="polite" aria-atomic="true">
+          <p className="text-xs text-lia-text-secondary mt-1" aria-live="polite" aria-atomic="true">
             O comparativo entre candidatos estará disponível quando houver 2 ou mais candidatos avaliados nesta vaga.
           </p>
         </div>
@@ -38,11 +38,11 @@ export function TriagemComparativoTab({ vacancyRanking, ranking, candidate }: Tr
         ].map(({ label, value, icon: Icon }) => (
           <div key={label} className="border border-lia-border-subtle rounded-md p-3">
             <div className="flex items-center gap-1.5 mb-1">
-              <Icon className="w-3.5 h-3.5 lia-text-secondary" />
-              <span className="text-micro lia-text-secondary uppercase tracking-wide">{label}</span>
+              <Icon className="w-3.5 h-3.5 text-lia-text-secondary" />
+              <span className="text-micro text-lia-text-secondary uppercase tracking-wide">{label}</span>
             </div>
             <p className="text-lg font-semibold text-lia-text-primary">
-              {value.toFixed(1)}<span className="text-xs lia-text-secondary">/10</span>
+              {value.toFixed(1)}<span className="text-xs text-lia-text-secondary">/10</span>
             </p>
           </div>
         ))}
@@ -52,7 +52,7 @@ export function TriagemComparativoTab({ vacancyRanking, ranking, candidate }: Tr
       <div className="border border-lia-border-subtle rounded-md overflow-hidden">
         <div className="bg-lia-bg-secondary px-3 py-2 flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <Trophy className="w-3.5 h-3.5 lia-text-secondary" />
+            <Trophy className="w-3.5 h-3.5 text-lia-text-secondary" />
             <span className="text-xs font-semibold text-lia-text-secondary" aria-live="polite" aria-atomic="true">
               Ranking — {vacancyRanking.total_screened} candidato{vacancyRanking.total_screened !== 1 ? 's' : ''} avaliado{vacancyRanking.total_screened !== 1 ? 's' : ''}
             </span>
@@ -71,7 +71,7 @@ export function TriagemComparativoTab({ vacancyRanking, ranking, candidate }: Tr
                   entry.rank === 1 ? 'bg-status-warning/10 text-status-warning' :
                   entry.rank === 2 ? 'bg-lia-bg-tertiary text-lia-text-secondary' :
                   entry.rank === 3 ? 'bg-wedo-orange/10 text-wedo-orange' :
-                  isCurrent ? 'bg-lia-bg-primary text-lia-text-primary' : 'bg-lia-bg-tertiary lia-text-secondary'
+                  isCurrent ? 'bg-lia-bg-primary text-lia-text-primary' : 'bg-lia-bg-tertiary text-lia-text-secondary'
                 }`}>
                   {entry.rank}
                 </div>

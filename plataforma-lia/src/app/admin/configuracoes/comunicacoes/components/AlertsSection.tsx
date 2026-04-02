@@ -99,7 +99,7 @@ export function AlertsSection({
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <AlertTriangle className={`w-4 h-4 ${alert.enabled ? 'text-status-warning' : 'lia-text-400 dark:text-lia-text-secondary'}`} />
+                      <AlertTriangle className={`w-4 h-4 ${alert.enabled ? 'text-status-warning' : 'text-lia-text-tertiary dark:text-lia-text-secondary'}`} />
                       <h4 className="font-medium text-sm text-lia-text-primary dark:text-lia-text-primary" >
                         {alert.name}
                       </h4>

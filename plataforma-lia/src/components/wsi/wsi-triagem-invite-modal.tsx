@@ -332,7 +332,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
             onClick={onClose}
             className="p-2 hover:bg-lia-interactive-hover rounded-md transition-colors motion-reduce:transition-none"
           >
-            <X className="w-4 h-4 lia-text-secondary" />
+            <X className="w-4 h-4 text-lia-text-secondary" />
           </button>
         </div>
 
@@ -470,12 +470,12 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                       Selecione a Vaga
                     </label>
                     {isLoadingVacancies ? (
-                      <div className="flex items-center gap-2 text-xs lia-text-secondary py-2" role="status" aria-live="polite" aria-label="Carregando...">
+                      <div className="flex items-center gap-2 text-xs text-lia-text-secondary py-2" role="status" aria-live="polite" aria-label="Carregando...">
                         <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
                         Carregando vagas...
                       </div>
                     ) : vacancies.length === 0 ? (
-                      <div className="text-xs lia-text-secondary py-2">
+                      <div className="text-xs text-lia-text-secondary py-2">
                         Nenhuma vaga disponível
                       </div>
                     ) : (
@@ -537,9 +537,9 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   </span>
                 </div>
                 {showQuestions ? (
-                  <ChevronUp className="w-4 h-4 lia-text-secondary" />
+                  <ChevronUp className="w-4 h-4 text-lia-text-secondary" />
                 ) : (
-                  <ChevronDown className="w-4 h-4 lia-text-secondary" />
+                  <ChevronDown className="w-4 h-4 text-lia-text-secondary" />
                 )}
               </button>
               
@@ -631,14 +631,14 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                         className="text-xs text-lia-text-primary leading-relaxed whitespace-pre-wrap"
                         dangerouslySetInnerHTML={{ __html: sanitizeHtml(formatPreviewMessage(message) || '<span class="lia-text-secondary">A mensagem aparecerá aqui...</span>') }}
                       />
-                      <div className="text-micro lia-text-secondary text-right mt-1">
+                      <div className="text-micro text-lia-text-secondary text-right mt-1">
                         {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} ✓✓
                       </div>
                     </div>
                   </div>
                   {/* WhatsApp Info */}
                   <div className="text-center mt-3">
-                    <span className="text-micro lia-text-secondary bg-lia-bg-primary/60 rounded-full py-1 px-3">
+                    <span className="text-micro text-lia-text-secondary bg-lia-bg-primary/60 rounded-full py-1 px-3">
                       Será aberto o WhatsApp Web/App
                     </span>
                   </div>

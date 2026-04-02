@@ -63,7 +63,7 @@ interface DisplayTest {
 }
 
 const categoryConfig: Record<TestCategory, { label: string, icon: React.ComponentType<{ className?: string }>, color: string, bgColor: string }> = {
-  coding: { label: 'Coding', icon: Code2, color: 'lia-text-600 dark:text-lia-text-tertiary', bgColor: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary' },
+  coding: { label: 'Coding', icon: Code2, color: 'text-lia-text-secondary dark:text-lia-text-tertiary', bgColor: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary' },
   logic: { label: 'Lógica/Raciocínio', icon: Brain, color: 'text-wedo-purple', bgColor: 'bg-wedo-purple/15 dark:bg-wedo-purple/30' },
   domain: { label: 'Específico', icon: FileSpreadsheet, color: 'text-status-warning', bgColor: 'bg-status-warning/15 dark:bg-status-warning/30' },
   personality: { label: 'Personalidade/Cultura', icon: Users, color: 'text-status-success', bgColor: 'bg-status-success/15 dark:bg-status-success/30' }

@@ -242,17 +242,17 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
                       </p>
                       <div className="flex items-center gap-0.5">
                         <button className="p-0.5 hover:bg-lia-bg-secondary rounded-md">
-                          <ChevronLeft className="w-3.5 h-3.5 lia-text-secondary" />
+                          <ChevronLeft className="w-3.5 h-3.5 text-lia-text-secondary" />
                         </button>
                         <button className="p-0.5 hover:bg-lia-bg-secondary rounded-md">
-                          <ChevronRight className="w-3.5 h-3.5 lia-text-secondary" />
+                          <ChevronRight className="w-3.5 h-3.5 text-lia-text-secondary" />
                         </button>
                       </div>
                     </div>
                     
                     <div className="flex items-center gap-2 mt-1.5">
                       <div className="w-8 h-8 rounded-full bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0">
-                        <User className="w-4 h-4 lia-text-secondary" />
+                        <User className="w-4 h-4 text-lia-text-secondary" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-lia-text-primary text-xs truncate">
@@ -285,7 +285,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
                           }}
                         />
                       ) : (
-                        <p className="text-xs lia-text-secondary italic">
+                        <p className="text-xs text-lia-text-secondary italic">
                           Selecione um template ou escreva sua mensagem
                         </p>
                       )}

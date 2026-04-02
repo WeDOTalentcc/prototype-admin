@@ -584,7 +584,7 @@ export function CandidatePreviewProfileTab({
 
                           {technologiesList.length > 0 && (
                             <div className="flex flex-wrap gap-1 mb-2">
-                              <span className="text-micro lia-text-secondary flex items-center gap-0.5">
+                              <span className="text-micro text-lia-text-secondary flex items-center gap-0.5">
                                 <Code className="w-2.5 h-2.5" />
                                 Stack:
                               </span>

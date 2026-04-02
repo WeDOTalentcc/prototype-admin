@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils"
 import { getProactiveActions, acceptProactiveAction, rejectProactiveAction } from "@/services/lia-api"
 
 const PRIORITY_STYLES: Record<string, { badge: string; icon: React.ElementType }> = {
-  low: { badge: 'bg-lia-bg-secondary0/10 lia-text-secondary', icon: Info },
+  low: { badge: 'bg-lia-bg-secondary0/10 text-lia-text-secondary', icon: Info },
   normal: { badge: 'bg-wedo-cyan/10 text-wedo-cyan-dark dark:text-wedo-cyan-dark', icon: Lightbulb },
   high: { badge: 'bg-wedo-orange/10 text-wedo-orange dark:text-wedo-orange', icon: AlertCircle },
   urgent: { badge: 'bg-status-error/10 text-status-error dark:text-status-error', icon: Bell }
@@ -184,7 +184,7 @@ export function ProactiveActions({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 w-7 p-0 lia-text-secondary hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error/20"
+                  className="h-7 w-7 p-0 text-lia-text-secondary hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error/20"
                   onClick={() => handleReject(action.id)}
                   disabled={isProcessing}
                 >
@@ -236,11 +236,11 @@ export function ProactiveActions({
                           {action.title}
                         </h4>
                         <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-micro lia-text-secondary">
+                          <span className="text-micro text-lia-text-secondary">
                             {action.action_type ? (ACTION_TYPE_LABELS[action.action_type] || action.action_type) : 'Ação'}
                           </span>
                           <span className="text-micro text-lia-text-disabled">•</span>
-                          <span className="text-micro lia-text-secondary">
+                          <span className="text-micro text-lia-text-secondary">
                             {formatTimeAgo(action.created_at)}
                           </span>
                         </div>

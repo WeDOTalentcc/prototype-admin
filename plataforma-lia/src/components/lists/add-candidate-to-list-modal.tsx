@@ -269,7 +269,7 @@ const fileInputRef = useRef<HTMLInputElement>(null)
             </div>
             
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 lia-text-secondary" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
               <Input
                 placeholder="Buscar por nome, email ou ID..."
                 value={searchQuery}
@@ -277,7 +277,7 @@ const fileInputRef = useRef<HTMLInputElement>(null)
                 className="pl-10 bg-lia-bg-secondary dark:bg-lia-bg-secondary border-0 focus:ring-1 focus:ring-lia-border-default"
               />
               {searching && (
-                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin motion-reduce:animate-none lia-text-secondary" />
+                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
               )}
             </div>
 
@@ -371,7 +371,7 @@ const fileInputRef = useRef<HTMLInputElement>(null)
               <span className="w-full border-t border-lia-border-subtle dark:border-lia-border-subtle" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-lia-bg-primary dark:bg-lia-bg-primary px-2 lia-text-secondary">ou</span>
+              <span className="bg-lia-bg-primary dark:bg-lia-bg-primary px-2 text-lia-text-secondary">ou</span>
             </div>
           </div>
 
@@ -384,7 +384,7 @@ const fileInputRef = useRef<HTMLInputElement>(null)
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <div className="relative">
-                  <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 lia-text-secondary" />
+                  <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
                   <Input
                     placeholder="Colar URL LinkedIn"
                     value={linkedinUrl}
@@ -399,9 +399,9 @@ const fileInputRef = useRef<HTMLInputElement>(null)
                       className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-lia-interactive-active dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
                     >
                       {importingLinkedin ? (
-                        <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-secondary" />
+                        <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
                       ) : (
-                        <ArrowRight className="w-4 h-4 lia-text-secondary" />
+                        <ArrowRight className="w-4 h-4 text-lia-text-secondary" />
                       )}
                     </button>
                   )}
@@ -445,7 +445,7 @@ const fileInputRef = useRef<HTMLInputElement>(null)
               <span className="w-full border-t border-lia-border-subtle dark:border-lia-border-subtle" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-lia-bg-primary dark:bg-lia-bg-primary px-2 lia-text-secondary">ou</span>
+              <span className="bg-lia-bg-primary dark:bg-lia-bg-primary px-2 text-lia-text-secondary">ou</span>
             </div>
           </div>
 
@@ -466,7 +466,7 @@ const fileInputRef = useRef<HTMLInputElement>(null)
                 </p>
               </div>
             </div>
-            <ArrowRight className="w-5 h-5 lia-text-secondary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-tertiary transition-colors motion-reduce:transition-none" />
+            <ArrowRight className="w-5 h-5 text-lia-text-secondary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-tertiary transition-colors motion-reduce:transition-none" />
           </button>
         </div>
       </DialogContent>

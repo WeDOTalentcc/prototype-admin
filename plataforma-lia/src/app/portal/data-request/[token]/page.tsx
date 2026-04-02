@@ -881,7 +881,7 @@ export default function CandidatePortalPage() {
                   href={portalData.branding.privacy_policy_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="underline hover:lia-text-700 dark:hover:lia-text-200"
+                  className="underline hover:text-lia-text-primary dark:hover:text-lia-text-disabled"
                 >
                   Política de Privacidade
                 </a>
@@ -892,7 +892,7 @@ export default function CandidatePortalPage() {
                       href={portalData.branding.terms_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="underline hover:lia-text-700 dark:hover:lia-text-200"
+                      className="underline hover:text-lia-text-primary dark:hover:text-lia-text-disabled"
                     >
                       Termos de Uso
                     </a>

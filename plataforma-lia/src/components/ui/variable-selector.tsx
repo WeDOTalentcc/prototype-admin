@@ -140,7 +140,7 @@ export function VariableSelector({
           </div>
           
           <div className="relative mb-2.5">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 lia-text-secondary" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-secondary" />
             <input
               type="text"
               value={searchQuery}
@@ -183,8 +183,8 @@ export function VariableSelector({
         <div className="max-h-[280px] overflow-y-auto p-2 space-y-1">
           {filteredRegistry.length === 0 ? (
             <div className="py-6 text-center">
-              <Variable className="w-8 h-8 mx-auto mb-2 lia-text-muted" />
-              <p className="text-xs lia-text-secondary">
+              <Variable className="w-8 h-8 mx-auto mb-2 text-lia-text-tertiary" />
+              <p className="text-xs text-lia-text-secondary">
                 Nenhuma variável encontrada
               </p>
             </div>
@@ -200,7 +200,7 @@ export function VariableSelector({
         </div>
 
         <div className="p-2 border-t border-lia-border-subtle">
-          <p className="text-micro lia-text-secondary text-center">
+          <p className="text-micro text-lia-text-secondary text-center">
             Clique para inserir a variável no template
           </p>
         </div>
@@ -220,8 +220,8 @@ function VariableGroupComponent({ group, onSelect }: VariableGroupComponentProps
   return (
     <div className="mb-2">
       <div className="flex items-center gap-1.5 px-2 py-1">
-        <Icon className="w-3 h-3 lia-text-secondary" />
-        <span className="text-micro font-semibold lia-text-secondary uppercase tracking-wide">
+        <Icon className="w-3 h-3 text-lia-text-secondary" />
+        <span className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wide">
           {group.label}
         </span>
       </div>
@@ -246,9 +246,9 @@ function VariableGroupComponent({ group, onSelect }: VariableGroupComponentProps
                   <span className="text-xs font-medium text-lia-text-primary truncate">
                     {variable.label}
                   </span>
-                  <ChevronRight className="w-3 h-3 lia-text-secondary opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none ml-auto flex-shrink-0" />
+                  <ChevronRight className="w-3 h-3 text-lia-text-secondary opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none ml-auto flex-shrink-0" />
                 </div>
-                <p className="text-micro lia-text-secondary line-clamp-1">
+                <p className="text-micro text-lia-text-secondary line-clamp-1">
                   {variable.description}
                 </p>
               </div>

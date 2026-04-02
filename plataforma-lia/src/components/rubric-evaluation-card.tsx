@@ -90,7 +90,7 @@ export function RubricEvaluationCard({
       case 'missing':
         return <X className="w-3.5 h-3.5 text-status-error" />
       default:
-        return <AlertCircle className="w-3.5 h-3.5 lia-text-secondary" />
+        return <AlertCircle className="w-3.5 h-3.5 text-lia-text-secondary" />
     }
   }
 
@@ -195,7 +195,7 @@ export function RubricEvaluationCard({
           <span className="font-medium">Vaga:</span> {jobTitle}
         </p>
         {jobCode && (
-          <span className={`${textStyles.caption} lia-text-secondary font-mono`}>
+          <span className={`${textStyles.caption} text-lia-text-secondary font-mono`}>
             ID: {jobCode}
           </span>
         )}
@@ -242,7 +242,7 @@ export function RubricEvaluationCard({
                       {reqName}
                     </span>
                     {req.priority && (
-                      <span className={`${textStyles.caption} lia-text-secondary bg-lia-bg-primary/50 px-1.5 py-0.5 rounded-md`}>
+                      <span className={`${textStyles.caption} text-lia-text-secondary bg-lia-bg-primary/50 px-1.5 py-0.5 rounded-md`}>
                         {getPriorityLabel(req.priority)}
                       </span>
                     )}
@@ -260,7 +260,7 @@ export function RubricEvaluationCard({
           {hasMoreRequirements && (
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className={`flex items-center gap-1 ${textStyles.caption} lia-text-secondary hover:text-lia-text-secondary transition-colors motion-reduce:transition-none pl-1 pt-1`}
+              className={`flex items-center gap-1 ${textStyles.caption} text-lia-text-secondary hover:text-lia-text-secondary transition-colors motion-reduce:transition-none pl-1 pt-1`}
             >
               {isExpanded ? (
                 <>
@@ -280,9 +280,9 @@ export function RubricEvaluationCard({
 
       {displaySummary && (
         <div className="flex items-start gap-2 pt-1 bg-lia-bg-secondary/50 p-2 rounded-md">
-          <FileText className="w-3.5 h-3.5 lia-text-secondary mt-0.5 flex-shrink-0" />
+          <FileText className="w-3.5 h-3.5 text-lia-text-secondary mt-0.5 flex-shrink-0" />
           <div>
-            <span className={`${textStyles.caption} lia-text-secondary font-medium block mb-0.5`}>
+            <span className={`${textStyles.caption} text-lia-text-secondary font-medium block mb-0.5`}>
               Resumo LIA:
             </span>
             <p className={`${textStyles.bodySmall} text-lia-text-primary ${isExpanded ? '' : 'line-clamp-2'} italic`}>
@@ -296,7 +296,7 @@ export function RubricEvaluationCard({
         <div className="flex items-start gap-2 pt-1">
           <TrendingUp className="w-3.5 h-3.5 text-status-success mt-0.5 flex-shrink-0" />
           <div className="flex-1">
-            <span className={`${textStyles.caption} lia-text-secondary font-medium block mb-1`}>
+            <span className={`${textStyles.caption} text-lia-text-secondary font-medium block mb-1`}>
               Pontos Fortes:
             </span>
             <div className="flex flex-wrap gap-1">
@@ -314,7 +314,7 @@ export function RubricEvaluationCard({
         <div className="flex items-start gap-2">
           <AlertCircle className="w-3.5 h-3.5 text-status-warning mt-0.5 flex-shrink-0" />
           <div className="flex-1">
-            <span className={`${textStyles.caption} lia-text-secondary font-medium block mb-1`}>
+            <span className={`${textStyles.caption} text-lia-text-secondary font-medium block mb-1`}>
               Pontos de Atenção:
             </span>
             <div className="flex flex-wrap gap-1">

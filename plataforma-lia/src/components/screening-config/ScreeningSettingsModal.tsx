@@ -104,7 +104,7 @@ export function ScreeningSettingsModal({
               step={5}
               className="w-full"
             />
-            <p className="text-micro lia-text-secondary" aria-live="polite" aria-atomic="true">
+            <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">
               Candidatos com score abaixo de {minScore}% serão reprovados automaticamente
             </p>
           </div>
@@ -150,9 +150,9 @@ export function ScreeningSettingsModal({
                 max={5}
                 className="w-24 h-9 text-xs border-lia-border-subtle"
               />
-              <span className="text-xs lia-text-secondary">tentativas</span>
+              <span className="text-xs text-lia-text-secondary">tentativas</span>
             </div>
-            <p className="text-micro lia-text-secondary">
+            <p className="text-micro text-lia-text-secondary">
               Número de tentativas de recontato antes de descartar (0-5)
             </p>
           </div>

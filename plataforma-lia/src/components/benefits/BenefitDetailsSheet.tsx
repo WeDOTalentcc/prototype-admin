@@ -201,7 +201,7 @@ export function BenefitDetailsSheet({
 
             {groupedBenefits.size === 0 && (
               <div className="flex flex-col items-center justify-center py-12 text-center">
-                <Gift className="w-12 h-12 lia-text-muted mb-3" />
+                <Gift className="w-12 h-12 text-lia-text-tertiary mb-3" />
                 <p 
                   className="text-sm text-lia-text-primary"
                  

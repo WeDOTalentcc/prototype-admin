@@ -50,8 +50,8 @@ export function SCMSectionConfiguracoes({
                     {statusValue === 'active' && <Play className="w-3.5 h-3.5 text-status-success" />}
                     {statusValue === 'paused' && <Pause className="w-3.5 h-3.5 text-status-warning" />}
                     {statusValue === 'completed' && <CheckCircle className="w-3.5 h-3.5 text-wedo-cyan-dark" />}
-                    {statusValue === 'not_started' && <Clock className="w-3.5 h-3.5 lia-text-secondary" />}
-                    {statusValue === 'not_configured' && <AlertCircle className="w-3.5 h-3.5 lia-text-secondary" />}
+                    {statusValue === 'not_started' && <Clock className="w-3.5 h-3.5 text-lia-text-secondary" />}
+                    {statusValue === 'not_configured' && <AlertCircle className="w-3.5 h-3.5 text-lia-text-secondary" />}
                   </div>
                   <div>
                     <span className="text-xs font-semibold text-lia-text-primary">Status da Triagem</span>
@@ -306,8 +306,8 @@ export function SCMSectionConfiguracoes({
                     {statusValue === 'active' && <Play className="w-3.5 h-3.5 text-status-success" />}
                     {statusValue === 'paused' && <Pause className="w-3.5 h-3.5 text-status-warning" />}
                     {statusValue === 'completed' && <CheckCircle className="w-3.5 h-3.5 text-wedo-cyan-dark" />}
-                    {statusValue === 'not_started' && <Clock className="w-3.5 h-3.5 lia-text-secondary" />}
-                    {statusValue === 'not_configured' && <AlertCircle className="w-3.5 h-3.5 lia-text-secondary" />}
+                    {statusValue === 'not_started' && <Clock className="w-3.5 h-3.5 text-lia-text-secondary" />}
+                    {statusValue === 'not_configured' && <AlertCircle className="w-3.5 h-3.5 text-lia-text-secondary" />}
                   </div>
                   <div>
                     <span className="text-xs font-semibold text-lia-text-primary">Status da Triagem</span>

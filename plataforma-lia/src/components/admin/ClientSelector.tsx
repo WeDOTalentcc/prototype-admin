@@ -123,7 +123,7 @@ export function ClientSelector() {
                 </div>
                 <div className="flex flex-col">
                   <span className="font-medium">Todos os Clientes</span>
-                  <span className="text-xs lia-text-secondary">Visão global do admin</span>
+                  <span className="text-xs text-lia-text-secondary">Visão global do admin</span>
                 </div>
                 {!selectedClient && (
                   <Check className="ml-auto h-4 w-4 text-lia-text-secondary" />
@@ -156,7 +156,7 @@ export function ClientSelector() {
                           {client.tradeName || client.name}
                         </span>
                         {client.cnpj && (
-                          <span className="text-xs lia-text-secondary truncate">
+                          <span className="text-xs text-lia-text-secondary truncate">
                             CNPJ: {client.cnpj}
                           </span>
                         )}

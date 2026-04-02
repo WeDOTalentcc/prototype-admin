@@ -137,7 +137,7 @@ export function QuickViewModal({
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="h-8 w-8 p-0 lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-bg-secondary"
+              className="h-8 w-8 p-0 text-lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-bg-secondary"
             >
               <X className="w-4 h-4" />
             </Button>
@@ -180,15 +180,15 @@ export function QuickViewModal({
                   <h3 className="text-xs font-medium text-lia-text-primary mb-3">Contato</h3>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-xs">
-                      <Mail className="w-4 h-4 lia-text-secondary" />
+                      <Mail className="w-4 h-4 text-lia-text-secondary" />
                       <span className="text-lia-text-secondary">{candidate.email}</span>
                     </div>
                     <div className="flex items-center gap-2 text-xs">
-                      <Phone className="w-4 h-4 lia-text-secondary" />
+                      <Phone className="w-4 h-4 text-lia-text-secondary" />
                       <span className="text-lia-text-secondary">{candidate.phone}</span>
                     </div>
                     <div className="flex items-center gap-2 text-xs">
-                      <MapPin className="w-4 h-4 lia-text-secondary" />
+                      <MapPin className="w-4 h-4 text-lia-text-secondary" />
                       <span className="text-lia-text-secondary">{candidate.location}</span>
                     </div>
                     <div className="flex items-center gap-2 text-xs">
@@ -205,16 +205,16 @@ export function QuickViewModal({
                   <h3 className="text-xs font-medium text-lia-text-primary mb-3">Informações</h3>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-xs">
-                      <Briefcase className="w-4 h-4 lia-text-secondary" />
+                      <Briefcase className="w-4 h-4 text-lia-text-secondary" />
                       <span className="text-lia-text-secondary">{candidate.experience} anos de experiência</span>
                     </div>
                     <div className="flex items-center gap-2 text-xs">
-                      <GraduationCap className="w-4 h-4 lia-text-secondary" />
+                      <GraduationCap className="w-4 h-4 text-lia-text-secondary" />
                       <span className="text-lia-text-secondary">{candidate.education}</span>
                     </div>
                     {candidate.salary && (
                       <div className="flex items-center gap-2 text-xs">
-                        <DollarSign className="w-4 h-4 lia-text-secondary" />
+                        <DollarSign className="w-4 h-4 text-lia-text-secondary" />
                         <span className="text-lia-text-secondary">
                           Atual: R$ {candidate.salary.current.toLocaleString()} |
                           Pretensão: R$ {candidate.salary.expected.toLocaleString()}
@@ -274,7 +274,7 @@ export function QuickViewModal({
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <Briefcase className="w-12 h-12 lia-text-secondary mx-auto mb-4" />
+                  <Briefcase className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
                   <p className="text-lia-text-secondary text-xs">Histórico profissional não disponível</p>
                 </div>
               )}
@@ -337,7 +337,7 @@ export function QuickViewModal({
                 </>
               ) : (
                 <div className="text-center py-8">
-                  <TrendingUp className="w-12 h-12 lia-text-secondary mx-auto mb-4" />
+                  <TrendingUp className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
                   <p className="text-lia-text-secondary text-xs">Análise da LIA não disponível</p>
                   <Button variant="outline" size="sm" className="mt-4 bg-lia-bg-primary border border-lia-border-default hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse text-lia-text-primary text-xs">
                     <Target className="w-4 h-4 mr-2" />

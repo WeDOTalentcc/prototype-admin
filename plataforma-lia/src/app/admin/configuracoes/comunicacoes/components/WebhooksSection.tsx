@@ -294,7 +294,7 @@ export function WebhooksSection({
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <Webhook className={`w-4 h-4 ${webhook.isActive ? 'text-lia-text-primary' : 'lia-text-400 dark:text-lia-text-secondary'}`} />
+                          <Webhook className={`w-4 h-4 ${webhook.isActive ? 'text-lia-text-primary' : 'text-lia-text-tertiary dark:text-lia-text-secondary'}`} />
                           <h4 className="font-medium text-sm text-lia-text-primary dark:text-lia-text-primary" >
                             {webhook.name}
                           </h4>

@@ -77,7 +77,7 @@ export function WorkOSAdminPortal({
             sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
           />
         </div>
-        <p className="text-xs lia-text-secondary mt-2">
+        <p className="text-xs text-lia-text-secondary mt-2">
           Nota: Algumas funcionalidades podem requerer autenticação no WorkOS Dashboard.
         </p>
       </DialogContent>

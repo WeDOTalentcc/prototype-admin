@@ -137,7 +137,7 @@ const getAlertSeverityStyle = (severity: string) => {
     case 'high':
       return { bg: 'var(--status-warning-bg)', border: 'var(--status-warning)', icon: 'text-status-warning' }
     case 'medium':
-      return { bg: 'var(--lia-interactive-active)', border: 'var(--lia-border-subtle)', icon: 'lia-text-600 dark:text-lia-text-tertiary' }
+      return { bg: 'var(--lia-interactive-active)', border: 'var(--lia-border-subtle)', icon: 'text-lia-text-secondary dark:text-lia-text-tertiary' }
     default:
       return { bg: 'var(--lia-bg-secondary)', border: 'var(--lia-text-tertiary)', icon: 'text-lia-text-secondary' }
   }
@@ -491,7 +491,7 @@ export default function SeguroCiberneticoPage() {
                 </div>
                 <div>
                   <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >Dias até Vencimento</p>
-                  <p className={`font-medium ${isExpiringSoon ? 'text-status-warning' : isExpired ? 'text-status-error' : 'lia-text-800 dark:text-lia-text-primary'}`}>
+                  <p className={`font-medium ${isExpiringSoon ? 'text-status-warning' : isExpired ? 'text-status-error' : 'text-lia-text-primary dark:text-lia-text-primary'}`}>
                     {isExpired ? 'Expirado' : daysRemaining > 0 ? `${daysRemaining} dias` : 'N/A'}
                   </p>
                 </div>

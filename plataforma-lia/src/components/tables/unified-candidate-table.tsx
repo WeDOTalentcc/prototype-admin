@@ -305,7 +305,7 @@ export function UnifiedCandidateTable({
   const getSortIcon = (columnId: string, isSortable: boolean) => {
     if (!isSortable) return null
     if (activeSort?.field !== columnId) {
-      return <ArrowUpDown className="w-3 h-3 lia-text-secondary" />
+      return <ArrowUpDown className="w-3 h-3 text-lia-text-secondary" />
     }
     return activeSort.direction === 'asc' 
       ? <ArrowUp className="w-3 h-3 text-lia-text-secondary" />
@@ -315,8 +315,8 @@ export function UnifiedCandidateTable({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
-        <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none lia-text-secondary" />
-        <span className="ml-2 text-sm lia-text-secondary" aria-live="polite" aria-atomic="true">Carregando candidatos...</span>
+        <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
+        <span className="ml-2 text-sm text-lia-text-secondary" aria-live="polite" aria-atomic="true">Carregando candidatos...</span>
       </div>
     )
   }
@@ -324,7 +324,7 @@ export function UnifiedCandidateTable({
   if (candidates.length === 0) {
     return (
       <div className="flex items-center justify-center py-12">
-        <span className="text-sm lia-text-secondary">{emptyMessage}</span>
+        <span className="text-sm text-lia-text-secondary">{emptyMessage}</span>
       </div>
     )
   }
@@ -375,7 +375,7 @@ export function UnifiedCandidateTable({
                   >
                     <div className="flex items-center gap-1">
                       {enableColumnReorder && (
-                        <GripVertical className="w-3 h-3 lia-text-secondary opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none cursor-grab" />
+                        <GripVertical className="w-3 h-3 text-lia-text-secondary opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none cursor-grab" />
                       )}
                       {renderCustomHeader?.(column.id, column.label) ?? (
                         column.id === 'acoes' || column.id === 'actions' ? (
@@ -499,7 +499,7 @@ export function UnifiedCandidateTable({
 
       {showPagination && totalPages > 1 && (
         <div className="flex items-center justify-between px-4 py-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
-          <span className="text-xs lia-text-secondary">
+          <span className="text-xs text-lia-text-secondary">
             Mostrando {((currentPage - 1) * pageSize) + 1} - {Math.min(currentPage * pageSize, sortedCandidates.length)} de {sortedCandidates.length}
           </span>
           <div className="flex items-center gap-2">

@@ -541,7 +541,7 @@ export default function GlobalPoliciesPage() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleEditPolicy(policy)}
-                                className="text-lia-text-secondary hover:lia-text-900 dark:hover:lia-text-50"
+                                className="text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-primary"
                                 disabled={isUpdating}
                               >
                                 <Edit className="w-4 h-4" />

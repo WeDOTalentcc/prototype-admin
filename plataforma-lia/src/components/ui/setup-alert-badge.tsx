@@ -163,7 +163,7 @@ export function SetupAlertBadge() {
         className="cursor-grab active:cursor-grabbing p-0.5 -ml-1 rounded-md hover:bg-lia-interactive-hover"
         title="Arraste para mover"
       >
-        <GripVertical className="w-3 h-3 lia-text-secondary" />
+        <GripVertical className="w-3 h-3 text-lia-text-secondary" />
       </div>
       <div className="relative">
         {/* Fundo com 12% de opacidade — opacity no wrapper isolado evita afetar o ícone filho */}
@@ -204,7 +204,7 @@ export function SetupAlertBadge() {
           </div>
         </div>
       </div>
-      <Settings className="w-3 h-3 lia-text-secondary ml-1" />
+      <Settings className="w-3 h-3 text-lia-text-secondary ml-1" />
     </button>
   )
 }

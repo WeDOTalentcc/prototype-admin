@@ -320,7 +320,7 @@ export function LiaChatPanel() {
           </span>
           <button
             onClick={() => { setActiveActionType(null); setActionLabel(null) }}
-            className="text-xs lia-text-secondary hover:text-lia-text-secondary dark:hover:lia-text-muted transition-colors motion-reduce:transition-none"
+            className="text-xs text-lia-text-secondary hover:text-lia-text-secondary dark:hover:text-lia-text-tertiary transition-colors motion-reduce:transition-none"
             aria-label="Sair do modo de ação"
           >
             Sair
@@ -354,7 +354,7 @@ export function LiaChatPanel() {
                 onClick={() => handleLoadConversation(chat.id)}
                 className="w-full flex items-start gap-2.5 px-3 py-2.5 rounded-md hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none text-left group"
               >
-                <Clock className="w-3.5 h-3.5 lia-text-secondary flex-shrink-0 mt-0.5" />
+                <Clock className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm-ui text-lia-text-secondary truncate group-hover:text-lia-text-primary dark:group-hover:text-lia-text-tertiary transition-colors motion-reduce:transition-none">
                     {chat.title}
@@ -373,7 +373,7 @@ export function LiaChatPanel() {
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4" role="status" aria-live="polite" aria-label="Carregando...">
           {isFetchingHistory ? (
             <div className="flex justify-center items-center h-full" role="status" aria-live="polite" aria-label="Carregando...">
-              <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none lia-text-secondary" />
+              <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
             </div>
           ) : isEmpty ? (
             <EmptyState />
@@ -482,7 +482,7 @@ export function LiaChatPanel() {
           </button>
         </div>
         {inputText.length > MAX_INPUT_CHARS * 0.9 && (
-          <p className="text-xs lia-text-secondary mt-1 text-right">
+          <p className="text-xs text-lia-text-secondary mt-1 text-right">
             {inputText.length}/{MAX_INPUT_CHARS}
           </p>
         )}

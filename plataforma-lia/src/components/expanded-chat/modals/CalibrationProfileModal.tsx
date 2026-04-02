@@ -67,7 +67,7 @@ export function CalibrationProfileModal({
           <div className="flex items-center gap-3">
             <button
               onClick={onClose}
-              className="flex items-center gap-2 lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none"
+              className="flex items-center gap-2 text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none"
             >
               <ChevronLeft className="w-5 h-5" />
               <span className="text-sm font-medium">
@@ -79,7 +79,7 @@ export function CalibrationProfileModal({
             onClick={onClose}
             className="p-2 rounded-md hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
           >
-            <X className="w-5 h-5 lia-text-secondary" />
+            <X className="w-5 h-5 text-lia-text-secondary" />
           </button>
         </div>
 
@@ -106,7 +106,7 @@ export function CalibrationProfileModal({
                         href={candidate.linkedinUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="lia-text-secondary hover:text-lia-text-primary dark:hover:lia-text-muted transition-colors motion-reduce:transition-none"
+                        className="lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-tertiary transition-colors motion-reduce:transition-none"
                       >
                         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
@@ -117,13 +117,13 @@ export function CalibrationProfileModal({
                       Full Profile ↗
                     </button>
                   </div>
-                  <p className="text-xs lia-text-secondary mt-1">
+                  <p className="text-xs text-lia-text-secondary mt-1">
                     {candidate.location}
                   </p>
                   <p className="text-xs text-lia-text-primary mt-1">
                     ↻ {candidate.currentRole} at {candidate.currentCompany}
                   </p>
-                  <p className="text-xs lia-text-secondary mt-1">
+                  <p className="text-xs text-lia-text-secondary mt-1">
                     ★ {candidate.education}
                   </p>
                 </div>
@@ -169,7 +169,7 @@ export function CalibrationProfileModal({
                           </div>
                           <div>
                             <p className="text-xs font-semibold text-lia-text-primary">{highlight.label}</p>
-                            <p className="text-xs lia-text-secondary">{highlight.value}</p>
+                            <p className="text-xs text-lia-text-secondary">{highlight.value}</p>
                           </div>
                         </div>
                       ))}
@@ -179,15 +179,15 @@ export function CalibrationProfileModal({
                   {/* Experience Stats */}
                   <div className="flex gap-6 py-3 border-b border-lia-border-subtle">
                     <div>
-                      <p className="text-xs lia-text-secondary uppercase tracking-wide">Average Tenure</p>
+                      <p className="text-xs text-lia-text-secondary uppercase tracking-wide">Average Tenure</p>
                       <p className="text-sm font-semibold text-lia-text-primary">{candidate.averageTenure}</p>
                     </div>
                     <div>
-                      <p className="text-xs lia-text-secondary uppercase tracking-wide">Current Tenure</p>
+                      <p className="text-xs text-lia-text-secondary uppercase tracking-wide">Current Tenure</p>
                       <p className="text-sm font-semibold text-lia-text-primary">{candidate.currentTenure}</p>
                     </div>
                     <div>
-                      <p className="text-xs lia-text-secondary uppercase tracking-wide">Total Experience</p>
+                      <p className="text-xs text-lia-text-secondary uppercase tracking-wide">Total Experience</p>
                       <p className="text-sm font-semibold text-lia-text-primary">{candidate.totalExperience}</p>
                     </div>
                   </div>
@@ -200,12 +200,12 @@ export function CalibrationProfileModal({
                     {candidate.experiences.map((exp) => (
                       <div key={exp.id} className="flex gap-3">
                         <div className="w-8 h-8 rounded-md bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
-                          <Building2 className="w-4 h-4 lia-text-secondary" />
+                          <Building2 className="w-4 h-4 text-lia-text-secondary" />
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <p className="text-sm font-semibold text-lia-text-primary">{exp.company}</p>
-                            <span className="text-xs lia-text-secondary">{exp.duration}</span>
+                            <span className="text-xs text-lia-text-secondary">{exp.duration}</span>
                           </div>
                           <div className="flex items-center gap-2 mt-1">
                             <p className="text-sm text-lia-text-primary">{exp.role}</p>
@@ -215,9 +215,9 @@ export function CalibrationProfileModal({
                               </span>
                             )}
                           </div>
-                          <p className="text-xs lia-text-secondary mt-1">{exp.period}</p>
+                          <p className="text-xs text-lia-text-secondary mt-1">{exp.period}</p>
                           {exp.skills.length > 0 && (
-                            <p className="text-xs lia-text-secondary mt-2">
+                            <p className="text-xs text-lia-text-secondary mt-2">
                               Skills: {exp.skills.slice(0, 6).join(' · ')}
                               {exp.skills.length > 6 && (
                                 <button className="text-lia-text-secondary ml-1">Read More</button>
@@ -240,8 +240,8 @@ export function CalibrationProfileModal({
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-lia-text-primary">{edu.institution}</p>
-                        <p className="text-sm lia-text-secondary">{edu.degree} in {edu.field}</p>
-                        <p className="text-xs lia-text-secondary mt-1">{edu.period}</p>
+                        <p className="text-sm text-lia-text-secondary">{edu.degree} in {edu.field}</p>
+                        <p className="text-xs text-lia-text-secondary mt-1">{edu.period}</p>
                       </div>
                     </div>
                   ))}
@@ -267,7 +267,7 @@ export function CalibrationProfileModal({
                     <h5 className="text-sm font-semibold text-lia-text-primary mb-2">Additional Skills</h5>
                     <div className="flex flex-wrap gap-2">
                       {candidate.additionalSkills.slice(0, 10).map((skill) => (
-                        <span key={skill} className="px-3 py-1.5 text-xs lia-text-secondary bg-lia-bg-secondary rounded-md">
+                        <span key={skill} className="px-3 py-1.5 text-xs text-lia-text-secondary bg-lia-bg-secondary rounded-md">
                           {skill}
                         </span>
                       ))}
@@ -329,11 +329,11 @@ export function CalibrationProfileModal({
                     </div>
                     <p className="text-xs font-semibold text-lia-text-primary">
                       {match.criteria}
-                      <span className="ml-1.5 text-micro lia-text-secondary font-normal">
+                      <span className="ml-1.5 text-micro text-lia-text-secondary font-normal">
                         {match.importance === 1 ? '①②' : '①'}
                       </span>
                     </p>
-                    <p className="text-micro lia-text-secondary leading-relaxed">
+                    <p className="text-micro text-lia-text-secondary leading-relaxed">
                       {match.explanation}
                     </p>
                   </div>
@@ -359,7 +359,7 @@ export function CalibrationProfileModal({
             {/* Edit criteria note */}
             <div className="shrink-0 px-4 pb-3">
               <div className="p-2 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
-                <p className="text-micro lia-text-secondary">
+                <p className="text-micro text-lia-text-secondary">
                   Você pode{' '}
                   <button onClick={onOpenEditCriteria} className="font-medium">fixar critérios</button>
                   {' '}obrigatórios ou{' '}
@@ -383,7 +383,7 @@ export function CalibrationProfileModal({
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
-                <span className="text-xs lia-text-secondary">
+                <span className="text-xs text-lia-text-secondary">
                   Profile {currentIndex + 1}/{candidates.length}
                 </span>
                 <button
@@ -418,27 +418,27 @@ export function CalibrationProfileModal({
                 </button>
               </div>
 
-              <p className="text-micro lia-text-secondary text-center mt-2">
+              <p className="text-micro text-lia-text-secondary text-center mt-2">
                 Isso apenas calibra o agente e não envia emails.
               </p>
 
               {/* Progress Dots */}
               <div className="mt-2 flex items-center justify-center gap-1.5">
-                <span className="text-micro lia-text-secondary">Aprovados:</span>
+                <span className="text-micro text-lia-text-secondary">Aprovados:</span>
                 <div className="flex gap-1">
                   {[0, 1, 2].map((i) => (
                     <div
                       key={i}
                       className={cn(
  "w-5 h-5 rounded-full flex items-center justify-center text-micro font-medium",
-                        approvedCount > i ? "bg-wedo-green text-white" : "bg-lia-interactive-active lia-text-secondary"
+                        approvedCount > i ? "bg-wedo-green text-white" : "bg-lia-interactive-active text-lia-text-secondary"
                       )}
                     >
                       {approvedCount > i ? '✓' : i + 1}
                     </div>
                   ))}
                 </div>
-                <span className="text-micro lia-text-secondary">de 3</span>
+                <span className="text-micro text-lia-text-secondary">de 3</span>
               </div>
             </div>
           </div>

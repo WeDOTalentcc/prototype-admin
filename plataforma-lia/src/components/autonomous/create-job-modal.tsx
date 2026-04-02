@@ -251,7 +251,7 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
               </SelectContent>
             </Select>
             {selectedJobType && (
-              <p className="text-micro lia-text-secondary mt-1">
+              <p className="text-micro text-lia-text-secondary mt-1">
                 {selectedJobType.description}
               </p>
             )}

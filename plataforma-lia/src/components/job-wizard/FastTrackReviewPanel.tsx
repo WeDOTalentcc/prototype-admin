@@ -97,7 +97,7 @@ function CollapsibleSection({
           {onEdit && (
             <button 
               onClick={(e) => { e.stopPropagation(); onEdit() }}
-              className="p-1 text-lia-text-secondary hover:lia-text-muted transition-colors motion-reduce:transition-none"
+              className="p-1 text-lia-text-secondary hover:text-lia-text-tertiary transition-colors motion-reduce:transition-none"
             >
               <Edit2 className="w-3 h-3" />
             </button>
@@ -354,7 +354,7 @@ export function FastTrackReviewPanel({
                       key={i}
                       className={cn(
  "w-2 h-2 rounded-full",
-                        i < comp.weight ? "bg-lia-border-medium" : "bg-neutral-700"
+                        i < comp.weight ? "bg-lia-border-medium" : "bg-lia-bg-inverse"
                       )}
                     />
                   ))}
@@ -428,7 +428,7 @@ export function FastTrackReviewPanel({
  "w-full",
           canPublish 
             ? "bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active" 
-            : "bg-neutral-700 text-lia-text-secondary cursor-not-allowed"
+            : "bg-lia-bg-inverse text-lia-text-secondary cursor-not-allowed"
         )}
       >
         {isPublishing ? (

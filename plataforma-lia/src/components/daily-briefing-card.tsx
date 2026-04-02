@@ -466,7 +466,7 @@ export function DailyBriefingCard({
                         {item.title}
                       </p>
                       {item.location && (
-                        <p className="text-xs truncate lia-text-secondary">
+                        <p className="text-xs truncate text-lia-text-secondary">
                           {item.location}
                         </p>
                       )}
@@ -534,7 +534,7 @@ export function DailyBriefingCard({
                   </p>
                   <div className="flex items-center gap-3 mt-0.5">
                     {briefing.pipeline.stages_summary.slice(0, 4).map((stage, i) => (
-                      <span key={i} className="text-xs lia-text-secondary">
+                      <span key={i} className="text-xs text-lia-text-secondary">
                         {stage.label}: <strong>{stage.count}</strong>
                       </span>
                     ))}

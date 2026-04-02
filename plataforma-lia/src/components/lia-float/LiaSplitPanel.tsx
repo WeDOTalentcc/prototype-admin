@@ -214,7 +214,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
           {splitView.page && onNavigate && (
             <button
               onClick={handleNavigatePage}
-              className="p-1.5 rounded-md lia-text-secondary hover:text-lia-text-secondary dark:hover:lia-text-muted hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
+              className="p-1.5 rounded-md text-lia-text-secondary hover:text-lia-text-secondary dark:hover:text-lia-text-tertiary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
               title={`Ir para ${splitView.page}`}
               aria-label={`Navegar para ${splitView.page}`}
             >
@@ -223,7 +223,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
           )}
           <button
             onClick={handleClose}
-            className="p-1.5 rounded-md lia-text-secondary hover:text-lia-text-secondary dark:hover:lia-text-muted hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
+            className="p-1.5 rounded-md text-lia-text-secondary hover:text-lia-text-secondary dark:hover:text-lia-text-tertiary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
             title="Fechar painel lateral"
             aria-label="Fechar painel lateral"
           >
@@ -248,7 +248,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4" role="status" aria-live="polite" aria-label="Carregando...">
         {isFetchingHistory ? (
           <div className="flex justify-center items-center h-full" role="status" aria-live="polite" aria-label="Carregando...">
-            <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none lia-text-secondary" />
+            <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
           </div>
         ) : isEmpty ? (
           <SplitEmptyState page={splitView.page} />
@@ -304,7 +304,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
           </button>
         </div>
         {inputText.length > MAX_INPUT_CHARS * 0.9 && (
-          <p className="text-xs lia-text-secondary mt-1 text-right">
+          <p className="text-xs text-lia-text-secondary mt-1 text-right">
             {inputText.length}/{MAX_INPUT_CHARS}
           </p>
         )}

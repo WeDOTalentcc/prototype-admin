@@ -240,9 +240,9 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
                       onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                     >
                       {showCurrentPassword ? (
-                        <EyeOff className="w-4 h-4 lia-text-secondary" />
+                        <EyeOff className="w-4 h-4 text-lia-text-secondary" />
                       ) : (
-                        <Eye className="w-4 h-4 lia-text-secondary" />
+                        <Eye className="w-4 h-4 text-lia-text-secondary" />
                       )}
                     </Button>
                   </div>
@@ -267,9 +267,9 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
                       onClick={() => setShowNewPassword(!showNewPassword)}
                     >
                       {showNewPassword ? (
-                        <EyeOff className="w-4 h-4 lia-text-secondary" />
+                        <EyeOff className="w-4 h-4 text-lia-text-secondary" />
                       ) : (
-                        <Eye className="w-4 h-4 lia-text-secondary" />
+                        <Eye className="w-4 h-4 text-lia-text-secondary" />
                       )}
                     </Button>
                   </div>
@@ -294,9 +294,9 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     >
                       {showConfirmPassword ? (
-                        <EyeOff className="w-4 h-4 lia-text-secondary" />
+                        <EyeOff className="w-4 h-4 text-lia-text-secondary" />
                       ) : (
-                        <Eye className="w-4 h-4 lia-text-secondary" />
+                        <Eye className="w-4 h-4 text-lia-text-secondary" />
                       )}
                     </Button>
                   </div>

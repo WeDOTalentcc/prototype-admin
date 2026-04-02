@@ -130,14 +130,14 @@ export default function ClientLayout({
           <nav className="flex items-center gap-2 py-3 text-sm">
             <Link 
               href="/admin"
-              className="hover:lia-text-900 dark:hover:lia-text-50 transition-colors motion-reduce:transition-none text-lia-text-tertiary dark:text-lia-text-secondary"
+              className="hover:text-lia-text-primary dark:hover:text-lia-text-primary transition-colors motion-reduce:transition-none text-lia-text-tertiary dark:text-lia-text-secondary"
             >
               Admin
             </Link>
             <ChevronRight className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-secondary" />
             <Link 
               href="/admin/clientes"
-              className="hover:lia-text-900 dark:hover:lia-text-50 transition-colors motion-reduce:transition-none text-lia-text-tertiary dark:text-lia-text-secondary"
+              className="hover:text-lia-text-primary dark:hover:text-lia-text-primary transition-colors motion-reduce:transition-none text-lia-text-tertiary dark:text-lia-text-secondary"
             >
               Clientes
             </Link>

@@ -71,7 +71,7 @@ export function InputEvaluationStage() {
       
       {/* Seção: Critérios Detectados */}
       <div className="mb-4">
-        <h4 className="text-micro font-semibold lia-text-secondary uppercase tracking-wider mb-2 px-1">
+        <h4 className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wider mb-2 px-1">
           Critérios Detectados
         </h4>
         <div className="space-y-2">

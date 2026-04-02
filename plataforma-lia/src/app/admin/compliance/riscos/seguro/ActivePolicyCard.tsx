@@ -85,7 +85,7 @@ export function ActivePolicyCard({ activePolicy, daysRemaining, isExpiringSoon, 
                   <Clock className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-secondary" />
                   <span className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">Tempo restante</span>
                 </div>
-                <span className={`text-sm font-medium ${isExpiringSoon ? 'text-status-warning' : isExpired ? 'text-status-error' : 'lia-text-800 dark:text-lia-text-primary'}`}>
+                <span className={`text-sm font-medium ${isExpiringSoon ? 'text-status-warning' : isExpired ? 'text-status-error' : 'text-lia-text-primary dark:text-lia-text-primary'}`}>
                   {isExpired ? 'Expirado' : `${daysRemaining} dias`}
                 </span>
               </div>

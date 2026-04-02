@@ -157,7 +157,7 @@ export function CandidateQueriesGuide({
             style={{backgroundColor: 'var(--lia-bg-tertiary)',
               border: '1px solid var(--lia-border-subtle)'}}
           >
-            <Search className="w-4 h-4 lia-text-secondary flex-shrink-0" />
+            <Search className="w-4 h-4 text-lia-text-secondary flex-shrink-0" />
             <input
               type="text"
               placeholder="Buscar consulta..."
@@ -173,7 +173,7 @@ export function CandidateQueriesGuide({
                 className="p-1 rounded-full hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none"
                 aria-label="Limpar busca"
               >
-                <X className="w-3.5 h-3.5 lia-text-secondary" />
+                <X className="w-3.5 h-3.5 text-lia-text-secondary" />
               </button>
             )}
           </div>
@@ -186,7 +186,7 @@ export function CandidateQueriesGuide({
  "px-3 py-1.5 rounded-full text-xs font-medium transition-[width,height] whitespace-nowrap",
               !activeCategory 
                 ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" 
-                : "bg-lia-bg-tertiary lia-text-secondary hover:bg-lia-interactive-active border border-lia-border-subtle"
+                : "bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active border border-lia-border-subtle"
             )}
            
           >
@@ -200,7 +200,7 @@ export function CandidateQueriesGuide({
  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-[width,height] whitespace-nowrap",
                 activeCategory === key 
                   ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" 
-                  : "bg-lia-bg-tertiary lia-text-secondary hover:bg-lia-interactive-active border border-lia-border-subtle"
+                  : "bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active border border-lia-border-subtle"
               )}
              
             >
@@ -238,7 +238,7 @@ export function CandidateQueriesGuide({
                   className="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center"
                   style={{backgroundColor: 'var(--lia-bg-secondary)'}}
                 >
-                  <Search className="w-5 h-5 lia-text-muted" />
+                  <Search className="w-5 h-5 text-lia-text-tertiary" />
                 </div>
                 <p
                   className="text-sm"

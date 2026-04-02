@@ -140,14 +140,14 @@ export function CandidatoActivitiesTab({
                   <div className="flex items-center bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-0.5 border border-lia-border-subtle dark:border-lia-border-default">
                     <button
                       onClick={() => setActivityView("timeline")}
-                      className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${activityView === "timeline" ? "bg-lia-interactive-active text-lia-text-primary" : "text-lia-text-secondary hover:lia-text-700"}`}
+                      className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${activityView === "timeline" ? "bg-lia-interactive-active text-lia-text-primary" : "text-lia-text-secondary hover:text-lia-text-primary"}`}
                       title="Visualização Timeline"
                     >
                       <GitBranch className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => setActivityView("list")}
-                      className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${activityView === "list" ? "bg-lia-interactive-active text-lia-text-primary" : "text-lia-text-secondary hover:lia-text-700"}`}
+                      className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${activityView === "list" ? "bg-lia-interactive-active text-lia-text-primary" : "text-lia-text-secondary hover:text-lia-text-primary"}`}
                       title="Visualização Lista"
                     >
                       <List className="w-4 h-4" />

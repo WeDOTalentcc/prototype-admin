@@ -142,7 +142,7 @@ function ResetPasswordContent() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-lia-text-secondary hover:lia-text-700"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-lia-text-secondary hover:text-lia-text-primary"
                   aria-label={showPassword ? "Ocultar nova senha" : "Mostrar nova senha"}
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -169,7 +169,7 @@ function ResetPasswordContent() {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-lia-text-secondary hover:lia-text-700"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-lia-text-secondary hover:text-lia-text-primary"
                   aria-label={showConfirmPassword ? "Ocultar confirmação de senha" : "Mostrar confirmação de senha"}
                 >
                   {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}

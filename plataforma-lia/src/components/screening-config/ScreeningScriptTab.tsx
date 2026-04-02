@@ -218,19 +218,19 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                 return Math.ceil(totalTime / 60)
               })()}min
             </div>
-            <p className="text-micro lia-text-secondary">Tempo Total</p>
+            <p className="text-micro text-lia-text-secondary">Tempo Total</p>
           </div>
           <div className="text-center">
             <div className="text-base-ui font-semibold text-lia-text-primary">
               {previewJob.screeningQuestions?.length || 0}
             </div>
-            <p className="text-micro lia-text-secondary">Perguntas</p>
+            <p className="text-micro text-lia-text-secondary">Perguntas</p>
           </div>
           <div className="text-center">
             <div className="text-base-ui font-semibold text-lia-text-primary">
               ~{100 - (previewJob.screeningConfig?.settings?.min_score ?? 70)}%
             </div>
-            <p className="text-micro lia-text-secondary">Reprovação Est.</p>
+            <p className="text-micro text-lia-text-secondary">Reprovação Est.</p>
           </div>
           <div className="text-center">
             <div className="text-base-ui font-semibold text-lia-text-primary">
@@ -238,7 +238,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                 ? new Date(previewJob.screeningConfig.status.last_updated).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
                 : new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
             </div>
-            <p className="text-micro lia-text-secondary">Atualizado</p>
+            <p className="text-micro text-lia-text-secondary">Atualizado</p>
           </div>
         </div>
         
@@ -248,25 +248,25 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
             <div className="text-base-ui font-semibold text-lia-text-primary">
               {Math.round(funnel.screening * 0.6)}
             </div>
-            <p className="text-micro lia-text-secondary">Triados</p>
+            <p className="text-micro text-lia-text-secondary">Triados</p>
           </div>
           <div className="text-center">
             <div className="text-base-ui font-semibold text-lia-text-primary">
               {funnel.total > 0 ? Math.round((funnel.screening / funnel.total) * 100) : 0}%
             </div>
-            <p className="text-micro lia-text-secondary">Conclusão</p>
+            <p className="text-micro text-lia-text-secondary">Conclusão</p>
           </div>
           <div className="text-center">
             <div className="text-base-ui font-semibold text-status-success">
               {funnel.screening > 0 ? Math.round((funnel.interview / funnel.screening) * 100) : 0}%
             </div>
-            <p className="text-micro lia-text-secondary">Aprovação</p>
+            <p className="text-micro text-lia-text-secondary">Aprovação</p>
           </div>
           <div className="text-center">
             <div className="text-base-ui font-semibold text-lia-text-primary">
               {nps > 0 ? (nps / 20).toFixed(1) : '4.2'}
             </div>
-            <p className="text-micro lia-text-secondary">Nota Média</p>
+            <p className="text-micro text-lia-text-secondary">Nota Média</p>
           </div>
         </div>
       </div>
@@ -290,7 +290,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
             ))
           })()}
         </div>
-        <p className="text-micro lia-text-secondary mt-2 flex items-center gap-1">
+        <p className="text-micro text-lia-text-secondary mt-2 flex items-center gap-1">
           <Lightbulb className="w-3 h-3" />
           Extraídas automaticamente do perfil da vaga via metodologia WSI
         </p>
@@ -380,10 +380,10 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                       <span className={`text-xs font-semibold ${block.editable ? 'text-lia-text-primary' : 'text-lia-text-secondary'}`}>
                         {block.name}
                       </span>
-                      <span className="text-micro lia-text-secondary ml-1.5">({block.duration})</span>
+                      <span className="text-micro text-lia-text-secondary ml-1.5">({block.duration})</span>
                     </div>
                     {!block.editable && (
-                      <Badge className="text-micro px-1 py-0 h-3.5 bg-lia-interactive-active lia-text-secondary">
+                      <Badge className="text-micro px-1 py-0 h-3.5 bg-lia-interactive-active text-lia-text-secondary">
                         Auto
                       </Badge>
                     )}
@@ -404,9 +404,9 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                       </>
                     )}
                     {isExpanded ? (
-                      <ChevronUp className="w-3.5 h-3.5 lia-text-secondary" />
+                      <ChevronUp className="w-3.5 h-3.5 text-lia-text-secondary" />
                     ) : (
-                      <ChevronDown className="w-3.5 h-3.5 lia-text-secondary" />
+                      <ChevronDown className="w-3.5 h-3.5 text-lia-text-secondary" />
                     )}
                   </div>
                 </div>
@@ -429,7 +429,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                             </div>
                           </div>
                           <div className="px-2.5 py-1.5 border-t border-lia-btn-primary-bg/10 bg-lia-bg-secondary">
-                            <p className="text-micro lia-text-secondary italic">
+                            <p className="text-micro text-lia-text-secondary italic">
                               {WSI_AUTOMATIC_MESSAGES[block.id].note}
                             </p>
                           </div>
@@ -439,7 +439,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                           <p className="text-micro text-lia-text-secondary italic">
                             {block.description}
                           </p>
-                          <p className="text-micro lia-text-secondary mt-1">
+                          <p className="text-micro text-lia-text-secondary mt-1">
                             Gerenciado automaticamente pela LIA
                           </p>
                         </div>
@@ -449,7 +449,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                         {/* Questions in this block */}
                         {blockQuestions.length === 0 ? (
                           <div className="p-3 bg-lia-bg-secondary border border-lia-border-subtle border-dashed rounded-md text-center">
-                            <p className="text-micro lia-text-secondary">
+                            <p className="text-micro text-lia-text-secondary">
                               Nenhuma pergunta neste bloco
                             </p>
                           </div>
@@ -507,19 +507,19 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
 
         {/* Canais em linha */}
         <div className="flex items-center gap-3 mb-3 pb-3 border-b border-lia-border-subtle">
-          <span className="text-micro lia-text-secondary">Canais:</span>
+          <span className="text-micro text-lia-text-secondary">Canais:</span>
           <div className="flex items-center gap-2">
-            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${(previewJob.screeningConfig?.channels?.whatsapp?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-lia-bg-tertiary lia-text-secondary'}`}>
+            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${(previewJob.screeningConfig?.channels?.whatsapp?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
               <MessageSquare className="w-3 h-3" />
               <span className="text-micro font-medium">WhatsApp</span>
               {(previewJob.screeningConfig?.channels?.whatsapp?.enabled ?? true) && <CheckCircle className="w-3 h-3" />}
             </div>
-            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${(previewJob.screeningConfig?.channels?.chat_web?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-lia-bg-tertiary lia-text-secondary'}`}>
+            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${(previewJob.screeningConfig?.channels?.chat_web?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
               <Globe className="w-3 h-3" />
               <span className="text-micro font-medium">Chat Web</span>
               {(previewJob.screeningConfig?.channels?.chat_web?.enabled ?? true) && <CheckCircle className="w-3 h-3" />}
             </div>
-            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${(previewJob.screeningConfig?.channels?.phone?.enabled ?? false) ? 'bg-status-success/10 text-status-success' : 'bg-lia-bg-tertiary lia-text-secondary'}`}>
+            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${(previewJob.screeningConfig?.channels?.phone?.enabled ?? false) ? 'bg-status-success/10 text-status-success' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
               <Phone className="w-3 h-3" />
               <span className="text-micro font-medium">Telefone</span>
               {(previewJob.screeningConfig?.channels?.phone?.enabled ?? false) && <CheckCircle className="w-3 h-3" />}
@@ -530,26 +530,26 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
         {/* Configurações em grid */}
         <div className="grid grid-cols-2 gap-2">
           <div className="flex items-center justify-between">
-            <span className="text-micro lia-text-secondary">Score Mínimo</span>
+            <span className="text-micro text-lia-text-secondary">Score Mínimo</span>
             <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-btn-primary-bg text-lia-btn-primary-text">{previewJob.screeningConfig?.settings?.min_score ?? 70}%</Badge>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-micro lia-text-secondary">Timeout Resposta</span>
+            <span className="text-micro text-lia-text-secondary">Timeout Resposta</span>
             <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">{previewJob.screeningConfig?.settings?.response_timeout_hours ?? 48}h</Badge>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-micro lia-text-secondary">Re-tentativas</span>
+            <span className="text-micro text-lia-text-secondary">Re-tentativas</span>
             <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">{previewJob.screeningConfig?.settings?.max_retries ?? 2}x</Badge>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-micro lia-text-secondary">Fallback</span>
+            <span className="text-micro text-lia-text-secondary">Fallback</span>
             <Badge className="text-micro px-1.5 py-0 h-4 bg-wedo-orange/15 text-wedo-orange">Revisão Manual</Badge>
           </div>
         </div>
 
         {/* Status Integrações */}
         <div className="flex items-center gap-3 mt-3 pt-2 border-t border-lia-border-subtle">
-          <span className="text-micro lia-text-secondary">Integrações:</span>
+          <span className="text-micro text-lia-text-secondary">Integrações:</span>
           <div className="flex items-center gap-1 text-micro">
             <div className="w-1.5 h-1.5 rounded-full bg-status-success"></div>
             <span className="text-lia-text-secondary">OpenMic.ai</span>
@@ -572,23 +572,23 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
             {(previewJob.screeningConfig?.scheduling?.auto_enabled ?? true) ? 'Ativo' : 'Inativo'}
           </Badge>
         </div>
-        <p className="text-micro lia-text-secondary mb-2">Aprovados na triagem são agendados automaticamente para entrevista</p>
+        <p className="text-micro text-lia-text-secondary mb-2">Aprovados na triagem são agendados automaticamente para entrevista</p>
 
         <div className="grid grid-cols-2 gap-2">
           <div className="flex items-center justify-between p-1.5 bg-lia-bg-secondary rounded-md">
-            <span className="text-micro lia-text-secondary">Score Mínimo</span>
+            <span className="text-micro text-lia-text-secondary">Score Mínimo</span>
             <span className="text-micro font-medium text-lia-text-primary">{previewJob.screeningConfig?.scheduling?.min_score_for_auto ?? 75}%</span>
           </div>
           <div className="flex items-center justify-between p-1.5 bg-lia-bg-secondary rounded-md">
-            <span className="text-micro lia-text-secondary">Calendário</span>
+            <span className="text-micro text-lia-text-secondary">Calendário</span>
             <span className="text-micro font-medium text-lia-text-primary">{previewJob.screeningConfig?.scheduling?.calendar_provider || 'Microsoft'}</span>
           </div>
           <div className="flex items-center justify-between p-1.5 bg-lia-bg-secondary rounded-md">
-            <span className="text-micro lia-text-secondary">Horários</span>
+            <span className="text-micro text-lia-text-secondary">Horários</span>
             <span className="text-micro font-medium text-lia-text-primary">{previewJob.screeningConfig?.scheduling?.available_hours || '9h-18h'}</span>
           </div>
           <div className="flex items-center justify-between p-1.5 bg-lia-bg-secondary rounded-md">
-            <span className="text-micro lia-text-secondary">Duração</span>
+            <span className="text-micro text-lia-text-secondary">Duração</span>
             <span className="text-micro font-medium text-lia-text-primary">{previewJob.screeningConfig?.scheduling?.interview_duration_min ?? 45}min</span>
           </div>
         </div>

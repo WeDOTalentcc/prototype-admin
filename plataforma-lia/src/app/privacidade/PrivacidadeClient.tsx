@@ -276,12 +276,12 @@ export default function PrivacidadePage() {
                                   requestType === type.value ? 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary' : 'bg-lia-bg-tertiary'
                                 }`}>
                                   <Icon className={`w-5 h-5 ${
-                                    requestType === type.value ? 'lia-text-600 dark:text-lia-text-tertiary' : 'text-lia-text-secondary'
+                                    requestType === type.value ? 'text-lia-text-secondary dark:text-lia-text-tertiary' : 'text-lia-text-secondary'
                                   }`} />
                                 </div>
                                 <div>
                                   <p className={`font-medium ${
- requestType === type.value ? 'text-lia-text-secondary' : 'lia-text-950 dark:text-lia-text-primary'
+ requestType === type.value ? 'text-lia-text-secondary' : 'text-lia-text-primary dark:text-lia-text-primary'
                                   }`}>
                                     {type.label}
                                   </p>

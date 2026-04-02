@@ -170,7 +170,7 @@ export default function PortalTitularPage() {
 
     const colorClasses: Record<string, string> = {
       'amber': 'bg-status-warning/15 text-status-warning hover:bg-status-warning/15',
- 'blue': 'lia-text-600 dark:text-lia-text-tertiary hover:bg-lia-bg-tertiary',
+ 'blue': 'text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-lia-bg-tertiary',
       'emerald': 'bg-status-success/15 text-status-success hover:bg-status-success/15',
       'red': 'bg-status-error/15 text-status-error hover:bg-status-error/15',
       'gray': 'bg-lia-bg-tertiary text-lia-text-primary dark:text-lia-text-primary hover:bg-lia-bg-tertiary',

@@ -118,7 +118,7 @@ const LIARulesInfo: React.FC<{ type: 'triage' | 'interview' }> = ({ type }) => {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <button className="inline-flex items-center gap-1 text-xs lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none">
+          <button className="inline-flex items-center gap-1 text-xs text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none">
             <Info className="w-3 h-3" />
             <span>Como funciona?</span>
           </button>

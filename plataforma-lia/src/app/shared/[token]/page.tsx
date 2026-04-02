@@ -353,10 +353,10 @@ export default function SharedSearchPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center font-['Open_Sans']" role="status" aria-live="polite" aria-label="Carregando...">
+      <div className="min-h-screen bg-lia-bg-primary flex items-center justify-center font-['Open_Sans']" role="status" aria-live="polite" aria-label="Carregando...">
         <div className="flex flex-col items-center gap-4" role="status" aria-live="polite" aria-label="Carregando...">
           <Loader2 className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
-          <p className="text-zinc-400">Carregando...</p>
+          <p className="text-lia-text-tertiary">Carregando...</p>
         </div>
       </div>
     )
@@ -364,8 +364,8 @@ export default function SharedSearchPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center font-['Open_Sans']">
-        <div className="bg-zinc-900 rounded-md p-8 max-w-md text-center border border-zinc-800">
+      <div className="min-h-screen bg-lia-bg-primary flex items-center justify-center font-['Open_Sans']">
+        <div className="bg-lia-btn-primary-bg rounded-md p-8 max-w-md text-center border border-lia-border-strong">
           <div className="text-status-error text-lg mb-4">{error}</div>
           <Button
             onClick={() => fetchSharedData()}
@@ -380,11 +380,11 @@ export default function SharedSearchPage() {
 
   if (isExpired) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center font-['Open_Sans']">
-        <div className="bg-zinc-900 rounded-md p-8 max-w-md text-center border border-zinc-800">
-          <Clock className="w-12 h-12 text-zinc-500 mx-auto mb-4" />
-          <h2 className="text-xl text-white mb-2">Link Expirado</h2>
-          <p className="text-zinc-400">
+      <div className="min-h-screen bg-lia-bg-primary flex items-center justify-center font-['Open_Sans']">
+        <div className="bg-lia-btn-primary-bg rounded-md p-8 max-w-md text-center border border-lia-border-strong">
+          <Clock className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
+          <h2 className="text-xl text-lia-text-on-inverse mb-2">Link Expirado</h2>
+          <p className="text-lia-text-tertiary">
             Este link de compartilhamento expirou em {formatDate(sharedData?.expires_at || '')}.
           </p>
         </div>
@@ -398,8 +398,8 @@ export default function SharedSearchPage() {
   const totalCount = sharedData?.candidates?.length || 0
 
   return (
-    <div className="min-h-screen bg-zinc-950 font-['Open_Sans']">
-      <header className="sticky top-0 z-50 bg-zinc-950/95 backdrop-blur-sm border-b border-zinc-800">
+    <div className="min-h-screen bg-lia-bg-primary font-['Open_Sans']">
+      <header className="sticky top-0 z-50 bg-lia-bg-primary/95 backdrop-blur-sm border-b border-lia-border-strong">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <Image
             src="/logos/wedo-logo.png"
@@ -420,13 +420,13 @@ export default function SharedSearchPage() {
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         <section className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
+          <h1 className="text-3xl font-bold text-lia-text-on-inverse mb-2">
             Candidatos para sua avaliação
           </h1>
           {sharedData?.title && (
-            <h2 className="text-xl text-zinc-300 mb-4">{sharedData.title}</h2>
+            <h2 className="text-xl text-lia-text-disabled mb-4">{sharedData.title}</h2>
           )}
-          <div className="flex flex-wrap gap-4 text-sm text-zinc-400">
+          <div className="flex flex-wrap gap-4 text-sm text-lia-text-tertiary">
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               <span aria-live="polite" aria-atomic="true">{totalCount} candidato{totalCount !== 1 ? 's' : ''}</span>
@@ -445,20 +445,20 @@ export default function SharedSearchPage() {
             )}
           </div>
           {sharedData?.message && (
-            <div className="mt-4 bg-zinc-900 rounded-md p-4 border border-zinc-800">
-              <p className="text-zinc-300 italic">"{sharedData.message}"</p>
+            <div className="mt-4 bg-lia-btn-primary-bg rounded-md p-4 border border-lia-border-strong">
+              <p className="text-lia-text-disabled italic">"{sharedData.message}"</p>
             </div>
           )}
         </section>
 
         {needsAuth && (
           <section className="mb-8">
-            <div className="bg-zinc-900 rounded-md p-6 border border-zinc-800 max-w-md mx-auto">
+            <div className="bg-lia-btn-primary-bg rounded-md p-6 border border-lia-border-strong max-w-md mx-auto">
               <div className="flex items-center gap-3 mb-4">
                 <Mail className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
-                <h3 className="text-lg font-medium text-white">Acesso Necessário</h3>
+                <h3 className="text-lg font-medium text-lia-text-on-inverse">Acesso Necessário</h3>
               </div>
-              <p className="text-zinc-400 text-sm mb-4" aria-live="polite" aria-atomic="true">
+              <p className="text-lia-text-tertiary text-sm mb-4" aria-live="polite" aria-atomic="true">
                 Para avaliar os candidatos, insira seu email para receber um código de acesso.
               </p>
 
@@ -469,7 +469,7 @@ export default function SharedSearchPage() {
                     placeholder="Seu email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
+                    className="bg-lia-btn-primary-hover border-lia-border-strong text-lia-text-on-inverse placeholder:text-lia-text-secondary"
                   />
                   {authError && (
                     <p className="text-status-error text-sm">{authError}</p>
@@ -489,7 +489,7 @@ export default function SharedSearchPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <p className="text-zinc-300 text-sm">
+                  <p className="text-lia-text-disabled text-sm">
                     Enviamos um código para <strong>{email}</strong>
                   </p>
                   <Input
@@ -498,7 +498,7 @@ export default function SharedSearchPage() {
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
                     maxLength={6}
-                    className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 text-center text-lg tracking-widest"
+                    className="bg-lia-btn-primary-hover border-lia-border-strong text-lia-text-on-inverse placeholder:text-lia-text-secondary text-center text-lg tracking-widest"
                   />
                   {authError && (
                     <p className="text-status-error text-sm">{authError}</p>
@@ -521,7 +521,7 @@ export default function SharedSearchPage() {
                       setOtp('')
                       setAuthError(null)
                     }}
-                    className="text-zinc-400 text-sm hover:text-zinc-300 w-full text-center"
+                    className="text-lia-text-tertiary text-sm hover:text-lia-text-disabled w-full text-center"
                   >
                     Voltar
                   </button>
@@ -534,16 +534,16 @@ export default function SharedSearchPage() {
         {(!sharedData?.requires_auth || sessionToken) && sharedData?.candidates && (
           <>
             <section className="mb-6">
-              <div className="bg-zinc-900 rounded-md p-4 border border-zinc-800">
+              <div className="bg-lia-btn-primary-bg rounded-md p-4 border border-lia-border-strong">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-zinc-300 text-sm">
+                  <span className="text-lia-text-disabled text-sm">
                     {evaluatedCount}/{totalCount} avaliados
                   </span>
-                  <span className="text-zinc-500 text-sm">
+                  <span className="text-lia-text-secondary text-sm">
                     {Math.round((evaluatedCount / totalCount) * 100) || 0}%
                   </span>
                 </div>
-                <div className="w-full bg-zinc-800 rounded-full h-2">
+                <div className="w-full bg-lia-btn-primary-hover rounded-full h-2">
                   <div
                     className="bg-lia-btn-primary-bg dark:bg-lia-bg-secondary h-2 rounded-full transition-[width,height] duration-300"
                     style={{width: `${(evaluatedCount / totalCount) * 100 || 0}%`}}
@@ -560,7 +560,7 @@ export default function SharedSearchPage() {
                     👎 <span className="text-status-error">{counts.rejected}</span>
                   </span>
                   <span className="flex items-center gap-1">
-                    ⏳ <span className="text-zinc-400">{counts.pending}</span>
+                    ⏳ <span className="text-lia-text-tertiary">{counts.pending}</span>
                   </span>
                 </div>
               </div>
@@ -581,7 +581,7 @@ export default function SharedSearchPage() {
                     className={`px-4 py-2 rounded-md text-sm transition-colors motion-reduce:transition-none ${
                       activeFilter === key
                         ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary'
-                        : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800 border border-zinc-800'
+                        : 'bg-lia-btn-primary-bg text-lia-text-tertiary hover:bg-lia-btn-primary-hover border border-lia-border-strong'
                     }`}
                   >
                     {label} ({count})
@@ -592,8 +592,8 @@ export default function SharedSearchPage() {
 
             <section className="space-y-4">
               {filteredCandidates.length === 0 ? (
-                <div className="bg-zinc-900 rounded-md p-8 text-center border border-zinc-800">
-                  <p className="text-zinc-400" aria-live="polite" aria-atomic="true">Nenhum candidato encontrado para este filtro.</p>
+                <div className="bg-lia-btn-primary-bg rounded-md p-8 text-center border border-lia-border-strong">
+                  <p className="text-lia-text-tertiary" aria-live="polite" aria-atomic="true">Nenhum candidato encontrado para este filtro.</p>
                 </div>
               ) : (
                 filteredCandidates.map((candidate) => {
@@ -605,7 +605,7 @@ export default function SharedSearchPage() {
                   return (
                     <div
                       key={candidate.id}
-                      className="bg-zinc-900 rounded-md border border-zinc-800 overflow-hidden"
+                      className="bg-lia-btn-primary-bg rounded-md border border-lia-border-strong overflow-hidden"
                     >
                       <div className="p-4">
                         <div className="flex items-start gap-4">
@@ -616,18 +616,18 @@ export default function SharedSearchPage() {
                               className="w-14 h-14 rounded-full object-cover flex-shrink-0"
                             />
                           ) : (
-                            <div className="w-14 h-14 rounded-full bg-zinc-800 flex items-center justify-center flex-shrink-0">
-                              <User className="w-6 h-6 text-zinc-600" />
+                            <div className="w-14 h-14 rounded-full bg-lia-btn-primary-hover flex items-center justify-center flex-shrink-0">
+                              <User className="w-6 h-6 text-lia-text-secondary" />
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-4">
                               <div>
-                                <h3 className="text-lg font-medium text-white truncate">
+                                <h3 className="text-lg font-medium text-lia-text-on-inverse truncate">
                                   {candidate.name}
                                 </h3>
                                 {candidate.title && (
-                                  <p className="text-zinc-400 text-sm">{candidate.title}</p>
+                                  <p className="text-lia-text-tertiary text-sm">{candidate.title}</p>
                                 )}
                               </div>
                               {candidate.wsi_score !== undefined && (
@@ -636,7 +636,7 @@ export default function SharedSearchPage() {
                                 </Badge>
                               )}
                             </div>
-                            <div className="flex flex-wrap gap-3 mt-2 text-sm text-zinc-500">
+                            <div className="flex flex-wrap gap-3 mt-2 text-sm text-lia-text-secondary">
                               {candidate.company && (
                                 <span className="flex items-center gap-1">
                                   <Briefcase className="w-3.5 h-3.5" />
@@ -671,7 +671,7 @@ export default function SharedSearchPage() {
                                   href={candidate.resume_url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="flex items-center gap-1 text-zinc-400 hover:text-zinc-200 transition-colors motion-reduce:transition-none"
+                                  className="flex items-center gap-1 text-lia-text-tertiary hover:text-lia-text-disabled transition-colors motion-reduce:transition-none"
                                 >
                                   <FileText className="w-3.5 h-3.5" />
                                   Currículo
@@ -684,7 +684,7 @@ export default function SharedSearchPage() {
                                   <Badge
                                     key={skill}
                                     variant="secondary"
-                                    className="bg-zinc-800 text-zinc-300 border-0 text-xs"
+                                    className="bg-lia-btn-primary-hover text-lia-text-disabled border-0 text-xs"
                                   >
                                     {skill}
                                   </Badge>
@@ -692,7 +692,7 @@ export default function SharedSearchPage() {
                                 {candidate.skills.length > 5 && (
                                   <Badge
                                     variant="secondary"
-                                    className="bg-zinc-800 text-zinc-500 border-0 text-xs"
+                                    className="bg-lia-btn-primary-hover text-lia-text-secondary border-0 text-xs"
                                   >
                                     +{candidate.skills.length - 5}
                                   </Badge>
@@ -720,28 +720,28 @@ export default function SharedSearchPage() {
                         </button>
 
                         {isExpanded && (
-                          <div className="mt-4 pt-4 border-t border-zinc-800">
+                          <div className="mt-4 pt-4 border-t border-lia-border-strong">
                             {candidate.summary && (
                               <div className="mb-4">
-                                <h4 className="text-sm font-medium text-zinc-300 mb-1">Resumo</h4>
-                                <p className="text-zinc-400 text-sm">{candidate.summary}</p>
+                                <h4 className="text-sm font-medium text-lia-text-disabled mb-1">Resumo</h4>
+                                <p className="text-lia-text-tertiary text-sm">{candidate.summary}</p>
                               </div>
                             )}
                             {candidate.education && (
                               <div className="mb-4">
-                                <h4 className="text-sm font-medium text-zinc-300 mb-1">Formação</h4>
-                                <p className="text-zinc-400 text-sm">{candidate.education}</p>
+                                <h4 className="text-sm font-medium text-lia-text-disabled mb-1">Formação</h4>
+                                <p className="text-lia-text-tertiary text-sm">{candidate.education}</p>
                               </div>
                             )}
                             {candidate.skills && candidate.skills.length > 5 && (
                               <div>
-                                <h4 className="text-sm font-medium text-zinc-300 mb-2">Todas as habilidades</h4>
+                                <h4 className="text-sm font-medium text-lia-text-disabled mb-2">Todas as habilidades</h4>
                                 <div className="flex flex-wrap gap-1.5">
                                   {candidate.skills.map((skill) => (
                                     <Badge
                                       key={skill}
                                       variant="secondary"
-                                      className="bg-zinc-800 text-zinc-300 border-0 text-xs"
+                                      className="bg-lia-btn-primary-hover text-lia-text-disabled border-0 text-xs"
                                     >
                                       {skill}
                                     </Badge>
@@ -753,9 +753,9 @@ export default function SharedSearchPage() {
                         )}
                       </div>
 
-                      <div className="bg-zinc-950 p-4 border-t border-zinc-800">
+                      <div className="bg-lia-bg-primary p-4 border-t border-lia-border-strong">
                         {sharedData?.can_rate === false ? (
-                          <div className="flex items-center gap-2 text-zinc-500 text-sm">
+                          <div className="flex items-center gap-2 text-lia-text-secondary text-sm">
                             <span>Visualização apenas — avaliações desativadas pelo recrutador.</span>
                           </div>
                         ) : feedback && !pending ? (
@@ -780,14 +780,14 @@ export default function SharedSearchPage() {
                                 </span>
                               )}
                               {feedback.comment && (
-                                <span className="text-zinc-500 text-sm ml-2">
+                                <span className="text-lia-text-secondary text-sm ml-2">
                                   • {feedback.comment}
                                 </span>
                               )}
                             </div>
                             <button
                               onClick={() => updatePendingFeedback(candidate.id, feedback.rating)}
-                              className="text-zinc-500 text-sm hover:text-zinc-300"
+                              className="text-lia-text-secondary text-sm hover:text-lia-text-disabled"
                             >
                               Editar
                             </button>
@@ -802,8 +802,8 @@ export default function SharedSearchPage() {
                                 size="sm"
                                 className={
                                   pending?.rating === 'approved'
-                                    ? 'bg-status-success hover:bg-status-success/10 text-white border-0'
-                                    : 'border-zinc-700 text-zinc-300 hover:bg-zinc-800'
+                                    ? 'bg-status-success hover:bg-status-success/10 text-lia-text-on-inverse border-0'
+                                    : 'border-lia-border-strong text-lia-text-disabled hover:bg-lia-btn-primary-hover'
                                 }
                               >
                                 <ThumbsUp className="w-4 h-4 mr-1" />
@@ -816,8 +816,8 @@ export default function SharedSearchPage() {
                                 size="sm"
                                 className={
                                   pending?.rating === 'maybe'
-                                    ? 'bg-status-warning/10 hover:bg-status-warning/10 text-white border-0'
-                                    : 'border-zinc-700 text-zinc-300 hover:bg-zinc-800'
+                                    ? 'bg-status-warning/10 hover:bg-status-warning/10 text-lia-text-on-inverse border-0'
+                                    : 'border-lia-border-strong text-lia-text-disabled hover:bg-lia-btn-primary-hover'
                                 }
                               >
                                 <HelpCircle className="w-4 h-4 mr-1" />
@@ -830,8 +830,8 @@ export default function SharedSearchPage() {
                                 size="sm"
                                 className={
                                   pending?.rating === 'rejected'
-                                    ? 'bg-status-error hover:bg-status-error text-white border-0'
-                                    : 'border-zinc-700 text-zinc-300 hover:bg-zinc-800'
+                                    ? 'bg-status-error hover:bg-status-error text-lia-text-on-inverse border-0'
+                                    : 'border-lia-border-strong text-lia-text-disabled hover:bg-lia-btn-primary-hover'
                                 }
                               >
                                 <ThumbsDown className="w-4 h-4 mr-1" />
@@ -847,7 +847,7 @@ export default function SharedSearchPage() {
                                     onChange={(e) =>
                                       updatePendingComment(candidate.id, e.target.value)
                                     }
-                                    className="w-full bg-zinc-800 border border-zinc-700 rounded-md p-2 text-sm text-white placeholder:text-zinc-500 resize-none focus:outline-none focus:border-lia-border-medium"
+                                    className="w-full bg-lia-btn-primary-hover border border-lia-border-strong rounded-md p-2 text-sm text-lia-text-on-inverse placeholder:text-lia-text-secondary resize-none focus:outline-none focus:border-lia-border-medium"
                                     rows={2}
                                   />
                                 )}
@@ -862,7 +862,7 @@ export default function SharedSearchPage() {
                                     }}
                                     variant="ghost"
                                     size="sm"
-                                    className="text-zinc-400 hover:text-zinc-300"
+                                    className="text-lia-text-tertiary hover:text-lia-text-disabled"
                                   >
                                     Cancelar
                                   </Button>
@@ -894,9 +894,9 @@ export default function SharedSearchPage() {
         )}
       </main>
 
-      <footer className="border-t border-zinc-800 mt-12">
+      <footer className="border-t border-lia-border-strong mt-12">
         <div className="max-w-6xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-zinc-500 text-sm">
+          <div className="flex items-center gap-2 text-lia-text-secondary text-sm">
             <span>Powered by</span>
             <Image
               src="/logos/wedo-logo.png"
@@ -910,7 +910,7 @@ export default function SharedSearchPage() {
             href="/privacidade"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-zinc-500 text-sm hover:lia-text-900 dark:hover:lia-text-50 transition-colors motion-reduce:transition-none"
+            className="text-lia-text-secondary text-sm hover:text-lia-text-primary dark:hover:text-lia-text-primary transition-colors motion-reduce:transition-none"
           >
             Política de Privacidade
           </a>

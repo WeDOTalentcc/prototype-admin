@@ -221,7 +221,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
 
           <div className="py-8 flex flex-col items-center justify-center text-center">
             <div className="w-14 h-14 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-full flex items-center justify-center mb-4">
-              <BrainCircuit className="w-7 h-7 lia-text-secondary" />
+              <BrainCircuit className="w-7 h-7 text-lia-text-secondary" />
             </div>
             <h3 className="text-base-ui font-medium text-lia-text-primary mb-2 font-['Open_Sans',sans-serif]">
               Assessment não realizado

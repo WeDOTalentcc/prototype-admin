@@ -370,7 +370,7 @@ export function AdminTemplateHub() {
       <div className="space-y-3">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 lia-text-secondary" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
             <Input
               placeholder="Buscar templates..."
               value={searchQuery}
@@ -419,7 +419,7 @@ export function AdminTemplateHub() {
           </div>
         </div>
 
-        <div className="text-xs lia-text-secondary flex items-center gap-2">
+        <div className="text-xs text-lia-text-secondary flex items-center gap-2">
           <Filter className="w-3.5 h-3.5" />
           {filteredTemplates.length} template{filteredTemplates.length !== 1 ? 's' : ''} encontrado{filteredTemplates.length !== 1 ? 's' : ''}
         </div>
@@ -461,7 +461,7 @@ export function AdminTemplateHub() {
                   <p className="text-sm text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                     Nenhum template encontrado
                   </p>
-                  <p className="text-xs lia-text-secondary mt-1">
+                  <p className="text-xs text-lia-text-secondary mt-1">
                     Tente ajustar os filtros de busca
                   </p>
                 </CardContent>
@@ -672,7 +672,7 @@ export function AdminTemplateHub() {
                         </div>
                         <div>
                           <span className="text-base-ui font-semibold text-lia-text-primary">Ajustar com a LIA</span>
-                          <p className="text-xs lia-text-secondary">
+                          <p className="text-xs text-lia-text-secondary">
                             Descreva as alterações desejadas
                           </p>
                         </div>
@@ -734,7 +734,7 @@ export function AdminTemplateHub() {
                               <h3 className="text-sm font-semibold text-lia-text-primary">
                                 Ajustes da LIA
                               </h3>
-                              <p className="text-xs lia-text-secondary">
+                              <p className="text-xs text-lia-text-secondary">
                                 Revise as alterações sugeridas
                               </p>
                             </div>
@@ -746,7 +746,7 @@ export function AdminTemplateHub() {
                       </div>
                       <CardContent className="p-4 space-y-4 overflow-y-auto" style={{maxHeight: 'calc(90vh - 180px)'}}>
                         <div>
-                          <label className="block text-xs font-medium lia-text-secondary uppercase tracking-wide mb-2">
+                          <label className="block text-xs font-medium text-lia-text-secondary uppercase tracking-wide mb-2">
                             Alterações Realizadas
                           </label>
                           <div className="flex flex-wrap gap-1.5">
@@ -761,7 +761,7 @@ export function AdminTemplateHub() {
                         
                         {aiResultModal.newSubject && (
                           <div>
-                            <label className="block text-xs font-medium lia-text-secondary uppercase tracking-wide mb-2">
+                            <label className="block text-xs font-medium text-lia-text-secondary uppercase tracking-wide mb-2">
                               Novo Assunto
                             </label>
                             <div className="p-3 bg-lia-bg-secondary rounded-md text-xs text-lia-text-primary">
@@ -771,7 +771,7 @@ export function AdminTemplateHub() {
                         )}
 
                         <div>
-                          <label className="block text-xs font-medium lia-text-secondary uppercase tracking-wide mb-2">
+                          <label className="block text-xs font-medium text-lia-text-secondary uppercase tracking-wide mb-2">
                             Novo Conteúdo
                           </label>
                           <div className="p-3 bg-lia-bg-secondary rounded-md text-xs text-lia-text-primary whitespace-pre-wrap max-h-content-md overflow-y-auto">
@@ -813,7 +813,7 @@ export function AdminTemplateHub() {
                   <p className="text-sm text-lia-text-secondary mb-1">
                     Selecione um template
                   </p>
-                  <p className="text-xs lia-text-secondary">
+                  <p className="text-xs text-lia-text-secondary">
                     Clique em um template à esquerda para visualizar e editar
                   </p>
                 </CardContent>

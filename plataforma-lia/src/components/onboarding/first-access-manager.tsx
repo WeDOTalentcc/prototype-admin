@@ -200,7 +200,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
               <Loader2 className="w-10 h-10 lia-text-white animate-spin motion-reduce:animate-none" />
             </div>
 
-            <h2 className="lia-title-large lia-text-black mb-4">
+            <h2 className="lia-title-large text-lia-text-primary mb-4">
               Validando seu acesso
             </h2>
             <p className="lia-text-medium">
@@ -224,10 +224,10 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
               <AlertCircle className="w-10 h-10 lia-text-white" />
             </div>
 
-            <h2 className="lia-title-large lia-text-black mb-4">
+            <h2 className="lia-title-large text-lia-text-primary mb-4">
               Acesso Negado
             </h2>
-            <p className="lia-text-medium lia-text-black mb-8">
+            <p className="lia-text-medium text-lia-text-primary mb-8">
               {error || 'Token inválido ou expirado'}
             </p>
 
@@ -275,7 +275,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
             </div>
           </div>
 
-          <h1 className="lia-title-hero lia-text-black mb-6">
+          <h1 className="lia-title-hero text-lia-text-primary mb-6">
             Bem-vindo à Plataforma LIA
           </h1>
           <p className="lia-text-large max-w-3xl mx-auto leading-relaxed">
@@ -297,17 +297,17 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                     <Building className="w-8 h-8 lia-text-white" />
                   </div>
                   <div>
-                    <h3 className="lia-title-medium lia-text-black">Dados da Empresa</h3>
+                    <h3 className="lia-title-medium text-lia-text-primary">Dados da Empresa</h3>
                     <p className="lia-text-small">Informações do seu convite</p>
                   </div>
                 </div>
 
                 <div className="space-y-6">
                   <div>
-                    <h4 className="lia-title-medium lia-text-black mb-3">
+                    <h4 className="lia-title-medium text-lia-text-primary mb-3">
                       {accessData?.companyName}
                     </h4>
-                    <Badge className="lia-bg-mint lia-text-black border-0 px-4 py-2 lia-font-sans font-semibold">
+                    <Badge className="lia-bg-mint text-lia-text-primary border-0 px-4 py-2 lia-font-sans font-semibold">
                       ✓ Convite válido
                     </Badge>
                   </div>
@@ -334,7 +334,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
 
                 {/* Contato que enviou o convite */}
                 <div className="pt-8 border-t border-lia-border-subtle mt-8">
-                  <h4 className="lia-title-medium lia-text-black mb-4">
+                  <h4 className="lia-title-medium text-lia-text-primary mb-4">
                     Convite enviado por:
                   </h4>
                   <div className="flex items-center gap-4 p-4 lia-bg-lavender rounded-md">
@@ -342,7 +342,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                       <User className="w-7 h-7 lia-text-white" />
                     </div>
                     <div>
-                      <p className="lia-text-bold lia-text-black text-lg">
+                      <p className="lia-text-bold text-lia-text-primary text-lg">
                         {accessData?.contactName}
                       </p>
                       <p className="lia-text-medium">
@@ -366,7 +366,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                     <User className="w-8 h-8 lia-text-white" />
                   </div>
                   <div>
-                    <h3 className="lia-title-medium lia-text-black">Criar sua Conta</h3>
+                    <h3 className="lia-title-medium text-lia-text-primary">Criar sua Conta</h3>
                     <p className="lia-text-small">Configure seu acesso à plataforma</p>
                   </div>
                 </div>
@@ -375,7 +375,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
               <form className="space-y-6">
                 {/* Nome */}
                 <div>
-                  <label className="block lia-text-bold lia-text-black mb-3">
+                  <label className="block lia-text-bold text-lia-text-primary mb-3">
                     Nome Completo *
                   </label>
                   <input
@@ -389,7 +389,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
 
                 {/* Email */}
                 <div>
-                  <label className="block lia-text-bold lia-text-black mb-3">
+                  <label className="block lia-text-bold text-lia-text-primary mb-3">
                     Email Corporativo *
                   </label>
                   <input
@@ -403,7 +403,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
 
                 {/* Telefone */}
                 <div>
-                  <label className="block lia-text-bold lia-text-black mb-3">
+                  <label className="block lia-text-bold text-lia-text-primary mb-3">
                     Telefone
                   </label>
                   <input
@@ -417,7 +417,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
 
                 {/* Cargo */}
                 <div>
-                  <label className="block lia-text-bold lia-text-black mb-3">
+                  <label className="block lia-text-bold text-lia-text-primary mb-3">
                     Seu Cargo
                   </label>
                   <select
@@ -435,7 +435,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
 
                 {/* Senha */}
                 <div>
-                  <label className="block lia-text-bold lia-text-black mb-3">
+                  <label className="block lia-text-bold text-lia-text-primary mb-3">
                     Senha *
                   </label>
                   <div className="relative">
@@ -449,7 +449,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 transform -translate-y-1/2 lia-text-black hover:lia-text-blue transition-colors motion-reduce:transition-none"
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-lia-text-primary hover:text-wedo-cyan transition-colors motion-reduce:transition-none"
                     >
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
@@ -458,7 +458,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
 
                 {/* Confirmar Senha */}
                 <div>
-                  <label className="block lia-text-bold lia-text-black mb-3">
+                  <label className="block lia-text-bold text-lia-text-primary mb-3">
                     Confirmar Senha *
                   </label>
                   <input
@@ -479,7 +479,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                     onChange={(e) => setUserData(prev => ({...prev, acceptTerms: e.target.checked}))}
                     className="mt-1 w-5 h-5 rounded-md text-lia-text-secondary focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20"
                   />
-                  <label htmlFor="terms" className="lia-text-medium lia-text-black">
+                  <label htmlFor="terms" className="lia-text-medium text-lia-text-primary">
                     Aceito os <a href="#" className="lia-text-blue hover:underline lia-text-bold">termos de uso</a> e a{' '}
                     <a href="#" className="lia-text-blue hover:underline lia-text-bold">política de privacidade</a>
                   </label>
@@ -518,7 +518,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
         <div
           className="text-center mt-16 animate-in fade-in slide-in-from-bottom-4 duration-700"
         >
-          <div className="inline-flex items-center gap-4 lia-font-sans lia-text-medium lia-text-black lia-bg-lia-bg-primary rounded-full px-8 py-4 border border-lia-border-subtle">
+          <div className="inline-flex items-center gap-4 lia-font-sans lia-text-medium text-lia-text-primary lia-bg-lia-bg-primary rounded-full px-8 py-4 border border-lia-border-subtle">
             <Shield className="w-6 h-6 lia-text-mint" />
             Seus dados estão seguros e protegidos
           </div>

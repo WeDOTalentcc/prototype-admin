@@ -186,7 +186,7 @@ export function ScreeningStatusModal({
                     onChange={(e) => setScheduledEndDate(e.target.value)}
                     className="h-8 text-xs border-lia-border-subtle"
                   />
-                  <p className="text-micro lia-text-secondary">
+                  <p className="text-micro text-lia-text-secondary">
                     A triagem será concluída automaticamente nesta data
                   </p>
                 </div>
@@ -212,19 +212,19 @@ export function ScreeningStatusModal({
               {metrics && (metrics.screened_count || 0) > 0 && (
                 <div className="grid grid-cols-3 gap-3">
                   <div className="bg-lia-bg-secondary rounded-md p-3 text-center">
-                    <Users className="w-4 h-4 lia-text-secondary mx-auto mb-1" />
+                    <Users className="w-4 h-4 text-lia-text-secondary mx-auto mb-1" />
                     <p className="text-base font-semibold text-lia-text-primary">{metrics.screened_count || 0}</p>
-                    <p className="text-micro lia-text-secondary">Triados</p>
+                    <p className="text-micro text-lia-text-secondary">Triados</p>
                   </div>
                   <div className="bg-lia-bg-secondary rounded-md p-3 text-center">
-                    <BarChart3 className="w-4 h-4 lia-text-secondary mx-auto mb-1" />
+                    <BarChart3 className="w-4 h-4 text-lia-text-secondary mx-auto mb-1" />
                     <p className="text-base font-semibold text-lia-text-primary">{metrics.completion_rate || 0}%</p>
-                    <p className="text-micro lia-text-secondary">Conclusão</p>
+                    <p className="text-micro text-lia-text-secondary">Conclusão</p>
                   </div>
                   <div className="bg-lia-bg-secondary rounded-md p-3 text-center">
-                    <CheckCircle2 className="w-4 h-4 lia-text-secondary mx-auto mb-1" />
+                    <CheckCircle2 className="w-4 h-4 text-lia-text-secondary mx-auto mb-1" />
                     <p className="text-base font-semibold text-lia-text-primary">{metrics.average_rating?.toFixed(1) || '—'}</p>
-                    <p className="text-micro lia-text-secondary">Nota Média</p>
+                    <p className="text-micro text-lia-text-secondary">Nota Média</p>
                   </div>
                 </div>
               )}
@@ -288,15 +288,15 @@ export function ScreeningStatusModal({
                 <div className="grid grid-cols-3 gap-3">
                   <div className="bg-lia-bg-secondary rounded-md p-3 text-center">
                     <p className="text-base font-semibold text-lia-text-primary">{metrics.screened_count || 0}</p>
-                    <p className="text-micro lia-text-secondary">Triados</p>
+                    <p className="text-micro text-lia-text-secondary">Triados</p>
                   </div>
                   <div className="bg-lia-bg-secondary rounded-md p-3 text-center">
                     <p className="text-base font-semibold text-lia-text-primary">{metrics.completion_rate || 0}%</p>
-                    <p className="text-micro lia-text-secondary">Conclusão</p>
+                    <p className="text-micro text-lia-text-secondary">Conclusão</p>
                   </div>
                   <div className="bg-lia-bg-secondary rounded-md p-3 text-center">
                     <p className="text-base font-semibold text-lia-text-primary">{metrics.average_rating?.toFixed(1) || '—'}</p>
-                    <p className="text-micro lia-text-secondary">Nota Média</p>
+                    <p className="text-micro text-lia-text-secondary">Nota Média</p>
                   </div>
                 </div>
               )}

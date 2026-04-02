@@ -143,14 +143,14 @@ export function NextStepModal({
  "flex h-8 w-8 items-center justify-center rounded-full",
                     decisionType === "approve"
                       ? "bg-lia-interactive-active text-lia-text-primary"
-                      : "bg-lia-bg-tertiary lia-text-secondary"
+                      : "bg-lia-bg-tertiary text-lia-text-secondary"
                   )}
                 >
                   <CheckCircle className="h-4 w-4" />
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-lia-text-primary">Aprovar</p>
-                  <p className="text-xs lia-text-secondary">
+                  <p className="text-xs text-lia-text-secondary">
                     Avançar para próxima etapa
                   </p>
                 </div>
@@ -170,14 +170,14 @@ export function NextStepModal({
  "flex h-8 w-8 items-center justify-center rounded-full",
                     decisionType === "reject"
                       ? "bg-lia-interactive-active text-lia-text-primary"
-                      : "bg-lia-bg-tertiary lia-text-secondary"
+                      : "bg-lia-bg-tertiary text-lia-text-secondary"
                   )}
                 >
                   <XCircle className="h-4 w-4" />
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-lia-text-primary">Reprovar</p>
-                  <p className="text-xs lia-text-secondary">
+                  <p className="text-xs text-lia-text-secondary">
                     Encerrar participação no processo
                   </p>
                 </div>
@@ -197,14 +197,14 @@ export function NextStepModal({
  "flex h-8 w-8 items-center justify-center rounded-full",
                     decisionType === "pending"
                       ? "bg-lia-interactive-active text-lia-text-primary"
-                      : "bg-lia-bg-tertiary lia-text-secondary"
+                      : "bg-lia-bg-tertiary text-lia-text-secondary"
                   )}
                 >
                   <Clock className="h-4 w-4" />
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-lia-text-primary">Pendente</p>
-                  <p className="text-xs lia-text-secondary">Decidir depois</p>
+                  <p className="text-xs text-lia-text-secondary">Decidir depois</p>
                 </div>
               </label>
             </RadioGroup>
@@ -236,7 +236,7 @@ export function NextStepModal({
                 </SelectContent>
               </Select>
               {suggestedNextStage && selectedStage !== suggestedNextStage && (
-                <p className="text-xs lia-text-secondary flex items-center gap-1">
+                <p className="text-xs text-lia-text-secondary flex items-center gap-1">
                   <Brain className="h-3 w-3 text-wedo-cyan" />
                   A LIA sugeriu: <span className="font-medium">{suggestedNextStage}</span>
                 </p>
@@ -274,7 +274,7 @@ export function NextStepModal({
  "flex h-7 w-7 items-center justify-center rounded-full",
                       feedbackAction === "send_now"
                         ? "bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary"
-                        : "bg-lia-bg-tertiary lia-text-secondary"
+                        : "bg-lia-bg-tertiary text-lia-text-secondary"
                     )}
                   >
                     <Mail className="h-3.5 w-3.5" />
@@ -304,7 +304,7 @@ export function NextStepModal({
  "flex h-7 w-7 items-center justify-center rounded-full",
                       feedbackAction === "schedule"
                         ? "bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary"
-                        : "bg-lia-bg-tertiary lia-text-secondary"
+                        : "bg-lia-bg-tertiary text-lia-text-secondary"
                     )}
                   >
                     <Calendar className="h-3.5 w-3.5" />
@@ -330,7 +330,7 @@ export function NextStepModal({
  "flex h-7 w-7 items-center justify-center rounded-full",
                       feedbackAction === "none"
                         ? "bg-lia-interactive-active text-lia-text-secondary"
-                        : "bg-lia-bg-tertiary lia-text-secondary"
+                        : "bg-lia-bg-tertiary text-lia-text-secondary"
                     )}
                   >
                     <XCircle className="h-3.5 w-3.5" />

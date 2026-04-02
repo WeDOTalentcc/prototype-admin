@@ -81,7 +81,7 @@ export function SearchCalibrationStage({
                 <h4 className="text-xs font-medium text-lia-text-primary">
                   Vaga Publicada!
                 </h4>
-                <p className="text-micro lia-text-secondary">
+                <p className="text-micro text-lia-text-secondary">
                   {publishedJobId || 'JOB-XXXXX'} • {basicInfoFields.cargo}
                 </p>
               </div>
@@ -93,7 +93,7 @@ export function SearchCalibrationStage({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4 text-lia-text-secondary" />
-                <span className="text-sm lia-text-secondary" aria-live="polite" aria-atomic="true">
+                <span className="text-sm text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                   Candidatos ideais:
                 </span>
               </div>
@@ -127,7 +127,7 @@ export function SearchCalibrationStage({
             {searchPhase === 'idle' || searchPhase === 'local-searching' ? (
               <div className="flex flex-col items-center justify-center py-4" role="status" aria-live="polite" aria-label="Carregando...">
                 <Loader2 className="w-6 h-6 text-lia-text-secondary animate-spin motion-reduce:animate-none mb-2" />
-                <p className="text-xs lia-text-secondary" aria-live="polite" aria-atomic="true">
+                <p className="text-xs text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                   Buscando candidatos na sua base de talentos...
                 </p>
               </div>
@@ -139,7 +139,7 @@ export function SearchCalibrationStage({
                     <span className="font-semibold text-wedo-green">{localCandidateCount}</span> candidatos encontrados
                   </span>
                 </div>
-                <span className="text-micro lia-text-secondary">Base interna</span>
+                <span className="text-micro text-lia-text-secondary">Base interna</span>
               </div>
             )}
           </div>
@@ -155,7 +155,7 @@ export function SearchCalibrationStage({
                   <h4 className="text-xs font-medium text-lia-text-primary mb-1">
                     Expandir para busca global?
                   </h4>
-                  <p className="text-micro lia-text-secondary mb-2">
+                  <p className="text-micro text-lia-text-secondary mb-2">
                     Posso buscar em uma base com mais de 800 milhões de perfis profissionais (Pearch AI).
                   </p>
                   <div className="flex gap-2">
@@ -171,7 +171,7 @@ export function SearchCalibrationStage({
                     </button>
                     <button
                       onClick={() => onSetSearchPhase('global-complete')}
-                      className="px-3 py-1.5 bg-lia-bg-secondary lia-text-secondary text-micro font-medium rounded-md hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none"
+                      className="px-3 py-1.5 bg-lia-bg-secondary text-lia-text-secondary text-micro font-medium rounded-md hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none"
                     >
                       Não, usar só base local
                     </button>
@@ -192,7 +192,7 @@ export function SearchCalibrationStage({
               </div>
               <div className="flex flex-col items-center justify-center py-4" role="status" aria-live="polite" aria-label="Carregando...">
                 <Loader2 className="w-6 h-6 text-lia-text-secondary animate-spin motion-reduce:animate-none mb-2" />
-                <p className="text-xs lia-text-secondary">
+                <p className="text-xs text-lia-text-secondary">
                   Buscando em 800M+ perfis profissionais...
                 </p>
               </div>
@@ -215,7 +215,7 @@ export function SearchCalibrationStage({
                     <span className="font-semibold text-lia-text-primary">+{globalCandidateCount}</span> candidatos encontrados
                   </span>
                 </div>
-                <span className="text-micro lia-text-secondary">Base global</span>
+                <span className="text-micro text-lia-text-secondary">Base global</span>
               </div>
             </div>
           )}
@@ -245,7 +245,7 @@ export function SearchCalibrationStage({
                   </div>
                 )}
                 <div className="pt-2 border-t border-lia-border-subtle">
-                  <p className="text-micro lia-text-secondary italic" aria-live="polite" aria-atomic="true">
+                  <p className="text-micro text-lia-text-secondary italic" aria-live="polite" aria-atomic="true">
                     {localCandidateCount >= 10
                       ? 'Ótima quantidade! Você tem candidatos suficientes para uma boa seleção.'
                       : localCandidateCount >= 5
@@ -268,7 +268,7 @@ export function SearchCalibrationStage({
                   <h4 className="text-xs font-medium text-lia-text-primary">
                     Próximo passo: Calibração
                   </h4>
-                  <p className="text-micro lia-text-secondary" aria-live="polite" aria-atomic="true">
+                  <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                     Vou apresentar 3 candidatos para você avaliar e calibrar minha assertividade
                   </p>
                 </div>
@@ -297,7 +297,7 @@ export function SearchCalibrationStage({
                   <h4 className="text-xs font-medium text-lia-text-primary">
                     Buscando candidatos...
                   </h4>
-                  <p className="text-micro lia-text-secondary">
+                  <p className="text-micro text-lia-text-secondary">
                     Aguarde enquanto encontro perfis compatíveis
                   </p>
                 </div>
@@ -355,7 +355,7 @@ export function SearchCalibrationStage({
                     <h4 className="text-xs font-medium text-lia-text-primary">
                       Calibração em andamento
                     </h4>
-                    <p className="text-micro lia-text-secondary" aria-live="polite" aria-atomic="true">
+                    <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                       Avalie os candidatos para calibrar a assertividade da LIA
                     </p>
                   </div>
@@ -404,7 +404,7 @@ export function SearchCalibrationStage({
                 <h3 className="text-xs font-semibold text-lia-text-primary">
                   Perfeito! Vaga Configurada com Sucesso
                 </h3>
-                <p className="text-micro lia-text-secondary" aria-live="polite" aria-atomic="true">
+                <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                   A partir de agora os candidatos serão automaticamente adicionados na vaga.
                 </p>
               </div>
@@ -439,7 +439,7 @@ export function SearchCalibrationStage({
 
           {/* Nota final */}
           <div className="p-2.5 bg-lia-bg-secondary rounded-md">
-            <p className="text-micro lia-text-secondary text-center italic" aria-live="polite" aria-atomic="true">
+            <p className="text-micro text-lia-text-secondary text-center italic" aria-live="polite" aria-atomic="true">
               *Todos estes detalhes serão enviados por e-mail junto com a confirmação de abertura da vaga.
             </p>
           </div>
@@ -493,7 +493,7 @@ export function SearchCalibrationNavButtons({
   return (
     <div className="flex gap-3">
       {calibrationCandidates.length === 0 && hasAttemptedCalibrationGeneration && !isLoadingCalibration ? (
-        <div className="w-full text-center text-micro lia-text-secondary">
+        <div className="w-full text-center text-micro text-lia-text-secondary">
           Use os botões acima para tentar novamente ou prosseguir
         </div>
       ) : (

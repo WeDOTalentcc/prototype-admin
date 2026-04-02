@@ -299,7 +299,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
               cursor: isDragging ? 'grabbing' : 'grab'}}
           >
             <div className="flex items-center gap-2">
-              <Move className="w-3 h-3 lia-text-muted" />
+              <Move className="w-3 h-3 text-lia-text-tertiary" />
               <div className="p-1.5 rounded-md bg-lia-btn-primary-bg/[0.08]">
                 <Brain className="w-4 h-4 text-wedo-cyan" />
               </div>
@@ -316,7 +316,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
               onClick={() => setIsExpanded(false)}
               className="h-7 w-7 p-0 rounded-md hover:bg-lia-interactive-active"
             >
-              <X className="w-4 h-4 lia-text-secondary" />
+              <X className="w-4 h-4 text-lia-text-secondary" />
             </Button>
           </div>
 

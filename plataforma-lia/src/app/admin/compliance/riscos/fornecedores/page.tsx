@@ -99,11 +99,11 @@ const vendors = [
 const getScoreColor = (score: string) => {
   switch (score) {
     case 'A': return { bg: 'bg-status-success/15', text: 'text-status-success', border: 'border-status-success/30' }
-    case 'B': return { bg: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary', text: 'lia-text-600 dark:text-lia-text-tertiary', border: 'border-lia-border-default dark:border-lia-border-default' }
+    case 'B': return { bg: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary', text: 'text-lia-text-secondary dark:text-lia-text-tertiary', border: 'border-lia-border-default dark:border-lia-border-default' }
     case 'C': return { bg: 'bg-status-warning/15', text: 'text-status-warning', border: 'border-status-warning/30' }
     case 'D': return { bg: 'bg-wedo-orange/15', text: 'text-wedo-orange', border: 'border-wedo-orange/30' }
     case 'F': return { bg: 'bg-status-error/15', text: 'text-status-error', border: 'border-status-error/30' }
-    default: return { bg: 'bg-lia-bg-tertiary', text: 'lia-text-800 dark:text-lia-text-primary', border: 'border-lia-border-default' }
+    default: return { bg: 'bg-lia-bg-tertiary', text: 'text-lia-text-primary dark:text-lia-text-primary', border: 'border-lia-border-default' }
   }
 }
 

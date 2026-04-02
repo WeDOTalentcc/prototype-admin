@@ -205,7 +205,7 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
 
   return (
     <div className={`relative inline-flex items-center gap-2 ${className}`}>
-      <div className="flex items-center gap-1.5 text-sm lia-text-secondary">
+      <div className="flex items-center gap-1.5 text-sm text-lia-text-secondary">
         <Calendar className="w-4 h-4 text-lia-text-secondary" />
         <span className="font-medium">Período:</span>
       </div>
@@ -255,7 +255,7 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
               {DAYS_PT.map((day) => (
                 <div
                   key={day}
-                  className="text-center text-xs lia-text-secondary py-1"
+                  className="text-center text-xs text-lia-text-secondary py-1"
                  
                 >
                   {day}

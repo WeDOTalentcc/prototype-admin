@@ -153,7 +153,7 @@ function BlockSection({
           <span className="text-sm font-medium text-lia-text-primary">
             {blockLabels[block.type]}
           </span>
-          <span className="text-xs lia-text-secondary">
+          <span className="text-xs text-lia-text-secondary">
             (Peso: {blockWeightLabels[block.type]})
           </span>
         </div>
@@ -170,7 +170,7 @@ function BlockSection({
             key={question.id}
             className={cn(
  "flex items-center justify-between py-1.5 px-2 rounded-md text-xs",
-              question.skipped ? "bg-lia-bg-secondary lia-text-secondary" : "bg-lia-bg-secondary"
+              question.skipped ? "bg-lia-bg-secondary text-lia-text-secondary" : "bg-lia-bg-secondary"
             )}
           >
             <span className="flex-1 truncate text-lia-text-secondary">
@@ -199,7 +199,7 @@ function BlockSection({
       </div>
 
       <div className="flex items-center justify-between pt-2 border-t border-lia-border-subtle">
-        <span className="text-xs lia-text-secondary">Subtotal do Bloco</span>
+        <span className="text-xs text-lia-text-secondary">Subtotal do Bloco</span>
         <span className="text-sm font-semibold text-lia-text-secondary">
           {score.toFixed(2)}
         </span>
@@ -253,21 +253,21 @@ export function ScoreCardWSI({
             </h2>
             <div className="flex flex-wrap items-center gap-4 text-xs text-lia-text-secondary">
               <div className="flex items-center gap-1.5">
-                <User className="h-3.5 w-3.5 lia-text-secondary" />
+                <User className="h-3.5 w-3.5 text-lia-text-secondary" />
                 <span className="font-medium text-lia-text-primary">
                   {candidateName}
                 </span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Briefcase className="h-3.5 w-3.5 lia-text-secondary" />
+                <Briefcase className="h-3.5 w-3.5 text-lia-text-secondary" />
                 <span>{jobTitle}</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <User className="h-3.5 w-3.5 lia-text-secondary" />
+                <User className="h-3.5 w-3.5 text-lia-text-secondary" />
                 <span>Entrevistador: {interviewerName}</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Calendar className="h-3.5 w-3.5 lia-text-secondary" />
+                <Calendar className="h-3.5 w-3.5 text-lia-text-secondary" />
                 <span>{formatDate(interviewDate)}</span>
               </div>
             </div>
@@ -330,11 +330,11 @@ export function ScoreCardWSI({
                 >
                   {wsiScore.totalWSI.toFixed(2)}
                 </span>
-                <span className="text-sm lia-text-secondary">/ 5.00</span>
+                <span className="text-sm text-lia-text-secondary">/ 5.00</span>
               </div>
             </div>
 
-            <div className="flex items-center justify-between text-xs lia-text-secondary pt-2">
+            <div className="flex items-center justify-between text-xs text-lia-text-secondary pt-2">
               <span>Limiares: Aprovado ≥ 4.2 | Revisão: 3.8 - 4.2 | Reprovado &lt; 3.8</span>
             </div>
           </div>

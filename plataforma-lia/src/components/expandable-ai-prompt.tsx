@@ -355,7 +355,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                   </TooltipTrigger>
                   <TooltipContent side="bottom">
                     <p className="text-xs font-medium">Apenas com Email</p>
-                    <p className="text-micro lia-text-secondary">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                    <p className="text-micro text-lia-text-secondary">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -378,7 +378,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                   </TooltipTrigger>
                   <TooltipContent side="bottom">
                     <p className="text-xs font-medium">Apenas com Telefone</p>
-                    <p className="text-micro lia-text-secondary">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                    <p className="text-micro text-lia-text-secondary">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -691,12 +691,12 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                         href="/funil?expandedSearch=true"
                         className="ml-1 p-1.5 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none border border-lia-border-subtle"
                       >
-                        <Table2 className="w-3.5 h-3.5 lia-text-secondary" />
+                        <Table2 className="w-3.5 h-3.5 text-lia-text-secondary" />
                       </Link>
                     </TooltipTrigger>
                     <TooltipContent side="bottom">
                       <p className="text-xs font-medium">Abrir em Tabela</p>
-                      <p className="text-micro lia-text-secondary" aria-live="polite" aria-atomic="true">Ir para resultados de busca</p>
+                      <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">Ir para resultados de busca</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>

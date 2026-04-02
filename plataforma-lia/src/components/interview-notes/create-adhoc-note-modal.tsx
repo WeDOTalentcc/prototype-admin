@@ -106,7 +106,7 @@ export function CreateAdhocNoteModal({
             </Label>
             <div className="relative">
               <User
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 lia-text-secondary"
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary"
               />
               <Select value={selectedCandidateId} onValueChange={setSelectedCandidateId}>
                 <SelectTrigger id="candidate" className="pl-10">
@@ -130,7 +130,7 @@ export function CreateAdhocNoteModal({
             </Label>
             <div className="relative">
               <Calendar
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 lia-text-secondary"
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary"
               />
               <Input
                 id="interview-date"
@@ -149,7 +149,7 @@ export function CreateAdhocNoteModal({
             </Label>
             <div className="relative">
               <Briefcase
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 lia-text-secondary"
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary"
               />
               <Select value={selectedJobId} onValueChange={setSelectedJobId}>
                 <SelectTrigger id="job" className="pl-10">

@@ -64,7 +64,7 @@ export function LiaSuggestionCards({
     return (
       <div className={`flex items-center justify-center py-8 ${className}`} role="status" aria-live="polite" aria-label="Carregando...">
         <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
-        <span className="ml-2 text-xs lia-text-secondary">Carregando sugestões...</span>
+        <span className="ml-2 text-xs text-lia-text-secondary">Carregando sugestões...</span>
       </div>
     )
   }
@@ -72,7 +72,7 @@ export function LiaSuggestionCards({
   if (suggestions.length === 0) {
     return (
       <div className={`text-center py-6 ${className}`}>
-        <p className="text-xs lia-text-secondary">Nenhuma sugestão disponível no momento.</p>
+        <p className="text-xs text-lia-text-secondary">Nenhuma sugestão disponível no momento.</p>
         {onRefresh && (
           <Button
             variant="ghost"
@@ -91,7 +91,7 @@ export function LiaSuggestionCards({
   return (
     <div className={`space-y-2 ${className}`}>
       <div className="flex items-center justify-between mb-3">
-        <h4 className="text-xs font-medium lia-text-secondary uppercase tracking-wider">
+        <h4 className="text-xs font-medium text-lia-text-secondary uppercase tracking-wider">
           Sugestões da LIA
         </h4>
         {onRefresh && (
@@ -99,7 +99,7 @@ export function LiaSuggestionCards({
             variant="ghost"
             size="sm"
             onClick={onRefresh}
-            className="h-6 px-2 text-micro lia-text-secondary hover:text-lia-text-primary"
+            className="h-6 px-2 text-micro text-lia-text-secondary hover:text-lia-text-primary"
           >
             <RefreshCw className="w-3 h-3" />
           </Button>
@@ -146,7 +146,7 @@ export function LiaSuggestionCards({
                     </Badge>
                     {(suggestion.metadata?.count as any) && (
                       // @ts-ignore TODO: fix type
-                      <span className="text-micro lia-text-secondary">
+                      <span className="text-micro text-lia-text-secondary">
                         {suggestion.metadata!.count as number} item(s)
                       </span>
                     )}

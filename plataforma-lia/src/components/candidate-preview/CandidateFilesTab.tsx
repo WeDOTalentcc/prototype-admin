@@ -230,7 +230,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
         {/* Empty state when no files */}
         {candidateFiles.length === 0 && !isLoadingFiles && (
           <div className="text-center py-6 text-lia-text-tertiary">
-            <FileText className="w-8 h-8 mx-auto mb-2 lia-text-muted" />
+            <FileText className="w-8 h-8 mx-auto mb-2 text-lia-text-tertiary" />
             <p className="text-xs">Nenhum arquivo enviado</p>
             <p className={textStyles.description}>Arraste arquivos ou clique acima para enviar</p>
           </div>

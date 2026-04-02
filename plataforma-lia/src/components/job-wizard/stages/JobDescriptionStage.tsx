@@ -61,7 +61,7 @@ export function JobDescriptionStage() {
     <div className="space-y-2.5">
       {/* Cargo */}
       <div>
-        <label className="flex items-center gap-2 text-micro font-medium lia-text-secondary mb-1">
+        <label className="flex items-center gap-2 text-micro font-medium text-lia-text-secondary mb-1">
           Cargo *
           {fieldOrigins['job_title'] && (
             <FieldOriginBadge 
@@ -85,7 +85,7 @@ export function JobDescriptionStage() {
 
       {/* Área */}
       <div>
-        <label className="flex items-center gap-2 text-micro font-medium lia-text-secondary mb-1">
+        <label className="flex items-center gap-2 text-micro font-medium text-lia-text-secondary mb-1">
           Área/Departamento *
           {fieldOrigins['department'] && (
             <FieldOriginBadge 
@@ -112,7 +112,7 @@ export function JobDescriptionStage() {
 
       {/* Gestor */}
       <div>
-        <label className="block text-micro font-medium lia-text-secondary mb-1">
+        <label className="block text-micro font-medium text-lia-text-secondary mb-1">
           Gestor Responsável
         </label>
         <input
@@ -128,7 +128,7 @@ export function JobDescriptionStage() {
 
       {/* Localidade */}
       <div>
-        <label className="flex items-center gap-2 text-micro font-medium lia-text-secondary mb-1">
+        <label className="flex items-center gap-2 text-micro font-medium text-lia-text-secondary mb-1">
           Localidade
           {fieldOrigins['location'] && (
             <FieldOriginBadge 
@@ -139,7 +139,7 @@ export function JobDescriptionStage() {
           )}
         </label>
         <div className="relative">
-          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 lia-text-secondary" />
+          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-secondary" />
           <input
             type="text"
             value={basicInfoFields.localidade}
@@ -154,7 +154,7 @@ export function JobDescriptionStage() {
 
       {/* Modelo de Trabalho */}
       <div>
-        <label className="flex items-center gap-2 text-micro font-medium lia-text-secondary mb-1">
+        <label className="flex items-center gap-2 text-micro font-medium text-lia-text-secondary mb-1">
           Modelo de Trabalho
           {fieldOrigins['work_model'] && (
             <FieldOriginBadge 
@@ -173,7 +173,7 @@ export function JobDescriptionStage() {
  "flex-1 py-1.5 px-2 rounded-md text-xs font-medium transition-colors",
                 basicInfoFields.modeloTrabalho === modelo
                   ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
-                  : "border border-lia-border-subtle lia-text-secondary hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle"
+                  : "border border-lia-border-subtle text-lia-text-secondary hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle"
               )}
              
             >
@@ -186,7 +186,7 @@ export function JobDescriptionStage() {
       {/* Dias Híbridos - só aparece se modelo for híbrido */}
       {basicInfoFields.modeloTrabalho === 'Híbrido' && (
         <div>
-          <label className="block text-micro font-medium lia-text-secondary mb-1">
+          <label className="block text-micro font-medium text-lia-text-secondary mb-1">
             Dias Presenciais por Semana
           </label>
           <div className="flex gap-1.5">
@@ -199,7 +199,7 @@ export function JobDescriptionStage() {
                   jobConfig.hybridDaysOnsite === dias || 
                   (jobConfig.hybridDaysOnsite === undefined && dias === (companyConfig?.hybridDaysOnsite || 3))
                     ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
-                    : "border border-lia-border-subtle lia-text-secondary hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle"
+                    : "border border-lia-border-subtle text-lia-text-secondary hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle"
                 )}
                
               >
@@ -212,7 +212,7 @@ export function JobDescriptionStage() {
 
       {/* Tipo de Contrato */}
       <div>
-        <label className="block text-micro font-medium lia-text-secondary mb-1">
+        <label className="block text-micro font-medium text-lia-text-secondary mb-1">
           Tipo de Contrato
         </label>
         <div className="flex flex-wrap gap-2">
@@ -224,7 +224,7 @@ export function JobDescriptionStage() {
  "py-1.5 px-3 rounded-md text-xs font-medium transition-colors",
                 basicInfoFields.tipoContrato === tipo
                   ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
-                  : "border border-lia-border-subtle lia-text-secondary hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle"
+                  : "border border-lia-border-subtle text-lia-text-secondary hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle"
               )}
              
             >

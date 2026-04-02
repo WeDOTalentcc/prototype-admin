@@ -264,13 +264,13 @@ const {
                 <p className={`${textStyles.bodySmall} truncate`}>
                   {(c.position || c.title || 'Cargo não informado') as React.ReactNode}
                 </p>
-                <span className={`${textStyles.bodySmall} lia-text-secondary`}>•</span>
+                <span className={`${textStyles.bodySmall} text-lia-text-secondary`}>•</span>
                 <p className={`${textStyles.bodySmall} truncate`}>
                   {c.workHistory?.[0]?.company || c.current_company || c.company || 'Empresa'}
                 </p>
                 {(c.workHistory?.[0]?.industry || c.workHistory?.[0]?.segment || c.company_segment || c.industry) && (
                   <>
-                    <span className={`${textStyles.description} lia-text-secondary`}>•</span>
+                    <span className={`${textStyles.description} text-lia-text-secondary`}>•</span>
                     <p className={`${textStyles.description} truncate`}>
                       {c.workHistory?.[0]?.industry || c.workHistory?.[0]?.segment || c.company_segment || c.industry}
                     </p>
@@ -350,7 +350,7 @@ const {
                 {(createdAt as any) && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="text-micro lia-text-secondary flex items-center gap-0.5 cursor-help">
+                      <span className="text-micro text-lia-text-secondary flex items-center gap-0.5 cursor-help">
                         {/* @ts-ignore TODO: fix type */}
                         <Calendar className="w-2.5 h-2.5" />
                         {formatDate(createdAt as string | Date | null | undefined)}
@@ -362,7 +362,7 @@ const {
                 {(updatedAt as any) && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="text-micro lia-text-secondary flex items-center gap-0.5 cursor-help">
+                      <span className="text-micro text-lia-text-secondary flex items-center gap-0.5 cursor-help">
                         {/* @ts-ignore TODO: fix type */}
                         <Clock className="w-2.5 h-2.5" />
                         {(formatDate(updatedAt as string | Date | null | undefined) as React.ReactNode)}

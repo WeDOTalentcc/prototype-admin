@@ -228,7 +228,7 @@ export function QuestionAdjustmentChat({
             <div className="bg-lia-bg-secondary border border-lia-border-subtle rounded-md px-3 py-2" role="status" aria-live="polite" aria-label="Carregando...">
               <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
                 <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
-                <span className="text-xs lia-text-secondary">Regenerando perguntas...</span>
+                <span className="text-xs text-lia-text-secondary">Regenerando perguntas...</span>
               </div>
             </div>
           </div>

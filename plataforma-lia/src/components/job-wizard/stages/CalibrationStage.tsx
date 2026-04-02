@@ -71,7 +71,7 @@ export function CalibrationStage() {
           <p className="text-sm text-lia-text-primary font-medium" aria-live="polite" aria-atomic="true">
             Buscando candidatos compatíveis...
           </p>
-          <p className="text-xs lia-text-secondary mt-1">
+          <p className="text-xs text-lia-text-secondary mt-1">
             Analisando perfis no mercado
           </p>
         </div>
@@ -90,7 +90,7 @@ export function CalibrationStage() {
           <p className="text-sm text-lia-text-primary font-semibold">
             Calibração Concluída!
           </p>
-          <p className="text-xs lia-text-secondary mt-1">
+          <p className="text-xs text-lia-text-secondary mt-1">
             {approvedCandidates.length} aprovado(s) • {rejectedCandidates.length} rejeitado(s)
           </p>
         </div>
@@ -104,7 +104,7 @@ export function CalibrationStage() {
             <span className="text-xs font-medium text-status-error">{rejectedCandidates.length}</span>
           </div>
         </div>
-        <p className="text-micro lia-text-secondary text-center max-w-xs" aria-live="polite" aria-atomic="true">
+        <p className="text-micro text-lia-text-secondary text-center max-w-xs" aria-live="polite" aria-atomic="true">
           O algoritmo de busca foi calibrado com suas preferências. 
           Os candidatos no kanban serão priorizados de acordo.
         </p>
@@ -114,7 +114,7 @@ export function CalibrationStage() {
 
   if (!currentCandidate) {
     return (
-      <div className="text-center py-8 lia-text-secondary">
+      <div className="text-center py-8 text-lia-text-secondary">
         <User className="w-8 h-8 mx-auto mb-2 opacity-50" />
         <p className="text-sm" aria-live="polite" aria-atomic="true">Nenhum candidato disponível</p>
       </div>
@@ -127,7 +127,7 @@ export function CalibrationStage() {
     <div className="space-y-3">
       {/* Progress bar */}
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-micro lia-text-secondary">
+        <span className="text-micro text-lia-text-secondary">
           Calibração: {processedCount}/{Math.min(5, totalCandidates)}
         </span>
         <div className="flex-1 h-1 bg-lia-interactive-active rounded-full overflow-hidden">
@@ -181,15 +181,15 @@ export function CalibrationStage() {
                 </a>
               )}
             </div>
-            <p className="text-xs lia-text-secondary truncate">{currentCandidate.currentRole}</p>
-            <p className="text-micro lia-text-secondary truncate">{currentCandidate.currentCompany}</p>
+            <p className="text-xs text-lia-text-secondary truncate">{currentCandidate.currentRole}</p>
+            <p className="text-micro text-lia-text-secondary truncate">{currentCandidate.currentCompany}</p>
           </div>
           <div className="text-right">
             <div className="flex items-center gap-1 justify-end">
               <Star className="w-4 h-4 fill-amber-400 text-status-warning" />
               <span className="text-sm font-semibold text-lia-text-primary">{currentCandidate.overallScore || 85}%</span>
             </div>
-            <span className="text-micro lia-text-secondary">Match Score</span>
+            <span className="text-micro text-lia-text-secondary">Match Score</span>
           </div>
         </div>
 
@@ -201,7 +201,7 @@ export function CalibrationStage() {
               {currentCandidate.highlights.map((h, i) => (
                 <div key={i} className="flex items-center gap-1 px-2 py-1 bg-lia-bg-secondary rounded-md">
                   <span className="text-micro">{h.icon}</span>
-                  <span className="text-micro lia-text-secondary">{h.label}:</span>
+                  <span className="text-micro text-lia-text-secondary">{h.label}:</span>
                   <span className="text-micro font-medium text-lia-text-primary">{h.value}</span>
                 </div>
               ))}
@@ -210,15 +210,15 @@ export function CalibrationStage() {
 
           {/* Location & Experience */}
           <div className="flex items-center gap-3 text-xs">
-            <div className="flex items-center gap-1 lia-text-secondary">
+            <div className="flex items-center gap-1 text-lia-text-secondary">
               <MapPin className="w-3 h-3" />
               {currentCandidate.location}
             </div>
-            <div className="flex items-center gap-1 lia-text-secondary">
+            <div className="flex items-center gap-1 text-lia-text-secondary">
               <Clock className="w-3 h-3" />
               {currentCandidate.totalExperience || '5+ anos'}
             </div>
-            <div className="flex items-center gap-1 lia-text-secondary">
+            <div className="flex items-center gap-1 text-lia-text-secondary">
               <GraduationCap className="w-3 h-3" />
               {currentCandidate.education}
             </div>
@@ -227,7 +227,7 @@ export function CalibrationStage() {
           {/* Skills */}
           {currentCandidate.skillMap && currentCandidate.skillMap.length > 0 && (
             <div>
-              <span className="text-micro font-semibold lia-text-secondary uppercase">Skills</span>
+              <span className="text-micro font-semibold text-lia-text-secondary uppercase">Skills</span>
               <div className="flex flex-wrap gap-1 mt-1">
                 {currentCandidate.skillMap.flatMap(sm => sm.skills).slice(0, 8).map((skill, i) => (
                   <span key={i} className="px-1.5 py-0.5 bg-wedo-cyan/10 text-wedo-cyan-dark text-micro rounded-full">
@@ -241,7 +241,7 @@ export function CalibrationStage() {
           {/* Match Criteria */}
           {currentCandidate.matchCriteria && currentCandidate.matchCriteria.length > 0 && (
             <div>
-              <span className="text-micro font-semibold lia-text-secondary uppercase flex items-center gap-1">
+              <span className="text-micro font-semibold text-lia-text-secondary uppercase flex items-center gap-1">
                 <Target className="w-3 h-3" />
                 Critérios de Match
               </span>
@@ -268,7 +268,7 @@ export function CalibrationStage() {
           <button
             onClick={goToPrevious}
             disabled={currentCalibrationIndex === 0}
-            className="p-2 lia-text-secondary hover:text-lia-text-secondary disabled:opacity-50"
+            className="p-2 text-lia-text-secondary hover:text-lia-text-secondary disabled:opacity-50"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
@@ -302,7 +302,7 @@ export function CalibrationStage() {
           <button
             onClick={goToNext}
             disabled={currentCalibrationIndex === totalCandidates - 1}
-            className="p-2 lia-text-secondary hover:text-lia-text-secondary disabled:opacity-50"
+            className="p-2 text-lia-text-secondary hover:text-lia-text-secondary disabled:opacity-50"
           >
             <ChevronRight className="w-5 h-5" />
           </button>
@@ -310,7 +310,7 @@ export function CalibrationStage() {
       </div>
 
       {/* Feedback note */}
-      <p className="text-micro lia-text-secondary text-center" aria-live="polite" aria-atomic="true">
+      <p className="text-micro text-lia-text-secondary text-center" aria-live="polite" aria-atomic="true">
         Suas avaliações ajudam a LIA a entender melhor o perfil ideal para esta vaga
       </p>
     </div>

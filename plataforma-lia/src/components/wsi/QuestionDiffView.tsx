@@ -47,7 +47,7 @@ export function QuestionDiffView({
   return (
     <div className={cn("space-y-3", className)}>
       <div className="flex items-center gap-1.5">
-        <ArrowRight className="h-3.5 w-3.5 lia-text-secondary" />
+        <ArrowRight className="h-3.5 w-3.5 text-lia-text-secondary" />
         <span className="text-xs font-semibold text-lia-text-primary">Antes / Depois</span>
         <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle">
           {diffs.length} alteração(ões)
@@ -67,15 +67,15 @@ export function QuestionDiffView({
                   {badge.label}
                 </Badge>
                 {diff.reason && (
-                  <span className="text-micro lia-text-secondary truncate">{diff.reason}</span>
+                  <span className="text-micro text-lia-text-secondary truncate">{diff.reason}</span>
                 )}
               </div>
 
               {diff.before && (
                 <div className="px-3 py-2 border-b border-lia-border-subtle" style={{backgroundColor: 'var(--lia-bg-secondary)'}}>
                   <div className="flex items-start gap-2">
-                    <span className="text-micro font-medium lia-text-secondary mt-0.5 shrink-0">ANTES</span>
-                    <p className="text-xs lia-text-secondary line-through leading-relaxed">
+                    <span className="text-micro font-medium text-lia-text-secondary mt-0.5 shrink-0">ANTES</span>
+                    <p className="text-xs text-lia-text-secondary line-through leading-relaxed">
                       {diff.before}
                     </p>
                   </div>

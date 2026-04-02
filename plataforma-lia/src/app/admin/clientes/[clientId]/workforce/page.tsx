@@ -70,7 +70,7 @@ const priorityConfig = {
 }
 
 const statusConfig = {
-  planned: { label: 'Planejada', color: 'lia-text-600 dark:text-lia-text-tertiary', bg: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary' },
+  planned: { label: 'Planejada', color: 'text-lia-text-secondary dark:text-lia-text-tertiary', bg: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary' },
   open: { label: 'Aberta', color: 'text-status-warning', bg: 'bg-status-warning/15' },
   filled: { label: 'Preenchida', color: 'text-status-success', bg: 'bg-status-success/15' },
   cancelled: { label: 'Cancelada', color: 'text-lia-text-secondary', bg: 'bg-lia-bg-tertiary' }

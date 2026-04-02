@@ -507,7 +507,7 @@ export default function ClientOverviewPage({
                     )}
                   </div>
                   <span
-                    className={`text-sm ${step.completed ? 'line-through text-lia-text-tertiary dark:text-lia-text-secondary' : 'lia-text-800 dark:text-lia-text-primary'}`}
+                    className={`text-sm ${step.completed ? 'line-through text-lia-text-tertiary dark:text-lia-text-secondary' : 'text-lia-text-primary dark:text-lia-text-primary'}`}
                   >
                     {step.label}
                   </span>

@@ -377,7 +377,7 @@ export function ScreeningQuestionsPanel({
             <span className="text-xs font-medium text-lia-text-primary">Compacto</span>
           </div>
           <p className="text-xs text-lia-text-secondary">8 perguntas WSI • ~15 min</p>
-          <p className="text-micro lia-text-secondary mt-0.5">Triagem rápida para alto volume</p>
+          <p className="text-micro text-lia-text-secondary mt-0.5">Triagem rápida para alto volume</p>
         </div>
         <div
           className={cn(
@@ -393,7 +393,7 @@ export function ScreeningQuestionsPanel({
             <span className="text-xs font-medium text-lia-text-primary">Completo</span>
           </div>
           <p className="text-xs text-lia-text-secondary">12 perguntas WSI • ~30 min</p>
-          <p className="text-micro lia-text-secondary mt-0.5">Avaliação aprofundada</p>
+          <p className="text-micro text-lia-text-secondary mt-0.5">Avaliação aprofundada</p>
         </div>
       </div>
     )
@@ -416,7 +416,7 @@ export function ScreeningQuestionsPanel({
 
     return (
       <div className="mb-3">
-        <p className="text-micro font-medium lia-text-secondary uppercase tracking-wide mb-1.5">Distribuição por Bloco</p>
+        <p className="text-micro font-medium text-lia-text-secondary uppercase tracking-wide mb-1.5">Distribuição por Bloco</p>
         <div className="flex flex-wrap items-center gap-1.5">
           {distributionItems.map((item, idx) => (
             <React.Fragment key={item.key}>
@@ -460,10 +460,10 @@ export function ScreeningQuestionsPanel({
       <div className="grid grid-cols-6 gap-2 mb-4 p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
         {configItems.map((item, idx) => (
           <div key={idx} className="flex flex-col items-center text-center">
-            <item.icon className="h-4 w-4 lia-text-secondary mb-1" />
-            <span className="text-micro lia-text-secondary uppercase tracking-wide">{item.label}</span>
+            <item.icon className="h-4 w-4 text-lia-text-secondary mb-1" />
+            <span className="text-micro text-lia-text-secondary uppercase tracking-wide">{item.label}</span>
             <span className="text-xs font-semibold text-lia-text-primary">{item.value}</span>
-            <span className="text-micro lia-text-secondary">{item.sublabel}</span>
+            <span className="text-micro text-lia-text-secondary">{item.sublabel}</span>
           </div>
         ))}
       </div>
@@ -521,14 +521,14 @@ export function ScreeningQuestionsPanel({
                   className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none"
                   onClick={() => toggleQuestion(question.id)}
                 >
-                  <Trash2 className="h-3 w-3 lia-text-secondary hover:text-status-error" />
+                  <Trash2 className="h-3 w-3 text-lia-text-secondary hover:text-status-error" />
                 </Button>
               )}
             </div>
             <p className="text-xs text-lia-text-primary leading-relaxed">
               {question.text}
             </p>
-            <div className="flex items-center gap-3 text-micro lia-text-secondary">
+            <div className="flex items-center gap-3 text-micro text-lia-text-secondary">
               <span className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-status-success"></span>
                 {question.weight ? `${Math.round(question.weight * 100)}%` : '75%'}
@@ -568,7 +568,7 @@ export function ScreeningQuestionsPanel({
           <div className="flex items-center gap-2.5">
             <div className={cn(
  "w-6 h-6 rounded-full flex items-center justify-center text-micro font-medium",
-              block.editable ? "bg-lia-interactive-active text-lia-text-secondary" : "bg-lia-bg-tertiary lia-text-secondary"
+              block.editable ? "bg-lia-interactive-active text-lia-text-secondary" : "bg-lia-bg-tertiary text-lia-text-secondary"
             )}>
               {block.id}
             </div>
@@ -582,14 +582,14 @@ export function ScreeningQuestionsPanel({
                   </Badge>
                 )}
               </div>
-              <span className="text-micro lia-text-secondary">{block.duration}</span>
+              <span className="text-micro text-lia-text-secondary">{block.duration}</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
             {!block.editable && (
               <Badge 
                 variant="outline" 
-                className="text-micro px-1.5 py-0 bg-lia-bg-tertiary lia-text-secondary border-lia-border-subtle"
+                className="text-micro px-1.5 py-0 bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle"
               >
                 <Lock className="h-2.5 w-2.5 mr-0.5" />
                 Automático
@@ -605,9 +605,9 @@ export function ScreeningQuestionsPanel({
               </Badge>
             )}
             {isExpanded ? (
-              <ChevronUp className="h-4 w-4 lia-text-secondary" />
+              <ChevronUp className="h-4 w-4 text-lia-text-secondary" />
             ) : (
-              <ChevronDown className="h-4 w-4 lia-text-secondary" />
+              <ChevronDown className="h-4 w-4 text-lia-text-secondary" />
             )}
           </div>
         </div>
@@ -628,21 +628,21 @@ export function ScreeningQuestionsPanel({
                     </div>
                   </div>
                   <div className="px-3 py-2 border-t border-lia-border-subtle bg-lia-bg-secondary">
-                    <p className="text-micro lia-text-secondary italic">
+                    <p className="text-micro text-lia-text-secondary italic">
                       {WSI_AUTOMATIC_MESSAGES[block.id].note}
                     </p>
                   </div>
                 </div>
               ) : (
                 <div className="p-3 rounded-md bg-lia-bg-secondary/50 border border-lia-border-subtle">
-                  <p className="text-xs lia-text-secondary italic">
+                  <p className="text-xs text-lia-text-secondary italic">
                     {block.description}
                   </p>
                 </div>
               )
             ) : questions.length === 0 ? (
               <div className="p-3 rounded-md bg-lia-bg-secondary/50 border border-lia-border-subtle border-dashed">
-                <p className="text-xs lia-text-secondary italic text-center">
+                <p className="text-xs text-lia-text-secondary italic text-center">
                   Nenhuma pergunta neste bloco
                 </p>
                 <div className="flex justify-center mt-2">
@@ -843,7 +843,7 @@ export function ScreeningQuestionsPanel({
                     suggestionsForSelectedBlock.map(renderSuggestionCard)
                   ) : (
                     <div className="p-4 text-center">
-                      <p className="text-xs lia-text-secondary">
+                      <p className="text-xs text-lia-text-secondary">
                         Todas as sugestões foram adicionadas ao roteiro
                       </p>
                     </div>
@@ -899,7 +899,7 @@ export function ScreeningQuestionsPanel({
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 text-xs lia-text-secondary"
+            className="h-7 text-xs text-lia-text-secondary"
           >
             Fechar
           </Button>

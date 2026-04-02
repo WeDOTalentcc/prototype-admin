@@ -50,7 +50,7 @@ function EmptyState({ message, onRetry }: { message?: string, onRetry?: () => vo
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4">
       <div className="w-16 h-16 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center mb-4">
-        <Building2 className="w-8 h-8 lia-text-secondary" />
+        <Building2 className="w-8 h-8 text-lia-text-secondary" />
       </div>
       <h3 className="text-lg font-medium text-lia-text-primary mb-1">
         Nenhum cliente encontrado

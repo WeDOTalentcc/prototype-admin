@@ -48,7 +48,7 @@ const quickLinks = [
     description: 'Trilha de auditoria completa para conformidade SOX',
     href: '/admin/compliance/auditoria/logs',
     icon: ScrollText,
-    color: 'lia-text-600 dark:text-lia-text-tertiary',
+    color: 'text-lia-text-secondary dark:text-lia-text-tertiary',
     bgColor: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary',
   },
   {
@@ -251,10 +251,10 @@ export default function AuditoriaPage() {
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center justify-between">
-                              <h3 className="font-medium text-lia-text-primary dark:text-lia-text-primary group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors motion-reduce:transition-none">
+                              <h3 className="font-medium text-lia-text-primary dark:text-lia-text-primary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-primary transition-colors motion-reduce:transition-none">
                                 {link.title}
                               </h3>
-                              <ArrowRight className="w-4 h-4 text-lia-text-tertiary group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors motion-reduce:transition-none" />
+                              <ArrowRight className="w-4 h-4 text-lia-text-tertiary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-primary transition-colors motion-reduce:transition-none" />
                             </div>
                             <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary mt-1">
                               {link.description}

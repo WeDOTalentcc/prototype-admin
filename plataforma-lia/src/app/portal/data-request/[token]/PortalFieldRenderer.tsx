@@ -131,7 +131,7 @@ export function PortalFieldRenderer({
               <button
                 type="button"
                 onClick={() => { const input = document.getElementById(`file-${field.name}`) as HTMLInputElement; input?.click() }}
-                className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:lia-text-700 dark:hover:lia-text-200 underline"
+                className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-disabled underline"
               >
                 Substituir
               </button>

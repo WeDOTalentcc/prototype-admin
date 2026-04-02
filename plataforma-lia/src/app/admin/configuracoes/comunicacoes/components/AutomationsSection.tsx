@@ -137,7 +137,7 @@ export function AutomationsSection({
                         style={{backgroundColor: automation.isActive ? 'var(--status-warning-bg)' : 'var(--lia-bg-secondary)'}}
                       >
                         <IconComponent
-                          className={`w-4 h-4 ${automation.isActive ? 'text-status-warning' : 'lia-text-400 dark:text-lia-text-secondary'}`}
+                          className={`w-4 h-4 ${automation.isActive ? 'text-status-warning' : 'text-lia-text-tertiary dark:text-lia-text-secondary'}`}
                         />
                       </div>
                       <div>

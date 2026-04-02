@@ -120,7 +120,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                           <span className={`text-micro font-semibold rounded-full w-5 h-5 flex items-center justify-center shrink-0 ${isAutomatic ? 'bg-lia-bg-tertiary' : 'text-lia-text-disabled'}`}>{block.id}</span>
                           <span className={`text-xs font-medium ${isAutomatic ? 'text-lia-text-tertiary' : 'text-lia-text-primary'}`}>{block.name}</span>
                           {isAutomatic ? (
-                            <span className="text-micro px-1.5 py-0.5 bg-lia-bg-tertiary lia-text-secondary rounded-full font-medium uppercase tracking-wide">Automático</span>
+                            <span className="text-micro px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary rounded-full font-medium uppercase tracking-wide">Automático</span>
                           ) : totalBlockCount > 0 ? (
                             <span className="text-micro text-lia-text-tertiary">({totalBlockCount} {totalBlockCount === 1 ? 'pergunta' : 'perguntas'})</span>
                           ) : (

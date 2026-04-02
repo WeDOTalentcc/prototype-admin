@@ -579,9 +579,9 @@ export function CultureProfilePreview({
       )}
 
       {((editedProfile.tech_stack && editedProfile.tech_stack.length > 0) || editedProfile.engineering_culture) && (
-        <Card className="rounded-xl border border-slate-200 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-800/20 backdrop-blur-sm">
+        <Card className="rounded-xl border border-lia-border-subtle dark:border-lia-border-strong/50 bg-lia-bg-secondary/50 dark:bg-lia-btn-primary-hover/20 backdrop-blur-sm">
           <CardHeader className="pb-2 pt-4 px-4">
-            <CardTitle className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+            <CardTitle className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-disabled flex items-center gap-2">
               <Code className="w-4 h-4" />
               Tecnologia
             </CardTitle>
@@ -589,12 +589,12 @@ export function CultureProfilePreview({
           <CardContent className="px-4 pb-4 space-y-3">
             {editedProfile.tech_stack && editedProfile.tech_stack.length > 0 && (
               <div>
-                <span className="text-micro text-slate-600 dark:text-slate-400 font-medium block mb-2">Stack Tecnológico</span>
+                <span className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary font-medium block mb-2">Stack Tecnológico</span>
                 <div className="flex flex-wrap gap-1.5">
                   {editedProfile.tech_stack.map((tech, index) => (
                     <span
                       key={`tech-${index}`}
-                      className="inline-flex items-center px-2 py-1 rounded-full text-micro font-medium bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300"
+                      className="inline-flex items-center px-2 py-1 rounded-full text-micro font-medium bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-inverse dark:text-lia-text-disabled"
                     >
                       {tech}
                     </span>
@@ -604,7 +604,7 @@ export function CultureProfilePreview({
             )}
             {editedProfile.engineering_culture && (
               <div>
-                <span className="text-micro text-slate-600 dark:text-slate-400 font-medium block mb-1">Cultura de Engenharia</span>
+                <span className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary font-medium block mb-1">Cultura de Engenharia</span>
                 <p className="text-xs text-lia-text-primary leading-relaxed">{editedProfile.engineering_culture}</p>
               </div>
             )}

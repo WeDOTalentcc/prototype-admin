@@ -42,7 +42,7 @@ function ScoreBar({ value, color }: { value: number; color: string }) {
           style={{width: `${Math.min(100, Math.max(0, value))}%`}}
         />
       </div>
-      <span className="text-xs lia-text-secondary w-8 text-right tabular-nums">
+      <span className="text-xs text-lia-text-secondary w-8 text-right tabular-nums">
         {Math.round(value)}%
       </span>
     </div>
@@ -77,7 +77,7 @@ export function LIAScoreCard({
           />
           <span className="text-xs font-medium text-lia-text-secondary">LIA Score</span>
           {jobTitle && (
-            <span className="text-xs lia-text-secondary truncate max-w-[120px]">
+            <span className="text-xs text-lia-text-secondary truncate max-w-[120px]">
               — {jobTitle}
             </span>
           )}
@@ -88,7 +88,7 @@ export function LIAScoreCard({
             aria-label={`Score: ${score} de 100`}
           >
             {score}
-            <span className="text-xs font-normal lia-text-secondary">/100</span>
+            <span className="text-xs font-normal text-lia-text-secondary">/100</span>
           </span>
           {hasBreakdown && (
             <button
@@ -98,9 +98,9 @@ export function LIAScoreCard({
               aria-label={expanded ? "Recolher detalhes do score" : "Ver detalhes do score"}
             >
               {expanded ? (
-                <ChevronUp className="w-3.5 h-3.5 lia-text-secondary" aria-hidden="true" />
+                <ChevronUp className="w-3.5 h-3.5 text-lia-text-secondary" aria-hidden="true" />
               ) : (
-                <ChevronDown className="w-3.5 h-3.5 lia-text-secondary" aria-hidden="true" />
+                <ChevronDown className="w-3.5 h-3.5 text-lia-text-secondary" aria-hidden="true" />
               )}
             </button>
           )}
@@ -127,7 +127,7 @@ export function LIAScoreCard({
               </div>
             )
           })}
-          <p className="text-micro lia-text-secondary pt-1 flex items-center gap-1">
+          <p className="text-micro text-lia-text-secondary pt-1 flex items-center gap-1">
             <Info className="w-3 h-3" aria-hidden="true" />
             Score calculado pela IA — EU AI Act Art. 13
           </p>

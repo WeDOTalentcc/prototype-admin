@@ -67,7 +67,7 @@ export function SCMQuestionDetailView({ item, isDetailsExpanded, onToggleDetails
         {(item.trait || item.skill) && <span className="flex items-center gap-1"><Target className="w-3 h-3" />Avalia: {item.trait || item.skill}</span>}
         <span className="flex items-center gap-1"><Scale className="w-3 h-3" />Peso: {((item.weight || 1) * 100).toFixed(0)}%</span>
       </div>
-      <button className="mt-1.5 text-micro lia-text-secondary hover:text-lia-text-secondary dark:hover:lia-text-muted transition-colors motion-reduce:transition-none" onClick={() => onToggleDetails(item.id)}>
+      <button className="mt-1.5 text-micro text-lia-text-secondary hover:text-lia-text-secondary dark:hover:text-lia-text-tertiary transition-colors motion-reduce:transition-none" onClick={() => onToggleDetails(item.id)}>
         {isDetailsExpanded ? '▲ Ocultar detalhes' : '▼ Ver detalhes'}
       </button>
       {isDetailsExpanded && (

@@ -136,7 +136,7 @@ export function SalaryStage() {
           {salaryBenchmark.internal && salaryBenchmark.internal.sample_size > 0 && (
             <div className="mb-2 p-2 bg-lia-bg-primary/50 rounded-md">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-micro lia-text-secondary" aria-live="polite" aria-atomic="true">
+                <span className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                   Dados internos ({salaryBenchmark.internal.sample_size} vagas)
                 </span>
                 {salaryBenchmark.internal.trend && salaryBenchmark.internal.trend !== 'stable' && (
@@ -155,7 +155,7 @@ export function SalaryStage() {
           {salaryBenchmark.market && salaryBenchmark.market.min > 0 && (
             <div className="mb-2 p-2 bg-lia-bg-primary/50 rounded-md">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-micro lia-text-secondary">
+                <span className="text-micro text-lia-text-secondary">
                   Dados de mercado ({salaryBenchmark.market.sources?.slice(0, 2).join(', ')})
                 </span>
                 <span className={`text-micro px-1.5 py-0.5 rounded-full ${
@@ -184,7 +184,7 @@ export function SalaryStage() {
             </button>
           )}
           
-          <p className="text-micro lia-text-secondary mt-2 italic">
+          <p className="text-micro text-lia-text-secondary mt-2 italic">
             Estimativa baseada em dados públicos. Valores podem variar.
           </p>
         </div>
@@ -194,21 +194,21 @@ export function SalaryStage() {
       {isLoadingBenchmark && (
         <div className="p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
           <Loader2 className="w-4 h-4 text-lia-text-secondary animate-spin motion-reduce:animate-none" />
-          <span className="text-xs lia-text-secondary">Buscando benchmark de mercado...</span>
+          <span className="text-xs text-lia-text-secondary">Buscando benchmark de mercado...</span>
         </div>
       )}
       
       {/* Salary Range */}
       <div>
-        <label className="block text-micro font-semibold lia-text-secondary uppercase tracking-wide mb-2">
+        <label className="block text-micro font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
           <DollarSign className="w-3.5 h-3.5 inline mr-1 text-lia-text-secondary" />
           Salário Base (CLT)
         </label>
         <div className="flex gap-2">
           <div className="flex-1">
-            <span className="text-micro lia-text-secondary">De</span>
+            <span className="text-micro text-lia-text-secondary">De</span>
             <div className="relative mt-1">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs lia-text-secondary">R$</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-lia-text-secondary">R$</span>
               <input
                 type="text"
                 value={salaryInfo.minSalary}
@@ -220,9 +220,9 @@ export function SalaryStage() {
             </div>
           </div>
           <div className="flex-1">
-            <span className="text-micro lia-text-secondary">Até</span>
+            <span className="text-micro text-lia-text-secondary">Até</span>
             <div className="relative mt-1">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs lia-text-secondary">R$</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-lia-text-secondary">R$</span>
               <input
                 type="text"
                 value={salaryInfo.maxSalary}
@@ -238,15 +238,15 @@ export function SalaryStage() {
 
       {/* Bonus */}
       <div>
-        <label className="block text-micro font-semibold lia-text-secondary uppercase tracking-wide mb-2">
+        <label className="block text-micro font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
           <Star className="w-3.5 h-3.5 inline mr-1 text-lia-text-secondary" />
           Bônus Anual
         </label>
         <div className="flex gap-2 mb-1.5">
           <div className="flex-1">
-            <span className="text-micro lia-text-secondary">De</span>
+            <span className="text-micro text-lia-text-secondary">De</span>
             <div className="relative mt-1">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs lia-text-secondary">R$</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-lia-text-secondary">R$</span>
               <input
                 type="text"
                 value={salaryInfo.minBonus}
@@ -258,9 +258,9 @@ export function SalaryStage() {
             </div>
           </div>
           <div className="flex-1">
-            <span className="text-micro lia-text-secondary">Até</span>
+            <span className="text-micro text-lia-text-secondary">Até</span>
             <div className="relative mt-1">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs lia-text-secondary">R$</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-lia-text-secondary">R$</span>
               <input
                 type="text"
                 value={salaryInfo.maxBonus}
@@ -284,7 +284,7 @@ export function SalaryStage() {
 
       {/* Benefits */}
       <div>
-        <label className="block text-micro font-semibold lia-text-secondary uppercase tracking-wide mb-2">
+        <label className="block text-micro font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
           <CheckCircle2 className="w-3.5 h-3.5 inline mr-1 text-lia-text-secondary" />
           Benefícios
           {companyConfig?.benefits && companyConfig.benefits.length > 0 && (
@@ -300,11 +300,11 @@ export function SalaryStage() {
             return (
               <div key={categoryId}>
                 <div className="flex items-center gap-1.5 mb-1.5">
-                  <CategoryIcon className="w-3 h-3 lia-text-secondary" />
-                  <span className="text-micro font-semibold lia-text-secondary uppercase tracking-wide">
+                  <CategoryIcon className="w-3 h-3 text-lia-text-secondary" />
+                  <span className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wide">
                     {meta.name}
                   </span>
-                  <span className="text-micro lia-text-secondary">({categoryBenefits.length})</span>
+                  <span className="text-micro text-lia-text-secondary">({categoryBenefits.length})</span>
                 </div>
                 <div className="grid grid-cols-2 gap-1.5">
                   {categoryBenefits.map((benefit) => {
@@ -339,10 +339,10 @@ export function SalaryStage() {
                             )}
                           </div>
                           {valueDisplay && (
-                            <span className="text-micro lia-text-secondary">{valueDisplay}</span>
+                            <span className="text-micro text-lia-text-secondary">{valueDisplay}</span>
                           )}
                           {benefit.provider && (
-                            <span className="text-micro lia-text-muted block truncate">{benefit.provider}</span>
+                            <span className="text-micro text-lia-text-tertiary block truncate">{benefit.provider}</span>
                           )}
                         </div>
                       </button>
@@ -401,7 +401,7 @@ export function SalaryStage() {
             <div className="flex gap-2">
               <button
                 onClick={() => setShowAddBenefitModal(false)}
-                className="flex-1 py-1.5 px-3 rounded-md border border-lia-border-subtle text-xs lia-text-secondary"
+                className="flex-1 py-1.5 px-3 rounded-md border border-lia-border-subtle text-xs text-lia-text-secondary"
               >
                 Cancelar
               </button>

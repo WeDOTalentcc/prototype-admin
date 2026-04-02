@@ -112,7 +112,7 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
     switch (trend) {
       case 'up': return <TrendingUp className="w-4 h-4 text-status-success" />
       case 'down': return <TrendingDown className="w-4 h-4 text-status-error" />
-      default: return <Minus className="w-4 h-4 lia-text-secondary" />
+      default: return <Minus className="w-4 h-4 text-lia-text-secondary" />
     }
   }
 
@@ -302,7 +302,7 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
             <CardContent className="p-4">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <p className="text-xs font-medium lia-text-secondary font-['Open_Sans']">
+                  <p className="text-xs font-medium text-lia-text-secondary font-['Open_Sans']">
                     {indicator.name}
                   </p>
                   <p className="text-2xl font-bold text-lia-text-primary mt-1 font-['Open_Sans'] animate-[fadeIn_0.5s_ease-out]">
@@ -314,7 +314,7 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
                       {indicator.trend_percentage > 0 ? '+' : ''}{indicator.trend_percentage}%
                     </span>
                     {indicator.target && (
-                      <span className="text-xs lia-text-secondary ml-2">
+                      <span className="text-xs text-lia-text-secondary ml-2">
                         Meta: {formatValue(indicator.target, indicator.unit)}
                       </span>
                     )}
@@ -333,7 +333,7 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
         {secondaryIndicators.map((indicator) => (
           <Card key={indicator.id} className="">
             <CardContent className="p-3">
-              <p className="text-xs lia-text-secondary font-['Open_Sans'] truncate" title={indicator.name}>
+              <p className="text-xs text-lia-text-secondary font-['Open_Sans'] truncate" title={indicator.name}>
                 {indicator.name}
               </p>
               <p className="text-lg font-bold text-lia-text-primary font-['Open_Sans']">
@@ -375,7 +375,7 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
                     <span className="text-xs font-medium text-lia-text-primary font-['Open_Sans']">
                       {stage.stage_name}
                     </span>
-                    <div className="flex items-center gap-4 text-xs lia-text-secondary font-['Open_Sans']">
+                    <div className="flex items-center gap-4 text-xs text-lia-text-secondary font-['Open_Sans']">
                       <span>{stage.count} candidatos</span>
                       <span>Conv: {stage.conversion_rate.toFixed(1)}%</span>
                       <span>{stage.avg_time_in_stage_days}d média</span>
@@ -418,14 +418,14 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
             <table className="w-full text-xs font-['Open_Sans']">
               <thead>
                 <tr className="border-b border-lia-border-subtle">
-                  <th className="text-left py-2 px-2 lia-text-secondary font-medium">Rank</th>
-                  <th className="text-left py-2 px-2 lia-text-secondary font-medium">Recrutador</th>
-                  <th className="text-center py-2 px-2 lia-text-secondary font-medium">Posições</th>
-                  <th className="text-center py-2 px-2 lia-text-secondary font-medium">Triagens</th>
-                  <th className="text-center py-2 px-2 lia-text-secondary font-medium">Entrevistas</th>
-                  <th className="text-center py-2 px-2 lia-text-secondary font-medium">Conversão</th>
-                  <th className="text-center py-2 px-2 lia-text-secondary font-medium">Tempo Médio</th>
-                  <th className="text-center py-2 px-2 lia-text-secondary font-medium">Qualidade</th>
+                  <th className="text-left py-2 px-2 text-lia-text-secondary font-medium">Rank</th>
+                  <th className="text-left py-2 px-2 text-lia-text-secondary font-medium">Recrutador</th>
+                  <th className="text-center py-2 px-2 text-lia-text-secondary font-medium">Posições</th>
+                  <th className="text-center py-2 px-2 text-lia-text-secondary font-medium">Triagens</th>
+                  <th className="text-center py-2 px-2 text-lia-text-secondary font-medium">Entrevistas</th>
+                  <th className="text-center py-2 px-2 text-lia-text-secondary font-medium">Conversão</th>
+                  <th className="text-center py-2 px-2 text-lia-text-secondary font-medium">Tempo Médio</th>
+                  <th className="text-center py-2 px-2 text-lia-text-secondary font-medium">Qualidade</th>
                 </tr>
               </thead>
               <tbody>

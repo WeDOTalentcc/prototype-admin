@@ -301,7 +301,7 @@ function LGPDFooter() {
           href="/privacidade"
           target="_blank"
           rel="noopener noreferrer"
-          className="underline hover:lia-text-500 dark:hover:lia-text-400 transition-colors motion-reduce:transition-none"
+          className="underline hover:text-lia-text-primary dark:hover:text-lia-text-tertiary transition-colors motion-reduce:transition-none"
           aria-label="Saiba mais sobre avaliação por IA"
         >
           Política de Privacidade

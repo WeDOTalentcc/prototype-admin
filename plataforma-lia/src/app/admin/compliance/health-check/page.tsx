@@ -844,7 +844,7 @@ export default function HealthCheckPage() {
                               className="mt-0.5"
                             />
                             <span
-                              className={`text-xs ${checkItem.completed ? 'line-through text-lia-text-tertiary dark:text-lia-text-secondary' : 'lia-text-800 dark:text-lia-text-primary'}`}
+                              className={`text-xs ${checkItem.completed ? 'line-through text-lia-text-tertiary dark:text-lia-text-secondary' : 'text-lia-text-primary dark:text-lia-text-primary'}`}
                             >
                               {checkItem.text}
                             </span>

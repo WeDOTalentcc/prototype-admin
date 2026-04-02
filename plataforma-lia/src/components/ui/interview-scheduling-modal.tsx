@@ -225,7 +225,7 @@ export function InterviewSchedulingModal({
                   disabled={isScheduling}
                   className="h-9 text-xs border-lia-border-subtle focus:ring-lia-border-medium focus:border-lia-border-medium bg-lia-bg-secondary text-lia-text-primary"
                 />
-                <p className="text-xs lia-text-secondary">
+                <p className="text-xs text-lia-text-secondary">
                   Use linguagem natural: "amanhã às 14h comigo" ou "próxima segunda 10h"
                 </p>
               </div>

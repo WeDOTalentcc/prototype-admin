@@ -268,7 +268,7 @@ export function HistoryTab({
                       </Button>
                     </div>
 
-                    <ChevronRight className="w-5 h-5 lia-text-muted group-hover:text-lia-text-secondary transition-colors motion-reduce:transition-none" />
+                    <ChevronRight className="w-5 h-5 text-lia-text-tertiary group-hover:text-lia-text-secondary transition-colors motion-reduce:transition-none" />
                   </div>
                 )
               })}

@@ -47,7 +47,7 @@ const ClientCard = memo(function ClientCard({ client, onSelect }: ClientCardProp
             />
           ) : (
             <div className="w-12 h-12 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-elevated flex items-center justify-center border border-lia-border-subtle dark:border-lia-border-default">
-              <Building2 className="w-6 h-6 lia-text-secondary" />
+              <Building2 className="w-6 h-6 text-lia-text-secondary" />
             </div>
           )}
           <div className="flex-1 min-w-0">
@@ -64,7 +64,7 @@ const ClientCard = memo(function ClientCard({ client, onSelect }: ClientCardProp
         <div className="mt-4 grid grid-cols-2 gap-3">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-elevated flex items-center justify-center">
-              <Users className="w-3 h-3 lia-text-secondary" />
+              <Users className="w-3 h-3 text-lia-text-secondary" />
             </div>
             <div>
               <p className="text-micro text-lia-text-tertiary uppercase">Usuários</p>
@@ -75,7 +75,7 @@ const ClientCard = memo(function ClientCard({ client, onSelect }: ClientCardProp
           </div>
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-elevated flex items-center justify-center">
-              <Calendar className="w-3 h-3 lia-text-secondary" />
+              <Calendar className="w-3 h-3 text-lia-text-secondary" />
             </div>
             <div>
               <p className="text-micro text-lia-text-tertiary uppercase">Início</p>

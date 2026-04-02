@@ -515,7 +515,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
                 </DropdownMenu>
               </div>
 
-              <ChevronRight className="w-5 h-5 lia-text-muted group-hover:text-lia-text-secondary transition-colors motion-reduce:transition-none flex-shrink-0" />
+              <ChevronRight className="w-5 h-5 text-lia-text-tertiary group-hover:text-lia-text-secondary transition-colors motion-reduce:transition-none flex-shrink-0" />
             </div>
           ))}
         </div>
@@ -562,7 +562,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
 
         {loadingShared ? (
           <div className="flex items-center justify-center py-8" role="status" aria-live="polite" aria-label="Carregando...">
-            <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none lia-text-secondary" />
+            <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
             <span className="ml-2 text-xs text-lia-text-secondary">Carregando compartilhamentos...</span>
           </div>
         ) : sharedSearches.length > 0 ? (
@@ -603,7 +603,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
                       </>
                     ) : (
                       <>
-                        <Clock className="w-3 h-3 lia-text-secondary" />
+                        <Clock className="w-3 h-3 text-lia-text-secondary" />
                         <span className="lia-text-secondary">Não acessou ainda</span>
                       </>
                     )}

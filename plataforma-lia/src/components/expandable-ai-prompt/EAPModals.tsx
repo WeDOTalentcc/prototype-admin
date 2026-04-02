@@ -269,7 +269,7 @@ export function EAPModals({
                     placeholder="Digite e pressione Enter para adicionar..."
                     className="w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lia-border-medium border border-lia-border-subtle"
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-micro lia-text-secondary">
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-micro text-lia-text-secondary">
                     Enter ↵
                   </span>
                 </div>
@@ -326,7 +326,7 @@ export function EAPModals({
               Tem certeza que deseja excluir o arquétipo{' '}
               <span className="font-medium text-lia-text-primary">"{archetypeToDelete?.name}"</span>?
               <br />
-              <span className="text-xs lia-text-secondary mt-1 block">
+              <span className="text-xs text-lia-text-secondary mt-1 block">
                 Esta ação não pode ser desfeita.
               </span>
             </AlertDialogDescription>
@@ -371,7 +371,7 @@ export function EAPModals({
               </h3>
             </div>
 
-            <p className="text-micro lia-text-secondary">
+            <p className="text-micro text-lia-text-secondary">
               {pendingSourceChange === 'hybrid'
                 ? 'Combina base local + global (800M+ perfis).'
                 : 'Acessa 800M+ perfis profissionais.'}

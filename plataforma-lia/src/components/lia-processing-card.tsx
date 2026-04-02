@@ -142,14 +142,14 @@ export function LIATaskStepItem({
             )}
           </div>
           {step.description && (
-            <p className="text-xs lia-text-secondary mt-0.5 truncate">
+            <p className="text-xs text-lia-text-secondary mt-0.5 truncate">
               {step.description}
             </p>
           )}
         </div>
 
         {hasDetails && (
-          <button className="p-1 lia-text-secondary hover:text-lia-text-secondary dark:hover:lia-text-muted">
+          <button className="p-1 text-lia-text-secondary hover:text-lia-text-secondary dark:hover:text-lia-text-tertiary">
             {step.isExpanded ? (
               <ChevronUp className="w-4 h-4" />
             ) : (
@@ -161,7 +161,7 @@ export function LIATaskStepItem({
 
       {hasDetails && step.isExpanded && (
         <div className="px-3 pb-3 pl-12">
-          <div className="text-xs lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-2.5 font-mono">
+          <div className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-2.5 font-mono">
             {step.details}
           </div>
         </div>
@@ -232,16 +232,16 @@ export function LIAProcessingCard({
                     style={{width: `${(completedCount / steps.length) * 100}%`}}
                   />
                 </div>
-                <span className="text-xs lia-text-secondary">
+                <span className="text-xs text-lia-text-secondary">
                   {completedCount}/{steps.length}
                 </span>
               </div>
             </div>
           </div>
           {isCardExpanded ? (
-            <ChevronUp className="w-4 h-4 lia-text-secondary" />
+            <ChevronUp className="w-4 h-4 text-lia-text-secondary" />
           ) : (
-            <ChevronDown className="w-4 h-4 lia-text-secondary" />
+            <ChevronDown className="w-4 h-4 text-lia-text-secondary" />
           )}
         </button>
       )}
@@ -295,7 +295,7 @@ export function LIAFeedbackButtons({
  "p-1.5 rounded-md transition-colors",
           feedback === 'positive'
             ? "bg-status-success/15 text-status-success dark:text-status-success"
-            : "lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover dark:hover:lia-text-muted"
+            : "lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover dark:hover:text-lia-text-tertiary"
         )}
         title="Resposta útil"
       >
@@ -307,7 +307,7 @@ export function LIAFeedbackButtons({
  "p-1.5 rounded-md transition-colors",
           feedback === 'negative'
             ? "bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error"
-            : "lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover dark:hover:lia-text-muted"
+            : "lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover dark:hover:text-lia-text-tertiary"
         )}
         title="Resposta não útil"
       >
@@ -384,7 +384,7 @@ export function LIAFileBadge({
         <div className="text-sm font-medium text-lia-text-primary truncate">
           {fileName}
         </div>
-        <div className="text-xs lia-text-secondary">
+        <div className="text-xs text-lia-text-secondary">
           {status === 'processing' ? 'Processando...' : 
            status === 'finished' ? 'Finalizado' : 'Erro'}
         </div>

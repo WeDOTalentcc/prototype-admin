@@ -166,7 +166,7 @@ export function CandidatePageOpinionsTab({
               <Card>
                 <CardContent className="p-6 text-center">
                   <div className="w-12 h-12 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-elevated flex items-center justify-center mx-auto mb-3">
-                    <FileText className="w-6 h-6 lia-text-secondary" />
+                    <FileText className="w-6 h-6 text-lia-text-secondary" />
                   </div>
                   <p className={`${textStyles.subtitle} mb-1`}>Nenhum parecer disponível</p>
                   <p className={textStyles.description}>
@@ -235,7 +235,7 @@ export function CandidatePageOpinionsTab({
                         </div>
                         <div className="flex items-center gap-2">
                           {!!(opinion.created_at) && (
-                            <span className="text-micro lia-text-secondary">
+                            <span className="text-micro text-lia-text-secondary">
                               {new Date(opinion.created_at as string).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })}
                             </span>
                           )}
@@ -251,16 +251,16 @@ export function CandidatePageOpinionsTab({
                                 {copiedItemId === `opinion-${opinion.id as string}` ? (
                                   <Check className="w-3.5 h-3.5 text-status-success" />
                                 ) : (
-                                  <Copy className="w-3.5 h-3.5 lia-text-secondary hover:text-lia-text-secondary" />
+                                  <Copy className="w-3.5 h-3.5 text-lia-text-secondary hover:text-lia-text-secondary" />
                                 )}
                               </button>
                             </TooltipTrigger>
                             <TooltipContent side="top" className="text-micro">Copiar parecer</TooltipContent>
                           </Tooltip>
                           {isExpanded ? (
-                            <ChevronUp className="w-4 h-4 lia-text-secondary" />
+                            <ChevronUp className="w-4 h-4 text-lia-text-secondary" />
                           ) : (
-                            <ChevronDown className="w-4 h-4 lia-text-secondary" />
+                            <ChevronDown className="w-4 h-4 text-lia-text-secondary" />
                           )}
                         </div>
                       </div>
@@ -411,7 +411,7 @@ export function CandidatePageOpinionsTab({
                                 {analysisLabels[analysis.analysis_type as string] || analysis.analysis_type as string}
                               </Badge>
                             </div>
-                            <span className={`${textStyles.caption} lia-text-secondary`}>
+                            <span className={`${textStyles.caption} text-lia-text-secondary`}>
                               {analysis.created_at ? new Date(analysis.created_at as string).toLocaleDateString("pt-BR", {
                                 day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit",
                               }) : "Data não disponível"}
@@ -431,13 +431,13 @@ export function CandidatePageOpinionsTab({
                                 {copiedItemId === `analysis-${analysis.id}` ? (
                                   <Check className="w-3.5 h-3.5 text-status-success" />
                                 ) : (
-                                  <Copy className="w-3.5 h-3.5 lia-text-secondary hover:text-lia-text-secondary" />
+                                  <Copy className="w-3.5 h-3.5 text-lia-text-secondary hover:text-lia-text-secondary" />
                                 )}
                               </button>
                             </TooltipTrigger>
                             <TooltipContent side="top" className="text-micro">Copiar análise</TooltipContent>
                           </Tooltip>
-                          <ChevronDown className={`w-4 h-4 lia-text-secondary transition-transform motion-reduce:transition-none ${isExpanded ? "rotate-180" : ""}`} />
+                          <ChevronDown className={`w-4 h-4 text-lia-text-secondary transition-transform motion-reduce:transition-none ${isExpanded ? "rotate-180" : ""}`} />
                         </div>
                       </div>
 
@@ -456,7 +456,7 @@ export function CandidatePageOpinionsTab({
                                   }}
                                   className="p-1.5 hover:bg-status-error/10 rounded-md transition-colors motion-reduce:transition-none group"
                                 >
-                                  <Trash2 className="w-4 h-4 lia-text-secondary group-hover:text-status-error" />
+                                  <Trash2 className="w-4 h-4 text-lia-text-secondary group-hover:text-status-error" />
                                 </button>
                               </TooltipTrigger>
                               <TooltipContent side="top" className="text-micro">Remover análise</TooltipContent>

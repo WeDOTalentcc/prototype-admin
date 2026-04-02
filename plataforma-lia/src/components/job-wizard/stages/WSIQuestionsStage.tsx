@@ -166,7 +166,7 @@ export function WSIQuestionsStage() {
               </span>
               
               {/* Type badge */}
-              <span className="px-1.5 py-0.5 bg-lia-bg-tertiary lia-text-secondary rounded-full text-micro">
+              <span className="px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary rounded-full text-micro">
                 {question.type === 'yes-no' ? 'Sim/Não' :
                  question.type === 'numeric' ? 'Numérica' :
                  question.type === 'multiple-choice' ? 'Múltipla escolha' :
@@ -180,7 +180,7 @@ export function WSIQuestionsStage() {
  "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-micro font-medium transition-colors",
                   question.isWSI
                     ? "bg-status-success/10 text-status-success"
-                    : "bg-lia-bg-tertiary lia-text-secondary hover:bg-status-success/10"
+                    : "bg-lia-bg-tertiary text-lia-text-secondary hover:bg-status-success/10"
                 )}
               >
                 <Brain className="w-2.5 h-2.5 text-wedo-cyan" />
@@ -192,7 +192,7 @@ export function WSIQuestionsStage() {
           {/* Delete button */}
           <button
             onClick={() => deleteQuestion(question.id)}
-            className="p-1 lia-text-secondary hover:text-status-error transition-colors motion-reduce:transition-none"
+            className="p-1 text-lia-text-secondary hover:text-status-error transition-colors motion-reduce:transition-none"
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
@@ -207,7 +207,7 @@ export function WSIQuestionsStage() {
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
           <Phone className="w-3.5 h-3.5 text-whatsapp-green" />
-          <span className="text-micro font-semibold lia-text-secondary uppercase tracking-wide">
+          <span className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wide">
             Perguntas de Triagem WSI
           </span>
         </div>
@@ -218,12 +218,12 @@ export function WSIQuestionsStage() {
           )}>
             {selectedCount}
           </span>
-          <span className="text-micro lia-text-secondary">/ 5 selecionadas</span>
+          <span className="text-micro text-lia-text-secondary">/ 5 selecionadas</span>
           {enabledCompanyQuestionsCount > 0 && (
             <>
-              <span className="text-micro lia-text-secondary">(+</span>
+              <span className="text-micro text-lia-text-secondary">(+</span>
               <span className="text-micro font-medium text-lia-text-secondary">{enabledCompanyQuestionsCount}</span>
-              <span className="text-micro lia-text-secondary">da empresa)</span>
+              <span className="text-micro text-lia-text-secondary">da empresa)</span>
             </>
           )}
         </div>
@@ -247,10 +247,10 @@ export function WSIQuestionsStage() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Settings className="w-3.5 h-3.5 text-lia-text-secondary" />
-              <span className="text-xs font-semibold lia-text-secondary uppercase tracking-wide">
+              <span className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide">
                 Perguntas Padrão da Empresa
               </span>
-              <span className="text-micro lia-text-secondary">
+              <span className="text-micro text-lia-text-secondary">
                 ({companyDefaultQuestions.filter(q => q.enabled).length}/{companyDefaultQuestions.length} ativas)
               </span>
             </div>
@@ -289,7 +289,7 @@ export function WSIQuestionsStage() {
                     {q.question}
                   </span>
                 </div>
-                <span className="px-1.5 py-0.5 bg-lia-bg-tertiary lia-text-secondary rounded-full text-micro">
+                <span className="px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary rounded-full text-micro">
                   {q.type === 'yes-no' ? 'Sim/Não' : q.type === 'numeric' ? 'Numérica' : q.type === 'multiple-choice' ? 'Múltipla' : 'Aberta'}
                 </span>
               </div>
@@ -313,7 +313,7 @@ export function WSIQuestionsStage() {
         <div className="space-y-2">
           <div className="flex items-center gap-2 mb-2">
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-            <span className="text-micro font-semibold lia-text-secondary uppercase tracking-wide">
+            <span className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wide">
               Perguntas Sugeridas por LIA
             </span>
           </div>
@@ -368,7 +368,7 @@ export function WSIQuestionsStage() {
                 setShowCustomQuestionForm(false)
                 setCustomQuestionText('')
               }}
-              className="flex-1 py-1.5 px-3 rounded-md border border-lia-border-subtle text-xs lia-text-secondary"
+              className="flex-1 py-1.5 px-3 rounded-md border border-lia-border-subtle text-xs text-lia-text-secondary"
             >
               Cancelar
             </button>

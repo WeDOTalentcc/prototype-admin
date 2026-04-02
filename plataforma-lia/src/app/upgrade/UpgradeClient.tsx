@@ -117,7 +117,7 @@ export default function UpgradePage() {
 
       <p className="mt-8 text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
         Dúvidas?{" "}
-        <Link href="mailto:contato@wedotalent.com.br" className="underline hover:lia-text-600 dark:hover:lia-text-300">
+        <Link href="mailto:contato@wedotalent.com.br" className="underline hover:text-lia-text-secondary dark:hover:text-lia-text-disabled">
           Fale com nosso time
         </Link>
       </p>

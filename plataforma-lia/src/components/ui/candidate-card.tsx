@@ -152,7 +152,7 @@ export function CandidateCard({
               <h4 className="font-semibold text-base truncate text-lia-text-primary">
                 {name}
               </h4>
-              <Badge variant="secondary" className={`text-xs shrink-0 border-0 lia-text-secondary ${source_badge.includes("Banco Proprietário") ? 'bg-stone-50' : 'bg-wedo-cyan/10'}`}>
+              <Badge variant="secondary" className={`text-xs shrink-0 border-0 text-lia-text-secondary ${source_badge.includes("Banco Proprietário") ? 'bg-stone-50' : 'bg-wedo-cyan/10'}`}>
                 {source_badge}
               </Badge>
             </div>
@@ -177,13 +177,13 @@ export function CandidateCard({
                   <Badge
                     key={`${name}-${skill}`}
                     variant="outline"
-                    className="text-xs px-2 py-0.5 border-lia-border-subtle lia-text-secondary"
+                    className="text-xs px-2 py-0.5 border-lia-border-subtle text-lia-text-secondary"
                   >
                     {skill}
                   </Badge>
                 ))}
                 {skills.length > 6 && (
-                  <Badge variant="outline" className="text-xs px-2 py-0.5 border-lia-border-subtle lia-text-secondary">
+                  <Badge variant="outline" className="text-xs px-2 py-0.5 border-lia-border-subtle text-lia-text-secondary">
                     +{skills.length - 6}
                   </Badge>
                 )}

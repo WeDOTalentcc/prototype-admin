@@ -127,7 +127,7 @@ export function CandidatePageProfileTab({
                       </Badge>
                     )}
                     {opinionsHistory[0]?.archetype && (
-                      <span className="text-micro lia-text-secondary">{opinionsHistory[0].archetype}</span>
+                      <span className="text-micro text-lia-text-secondary">{opinionsHistory[0].archetype}</span>
                     )}
                   </div>
                 </div>
@@ -340,7 +340,7 @@ export function CandidatePageProfileTab({
                   <span className="text-sm font-medium text-lia-text-primary">
                     {calculateAge(candidate.date_of_birth) || candidate.estimated_age} anos
                     {candidate.date_of_birth && (
-                      <span className="text-xs lia-text-secondary ml-1">
+                      <span className="text-xs text-lia-text-secondary ml-1">
                         ({formatDate(candidate.date_of_birth)})
                       </span>
                     )}

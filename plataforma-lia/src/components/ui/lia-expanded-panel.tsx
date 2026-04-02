@@ -77,7 +77,7 @@ export function LiaExpandedPanel({
                 </h3>
                 {description && (
                   <p 
-                    className="text-xs leading-tight truncate mt-0.5 lia-text-secondary" 
+                    className="text-xs leading-tight truncate mt-0.5 text-lia-text-secondary" 
                    
                   >
                     {description}
@@ -89,7 +89,7 @@ export function LiaExpandedPanel({
               {onNewChat && (
                 <button
                   onClick={onNewChat}
-                  className="p-1.5 rounded-lg lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
+                  className="p-1.5 rounded-lg text-lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
                   title="Novo chat"
                   aria-label="Iniciar novo chat"
                 >
@@ -99,7 +99,7 @@ export function LiaExpandedPanel({
               {onClearChat && (
                 <button
                   onClick={onClearChat}
-                  className="p-1.5 rounded-lg lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
+                  className="p-1.5 rounded-lg text-lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
                   title="Limpar mensagens"
                   aria-label="Limpar mensagens"
                 >
@@ -109,7 +109,7 @@ export function LiaExpandedPanel({
               {onToggleHistory && (
                 <button
                   onClick={onToggleHistory}
-                  className="p-1.5 rounded-lg lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
+                  className="p-1.5 rounded-lg text-lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
                   title="Histórico"
                   aria-label="Ver histórico de conversas"
                 >
@@ -125,7 +125,7 @@ export function LiaExpandedPanel({
                 onClick={onClose}
                 className="h-7 w-7 p-0 rounded-full hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none flex-shrink-0"
               >
-                <X className="w-4 h-4 lia-text-secondary" />
+                <X className="w-4 h-4 text-lia-text-secondary" />
               </Button>
             </div>
           </div>
@@ -396,7 +396,7 @@ const handleKeyDown = (e: React.KeyboardEvent) => {
           className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none ${
  value.trim() && !isLoading
               ? 'bg-chat-cyan text-white hover:opacity-90'
-              : 'bg-lia-interactive-active dark:bg-lia-bg-elevated lia-text-secondary cursor-not-allowed'
+              : 'bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-secondary cursor-not-allowed'
           }`}
         >
           <Send className="w-3.5 h-3.5" />
@@ -436,7 +436,7 @@ export function LiaChatMessage({ type, content, timestamp, messageId, sessionId 
             />
           </div>
           {timestamp && (
-            <span className="text-xs lia-text-secondary px-1" >
+            <span className="text-xs text-lia-text-secondary px-1" >
               {formatTime(timestamp)}
             </span>
           )}
@@ -478,7 +478,7 @@ export function LiaChatMessage({ type, content, timestamp, messageId, sessionId 
           className="px-1"
         />
         {timestamp && (
-          <span className="text-xs lia-text-secondary px-1" >
+          <span className="text-xs text-lia-text-secondary px-1" >
             {formatTime(timestamp)}
           </span>
         )}

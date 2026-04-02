@@ -265,7 +265,7 @@ export function CompetenciesStage({
  "px-1.5 py-0.5 text-micro rounded-full transition-[width,height]",
               skill.required
                 ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
-                : "bg-lia-interactive-active lia-text-secondary"
+                : "bg-lia-interactive-active text-lia-text-secondary"
             )}
             aria-label={skill.required ? 'Marcar como desejável' : 'Marcar como obrigatório'}
           >
@@ -273,14 +273,14 @@ export function CompetenciesStage({
           </button>
           <button
             onClick={() => onSetTechnicalSkills(technicalSkills.filter(s => s.id !== skill.id))}
-            className="p-0.5 lia-text-secondary hover:text-status-error transition-colors motion-reduce:transition-none"
+            className="p-0.5 text-lia-text-secondary hover:text-status-error transition-colors motion-reduce:transition-none"
             aria-label={`Remover competência: ${skill.name}`}
           >
             <Trash2 className="w-3 h-3" />
           </button>
         </div>
         <div className="flex items-center gap-1 ml-0.5">
-          <span className="text-micro lia-text-secondary mr-1">Peso:</span>
+          <span className="text-micro text-lia-text-secondary mr-1">Peso:</span>
           {[1, 2, 3, 4, 5].map((w) => (
             <button
               key={w}
@@ -337,7 +337,7 @@ export function CompetenciesStage({
               <span className="text-xs font-medium text-status-success">
                 Competências pré-configuradas
               </span>
-              <p className="text-micro lia-text-secondary mt-0.5">
+              <p className="text-micro text-lia-text-secondary mt-0.5">
                 Baseadas nas políticas e histórico da empresa.
                 <button
                   onClick={handleToggleExpand}
@@ -353,7 +353,7 @@ export function CompetenciesStage({
               aria-label={isExpanded ? 'Recolher painel de competências' : 'Expandir painel de competências'}
             >
               <ChevronDown className={cn(
- "w-4 h-4 lia-text-secondary transition-transform",
+ "w-4 h-4 text-lia-text-secondary transition-transform",
                 isExpanded && "rotate-180"
               )} />
             </button>
@@ -372,7 +372,7 @@ export function CompetenciesStage({
                 Competências pré-preenchidas do catálogo da empresa
                 <span className="w-1.5 h-1.5 rounded-full bg-wedo-cyan flex-shrink-0" />
               </span>
-              <p className="text-micro lia-text-secondary mt-0.5">
+              <p className="text-micro text-lia-text-secondary mt-0.5">
                 Essas competências foram automaticamente sugeridas com base no catálogo de habilidades da sua empresa.
               </p>
             </div>
@@ -391,7 +391,7 @@ export function CompetenciesStage({
                 Competências pré-preenchidas do Tech Stack
                 <span className="w-1.5 h-1.5 rounded-full bg-wedo-purple flex-shrink-0" />
               </span>
-              <p className="text-micro lia-text-secondary mt-0.5">
+              <p className="text-micro text-lia-text-secondary mt-0.5">
                 Essas competências foram automaticamente sugeridas com base no perfil tecnológico da sua empresa.
               </p>
             </div>
@@ -425,7 +425,7 @@ export function CompetenciesStage({
           </div>
 
           {(technicalSkills.length < 3 || behavioralCompetencies.filter(c => c.enabled).length < 3) && (
-            <div className="text-xs lia-text-secondary mb-3 flex items-center gap-1.5">
+            <div className="text-xs text-lia-text-secondary mb-3 flex items-center gap-1.5">
               <Info className="w-3.5 h-3.5" />
               <span>Selecione pelo menos 3 competências técnicas e 3 comportamentais para uma triagem WSI eficaz</span>
             </div>
@@ -453,7 +453,7 @@ export function CompetenciesStage({
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <Code className="w-3.5 h-3.5 text-lia-text-secondary" />
-                    <span className={`${textStyles.label} lia-text-secondary uppercase tracking-wide`}>
+                    <span className={`${textStyles.label} text-lia-text-secondary uppercase tracking-wide`}>
                       Linguagens de Programação
                     </span>
                   </div>
@@ -472,7 +472,7 @@ export function CompetenciesStage({
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <Laptop className="w-3.5 h-3.5 text-lia-text-secondary" />
-                    <span className={`${textStyles.label} lia-text-secondary uppercase tracking-wide`}>
+                    <span className={`${textStyles.label} text-lia-text-secondary uppercase tracking-wide`}>
                       Frameworks
                     </span>
                   </div>
@@ -491,7 +491,7 @@ export function CompetenciesStage({
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <Database className="w-3.5 h-3.5 text-lia-text-secondary" />
-                    <span className="text-micro font-semibold lia-text-secondary uppercase tracking-wide">
+                    <span className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wide">
                       Bancos de Dados
                     </span>
                   </div>
@@ -510,7 +510,7 @@ export function CompetenciesStage({
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <Wrench className="w-3.5 h-3.5 text-lia-text-secondary" />
-                    <span className="text-micro font-semibold lia-text-secondary uppercase tracking-wide">
+                    <span className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wide">
                       Ferramentas e Plataformas
                     </span>
                   </div>
@@ -529,7 +529,7 @@ export function CompetenciesStage({
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <Lightbulb className="w-3.5 h-3.5 text-lia-text-secondary" />
-                    <span className="text-micro font-semibold lia-text-secondary uppercase tracking-wide">
+                    <span className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wide">
                       Competências Técnicas Gerais
                     </span>
                   </div>
@@ -549,7 +549,7 @@ export function CompetenciesStage({
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <Wrench className="w-3.5 h-3.5 text-lia-text-secondary" />
-                  <span className="text-micro font-semibold lia-text-secondary uppercase tracking-wide">
+                  <span className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wide">
                     Conhecimentos Específicos da Área
                   </span>
                 </div>
@@ -670,20 +670,20 @@ export function CompetenciesStage({
                     </div>
                     <button
                       onClick={() => onEditCompetency?.(comp)}
-                      className="p-1 lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none"
+                      className="p-1 text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none"
                       aria-label={`Editar competência: ${comp.name}`}
                     >
                       <Edit2 className="w-3 h-3" />
                     </button>
                     <button
                       onClick={() => onSetBehavioralCompetencies(behavioralCompetencies.filter(c => c.id !== comp.id))}
-                      className="p-1 lia-text-secondary hover:text-status-error transition-colors motion-reduce:transition-none"
+                      className="p-1 text-lia-text-secondary hover:text-status-error transition-colors motion-reduce:transition-none"
                       aria-label={`Remover competência: ${comp.name}`}
                     >
                       <Trash2 className="w-3 h-3" />
                     </button>
                   </div>
-                  <p className="text-micro lia-text-secondary mt-1 ml-6">
+                  <p className="text-micro text-lia-text-secondary mt-1 ml-6">
                     {comp.justification}
                   </p>
                 </div>

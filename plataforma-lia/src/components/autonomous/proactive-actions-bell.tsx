@@ -197,7 +197,7 @@ export function ProactiveActionsBell({
                   </span>
                 )}
               </div>
-              <span className="text-micro lia-text-secondary shrink-0">
+              <span className="text-micro text-lia-text-secondary shrink-0">
                 {formatTimeAgo(action.created_at)}
               </span>
             </div>
@@ -223,7 +223,7 @@ export function ProactiveActionsBell({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 px-2 text-micro lia-text-secondary hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error/20"
+                className="h-6 px-2 text-micro text-lia-text-secondary hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error/20"
                 onClick={() => handleReject(action.id)}
                 disabled={isProcessing}
               >
@@ -233,7 +233,7 @@ export function ProactiveActionsBell({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 px-2 text-micro lia-text-secondary hover:text-status-warning hover:bg-status-warning/10 dark:hover:bg-status-warning/20"
+                className="h-6 px-2 text-micro text-lia-text-secondary hover:text-status-warning hover:bg-status-warning/10 dark:hover:bg-status-warning/20"
                 onClick={() => handleDefer(action.id)}
                 disabled={isProcessing}
               >
@@ -366,7 +366,7 @@ export function ProactiveActionsBell({
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-micro lia-text-secondary hover:text-lia-text-secondary"
+                className="text-micro text-lia-text-secondary hover:text-lia-text-secondary"
                 onClick={() => setDeferredIds(new Set())}
               >
                 <Clock className="h-3 w-3 mr-1" />

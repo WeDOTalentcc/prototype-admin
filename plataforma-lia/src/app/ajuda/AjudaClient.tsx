@@ -51,7 +51,7 @@ export default function AjudaPage() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="mb-8">
           <Link href="/">
-            <Button variant="ghost" className="mb-4 text-lia-text-secondary hover:lia-text-800">
+            <Button variant="ghost" className="mb-4 text-lia-text-secondary hover:text-lia-text-primary">
               <ChevronLeft className="w-4 h-4 mr-1" />
               Voltar
             </Button>

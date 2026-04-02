@@ -168,7 +168,7 @@ export function FileUploadButton({
               size="icon"
               onClick={handleClick}
               disabled={disabled || uploadedFiles.length >= maxFiles || isAnalyzing}
-              className="h-8 w-8 lia-text-secondary hover:text-lia-text-primary hover:bg-lia-interactive-hover"
+              className="h-8 w-8 text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-interactive-hover"
             >
               {isAnalyzing ? (
                 <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />

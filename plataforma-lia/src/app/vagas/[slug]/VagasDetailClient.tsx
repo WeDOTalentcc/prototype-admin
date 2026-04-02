@@ -175,8 +175,8 @@ export default function PublicVacancyPage() {
     return (
       <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary flex items-center justify-center" role="status" aria-live="polite" aria-label="Carregando...">
         <div className="text-center" role="status" aria-live="polite" aria-label="Carregando...">
-          <Loader2 className="w-10 h-10 animate-spin motion-reduce:animate-none text-neutral-400 dark:text-lia-text-secondary mx-auto" />
-          <p className="text-neutral-500 dark:text-lia-text-tertiary mt-4 text-sm" aria-live="polite" aria-atomic="true">Carregando vaga...</p>
+          <Loader2 className="w-10 h-10 animate-spin motion-reduce:animate-none text-lia-text-tertiary dark:text-lia-text-secondary mx-auto" />
+          <p className="text-lia-text-secondary dark:text-lia-text-tertiary mt-4 text-sm" aria-live="polite" aria-atomic="true">Carregando vaga...</p>
         </div>
       </div>
     )
@@ -186,18 +186,18 @@ export default function PublicVacancyPage() {
     return (
       <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary flex items-center justify-center p-6">
         <div className="max-w-md w-full text-center">
-          <div className="w-16 h-16 rounded-full bg-neutral-100 dark:bg-lia-bg-elevated flex items-center justify-center mx-auto mb-6">
-              <AlertCircle className="w-8 h-8 text-neutral-400 dark:text-lia-text-secondary" />
+          <div className="w-16 h-16 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-elevated flex items-center justify-center mx-auto mb-6">
+              <AlertCircle className="w-8 h-8 text-lia-text-tertiary dark:text-lia-text-secondary" />
           </div>
-          <h2 className="text-xl font-semibold text-neutral-900 dark:text-lia-text-primary mb-2">
+          <h2 className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary mb-2">
             Vaga Indisponível
           </h2>
-          <p className="text-neutral-500 dark:text-lia-text-tertiary mb-6" aria-live="polite" aria-atomic="true">
+          <p className="text-lia-text-secondary dark:text-lia-text-tertiary mb-6" aria-live="polite" aria-atomic="true">
             {error || "Esta vaga não está mais disponível."}
           </p>
           <Button 
             variant="outline"
-            className="border-neutral-200 dark:border-lia-border-medium text-neutral-700 dark:text-lia-text-disabled hover:bg-neutral-50 dark:hover:bg-lia-bg-inverse"
+            className="border-lia-border-subtle dark:border-lia-border-medium text-lia-text-primary dark:text-lia-text-disabled hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse"
             onClick={() => window.history.back()}
           >
             Voltar
@@ -318,15 +318,15 @@ export default function PublicVacancyPage() {
                 alt={vacancy.company_name || "Logo"} 
                 width={56}
                 height={56}
-                className="w-14 h-14 rounded-md object-contain border border-neutral-100 dark:border-lia-border-strong"
+                className="w-14 h-14 rounded-md object-contain border border-lia-border-subtle dark:border-lia-border-strong"
               />
             ) : (
-              <div className="w-14 h-14 rounded-md bg-neutral-100 dark:bg-lia-bg-elevated flex items-center justify-center">
-                <Building2 className="w-7 h-7 text-neutral-400 dark:text-lia-text-secondary" />
+              <div className="w-14 h-14 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-elevated flex items-center justify-center">
+                <Building2 className="w-7 h-7 text-lia-text-tertiary dark:text-lia-text-secondary" />
               </div>
             )}
             <div>
-              <h2 className="text-lg font-medium text-neutral-900 dark:text-lia-text-primary">
+              <h2 className="text-lg font-medium text-lia-text-primary dark:text-lia-text-primary">
                 {vacancy.company_name}
               </h2>
               {vacancy.company_website && (
@@ -334,7 +334,7 @@ export default function PublicVacancyPage() {
                   href={vacancy.company_website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-neutral-500 dark:text-lia-text-tertiary hover:text-neutral-700 dark:hover:lia-text-200 flex items-center gap-1"
+                  className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-disabled flex items-center gap-1"
                 >
                   Visitar website
                   <ExternalLink className="w-3 h-3" />
@@ -353,38 +353,38 @@ export default function PublicVacancyPage() {
               </Badge>
             )}
             {vacancy.department && (
-              <Badge variant="outline" className="border-neutral-200 dark:border-lia-border-medium text-neutral-600 dark:text-lia-text-disabled font-normal">
+              <Badge variant="outline" className="border-lia-border-subtle dark:border-lia-border-medium text-lia-text-secondary dark:text-lia-text-disabled font-normal">
                 {vacancy.department}
               </Badge>
             )}
           </div>
           
-          <h1 className="text-3xl sm:text-4xl font-semibold text-neutral-900 dark:text-lia-text-primary tracking-tight mb-6">
+          <h1 className="text-3xl sm:text-4xl font-semibold text-lia-text-primary dark:text-lia-text-primary tracking-tight mb-6">
             {vacancy.title}
           </h1>
           
-          <div className="flex flex-wrap gap-6 text-sm text-neutral-600 dark:text-lia-text-secondary">
+          <div className="flex flex-wrap gap-6 text-sm text-lia-text-secondary dark:text-lia-text-secondary">
             {vacancy.location && (
               <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-neutral-400 dark:text-lia-text-secondary" />
+                <MapPin className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-secondary" />
                 <span>{vacancy.location}</span>
               </div>
             )}
             {vacancy.work_model && (
               <div className="flex items-center gap-2">
-                <Globe className="w-4 h-4 text-neutral-400 dark:text-lia-text-secondary" />
+                <Globe className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-secondary" />
                 <span>{workModelLabels[vacancy.work_model.toLowerCase()] || vacancy.work_model}</span>
               </div>
             )}
             {vacancy.employment_type && (
               <div className="flex items-center gap-2">
-                <Briefcase className="w-4 h-4 text-neutral-400 dark:text-lia-text-secondary" />
+                <Briefcase className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-secondary" />
                 <span>{vacancy.employment_type}</span>
               </div>
             )}
             {vacancy.seniority_level && (
               <div className="flex items-center gap-2">
-                <GraduationCap className="w-4 h-4 text-neutral-400 dark:text-lia-text-secondary" />
+                <GraduationCap className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-secondary" />
                 <span>{vacancy.seniority_level}</span>
               </div>
             )}
@@ -392,36 +392,36 @@ export default function PublicVacancyPage() {
         </header>
 
         {showCompanyInfo && vacancy.company_description && (
-          <section className="mb-10 pb-10 border-b border-neutral-100 dark:border-lia-border-subtle">
-            <h3 className="text-xs font-medium text-neutral-400 dark:text-lia-text-secondary uppercase tracking-wider mb-3">
+          <section className="mb-10 pb-10 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+            <h3 className="text-xs font-medium text-lia-text-tertiary dark:text-lia-text-secondary uppercase tracking-wider mb-3">
               Sobre a Empresa
             </h3>
-            <p className="text-neutral-600 dark:text-lia-text-secondary leading-relaxed">
+            <p className="text-lia-text-secondary dark:text-lia-text-secondary leading-relaxed">
               {vacancy.company_description}
             </p>
           </section>
         )}
 
         {vacancy.description && (
-          <section className="mb-10 pb-10 border-b border-neutral-100 dark:border-lia-border-strong">
-            <h3 className="text-xs font-medium text-neutral-400 dark:text-lia-text-secondary uppercase tracking-wider mb-3">
+          <section className="mb-10 pb-10 border-b border-lia-border-subtle dark:border-lia-border-strong">
+            <h3 className="text-xs font-medium text-lia-text-tertiary dark:text-lia-text-secondary uppercase tracking-wider mb-3">
               Sobre a Vaga
             </h3>
-            <p className="text-neutral-700 dark:text-lia-text-primary whitespace-pre-wrap leading-relaxed">
+            <p className="text-lia-text-primary dark:text-lia-text-primary whitespace-pre-wrap leading-relaxed">
               {vacancy.description}
             </p>
           </section>
         )}
         
         {vacancy.requirements && vacancy.requirements.length > 0 && (
-          <section className="mb-10 pb-10 border-b border-neutral-100 dark:border-lia-border-strong">
-            <h3 className="text-xs font-medium text-neutral-400 dark:text-lia-text-secondary uppercase tracking-wider mb-4">
+          <section className="mb-10 pb-10 border-b border-lia-border-subtle dark:border-lia-border-strong">
+            <h3 className="text-xs font-medium text-lia-text-tertiary dark:text-lia-text-secondary uppercase tracking-wider mb-4">
               Requisitos
             </h3>
             <ul className="space-y-3">
               {vacancy.requirements.map((req, idx) => (
-                <li key={`req-${idx}`} className="flex items-start gap-3 text-neutral-700 dark:text-lia-text-primary">
-                  <CheckCircle2 className="w-4 h-4 text-neutral-300 dark:text-lia-text-secondary mt-0.5 flex-shrink-0" />
+                <li key={`req-${idx}`} className="flex items-start gap-3 text-lia-text-primary dark:text-lia-text-primary">
+                  <CheckCircle2 className="w-4 h-4 text-lia-text-disabled dark:text-lia-text-secondary mt-0.5 flex-shrink-0" />
                   <span>{req}</span>
                 </li>
               ))}
@@ -430,8 +430,8 @@ export default function PublicVacancyPage() {
         )}
         
         {vacancy.technical_requirements && vacancy.technical_requirements.length > 0 && (
-          <section className="mb-10 pb-10 border-b border-neutral-100 dark:border-lia-border-strong">
-            <h3 className="text-xs font-medium text-neutral-400 dark:text-lia-text-secondary uppercase tracking-wider mb-4">
+          <section className="mb-10 pb-10 border-b border-lia-border-subtle dark:border-lia-border-strong">
+            <h3 className="text-xs font-medium text-lia-text-tertiary dark:text-lia-text-secondary uppercase tracking-wider mb-4">
               <Code2 className="w-4 h-4 inline mr-2" />
               Stack Técnico
             </h3>
@@ -442,13 +442,13 @@ export default function PublicVacancyPage() {
                   variant="outline"
                   className={
                     tech.required 
-                      ? "border-neutral-300 dark:border-lia-border-medium text-neutral-700 dark:text-lia-text-disabled bg-neutral-50 dark:bg-lia-bg-inverse font-normal"
-                      : "border-neutral-200 dark:border-lia-border-strong text-neutral-500 dark:text-lia-text-tertiary font-normal"
+                      ? "border-lia-border-default dark:border-lia-border-medium text-lia-text-primary dark:text-lia-text-disabled bg-lia-bg-secondary dark:bg-lia-bg-inverse font-normal"
+                      : "border-lia-border-subtle dark:border-lia-border-strong text-lia-text-secondary dark:text-lia-text-tertiary font-normal"
                   }
                 >
                   {tech.technology}
                   {tech.level && (
-                    <span className="ml-1 text-neutral-400 dark:text-lia-text-secondary">
+                    <span className="ml-1 text-lia-text-tertiary dark:text-lia-text-secondary">
                       · {tech.level}
                     </span>
                   )}
@@ -459,8 +459,8 @@ export default function PublicVacancyPage() {
         )}
         
         {vacancy.languages && vacancy.languages.length > 0 && (
-          <section className="mb-10 pb-10 border-b border-neutral-100 dark:border-lia-border-strong">
-            <h3 className="text-xs font-medium text-neutral-400 dark:text-lia-text-secondary uppercase tracking-wider mb-4">
+          <section className="mb-10 pb-10 border-b border-lia-border-subtle dark:border-lia-border-strong">
+            <h3 className="text-xs font-medium text-lia-text-tertiary dark:text-lia-text-secondary uppercase tracking-wider mb-4">
               <Languages className="w-4 h-4 inline mr-2" />
               Idiomas
             </h3>
@@ -471,13 +471,13 @@ export default function PublicVacancyPage() {
                   variant="outline"
                   className={
                     lang.required 
-                      ? "border-neutral-300 dark:border-lia-border-medium text-neutral-700 dark:text-lia-text-disabled bg-neutral-50 dark:bg-lia-bg-inverse font-normal"
-                      : "border-neutral-200 dark:border-lia-border-strong text-neutral-500 dark:text-lia-text-tertiary font-normal"
+                      ? "border-lia-border-default dark:border-lia-border-medium text-lia-text-primary dark:text-lia-text-disabled bg-lia-bg-secondary dark:bg-lia-bg-inverse font-normal"
+                      : "border-lia-border-subtle dark:border-lia-border-strong text-lia-text-secondary dark:text-lia-text-tertiary font-normal"
                   }
                 >
                   {lang.language}
                   {lang.level && (
-                    <span className="ml-1 text-neutral-400 dark:text-lia-text-secondary">
+                    <span className="ml-1 text-lia-text-tertiary dark:text-lia-text-secondary">
                       · {levelLabels[lang.level] || lang.level}
                     </span>
                   )}
@@ -488,8 +488,8 @@ export default function PublicVacancyPage() {
         )}
         
         {vacancy.behavioral_competencies && vacancy.behavioral_competencies.length > 0 && (
-          <section className="mb-10 pb-10 border-b border-neutral-100 dark:border-lia-border-strong">
-            <h3 className="text-xs font-medium text-neutral-400 dark:text-lia-text-secondary uppercase tracking-wider mb-4">
+          <section className="mb-10 pb-10 border-b border-lia-border-subtle dark:border-lia-border-strong">
+            <h3 className="text-xs font-medium text-lia-text-tertiary dark:text-lia-text-secondary uppercase tracking-wider mb-4">
               <Users className="w-4 h-4 inline mr-2" />
               Competências
             </h3>
@@ -498,7 +498,7 @@ export default function PublicVacancyPage() {
                 <Badge 
                   key={`comp-${idx}`}
                   variant="outline"
-                  className="border-neutral-200 dark:border-lia-border-medium text-neutral-600 dark:text-lia-text-disabled font-normal"
+                  className="border-lia-border-subtle dark:border-lia-border-medium text-lia-text-secondary dark:text-lia-text-disabled font-normal"
                 >
                   {comp.competency}
                 </Badge>
@@ -508,17 +508,17 @@ export default function PublicVacancyPage() {
         )}
         
         {vacancy.benefits && vacancy.benefits.length > 0 && (
-          <section className="mb-10 pb-10 border-b border-neutral-100 dark:border-lia-border-strong">
-            <h3 className="text-xs font-medium text-neutral-400 dark:text-lia-text-secondary uppercase tracking-wider mb-4">
+          <section className="mb-10 pb-10 border-b border-lia-border-subtle dark:border-lia-border-strong">
+            <h3 className="text-xs font-medium text-lia-text-tertiary dark:text-lia-text-secondary uppercase tracking-wider mb-4">
               Benefícios
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {vacancy.benefits.map((benefit, idx) => (
                 <div 
                   key={`benefit-${idx}`} 
-                  className="flex items-center gap-3 text-neutral-700 dark:text-lia-text-primary py-2"
+                  className="flex items-center gap-3 text-lia-text-primary dark:text-lia-text-primary py-2"
                 >
-                  <CheckCircle2 className="w-4 h-4 text-neutral-300 dark:text-lia-text-secondary flex-shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-lia-text-disabled dark:text-lia-text-secondary flex-shrink-0" />
                   <span className="text-sm">{benefit}</span>
                 </div>
               ))}
@@ -526,13 +526,13 @@ export default function PublicVacancyPage() {
           </section>
         )}
 
-        <section className="mb-10 pb-10 border-b border-neutral-100 dark:border-lia-border-strong">
-          <h3 className="text-xs font-medium text-neutral-400 dark:text-lia-text-secondary uppercase tracking-wider mb-6">
+        <section className="mb-10 pb-10 border-b border-lia-border-subtle dark:border-lia-border-strong">
+          <h3 className="text-xs font-medium text-lia-text-tertiary dark:text-lia-text-secondary uppercase tracking-wider mb-6">
             Como funciona o processo
           </h3>
           
           <div className="relative">
-            <div className="absolute left-5 top-8 bottom-8 w-px bg-neutral-100 dark:bg-lia-bg-inverse hidden sm:block" />
+            <div className="absolute left-5 top-8 bottom-8 w-px bg-lia-bg-tertiary dark:bg-lia-bg-inverse hidden sm:block" />
             
             <div className="space-y-6">
               {processSteps.map((step, idx) => (
@@ -540,34 +540,34 @@ export default function PublicVacancyPage() {
                   <div className={`
                     w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 z-10
                     ${step.highlight 
-                      ? 'bg-neutral-900 text-white dark:bg-lia-bg-inverse'
-                      : 'bg-neutral-100 dark:bg-lia-bg-inverse text-neutral-500 dark:text-lia-text-tertiary'
+                      ? 'bg-lia-btn-primary-bg text-white dark:bg-lia-bg-inverse'
+                      : 'bg-lia-bg-tertiary dark:bg-lia-bg-inverse text-lia-text-secondary dark:text-lia-text-tertiary'
                     }
                   `}>
                     <step.icon className="w-4 h-4" />
                   </div>
                   <div className="pt-2">
-                    <h4 className={`font-medium ${step.highlight ? 'text-neutral-900 dark:text-lia-text-primary' : 'text-neutral-700 dark:text-lia-text-primary'}`}>
+                    <h4 className={`font-medium ${step.highlight ? 'text-lia-text-primary dark:text-lia-text-primary' : 'text-lia-text-primary dark:text-lia-text-primary'}`}>
                       {step.title}
                     </h4>
-                    <p className="text-sm text-neutral-500 dark:text-lia-text-tertiary mt-0.5">
+                    <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary mt-0.5">
                       {step.description}
                     </p>
                   </div>
                   {idx < processSteps.length - 1 && (
-                    <ArrowRight className="w-4 h-4 text-neutral-200 dark:text-lia-text-primary absolute left-3 -bottom-3 hidden sm:block" />
+                    <ArrowRight className="w-4 h-4 text-lia-text-disabled dark:text-lia-text-primary absolute left-3 -bottom-3 hidden sm:block" />
                   )}
                 </div>
               ))}
             </div>
           </div>
           
-          <div className="mt-8 bg-neutral-50 dark:bg-lia-bg-secondary rounded-md p-4 border border-neutral-100 dark:border-lia-border-subtle">
+          <div className="mt-8 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
             <div className="flex items-start gap-3">
-              <Bot className="w-5 h-5 text-neutral-400 dark:text-lia-text-secondary mt-0.5" />
+              <Bot className="w-5 h-5 text-lia-text-tertiary dark:text-lia-text-secondary mt-0.5" />
               <div>
-                <p className="text-sm text-neutral-600 dark:text-lia-text-secondary">
-                  <strong className="text-neutral-700 dark:text-lia-text-disabled">Triagem inteligente com LIA.</strong>{" "}
+                <p className="text-sm text-lia-text-secondary dark:text-lia-text-secondary">
+                  <strong className="text-lia-text-primary dark:text-lia-text-disabled">Triagem inteligente com LIA.</strong>{" "}
                   Nossa assistente de IA conduz uma conversa amigável para conhecer você melhor, 
                   garantindo uma avaliação justa e feedback em todas as etapas.
                 </p>
@@ -577,11 +577,11 @@ export default function PublicVacancyPage() {
         </section>
 
         <section className="mb-12">
-          <div className="bg-neutral-900 dark:bg-lia-btn-primary-hover rounded-md p-6 sm:p-8 text-center">
+          <div className="bg-lia-btn-primary-bg dark:bg-lia-btn-primary-hover rounded-md p-6 sm:p-8 text-center">
             <h3 className="text-xl font-semibold text-white mb-2">
               Interessado na vaga?
             </h3>
-            <p className="text-neutral-400 dark:text-lia-text-tertiary text-sm mb-6 max-w-md mx-auto">
+            <p className="text-lia-text-tertiary dark:text-lia-text-tertiary text-sm mb-6 max-w-md mx-auto">
               Candidate-se online ou via WhatsApp em menos de 10 minutos. 
               Basta enviar seu currículo e responder algumas perguntas.
             </p>
@@ -589,7 +589,7 @@ export default function PublicVacancyPage() {
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button 
                 size="lg" 
-                className="bg-lia-bg-primary dark:bg-lia-interactive-active text-neutral-900 hover:bg-neutral-100 font-medium px-8"
+                className="bg-lia-bg-primary dark:bg-lia-interactive-active text-lia-text-primary hover:bg-lia-bg-tertiary font-medium px-8"
                 onClick={handleOpenForm}
               >
                 <Monitor className="w-5 h-5 mr-2" />
@@ -598,7 +598,7 @@ export default function PublicVacancyPage() {
               <Button 
                 size="lg" 
                 variant="outline"
-                className="border-neutral-600 dark:border-lia-border-medium text-neutral-300 hover:bg-neutral-800 dark:hover:bg-lia-bg-inverse hover:text-white font-medium px-8"
+                className="border-lia-border-medium dark:border-lia-border-medium text-lia-text-disabled hover:bg-lia-btn-primary-hover dark:hover:bg-lia-bg-inverse hover:text-white font-medium px-8"
                 onClick={handleApplyWhatsApp}
               >
                 <MessageCircle className="w-5 h-5 mr-2" />
@@ -611,29 +611,29 @@ export default function PublicVacancyPage() {
         {showForm && (
           <section className="mb-12" ref={formRef}>
             {applicationResult && applicationResult.status !== "error" ? (
-              <div className="border border-neutral-200 dark:border-lia-border-subtle rounded-md p-6 sm:p-8 text-center dark:bg-lia-bg-secondary">
+              <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-6 sm:p-8 text-center dark:bg-lia-bg-secondary">
                 <div className="w-16 h-16 rounded-full bg-status-success/10 flex items-center justify-center mx-auto mb-4">
                   <CheckCircle className="w-8 h-8 text-status-success" />
                 </div>
-                <h3 className="text-xl font-semibold text-neutral-900 dark:text-lia-text-primary mb-2">
+                <h3 className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary mb-2">
                   {applicationResult.status === "applied" ? "Candidatura Enviada!" : 
                    applicationResult.status === "queued" ? "Dados Registrados!" :
                    applicationResult.status === "already_applied" ? "Candidatura Existente" :
                    "Obrigado pela Candidatura"}
                 </h3>
-                <p className="text-neutral-600 dark:text-lia-text-secondary text-sm max-w-md mx-auto">
+                <p className="text-lia-text-secondary dark:text-lia-text-secondary text-sm max-w-md mx-auto">
                   {applicationResult.message}
                 </p>
               </div>
             ) : (
-              <div className="border border-neutral-200 dark:border-lia-border-subtle rounded-md p-6 sm:p-8 dark:bg-lia-bg-secondary">
+              <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-6 sm:p-8 dark:bg-lia-bg-secondary">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-lia-text-primary">
+                  <h3 className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary">
                     Candidatura Online
                   </h3>
                   <button
                     onClick={() => setShowForm(false)}
-                    className="text-neutral-400 dark:text-lia-text-secondary hover:text-neutral-600 dark:hover:lia-text-300"
+                    className="text-lia-text-tertiary dark:text-lia-text-secondary hover:text-lia-text-secondary dark:hover:text-lia-text-disabled"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -647,15 +647,15 @@ export default function PublicVacancyPage() {
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 dark:text-lia-text-primary mb-1">
+                    <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-1">
                       Nome completo *
                     </label>
                     <input
                       type="text"
                       value={form.name}
                       onChange={(e) => setForm(prev => ({ ...prev, name: e.target.value }))}
-                      className={`w-full px-3 py-2 border rounded-md text-sm text-neutral-900 dark:text-lia-text-disabled dark:bg-lia-btn-primary-hover placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent ${
-                        formErrors.name ? "border-status-error/30" : "border-neutral-200 dark:border-lia-border-medium"
+                      className={`w-full px-3 py-2 border rounded-md text-sm text-lia-text-primary dark:text-lia-text-disabled dark:bg-lia-btn-primary-hover placeholder-lia-text-tertiary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg focus:border-transparent ${
+                        formErrors.name ? "border-status-error/30" : "border-lia-border-subtle dark:border-lia-border-medium"
                       }`}
                       placeholder="Seu nome completo"
                     />
@@ -665,15 +665,15 @@ export default function PublicVacancyPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 dark:text-lia-text-disabled mb-1">
+                    <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-disabled mb-1">
                       Email *
                     </label>
                     <input
                       type="email"
                       value={form.email}
                       onChange={(e) => setForm(prev => ({ ...prev, email: e.target.value }))}
-                      className={`w-full px-3 py-2 border rounded-md text-sm text-neutral-900 dark:text-lia-text-disabled dark:bg-lia-btn-primary-hover placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent ${
-                        formErrors.email ? "border-status-error/30" : "border-neutral-200 dark:border-lia-border-medium"
+                      className={`w-full px-3 py-2 border rounded-md text-sm text-lia-text-primary dark:text-lia-text-disabled dark:bg-lia-btn-primary-hover placeholder-lia-text-tertiary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg focus:border-transparent ${
+                        formErrors.email ? "border-status-error/30" : "border-lia-border-subtle dark:border-lia-border-medium"
                       }`}
                       placeholder="seu@email.com"
                     />
@@ -683,15 +683,15 @@ export default function PublicVacancyPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 dark:text-lia-text-disabled mb-1">
+                    <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-disabled mb-1">
                       Telefone / WhatsApp *
                     </label>
                     <input
                       type="tel"
                       value={form.phone}
                       onChange={(e) => setForm(prev => ({ ...prev, phone: e.target.value }))}
-                      className={`w-full px-3 py-2 border rounded-md text-sm text-neutral-900 dark:text-lia-text-disabled dark:bg-lia-btn-primary-hover placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent ${
-                        formErrors.phone ? "border-status-error/30" : "border-neutral-200 dark:border-lia-border-medium"
+                      className={`w-full px-3 py-2 border rounded-md text-sm text-lia-text-primary dark:text-lia-text-disabled dark:bg-lia-btn-primary-hover placeholder-lia-text-tertiary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg focus:border-transparent ${
+                        formErrors.phone ? "border-status-error/30" : "border-lia-border-subtle dark:border-lia-border-medium"
                       }`}
                       placeholder="+55 (11) 99999-9999"
                     />
@@ -701,7 +701,7 @@ export default function PublicVacancyPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 dark:text-lia-text-disabled mb-1">
+                    <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-disabled mb-1">
                       Currículo (PDF ou DOC) *
                     </label>
                     <input
@@ -716,12 +716,12 @@ export default function PublicVacancyPage() {
                     />
                     <div
                       onClick={() => fileInputRef.current?.click()}
-                      className={`w-full px-3 py-4 border-2 border-dashed rounded-md text-center cursor-pointer transition-colors motion-reduce:transition-none hover:border-neutral-400 dark:hover:border-lia-border-medium hover:bg-neutral-50 dark:hover:bg-lia-bg-inverse ${
-                        formErrors.cvFile ? "border-status-error/30" : form.cvFile ? "border-neutral-400 dark:border-lia-border-medium bg-neutral-50 dark:bg-lia-bg-inverse" : "border-neutral-200 dark:border-lia-border-medium"
+                      className={`w-full px-3 py-4 border-2 border-dashed rounded-md text-center cursor-pointer transition-colors motion-reduce:transition-none hover:border-lia-border-medium dark:hover:border-lia-border-medium hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse ${
+                        formErrors.cvFile ? "border-status-error/30" : form.cvFile ? "border-lia-border-medium dark:border-lia-border-medium bg-lia-bg-secondary dark:bg-lia-bg-inverse" : "border-lia-border-subtle dark:border-lia-border-medium"
                       }`}
                     >
                       {form.cvFile ? (
-                        <div className="flex items-center justify-center gap-2 text-sm text-neutral-700 dark:text-lia-text-disabled">
+                        <div className="flex items-center justify-center gap-2 text-sm text-lia-text-primary dark:text-lia-text-disabled">
                           <FileText className="w-4 h-4" />
                           <span>{form.cvFile.name}</span>
                           <button
@@ -730,18 +730,18 @@ export default function PublicVacancyPage() {
                               setForm(prev => ({ ...prev, cvFile: null }))
                               if (fileInputRef.current) fileInputRef.current.value = ""
                             }}
-                            className="text-neutral-400 dark:text-lia-text-secondary hover:text-neutral-600 dark:hover:lia-text-300 ml-1"
+                            className="text-lia-text-tertiary dark:text-lia-text-secondary hover:text-lia-text-secondary dark:hover:text-lia-text-disabled ml-1"
                           >
                             <X className="w-4 h-4" />
                           </button>
                         </div>
                       ) : (
                         <div className="flex flex-col items-center gap-1">
-                          <Upload className="w-5 h-5 text-neutral-400 dark:text-lia-text-secondary" />
-                          <span className="text-sm text-neutral-500 dark:text-lia-text-tertiary">
+                          <Upload className="w-5 h-5 text-lia-text-tertiary dark:text-lia-text-secondary" />
+                          <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
                             Clique para enviar seu currículo
                           </span>
-                          <span className="text-xs text-neutral-400 dark:text-lia-text-secondary">PDF ou DOC, até 10MB</span>
+                          <span className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">PDF ou DOC, até 10MB</span>
                         </div>
                       )}
                     </div>
@@ -756,9 +756,9 @@ export default function PublicVacancyPage() {
                         type="checkbox"
                         checked={form.lgpdConsent}
                         onChange={(e) => setForm(prev => ({ ...prev, lgpdConsent: e.target.checked }))}
-                        className="mt-0.5 h-4 w-4 rounded-md border-neutral-300 dark:border-lia-border-medium text-neutral-900 focus:ring-neutral-900"
+                        className="mt-0.5 h-4 w-4 rounded-md border-lia-border-default dark:border-lia-border-medium text-lia-text-primary focus:ring-lia-btn-primary-bg"
                       />
-                      <span className={`text-xs leading-relaxed ${formErrors.lgpdConsent ? "text-status-error" : "text-neutral-500 dark:text-lia-text-tertiary"}`}>
+                      <span className={`text-xs leading-relaxed ${formErrors.lgpdConsent ? "text-status-error" : "text-lia-text-secondary dark:text-lia-text-tertiary"}`}>
                         Autorizo a coleta e tratamento dos meus dados pessoais para fins deste processo seletivo, 
                         conforme a Lei Geral de Proteção de Dados (LGPD). Entendo que posso solicitar a exclusão 
                         dos meus dados a qualquer momento. *
@@ -772,7 +772,7 @@ export default function PublicVacancyPage() {
                   <div className="pt-4">
                     <Button
                       size="lg"
-                      className="w-full bg-neutral-900 dark:bg-lia-bg-inverse text-white hover:bg-neutral-800 dark:hover:bg-lia-border-medium font-medium"
+                      className="w-full bg-lia-btn-primary-bg dark:bg-lia-bg-inverse text-white hover:bg-lia-btn-primary-hover dark:hover:bg-lia-border-medium font-medium"
                       onClick={handleSubmitApplication}
                       disabled={submitting}
                     >
@@ -796,34 +796,34 @@ export default function PublicVacancyPage() {
         )}
 
         <section className="text-center">
-          <div className="border border-neutral-100 dark:border-lia-border-subtle rounded-md p-6 bg-neutral-50/50 dark:bg-lia-bg-secondary">
+          <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-6 bg-lia-bg-secondary/50 dark:bg-lia-bg-secondary">
             <div className="flex items-center justify-center gap-2 mb-3">
-              <Shield className="w-4 h-4 text-neutral-400 dark:text-lia-text-secondary" />
-              <h4 className="text-sm font-medium text-neutral-700 dark:text-lia-text-primary">
+              <Shield className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-secondary" />
+              <h4 className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                 Privacidade e Proteção de Dados
               </h4>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-lia-text-tertiary leading-relaxed max-w-lg mx-auto mb-2">
+            <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary leading-relaxed max-w-lg mx-auto mb-2">
               Este processo seletivo utiliza inteligência artificial (LIA) para auxiliar na triagem. 
               Seus dados são tratados conforme a LGPD. Ao se candidatar, você autoriza a coleta 
               e análise dos seus dados para fins deste processo.
             </p>
-            <p className="text-xs text-neutral-400 dark:text-lia-text-secondary">
-              <a href="/privacidade" className="hover:text-neutral-600 dark:hover:lia-text-300 underline">
+            <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
+              <a href="/privacidade" className="hover:text-lia-text-secondary dark:hover:text-lia-text-disabled underline">
                 Política de Privacidade
               </a>
               {" · "}
-              <a href="mailto:dpo@wedotalent.com" className="hover:text-neutral-600 dark:hover:lia-text-300">
+              <a href="mailto:dpo@wedotalent.com" className="hover:text-lia-text-secondary dark:hover:text-lia-text-disabled">
                 dpo@wedotalent.com
               </a>
             </p>
           </div>
         </section>
 
-        <footer className="text-center mt-12 pt-8 border-t border-neutral-100 dark:border-lia-border-subtle">
-          <p className="text-xs text-neutral-400 dark:text-lia-text-secondary">
+        <footer className="text-center mt-12 pt-8 border-t border-lia-border-subtle dark:border-lia-border-subtle">
+          <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
             Powered by{" "}
-            <span className="font-medium text-neutral-500 dark:text-lia-text-tertiary">WeDOTalent</span>
+            <span className="font-medium text-lia-text-secondary dark:text-lia-text-tertiary">WeDOTalent</span>
           </p>
         </footer>
       </div>

@@ -119,13 +119,13 @@ export const JDArrayEditor = React.memo(function JDArrayEditor({
                 key={`${fieldKey}-${idx}`}
                 className="group flex items-start gap-2 py-1 px-1 rounded-md hover:bg-lia-interactive-hover"
               >
-                <span className="text-xs lia-text-secondary mt-0.5 shrink-0">•</span>
+                <span className="text-xs text-lia-text-secondary mt-0.5 shrink-0">•</span>
                 <span className="text-xs text-lia-text-secondary flex-1 leading-relaxed">
                   {item}
                 </span>
                 <button
                   onClick={() => handleRemove(idx)}
-                  className="opacity-0 group-hover:opacity-100 lia-text-secondary hover:text-status-error shrink-0 transition-opacity motion-reduce:transition-none"
+                  className="opacity-0 group-hover:opacity-100 text-lia-text-secondary hover:text-status-error shrink-0 transition-opacity motion-reduce:transition-none"
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -193,7 +193,7 @@ export const JDArrayEditor = React.memo(function JDArrayEditor({
               onNewItemChange("")
               onStartEditing(fieldKey)
             }}
-            className="text-xs lia-text-secondary hover:text-lia-text-secondary flex items-center gap-1 mt-2"
+            className="text-xs text-lia-text-secondary hover:text-lia-text-secondary flex items-center gap-1 mt-2"
           >
             <Plus className="h-3 w-3" /> Adicionar
           </button>

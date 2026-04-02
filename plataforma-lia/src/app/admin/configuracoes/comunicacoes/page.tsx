@@ -724,7 +724,7 @@ export default function AdminComunicacoesPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors motion-reduce:transition-none relative ${isActive ? 'lia-text-700 dark:text-lia-text-secondary' : 'lia-text-500 dark:text-lia-text-tertiary'}`}
+              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors motion-reduce:transition-none relative ${isActive ? 'text-lia-text-primary dark:text-lia-text-secondary' : 'text-lia-text-secondary dark:text-lia-text-tertiary'}`}
             >
               <tab.icon className="w-4 h-4" />
               {tab.label}

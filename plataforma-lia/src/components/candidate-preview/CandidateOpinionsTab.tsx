@@ -221,7 +221,7 @@ opinionsSubTab === 'analises'
                               {(analysisLabels[analysis.analysis_type as string] || analysis.analysis_type as React.ReactNode)}
                             </Badge>
                           </div>
-                          <span className={`${textStyles.caption} lia-text-secondary`}>
+                          <span className={`${textStyles.caption} text-lia-text-secondary`}>
                             {analysis.created_at ? new Date(analysis.created_at as string).toLocaleDateString('pt-BR', {
                               day: '2-digit',
                               month: '2-digit',
@@ -251,7 +251,7 @@ opinionsSubTab === 'analises'
                           </TooltipTrigger>
                           <TooltipContent side="top" className="text-micro">Copiar análise</TooltipContent>
                         </Tooltip>
-                        <ChevronDown className={`w-4 h-4 lia-text-secondary transition-transform motion-reduce:transition-none ${isExpanded ? 'rotate-180' : ''}`} />
+                        <ChevronDown className={`w-4 h-4 text-lia-text-secondary transition-transform motion-reduce:transition-none ${isExpanded ? 'rotate-180' : ''}`} />
                       </div>
                     </div>
 
@@ -272,7 +272,7 @@ opinionsSubTab === 'analises'
                                 }}
                                 className="p-1.5 hover:bg-status-error/10 rounded-md transition-colors motion-reduce:transition-none group"
                               >
-                                <Trash2 className="w-4 h-4 lia-text-secondary group-hover:text-status-error" />
+                                <Trash2 className="w-4 h-4 text-lia-text-secondary group-hover:text-status-error" />
                               </button>
                             </TooltipTrigger>
                             <TooltipContent side="top" className="text-micro">Remover análise</TooltipContent>

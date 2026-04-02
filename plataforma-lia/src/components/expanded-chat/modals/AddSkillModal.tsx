@@ -156,7 +156,7 @@ function SkillCard({ skill, isSelected, onAdd }: SkillCardProps) {
         )}
       </div>
       {skill.description && (
-        <p className="text-micro lia-text-secondary line-clamp-2">
+        <p className="text-micro text-lia-text-secondary line-clamp-2">
           {skill.description}
         </p>
       )}
@@ -189,7 +189,7 @@ function SkillsTabContent({ skills, selectedSkills, onAddSkill, tabLabel }: TabC
   return (
     <div className="space-y-4">
       <div className="relative">
-        <Search className="absolute left-3 top-2.5 w-4 h-4 lia-text-secondary" />
+        <Search className="absolute left-3 top-2.5 w-4 h-4 text-lia-text-secondary" />
         <Input
           placeholder={`Buscar ${tabLabel.toLowerCase()}...`}
           value={searchQuery}
@@ -200,7 +200,7 @@ function SkillsTabContent({ skills, selectedSkills, onAddSkill, tabLabel }: TabC
 
       {filteredSkills.length === 0 ? (
         <div className="py-8 text-center">
-          <p className="text-xs lia-text-secondary">
+          <p className="text-xs text-lia-text-secondary">
             {searchQuery ? 'Nenhum resultado encontrado' : 'Nenhuma skill disponível'}
           </p>
         </div>
@@ -365,7 +365,7 @@ function CustomSkillForm({ onAddCustomSkill, selectedSkills }: CustomSkillFormPr
           <Label htmlFor="save-to-catalog" className="text-xs font-medium text-lia-text-primary cursor-pointer">
             Salvar no Catálogo da Empresa
           </Label>
-          <p className="text-micro lia-text-secondary">
+          <p className="text-micro text-lia-text-secondary">
             Skill ficará disponível para futuras vagas
           </p>
         </div>
@@ -461,7 +461,7 @@ export function AddSkillModal({
           <TabsContent value="catalog" className="space-y-3">
             {catalogByCategory.length === 0 ? (
               <div className="py-8 text-center">
-                <p className="text-xs lia-text-secondary">
+                <p className="text-xs text-lia-text-secondary">
                   Nenhuma skill de {CATEGORY_LABELS[category].toLowerCase()} no catálogo da empresa
                 </p>
               </div>
@@ -478,7 +478,7 @@ export function AddSkillModal({
           <TabsContent value="market" className="space-y-3">
             {suggestionsWithoutSelected.length === 0 ? (
               <div className="py-8 text-center">
-                <p className="text-xs lia-text-secondary">
+                <p className="text-xs text-lia-text-secondary">
                   Nenhuma sugestão de mercado disponível para {CATEGORY_LABELS[category].toLowerCase()}
                 </p>
               </div>
@@ -501,7 +501,7 @@ export function AddSkillModal({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="border-lia-border-subtle lia-text-secondary hover:bg-lia-interactive-hover rounded-md focus-visible:ring-2 focus-visible:ring-lia-border-default"
+            className="border-lia-border-subtle text-lia-text-secondary hover:bg-lia-interactive-hover rounded-md focus-visible:ring-2 focus-visible:ring-lia-border-default"
             aria-label="Fechar"
           >
             <X className="w-3.5 h-3.5 mr-1.5" />

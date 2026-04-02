@@ -175,7 +175,7 @@ export function AsyncJobProgress({
       <div className="flex items-center justify-between gap-2" role="status" aria-live="polite" aria-label="Carregando...">
         <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
           {status === "processing" || status === "queued" ? (
-            <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none lia-text-secondary" />
+            <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
           ) : status === "completed" ? (
             <CheckCircle2 className="h-4 w-4 text-status-success" />
           ) : (
@@ -186,7 +186,7 @@ export function AsyncJobProgress({
 
         <div className="flex items-center gap-2">
           {usePolling && status !== "completed" && status !== "failed" && (
-            <Badge variant="outline" className="text-xs px-1.5 py-0 lia-text-secondary">
+            <Badge variant="outline" className="text-xs px-1.5 py-0 text-lia-text-secondary">
               <RefreshCw className="h-2.5 w-2.5 mr-1" />
               polling
             </Badge>
@@ -212,7 +212,7 @@ export function AsyncJobProgress({
       <Progress value={progress} className="h-1.5" />
 
       {/* Message */}
-      <p className="text-xs lia-text-secondary leading-relaxed">{message}</p>
+      <p className="text-xs text-lia-text-secondary leading-relaxed">{message}</p>
 
       {/* Retry on failure */}
       {status === "failed" && (

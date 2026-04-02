@@ -124,7 +124,7 @@ export function ChatMessageList({
                 >
                   <p className="text-base-ui text-lia-text-secondary leading-relaxed">{message.content}</p>
                 </div>
-                <span className="text-xs lia-text-secondary px-1" style={{fontFamily: '"Inter", sans-serif'}}>
+                <span className="text-xs text-lia-text-secondary px-1" style={{fontFamily: '"Inter", sans-serif'}}>
                   {formatTimestamp(message.timestamp)}
                 </span>
               </div>
@@ -140,7 +140,7 @@ export function ChatMessageList({
               <div className="pt-1 flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-2">
                   <span className="text-xs font-bold text-lia-text-primary" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
-                  <span className="text-xs lia-text-secondary" style={{fontFamily: '"Inter", sans-serif'}}>{formatTimestamp(message.timestamp)}</span>
+                  <span className="text-xs text-lia-text-secondary" style={{fontFamily: '"Inter", sans-serif'}}>{formatTimestamp(message.timestamp)}</span>
                 </div>
                 <p className="text-base-ui text-lia-text-secondary mb-3">{message.content}</p>
                 <ParecerLIACard
@@ -167,7 +167,7 @@ export function ChatMessageList({
               <div className="pt-1 flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-1">
                   <span className="text-xs font-bold text-lia-text-primary" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
-                  <span className="text-xs lia-text-secondary" style={{fontFamily: '"Inter", sans-serif'}}>{formatTimestamp(message.timestamp)}</span>
+                  <span className="text-xs text-lia-text-secondary" style={{fontFamily: '"Inter", sans-serif'}}>{formatTimestamp(message.timestamp)}</span>
                 </div>
                 <div className="text-base-ui text-lia-text-secondary leading-relaxed whitespace-pre-wrap">
                   {formatSalaryAnalysisText(message.compensationAnalysis || null)}
@@ -266,7 +266,7 @@ export function ChatMessageList({
               <div className="pt-1 flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-1">
                   <span className="text-xs font-bold text-lia-text-primary" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
-                  <span className="text-xs lia-text-secondary" style={{fontFamily: '"Inter", sans-serif'}}>{formatTimestamp(message.timestamp)}</span>
+                  <span className="text-xs text-lia-text-secondary" style={{fontFamily: '"Inter", sans-serif'}}>{formatTimestamp(message.timestamp)}</span>
                 </div>
                 <ToolConfirmationMessage
                   toolCall={message.toolCall}
@@ -321,7 +321,7 @@ export function ChatMessageList({
               <div className="pt-1 flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-1">
                   <span className="text-xs font-bold text-lia-text-primary" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
-                  <span className="text-xs lia-text-secondary" style={{fontFamily: '"Inter", sans-serif'}}>{formatTimestamp(message.timestamp)}</span>
+                  <span className="text-xs text-lia-text-secondary" style={{fontFamily: '"Inter", sans-serif'}}>{formatTimestamp(message.timestamp)}</span>
                 </div>
                 <ToolExecutionFeedback
                   result={message.toolExecutionResult}
@@ -358,7 +358,7 @@ export function ChatMessageList({
                 <div className="flex items-center gap-1.5 mb-1">
                   <span className="text-micro font-bold text-chat-cyan" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
                   <span className="text-micro px-1.5 py-0.5 rounded-full bg-chat-cyan/10 text-chat-cyan" style={{fontFamily: '"Inter", sans-serif'}}>ação executada</span>
-                  <span className="text-xs lia-text-secondary" style={{fontFamily: '"Inter", sans-serif'}}>{formatTimestamp(message.timestamp)}</span>
+                  <span className="text-xs text-lia-text-secondary" style={{fontFamily: '"Inter", sans-serif'}}>{formatTimestamp(message.timestamp)}</span>
                 </div>
                 <ActionResultCard
                   actionType={message.actionType}
@@ -387,7 +387,7 @@ export function ChatMessageList({
                 <div className="flex items-center gap-1.5 mb-1">
                   <span className="text-micro font-bold text-chat-cyan" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
                   <span className="text-micro px-1.5 py-0.5 rounded-full bg-chat-cyan/10 text-chat-cyan" style={{fontFamily: '"Inter", sans-serif'}}>sugestão proativa</span>
-                  <span className="text-xs lia-text-secondary" style={{fontFamily: '"Inter", sans-serif'}}>{formatTimestamp(message.timestamp)}</span>
+                  <span className="text-xs text-lia-text-secondary" style={{fontFamily: '"Inter", sans-serif'}}>{formatTimestamp(message.timestamp)}</span>
                 </div>
                 <div className={cn(
  "rounded-md border-l-4 p-2.5 mb-1",
@@ -407,7 +407,7 @@ export function ChatMessageList({
                   </button>
                   <button
                     onClick={() => onProactiveReject(message.proactiveData!.actionId, message.id)}
-                    className="px-3 py-1 text-xs rounded-md lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
+                    className="px-3 py-1 text-xs rounded-md text-lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
                     style={{fontFamily: '"Inter", sans-serif'}}
                   >
                     Ignorar
@@ -437,7 +437,7 @@ export function ChatMessageList({
             <div
               className={cn(
  "px-3 py-2 rounded-md text-xs transition-colors duration-300",
-                message.processingState === 'completed' ? "bg-lia-bg-tertiary text-lia-text-primary" : "bg-lia-bg-secondary lia-text-secondary"
+                message.processingState === 'completed' ? "bg-lia-bg-tertiary text-lia-text-primary" : "bg-lia-bg-secondary text-lia-text-secondary"
               )}
              
             >
@@ -461,7 +461,7 @@ export function ChatMessageList({
                 <div className="flex-1 min-w-0 overflow-hidden flex flex-col gap-1">
                   <div className="flex items-center gap-1.5 px-1">
                     <span className="text-xs font-bold text-lia-text-primary" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
-                    <span className="text-xs lia-text-secondary" style={{fontFamily: '"Inter", sans-serif'}}>{formatTimestamp(message.timestamp)}</span>
+                    <span className="text-xs text-lia-text-secondary" style={{fontFamily: '"Inter", sans-serif'}}>{formatTimestamp(message.timestamp)}</span>
                   </div>
                   <div className="px-3.5 py-2.5 bg-lia-bg-primary border border-lia-border-subtle rounded-[14px] rounded-bl-[4px]">
                     <div className="text-base-ui text-lia-text-secondary space-y-1 leading-relaxed break-words overflow-wrap-anywhere">
