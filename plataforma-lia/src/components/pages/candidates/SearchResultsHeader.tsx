@@ -172,7 +172,7 @@ const SearchResultsHeader = memo(function SearchResultsHeader({
   }
 
   return (
-    <div className="flex items-center gap-3 -mt-1 bg-gray-50 rounded-md px-3 py-2">
+    <div className="flex items-center gap-3 -mt-1 bg-white rounded-md px-3 py-2">
       {/* Botão Voltar - apenas ícone em azul negrito */}
       <TooltipProvider>
         <Tooltip>
