@@ -122,7 +122,7 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
               >
                 <Avatar className="h-7 w-7">
                   <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
-                  <AvatarFallback className="text-xs bg-lia-btn-primary-bg text-white">
+                  <AvatarFallback className="text-xs bg-lia-bg-inverse text-lia-text-on-inverse">
                     {currentUser.name.split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
@@ -139,7 +139,7 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
                 <div className="flex items-center space-x-3">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
-                    <AvatarFallback className="text-sm bg-lia-btn-primary-bg text-white">
+                    <AvatarFallback className="text-sm bg-lia-bg-inverse text-lia-text-on-inverse">
                       {currentUser.name.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>
                   </Avatar>
@@ -316,7 +316,7 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
                 </Button>
                 <Button 
                   onClick={handlePasswordChange}
-                  className="text-white hover:opacity-90 bg-lia-btn-primary-bg"
+                  className="text-lia-btn-primary-text hover:opacity-90 bg-lia-btn-primary-bg"
                 >
                   Alterar Senha
                 </Button>

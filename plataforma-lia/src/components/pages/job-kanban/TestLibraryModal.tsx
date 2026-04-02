@@ -147,7 +147,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                         Teste básico de conceitos e heurísticas de UX
                       </p>
                     </div>
-                    <Badge className="bg-lia-btn-primary-bg text-white text-xs">Popular</Badge>
+                    <Badge className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs">Popular</Badge>
                   </div>
 
                   {/* Mini Dashboard de Indicadores */}
@@ -163,7 +163,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                           <div className="flex items-baseline gap-2">
                             <p className="text-2xl font-bold text-lia-text-primary">7.4</p>
                             <span className="text-xs text-lia-text-primary">/10</span>
-                            <Badge className="bg-lia-btn-primary-bg text-white text-xs">
+                            <Badge className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs">
                               <TrendingUp className="w-2.5 h-2.5 mr-0.5" />
                               +0.3
                             </Badge>
@@ -282,7 +282,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                       </Button>
                       <Button
                         size="sm"
-                        className="flex-1 text-xs bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white"
+                        className="flex-1 text-xs bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
                         onClick={onClose}
                       >
                         <RefreshCw className="w-3 h-3 mr-1" />
@@ -350,7 +350,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                       </Button>
                       <Button
                         size="sm"
-                        className="flex-1 text-xs bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white"
+                        className="flex-1 text-xs bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
                         onClick={onClose}
                       >
                         <RefreshCw className="w-3 h-3 mr-1" />
@@ -418,7 +418,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                       </Button>
                       <Button
                         size="sm"
-                        className="flex-1 text-xs bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white"
+                        className="flex-1 text-xs bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
                         onClick={onClose}
                       >
                         <RefreshCw className="w-3 h-3 mr-1" />
@@ -455,7 +455,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                     </div>
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-lia-text-primary">Nível:</span>
-                      <Badge className="bg-lia-btn-primary-bg text-white text-xs">Júnior</Badge>
+                      <Badge className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs">Júnior</Badge>
                     </div>
                   </div>
 
@@ -486,7 +486,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                       </Button>
                       <Button
                         size="sm"
-                        className="flex-1 text-xs bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white"
+                        className="flex-1 text-xs bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
                         onClick={onClose}
                       >
                         <RefreshCw className="w-3 h-3 mr-1" />
@@ -529,7 +529,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
               <Button variant="outline" onClick={onClose}>
                 Fechar
               </Button>
-              <Button className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white">
+              <Button className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text">
                 <Plus className="w-4 h-4 mr-2" />
                 Criar Novo Teste
               </Button>

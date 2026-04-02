@@ -358,7 +358,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
             </p>
             <Button
               size="sm"
-              className="h-7 text-xs bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white"
+              className="h-7 text-xs bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
               onClick={onClose}
             >
               Entendi

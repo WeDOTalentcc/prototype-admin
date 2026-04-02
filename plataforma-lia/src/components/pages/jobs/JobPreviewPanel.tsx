@@ -664,7 +664,7 @@ export function JobPreviewPanel({
                                   return (
                                     <div className="bg-lia-btn-primary-bg h-3 rounded-full flex items-center justify-end pr-1"
                                          style={{width: `${Math.min(widthPercent, 100)}%`}}>
-                                      <span className="text-xs text-white font-bold">{entrevistasAgendadas}</span>
+                                      <span className="text-xs text-lia-btn-primary-text font-bold">{entrevistasAgendadas}</span>
                                     </div>
                                   )
                                 })()}

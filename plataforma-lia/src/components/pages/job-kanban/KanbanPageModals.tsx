@@ -494,7 +494,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
               <Button
                 onClick={confirmMove}
                 disabled={!selectedSubStatus}
-                className="px-4 text-white bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover"
+                className="px-4 text-lia-btn-primary-text bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover"
               >
                 <CheckCircle className="w-4 h-4 mr-2" />
                 Confirmar
@@ -719,7 +719,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
       {selectedForCompare.size >= 2 && (
         <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2">
           <button
-            className="flex items-center gap-2 bg-lia-btn-primary-bg text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none shadow-lia-md"
+            className="flex items-center gap-2 bg-lia-btn-primary-bg text-lia-btn-primary-text px-4 py-2 rounded-md text-sm font-medium hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none shadow-lia-md"
             onClick={() => {
               const selectedIds = Array.from(selectedForCompare)
               const resolvedCandidates = allTableCandidates
@@ -914,7 +914,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
                       toast.error("Não foi possível copiar", { description: "Selecione o link manualmente e copie." })
                     }
                   }}
-                  className="p-2 rounded-md bg-lia-btn-primary-bg text-white hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none flex-shrink-0"
+                  className="p-2 rounded-md bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none flex-shrink-0"
                   title="Copiar link"
                 >
                   <Copy className="w-4 h-4" />
@@ -924,7 +924,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
             <div className="px-6 py-4 bg-lia-bg-secondary border-t border-lia-border-subtle flex justify-end">
               <button
                 onClick={() => setShowPublishSuccess(false)}
-                className="px-4 py-2 text-sm font-medium rounded-md bg-lia-btn-primary-bg text-white hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
+                className="px-4 py-2 text-sm font-medium rounded-md bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
               >
                 Fechar
               </button>
