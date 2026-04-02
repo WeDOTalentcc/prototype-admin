@@ -206,7 +206,7 @@ Qualquer código novo ou modificado **deve** seguir as dimensões aplicáveis:
 
 ---
 
-## 1. UI Base (`ui/`) — 66 componentes
+## 1. UI Base (`ui/`) — 65 componentes
 
 Componentes primitivos reutilizáveis. Base do design system.
 
@@ -220,7 +220,7 @@ Componentes primitivos reutilizáveis. Base do design system.
 | 6 | `avatar` | 50 | Primitivo | Avatar com fallback de iniciais |
 | 7 | `badge` | 102 | Primitivo | 8 variantes: default, secondary, destructive, outline, success, warning, info, lilac |
 | 8 | `big-five-profile` | 171 | Especializado | Radar chart Big Five |
-| 9 | `bulk-selection-bar` | 255 | Especializado | Barra de seleção em massa |
+| 9 | `bulk-actions-bar` | 197 | Especializado | Barra unificada de ações em massa com `layout="inline"\|"fixed"`, `actions[]` tipadas, `entityLabel`/`entityIcon`. Substitui 4 componentes antigos (Task #93) |
 | 10 | `button` | 57 | Primitivo | 7 variantes (`default`, `primary`, `destructive`, `outline`, `secondary`, `ghost`, `link`) + 4 tamanhos. Base do DS |
 | 11 | `candidate-card` | 399 | Especializado | Card de candidato com score, tags, ações |
 | 12 | `candidate-queries-guide` | 204 | Especializado | Guia de queries para candidatos |
@@ -276,8 +276,7 @@ Componentes primitivos reutilizáveis. Base do design system.
 | 62 | `textarea` | 23 | Primitivo | Textarea com forwardRef |
 | 63 | `thinking-dots` | 31 | Primitivo | Animação de pontos de carregamento (LIA pensando) |
 | 64 | `tooltip` | 30 | Primitivo | Radix Tooltip |
-| 65 | `unified-bulk-actions-bar` | 200 | Especializado | Barra unificada de ações em massa |
-| 66 | `variable-selector` | 267 | Especializado | Seletor de variáveis para templates |
+| 65 | `variable-selector` | 267 | Especializado | Seletor de variáveis para templates |
 
 > **Removidos:** `toast.tsx` e `toaster.tsx` não existem mais como arquivos — o sistema de toasts usa `sonner` importado diretamente em `layout.tsx`.
 
@@ -679,7 +678,7 @@ Componentes na raiz de `src/components/` sem subdiretório dedicado.
 | 11 | `candidate-preview` | 5994 | Preview expandido — era 6.723, -729L Sprint 4.6 |
 | 12 | `column-configuration-modal` | 346 | Modal de configuração de colunas |
 | 13 | `company-screening-settings` | 507 | Config de triagem da empresa |
-| 14 | `contextual-actions-banner` | 172 | Banner de ações contextuais |
+| 14 | ~~`contextual-actions-banner`~~ | ~~172~~ | ~~Banner de ações contextuais~~ — ✅ **DELETADO** Task #93 (substituído por `ui/bulk-actions-bar`) |
 | 15 | `daily-briefing-card` | 564 | Card de briefing diário |
 | 16 | `dashboard-app` | 187 | App principal do dashboard |
 | 17 | `disc-assessment-modal` | 557 | Modal de assessment DISC |
@@ -692,7 +691,7 @@ Componentes na raiz de `src/components/` sem subdiretório dedicado.
 | 24 | `global-search-modal` | 482 | Modal de busca global |
 | 25 | `intelligence-notifications` | 404 | Notificações inteligentes |
 | 26 | `interviews-section` | 202 | Seção de entrevistas |
-| 27 | `job-actions-bar` | 116 | Barra de ações de vaga |
+| 27 | ~~`job-actions-bar`~~ | ~~116~~ | ~~Barra de ações de vaga~~ — ✅ **DELETADO** Task #93 (substituído por `ui/bulk-actions-bar`) |
 | 28 | `job-report-modal` | 556 | Modal de relatório de vaga |
 | 29 | `lia-activity-feed` | 448 | Feed de atividades da LIA |
 | 30 | `lia-expanded-prompt` | 199 | Prompt expandido da LIA |

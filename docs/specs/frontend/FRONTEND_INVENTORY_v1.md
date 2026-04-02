@@ -753,7 +753,7 @@ Localização: `/src/components/ui/` — **68 arquivos**
 | `avatar.tsx`                     | Avatar circular (Radix)                        |
 | `badge.tsx`                      | Badge/tag semântica — variants: default/secondary/destructive/outline/success/warning/info |
 | `big-five-profile.tsx`           | Visualização de perfil Big Five                |
-| `bulk-selection-bar.tsx`         | Barra de seleção em massa                      |
+| `bulk-actions-bar.tsx`           | Barra unificada de ações em massa — `layout="inline"\|"fixed"`, `actions[]` tipadas, `BulkActionType` (Task #93, substitui 4 componentes) |
 | `button.tsx`                     | Botão (CVA + Radix Slot) — variants: default/primary/destructive/outline/secondary/ghost/link; sizes: default/sm/lg/icon; asChild suportado |
 | `candidate-card.tsx`             | Card de candidato                              |
 | `candidate-queries-guide.tsx`    | Guia de queries de candidatos                  |
@@ -811,10 +811,9 @@ Localização: `/src/components/ui/` — **68 arquivos**
 | `toast.tsx`                      | Toast de notificação (Radix)                   |
 | `toaster.tsx`                    | Container de toasts                            |
 | `tooltip.tsx`                    | Tooltip (Radix)                                |
-| `unified-bulk-actions-bar.tsx`   | Barra unificada de ações em massa              |
 | `variable-selector.tsx`          | Seletor de variáveis (templates)               |
 
-**Total: 68 componentes UI** *(atualizado 2026-04-02 — +cookie-consent, lia-prompt-header, masked-input, thinking-dots)*
+**Total: 65 componentes UI** *(atualizado 2026-04-02 — Task #93: removidos `bulk-selection-bar`, `unified-bulk-actions-bar`; adicionado `bulk-actions-bar` unificado)*
 
 ---
 
@@ -980,7 +979,7 @@ Não há um diretório dedicado `/components/layout/`, mas os componentes de lay
 | `prompt-suggestions-dock.tsx` | 1                        | USO ÚNICO               |
 | `setup-alert-badge.tsx`       | 1                        | USO ÚNICO               |
 | `toaster.tsx`                 | 1                        | USO ÚNICO (root layout) |
-| `unified-bulk-actions-bar.tsx`| 1                        | USO ÚNICO               |
+| ~~`unified-bulk-actions-bar.tsx`~~| —                    | ✅ **DELETADO** Task #93 (substituído por `bulk-actions-bar.tsx`, 4 consumidores) |
 
 | Métrica de cobertura de testes | Valor |
 |-------------------------------|-------|
