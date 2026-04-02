@@ -1,5 +1,5 @@
 # FRONTEND INVENTORY — plataforma-lia
-> **Última atualização:** 2026-03-30 — Sprints 1–11 + FASE 2 concluídos. Ver `OPORTUNIDADES_PADRONIZACAO.md` para histórico completo.
+> **Última atualização:** 2026-04-02 — Sprints 1–11 + FASE 2 concluídos. Ver `OPORTUNIDADES_PADRONIZACAO.md` para histórico completo.
 > **Score estimado:** **10.0/10** (era 9.5/10 antes da FASE 3; era 9.0/10 antes da FASE 2; era 7.6/10 antes das sprints)
 > **Build status:** ✅ Verde (output: 'export' removido, workos lazy init)
 
@@ -175,8 +175,8 @@ Aliases semânticos (design-tokens.css, linhas ~490–504):
 |---------|-------|
 | `dark:lia-*` tokens semânticos em uso | **9.572 ocorrências** |
 | `dark:gray-N` hardcoded residual (gray-500..950) | ~~**3.816**~~ → **98** (inversões intencionais — FASE 2 concluída) |
-| Componentes UI base com `dark:` | **62/65** (3 N/A: collapsible, lia-icon, toaster) |
-| Pages com `dark:` | **81/90** |
+| Componentes UI base com `dark:` | **62/68** (6 sem dark:: collapsible, cookie-consent, lia-icon, lia-prompt-header, masked-input, toaster) |
+| Pages com `dark:` | **81/91** |
 
 ---
 
@@ -739,7 +739,7 @@ Classes Tailwind geradas:
 ## SEÇÃO 6 — Catálogo de Componentes
 
 ### 6.1 Componentes Base (shadcn/ui)
-Localização: `/src/components/ui/` — **65 arquivos**
+Localização: `/src/components/ui/` — **68 arquivos**
 
 **Configuração shadcn:** `style: "new-york"`, `baseColor: "zinc"`, `cssVariables: true`, `iconLibrary: "lucide"`.
 
@@ -764,6 +764,7 @@ Localização: `/src/components/ui/` — **65 arquivos**
 | `command-palette.tsx`            | Paleta de comandos estendida                   |
 | `command.tsx`                    | Comando/busca (cmdk)                           |
 | `context-pill.tsx`               | Pill de contexto (ex: filtros ativos)          |
+| `cookie-consent.tsx`             | Banner de consentimento de cookies (LGPD)      |
 | `data-request-indicator.tsx`     | Indicador de solicitação de dados              |
 | `date-range-picker.tsx`          | Seletor de intervalo de datas                  |
 | `dialog.tsx`                     | Diálogo modal (Radix) — exporta: Root/Trigger/Portal/Close/Overlay/Content/Header/Footer/Title/Description |
@@ -776,10 +777,12 @@ Localização: `/src/components/ui/` — **65 arquivos**
 | `label.tsx`                      | Label de formulário (Radix)                    |
 | `lia-expanded-panel.tsx`         | Painel expandido da LIA                        |
 | `lia-icon.tsx`                   | Ícone customizado da LIA                       |
+| `lia-prompt-header.tsx`          | Header de prompt da LIA                        |
 | `lia-queries-guide.tsx`          | Guia de queries da LIA                         |
 | `lia-search-queries-guide.tsx`   | Guia de queries de busca da LIA                |
 | `lia-vacancy-queries-guide.tsx`  | Guia de queries de vagas da LIA                |
 | `loading.tsx`                    | Indicador de carregamento                      |
+| `masked-input.tsx`               | Input com máscara (CPF, CNPJ, telefone)        |
 | `pipeline-report.tsx`            | Relatório de pipeline                          |
 | `pipeline-stages-carousel.tsx`   | Carrossel de etapas do pipeline                |
 | `popover.tsx`                    | Popover (Radix)                                |
@@ -804,19 +807,20 @@ Localização: `/src/components/ui/` — **65 arquivos**
 | `table.tsx`                      | Tabela                                         |
 | `tabs.tsx`                       | Tabs (Radix) — rounded-full TabsList, ativa bg-white shadow; Trigger/Content/Root exportados |
 | `textarea.tsx`                   | Área de texto                                  |
+| `thinking-dots.tsx`              | Animação de pontos "pensando" da LIA           |
 | `toast.tsx`                      | Toast de notificação (Radix)                   |
 | `toaster.tsx`                    | Container de toasts                            |
 | `tooltip.tsx`                    | Tooltip (Radix)                                |
 | `unified-bulk-actions-bar.tsx`   | Barra unificada de ações em massa              |
 | `variable-selector.tsx`          | Seletor de variáveis (templates)               |
 
-**Total: 65 componentes UI** *(atualizado pós-Sprint 11)*
+**Total: 68 componentes UI** *(atualizado 2026-04-02 — +cookie-consent, lia-prompt-header, masked-input, thinking-dots)*
 
 ---
 
 ### 6.2 Modais — Catálogo Completo
 
-Localização: `/src/components/modals/` — 34 arquivos funcionais + 1 index.ts
+Localização: `/src/components/modals/` — 35 arquivos (33 modais + 1 constants + 1 index.ts)
 
 | Arquivo                                   | Tamanho | Propósito                                                         |
 |-------------------------------------------|---------|-------------------------------------------------------------------|
@@ -832,6 +836,7 @@ Localização: `/src/components/modals/` — 34 arquivos funcionais + 1 index.ts
 | `create-job-with-candidates-modal.tsx`    | 11KB    | Criar vaga com pré-seleção de candidatos (Portal ou e-mail)       |
 | `data-blocking-modal.tsx`                 | 9KB     | Alerta de dados faltantes para progressão de etapa (LGPD)        |
 | `data-request-modal.tsx`                  | 13KB    | Solicitar dados específicos ao candidato via e-mail ou WhatsApp   |
+| `edit-job-modal.constants.tsx`            | ~2KB    | Constantes do modal de edição de vaga (tabs, defaults)            |
 | `edit-job-modal.tsx`                      | 90KB    | Edição completa de vaga: todas as abas (maior modal do sistema)   |
 | `english-test-modal.tsx`                  | 13KB    | Visualizar resultado de teste de inglês: status pending/in_progress/completed |
 | `general-score-modal.tsx`                 | 9KB     | Score geral do candidato: breakdown por CV Fit / Triagem LIA / Técnico / Inglês |
@@ -855,7 +860,7 @@ Localização: `/src/components/modals/` — 34 arquivos funcionais + 1 index.ts
 | `unsaved-pearch-warning-modal.tsx`        | 6KB     | AlertDialog de aviso ao sair de busca com candidatos não salvos   |
 | `index.ts`                                | 677B    | Barrel exports de todos os modais                                  |
 
-**Total: 33 modais funcionais** (+ index.ts)
+**Total: 33 modais funcionais** (+ edit-job-modal.constants.tsx + index.ts = 35 arquivos)
 
 **COBERTURA desta seção: 100%** — todos os 33 modais documentados com propósito e tamanho.
 
@@ -863,35 +868,48 @@ Localização: `/src/components/modals/` — 34 arquivos funcionais + 1 index.ts
 
 ### 6.3 Componentes de Página Compostos
 
-Localização: `/src/components/pages/` — principais páginas compostas:
+Localização: `/src/components/pages/` — **25 arquivos raiz** + **8 subdiretórios** (197 arquivos totais)
 
 | Arquivo                          | Descrição                                      |
 |----------------------------------|------------------------------------------------|
+| `ai-credits-page.tsx`            | Créditos de IA                                 |
+| `ats-integrations-page.tsx`      | Integrações ATS específicas                    |
+| `big-five-dashboard-page.tsx`    | Dashboard Big Five                             |
+| `candidate-review-modal.tsx`     | Modal de revisão de candidato                  |
 | `candidates-page.tsx`            | Página completa de candidatos                  |
 | `chat-page.tsx`                  | Página de chat com LIA                         |
 | `dashboards-page.tsx`            | Dashboard principal                            |
+| `executive-dashboard-page.tsx`   | Dashboard executivo                            |
+| `indicators-page.tsx`            | Indicadores de recrutamento                    |
+| `integrations-page.tsx`          | Integrações                                    |
 | `job-kanban-page.tsx`            | Kanban de vagas                                |
 | `jobs-page.tsx`                  | Lista de vagas                                 |
-| `jobs2-page.tsx`                 | Variante da lista de vagas                     |
-| `tasks-page-mvp.tsx`             | Página de tarefas MVP                          |
-| `settings-page.tsx`              | Configurações                                  |
-| `settings-page-enhanced.tsx`     | Configurações avançadas                        |
+| `job-templates-page.tsx`         | Templates de vagas                             |
+| `lia-library-page.tsx`           | Biblioteca de prompts LIA                      |
 | `login-page.tsx`                 | Página de login                                |
 | `onboarding-page.tsx`            | Onboarding de empresa                          |
 | `onboarding-premium-page.tsx`    | Onboarding premium                             |
-| `integrations-page.tsx`          | Integrações                                    |
-| `ats-integrations-page.tsx`      | Integrações ATS específicas                    |
-| `big-five-dashboard-page.tsx`    | Dashboard Big Five                             |
 | `real-time-dashboard-page.tsx`   | Dashboard em tempo real                        |
-| `executive-dashboard-page.tsx`   | Dashboard executivo                            |
-| `ai-credits-page.tsx`            | Créditos de IA                                 |
-| `lia-library-page.tsx`           | Biblioteca de prompts LIA                      |
-| `indicators-page.tsx`            | Indicadores de recrutamento                    |
-| `job-templates-page.tsx`         | Templates de vagas                             |
-| `AdminTemplateHub.tsx`           | Hub de templates admin                         |
-| `candidate-review-modal.tsx`     | Modal de revisão de candidato                  |
-| `Breadcrumbs.tsx`                | Navegação em breadcrumbs                       |
-| `ClientSelector.tsx`             | Seletor de cliente (admin)                     |
+| `settings-page-enhanced.tsx`     | Configurações avançadas                        |
+| `task-helpers.tsx`               | Helpers de tarefas (utilitários)               |
+| `tasks-page-mvp.tsx`             | Página de tarefas MVP                          |
+| `tasks-page.tsx`                 | Página de tarefas completa                     |
+| `templates-page.tsx`             | Página de templates                            |
+| `workflow-automation-page.tsx`   | Página de automação de workflows               |
+| `work-model-analytics-page.tsx`  | Analytics de modelo de trabalho                 |
+
+#### Subdiretórios de Página
+
+| Subdiretório     | Arquivos | Conteúdo principal                                  |
+|------------------|----------|-----------------------------------------------------|
+| `candidates/`    | 75       | Componentes da página de candidatos (tabs, filters, cards, modals) |
+| `job-kanban/`    | 52       | Componentes do kanban (columns, cards, DnD, pipeline) |
+| `jobs/`          | 26       | Componentes da página de vagas (table, filters, actions) |
+| `chat-page/`     | 16       | Componentes do chat (messages, input, sidebar)       |
+| `dashboards-page/` | 12    | Componentes do dashboard (widgets, charts, summary)  |
+| `indicators/`    | 9        | Componentes de indicadores (charts, tables, filters) |
+| `ats-integrations/` | 5     | Componentes de integrações ATS (cards, config)       |
+| `tasks/`         | 2        | Componentes auxiliares de tarefas                    |
 
 #### Componentes Chave Não-Page
 
@@ -931,13 +949,13 @@ Não há um diretório dedicado `/components/layout/`, mas os componentes de lay
 
 | Métrica                              | Valor       |
 |--------------------------------------|-------------|
-| Componentes UI base (shadcn/ui)      | **65**      |
-| Componentes de página compostos      | ~25         |
+| Componentes UI base (shadcn/ui)      | **68**      |
+| Componentes de página compostos      | 25 raiz + 8 subdirs (197 arquivos totais) |
 | Componentes específicos LIA          | ~15 (lia-float, expanded-chat, screening, etc.) |
 | Componentes de Admin                 | ~10+        |
-| Total de arquivos em `/components/`  | ~150+ (incluindo subdiretórios — kanban, expanded-chat, job-wizard, etc.) |
-| Modais em `/components/modals/`      | 33 funcionais                            |
-| Páginas em `/components/pages/`      | 36 arquivos (.tsx + .ts + subpastas)     |
+| Total de arquivos em `/components/`  | **946** (incluindo subdiretórios — kanban, expanded-chat, job-wizard, etc.) |
+| Modais em `/components/modals/`      | 33 funcionais + constants + index = 35 arquivos |
+| Páginas em `/components/pages/`      | 25 raiz + 197 em subdirs              |
 | Primitivos Radix UI utilizados       | 20 (accordion, alert-dialog, avatar, checkbox, collapsible, dialog, dropdown-menu, label, popover, progress, radio-group, scroll-area, select, separator, slider, slot, switch, tabs, toast, tooltip) |
 | Biblioteca de ícones                 | Lucide React `^0.475.0`     |
 | DnD                                  | `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities` |
@@ -967,7 +985,7 @@ Não há um diretório dedicado `/components/layout/`, mas os componentes de lay
 | Métrica de cobertura de testes | Valor |
 |-------------------------------|-------|
 | Arquivos `.test.*` / `.spec.*` em `/components/` | **6** |
-| Hooks com testes unitários (`/hooks/__tests__/`) | 23 arquivos de teste rodando (era 125 não-rodando) |
+| Hooks com testes unitários (`/hooks/__tests__/`) | **29** arquivos de teste rodando (era 125 não-rodando) |
 | Testes passando | **236 testes** via `npm test → vitest` |
 | Componentes sem nenhum teste  | ~95% (estimativa — FASE 3 para expansão) |
 
@@ -979,7 +997,7 @@ Não há um diretório dedicado `/components/layout/`, mas os componentes de lay
 
 ### 7.1 Rotas da Aplicação
 
-Total: **90 rotas** identificadas via `find page.tsx`.
+Total: **91 rotas** identificadas via `find page.tsx`.
 
 #### Rotas Públicas / Auth
 
@@ -1243,7 +1261,7 @@ Estado complexo de múltiplas etapas para criação de vagas:
 
 ### 8.2 Catálogo Completo de Custom Hooks
 
-Localização: `/src/hooks/` — **110 arquivos** (hooks + testes + admin + settings)
+Localização: `/src/hooks/` — **144 arquivos** (102 root + 11 admin + 2 settings + 29 testes)
 
 #### Grupo A — Candidatos
 
@@ -1413,6 +1431,11 @@ Localização: `/src/hooks/` — **110 arquivos** (hooks + testes + admin + sett
 | Hook                             | Retorna / Gerencia                                                  |
 |----------------------------------|---------------------------------------------------------------------|
 | `use-archetypes.ts`              | Arquétipos/personas de candidato ideal                              |
+| `use-notifications.ts`           | Sistema de notificações push/in-app                                 |
+| `useSessionTimeout.ts`           | Timeout de sessão com redirect para login                           |
+| `useTagInputState.ts`            | Estado compartilhado de tag input (add/remove/validate)             |
+| `useUnifiedSearch.ts`            | Busca unificada cross-entity (candidatos + vagas + listas)          |
+| `useUnsavedChanges.ts`           | Detecção de mudanças não salvas com aviso ao navegar                |
 | `use-wsi-async.ts`               | WSI assíncrono (Workplace Screening Interview)                      |
 | `use-agent-streaming.ts` (ver Grupo D) | Streaming LangGraph                                         |
 
@@ -1431,8 +1454,13 @@ Localização: `/src/hooks/` — **110 arquivos** (hooks + testes + admin + sett
 | Comunicação/Templates  | 4          |
 | Admin                  | 10         |
 | Settings               | 6          |
-| **Total hooks (.ts/.tsx)** | **128** |
-| Testes unitários (`__tests__/`) | 13 arquivos |
+| Outros / Utilitários   | 7          |
+| **Total hooks únicos** | **~112**   |
+| Arquivos root hooks/   | 102 (incl. index.ts, utils) |
+| Arquivos admin/        | 11 (10 hooks + index.ts) |
+| Arquivos settings/     | 2          |
+| Testes unitários (`__tests__/`) | **29** arquivos |
+| **Total arquivos hooks/** | **144** |
 
 ---
 
@@ -1645,14 +1673,17 @@ Todos os 90+ grupos de `backend-proxy` seguem o mesmo padrão:
 - **Fetch nativo** como cliente HTTP principal.
 - **SWR** (`swr ^2.4.1`) para data fetching com cache, revalidação e stale-while-revalidate.
 - Não há Axios.
-- SSE (Server-Sent Events) para o endpoint de streaming de chat (`/api/lia/chat/stream`) — bypassado via rewrite diretamente para o backend Python, pois SSE é incompatível com static export do Next.js.
-- Serviços encapsulados em `/src/services/`:
+- SSE (Server-Sent Events) para o endpoint de streaming de chat (`/api/lia/chat/stream`) — bypassado via rewrite diretamente para o backend Python.
+- Serviços encapsulados em `/src/services/` — **51 arquivos**:
   - `auth-service.ts` — autenticação JWT + SSO
-  - `lia-api.ts` / `lia-api/` — cliente para a API LIA
+  - `lia-api.ts` / `lia-api/` — cliente para a API LIA (14 arquivos: base, bulk, candidates, chat, email, feedback, jobs, misc, notifications, voice, wsi + types/)
+  - `lia-api/types/` — 13 arquivos de tipos por domínio (candidate, chat, communication, company, email, interview, job, misc, pipeline, shared-search, wsi, bulk, index)
   - `agent-monitoring.ts` — monitoramento de agentes
+  - `agentMemoryService.ts` — memória persistente do agente LIA
   - `integrations-service.ts` — integrações externas
   - `viewed-candidates-service.ts` — candidatos visualizados
   - `duplicate-detection-service.ts` — detecção de duplicatas
+  - `admin/` — 17 arquivos (ai-consumption, api-client, audit-logs, bias, clients, compliance, consent-management, dashboard, data-subject-requests, insurance, lgpd, policies, saas-metrics ×2, technical-tests, templates + index)
 
 ---
 
@@ -1688,7 +1719,7 @@ Localizado em `globals.css (251 linhas, split em styles/)` linha 1. Pode duplica
   - `images.unsplash.com`
   - `ext.same-assets.com`
   - `ugc.same-assets.com`
-- **Otimização de imagens:** `unoptimized: true` (necessário para static export)
+- **Otimização de imagens:** `unoptimized: true` (configuração mantida)
 
 ---
 
@@ -1700,13 +1731,13 @@ Localizado em `globals.css (251 linhas, split em styles/)` linha 1. Pode duplica
 /home/runner/workspace/plataforma-lia/
 ├── src/
 │   ├── app/                     # Next.js App Router
-│   │   ├── (rotas)              # 90 page.tsx
+│   │   ├── (rotas)              # 91 page.tsx
 │   │   ├── api/                 # 424 route.ts
 │   │   ├── globals.css          # Estilos globais — 251 linhas (split em styles/)
 │   │   │   └── styles/          # animations.css(351L) | components.css(528L) | typography.css(88L) | dark-mode.css(41L)
 │   │   └── layout.tsx           # Root layout
 │   ├── components/              # Componentes React
-│   │   ├── ui/                  # 62 shadcn/ui components
+│   │   ├── ui/                  # 68 shadcn/ui components
 │   │   ├── pages/               # Páginas compostas (~25)
 │   │   ├── job-wizard/          # Wizard de vagas
 │   │   ├── kanban/              # Kanban DnD
@@ -1720,10 +1751,10 @@ Localizado em `globals.css (251 linhas, split em styles/)` linha 1. Pode duplica
 │   │   ├── auth-context.tsx
 │   │   ├── lia-float-context.tsx
 │   │   └── ClientContext.tsx
-│   ├── hooks/                   # Custom hooks (**128 arquivos** .ts/.tsx)
-│   │   ├── admin/               # 10 hooks admin (useAuditLogs, useBiasAudits, etc.)
+│   ├── hooks/                   # Custom hooks (**144 arquivos** .ts/.tsx)
+│   │   ├── admin/               # 11 arquivos (10 hooks + index.ts)
 │   │   ├── settings/            # 2 hooks de settings
-│   │   ├── __tests__/           # 13 arquivos de teste
+│   │   ├── __tests__/           # 29 arquivos de teste
 │   │   ├── use-candidates-list.ts
 │   │   ├── use-search-autocomplete.ts
 │   │   ├── use-agent-streaming.ts
@@ -1738,9 +1769,10 @@ Localizado em `globals.css (251 linhas, split em styles/)` linha 1. Pode duplica
 │   │   ├── design-tokens.ts     # Tokens TS (programático)
 │   │   ├── utils/               # Sub-utilitários
 │   │   └── api/                 # Clientes API
-│   ├── services/                # Serviços de API
+│   ├── services/                # Serviços de API (**51 arquivos**)
 │   │   ├── auth-service.ts
-│   │   ├── lia-api.ts
+│   │   ├── lia-api.ts + lia-api/ (14 arquivos + types/)
+│   │   ├── admin/               # 17 serviços admin
 │   │   └── ...
 │   ├── styles/
 │   │   └── design-tokens.css    # Tokens CSS (995 linhas)
@@ -1933,16 +1965,16 @@ Localizado em `globals.css (251 linhas, split em styles/)` linha 1. Pode duplica
 
 | Dimensão                     | Contagem / Detalhe                              |
 |------------------------------|-------------------------------------------------|
-| **Arquivos .tsx**            | **688**                                         |
-| **Arquivos .ts**             | **785**                                         |
-| **Rotas de página**          | 90                                              |
+| **Arquivos .tsx**            | **878**                                         |
+| **Arquivos .ts**             | **947**                                         |
+| **Rotas de página**          | 91                                              |
 | **API routes (route.ts)**    | 424                                             |
-| **Componentes UI (shadcn)**  | **65**                                          |
-| **Componentes de página**    | ~25                                             |
-| **Total componentes estimado**| ~200+                                          |
-| **Custom hooks**             | **128** (em /src/hooks/ + subpastas)            |
+| **Componentes UI (shadcn)**  | **68**                                          |
+| **Componentes de página**    | 25 raiz + 197 em subdirs                        |
+| **Total componentes estimado**| **946** arquivos em /components/                |
+| **Custom hooks**             | **~112 únicos** (144 arquivos em /hooks/)       |
 | **Contexts / Providers**     | 6                                               |
-| **Serviços**                 | 8+                                              |
+| **Serviços**                 | **51** (em /src/services/ + admin/ + lia-api/)  |
 | **CSS tokens (`--*`)**       | ~180+                                           |
 | **Tokens `--lia-*`**         | ~60                                             |
 | **Tokens `--wedo-*`**        | ~50                                             |
@@ -1972,7 +2004,7 @@ Localizado em `globals.css (251 linhas, split em styles/)` linha 1. Pode duplica
 1. **Monocromático 90% + acentos 10%:** Inspirado em ElevenLabs, Linear, Vercel.
 2. **Cyan exclusivo para IA:** `#60BED1` (wedo-cyan) reservado para interações com a LIA.
 3. **Animações Radix desabilitadas:** tooltip, dropdown, popover sem motion por decisão deliberada.
-4. **Sem middleware de rota:** Proteção via React Context no cliente, não via edge middleware.
+4. **Middleware de rota:** `middleware.ts` (102L) protege `/dashboard`, `/admin`, `/api/protected/*` no edge (FASE 2). Proteção adicional via React Context no cliente.
 5. ~~**Static export em produção:** `output: 'export'` — incompatível com SSR em produção.~~ ✅ **Sprint 11: removido — deploy via Node server (compatível com SSR WorkOS).**
 6. **API como proxy:** 424 routes.ts atuam como proxy para backend Python FastAPI na porta 8000.
 7. **DS v4.1:** Open Sans 60% / Inter 40% — Inter exclusivo para métricas numéricas.
